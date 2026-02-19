@@ -64,7 +64,7 @@ lemma lipschitz : LipschitzOnWith 1 ℰ.U (Set.Icc ℰ.a ℰ.b) := fun x hx y hy
     mul_nonneg (abs_nonneg (x - y)) <| show 0 ≤ 1 - ℰ.q y by linarith [hqy.2],
     mul_nonneg (abs_nonneg (x - y)) <| show 0 ≤ 1 - ℰ.q x by linarith [hqx.2]]
 
-private lemma q_monotoneOn (ℰ : EnvelopSetUpMathsCore) : MonotoneOn ℰ.q (Set.Icc ℰ.a ℰ.b) :=
+lemma q_monotoneOn (ℰ : EnvelopSetUpMathsCore) : MonotoneOn ℰ.q (Set.Icc ℰ.a ℰ.b) :=
   fun x hx y hy hxy => by
     rcases hxy.lt_or_eq with hlt | rfl
     · by_contra! h
