@@ -4,21 +4,41 @@ public import Mathlib.MeasureTheory.Integral.DivergenceTheorem
 
 /-!
 
-# Envelope Theorem
+# Envelope Theorem & Myerson's Lemma — Mathematical Core
 
-This file contains the mathematical heart of the Envelope Theorem.
+This file contains the mathematical heart of the Envelope Theorem and Myerson's Lemma.
+
+## Envelope Theorem
+
 We introduced a structure `EnvelopSetUpMathsCore`, which captures the analytic hypotheses:
 - a bounded interval `[a, b]`
 - a marginal allocation `q : ℝ → ℝ` taking values in `[0, 1]`,
 - an interim utility `U : ℝ → ℝ` satisfying the incentive-compatibility inequality:
   for all `s, s' ∈ [a, b]`, `(s - s') * q s' ≤ U s - U s'`
 
-## Main results
+### Main results
 
 - `EnvelopSetUpMathsCore.lipschitz`: `U` is 1-Lipschitz on `[a, b]`.
 - `EnvelopSetUpMathsCore.aeDifferentiable`: for almost every `s ∈ [a, b]`, the deriviate of `U` is
   equal to `q`.
 - `EnvelopSetUpMathsCore.integral_rep`: `U s = U a + ∫ ψ in a..s, q ψ`.
+
+## Myerson's Lemma
+
+Two structures capture the two directions of the Myerson equivalence:
+
+- `MyersonSetUpMathsCore`: the **necessity** direction.
+  Extends `EnvelopSetUpMathsCore` with a payment rule `t : ℝ → ℝ` and DSIC.
+- `MyersonSufficiencySetup`: the **sufficiency** direction.
+  Given a monotone allocation rule, the canonical integral payment formula yields DSIC.
+
+### Main results
+
+- `MyersonSetUpMathsCore.monotone_of_dsic`: DSIC ⟹ `q` monotone on `[a, b]`.
+- `MyersonSetUpMathsCore.payment_identity`: DSIC ⟹ `t(s) = s · q(s) - U(a) - ∫_{a}^{s} q(ψ) dψ`.
+- `MyersonSetUpMathsCore.payment_unique`: two DSIC payment rules with the same `q` and `U(a)` agree
+  on `[a, b]`.
+- `MyersonSufficiencySetup.dsic_of_monotone`: monotone `x` + integral payment ⟹ DSIC.
 
 -/
 
@@ -64,7 +84,7 @@ lemma lipschitz : LipschitzOnWith 1 ℰ.U (Set.Icc ℰ.a ℰ.b) := fun x hx y hy
     mul_nonneg (abs_nonneg (x - y)) <| show 0 ≤ 1 - ℰ.q y by linarith [hqy.2],
     mul_nonneg (abs_nonneg (x - y)) <| show 0 ≤ 1 - ℰ.q x by linarith [hqx.2]]
 
-private lemma q_monotoneOn (ℰ : EnvelopSetUpMathsCore) : MonotoneOn ℰ.q (Set.Icc ℰ.a ℰ.b) :=
+lemma q_monotoneOn (ℰ : EnvelopSetUpMathsCore) : MonotoneOn ℰ.q (Set.Icc ℰ.a ℰ.b) :=
   fun x hx y hy hxy => by
     rcases hxy.lt_or_eq with hlt | rfl
     · by_contra! h
@@ -142,6 +162,127 @@ lemma integral_rep (s) (hs : s ∈ Set.Icc ℰ.a ℰ.b) : ℰ.U s = ℰ.U ℰ.a 
   grind
 
 end EnvelopSetUpMathsCore
+
+/-- The mathematical setup for Myerson's Lemma (necessity direction).
+Extends `EnvelopSetUpMathsCore` with a payment rule and DSIC condition. -/
+structure MyersonSetUpMathsCore extends EnvelopSetUpMathsCore where
+  /-- payment rule -/
+  t : ℝ → ℝ
+  /-- Dominant-strategy incentive compatibility: for any types `s, s' ∈ [a, b]`,
+      reporting truthfully (`s`) is weakly better than misreporting (`s'`). -/
+  dsic : ∀ s ∈ Set.Icc a b, ∀ s' ∈ Set.Icc a b,
+    s * q s' - t s' ≤ s * q s - t s
+  /-- Coherence: the inherited utility equals `s * q s - t s` -/
+  hU : ∀ s, U s = s * q s - t s
+
+namespace MyersonSetUpMathsCore
+
+/-- Smart constructor: builds a `MyersonSetUpMathsCore` from allocation `x`, payment `t`,
+and DSIC, automatically deriving the incentive-compatibility inequality for the parent. -/
+noncomputable def mk'
+    (a b : ℝ) (x : ℝ → ℝ) (x_range : ∀ s ∈ Set.Icc a b, x s ∈ Set.Icc 0 1)
+    (t : ℝ → ℝ)
+    (dsic : ∀ s ∈ Set.Icc a b, ∀ s' ∈ Set.Icc a b,
+      s * x s' - t s' ≤ s * x s - t s) :
+    MyersonSetUpMathsCore where
+  a := a
+  b := b
+  q := x
+  q_range := x_range
+  U := fun s => s * x s - t s
+  ic := fun s hs s' hs' => by nlinarith [dsic s hs s' hs']
+  t := t
+  dsic := dsic
+  hU := fun _ => rfl
+
+variable (ℳ : MyersonSetUpMathsCore)
+
+/-- **Necessity**: DSIC implies the allocation rule is monotone nondecreasing. -/
+theorem monotone_of_dsic : MonotoneOn ℳ.q (Set.Icc ℳ.a ℳ.b) :=
+  ℳ.toEnvelopSetUpMathsCore.q_monotoneOn
+
+/-- **Payment Identity**: Under DSIC, `t(s) = s · q(s) - U(a) - ∫_{a}^{s} q(ψ) dψ`. -/
+theorem payment_identity (s : ℝ) (hs : s ∈ Set.Icc ℳ.a ℳ.b) :
+    ℳ.t s = s * ℳ.q s - ℳ.U ℳ.a - ∫ ψ in ℳ.a..s, ℳ.q ψ := by
+  have hrep := ℳ.toEnvelopSetUpMathsCore.integral_rep s hs
+  have hUs := ℳ.hU s
+  linarith
+
+/-- **Payment Uniqueness**: Under DSIC, the payment rule is uniquely determined by the allocation
+    rule and the base utility `U(a)`. -/
+theorem payment_unique (ℳ₂ : MyersonSetUpMathsCore)
+    (h_a : ℳ.a = ℳ₂.a) (h_b : ℳ.b = ℳ₂.b)
+    (h_q : ℳ.q = ℳ₂.q) (h_Ua : ℳ.U ℳ.a = ℳ₂.U ℳ₂.a)
+    (s : ℝ) (hs : s ∈ Set.Icc ℳ.a ℳ.b) :
+    ℳ.t s = ℳ₂.t s := by
+  have h1 := ℳ.payment_identity s hs
+  have h2 := ℳ₂.payment_identity s (show s ∈ Set.Icc ℳ₂.a ℳ₂.b by rwa [← h_a, ← h_b])
+  rw [h_q, h_a] at h1
+  rw [h_a] at h_Ua
+  linarith
+
+end MyersonSetUpMathsCore
+
+/-- The mathematical setup for Myerson's Lemma (sufficiency direction). -/
+structure MyersonSufficiencySetup where
+  /-- lower bound -/
+  a : ℝ
+  /-- upper bound -/
+  b : ℝ
+  /-- allocation rule -/
+  x : ℝ → ℝ
+  /-- allocations are probabilities: x takes values in [0, 1] on [a, b] -/
+  x_range : ∀ s ∈ Set.Icc a b, x s ∈ Set.Icc 0 1
+  /-- monotone nondecreasing allocation -/
+  x_mono : MonotoneOn x (Set.Icc a b)
+
+namespace MyersonSufficiencySetup
+
+variable (ℳ : MyersonSufficiencySetup)
+
+/-- The canonical payment rule: `t(s) = s · x(s) - c - ∫_{a}^{s} x(ψ) dψ`. -/
+noncomputable def t (c : ℝ) (s : ℝ) : ℝ :=
+  s * ℳ.x s - c - ∫ ψ in ℳ.a..s, ℳ.x ψ
+
+/-- Utility under the canonical payment rule: `U(s) = c + ∫_{a}^{s} x(ψ) dψ`. -/
+noncomputable abbrev U (c : ℝ) (s : ℝ) : ℝ := c + ∫ ψ in ℳ.a..s, ℳ.x ψ
+
+/-- **Sufficiency**: The canonical payment formula yields a DSIC mechanism. -/
+theorem dsic_of_monotone (c : ℝ) :
+    ∀ s ∈ Set.Icc ℳ.a ℳ.b, ∀ s' ∈ Set.Icc ℳ.a ℳ.b,
+    s * ℳ.x s' - ℳ.t c s' ≤ s * ℳ.x s - ℳ.t c s := by
+  intro s hs s' hs'
+  simp only [t]
+  have hab : ℳ.a ≤ ℳ.b := le_trans hs.1 hs.2
+  have ha_mem : ℳ.a ∈ Set.Icc ℳ.a ℳ.b := ⟨le_refl _, hab⟩
+  -- Integrability from monotonicity on the relevant sub-intervals
+  have hint : IntervalIntegrable ℳ.x volume s' s :=
+    (ℳ.x_mono.mono (Set.uIcc_subset_Icc hs' hs)).intervalIntegrable
+  have hint' : IntervalIntegrable ℳ.x volume ℳ.a s' :=
+    (ℳ.x_mono.mono (Set.uIcc_subset_Icc ha_mem hs')).intervalIntegrable
+  -- Integral additivity: ∫_a^{s'} x + ∫_{s'}^s x = ∫_a^s x
+  have hadd := intervalIntegral.integral_add_adjacent_intervals hint' hint
+  -- Key inequality: (s - s') * x(s') ≤ ∫_{s'}^s x
+  suffices key : (s - s') * ℳ.x s' ≤ ∫ ψ in s'..s, ℳ.x ψ by nlinarith
+  by_cases hle : s' ≤ s
+  · -- Case s' ≤ s: x nondecreasing ⟹ x(ψ) ≥ x(s') on [s', s]
+    have hconst : ∫ _ in s'..s, ℳ.x s' = (s - s') * ℳ.x s' := by
+      rw [intervalIntegral.integral_const, smul_eq_mul]
+    linarith [intervalIntegral.integral_mono_on hle intervalIntegrable_const hint
+      (fun ψ hψ => ℳ.x_mono hs' ⟨le_trans hs'.1 hψ.1, le_trans hψ.2 hs.2⟩ hψ.1)]
+  · -- Case s' > s: x nondecreasing ⟹ x(ψ) ≤ x(s') on [s, s']
+    push_neg at hle
+    have hle' := le_of_lt hle
+    have hconst : ∫ _ in s..s', ℳ.x s' = (s' - s) * ℳ.x s' := by
+      rw [intervalIntegral.integral_const, smul_eq_mul]
+    have hmono_ineq : ∫ ψ in s..s', ℳ.x ψ ≤ ∫ _ in s..s', ℳ.x s' :=
+      intervalIntegral.integral_mono_on hle' hint.symm intervalIntegrable_const
+        (fun ψ hψ => ℳ.x_mono ⟨le_trans hs.1 hψ.1, le_trans hψ.2 hs'.2⟩ hs' hψ.2)
+    have hsymm : ∫ ψ in s'..s, ℳ.x ψ = -(∫ ψ in s..s', ℳ.x ψ) :=
+      intervalIntegral.integral_symm s s'
+    nlinarith
+
+end MyersonSufficiencySetup
 
 end analysis
 

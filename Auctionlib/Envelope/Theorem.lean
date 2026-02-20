@@ -21,13 +21,19 @@ The derived quantities are:
 - `q i s = 𝔼[xᵢ(s, θ₋ᵢ)]`: marginal allocation (probability of winning),
 - `U i s = s * q i s - p i s`: interim utility.
 
+## Incentive compatibility
+
+- `IncentiveCompatible` (BIC): truthful reporting maximizes interim expected utility.
+
+## Individual rationality
+
+- `ExPostIR`: non-negative utility for every type realization.
+- `InterimIR`: non-negative interim expected utility for every type.
+- `ExAnteIR`: non-negative ex-ante expected utility.
+
 ## Main result
 
-`envelop_theorem`: Bayesian incentive compatibility (`IncentiveCompatible`) implies
-`EnvelopSetup.Theorem`, which states for each bidder `i`:
-1. `U i` is 1-Lipschitz on `[θmin i, θmax i]`,
-2. `HasDerivAt (U i) (q i s) s` for a.e. `s`,
-3. `U i s = U i (θmin i) + ∫ ψ in θmin i..s, q i ψ`.
+- `envelop_theorem`: BIC implies the Envelope Theorem (Lipschitz, a.e. derivative, integral rep).
 
 -/
 
@@ -120,6 +126,23 @@ noncomputable def U : Fin ℰ.n → ℝ → ℝ := fun i s => s * ℰ.q i s - �
     interim utility. Bidder `i` with true type `s` cannot gain by misreporting `s'`. -/
 def IncentiveCompatible : Prop :=
   ∀ i, ∀ s ∈ ℰ.interval i, ∀ s' ∈ ℰ.interval i, s * ℰ.q i s' - ℰ.p i s' ≤ ℰ.U i s
+
+/-- Ex-post individual rationality: every bidder gets non-negative utility
+    for every type realization. -/
+def ExPostIR : Prop :=
+  ∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
+    0 ≤ θ i * ℰ.x i θ - ℰ.t i θ
+
+/-- Interim individual rationality: every bidder gets non-negative
+    expected utility for every type. -/
+def InterimIR : Prop :=
+  ∀ i, ∀ s ∈ ℰ.interval i, 0 ≤ ℰ.U i s
+
+/-- Ex-ante individual rationality: every bidder gets non-negative
+    ex-ante expected utility. -/
+def ExAnteIR : Prop :=
+  ∀ i, 0 ≤ 𝔼[fun ω => ℰ.θ i ω * ℰ.x i (ℰ.θ · ω) - ℰ.t i (ℰ.θ · ω)]
+
 /--
 The statement of the envelope theorem:
 - `Uᵢ` is 1-lipschitz
