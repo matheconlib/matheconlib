@@ -19,7 +19,8 @@ core from `Auctionlib.Envelope.Mathematics`.
 ## Main results
 
 - `myerson_necessity`: DSIC implies monotone allocation and the payment identity.
-- `myerson_sufficiency`: monotone allocation implies existence of a DSIC payment rule.
+- `myerson_payment_unique`: DSIC implies payment uniqueness (given the same base utility).
+- `myerson_sufficiency`: monotone allocation implies the canonical integral payment rule is DSIC.
 
 -/
 
@@ -96,18 +97,29 @@ theorem myerson_necessity :
     intro i θ hθ s hs
     exact (ℰ.toMyersonSetUpMathsCore i θ hθ hdsic).payment_identity s hs
 
-/-- **Myerson's Lemma — Sufficiency**: Monotone allocation implies the existence of a DSIC
-    payment rule. -/
+/-- **Myerson's Lemma — Payment Uniqueness**: Under DSIC, the payment rule is uniquely determined
+    by the allocation rule and the utility at the lowest type. -/
+theorem myerson_payment_unique :
+    EnvelopSetup.DSIC ≤ fun ℰ =>
+      ∀ (t' : Fin ℰ.n → (Fin ℰ.n → ℝ) → ℝ),
+        { ℰ with t := t' }.DSIC →
+        (∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
+          ℰ.t i (Function.update θ i (ℰ.θmin i)) = t' i (Function.update θ i (ℰ.θmin i))) →
+        ∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
+        ∀ s ∈ ℰ.interval i,
+          ℰ.t i (Function.update θ i s) = t' i (Function.update θ i s) := by
+  intro ℰ hdsic t' hdsic' h_base i θ hθ s hs
+  have h1 := (myerson_necessity ℰ hdsic).2 i θ hθ s hs
+  have h2 := (myerson_necessity { ℰ with t := t' } hdsic').2 i θ hθ s hs
+  linarith [h_base i θ hθ]
+
+/-- **Myerson's Lemma — Sufficiency**: Monotone allocation implies the canonical integral
+    payment rule is DSIC. -/
 theorem myerson_sufficiency :
     EnvelopSetup.MonotoneAlloc ≤ fun ℰ =>
-      ∃ (t : Fin ℰ.n → (Fin ℰ.n → ℝ) → ℝ),
-        { ℰ with t := t }.DSIC := by
-  intro ℰ hmono
-  -- Define canonical integral payment: t_i(θ) = θ_i·x_i(θ) - ∫_{θmin}^{θ_i} x_i(ψ,θ_{-i})dψ
-  refine ⟨fun i θ => θ i * ℰ.x i θ -
-    ∫ ψ in ℰ.θmin i..θ i, ℰ.x i (Function.update θ i ψ), ?_⟩
-  -- Prove DSIC for this payment rule
-  intro i θ hθ s' hs'
+      { ℰ with t := fun i θ => θ i * ℰ.x i θ -
+        ∫ ψ in ℰ.θmin i..θ i, ℰ.x i (Function.update θ i ψ) }.DSIC := by
+  intro ℰ hmono i θ hθ s' hs'
   -- Simplify Function.update nested applications in the goal
   simp only [Function.update_self, Function.update_idem]
   -- Construct the mathematical sufficiency setup for this slice

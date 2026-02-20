@@ -36,6 +36,8 @@ Two structures capture the two directions of the Myerson equivalence:
 
 - `MyersonSetUpMathsCore.monotone_of_dsic`: DSIC ⟹ `q` monotone on `[a, b]`.
 - `MyersonSetUpMathsCore.payment_identity`: DSIC ⟹ `t(s) = s · q(s) - U(a) - ∫_{a}^{s} q(ψ) dψ`.
+- `MyersonSetUpMathsCore.payment_unique`: two DSIC payment rules with the same `q` and `U(a)` agree
+  on `[a, b]`.
 - `MyersonSufficiencySetup.dsic_of_monotone`: monotone `x` + integral payment ⟹ DSIC.
 
 -/
@@ -204,6 +206,19 @@ theorem payment_identity (s : ℝ) (hs : s ∈ Set.Icc ℳ.a ℳ.b) :
     ℳ.t s = s * ℳ.q s - ℳ.U ℳ.a - ∫ ψ in ℳ.a..s, ℳ.q ψ := by
   have hrep := ℳ.toEnvelopSetUpMathsCore.integral_rep s hs
   have hUs := ℳ.hU s
+  linarith
+
+/-- **Payment Uniqueness**: Under DSIC, the payment rule is uniquely determined by the allocation
+    rule and the base utility `U(a)`. -/
+theorem payment_unique (ℳ₂ : MyersonSetUpMathsCore)
+    (h_a : ℳ.a = ℳ₂.a) (h_b : ℳ.b = ℳ₂.b)
+    (h_q : ℳ.q = ℳ₂.q) (h_Ua : ℳ.U ℳ.a = ℳ₂.U ℳ₂.a)
+    (s : ℝ) (hs : s ∈ Set.Icc ℳ.a ℳ.b) :
+    ℳ.t s = ℳ₂.t s := by
+  have h1 := ℳ.payment_identity s hs
+  have h2 := ℳ₂.payment_identity s (show s ∈ Set.Icc ℳ₂.a ℳ₂.b by rwa [← h_a, ← h_b])
+  rw [h_q, h_a] at h1
+  rw [h_a] at h_Ua
   linarith
 
 end MyersonSetUpMathsCore
