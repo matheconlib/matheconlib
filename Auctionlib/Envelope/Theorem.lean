@@ -128,7 +128,7 @@ def IncentiveCompatible : Prop :=
 /-- Ex-post individual rationality: every bidder gets non-negative utility
     for every type realization. -/
 def ExPostIR : Prop :=
-  ∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
+  ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
     0 ≤ θ i * ℰ.x i θ - ℰ.t i θ
 
 /-- Interim individual rationality: every bidder gets non-negative
