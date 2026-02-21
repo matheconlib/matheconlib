@@ -19,24 +19,18 @@ This file specializes `RevenueEquivalenceMathsCore` to the symmetric IPV auction
 - an identical-distribution condition (`θ_identical`), and
 - an **efficient** allocation rule (the bidder with the strictly highest type wins).
 
-The common CDF `ℰ.cdf s = ℙ[θ₀ ≤ s]` is a *derived definition* using bidder 0 as representative
+The common CDF `ℰ.cdf s = ℙ[θ₀ ≤ s]` is a derived definition using bidder 0 as representative
 (valid by `θ_identical`: all bidders share the same distribution).
-
-All derived quantities (`q`, `p`, `U`, `interval`, `q_range`) and the `IncentiveCompatible`
-predicate are inherited from `EnvelopSetup` via dot notation.
 
 ## Main results
 
-`revenue_equivalence_theorem`: Under IC and IR at the bottom type:
-
-1. The expected payment of any bidder with type `s` is uniquely determined:
-
-   `p i s = s · cdf(s)^(n-1) - ∫ ψ in lowestType..s, cdf(ψ)^(n-1) dψ`
-
-2. The total expected revenue equals the expected second-highest type:
-
-   `∑ i, 𝔼[p i (θ i)] = 𝔼[S₂]`
-
+- `RevenueEquivalenceSetup.payment_formula`: under IC and IR, the payment rule equals
+  `p(s) = s · F(s)^{n-1} - ∫_{θ̲}^s F(ψ)^{n-1} dψ`.
+- `RevenueEquivalenceSetup.total_revenue`: total expected revenue equals `𝔼[S₂]`,
+  the expected second-highest order statistic.
+- `payment_equivalence`: any two efficient, IC, IR mechanisms with identically
+  distributed types yield the same per-type payment (may live on different probability spaces).
+- `revenue_equivalence`: any two such mechanisms yield the same expected total revenue.
 -/
 
 @[expose] public section
@@ -148,7 +142,7 @@ noncomputable def toOrderStatisticsSetup : OrderStatisticsSetup Ω n where
 /-- The second-highest order statistic: `S₂ ω = minᵢ maxₙₒₜ ⱼ₌ᵢ θⱼ(ω)`.
 In a symmetric efficient auction, the seller's total revenue equals `𝔼[S₂]`. -/
 noncomputable def S₂ (ω : Ω) : ℝ :=
-  ℰ.toOrderStatisticsSetup.val ⟨n - 2, by have := Nat.AtLeastTwo.prop (n := n); omega⟩ ω
+  ℰ.toOrderStatisticsSetup.val ⟨n - 2, by grind[Nat.AtLeastTwo.prop (n := n)]⟩ ω
 
 /-- In a symmetric efficient IPV auction, the probability that bidder `i`
 wins when reporting type `s` equals `cdf(i, s)^(n-1)`. -/
@@ -180,8 +174,7 @@ lemma q_eq_pow (i : Fin n) (s : ℝ) : ℰ.q i s = ℰ.commonCDF s ^ (n - 1) := 
 /-- Individual rationality at the bottom: the lowest type gets zero utility -/
 def IndividuallyRational : Prop := ∀ i, ℰ.U i ℰ.lowestType = 0
 
-/-- Under IC and IR, the per-type expected payment is uniquely determined by `cdf i`.
-This is the core pointwise fact used by both `payment_formula` and `total_payment`. -/
+/-- Under IC and IR, the per-type expected payment is uniquely determined by `cdf i`.-/
 lemma payment_formula (ic : ℰ.IncentiveCompatible) (ir : ℰ.IndividuallyRational)
     (i : Fin n) {s : ℝ} (hs : s ∈ ℰ.interval i) :
     ℰ.p i s = s * ℰ.commonCDF s ^ (n - 1) - ∫ ψ in ℰ.lowestType..s, ℰ.commonCDF ψ ^ (n - 1) := by
@@ -189,6 +182,8 @@ lemma payment_formula (ic : ℰ.IncentiveCompatible) (ir : ℰ.IndividuallyRatio
     linarith [show ℰ.U i s = s * ℰ.q i s - ℰ.p i s by rfl]
   simp [hpU, envelop_theorem ℰ.toEnvelopSetup ic |>.U_eq i s hs, ℰ.q_eq_pow, ir i]
 
+/-- Under IC and IR, the expected revenue is equal to the expected value of the second highest
+bidder's θ.-/
 lemma total_revenue (ic : ℰ.IncentiveCompatible) (ir : ℰ.IndividuallyRational) :
     ℰ.expectedRevenue = 𝔼[ℰ.S₂] := by
   simp only [RevenueEquivalenceSetup.expectedRevenue]

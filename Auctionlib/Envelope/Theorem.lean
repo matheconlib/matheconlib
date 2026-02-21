@@ -59,14 +59,10 @@ structure EnvelopSetup (Ω : Type)
   θmin : Fin n → ℝ
   /-- maximum value of valuation -/
   θmax : Fin n → ℝ
-  -- Since the inequality is not needed in the maths argument, we don't need it here
-  -- θmin_le_θmax i : θmin i < θmax i
 
   /-- random variable: θᵢ stands for the valuation of i-th bidder -/
   θ : Fin n → Ω → ℝ
   θ_measurable i : Measurable <| θ i
-  -- The assumption that θ takes value in `[θmin, θmax]` seems not be used as well
-  -- θ_in i : ∀ ω, θ i ω ∈ Set.Icc (θmin i) (θmax i)
 
   /-- random variable: i-th bidder won-/
   x : Fin n → (Fin n → ℝ) → ℝ
@@ -75,11 +71,6 @@ structure EnvelopSetup (Ω : Type)
 
   /-- random variable: amount of money i-th bidder pay -/
   t : Fin n → (Fin n → ℝ) → ℝ
-
-  -- the assumptions on measurability and integrability of `t` is not used
-  -- t_measurable i : Measurable <| t i
-  -- t_integrable i s : s ∈ Set.Icc (θmin i) (θmax i) →
-  --   Integrable (fun ω => t i <| Function.update (θ · ω) i s) ℙ
 
 
 namespace EnvelopSetup

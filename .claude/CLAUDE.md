@@ -1,4 +1,4 @@
-This is Lean4 project (lean-4.28.0) to formalize theorems in auction theory. The main mathematical reference is located is `documents/Auto_Formalizing_AuctionsFeb16_2026`.
+This is Lean4 project (lean-4.28.0) to formalize theorems in auction theory. The main mathematical reference are located `documents/` folder.
 
 To achieve good formalization, we try to split the argument into two parts, the "mathematcis" and the "econimics".
 
@@ -17,6 +17,8 @@ Task:
 ## Useful lake commands
 
 - `lake exe mk_all --lib Auctionlib --git`: regenerate `Auctionlib.lean` with all imports, using git to determine which files to include (respects `.gitignore`, so e.g. the Playground folder is excluded).
+- `lake build`: build the whole project, should be run after `lake exe mk_all --lib Auctionlib --git` to
+ensure all relevant files would be built.
 
 ## Some Lean4 Requirement and Tips
 

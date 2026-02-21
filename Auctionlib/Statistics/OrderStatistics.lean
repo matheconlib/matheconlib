@@ -22,33 +22,28 @@ identity** used in auction theory (Section 5.3).
 
 ## Main results
 
-### Deterministic
-
-* `orderStatistics_mono`: the order statistics form a monotone (non-decreasing) sequence.
-* `orderStatistics_le_iff`: `orderStatistics v k ≤ x ↔ k + 1 ≤ (univ.filter (v · ≤ x)).card`.
-
 ### Probabilistic (CDF and density)
 
 * `OrderStatisticsSetup.prob_count_eq`: binomial probability that exactly `l` of `n` i.i.d.
   variables fall below `x`.
-* `OrderStatisticsSetup.cdf_orderStatistics` (Theorem 4.2): CDF of the k-th order statistic,
-  `P(X_{(k+1)} ≤ x) = Σ_{l=k+1}^{n} C(n,l) F(x)^l (1-F(x))^{n-l}`.
-* `OrderStatisticsSetup.pdf_orderStatistics` (Corollary 4.3): density of the k-th order statistic,
+* `OrderStatisticsSetup.cdf_val` (Theorem 4.2): CDF of the k-th order statistic,
+  `cdf(X_{(k+1)}) = Σ_{l=k+1}^{n} C(n,l) F(x)^l (1-F(x))^{n-l}`.
+* `OrderStatisticsSetup.pdf_val` (Corollary 4.3): density of the k-th order statistic,
   `n!/(k!(n-1-k)!) · F(x)^k · (1-F(x))^{n-1-k} · f(x)`.
-* `OrderStatisticsSetup.identDistrib_orderStat`: if two setups have identically distributed
+* `OrderStatisticsSetup.identDistrib_val`: if two setups have identically distributed
   base variables, then their k-th order statistics are identically distributed.
 
-### Revenue equivalence identity
+### Expected value and integration by parts
 
-* `OrderStatisticsSetup.integral_cdf_pow_ibp`: integration by parts for `∫ₐˢ F(ψ)^m dψ`.
-* `OrderStatisticsSetup.n_expected_payment_eq_expected_orderStat`: for `n ≥ 2` i.i.d. random
-  variables bounded in `[a, b]`,
-  `n · E[s · F(s)^{n-1} - ∫ₐˢ F(ψ)^{n-1} dψ] = E[X_{(n-1)}]`.
-  This is the key identity underlying the Revenue Equivalence Theorem (Theorem 5.3).
-  It is derived as a corollary of `expected_kth_orderStat`.
-* `OrderStatisticsSetup.expected_kth_orderStat`: **expected value of the k-th order statistic**
-  for `n` i.i.d. random variables bounded in `[a, b]`:
+* `OrderStatisticsSetup.expected_val_eq_sub_integral_cdf`: layer-cake representation,
+  `E[X_{(k)}] = b - ∫_{a}^{b} cdf(X_{(k)}) dx`.
+* `OrderStatisticsSetup.expected_val`: **expected value of the k-th order statistic**
+  for `n` i.i.d. random variables with `F(a) = 0`, `F(b) = 1`:
   `E[X_{(k)}] = n!/(k!(n-1-k)!) · ∫ₐᵇ ψ · F(ψ)^k · (1-F(ψ))^{n-1-k} · f(ψ) dψ`.
+* `OrderStatisticsSetup.integral_cdf_pow`: integration by parts for `∫ₐˢ F(ψ)^m dψ`.
+* `OrderStatisticsSetup.expected_second_highest`: for `n ≥ 2` i.i.d. random variables,
+  `E[X_{(n-1)}] = n · E[s · F(s)^{n-1} - ∫ₐˢ F(ψ)^{n-1} dψ]`.
+  This is the key identity underlying the Revenue Equivalence Theorem (Theorem 5.3).
 
 -/
 
@@ -143,7 +138,7 @@ theorem orderStatistics_le_iff (v : Fin n → α) (k : Fin n) (x : α) :
 
 end Counting
 
-/-! ## CDF of the k-th order statistic (Theorem 4.2) and density (Corollary 4.3) -/
+/-! ## CDF of the k-th order statistic -/
 
 section Probability
 

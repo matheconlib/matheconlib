@@ -8,9 +8,17 @@ public import Mathlib.Topology.EMetricSpace.Paracompact
 public import Mathlib.Topology.UniformSpace.Uniformizable
 
 /-!
-# Auxiliary lemmas for `AbsolutelyContinuousOnInterval`
+# Auxiliary lemmas for absolute continuity and Radon-Nikodym derivatives
 
 Lemmas that should eventually be upstreamed to Mathlib.
+
+## Main results
+
+* `AbsolutelyContinuousOnInterval.pow`: if `f` is AC on `[a, s]`, then `f ^ n` is too.
+* `ae_restrict_rnDeriv_eq_zero`: if `μ ≪ ν` and `μ(S) = 0`, the Radon-Nikodym derivative
+  vanishes a.e. on `S`.
+* `absolutelyContinuousOnInterval_cdf`: the CDF of a probability measure `μ ≪ volume`
+  is AC on any interval where `cdf μ a = 0`.
 -/
 
 @[expose] public section
