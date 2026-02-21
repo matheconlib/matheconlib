@@ -171,8 +171,7 @@ lemma q_eq_pow (i : Fin n) (s : ℝ) : ℰ.q i s = ℰ.commonCDF s ^ (n - 1) := 
             (ℰ.θ_identical j 0).measure_mem_eq measurableSet_Iio
         _ = (Measure.map (ℰ.θ 0) ℙ) (Set.Iio s) :=
             (Measure.map_apply (ℰ.θ_measurable 0) measurableSet_Iio).symm
-        _ = (Measure.map (ℰ.θ 0) ℙ) (Set.Iic s) := by
-            haveI := ℰ.θ_noAtoms; exact measure_congr Iio_ae_eq_Iic
+        _ = (Measure.map (ℰ.θ 0) ℙ) (Set.Iic s) := measure_congr Iio_ae_eq_Iic
         _ = ℙ (ℰ.θ 0 ⁻¹' Set.Iic s) :=
             Measure.map_apply (ℰ.θ_measurable 0) measurableSet_Iic
   simp_rw [hfactor, Finset.prod_const, Finset.card_erase_of_mem (Finset.mem_univ i),
