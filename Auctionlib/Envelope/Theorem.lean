@@ -11,11 +11,14 @@ standard single-parameter Bayesian auction model.
 
 ## Setup
 
-`EnvelopSetup` encodes an `n`-bidder independent private values (IPV) auction:
-- a probability space `(Ω, ℙ)`,
+`EnvelopSetup` encodes an `n`-bidder independent private values (IPV) auction over a probability
+space `(Ω, ℙ)`:
 - type intervals `[θmin i, θmax i]` for each bidder `i`,
 - allocation rule `xᵢ : (Fin n → ℝ) → [0, 1]`,
 - payment rule `tᵢ : (Fin n → ℝ) → ℝ`.
+
+Both the probability space `Ω` and the number of bidders `n` are *parameters* of the
+structure rather than fields, so Lean's type class system handles instances automatically.
 
 The derived quantities are:
 - `q i s = 𝔼[xᵢ(s, θ₋ᵢ)]`: marginal allocation (probability of winning),
@@ -39,17 +42,13 @@ section envelop
 open MeasureTheory ProbabilityTheory
 
 /--
-The setup of the envelop theorem
+The setup of the envelope theorem.
+
+`Ω` is the underlying probability space and `n` is the number of bidders;
+both are parameters so that type-class instances are inherited automatically.
 -/
-structure EnvelopSetup where
-  /-- A domain big enough for all random variable involved -/
-  Ω : Type
-  [mΩ : MeasureSpace Ω]
-  [pΩ : IsProbabilityMeasure (ℙ : Measure Ω)]
-
-  /-- number of bidder -/
-  n : ℕ
-
+structure EnvelopSetup (Ω : Type)
+    [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] (n : ℕ) where
   /-- minimum value of valuation -/
   θmin : Fin n → ℝ
   /-- maximum value of valuation -/
@@ -71,7 +70,7 @@ structure EnvelopSetup where
   /-- random variable: amount of money i-th bidder pay -/
   t : Fin n → (Fin n → ℝ) → ℝ
 
-  -- the assumptions on measurablity and integrability of `t` is not used
+  -- the assumptions on measurability and integrability of `t` is not used
   -- t_measurable i : Measurable <| t i
   -- t_integrable i s : s ∈ Set.Icc (θmin i) (θmax i) →
   --   Integrable (fun ω => t i <| Function.update (θ · ω) i s) ℙ
@@ -79,19 +78,18 @@ structure EnvelopSetup where
 
 namespace EnvelopSetup
 
-attribute [instance] EnvelopSetup.mΩ EnvelopSetup.pΩ
-
-variable (ℰ : EnvelopSetup)
+variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
+variable (ℰ : EnvelopSetup Ω n)
 
 /-- the range of valuation -/
-abbrev interval (i : Fin ℰ.n) : Set ℝ := Set.Icc (ℰ.θmin i) (ℰ.θmax i)
+abbrev interval (i : Fin n) : Set ℝ := Set.Icc (ℰ.θmin i) (ℰ.θmax i)
 
 /-- Shorthand for `𝔼_{θ₋ᵢ}[xᵢ(s, θ₋ᵢ)]` -/
-noncomputable def q : Fin ℰ.n → ℝ → ℝ := fun i s =>
+noncomputable def q : Fin n → ℝ → ℝ := fun i s =>
   𝔼[fun ω => ℰ.x i <| Function.update (ℰ.θ · ω) i s]
 
 /-- Shorthand for `𝔼_{θ₋ᵢ}[tᵢ(s, θ₋ᵢ)]` -/
-noncomputable def p : Fin ℰ.n → ℝ → ℝ := fun i s =>
+noncomputable def p : Fin n → ℝ → ℝ := fun i s =>
   𝔼[fun ω => ℰ.t i <| Function.update (ℰ.θ · ω) i s]
 
 lemma q_range (i) (s) : ℰ.q i s ∈ Set.Icc 0 1 := by
@@ -114,7 +112,7 @@ lemma q_range (i) (s) : ℰ.q i s ∈ Set.Icc 0 1 := by
         simp [Measure.real, measure_univ]
 
 /-- Interim utility function -/
-noncomputable def U : Fin ℰ.n → ℝ → ℝ := fun i s => s * ℰ.q i s - ℰ.p i s
+noncomputable def U : Fin n → ℝ → ℝ := fun i s => s * ℰ.q i s - ℰ.p i s
 
 /-- Bayesian incentive compatibility: truthful reporting maximizes each bidder's
     interim utility. Bidder `i` with true type `s` cannot gain by misreporting `s'`. -/
@@ -137,7 +135,7 @@ structure Theorem : Prop where
 /-- Given a proof of incentive compatibility, construct the analytic core for agent `i` from the
 full probabilistic setup. -/
 @[simps]
-noncomputable def toEnvelopSetUpMathsCore (i : Fin ℰ.n) (ic : ℰ.IncentiveCompatible) :
+noncomputable def toEnvelopSetUpMathsCore (i : Fin n) (ic : ℰ.IncentiveCompatible) :
     EnvelopSetUpMathsCore where
   a := ℰ.θmin i
   b := ℰ.θmax i
@@ -155,7 +153,11 @@ end envelop
 
 section proof
 
-theorem envelop_theorem : EnvelopSetup.IncentiveCompatible ≤ EnvelopSetup.Theorem := fun ℰ ic =>
+open MeasureTheory ProbabilityTheory
+
+variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
+
+theorem envelop_theorem (ℰ : EnvelopSetup Ω n) : ℰ.IncentiveCompatible ≤ ℰ.Theorem := fun ic =>
   { lipschitzOnWith i :=  ℰ.toEnvelopSetUpMathsCore i ic |>.lipschitz
     aeDifferentiable i := ℰ.toEnvelopSetUpMathsCore i ic |>.aeDifferentiable
     U_eq i := ℰ.toEnvelopSetUpMathsCore i ic |>.integral_rep }

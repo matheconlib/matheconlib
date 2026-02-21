@@ -16,3 +16,9 @@ Task:
 ## Useful lake commands
 
 - `lake exe mk_all --lib Auctionlib --git`: regenerate `Auctionlib.lean` with all imports, using git to determine which files to include (respects `.gitignore`, so e.g. the Playground folder is excluded).
+
+## Some Lean4 Requirement and Tips
+
+- `native_decide` tactic is **STRICTLY NOT ALLOWED**
+- variable naming should follow mathlib naming conventions
+- Grepping in the project root folder's `.lake` subfolder is good idea as it contains a copy of `mathlib` we are using
