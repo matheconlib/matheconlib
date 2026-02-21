@@ -32,9 +32,9 @@ open MeasureTheory ProbabilityTheory
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
 
-namespace EnvelopSetup
+namespace EnvelopeSetup
 
-variable (ℰ : EnvelopSetup Ω n)
+variable (ℰ : EnvelopeSetup Ω n)
 
 /-- Dominant-strategy incentive compatibility: truthful reporting weakly dominates all
     misreports for every realization of others' types (ex-post). -/
@@ -79,7 +79,7 @@ noncomputable def toMyersonSetUpMathsCore (i : Fin n) (θ : Fin n → ℝ)
         · exact hθ j
       simpa using hdsic i (Function.update θ i s) hθ' s' hs')
 
-end EnvelopSetup
+end EnvelopeSetup
 
 end myerson
 
@@ -89,10 +89,10 @@ open MeasureTheory ProbabilityTheory
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
 
-open EnvelopSetup
+open EnvelopeSetup
 
 /-- **Myerson's Lemma — Necessity**: DSIC implies monotone allocation and the payment identity. -/
-theorem myerson_necessity (ℰ : EnvelopSetup Ω n) (hdsic : ℰ.DSIC) :
+theorem myerson_necessity (ℰ : EnvelopeSetup Ω n) (hdsic : ℰ.DSIC) :
     ℰ.MonotoneAlloc ∧ ℰ.PaymentIdentityHolds := by
   constructor
   · -- Monotone allocation
@@ -104,7 +104,7 @@ theorem myerson_necessity (ℰ : EnvelopSetup Ω n) (hdsic : ℰ.DSIC) :
 
 /-- **Myerson's Lemma — Payment Uniqueness**: Under DSIC, the payment rule is uniquely determined
     by the allocation rule and the utility at the lowest type. -/
-theorem myerson_payment_unique (ℰ : EnvelopSetup Ω n) (hdsic : ℰ.DSIC)
+theorem myerson_payment_unique (ℰ : EnvelopeSetup Ω n) (hdsic : ℰ.DSIC)
     (t' : Fin n → (Fin n → ℝ) → ℝ)
     (hdsic' : { ℰ with t := t' }.DSIC)
     (h_base : ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
@@ -118,7 +118,7 @@ theorem myerson_payment_unique (ℰ : EnvelopSetup Ω n) (hdsic : ℰ.DSIC)
 
 /-- **Myerson's Lemma — Sufficiency**: Monotone allocation implies the canonical integral
     payment rule is DSIC. -/
-theorem myerson_sufficiency (ℰ : EnvelopSetup Ω n) (hmono : ℰ.MonotoneAlloc) :
+theorem myerson_sufficiency (ℰ : EnvelopeSetup Ω n) (hmono : ℰ.MonotoneAlloc) :
     { ℰ with t := fun i θ => θ i * ℰ.x i θ -
       ∫ ψ in ℰ.θmin i..θ i, ℰ.x i (Function.update θ i ψ) }.DSIC := by
   intro i θ hθ s' hs'

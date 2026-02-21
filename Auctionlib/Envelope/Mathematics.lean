@@ -10,7 +10,7 @@ This file contains the mathematical heart of the Envelope Theorem and Myerson's 
 
 ## Envelope Theorem
 
-We introduced a structure `EnvelopSetUpMathsCore`, which captures the analytic hypotheses:
+We introduced a structure `EnvelopeSetUpMathsCore`, which captures the analytic hypotheses:
 - a bounded interval `[a, b]`
 - a marginal allocation `q : ℝ → ℝ` taking values in `[0, 1]`,
 - an interim utility `U : ℝ → ℝ` satisfying the incentive-compatibility inequality:
@@ -18,18 +18,18 @@ We introduced a structure `EnvelopSetUpMathsCore`, which captures the analytic h
 
 ### Main results
 
-- `EnvelopSetUpMathsCore.lipschitz`: `U` is 1-Lipschitz on `[a, b]`.
-- `EnvelopSetUpMathsCore.aeDifferentiable`: for almost every `s ∈ [a, b]`, the deriviate of `U` is
+- `EnvelopeSetUpMathsCore.lipschitz`: `U` is 1-Lipschitz on `[a, b]`.
+- `EnvelopeSetUpMathsCore.aeDifferentiable`: for almost every `s ∈ [a, b]`, the derivative of `U` is
   equal to `q`.
-- `EnvelopSetUpMathsCore.integral_rep`: `U s = U a + ∫ ψ in a..s, q ψ`.
+- `EnvelopeSetUpMathsCore.integral_rep`: `U s = U a + ∫ ψ in a..s, q ψ`.
 
 ## Myerson's Lemma
 
 Two structures capture the two directions of the Myerson equivalence:
 
-- `MyersonSetUpMathsCore`: the **necessity** direction.
-  Extends `EnvelopSetUpMathsCore` with a payment rule `t : ℝ → ℝ` and DSIC.
-- `MyersonSufficiencySetup`: the **sufficiency** direction.
+- `MyersonSetUpMathsCore`: the necessity direction.
+  Extends `EnvelopeSetUpMathsCore` with a payment rule `t : ℝ → ℝ` and DSIC.
+- `MyersonSufficiencySetup`: the sufficiency direction.
   Given a monotone allocation rule, the canonical integral payment formula yields DSIC.
 
 ### Main results
@@ -49,7 +49,7 @@ section analysis
 open MeasureTheory Filter Topology Asymptotics
 
 /-- The mathematical setup for the Envelope Theorem. -/
-structure EnvelopSetUpMathsCore where
+structure EnvelopeSetUpMathsCore where
   /-- lower bound -/
   a : ℝ
   /-- upper bound -/
@@ -65,9 +65,9 @@ structure EnvelopSetUpMathsCore where
   /-- incentive compatibility in analytic form.-/
   ic : ∀ s ∈ Set.Icc a b, ∀ s' ∈ Set.Icc a b, (s - s') * q s' ≤ U s - U s'
 
-namespace EnvelopSetUpMathsCore
+namespace EnvelopeSetUpMathsCore
 
-variable (ℰ : EnvelopSetUpMathsCore)
+variable (ℰ : EnvelopeSetUpMathsCore)
 
 lemma lipschitz : LipschitzOnWith 1 ℰ.U (Set.Icc ℰ.a ℰ.b) := fun x hx y hy => by
   simp only [ENNReal.coe_one, one_mul, edist_dist, Real.dist_eq]
@@ -84,7 +84,7 @@ lemma lipschitz : LipschitzOnWith 1 ℰ.U (Set.Icc ℰ.a ℰ.b) := fun x hx y hy
     mul_nonneg (abs_nonneg (x - y)) <| show 0 ≤ 1 - ℰ.q y by linarith [hqy.2],
     mul_nonneg (abs_nonneg (x - y)) <| show 0 ≤ 1 - ℰ.q x by linarith [hqx.2]]
 
-lemma q_monotoneOn (ℰ : EnvelopSetUpMathsCore) : MonotoneOn ℰ.q (Set.Icc ℰ.a ℰ.b) :=
+lemma q_monotoneOn (ℰ : EnvelopeSetUpMathsCore) : MonotoneOn ℰ.q (Set.Icc ℰ.a ℰ.b) :=
   fun x hx y hy hxy => by
     rcases hxy.lt_or_eq with hlt | rfl
     · by_contra! h
@@ -94,7 +94,7 @@ lemma q_monotoneOn (ℰ : EnvelopSetUpMathsCore) : MonotoneOn ℰ.q (Set.Icc ℰ
     · rfl
 
 /-- The HasDerivAt argument at a continuity point of q in the interior of [a,b]. -/
-private lemma hasDerivAt_of_continuousAt {ℰ : EnvelopSetUpMathsCore} {x : ℝ}
+private lemma hasDerivAt_of_continuousAt {ℰ : EnvelopeSetUpMathsCore} {x : ℝ}
     (hx_a : ℰ.a < x) (hx_b : x < ℰ.b) (hq_cont : ContinuousAt ℰ.q x) :
     HasDerivAt ℰ.U (ℰ.q x) x := by
   rw [hasDerivAt_iff_isLittleO_nhds_zero, isLittleO_iff]
@@ -161,11 +161,11 @@ lemma integral_rep (s) (hs : s ∈ Set.Icc ℰ.a ℰ.b) : ℰ.U s = ℰ.U ℰ.a 
       by simpa [Set.uIcc_of_le hs.1] using Set.Icc_subset_Icc_right hs.2).intervalIntegrable
   grind
 
-end EnvelopSetUpMathsCore
+end EnvelopeSetUpMathsCore
 
 /-- The mathematical setup for Myerson's Lemma (necessity direction).
-Extends `EnvelopSetUpMathsCore` with a payment rule and DSIC condition. -/
-structure MyersonSetUpMathsCore extends EnvelopSetUpMathsCore where
+Extends `EnvelopeSetUpMathsCore` with a payment rule and DSIC condition. -/
+structure MyersonSetUpMathsCore extends EnvelopeSetUpMathsCore where
   /-- payment rule -/
   t : ℝ → ℝ
   /-- Dominant-strategy incentive compatibility: for any types `s, s' ∈ [a, b]`,
@@ -197,18 +197,18 @@ noncomputable def mk'
 
 variable (ℳ : MyersonSetUpMathsCore)
 
-/-- **Necessity**: DSIC implies the allocation rule is monotone nondecreasing. -/
+/-- Necessity: DSIC implies the allocation rule is monotone nondecreasing. -/
 theorem monotone_of_dsic : MonotoneOn ℳ.q (Set.Icc ℳ.a ℳ.b) :=
-  ℳ.toEnvelopSetUpMathsCore.q_monotoneOn
+  ℳ.toEnvelopeSetUpMathsCore.q_monotoneOn
 
-/-- **Payment Identity**: Under DSIC, `t(s) = s · q(s) - U(a) - ∫_{a}^{s} q(ψ) dψ`. -/
+/-- Payment identity: under DSIC, `t(s) = s · q(s) - U(a) - ∫_{a}^{s} q(ψ) dψ`. -/
 theorem payment_identity (s : ℝ) (hs : s ∈ Set.Icc ℳ.a ℳ.b) :
     ℳ.t s = s * ℳ.q s - ℳ.U ℳ.a - ∫ ψ in ℳ.a..s, ℳ.q ψ := by
-  have hrep := ℳ.toEnvelopSetUpMathsCore.integral_rep s hs
+  have hrep := ℳ.toEnvelopeSetUpMathsCore.integral_rep s hs
   have hUs := ℳ.hU s
   linarith
 
-/-- **Payment Uniqueness**: Under DSIC, the payment rule is uniquely determined by the allocation
+/-- Payment uniqueness: under DSIC, the payment rule is uniquely determined by the allocation
     rule and the base utility `U(a)`. -/
 theorem payment_unique (ℳ₂ : MyersonSetUpMathsCore)
     (h_a : ℳ.a = ℳ₂.a) (h_b : ℳ.b = ℳ₂.b)
@@ -247,7 +247,7 @@ noncomputable def t (c : ℝ) (s : ℝ) : ℝ :=
 /-- Utility under the canonical payment rule: `U(s) = c + ∫_{a}^{s} x(ψ) dψ`. -/
 noncomputable abbrev U (c : ℝ) (s : ℝ) : ℝ := c + ∫ ψ in ℳ.a..s, ℳ.x ψ
 
-/-- **Sufficiency**: The canonical payment formula yields a DSIC mechanism. -/
+/-- Sufficiency: the canonical payment formula yields a DSIC mechanism. -/
 theorem dsic_of_monotone (c : ℝ) :
     ∀ s ∈ Set.Icc ℳ.a ℳ.b, ∀ s' ∈ Set.Icc ℳ.a ℳ.b,
     s * ℳ.x s' - ℳ.t c s' ≤ s * ℳ.x s - ℳ.t c s := by

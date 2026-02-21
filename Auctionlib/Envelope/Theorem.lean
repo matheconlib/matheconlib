@@ -11,7 +11,7 @@ standard single-parameter Bayesian auction model.
 
 ## Setup
 
-`EnvelopSetup` encodes an `n`-bidder independent private values (IPV) auction over a probability
+`EnvelopeSetup` encodes an `n`-bidder independent private values (IPV) auction over a probability
 space `(Ω, ℙ)`:
 - type intervals `[θmin i, θmax i]` for each bidder `i`,
 - allocation rule `xᵢ : (Fin n → ℝ) → [0, 1]`,
@@ -36,14 +36,14 @@ The derived quantities are:
 
 ## Main result
 
-- `envelop_theorem`: BIC implies the Envelope Theorem (Lipschitz, a.e. derivative, integral rep).
+- `envelope_theorem`: BIC implies the Envelope Theorem (Lipschitz, a.e. derivative, integral rep).
 
 -/
 
 
 @[expose] public section
 
-section envelop
+section envelope
 
 open MeasureTheory ProbabilityTheory
 
@@ -53,7 +53,7 @@ The setup of the envelope theorem.
 `Ω` is the underlying probability space and `n` is the number of bidders;
 both are parameters so that type-class instances are inherited automatically.
 -/
-structure EnvelopSetup (Ω : Type)
+structure EnvelopeSetup (Ω : Type)
     [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] (n : ℕ) where
   /-- minimum value of valuation -/
   θmin : Fin n → ℝ
@@ -73,10 +73,10 @@ structure EnvelopSetup (Ω : Type)
   t : Fin n → (Fin n → ℝ) → ℝ
 
 
-namespace EnvelopSetup
+namespace EnvelopeSetup
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
-variable (ℰ : EnvelopSetup Ω n)
+variable (ℰ : EnvelopeSetup Ω n)
 
 /-- the range of valuation -/
 abbrev interval (i : Fin n) : Set ℝ := Set.Icc (ℰ.θmin i) (ℰ.θmax i)
@@ -149,8 +149,8 @@ structure Theorem : Prop where
 /-- Given a proof of incentive compatibility, construct the analytic core for agent `i` from the
 full probabilistic setup. -/
 @[simps]
-noncomputable def toEnvelopSetUpMathsCore (i : Fin n) (ic : ℰ.IncentiveCompatible) :
-    EnvelopSetUpMathsCore where
+noncomputable def toEnvelopeSetUpMathsCore (i : Fin n) (ic : ℰ.IncentiveCompatible) :
+    EnvelopeSetUpMathsCore where
   a := ℰ.θmin i
   b := ℰ.θmax i
   q := ℰ.q i
@@ -161,9 +161,9 @@ noncomputable def toEnvelopSetUpMathsCore (i : Fin n) (ic : ℰ.IncentiveCompati
     have expand : (s - s') * ℰ.q i s' = s * ℰ.q i s' - s' * ℰ.q i s' := by ring
     linarith [ic i s hs s' hs', hUs', expand]
 
-end EnvelopSetup
+end EnvelopeSetup
 
-end envelop
+end envelope
 
 section proof
 
@@ -171,10 +171,10 @@ open MeasureTheory ProbabilityTheory
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
 
-theorem envelop_theorem (ℰ : EnvelopSetup Ω n) : ℰ.IncentiveCompatible ≤ ℰ.Theorem := fun ic =>
-  { lipschitzOnWith i :=  ℰ.toEnvelopSetUpMathsCore i ic |>.lipschitz
-    aeDifferentiable i := ℰ.toEnvelopSetUpMathsCore i ic |>.aeDifferentiable
-    U_eq i := ℰ.toEnvelopSetUpMathsCore i ic |>.integral_rep }
+theorem envelope_theorem (ℰ : EnvelopeSetup Ω n) : ℰ.IncentiveCompatible ≤ ℰ.Theorem := fun ic =>
+  { lipschitzOnWith i :=  ℰ.toEnvelopeSetUpMathsCore i ic |>.lipschitz
+    aeDifferentiable i := ℰ.toEnvelopeSetUpMathsCore i ic |>.aeDifferentiable
+    U_eq i := ℰ.toEnvelopeSetUpMathsCore i ic |>.integral_rep }
 
 end proof
 

@@ -6,11 +6,11 @@ public import Auctionlib.ForMathlib.AbsolutelyContinuous
 /-!
 # Order Statistics
 
-Given `n` values `v 0, v 1, …, v (n-1)`, the **k-th order statistic** (0-indexed)
+Given `n` values `v 0, v 1, …, v (n-1)`, the k-th order statistic (0-indexed)
 is the `(k+1)`-smallest value. This file develops the theory from deterministic
 definitions through to the probabilistic CDF/density formulas for i.i.d. random
-variables (Section 4 of the reference), and culminates in the **revenue equivalence
-identity** used in auction theory (Section 5.3).
+variables (Section 4 of the reference), and culminates in the revenue equivalence
+identity used in auction theory (Section 5.3).
 
 ## Main definitions
 
@@ -37,7 +37,7 @@ identity** used in auction theory (Section 5.3).
 
 * `OrderStatisticsSetup.expected_val_eq_sub_integral_cdf`: layer-cake representation,
   `E[X_{(k)}] = b - ∫_{a}^{b} cdf(X_{(k)}) dx`.
-* `OrderStatisticsSetup.expected_val`: **expected value of the k-th order statistic**
+* `OrderStatisticsSetup.expected_val`: expected value of the k-th order statistic
   for `n` i.i.d. random variables with `F(a) = 0`, `F(b) = 1`:
   `E[X_{(k)}] = n!/(k!(n-1-k)!) · ∫ₐᵇ ψ · F(ψ)^k · (1-F(ψ))^{n-1-k} · f(ψ) dψ`.
 * `OrderStatisticsSetup.integral_cdf_pow`: integration by parts for `∫ₐˢ F(ψ)^m dψ`.
@@ -53,7 +53,7 @@ open Finset Nat ENNReal
 
 /-! ## Definition and basic properties -/
 
-section orderStatisticss_def
+section orderStatistics_def
 
 variable {α : Type*} [LinearOrder α] {n : ℕ}
 
@@ -82,7 +82,7 @@ lemma orderStatistics_mem_range (v : Fin n → α) (k : Fin n) :
   obtain ⟨i, _, hi⟩ := Multiset.mem_map.mp h1
   grind
 
-end orderStatisticss_def
+end orderStatistics_def
 
 /-! ## Counting characterization -/
 
@@ -221,7 +221,7 @@ instance isProbabilityMeasure_map_val (k : Fin n) :
     IsProbabilityMeasure (Measure.map (S.val k) ℙ) :=
   Measure.isProbabilityMeasure_map (S.measurable_val k).aemeasurable
 
-/-- **Tail expectation formula for order statistics.**
+/-- Tail expectation formula for order statistics.
 
 For a.s. bounded i.i.d. random variables `X_i ∈ [a, b]`:
   `E[X_{(k+1)}] = b - ∫ₐᵇ F_{(k+1)}(x) dx`
@@ -311,7 +311,7 @@ theorem prob_iInter_inter_iInter_eq (i₀ : Fin n) (T : Finset (Fin n)) (x : ℝ
   rw [ENNReal.toReal_mul, ENNReal.toReal_pow, ENNReal.toReal_pow, hp_real, hq_real]
   simpa [Finset.card_sdiff] using by ring
 
-/-- **Binomial probability formula**: For `n` i.i.d. random variables, the probability that
+/-- Binomial probability formula: for `n` i.i.d. random variables, the probability that
 exactly `l` of them fall in `Set.Iic x` equals `C(n,l) · F(x)^l · (1-F(x))^{n-l}`.-/
 theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
     Measure.real ℙ {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} =
@@ -542,7 +542,7 @@ theorem pdf_val (i₀ : Fin n) (k : Fin n) :
 --     AbsolutelyContinuousOnInterval (cdf (Measure.map (S.X i₀) ℙ)) a s :=
 --   _root_.absolutelyContinuousOnInterval_cdf (S.X_hasPDF i₀).absolutelyContinuous F_a
 
-/-- **Integration by parts for CDF powers.**
+/-- Integration by parts for CDF powers.
 For a random variable with CDF `F`, density `f`, and `F(a) = 0`:
   `∫ₐˢ F(ψ)^m dψ = s · F(s)^m - m · ∫ₐˢ ψ · F(ψ)^{m-1} · f(ψ) dψ`
 where `f(ψ) = (pdf (X₀) ℙ volume ψ).toReal`.
@@ -572,7 +572,7 @@ theorem integral_cdf_pow (i₀ : Fin n) (a s : ℝ) (m : ℕ) (hm : 1 ≤ m)
     rw [intervalIntegral.integral_congr_ae_restrict h_deriv_ae, intervalIntegral.integral_const_mul]
   linarith
 
-/-- **Expected value of the k-th order statistic.**
+/-- Expected value of the k-th order statistic.
 
 For `n` i.i.d. random variables bounded in `[a, b]` with CDF `F`, density `f`, `F(a) = 0`,
 `F(b) = 1`:
@@ -626,9 +626,7 @@ theorem expected_val (k : Fin n) (i₀ : Fin n) (a b : ℝ) (hab : a ≤ b)
         exact h_not_mem (Set.mem_Ioc.mpr ⟨h, h'⟩)
       rw [h_hi (Set.mem_Ioi.mpr hb), mul_zero])
 
-/-- **Revenue equivalence identity.**
-
-For `n ≥ 2` i.i.d. random variables bounded in `[a, b]` with CDF `F`, `F(a) = 0`, `F(b) = 1`:
+/-- For `n ≥ 2` i.i.d. random variables bounded in `[a, b]` with CDF `F`, `F(a) = 0`, `F(b) = 1`:
 
   `n · E[s · F(s)^{n-1} - ∫ₐˢ F(ψ)^{n-1} dψ] = E[X_{(n-1)}]`
 
