@@ -6,8 +6,9 @@ The mathematical part is the core idea involving analysis, combinatorics etc. Th
 
 Task: 
 - [x] formalize ‹The Envelop Theorem› in section 5.1.
-- [ ] formalize ‹Myerson's Lemma› in section 5.2
-- [ ] formalize ‹Revenue Equivalence Theorem› in section 5.3
+- [x] formalize ‹Myerson's Lemma› in section 5.2
+- [x] formalize ‹Revenue Equivalence Theorem› in section 5.3
+- [ ] formalize game theoretic concepts in section 3
 
 ## Useful Lean commands
 
