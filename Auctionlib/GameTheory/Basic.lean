@@ -29,14 +29,14 @@ consider for finding the right implementation:
 ## Main definitions / results
 * `Game A O`: a normal-form game with strategy types `A i` and an outcome type `O`, given
   simply by a function `((i : ι) → A i) → O`.
-* `G.Strategies u i`: a type synonym for the type `A i` of strategies available to player `i` in the
+* `G.Strategy u i`: a type synonym for the type `A i` of strategies available to player `i` in the
   game `G`. This takes in a utility function `u` and is then equipped with the preorder given by
   weak dominance with respect to `u`.
-* `Strategies.IsDominant s`: a strategy is called weakly dominant if it weakly dominates every other
-  strategy, i.e. if it is a top element with respect to the order we put on `G.Strategies u i`.
-* `Strategies.IsStrictlyDominant s`: a strategy is called weakly dominant if it strictly dominates
+* `Strategy.IsDominant s`: a strategy is called weakly dominant if it weakly dominates every other
+  strategy, i.e. if it is a top element with respect to the order we put on `G.Strategy u i`.
+* `Strategy.IsStrictlyDominant s`: a strategy is called weakly dominant if it strictly dominates
   every other strategy, i.e. if it is the only top element with respect to the order we put on
-  `G.Strategies u i`.
+  `G.Strategy u i`.
 * `G.IsNashEquilibrium u a`: a family of strategies `a i` is called a Nash equilibrium with respect
   to a family of utility functions `u i` if no player benefits from changing their strategy.
 * `G.IsStrictNashEquilibrium u a`: a family of strategies `a i` is called a strict Nash equilibrium
@@ -50,6 +50,8 @@ consider for finding the right implementation:
 
 -/
 
+namespace GameTheory
+
 /-- A deterministic normal-form game, given by a type `ι` of players, a type `A i` of pure
 strategies for each player `i`, a type `O` of outcomes and a function that assigns
 each combination `a : (i : ι) → A i` of strategies an outcome. We implement this
@@ -60,31 +62,35 @@ structure Game {ι : Type*} (A : ι → Type*) (O : Type*) where
 
 namespace Game
 
-variable {ι : Type*} {A : ι → Type*} {O : Type*} (G : Game A O)
+variable {ι : Type*} {A : ι → Type*} {O : Type*}
+
+section Strategies
 
 set_option linter.unusedVariables false in
 /-- A type synonym for the type `A i` of pure strategies available to player `i` in the game
 `G : Game A O`, equipped with the preorder given by weak dominance with respect to a given
 utility function `u`. -/
-def Strategies (G : Game A O) {O' : Type*} (u : O → O') (i : ι) := A i
+def Strategy (G : Game A O) {O' : Type*} (u : O → O') (i : ι) := A i
+
+namespace Strategy
 
 instance (G : Game A O) {O' : Type*} [LE O'] (u : O → O') (i : ι) :
-    LE (G.Strategies u i) where
+    LE (G.Strategy u i) where
   le s s' := ∀ (a a' : (i : ι) → A i),
     a i = s → a' i = s' → (∀ j ≠ i, a j = a' j) → u (G.outcome a) ≤ u (G.outcome a')
 
-protected lemma Strategies.le_def {G : Game A O} {O' : Type*} [LE O'] {u : O → O'} {i : ι}
-    {s s' : G.Strategies u i} : s ≤ s' ↔ ∀ (a a' : (i : ι) → A i),
+protected lemma le_def {G : Game A O} {O' : Type*} [LE O'] {u : O → O'} {i : ι}
+    {s s' : G.Strategy u i} : s ≤ s' ↔ ∀ (a a' : (i : ι) → A i),
       a i = s → a' i = s' → (∀ j ≠ i, a j = a' j) → u (G.outcome a) ≤ u (G.outcome a') :=
   Iff.rfl
 
-protected lemma Strategies.le_iff [DecidableEq ι] {G : Game A O} {O' : Type*} [LE O']
-    {u : O → O'} {i : ι} {s s' : G.Strategies u i} : s ≤ s' ↔ ∀ (a a' : (i : ι) → A i),
+protected lemma le_iff [DecidableEq ι] {G : Game A O} {O' : Type*} [LE O']
+    {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s ≤ s' ↔ ∀ (a a' : (i : ι) → A i),
       a i = s → a' = Function.update a i s' → u (G.outcome a) ≤ u (G.outcome a') := by
   simp only [le_def, Function.eq_update_iff, and_imp, eq_comm]
 
-protected lemma Strategies.le_iff' [DecidableEq ι] {G : Game A O} {O' : Type*} [LE O']
-    {u : O → O'} {i : ι} {s s' : G.Strategies u i} : s ≤ s' ↔ ∀ a : (i : ι) → A i,
+protected lemma le_iff' [DecidableEq ι] {G : Game A O} {O' : Type*} [LE O']
+    {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s ≤ s' ↔ ∀ a : (i : ι) → A i,
       u (G.outcome (Function.update a i s)) ≤ u (G.outcome (Function.update a i s')) := by
   rw [le_iff]
   refine ⟨fun h a ↦ h _ _ (by simp) (by simp), fun h a a' ha ha' ↦ ?_⟩
@@ -92,35 +98,41 @@ protected lemma Strategies.le_iff' [DecidableEq ι] {G : Game A O} {O' : Type*} 
   exact h a
 
 instance (G : Game A O) {O' : Type*} [Preorder O'] (u : O → O') (i : ι) :
-    Preorder (G.Strategies u i) where
+    Preorder (G.Strategy u i) where
   le_refl s a a' hai hai' h := Eq.le <| by congr; grind
   le_trans s s' s'' := by
     classical
-    simp_rw [Strategies.le_iff']
+    simp_rw [le_iff']
     grind
 
 /-- A strategy strictly dominates another iff it weakly dominates it and there is at least one
 scenario in which it is strictly better. -/
-protected lemma Strategies.lt_iff [DecidableEq ι] {G : Game A O} {O' : Type*} [Preorder O']
-      {u : O → O'} {i : ι} {s s' : G.Strategies u i} : s < s' ↔ s ≤ s' ∧ ∃ a : (i : ι) → A i,
+protected lemma lt_iff [DecidableEq ι] {G : Game A O} {O' : Type*} [Preorder O']
+      {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s < s' ↔ s ≤ s' ∧ ∃ a : (i : ι) → A i,
       u (G.outcome (Function.update a i s)) < u (G.outcome (Function.update a i s')) := by
     refine lt_iff_le_not_ge.trans <| and_congr_right fun h ↦ ?_
     simp only [le_iff', not_forall, lt_iff_le_not_ge, le_iff'.1 h, true_and]
 
 /-- A strategy is called weakly dominant iff it weakly dominates every strategy. -/
-def Strategies.IsDominant {G : Game A O} {O' : Type*} [LE O']
-    {u : O → O'} {i : ι} (s : G.Strategies u i) := IsTop s
+def IsDominant {G : Game A O} {O' : Type*} [LE O']
+    {u : O → O'} {i : ι} (s : G.Strategy u i) := IsTop s
 
 /-- A strategy is called strictly dominant iff it strictly dominates every other strategy. -/
-def Strategies.IsStrictlyDominant {G : Game A O} {O' : Type*} [Preorder O']
-    {u : O → O'} {i : ι} (s : G.Strategies u i) := ∀ s' ≠ s, s' < s
+def IsStrictlyDominant {G : Game A O} {O' : Type*} [Preorder O']
+    {u : O → O'} {i : ι} (s : G.Strategy u i) := ∀ s' ≠ s, s' < s
 
-lemma Strategies.IsStrictlyDominant.isDominant {G : Game A O} {O' : Type*} [Preorder O']
-    {u : O → O'} {i : ι} {s : G.Strategies u i} (hs : s.IsStrictlyDominant) : s.IsDominant := by
+lemma IsStrictlyDominant.isDominant {G : Game A O} {O' : Type*} [Preorder O']
+    {u : O → O'} {i : ι} {s : G.Strategy u i} (hs : s.IsStrictlyDominant) : s.IsDominant := by
   intro s'
   by_cases h : s' = s
   · exact h.le
   · exact (hs _ h).le
+
+end Strategy
+
+end Strategies
+
+section Equilibria
 
 /-- A family of strategies `a i` is called a Nash equilibrium with respect to a family
 of utility functions `u i` if no player can benefit from changing their strategy. -/
@@ -147,7 +159,7 @@ lemma IsStrictNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} 
 corresponding statement for strictly dominant strategies and strict nash equilibria isn't true. -/
 lemma isNashEquilibrium_of_isDominant [DecidableEq ι] {G : Game A O} {O' : ι → Type*}
     [∀ i, LE (O' i)] {u : (i : ι) → O → O' i} {a : (i : ι) → A i}
-    (ha : ∀ i, Strategies.IsDominant (G := G) (u := u i) (a i)) : G.IsNashEquilibrium u a :=
+    (ha : ∀ i, Strategy.IsDominant (G := G) (u := u i) (a i)) : G.IsNashEquilibrium u a :=
   fun i s ↦ ha i s _ _ (by simp) rfl (by grind)
 
 /-- A family of strategies `a i` is called a strong Nash equilibrium if every other strategy leaves
@@ -168,4 +180,8 @@ lemma IsStrongNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} 
     replace hj : j = i := by grind
     rwa [hj] at hj'
 
+end Equilibria
+
 end Game
+
+end GameTheory
