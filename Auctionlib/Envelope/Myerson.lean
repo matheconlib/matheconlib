@@ -30,14 +30,16 @@ section myerson
 
 open MeasureTheory ProbabilityTheory
 
-namespace EnvelopSetup
+variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
 
-variable (ℰ : EnvelopSetup)
+namespace EnvelopeSetup
+
+variable (ℰ : EnvelopeSetup Ω n)
 
 /-- Dominant-strategy incentive compatibility: truthful reporting weakly dominates all
     misreports for every realization of others' types (ex-post). -/
 def DSIC : Prop :=
-  ∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
+  ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
     ∀ s' ∈ ℰ.interval i,
       θ i * ℰ.x i (Function.update θ i s') - ℰ.t i (Function.update θ i s') ≤
       θ i * ℰ.x i θ - ℰ.t i θ
@@ -46,13 +48,13 @@ def DSIC : Prop :=
 (with all types in their valid ranges), the allocation `x_i(·, θ_{-i})` is nondecreasing
 in `θ_i`. -/
 def MonotoneAlloc : Prop :=
-  ∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
+  ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
     MonotoneOn (fun s => ℰ.x i (Function.update θ i s)) (ℰ.interval i)
 
 /-- Payment identity holds: for each bidder `i` and fixed `θ_{-i}`, the payment rule equals
 `t_i(s, θ_{-i}) = s · x_i(s, θ_{-i}) - U_i(θmin i, θ_{-i}) - ∫_{θmin i}^{s} x_i(ψ, θ_{-i}) dψ`. -/
 def PaymentIdentityHolds : Prop :=
-  ∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) → ∀ s ∈ ℰ.interval i,
+  ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ ℰ.interval j) → ∀ s ∈ ℰ.interval i,
     ℰ.t i (Function.update θ i s) =
       s * ℰ.x i (Function.update θ i s)
       - (ℰ.θmin i * ℰ.x i (Function.update θ i (ℰ.θmin i))
@@ -61,7 +63,7 @@ def PaymentIdentityHolds : Prop :=
 
 /-- Bridge: for a fixed profile `θ` (with all types in their intervals) and a bidder `i`,
 convert the DSIC condition on the slice `x_i(·, θ_{-i})` into a `MyersonSetUpMathsCore`. -/
-noncomputable def toMyersonSetUpMathsCore (i : Fin ℰ.n) (θ : Fin ℰ.n → ℝ)
+noncomputable def toMyersonSetUpMathsCore (i : Fin n) (θ : Fin n → ℝ)
     (hθ : ∀ j, θ j ∈ ℰ.interval j) (hdsic : ℰ.DSIC) : MyersonSetUpMathsCore :=
   MyersonSetUpMathsCore.mk'
     (ℰ.θmin i) (ℰ.θmax i)
@@ -77,18 +79,21 @@ noncomputable def toMyersonSetUpMathsCore (i : Fin ℰ.n) (θ : Fin ℰ.n → �
         · exact hθ j
       simpa using hdsic i (Function.update θ i s) hθ' s' hs')
 
-end EnvelopSetup
+end EnvelopeSetup
 
 end myerson
 
 section proof
 
-open EnvelopSetup
+open MeasureTheory ProbabilityTheory
+
+variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
+
+open EnvelopeSetup
 
 /-- **Myerson's Lemma — Necessity**: DSIC implies monotone allocation and the payment identity. -/
-theorem myerson_necessity :
-    EnvelopSetup.DSIC ≤ fun ℰ => ℰ.MonotoneAlloc ∧ ℰ.PaymentIdentityHolds := by
-  intro ℰ hdsic
+theorem myerson_necessity (ℰ : EnvelopeSetup Ω n) (hdsic : ℰ.DSIC) :
+    ℰ.MonotoneAlloc ∧ ℰ.PaymentIdentityHolds := by
   constructor
   · -- Monotone allocation
     intro i θ hθ
@@ -99,27 +104,24 @@ theorem myerson_necessity :
 
 /-- **Myerson's Lemma — Payment Uniqueness**: Under DSIC, the payment rule is uniquely determined
     by the allocation rule and the utility at the lowest type. -/
-theorem myerson_payment_unique :
-    EnvelopSetup.DSIC ≤ fun ℰ =>
-      ∀ (t' : Fin ℰ.n → (Fin ℰ.n → ℝ) → ℝ),
-        { ℰ with t := t' }.DSIC →
-        (∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
-          ℰ.t i (Function.update θ i (ℰ.θmin i)) = t' i (Function.update θ i (ℰ.θmin i))) →
-        ∀ i, ∀ θ : Fin ℰ.n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
-        ∀ s ∈ ℰ.interval i,
-          ℰ.t i (Function.update θ i s) = t' i (Function.update θ i s) := by
-  intro ℰ hdsic t' hdsic' h_base i θ hθ s hs
+theorem myerson_payment_unique (ℰ : EnvelopeSetup Ω n) (hdsic : ℰ.DSIC)
+    (t' : Fin n → (Fin n → ℝ) → ℝ)
+    (hdsic' : { ℰ with t := t' }.DSIC)
+    (h_base : ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ ℰ.interval j) →
+      ℰ.t i (Function.update θ i (ℰ.θmin i)) = t' i (Function.update θ i (ℰ.θmin i)))
+    (i : Fin n) (θ : Fin n → ℝ) (hθ : ∀ j, θ j ∈ ℰ.interval j)
+    (s : ℝ) (hs : s ∈ ℰ.interval i) :
+    ℰ.t i (Function.update θ i s) = t' i (Function.update θ i s) := by
   have h1 := (myerson_necessity ℰ hdsic).2 i θ hθ s hs
   have h2 := (myerson_necessity { ℰ with t := t' } hdsic').2 i θ hθ s hs
   linarith [h_base i θ hθ]
 
 /-- **Myerson's Lemma — Sufficiency**: Monotone allocation implies the canonical integral
     payment rule is DSIC. -/
-theorem myerson_sufficiency :
-    EnvelopSetup.MonotoneAlloc ≤ fun ℰ =>
-      { ℰ with t := fun i θ => θ i * ℰ.x i θ -
-        ∫ ψ in ℰ.θmin i..θ i, ℰ.x i (Function.update θ i ψ) }.DSIC := by
-  intro ℰ hmono i θ hθ s' hs'
+theorem myerson_sufficiency (ℰ : EnvelopeSetup Ω n) (hmono : ℰ.MonotoneAlloc) :
+    { ℰ with t := fun i θ => θ i * ℰ.x i θ -
+      ∫ ψ in ℰ.θmin i..θ i, ℰ.x i (Function.update θ i ψ) }.DSIC := by
+  intro i θ hθ s' hs'
   -- Simplify Function.update nested applications in the goal
   simp only [Function.update_self, Function.update_idem]
   -- Construct the mathematical sufficiency setup for this slice
