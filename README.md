@@ -39,7 +39,7 @@ Built on [`MyersonSetUpMathsCore`](Auctionlib/Envelope/Mathematics.lean#L168) (n
 | Result | Statement |
 |--------|-----------|
 | [`q_eq_pow`](Auctionlib/RevenueEquivalence/Theorem.lean#L150) | $q(s) = F(s)^{n-1}$ for efficient auctions |
-| [`payment_formula`](Auctionlib/RevenueEquivalence/Theorem.lean#L179) | $p(s) = s \cdot F(s)^{n-1} - \int F(\psi)^{n-1}\, d\psi$ under IC + IR |
+| [`payment_formula`](Auctionlib/RevenueEquivalence/Theorem.lean#L179) | $p(s) = s \cdot F(s)^{n-1} - \int_{\text{lowestType}}^s F(\psi)^{n-1}\, d\psi$ under IC + IR |
 | [`total_revenue`](Auctionlib/RevenueEquivalence/Theorem.lean#L188) | Expected revenue $= \mathbb{E}[S_2]$ (expected second-highest order statistic) |
 | [`payment_equivalence`](Auctionlib/RevenueEquivalence/Theorem.lean#L271) | Any two efficient IC IR mechanisms yield the same per-type payment |
 | [`revenue_equivalence`](Auctionlib/RevenueEquivalence/Theorem.lean#L294) | Any two efficient IC IR mechanisms yield the same total expected revenue |
