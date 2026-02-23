@@ -44,6 +44,9 @@ consider for finding the right implementation:
   changing their strategy.
 * `isNashEquilibrium_of_isDominant`: any family of weakly dominant strategies is a Nash equilibrium.
   The analogous statement for strictly dominant strategies and strict Nash equilibria does not hold.
+* `G.IsStrongNashEquilibrium u a`: a family of strategies `a i` is called a strong Nash equilibrium
+  with respect to a family of utility functions `u i` if no coalition can form and change their
+  strategies in a way that would strictly benefit each of its members.
 
 -/
 
@@ -131,6 +134,7 @@ def IsStrictNashEquilibrium [DecidableEq ι] (G : Game A O) {O' : ι → Type*} 
     (u : (i : ι) → O → O' i) (a : (i : ι) → A i) :=
   ∀ i, ∀ s ≠ a i, u i (G.outcome (Function.update a i s)) < u i (G.outcome a)
 
+/-- Every strict Nash equilibrium is a Nash equilibrium. -/
 lemma IsStrictNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} {O' : ι → Type*}
     [∀ i, Preorder (O' i)] {u : (i : ι) → O → O' i} {a : (i : ι) → A i}
     (ha : G.IsStrictNashEquilibrium u a) : G.IsNashEquilibrium u a := by
@@ -145,5 +149,23 @@ lemma isNashEquilibrium_of_isDominant [DecidableEq ι] {G : Game A O} {O' : ι �
     [∀ i, LE (O' i)] {u : (i : ι) → O → O' i} {a : (i : ι) → A i}
     (ha : ∀ i, Strategies.IsDominant (G := G) (u := u i) (a i)) : G.IsNashEquilibrium u a :=
   fun i s ↦ ha i s _ _ (by simp) rfl (by grind)
+
+/-- A family of strategies `a i` is called a strong Nash equilibrium if every other strategy leaves
+at least one player who changed their strategy no better off than they were before, i.e. if it is
+impossible for a coalition to form that strictly benefits each of its members. -/
+def IsStrongNashEquilibrium (G : Game A O) {O' : ι → Type*} [∀ i, Preorder (O' i)]
+    (u : (i : ι) → O → O' i) (a : (i : ι) → A i) :=
+  ∀ a' ≠ a, ∃ i, a i ≠ a' i ∧ u i (G.outcome a') ≤ u i (G.outcome a)
+
+/-- Every strong Nash equilibrium is a Nash equilibrium. -/
+lemma IsStrongNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} {O' : ι → Type*}
+    [∀ i, Preorder (O' i)] {u : (i : ι) → O → O' i} {a : (i : ι) → A i}
+    (ha : G.IsStrongNashEquilibrium u a) : G.IsNashEquilibrium u a := by
+  intro i s
+  by_cases h : s = a i
+  · simp [h]
+  · have ⟨j, hj, hj'⟩ := ha (Function.update a i s) (by simp [h])
+    replace hj : j = i := by grind
+    rwa [hj] at hj'
 
 end Game
