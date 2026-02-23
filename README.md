@@ -71,7 +71,8 @@ lake build                                # build the project
 
 ## Roadmap
 
+
+- [ ] Game-theoretic concepts (Section 3)
 - [x] Envelope Theorem (Section 5.1)
 - [x] Myerson's Lemma (Section 5.2)
 - [x] Revenue Equivalence Theorem (Section 5.3)
-- [ ] Game-theoretic concepts (Section 3)
