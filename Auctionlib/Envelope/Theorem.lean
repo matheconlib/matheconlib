@@ -178,4 +178,54 @@ theorem envelope_theorem (ℰ : EnvelopeSetup Ω n) : ℰ.IncentiveCompatible �
 
 end proof
 
+section payment_equivalence
+
+open MeasureTheory ProbabilityTheory
+
+variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)] {n : ℕ}
+
+namespace EnvelopeSetup
+
+/-- General payment formula from the Envelope Theorem.
+
+Under IC alone, the interim expected payment is uniquely determined (up to the
+constant `U(θmin)`) by the interim allocation rule `q`:
+
+  `p(s) = s · q(s) - U(θmin) - ∫_{θmin}^s q(ψ) dψ`
+
+No efficiency, symmetry, independence, or atomless assumptions are needed. -/
+lemma payment_formula (ℰ : EnvelopeSetup Ω n) (ic : ℰ.IncentiveCompatible)
+    (i : Fin n) {s : ℝ} (hs : s ∈ ℰ.interval i) :
+    ℰ.p i s = s * ℰ.q i s - ℰ.U i (ℰ.θmin i) - ∫ ψ in ℰ.θmin i..s, ℰ.q i ψ := by
+  have hpU : ℰ.p i s = s * ℰ.q i s - ℰ.U i s := by
+    linarith [show ℰ.U i s = s * ℰ.q i s - ℰ.p i s from rfl]
+  linarith [envelope_theorem ℰ ic |>.U_eq i s hs]
+
+/-- **General Payment Equivalence.**
+
+Any two IC mechanisms with the same interim allocation rule `q`, the same lower
+bound of the type space `θmin`, and the same utility at the lowest type `U(θmin)`
+must have the same interim expected payment `p` for every type.
+
+This is the most general form of the Revenue Equivalence / Payment Equivalence
+result. No efficiency, symmetry, independence, or atomless assumptions are needed.
+The two mechanisms may live on different probability spaces `Ω₁`, `Ω₂`. -/
+theorem payment_equivalence
+    {Ω₁ : Type} [MeasureSpace Ω₁] [IsProbabilityMeasure (ℙ : Measure Ω₁)]
+    {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
+    {n : ℕ}
+    (ℰ₁ : EnvelopeSetup Ω₁ n) (ℰ₂ : EnvelopeSetup Ω₂ n)
+    (ic₁ : ℰ₁.IncentiveCompatible) (ic₂ : ℰ₂.IncentiveCompatible)
+    (i j : Fin n)
+    (hθmin : ℰ₁.θmin i = ℰ₂.θmin j)
+    (hq : ℰ₁.q i = ℰ₂.q j)
+    (hU : ℰ₁.U i (ℰ₁.θmin i) = ℰ₂.U j (ℰ₂.θmin j))
+    {s : ℝ} (hs₁ : s ∈ ℰ₁.interval i) (hs₂ : s ∈ ℰ₂.interval j) :
+    ℰ₁.p i s = ℰ₂.p j s := by
+  simp_rw [ℰ₁.payment_formula ic₁ i hs₁, ℰ₂.payment_formula ic₂ j hs₂, hU, hθmin, hq]
+
+end EnvelopeSetup
+
+end payment_equivalence
+
 end

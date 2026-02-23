@@ -32,17 +32,25 @@ Built on [`MyersonSetUpMathsCore`](Auctionlib/Envelope/Mathematics.lean) (necess
 | [`myerson_payment_unique`](Auctionlib/Envelope/Myerson.lean) | Payment is uniquely determined by allocation (up to a constant) |
 | [`myerson_sufficiency`](Auctionlib/Envelope/Myerson.lean) | Monotone allocation $\Rightarrow$ canonical integral payment achieves DSIC |
 
-### Revenue Equivalence Theorem (Section 5.3)
+### Payment Equivalence (General)
 
-[`RevenueEquivalenceSetup`](Auctionlib/RevenueEquivalence/Theorem.lean) extends the envelope setup with mutual independence, identical distributions, efficient allocation, and atomless types.
+[`EnvelopeSetup.payment_formula`](Auctionlib/Envelope/Theorem.lean) and [`EnvelopeSetup.payment_equivalence`](Auctionlib/Envelope/Theorem.lean) are proved without any efficiency, symmetry, or distributional assumptions:
 
 | Result | Statement |
 |--------|-----------|
-| [`q_eq_pow`](Auctionlib/RevenueEquivalence/Theorem.lean) | $q(s) = F(s)^{n-1}$ for efficient auctions |
-| [`payment_formula`](Auctionlib/RevenueEquivalence/Theorem.lean) | $p(s) = s \cdot F(s)^{n-1} - \int F(\psi)^{n-1}\, d\psi$ under IC + IR |
-| [`total_revenue`](Auctionlib/RevenueEquivalence/Theorem.lean) | Expected revenue $= \mathbb{E}[S_2]$ (expected second-highest order statistic) |
-| [`payment_equivalence`](Auctionlib/RevenueEquivalence/Theorem.lean) | Any two efficient IC IR mechanisms yield the same per-type payment |
-| [`revenue_equivalence`](Auctionlib/RevenueEquivalence/Theorem.lean) | Any two efficient IC IR mechanisms yield the same total expected revenue |
+| [`payment_formula`](Auctionlib/Envelope/Theorem.lean) | Under IC: $p(s) = s \cdot q(s) - U(\underline\theta) - \int_{\underline\theta}^s q(\psi)\, d\psi$ |
+| [`payment_equivalence`](Auctionlib/Envelope/Theorem.lean) | Same $q$, same $\underline\theta$, same $U(\underline\theta)$ $\Rightarrow$ same $p$ |
+
+### Revenue Equivalence Theorem (Section 5.3)
+
+[`RevenueEquivalenceSetup`](Auctionlib/RevenueEquivalence/Theorem.lean) extends the envelope setup with mutual independence, identical distributions, and atomless types. Efficiency is a separate predicate ([`Efficient`](Auctionlib/RevenueEquivalence/Theorem.lean)), required only where genuinely needed.
+
+| Result | Statement |
+|--------|-----------|
+| [`q_eq_pow`](Auctionlib/RevenueEquivalence/Theorem.lean) | $q(s) = F(s)^{n-1}$ under efficient allocation |
+| [`payment_formula`](Auctionlib/RevenueEquivalence/Theorem.lean) | $p(s) = s \cdot F(s)^{n-1} - \int F(\psi)^{n-1}\, d\psi$ under efficient allocation + IC + IR |
+| [`total_revenue`](Auctionlib/RevenueEquivalence/Theorem.lean) | Expected revenue $= \mathbb{E}[S_2]$ under efficient allocation + IC + IR |
+| [`revenue_equivalence`](Auctionlib/RevenueEquivalence/Theorem.lean) | Any two IC, IR mechanisms with the same $q$ yield the same total expected revenue (no efficiency needed) |
 
 ### Order Statistics
 
