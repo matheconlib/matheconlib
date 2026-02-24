@@ -17,21 +17,22 @@ This file specializes `EnvelopeSetup` to the symmetric IPV auction model.
 `RevenueEquivalenceSetup` extends `EnvelopeSetup Ω n`, adding:
 - mutual independence of types (`θ_indep`),
 - an identical-distribution condition (`θ_identical`), and
-- an efficient allocation rule (the bidder with the strictly highest type wins).
+- an atomless type distribution with density.
 
 The common CDF `ℰ.cdf s = ℙ[θ₀ ≤ s]` is a derived definition using bidder 0 as representative
 (valid by `θ_identical`: all bidders share the same distribution).
 
 ## Main results
 
-- `RevenueEquivalenceSetup.payment_formula`: under IC and IR, the payment rule equals
-  `p(s) = s · F(s)^{n-1} - ∫_{θ̲}^s F(ψ)^{n-1} dψ`.
-- `RevenueEquivalenceSetup.total_revenue`: total expected revenue equals `𝔼[S₂]`,
-  the expected second-highest order statistic.
-- `RevenueEquivalenceSetup.payment_equivalence`: any two efficient, IC, IR mechanisms with
-  identically distributed types yield the same per-type payment.
-- `RevenueEquivalenceSetup.revenue_equivalence`: any two efficient, IC, IR mechanisms yield the same
-  expected total revenue.
+- `RevenueEquivalenceSetup.q_eq_pow`: under efficient allocation, the winning probability equals
+  `q(s) = F(s)^{n-1}`.
+- `RevenueEquivalenceSetup.payment_formula`: under IC, IR, and efficient allocation, the payment
+  rule equals `p(s) = s · F(s)^{n-1} - ∫_{θ̲}^s F(ψ)^{n-1} dψ`.
+- `RevenueEquivalenceSetup.total_revenue`: under efficient allocation, total expected revenue
+  equals `𝔼[S₂]`, the expected second-highest order statistic.
+- `RevenueEquivalenceSetup.revenue_equivalence`: any two IC, IR mechanisms with the same interim
+  allocation rule yield the same expected total revenue.  No efficiency assumption is needed; the
+  proof uses `EnvelopeSetup.payment_equivalence` from `Auctionlib.Envelope.Theorem`.
 -/
 
 @[expose] public section
@@ -45,8 +46,12 @@ Extension of `EnvelopeSetup` for the Revenue Equivalence Theorem.
 
 Adds to the general auction setup:
 - mutual independence of types (`θ_indep`),
-- identical marginal distributions (`θ_cdf`): any two bidders have the same CDF, and
-- an efficient allocation rule (`efficient`).
+- identical marginal distributions (`θ_identical`): any two bidders have the same CDF, and
+- an atomless type distribution with density.
+
+The efficiency assumption (`Efficient`) is *not* baked into the structure; it is passed
+as a hypothesis to the theorems that require it (`q_eq_pow`, `payment_formula`,
+`total_revenue`, `revenue_equivalence`).
 
 The common CDF is the definition `ℰ.cdf s = ℙ[θ₀ ≤ s]` (bidder 0 as representative),
 not a separate field.
@@ -62,8 +67,6 @@ structure RevenueEquivalenceSetup
   θ_identical i j : IdentDistrib (θ i) (θ j) ℙ ℙ
   /-- Each bidder's type lies in their type interval -/
   θ_in i (ω : Ω) : θ i ω ∈ toEnvelopeSetup.interval i
-  /-- Efficient allocation: bidder i wins iff they have the strictly highest type -/
-  efficient i : x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
   /-- The common type distribution has a density w.r.t. Lebesgue measure. -/
   θ_hasPDF : ∀ i, HasPDF (θ i) ℙ volume
   /-- The common type distribution is atomless: `ℙ[θ₀ = t] = 0` for all `t`.
@@ -145,10 +148,14 @@ In a symmetric efficient auction, the seller's total revenue equals `𝔼[S₂]`
 noncomputable def S₂ (ω : Ω) : ℝ :=
   ℰ.toOrderStatisticsSetup.val ⟨n - 2, by grind[Nat.AtLeastTwo.prop (n := n)]⟩ ω
 
+/-- Efficient allocation: bidder i wins iff they have the strictly highest type. -/
+def Efficient : Prop := ∀ i, ℰ.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
+
 /-- In a symmetric efficient IPV auction, the probability that bidder `i`
 wins when reporting type `s` equals `cdf(i, s)^(n-1)`. -/
-lemma q_eq_pow (i : Fin n) (s : ℝ) : ℰ.q i s = ℰ.commonCDF s ^ (n - 1) := by
-  simp only [EnvelopeSetup.q, ℰ.efficient i, ne_eq]
+lemma q_eq_pow (eff : ℰ.Efficient) (i : Fin n) (s : ℝ) :
+    ℰ.q i s = ℰ.commonCDF s ^ (n - 1) := by
+  simp only [EnvelopeSetup.q, eff i, ne_eq]
   have hrw (ω) :
       {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}.indicator 1 (Function.update (ℰ.θ · ω) i s) =
       (⋂ j ∈ Finset.univ.erase i, ℰ.θ j ⁻¹' Set.Iio s).indicator (1 : Ω → ℝ) ω := by
@@ -175,22 +182,25 @@ lemma q_eq_pow (i : Fin n) (s : ℝ) : ℰ.q i s = ℰ.commonCDF s ^ (n - 1) := 
 /-- Individual rationality at the bottom: the lowest type gets zero utility -/
 def IndividuallyRational : Prop := ∀ i, ℰ.U i ℰ.lowestType = 0
 
-/-- Under IC and IR, the per-type expected payment is uniquely determined by `cdf i`.-/
-lemma payment_formula (ic : ℰ.IncentiveCompatible) (ir : ℰ.IndividuallyRational)
+/-- Under IC, IR, and efficient allocation, the per-type expected payment is uniquely
+determined by the common CDF.-/
+lemma payment_formula (eff : ℰ.Efficient) (ic : ℰ.IncentiveCompatible)
+    (ir : ℰ.IndividuallyRational)
     (i : Fin n) {s : ℝ} (hs : s ∈ ℰ.interval i) :
     ℰ.p i s = s * ℰ.commonCDF s ^ (n - 1) - ∫ ψ in ℰ.lowestType..s, ℰ.commonCDF ψ ^ (n - 1) := by
   have hpU : ℰ.p i s = s * ℰ.q i s - ℰ.U i s := by
     linarith [show ℰ.U i s = s * ℰ.q i s - ℰ.p i s by rfl]
-  simp [hpU, envelope_theorem ℰ.toEnvelopeSetup ic |>.U_eq i s hs, ℰ.q_eq_pow, ir i]
+  simp [hpU, envelope_theorem ℰ.toEnvelopeSetup ic |>.U_eq i s hs, ℰ.q_eq_pow eff, ir i]
 
-/-- Under IC and IR, the expected revenue is equal to the expected value of the second highest
-bidder's θ.-/
-lemma total_revenue (ic : ℰ.IncentiveCompatible) (ir : ℰ.IndividuallyRational) :
+/-- Under efficient allocation, IC, and IR, the expected revenue is equal to the expected value
+of the second highest bidder's θ.-/
+lemma total_revenue (eff : ℰ.Efficient) (ic : ℰ.IncentiveCompatible) (ir : ℰ.IndividuallyRational) :
     ℰ.expectedRevenue = 𝔼[ℰ.S₂] := by
   simp only [RevenueEquivalenceSetup.expectedRevenue]
   let φ : ℝ → ℝ :=
     fun s => s * ℰ.commonCDF s ^ (n - 1) - ∫ ψ in ℰ.lowestType..s, ℰ.commonCDF ψ ^ (n - 1)
-  have hrw (j ω) : ℰ.p j (ℰ.θ j ω) = φ (ℰ.θ j ω) := ℰ.payment_formula ic ir j (ℰ.θ_in j ω)
+  have hrw (j ω) : ℰ.p j (ℰ.θ j ω) = φ (ℰ.θ j ω) :=
+    ℰ.payment_formula eff ic ir j (ℰ.θ_in j ω)
   simp_rw [hrw]
   have hφ_meas : Measurable φ := by
     refine Measurable.sub (measurable_id.mul (ℰ.commonCDF_measurable.pow measurable_const)) <|
@@ -259,49 +269,37 @@ lemma total_revenue (ic : ℰ.IncentiveCompatible) (ir : ℰ.IndividuallyRationa
   exact (ℰ.toOrderStatisticsSetup.expected_second_highest 0 _ _ hab hbounded
     ℰ.commonCDF_lowestType ℰ.commonCDF_highestType).symm
 
-/-- **Revenue Equivalence (per-type payment).**
-Any two efficient, IC, IR mechanisms whose type distributions are identically
-distributed yield the same expected payment for any bidder at any type.
-
-The payment formula `s · F(s)^{n-1} - ∫_{θ̲}^s F(ψ)^{n-1} dψ` depends only on the
-common CDF `F` and the lowest type `θ̲`—not on the specific allocation or payment
-rules of the mechanism, nor on the identity of the bidder.
-
-The two mechanisms may live on different probability spaces `Ω₁`, `Ω₂`. -/
-theorem payment_equivalence
-    {Ω₁ : Type} [MeasureSpace Ω₁] [IsProbabilityMeasure (ℙ : Measure Ω₁)]
-    {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
-    (ℰ₁ : RevenueEquivalenceSetup Ω₁ n) (ℰ₂ : RevenueEquivalenceSetup Ω₂ n)
-    (hident : ∀ i j, IdentDistrib (ℰ₁.θ i) (ℰ₂.θ j) ℙ ℙ)
-    (hmin : ℰ₁.lowestType = ℰ₂.lowestType)
-    (ic₁ : ℰ₁.IncentiveCompatible) (ic₂ : ℰ₂.IncentiveCompatible)
-    (ir₁ : ℰ₁.IndividuallyRational) (ir₂ : ℰ₂.IndividuallyRational)
-    (i j : Fin n) {s : ℝ} (hs₁ : s ∈ ℰ₁.interval i) (hs₂ : s ∈ ℰ₂.interval j) :
-    ℰ₁.p i s = ℰ₂.p j s := by
-  rw [ℰ₁.payment_formula ic₁ ir₁ i hs₁, ℰ₂.payment_formula ic₂ ir₂ j hs₂]
-  have hcdf : ∀ s, ℰ₁.commonCDF s = ℰ₂.commonCDF s := fun s => by
-    simp only [commonCDF]; exact congr_arg (cdf · s) (hident 0 0).map_eq
-  simp only [hcdf, hmin]
-
 /-- **Revenue Equivalence Theorem.**
-Any two efficient, IC, IR mechanisms whose type distributions are identically
-distributed yield the same expected total revenue.
-
-Both equal `𝔼[S₂]` (see `total_revenue`), the expected second-highest order statistic, which depends
-only on the type distribution `F` and the number of bidders `n`—not on the specific auction format.
-
+Any two IC, IR mechanisms with the same interim allocation rule `q`, identically
+distributed types, the same type bounds, yield the same expected total revenue.
 The two mechanisms may live on different probability spaces `Ω₁`, `Ω₂`. -/
 theorem revenue_equivalence
     {Ω₁ : Type} [MeasureSpace Ω₁] [IsProbabilityMeasure (ℙ : Measure Ω₁)]
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (ℰ₁ : RevenueEquivalenceSetup Ω₁ n) (ℰ₂ : RevenueEquivalenceSetup Ω₂ n)
-    (ident : ∀ i j, IdentDistrib (ℰ₁.θ i) (ℰ₂.θ j) ℙ ℙ)
+    (hq : ∀ i, ℰ₁.q i = ℰ₂.q i)
+    (hmin : ℰ₁.lowestType = ℰ₂.lowestType)
+    (hmax : ℰ₁.highestType = ℰ₂.highestType)
+    (ident : ∀ i, IdentDistrib (ℰ₁.θ i) (ℰ₂.θ i) ℙ ℙ)
     (ic₁ : ℰ₁.IncentiveCompatible) (ic₂ : ℰ₂.IncentiveCompatible)
-    (ir₁ : ℰ₁.IndividuallyRational) (ir₂ : ℰ₂.IndividuallyRational) :
-    ℰ₁.expectedRevenue = ℰ₂.expectedRevenue :=
-  ℰ₁.total_revenue ic₁ ir₁ ▸ ℰ₂.total_revenue ic₂ ir₂ ▸
-    (ℰ₁.toOrderStatisticsSetup.identDistrib_val ℰ₂.toOrderStatisticsSetup
-      ident ⟨n - 2, by grind[Nat.AtLeastTwo.prop (n := n)]⟩).integral_eq
+    (ir₁ : ℰ₁.IndividuallyRational) (ir₂ : ℰ₂.IndividuallyRational)
+    (p_meas : ∀ i, Measurable (ℰ₂.p i))
+    (hint₁ : ∀ i, Integrable (fun ω => ℰ₁.p i (ℰ₁.θ i ω)) ℙ)
+    (hint₂ : ∀ i, Integrable (fun ω => ℰ₂.p i (ℰ₂.θ i ω)) ℙ) :
+    ℰ₁.expectedRevenue = ℰ₂.expectedRevenue := by
+  simp only [expectedRevenue]
+  rw [integral_finset_sum _ fun i _ => hint₁ i, integral_finset_sum _ fun i _ => hint₂ i]
+  congr 1; ext i
+  have hθmin : ℰ₁.θmin i = ℰ₂.θmin i := by simp [hmin]
+  have hθmax : ℰ₁.θmax i = ℰ₂.θmax i := by simp [hmax]
+  have hU : ℰ₁.U i (ℰ₁.θmin i) = ℰ₂.U i (ℰ₂.θmin i) := by simp [ir₁ i, ir₂ i]
+  have heq (ω) : ℰ₁.p i (ℰ₁.θ i ω) = ℰ₂.p i (ℰ₁.θ i ω) :=
+    EnvelopeSetup.payment_equivalence ℰ₁.toEnvelopeSetup ℰ₂.toEnvelopeSetup ic₁ ic₂ i i
+      hθmin (hq i) hU (ℰ₁.θ_in i ω)
+      ⟨hθmin.symm ▸ (ℰ₁.θ_in i ω).1, hθmax.symm ▸ (ℰ₁.θ_in i ω).2⟩
+  calc ∫ ω, ℰ₁.p i (ℰ₁.θ i ω) ∂ℙ
+      = ∫ ω, ℰ₂.p i (ℰ₁.θ i ω) ∂ℙ := integral_congr_ae (ae_of_all _ heq)
+    _ = ∫ ω, ℰ₂.p i (ℰ₂.θ i ω) ∂ℙ := ((ident i).comp (p_meas i)).integral_eq
 
 end RevenueEquivalenceSetup
 
