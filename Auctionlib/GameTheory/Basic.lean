@@ -1,6 +1,6 @@
 module
 
-public import Mathlib.MeasureTheory.Integral.DivergenceTheorem
+public import Mathlib.Order.Max
 
 /-!
 # Basic game-theoretic concepts
@@ -11,7 +11,7 @@ In this file we set up basic game-theoretic concepts. We focus on normal-form ga
 games that are simply given by a function assigning outcomes to combinations of strategies instead
 detailed descriptions in terms of turns and states. Even so, there are still a lot of things to
 consider for finding the right implementation:
-* do we want games to include utility functions for each player or just a type of outcomes?
+* Do we want games to include utility functions for each player or just a type of outcomes?
   We have gone with the latter approach for now, but maybe it would make sense to switch.
 * What about nondeterministic games? These can currently be modelled as games whose outcome type is
   `MeasureTheory.ProbabilityMeasure α` for some measurable space `α`, but another option would be to
@@ -25,6 +25,10 @@ consider for finding the right implementation:
   through the Giry monad.
 * At what point do we want to impose measurability conditions? In the definition of games already,
   or only later?
+* Should we go with a bundled or an unbundled approach? Currently we use the latter, but it seems
+  that for many types like the type of strategies and the type of joint strategies we will need
+  to set up type synonyms anyway to work with e.g. weak dominance of strategies as a preorder
+  without conflicting with existing preorders on the strategy types.
 
 ## Main definitions / results
 * `Game A O`: a normal-form game with strategy types `A i` and an outcome type `O`, given
@@ -49,6 +53,8 @@ consider for finding the right implementation:
   strategies in a way that would strictly benefit each of its members.
 
 -/
+
+@[expose] public section
 
 namespace GameTheory
 
@@ -87,12 +93,12 @@ protected lemma le_def {G : Game A O} {O' : Type*} [LE O'] {u : O → O'} {i : �
 protected lemma le_iff [DecidableEq ι] {G : Game A O} {O' : Type*} [LE O']
     {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s ≤ s' ↔ ∀ (a a' : (i : ι) → A i),
       a i = s → a' = Function.update a i s' → u (G.outcome a) ≤ u (G.outcome a') := by
-  simp only [le_def, Function.eq_update_iff, and_imp, eq_comm]
+  simp only [Strategy.le_def, Function.eq_update_iff, and_imp, eq_comm]
 
 protected lemma le_iff' [DecidableEq ι] {G : Game A O} {O' : Type*} [LE O']
     {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s ≤ s' ↔ ∀ a : (i : ι) → A i,
       u (G.outcome (Function.update a i s)) ≤ u (G.outcome (Function.update a i s')) := by
-  rw [le_iff]
+  rw [Strategy.le_iff]
   refine ⟨fun h a ↦ h _ _ (by simp) (by simp), fun h a a' ha ha' ↦ ?_⟩
   rw [Function.eq_update_self_iff.2 ha, ha']
   exact h a
@@ -102,7 +108,7 @@ instance (G : Game A O) {O' : Type*} [Preorder O'] (u : O → O') (i : ι) :
   le_refl s a a' hai hai' h := Eq.le <| by congr; grind
   le_trans s s' s'' := by
     classical
-    simp_rw [le_iff']
+    simp_rw [Strategy.le_iff']
     grind
 
 /-- A strategy strictly dominates another iff it weakly dominates it and there is at least one
@@ -111,7 +117,7 @@ protected lemma lt_iff [DecidableEq ι] {G : Game A O} {O' : Type*} [Preorder O'
       {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s < s' ↔ s ≤ s' ∧ ∃ a : (i : ι) → A i,
       u (G.outcome (Function.update a i s)) < u (G.outcome (Function.update a i s')) := by
     refine lt_iff_le_not_ge.trans <| and_congr_right fun h ↦ ?_
-    simp only [le_iff', not_forall, lt_iff_le_not_ge, le_iff'.1 h, true_and]
+    simp only [Strategy.le_iff', not_forall, lt_iff_le_not_ge, Strategy.le_iff'.1 h, true_and]
 
 /-- A strategy is called weakly dominant iff it weakly dominates every strategy. -/
 def IsDominant {G : Game A O} {O' : Type*} [LE O']
