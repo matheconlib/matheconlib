@@ -1,6 +1,6 @@
 module
 
-public import Mathlib.Order.Max
+public import Mathlib.MeasureTheory.Measure.FiniteMeasurePi
 
 /-!
 # Basic game-theoretic concepts
@@ -51,6 +51,16 @@ consider for finding the right implementation:
 * `G.IsStrongNashEquilibrium u a`: a family of strategies `a i` is called a strong Nash equilibrium
   with respect to a family of utility functions `u i` if no coalition can form and change their
   strategies in a way that would strictly benefit each of its members.
+* `G.Measurable`: typeclass stating that the action spaces and outcome space of `G` are measurable
+  spaces, and that the outcome function `G.outcome` is measurable
+* `G.toMixed`: the game whose pure strategies are the mixed strategies of `G`, and whose outcome
+  space is the space of probability distributions on the outcome space of `G`. This enables us to
+  use the same API for pure and mixed strategies, by treating mixed strategies as pure strategies
+  of `G.toMixed`.
+* `G.toMixed'`: a variant of `G.toMixed` for when the outcome space of `G` is already a space of
+  probability distributions.
+* When `G` is measurable, `G.toMixed` and `G.toMixed'` are as well.
+
 
 -/
 
@@ -187,6 +197,111 @@ lemma IsStrongNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} 
     rwa [hj] at hj'
 
 end Equilibria
+
+section Measurable
+
+open MeasureTheory
+
+variable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
+
+/-- We call a game measurable if its action spaces and outcome space are measurable spaces, and
+the outcome function `G.outcome : ((i : ι) → A i) → O` is measurable. -/
+protected class Measurable (G : Game A O) where
+  measurable_outcome : Measurable G.outcome
+
+export Measurable (measurable_outcome)
+
+/-- For any measurable game `G` with pure strategy spaces `A i` and outcome space `O`, this is a
+game whose pure strategy spaces are the spaces `ProbabilityMeasure (A i)` of mixed strategies of
+`G`, and whose outcome space is the space `ProbabilityMeasure O` of probability distributions on
+`O`. This enables us to talk about pure and mixed strategies using the same API: a mixed strategy
+for `G` is simply a pure strategy for `G.toMixed`.
+
+Note that when `G` is already a nondeterministic game in the sense that it is of the form
+`Game A (ProbabilityMeasure O)`, `G.toMixed` has the outcome type
+`ProbabilityMeasure (ProbabilityMeasure O)`; you can avoid that by using `toMixed'` instead,
+which takes games of the form `Game A (ProbabilityMeasure O)` to games of the form
+`Game (fun i ↦ ProbabilityMeasure (A i)) (ProbabilityMeasure O)`.
+
+TODO: find a more standard name for this. -/
+@[simps]
+noncomputable def toMixed (G : Game A O) [G.Measurable] [Fintype ι] :
+    Game (fun i ↦ ProbabilityMeasure (A i)) (ProbabilityMeasure O) where
+  outcome a := (ProbabilityMeasure.pi a).map G.measurable_outcome.aemeasurable
+
+/-- The probability measure `μ.join : ProbabilityMeasure α` corresponding to a probability measure
+`μ : ProbabilityMeasure (ProbabilityMeasure α)` on the space of probability measures on `α`.
+
+This operation is part of the Giry monad. -/
+@[simps]
+noncomputable def _root_.MeasureTheory.ProbabilityMeasure.join {α : Type*} [MeasurableSpace α]
+    (μ : ProbabilityMeasure (ProbabilityMeasure α)) : ProbabilityMeasure α where
+  val := (μ.toMeasure.map (↑)).join
+  property := @isProbabilityMeasure_join _ _ _
+    (Measure.isProbabilityMeasure_map measurable_subtype_coe.aemeasurable) <|
+      (ae_map_iff measurable_subtype_coe.aemeasurable
+        ProbabilityMeasure.measurableSet_isProbabilityMeasure).2 <| .of_forall fun x ↦ x.2
+
+/-- For any measurable game `G` with pure strategy spaces `A i` and outcome space `O`, this is a
+game whose pure strategy spaces are the spaces `ProbabilityMeasure (A i)` or mixed strategies of
+`G`, and whose outcome space is the space `ProbabilityMeasure O` of probability distributions on
+`O`. This enables us to talk about pure and mixed strategies using the same API: a mixed strategy
+for `G` is simply a pure strategy for `G.toMixed`. -/
+@[simps]
+noncomputable def toMixed' (G : Game A (ProbabilityMeasure O)) [G.Measurable] [Fintype ι] :
+    Game (fun i ↦ ProbabilityMeasure (A i)) (ProbabilityMeasure O) where
+  outcome := ProbabilityMeasure.join ∘ G.toMixed.outcome
+
+lemma _root_.MeasureTheory.ProbabilityMeasure.measurableEmbedding_toMeasure {α : Type*}
+    [MeasurableSpace α] : MeasurableEmbedding (ProbabilityMeasure.toMeasure (Ω := α)) :=
+  .subtype_coe ProbabilityMeasure.measurableSet_isProbabilityMeasure
+
+lemma _root_.MeasureTheory.ProbabilityMeasure.measurable_map {α β : Type*} [MeasurableSpace α]
+    [MeasurableSpace β] {f : α → β} (hf : Measurable f) :
+    Measurable fun μ : ProbabilityMeasure α ↦ μ.map hf.aemeasurable :=
+  (Measure.measurable_map f hf).subtype_map fun μ hμ ↦
+    @μ.isProbabilityMeasure_map _ _ _ _ hμ _ hf.aemeasurable
+
+lemma _root_.MeasureTheory.ProbabilityMeasure.measurable_pi {ι : Type*} [Fintype ι] {α : ι → Type*}
+    [∀ i, MeasurableSpace (α i)] :
+    Measurable (ProbabilityMeasure.pi : _ → ProbabilityMeasure ((i : ι) → α i)) := by
+  rw [← ProbabilityMeasure.measurableEmbedding_toMeasure.measurable_comp_iff]
+  simp_rw [Measure.instMeasurableSpace, measurable_iff_comap_le, MeasurableSpace.comap_iSup,
+    iSup₂_le_iff, MeasurableSpace.comap_comp, ← measurable_iff_comap_le]
+  intro s hs
+  refine MeasurableSpace.induction_on_inter (C := fun s hs ↦ Measurable
+    ((fun μ ↦ μ s) ∘ ProbabilityMeasure.toMeasure ∘ ProbabilityMeasure.pi))
+      generateFrom_pi.symm isPiSystem_pi ?_ ?_ ?_ ?_ s hs
+  · simp only [measure_empty]; exact measurable_const
+  · intro t ⟨t', ht', ht''⟩
+    simp only [← ht'', Function.comp_def, ProbabilityMeasure.toMeasure_pi, Measure.pi_pi]
+    refine Finset.measurable_prod _ fun i _ ↦ ?_
+    exact (Measure.measurable_coe (ht' i trivial)).comp <| measurable_subtype_coe.comp <|
+      measurable_pi_apply i
+  · intro t ht ht'
+    convert ht'.const_sub 1 using 2
+    rw [Function.comp_apply, measure_compl ht] <;> simp
+  · intro t ht ht' ht''
+    convert Measurable.ennreal_tsum ht'' using 2
+    simp [measure_iUnion ht ht']
+
+instance (G : Game A O) [G.Measurable] [Fintype ι] : G.toMixed.Measurable where
+  measurable_outcome := (ProbabilityMeasure.measurable_map G.measurable_outcome).comp
+    ProbabilityMeasure.measurable_pi
+
+lemma _root_.MeasureTheory.ProbabilityMeasure.measurable_join {α : Type*} [MeasurableSpace α] :
+    Measurable (ProbabilityMeasure.join (α := α)) := by
+  rw [← ProbabilityMeasure.measurableEmbedding_toMeasure.measurable_comp_iff]
+  dsimp [Function.comp_def, ProbabilityMeasure.join]
+  exact Measure.measurable_join.comp <| (Measure.measurable_map _ measurable_subtype_coe).comp
+    measurable_subtype_coe
+
+instance (G : Game A (ProbabilityMeasure O)) [G.Measurable] [Fintype ι] :
+    G.toMixed'.Measurable where
+  measurable_outcome :=
+    (ProbabilityMeasure.measurable_join (α := O)).comp G.toMixed.measurable_outcome
+
+end Measurable
 
 end Game
 
