@@ -24,25 +24,13 @@ lemma ProbabilityMeasure.measurable_pi {ι : Type*} [Fintype ι] {α : ι → Ty
     [∀ i, MeasurableSpace (α i)] :
     Measurable (ProbabilityMeasure.pi : _ → ProbabilityMeasure ((i : ι) → α i)) := by
   rw [← measurableEmbedding_toMeasure.measurable_comp_iff]
-  unfold Measure.instMeasurableSpace
-  simp_rw [measurable_iff_comap_le, MeasurableSpace.comap_iSup,
-    iSup₂_le_iff, MeasurableSpace.comap_comp, ← measurable_iff_comap_le]
-  intro s hs
-  refine MeasurableSpace.induction_on_inter (C := fun s hs ↦ Measurable
-    ((fun μ ↦ μ s) ∘ toMeasure ∘ pi))
-      generateFrom_pi.symm isPiSystem_pi ?_ ?_ ?_ ?_ s hs
-  · simp only [measure_empty]; exact measurable_const
-  · intro t ⟨t', ht', ht''⟩
-    simp only [← ht'', Function.comp_def, toMeasure_pi, Measure.pi_pi]
-    refine Finset.measurable_prod _ fun i _ ↦ ?_
-    exact (Measure.measurable_coe (ht' i trivial)).comp <| measurable_subtype_coe.comp <|
-      measurable_pi_apply i
-  · intro t ht ht'
-    convert ht'.const_sub 1 using 2
-    rw [Function.comp_apply, measure_compl ht] <;> simp
-  · intro t ht ht' ht''
-    convert Measurable.ennreal_tsum ht'' using 2
-    simp [measure_iUnion ht ht']
+  refine @Measurable.measure_of_isPiSystem_of_isProbabilityMeasure _ _ _ _ _
+    (fun _ ↦ Subtype.property _) _ generateFrom_pi.symm isPiSystem_pi ?_
+  intro t ⟨t', ht', ht''⟩
+  simp only [← ht'', Function.comp_def, toMeasure_pi, Measure.pi_pi]
+  refine Finset.measurable_prod _ fun i _ ↦ ?_
+  exact (Measure.measurable_coe (ht' i trivial)).comp <| measurable_subtype_coe.comp <|
+    measurable_pi_apply i
 
 /-- The probability measure `μ.join : ProbabilityMeasure α` corresponding to a probability measure
 `μ : ProbabilityMeasure (ProbabilityMeasure α)` on the space of probability measures on `α`.
