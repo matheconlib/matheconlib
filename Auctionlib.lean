@@ -2,6 +2,7 @@ import Auctionlib.Envelope.Mathematics
 import Auctionlib.Envelope.Myerson
 import Auctionlib.Envelope.Theorem
 import Auctionlib.ForMathlib.AbsolutelyContinuous
+import Auctionlib.ForMathlib.ProbabilityMeasure
 import Auctionlib.GameTheory.Basic
 import Auctionlib.RevenueEquivalence.Theorem
 import Auctionlib.Statistics.OrderStatistics
