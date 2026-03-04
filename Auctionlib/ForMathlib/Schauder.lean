@@ -1,6 +1,12 @@
 module
 
-public import Mathlib
+public import Mathlib.Algebra.Order.Ring.Star
+public import Mathlib.Analysis.Convex.PartitionOfUnity
+public import Mathlib.Analysis.InnerProductSpace.Basic
+public import Mathlib.Analysis.RCLike.Lemmas
+public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
+public import Mathlib.Data.Int.Star
+public import Mathlib.Data.Nat.Nth
 
 ----------------------
 noncomputable section
@@ -8,9 +14,6 @@ open Classical
 
 set_option linter.unusedVariables false
 set_option linter.style.longLine false
-set_option linter.unusedSimpArgs false
-set_option linter.unnecessarySeqFocus false
-set_option linter.privateModule true
 
 def isDominant {n : ℕ} {T : Type}
     (ords : Fin (n + 1) → LinearOrder T)
@@ -43,7 +46,7 @@ def IsScarfVtx {n : ℕ} {T : Type} [DecidableEq T]
    (p.1.card = p.2.card ∧ p.2 \ p.1.image c = {i₀}) ∨
    (p.2.card = p.1.card + 1 ∧ p.2 \ p.1.image c = {i₀}))
 
-private lemma isDominant_erase {n : ℕ} {T : Type} [DecidableEq T]
+lemma isDominant_erase {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (σ : Finset T) (C : Finset (Fin (n + 1))) (z : T)
     (hdom : isDominant ords σ C) :
@@ -54,7 +57,7 @@ private lemma isDominant_erase {n : ℕ} {T : Type} [DecidableEq T]
 
 -- InjOn version of image_erase
 
-private lemma image_erase_of_injOn {α β : Type*} [DecidableEq α] [DecidableEq β]
+lemma image_erase_of_injOn {α β : Type*} [DecidableEq α] [DecidableEq β]
     {f : α → β} {s : Finset α} {a : α}
     (hinj : Set.InjOn f ↑s) (ha : a ∈ s) :
     (s.erase a).image f = (s.image f).erase (f a) := by
@@ -610,14 +613,14 @@ lemma not_scarf_insert_form {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Decid
     Uses `Finset.card_erase_of_mem : ∀ {s a}, a ∈ s → (s.erase a).card = s.card - 1`.
     Uses `Finset.card_insert_of_not_mem : ∀ {s a}, a ∉ s → (insert a s).card = s.card + 1`.
     No direct Mathlib equivalent. -/
-private lemma card_erase_ne' {T : Type} [DecidableEq T] {α : Type} [DecidableEq α]
+lemma card_erase_ne' {T : Type} [DecidableEq T] {α : Type} [DecidableEq α]
     (σ : Finset T) (C : Finset α) (z : T)
     (hz : z ∈ σ) (hcard : σ.card = C.card) (hC_ne : C.Nonempty) :
     (σ.erase z).card ≠ C.card := by
   rw [Finset.card_erase_of_mem hz, hcard]
   have h := hC_ne.card_pos; omega
 
-private lemma image_card_eq' {n : ℕ} {T : Type} [DecidableEq T]
+lemma image_card_eq' {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1)) (σ : Finset T) (C : Finset (Fin (n + 1)))
     (i₀ : Fin (n + 1)) (hcard : σ.card = C.card)
     (hnearly : C \ σ.image c = {i₀}) (himg_sub : σ.image c ⊆ C) :
@@ -626,7 +629,7 @@ private lemma image_card_eq' {n : ℕ} {T : Type} [DecidableEq T]
   have h2 := Finset.card_sdiff_add_card_eq_card himg_sub
   omega
 
-private lemma image_erase_eq_of_cover' {T : Type} [DecidableEq T] {β : Type} [DecidableEq β]
+lemma image_erase_eq_of_cover' {T : Type} [DecidableEq T] {β : Type} [DecidableEq β]
     (f : T → β) (σ : Finset T) (z : T)
     (w : T) (hw : w ∈ σ.erase z) (hwz : f w = f z) :
     (σ.erase z).image f = σ.image f := by
@@ -640,7 +643,7 @@ private lemma image_erase_eq_of_cover' {T : Type} [DecidableEq T] {β : Type} [D
     · exact ⟨w, hw, by rw [hwz, ← haz]; exact hab⟩
     · exact ⟨a, Finset.mem_erase.mpr ⟨haz, ha⟩, hab⟩
 
-private lemma cz_unique' {n : ℕ} {T : Type} [DecidableEq T]
+lemma cz_unique' {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1)) (σ : Finset T) (C : Finset (Fin (n + 1)))
     (i₀ : Fin (n + 1)) (x y z : T)
     (hx : x ∈ σ) (hy : y ∈ σ) (hz : z ∈ σ)
@@ -667,7 +670,7 @@ private lemma cz_unique' {n : ℕ} {T : Type} [DecidableEq T]
   have hy_erase : y ∈ σ.erase z := Finset.mem_erase.mpr ⟨hzy.symm, hy⟩
   exact hxy (h_inj hx_erase hy_erase hcxy)
 
-private lemma not_scarf_vtx_erase_non_colliding' {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
+lemma not_scarf_vtx_erase_non_colliding' {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -692,7 +695,7 @@ private lemma not_scarf_vtx_erase_non_colliding' {n : ℕ} {T : Type} [Fintype T
   · exact hcard_ne h1
   · exact hsdiff_ne h2
 
-private lemma caseB_impossible' {n : ℕ} {T : Type} [DecidableEq T]
+lemma caseB_impossible' {n : ℕ} {T : Type} [DecidableEq T]
     (σ : Finset T) (C : Finset (Fin (n + 1)))
     (hcard : σ.card = C.card)
     (q : Finset T × Finset (Fin (n + 1)))
@@ -1304,7 +1307,7 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     Uses `Finset.min' (s : Finset α) (h : s.Nonempty) : α` with
     `Finset.min'_mem : ∀ (s : Finset α) (h : s.Nonempty), s.min' h ∈ s` and
     `Finset.min'_le : ∀ (s : Finset α) (x : α) (h : x ∈ s), s.min' ⋯ ≤ x`. -/
-noncomputable def ordMin {n : ℕ} {T : Type}
+def ordMin {n : ℕ} {T : Type}
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (hne : τ.Nonempty) (i : Fin (n + 1)) : T :=
   @Finset.min' T (ords i) τ hne
@@ -1352,7 +1355,7 @@ lemma ordMin_surj_on_tau {n : ℕ} {T : Type} [DecidableEq T]
   exact hne_eq (@le_antisymm T (ords i₀).toPartialOrder _ _
     (@not_lt _ (ords i₀) _ _ |>.mp h2) (@not_lt _ (ords i₀) _ _ |>.mp h1)).symm
 
-private lemma ordMin_image_eq_tau {n : ℕ} {T : Type} [DecidableEq T]
+lemma ordMin_image_eq_tau {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hne : τ.Nonempty) (hdom : isDominant ords τ D) :
@@ -1369,7 +1372,7 @@ private lemma ordMin_image_eq_tau {n : ℕ} {T : Type} [DecidableEq T]
     obtain ⟨i, hi, heq⟩ := ordMin_surj_on_tau ords τ D hne hdom t ht
     exact ⟨i, hi, heq⟩
 
-private lemma ordMin_collision_unique {n : ℕ} {T : Type} [DecidableEq T]
+lemma ordMin_collision_unique {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hne : τ.Nonempty)
@@ -1475,7 +1478,7 @@ lemma adj_door_neighbor_form {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Deci
       · rw [hDeq, Finset.erase_insert hi]
       · rw [hτeq, hDeq, Finset.erase_insert hi]; exact hdom
 
-private lemma isDominant_erase_of_empty_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma isDominant_erase_of_empty_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
@@ -1489,7 +1492,7 @@ private lemma isDominant_erase_of_empty_Mi {n : ℕ} {T : Type} [Fintype T] [Dec
   have hle := ordMin_le ords τ hnonempty k x hx
   exact hk_not_lt (@lt_of_le_of_lt T (ords k).toPreorder _ _ _ (@le_of_not_gt T (ords k) _ _ hle) hxy)
 
-private lemma erase_nonempty_of_card_ge_two {α : Type} [DecidableEq α]
+lemma erase_nonempty_of_card_ge_two {α : Type} [DecidableEq α]
     (D : Finset α) (i : α) (hi : i ∈ D) (hcard : D.card ≥ 2) :
     (D.erase i).Nonempty := by
   have h₁ : (D.erase i).card = D.card - 1 := by
@@ -1504,7 +1507,7 @@ private lemma erase_nonempty_of_card_ge_two {α : Type} [DecidableEq α]
     exact Finset.card_pos.mp h₄
   exact h₃
 
-private lemma erase_eq_image_of_eq_i₀ {n : ℕ} {T : Type} [DecidableEq T]
+lemma erase_eq_image_of_eq_i₀ {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (i₀ : Fin (n + 1))
@@ -1525,7 +1528,7 @@ private lemma erase_eq_image_of_eq_i₀ {n : ℕ} {T : Type} [DecidableEq T]
     omega
   exact (Finset.eq_of_superset_of_card_ge hsub hcard).symm
 
-private lemma erase_sdiff_image_eq_singleton {n : ℕ} {T : Type} [DecidableEq T]
+lemma erase_sdiff_image_eq_singleton {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (i i₀ : Fin (n + 1))
@@ -1535,7 +1538,7 @@ private lemma erase_sdiff_image_eq_singleton {n : ℕ} {T : Type} [DecidableEq T
   rw [Finset.erase_sdiff_comm, hnearly]
   exact Finset.erase_eq_of_notMem (Finset.notMem_singleton.mpr hne)
 
-private lemma isScarfVtx_erase_case {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
+lemma isScarfVtx_erase_case {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
@@ -1556,7 +1559,7 @@ private lemma isScarfVtx_erase_case {n : ℕ} {T : Type} [Fintype T] [Nonempty T
     exact ⟨hcard_erase.symm, erase_sdiff_image_eq_singleton c τ D i i₀ h hnearly⟩
 
 set_option maxRecDepth 5000 in
-private lemma scarfAdjRel_erase {n : ℕ} {T : Type} [DecidableEq T]
+lemma scarfAdjRel_erase {n : ℕ} {T : Type} [DecidableEq T]
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdoor : D.card = τ.card + 1)
     (i : Fin (n + 1)) (hiD : i ∈ D) :
@@ -1568,7 +1571,7 @@ private lemma scarfAdjRel_erase {n : ℕ} {T : Type} [DecidableEq T]
   have h_main : scarfAdjRel (τ, D) (τ, D.erase i) := by grind [=scarfAdjRel]
   exact h_main
 
-private lemma not_lt_ordMin_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma not_lt_ordMin_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
@@ -1584,7 +1587,7 @@ private lemma not_lt_ordMin_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [Decidabl
   · subst hki; exact hnotlt hcontra
   · exact hnotlt (hx_in_Mi k (Finset.mem_erase.mpr ⟨hki, hkD⟩))
 
-private lemma ordMin_eq_of_mem_of_not_lt {n : ℕ} {T : Type} [DecidableEq T]
+lemma ordMin_eq_of_mem_of_not_lt {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (hne : τ.Nonempty) (i : Fin (n + 1))
     (x : T) (hx : x ∈ τ) (hnotlt : ¬ (ords i).lt (ordMin ords τ hne i) x) :
@@ -1593,7 +1596,7 @@ private lemma ordMin_eq_of_mem_of_not_lt {n : ℕ} {T : Type} [DecidableEq T]
   have hle := @Finset.min'_le T (ords i) τ x hx
   exact @eq_of_le_of_not_lt T (ords i).toPartialOrder _ _ hle hnotlt
 
-private lemma not_mem_tau_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma not_mem_tau_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
@@ -1623,7 +1626,7 @@ private lemma not_mem_tau_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableE
     rw [heq_a] at hlt_a
     exact @lt_irrefl T (ords a).toPreorder x hlt_a
 
-private lemma isDominant_insert_case1 {n : ℕ} {T : Type} [DecidableEq T]
+lemma isDominant_insert_case1 {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (x y : T)
     (k₀ : Fin (n + 1))
@@ -1639,7 +1642,7 @@ private lemma isDominant_insert_case1 {n : ℕ} {T : Type} [DecidableEq T]
   | inr h =>
     exact hk₀_τ z h
 
-private lemma case2_k0_eq_i {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma case2_k0_eq_i {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hnonempty : τ.Nonempty)
@@ -1656,7 +1659,7 @@ private lemma case2_k0_eq_i {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
   have h2 : ordMin ords τ hnonempty k₀ ∈ τ := @Finset.min'_mem T (ords k₀) τ hnonempty
   exact hk₀_τ _ h2 (@lt_trans T (ords k₀).toPreorder _ _ _ h1 hx_lt_k₀)
 
-private lemma case2_witness_k1_tau {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma case2_witness_k1_tau {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (hnonempty : τ.Nonempty)
     (y : T)
@@ -1668,7 +1671,7 @@ private lemma case2_witness_k1_tau {n : ℕ} {T : Type} [Fintype T] [DecidableEq
   letI := ords k₁
   exact lt_of_le_of_lt (@Finset.min'_le T _ τ z hz) hzy
 
-private lemma case2_witness_k1_x {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma case2_witness_k1_x {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (hnonempty : τ.Nonempty)
     (x y : T)
@@ -1681,7 +1684,7 @@ private lemma case2_witness_k1_x {n : ℕ} {T : Type} [Fintype T] [DecidableEq T
   letI := ords k₁
   exact lt_trans hk₁_lt_x hxy
 
-private lemma case2_witness_k1 {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma case2_witness_k1 {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hnonempty : τ.Nonempty)
@@ -1697,7 +1700,7 @@ private lemma case2_witness_k1 {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
   · exact case2_witness_k1_x ords τ hnonempty _ y k₁ hk₁_not (hx_in_Mi k₁ hk₁)
   · exact case2_witness_k1_tau ords τ hnonempty y k₁ hk₁_not z hz
 
-private lemma isDominant_insert_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma isDominant_insert_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
@@ -1725,7 +1728,7 @@ private lemma isDominant_insert_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [Deci
     exact ⟨k₁, Finset.mem_of_mem_erase hk₁, case2_witness_k1 ords τ D hnonempty i x y k₁ hk₁ hk₁_not' hx_in_Mi⟩
   · exact ⟨k₀, hk₀D, isDominant_insert_case1 ords τ x y k₀ hk₀_τ hcase⟩
 
-private lemma isScarfVtx_insert_case_cx_eq {n : ℕ} {T : Type} [DecidableEq T]
+lemma isScarfVtx_insert_case_cx_eq {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
@@ -1751,7 +1754,7 @@ private lemma isScarfVtx_insert_case_cx_eq {n : ℕ} {T : Type} [DecidableEq T]
       _ = τ.card + 1 := Finset.card_insert_of_notMem hx_not_mem
       _ = D.card := hdoor.symm
 
-private lemma isScarfVtx_insert_case_cx_ne {n : ℕ} {T : Type} [DecidableEq T]
+lemma isScarfVtx_insert_case_cx_ne {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
@@ -1765,7 +1768,7 @@ private lemma isScarfVtx_insert_case_cx_ne {n : ℕ} {T : Type} [DecidableEq T]
   · rw [Finset.image_insert, Finset.sdiff_insert, hnearly]
     exact Finset.erase_eq_of_notMem (Finset.notMem_singleton.mpr hcx)
 
-private lemma isScarfVtx_insert_case {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
+lemma isScarfVtx_insert_case {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
@@ -1782,7 +1785,7 @@ private lemma isScarfVtx_insert_case {n : ℕ} {T : Type} [Fintype T] [Nonempty 
   · right; left
     exact isScarfVtx_insert_case_cx_ne c i₀ τ D x hx_not_mem hdoor hnearly hcx
 
-private lemma scarfAdjRel_insert {n : ℕ} {T : Type} [DecidableEq T]
+lemma scarfAdjRel_insert {n : ℕ} {T : Type} [DecidableEq T]
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdoor : D.card = τ.card + 1)
     (x : T) (hx_not_mem : x ∉ τ) :
@@ -1869,7 +1872,7 @@ lemma scarf_neighbor_from_collision_index {n : ℕ} {T : Type} [Fintype T] [None
     have hadj := scarfAdjRel_erase τ D hdoor i hiD
     exact ⟨(τ, D.erase i), hscarf, hadj, Or.inl ⟨rfl, rfl⟩⟩
 
-private lemma insert_elements_ne_of_collision {n : ℕ} {T : Type}
+lemma insert_elements_ne_of_collision {n : ℕ} {T : Type}
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (hnonempty : τ.Nonempty)
     (D : Finset (Fin (n + 1)))
@@ -1943,7 +1946,7 @@ lemma scarf_two_neighbors_distinct {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       · exact hne_elts rfl
       · exact hx₁_nmem hmem
 
-private lemma i_mem_pair_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma i_mem_pair_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
@@ -1975,7 +1978,7 @@ private lemma i_mem_pair_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     omega
   exact absurd (hinj ha' hb' hcoll) hab
 
-private lemma insert_branch_absurd {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma insert_branch_absurd {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hnonempty : τ.Nonempty) (j : Fin (n + 1))
@@ -1985,7 +1988,7 @@ private lemma insert_branch_absurd {n : ℕ} {T : Type} [Fintype T] [DecidableEq
   obtain ⟨k, hk_mem, hk_prop⟩ := hqi x
   exact hk_prop (ordMin ords τ hnonempty k) (ordMin_mem ords τ hnonempty k) (hx k hk_mem)
 
-private lemma erase_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
+lemma erase_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
@@ -2029,7 +2032,7 @@ private lemma erase_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempt
     · exact Prod.ext (hq1.trans hp₂_fst.symm) (hq2.trans hp₂_snd.symm)
     · exact absurd (insert_branch_absurd ords τ D hnonempty b hqi x hxlt) False.elim
 
-private lemma insert_dominant_gives_ordMin_conditions {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma insert_dominant_gives_ordMin_conditions {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
@@ -2087,7 +2090,7 @@ private lemma insert_dominant_gives_ordMin_conditions {n : ℕ} {T : Type} [Fint
       rwa [show @Finset.min' T (ords i) (insert x τ) hne' = x from hfi] at this
     exact @not_lt_of_ge T (ords i).toPreorder _ _ hx_le
 
-private lemma ordMin_insert_eq_of_lt {n : ℕ} {T : Type} [DecidableEq T]
+lemma ordMin_insert_eq_of_lt {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (hne : τ.Nonempty)
     (k : Fin (n + 1)) (x : T)
@@ -2099,7 +2102,7 @@ private lemma ordMin_insert_eq_of_lt {n : ℕ} {T : Type} [DecidableEq T]
   convert h.trans hmr using 2
   ext y; simp [Finset.mem_insert]
 
-private lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
@@ -2155,7 +2158,7 @@ private lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] 
   have hle := Finset.card_le_card hsub
   omega
 
-private lemma ordMin_conditions_index_in_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma ordMin_conditions_index_in_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
@@ -2177,7 +2180,7 @@ private lemma ordMin_conditions_index_in_ab {n : ℕ} {T : Type} [Fintype T] [De
   exact ordMin_conditions_not_outside_ab ords τ D hdom hdoor hnonempty a b ha hb hab hcoll huniq
     i hi h.1 h.2 x hx hdom_ins hx_Mi
 
-private lemma x_maximal_in_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma x_maximal_in_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hnonempty : τ.Nonempty)
@@ -2198,7 +2201,7 @@ private lemma x_maximal_in_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     have hmin_lt : (ords k₀).lt (ordMin ords τ hnonempty k₀) y := hy_Mi k₀ hk₀_erase
     exact absurd hmin_lt (hk₀_wit _ hmin_insert)
 
-private lemma insert_elements_equal {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
+lemma insert_elements_equal {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hnonempty : τ.Nonempty)
@@ -2215,7 +2218,7 @@ private lemma insert_elements_equal {n : ℕ} {T : Type} [Fintype T] [DecidableE
   · exact absurd h_lt (x_maximal_in_Mi ords τ D hnonempty i hi x hdom_x hx_Mi x' hx'_Mi)
   · exact absurd h_gt (x_maximal_in_Mi ords τ D hnonempty i hi x' hdom_x' hx'_Mi x hx_Mi)
 
-private lemma insert_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
+lemma insert_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
@@ -2415,7 +2418,7 @@ lemma empty_singleton_isScarfVtx {n : ℕ} {T : Type} [DecidableEq T]
     use i₀
     simp
   · -- Prove the third disjunct: {i₀}.card = ∅.card + 1 and {i₀} \ ∅.image c = {i₀}
-    simp [Finset.card_singleton, Finset.card_empty, Finset.image_empty, Finset.ext_iff]
+    simp [Finset.card_singleton, Finset.ext_iff]
 
 lemma scarfAdjRel_v0_max {n : ℕ} {T : Type} [DecidableEq T]
     (i₀ : Fin (n + 1))
@@ -2525,11 +2528,11 @@ lemma scarf_v0_degree_one {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     subst this
     exact Subtype.ext hx_eq
 
-noncomputable def μ' {n : ℕ} {T : Type} (ords : Fin (n + 1) → LinearOrder T)
+def μ' {n : ℕ} {T : Type} (ords : Fin (n + 1) → LinearOrder T)
     (σ : Finset T) (hσne : σ.Nonempty) (i : Fin (n + 1)) : T :=
   @Finset.min' T (ords i) σ hσne
 
-noncomputable def admSet {n : ℕ} {T : Type} [Fintype T]
+def admSet {n : ℕ} {T : Type} [Fintype T]
     (ords : Fin (n + 1) → LinearOrder T) (σ : Finset T)
     (hσne : σ.Nonempty) (CC : Finset (Fin (n + 1))) (i : Fin (n + 1)) : Finset T :=
   Finset.univ.filter fun y =>
@@ -3242,14 +3245,12 @@ lemma degree_two_other_adj {V : Type} [Fintype V] [DecidableEq V]
     ∃ w' : V, w' ≠ w ∧ G.Adj v w' ∧ ∀ u : V, G.Adj v u → u = w ∨ u = w' := by
   have h₁ : (G.neighborFinset v).card = 2 := by
     rw [SimpleGraph.card_neighborFinset_eq_degree]
-    <;> simp [hdeg]
-
+    simp [hdeg]
   have h₂ : ∃ (a b : V), a ≠ b ∧ G.neighborFinset v = {a, b} := by
     rw [Finset.card_eq_two] at h₁
     obtain ⟨a, b, hab, h⟩ := h₁
     refine' ⟨a, b, hab, _⟩
     simp_all [Finset.ext_iff]
-
   obtain ⟨a, b, hab, h₃⟩ := h₂
   have h₄ : w = a ∨ w = b := by
     have h₄₁ : w ∈ G.neighborFinset v := by
@@ -3260,7 +3261,6 @@ lemma degree_two_other_adj {V : Type} [Fintype V] [DecidableEq V]
       exact h₄₁
     simp only [Finset.mem_insert, Finset.mem_singleton] at h₄₂
     tauto
-
   have h₅ : (if w = a then b else a) ≠ w := by
     split_ifs with h
     · intro h₅
@@ -3269,18 +3269,14 @@ lemma degree_two_other_adj {V : Type} [Fintype V] [DecidableEq V]
     · intro h₅
       apply hab
       simp_all
-
   have h₆ : G.Adj v (if w = a then b else a) := by
     have h₆₁ : (if w = a then b else a) ∈ ({a, b} : Finset V) := by
-      split_ifs with h
-      · simp [h]
-      · simp [h]
+      split_ifs with h <;> simp
     have h₆₂ : (if w = a then b else a) ∈ G.neighborFinset v := by
       rw [h₃]
       exact h₆₁
     rw [SimpleGraph.mem_neighborFinset] at h₆₂
     exact h₆₂
-
   have h₇ : ∀ (u : V), G.Adj v u → u = w ∨ u = (if w = a then b else a) := by
     intro u hu
     have h₇₁ : u ∈ G.neighborFinset v := by
@@ -3313,7 +3309,6 @@ lemma degree_two_other_adj {V : Type} [Fintype V] [DecidableEq V]
       | inr h₇₄ =>
         have h₇₅ : u = w := by simp_all
         exact Or.inl h₇₅
-
   have h₈ : ∃ (w' : V), w' ≠ w ∧ G.Adj v w' ∧ ∀ (u : V), G.Adj v u → u = w ∨ u = w' := by
     refine' ⟨if w = a then b else a, _, h₆, _⟩
     · exact h₅
@@ -3578,7 +3573,7 @@ lemma discreteSimplex_numerator_bound {n l : ℕ} (hl : 0 < l)
   rw [div_le_one hl'] at hle
   exact Nat.lt_add_one_iff.mpr (Nat.cast_le.mp hle)
 
-noncomputable def discreteSimplex_encode (n l : ℕ) (hl : 0 < l) :
+def discreteSimplex_encode (n l : ℕ) (hl : 0 < l) :
     DiscreteSimplex n l → (Fin (n + 1) → Fin (l + 1)) :=
   fun ⟨x, hx⟩ i => ⟨(hx i).choose, discreteSimplex_numerator_bound hl x hx i⟩
 
@@ -4144,11 +4139,9 @@ lemma exists_ge_coord_of_simplex_map (n : ℕ)
             -- Use the fact that each f(x)_i < x_i to show that the sum of f(x)_i is less than the sum of x_i
             apply Finset.sum_lt_sum_of_nonempty
             · -- Show that the set of indices is nonempty
-              exact Finset.nonempty_of_ne_empty (by intro h; simp_all [Fin.ext_iff])
+              exact Finset.nonempty_of_ne_empty (by grind)
             · -- Show that each term in the sum is less than the corresponding term in the other sum
-              intro i _
-              specialize h₂ i
-              simp_all [Fin.forall_fin_succ]
+              grind
           exact h₅₂
         _ = ∑ i : Fin (n + 1), (x : Fin (n + 1) → ℝ) i := by rfl
     exact h₅₁
@@ -4355,7 +4348,6 @@ lemma sum_eq_one_of_zero_outside (n : ℕ)
   have h₁ : ∑ i : Fin (n + 1), z i = 1 := by
     have h₂ : ∑ i : Fin (n + 1), z i = 1 := hz.2
     exact h₂
-
   have h₃ : ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i = 0 := by
     calc
       ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i = ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i := rfl
@@ -4371,7 +4363,6 @@ lemma sum_eq_one_of_zero_outside (n : ℕ)
   have h₄ : ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))), z i = ∑ i ∈ C, z i + ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i := by
     have h₅ : ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))), z i = ∑ i ∈ C ∪ ((Finset.univ : Finset (Fin (n + 1))) \ C), z i := by
       congr 1
-      <;>
       simp [Finset.ext_iff]
     rw [h₅]
     have h₆ : C ∪ ((Finset.univ : Finset (Fin (n + 1))) \ C) = C ∪ ((Finset.univ : Finset (Fin (n + 1))) \ C) := rfl
@@ -4379,10 +4370,8 @@ lemma sum_eq_one_of_zero_outside (n : ℕ)
     have h₇ : Disjoint C ((Finset.univ : Finset (Fin (n + 1))) \ C) := by
       simp [Finset.disjoint_left]
     rw [Finset.sum_union h₇]
-
   have h₅ : ∑ i ∈ C, z i = 1 := by
     linarith
-
   exact h₅
 
 lemma sum_compl_eq_zero (n : ℕ)
@@ -4477,7 +4466,7 @@ lemma tendsto_bound_to_zero (n : ℕ) (φ : ℕ → ℕ) (hφ : StrictMono φ) :
     tendsto_natCast_atTop_atTop.comp h2
   exact h3
 
-private theorem brouwer_fixed_point (n : ℕ)
+theorem brouwer_fixed_point (n : ℕ)
     (f : ↑(stdSimplex ℝ (Fin (n + 1))) → ↑(stdSimplex ℝ (Fin (n + 1))))
     (hf : Continuous f) :
     ∃ z : ↑(stdSimplex ℝ (Fin (n + 1))), f z = z := by
