@@ -8,7 +8,6 @@ public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
 public import Mathlib.Data.Int.Star
 public import Mathlib.Data.Nat.Nth
 
-----------------------
 noncomputable section
 
 open Classical
@@ -66,8 +65,7 @@ lemma image_erase_of_injOn {α β : Type*} [DecidableEq α] [DecidableEq β]
   constructor
   · rintro ⟨t, ⟨ht_ne, ht_mem⟩, rfl⟩
     exact ⟨fun h => ht_ne (hinj ht_mem ha h), t, ht_mem, rfl⟩
-  · rintro ⟨hy_ne, t, ht_mem, rfl⟩
-    exact ⟨t, ⟨fun h => hy_ne (by rw [h]), ht_mem⟩, rfl⟩
+  · grind
 
 lemma colorful_room_unique_adj_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -101,16 +99,7 @@ lemma colorful_room_unique_adj_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
   refine ⟨(σ.erase x₀, C), ?_, ?_⟩
   · constructor
     · -- scarfAdjRel
-      constructor
-      · -- neq
-        intro h
-        have h1 : σ = σ.erase x₀ := (Prod.mk.inj h).1
-        have := Finset.notMem_erase x₀ σ
-        rw [← h1] at this
-        exact this hx₀_mem
-      · -- structural
-        left
-        exact ⟨hcard, Or.inl ⟨x₀, hx₀_mem, rfl, rfl⟩⟩
+      constructor <;> grind
     · -- IsScarfVtx
       refine ⟨hC, isDominant_erase ords σ C x₀ hdom, ?_⟩
       right; right
@@ -134,16 +123,9 @@ lemma colorful_room_unique_adj_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
           have hcz_mem : c z ∈ C := hcolor ▸ Finset.mem_image_of_mem c hz_mem
           rcases hvtx_cases with ⟨hc1, hc2⟩ | ⟨_, hc2⟩ | ⟨_, hc2⟩
           · -- Colorful: C = (σ.erase z).image c — contradicts cardinality
-            exfalso
-            rw [hw2_eq, hw1_eq] at hc2
-            rw [hc2, Finset.card_image_of_injOn
-              (hinj.mono (by exact_mod_cast Finset.erase_subset z σ)),
-              Finset.card_erase_of_mem hz_mem] at hcard
-            omega
+            grind
           · -- Nearly colorful: C \ (σ.erase z).image c = {i₀}
-            rw [hw2_eq, hw1_eq, herase_z] at hc2
-            rw [Finset.sdiff_erase_self hcz_mem] at hc2
-            exact Finset.singleton_injective hc2
+            grind
           · -- Door: C \ (σ.erase z).image c = {i₀}
             rw [hw2_eq, hw1_eq, herase_z] at hc2
             rw [Finset.sdiff_erase_self hcz_mem] at hc2
@@ -155,30 +137,15 @@ lemma colorful_room_unique_adj_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
         exfalso
         rcases hvtx_cases with ⟨_, hc2⟩ | ⟨_, hc2⟩ | ⟨_, hc2⟩
         · -- Colorful: w.2 = w.1.image c = σ.image c = C
-          rw [hw1_eq, ← hcolor] at hc2
-          rw [hw2_eq] at hc2
-          exact hj_nmem (hc2 ▸ Finset.mem_insert_self j C)
+          grind
         · -- Nearly colorful: w.2 \ w.1.image c = {i₀}
-          rw [hw1_eq, ← hcolor, hw2_eq] at hc2
-          rw [Finset.insert_sdiff_cancel hj_nmem] at hc2
-          exact hj_nmem (Finset.singleton_injective hc2 ▸ hi₀)
+          grind
         · -- Door: same argument
           rw [hw1_eq, ← hcolor, hw2_eq] at hc2
           rw [Finset.insert_sdiff_cancel hj_nmem] at hc2
           exact hj_nmem (Finset.singleton_injective hc2 ▸ hi₀)
     · -- Second disjunction: w is the room, (σ,C) is obtained from w
-      rcases hadj_sub with ⟨x, hx_mem, hσ_eq, hC_eq⟩ | ⟨i, hi_nmem, hσ_eq, hC_eq⟩
-      · -- σ = w.1.erase x, C = w.2 → |σ| = |C| - 1, contradiction
-        exfalso
-        have hpos : 0 < w.1.card := Finset.card_pos.mpr ⟨x, hx_mem⟩
-        rw [hσ_eq, Finset.card_erase_of_mem hx_mem] at hcard
-        rw [hC_eq, ← hcard_eq_w] at hcard
-        omega
-      · -- σ = w.1, C = insert i w.2 → |C| = |σ| + 1, contradiction
-        exfalso
-        rw [hσ_eq] at hcard
-        rw [hC_eq, Finset.card_insert_of_notMem hi_nmem] at hcard
-        omega
+      grind
 
 /-- isDominant is monotone in C: if σ is dominant w.r.t. C and C ⊆ D, then σ is dominant w.r.t. D.
     This follows directly from the definition: for any y, there exists i ∈ C ⊆ D such that
@@ -208,10 +175,7 @@ lemma adj_insert_of_not_mem {n : ℕ} {T : Type} [DecidableEq T]
     (hcard : σ.card = C.card) (hi₀ : i₀ ∉ C) :
     scarfAdjRel (σ, C) (σ, insert i₀ C) := by
   refine ⟨?_, Or.inl ⟨hcard, Or.inr ⟨i₀, hi₀, rfl, rfl⟩⟩⟩
-  intro h
-  have : (σ, C).2 = (σ, insert i₀ C).2 := by rw [h]
-  simp at this
-  exact hi₀ (this ▸ Finset.mem_insert_self i₀ C)
+  grind
 
 /-- The candidate w = (σ, insert i₀ C) satisfies IsScarfVtx when (σ, C) is a colorful room
     with i₀ ∉ C.
@@ -234,10 +198,7 @@ lemma isScarfVtx_insert_of_not_mem {n : ℕ} {T : Type} [DecidableEq T]
     (hi₀ : i₀ ∉ C) :
     IsScarfVtx ords c i₀ (σ, insert i₀ C) := by
   refine ⟨Finset.insert_nonempty i₀ C, isDominant_mono ords σ C _ hdom (Finset.subset_insert i₀ C), ?_⟩
-  right; right
-  constructor
-  · rw [Finset.card_insert_of_notMem hi₀, hcard]
-  · rw [hcolor]; exact Finset.insert_sdiff_cancel (hcolor ▸ hi₀)
+  grind
 
 lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -283,31 +244,16 @@ lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Fintype T] [Nonempt
       exact Finset.insert_sdiff_cancel (hcolor ▸ hj)
     rcases hvtx_disj with ⟨hcard', _⟩ | ⟨_, hsdiff⟩ | ⟨_, hsdiff⟩
     · rw [hw1, hw2, Finset.card_insert_of_notMem hj] at hcard'; omega
-    · rw [hw1, hw2] at hsdiff
-      rw [hsdiff_j] at hsdiff
-      have hji : j = i₀ := Finset.singleton_injective hsdiff
-      subst hji
-      exact Prod.ext hw1 hw2
+    · grind
     · rw [hw1, hw2] at hsdiff
       rw [hsdiff_j] at hsdiff
       have hji : j = i₀ := Finset.singleton_injective hsdiff
       subst hji
       exact Prod.ext hw1 hw2
   · -- Case 3: second disjunction erase
-    obtain ⟨x', hx', hw1, hw2⟩ := herase'
-    exfalso
-    have hpos : w.1.card ≥ 1 := Finset.card_pos.mpr ⟨x', hx'⟩
-    have h1 : σ.card = w.1.card - 1 := by
-      rw [hw1, Finset.card_erase_of_mem hx']
-    rw [← hw2] at hwcard
-    omega
+    grind
   · -- Case 4: second disjunction insert
-    obtain ⟨j', hj', hw1, hw2⟩ := hinsert'
-    exfalso
-    have h1 : C.card = w.2.card + 1 := by
-      rw [hw2, Finset.card_insert_of_notMem hj']
-    rw [← hw1] at hwcard
-    omega
+    grind
 
 lemma colorful_room_unique_adj {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -334,11 +280,7 @@ lemma degree_one_of_unique_adj_raw {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
   rw [SimpleGraph.degree_eq_one_iff_existsUnique_adj]
   obtain ⟨w₀, ⟨hadj₀, hscarf₀⟩, huniq'⟩ := huniq
   refine ⟨⟨w₀, hscarf₀⟩, (hG v ⟨w₀, hscarf₀⟩).mpr hadj₀, ?_⟩
-  intro w₁ hw₁
-  have hadj₁ := (hG v w₁).mp hw₁
-  have hscarf₁ := w₁.property
-  have : w₁.val = w₀ := huniq' w₁.val ⟨hadj₁, hscarf₁⟩
-  exact Subtype.ext this
+  grind
 
 lemma scarf_degree_colorful_room {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
@@ -362,11 +304,7 @@ lemma nearly_colorful_image_card_cases {n : ℕ} {T : Type} [DecidableEq T]
     (hnearly : C \ σ.image c = {i₀}) :
     (σ.image c).card = σ.card ∨ (σ.image c).card + 1 = σ.card := by
   have h1 : (C \ σ.image c).card = 1 := by grind
-  have h2 : (C ∩ σ.image c).card = σ.card - 1 := by grind
-  have h3 : (σ.image c).card ≥ σ.card - 1 := by grind
-  have h4 : (σ.image c).card ≤ σ.card := by grind
-  have h5 : (σ.image c).card = σ.card ∨ (σ.image c).card + 1 = σ.card := by grind
-  exact h5
+  grind
 
 /-- Given exactly two adjacent Scarf vertex pairs, the degree in the subtype graph is 2.
     Proved by constructing the neighbor finset as {w₁, w₂} and applying Finset.card_pair. -/
@@ -394,15 +332,7 @@ lemma scarf_degree_of_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T
   have hfinset : G.neighborFinset v = {w₁, w₂} := by
     ext w
     simp only [Finset.mem_insert, Finset.mem_singleton, SimpleGraph.mem_neighborFinset]
-    constructor
-    · intro hadj
-      have hadj_raw := (hG v w).mp hadj
-      rcases huniq w.val w.prop hadj_raw with h | h
-      · left; exact Subtype.ext h
-      · right; exact Subtype.ext h
-    · rintro (rfl | rfl)
-      · exact hw₁_adj
-      · exact hw₂_adj
+    constructor <;> grind
   rw [SimpleGraph.degree, hfinset]
   exact Finset.card_pair hw_ne
 
@@ -410,17 +340,9 @@ lemma erase_image_eq_of_duplicate {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1))
     (σ : Finset T)
     (x y : T)
-    (hx : x ∈ σ) (hy : y ∈ σ) (hne : x ≠ y) (hc : c x = c y) :
+    (hy : y ∈ σ) (hne : x ≠ y) (hc : c x = c y) :
     (σ.erase x).image c = σ.image c := by
-  apply Finset.Subset.antisymm
-  · exact Finset.image_mono c (Finset.erase_subset x σ)
-  · intro i hi
-    rw [Finset.mem_image] at hi ⊢
-    obtain ⟨z, hz, rfl⟩ := hi
-    by_cases hzx : z = x
-    · subst hzx
-      exact ⟨y, Finset.mem_erase.mpr ⟨hne.symm, hy⟩, hc.symm⟩
-    · exact ⟨z, Finset.mem_erase.mpr ⟨hzx, hz⟩, rfl⟩
+  grind
 
 -- Key helper: if (σ.image c).card + 1 = σ.card, then c is injective on σ.erase x for
 -- any x ∈ σ where c x = c y for some other y ∈ σ, and erasing preserves image.
@@ -445,7 +367,7 @@ lemma collision_with_uniqueness {n : ℕ} {T : Type} [DecidableEq T]
   -- Prove uniqueness: no third z with c z = c x
   intro z hz hzx hzy hcz
   -- We know (σ.erase x).image c = σ.image c (from erase_image_eq_of_duplicate)
-  have heq := erase_image_eq_of_duplicate c σ x y hx hy hne hc
+  have heq := erase_image_eq_of_duplicate c σ x y hy hne hc
   -- So (σ.erase x).image c has the same cardinality as σ.image c
   -- But σ.erase x contains both y and z (distinct, both mapping to c x)
   -- So there's still a collision in σ.erase x
@@ -479,31 +401,8 @@ lemma noninjective_pair_exists {n : ℕ} {T : Type} [DecidableEq T]
     (σ.erase y).image c = σ.image c := by
   obtain ⟨x, y, hx, hy, hne, hc, huniq⟩ := collision_with_uniqueness c σ himg
   exact ⟨x, y, hx, hy, hne, hc, huniq,
-    erase_image_eq_of_duplicate c σ x y hx hy hne hc,
-    erase_image_eq_of_duplicate c σ y x hy hx hne.symm hc.symm⟩
-
-lemma sdiff_image_erase_card_ge_two {n : ℕ} {T : Type} [DecidableEq T]
-    (c : T → Fin (n + 1))
-    (σ : Finset T) (C : Finset (Fin (n + 1)))
-    (i₀ : Fin (n + 1))
-    (z : T) (hz : z ∈ σ)
-    (hnearly : C \ σ.image c = {i₀})
-    (himg_sub : σ.image c ⊆ C)
-    (hz_unique : c z ∉ (σ.erase z).image c) :
-    (C \ (σ.erase z).image c).card ≥ 2 := by
-  -- The image of (σ.erase z) under c is a subset of σ.image c
-  have heru : (σ.erase z).image c ⊆ σ.image c :=
-    Finset.image_subset_image (Finset.erase_subset z σ)
-  -- Decompose C \ (σ.erase z).image c as disjoint union
-  have hkey : C \ σ.image c ∪ σ.image c \ (σ.erase z).image c = C \ (σ.erase z).image c :=
-    Finset.sdiff_union_sdiff_cancel himg_sub heru
-  have hdisj : Disjoint (C \ σ.image c) (σ.image c \ (σ.erase z).image c) :=
-    Disjoint.mono_right Finset.sdiff_subset disjoint_sdiff_self_left
-  rw [← hkey, Finset.card_union_of_disjoint hdisj]
-  have h1 : (C \ σ.image c).card = 1 := by rw [hnearly]; exact Finset.card_singleton i₀
-  have h2 : 0 < (σ.image c \ (σ.erase z).image c).card :=
-    Finset.card_pos.mpr ⟨c z, Finset.mem_sdiff.mpr ⟨Finset.mem_image_of_mem c hz, hz_unique⟩⟩
-  omega
+    erase_image_eq_of_duplicate c σ x y hy hne hc,
+    erase_image_eq_of_duplicate c σ y x hx hne.symm hc.symm⟩
 
 /-- If C \ σ.image c = {i₀} and |σ.image c| + 1 = |σ| = |C|, then σ.image c ⊆ C.
     From C \ σ.image c = {i₀} we get |C \ σ.image c| = 1. With |C| = |σ| = |σ.image c| + 1,
@@ -520,28 +419,15 @@ lemma image_subset_of_sdiff_singleton {n : ℕ} {T : Type} [DecidableEq T]
     (hnearly : C \ σ.image c = {i₀})
     (himg : (σ.image c).card + 1 = σ.card) :
     σ.image c ⊆ C := by
-  have h₁ : (C \ σ.image c).card + (C ∩ σ.image c).card = C.card := by
-    have h₁₁ : (C \ σ.image c).card + (C ∩ σ.image c).card = C.card := by
-      rw [← Finset.card_sdiff_add_card_inter C (σ.image c)]
-    exact h₁₁
-  have h₂ : (C \ σ.image c).card = 1 := by
-    rw [hnearly]
-    simp [Finset.card_singleton]
-  have h₃ : (C ∩ σ.image c).card = (σ.image c).card := by
-    have h₃₆ : (C ∩ σ.image c).card = (σ.image c).card := by
-      omega
-    exact h₃₆
+  have h₁ : (C \ σ.image c).card + (C ∩ σ.image c).card = C.card := by grind
+  have h₂ : (C \ σ.image c).card = 1 := by grind
+  have h₃ : (C ∩ σ.image c).card = (σ.image c).card := by grind
   have h₄ : C ∩ σ.image c = σ.image c := by
     have h₄₁ : C ∩ σ.image c ⊆ σ.image c := Finset.inter_subset_right
     have h₄₂ : (C ∩ σ.image c).card = (σ.image c).card := h₃
     apply Finset.eq_of_subset_of_card_le h₄₁
     rw [h₄₂]
-  have h₅ : σ.image c ⊆ C := by
-    have h₅₁ : σ.image c ⊆ C ∩ σ.image c := by
-      rw [h₄]
-    have h₅₂ : C ∩ σ.image c ⊆ C := Finset.inter_subset_left
-    exact Finset.Subset.trans h₅₁ h₅₂
-  exact h₅
+  grind
 
 /-- Given a nearly colorful room (σ, C) with non-injective coloring, for any z ∈ σ with
     c z unique in σ (c z ∉ (σ.erase z).image c), we have
@@ -560,7 +446,6 @@ lemma not_scarf_erase_non_colliding_1 {n : ℕ} {T : Type} [DecidableEq T]
   have hc_z_in_image : c z ∈ σ.image c := by grind
   have hc_z_in_C : c z ∈ C := by grind
   have hc_z_in_diff : c z ∈ C \ (σ.erase z).image c := by grind
-  have h_main : ¬ (C \ (σ.erase z).image c = {i₀}) := by grind
   grind
 
 lemma not_scarf_insert_form {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
@@ -576,22 +461,10 @@ lemma not_scarf_insert_form {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Decid
   have hj_not_img : j ∉ σ.image c := fun h => hj (himg_sub h)
   have hsdiff : insert j C \ σ.image c = {i₀, j} := by
     rw [Finset.insert_sdiff_of_notMem _ hj_not_img, hnearly, Finset.pair_comm]
-  have hi0_ne_j : i₀ ≠ j := by
-    intro heq; subst heq
-    have : i₀ ∈ C \ σ.image c := hnearly ▸ Finset.mem_singleton_self i₀
-    exact hj (Finset.mem_sdiff.mp this).1
+  have hi0_ne_j : i₀ ≠ j := by grind
   have hcard2 : (insert j C \ σ.image c).card = 2 := by
     rw [hsdiff, Finset.card_pair hi0_ne_j]
-  have hcard_ins : (insert j C).card = σ.card + 1 := by
-    rw [Finset.card_insert_of_notMem hj, hcard]
-  rcases h_disj with ⟨h1, _⟩ | ⟨h1, _⟩ | ⟨_, h2⟩
-  · have : σ.card = (insert j C).card := h1
-    omega
-  · have : σ.card = (insert j C).card := h1
-    omega
-  · have h2' : insert j C \ σ.image c = {i₀} := h2
-    rw [h2'] at hcard2
-    simp only [Finset.card_singleton] at hcard2; omega
+  grind
 
 /-- Given a nearly colorful room (σ, C) with non-injective coloring and the colliding pair x, y,
     any Scarf vertex q adjacent to (σ, C) must be (σ.erase x, C) or (σ.erase y, C).
@@ -615,8 +488,7 @@ lemma card_erase_ne' {T : Type} [DecidableEq T] {α : Type} [DecidableEq α]
     (σ : Finset T) (C : Finset α) (z : T)
     (hz : z ∈ σ) (hcard : σ.card = C.card) (hC_ne : C.Nonempty) :
     (σ.erase z).card ≠ C.card := by
-  rw [Finset.card_erase_of_mem hz, hcard]
-  have h := hC_ne.card_pos; omega
+  grind
 
 lemma image_card_eq' {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1)) (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -631,15 +503,7 @@ lemma image_erase_eq_of_cover' {T : Type} [DecidableEq T] {β : Type} [Decidable
     (f : T → β) (σ : Finset T) (z : T)
     (w : T) (hw : w ∈ σ.erase z) (hwz : f w = f z) :
     (σ.erase z).image f = σ.image f := by
-  ext b
-  simp only [Finset.mem_image]
-  constructor
-  · rintro ⟨a, ha, hab⟩
-    exact ⟨a, (Finset.mem_erase.mp ha).2, hab⟩
-  · rintro ⟨a, ha, hab⟩
-    by_cases haz : a = z
-    · exact ⟨w, hw, by rw [hwz, ← haz]; exact hab⟩
-    · exact ⟨a, Finset.mem_erase.mpr ⟨haz, ha⟩, hab⟩
+  grind
 
 lemma cz_unique' {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1)) (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -688,10 +552,7 @@ lemma not_scarf_vtx_erase_non_colliding' {n : ℕ} {T : Type} [Fintype T] [Nonem
     hcard hnearly himg_sub
   have hsdiff_ne := not_scarf_erase_non_colliding_1 c σ C i₀ z hz hnearly himg_sub hz_unique
   have hcard_ne := card_erase_ne' σ C z hz hcard hC_ne
-  rcases h with ⟨h1, _⟩ | ⟨h1, _⟩ | ⟨_, h2⟩
-  · exact hcard_ne h1
-  · exact hcard_ne h1
-  · exact hsdiff_ne h2
+  grind
 
 lemma caseB_impossible' {n : ℕ} {T : Type} [DecidableEq T]
     (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -769,30 +630,16 @@ lemma ncr_noninjective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty 
     exact (Finset.notMem_erase x σ) this
   · -- IsScarfVtx p₁
     refine ⟨hC_ne, isDominant_erase ords σ C x hdom, ?_⟩
-    right; right
-    constructor
-    · simp only [Finset.card_erase_of_mem hx]
-      omega
-    · rw [himg_ex, hnearly]
+    grind
   · -- scarfAdjRel (σ, C) p₁
     refine ⟨?_, Or.inl ⟨hcard, Or.inl ⟨x, hx, rfl, rfl⟩⟩⟩
-    intro heq
-    have : σ = σ.erase x := by exact (Prod.mk.inj heq).1
-    have : x ∉ σ := by rw [this]; exact Finset.notMem_erase x σ
-    exact this hx
+    grind
   · -- IsScarfVtx p₂
     refine ⟨hC_ne, isDominant_erase ords σ C y hdom, ?_⟩
-    right; right
-    constructor
-    · simp only [Finset.card_erase_of_mem hy]
-      omega
-    · rw [himg_ey, hnearly]
+    grind
   · -- scarfAdjRel (σ, C) p₂
     refine ⟨?_, Or.inl ⟨hcard, Or.inl ⟨y, hy, rfl, rfl⟩⟩⟩
-    intro heq
-    have : σ = σ.erase y := by exact (Prod.mk.inj heq).1
-    have : y ∉ σ := by rw [this]; exact Finset.notMem_erase y σ
-    exact this hy
+    grind
   · -- Uniqueness
     exact ncr_noninjective_uniqueness ords c i₀ σ C hC_ne hdom hcard hnearly himg
       himg_sub x y hx hy hxy hcxy huniq himg_ex himg_ey
@@ -840,16 +687,9 @@ lemma ncr_injective_unique_y {n : ℕ} {T : Type} [DecidableEq T]
   have hinj : Set.InjOn c ↑σ := Finset.injOn_of_card_image_eq himg
   -- |σ.image c \ C| = 1
   have h_Csdiff : (C \ σ.image c).card = 1 := by rw [hnearly]; exact Finset.card_singleton i₀
-  have h_inter_card : (σ.image c ∩ C).card = C.card - 1 := by
-    have := Finset.card_sdiff_add_card_inter C (σ.image c)
-    rw [Finset.inter_comm] at this; omega
-  have hCpos : 0 < C.card := by
-    have : i₀ ∈ C \ σ.image c := hnearly ▸ Finset.mem_singleton.mpr rfl
-    exact Finset.card_pos.mpr ⟨i₀, (Finset.mem_sdiff.mp this).1⟩
-  have hsdiff_card : (σ.image c \ C).card = 1 := by
-    have h1 := Finset.card_sdiff_add_card_inter (σ.image c) C
-    have h5 : (σ.image c ∩ C).card + 1 = C.card := by omega
-    omega
+  have h_inter_card : (σ.image c ∩ C).card = C.card - 1 := by grind
+  have hCpos : 0 < C.card := by grind
+  have hsdiff_card : (σ.image c \ C).card = 1 := by grind
   -- Get the unique element in σ.image c \ C
   rw [Finset.card_eq_one] at hsdiff_card
   obtain ⟨cy, hcy_eq⟩ := hsdiff_card
@@ -917,7 +757,6 @@ lemma ncr_injective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (hcard : σ.card = C.card)
     (hnearly : C \ σ.image c = {i₀})
     (y : T) (hy : y ∈ σ) (hcy : c y ∉ C)
-    (hsdiff_cy : σ.image c \ C = {c y})
     (huniq : ∀ z ∈ σ, c z ∉ C → z = y)
     (hinj_erase : ∀ x ∈ σ, c x ∉ (σ.erase x).image c) :
     ∀ q : Finset T × Finset (Fin (n + 1)),
@@ -986,13 +825,9 @@ lemma ncr_injective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
                 Finset.card_le_card h_pair_sub
             _ = 2 := Finset.card_pair hcx_ne_i₀.symm
         -- Now show this contradicts IsScarfVtx
-        rcases hqscarf with ⟨_, hq_eq'⟩ | ⟨_, hq_sdiff⟩ | ⟨_, hq_sdiff⟩
-        · simp only at hq_eq'; rw [hq_eq'] at hcard_ge_2; simp at hcard_ge_2
-        · simp only at hq_sdiff; rw [hq_sdiff] at hcard_ge_2; simp at hcard_ge_2
-        · simp only at hq_sdiff; rw [hq_sdiff] at hcard_ge_2; simp at hcard_ge_2
+        grind
       · -- c(x) ∉ C: then x = y by uniqueness
-        have := huniq x hx hcx
-        subst this; left; rfl
+        grind
     · -- Insert case: q = (σ, insert j C)
       simp only at hj hq1 hq2
       have hq_eq : q = (σ, insert j C) := Prod.ext hq1 hq2
@@ -1000,39 +835,14 @@ lemma ncr_injective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       -- Need to show j = c y
       by_cases hj_img : j ∈ σ.image c
       · -- j ∈ σ.image c: since j ∉ C and σ.image c \ C = {c y}, j = c y
-        have : j ∈ σ.image c \ C := Finset.mem_sdiff.mpr ⟨hj_img, hj⟩
-        rw [hsdiff_cy] at this
-        have := Finset.mem_singleton.mp this
-        subst this; right; rfl
+        grind
       · -- j ∉ σ.image c: insert j C \ σ.image c = insert j (C \ σ.image c) has card 2
         exfalso
         have h_sdiff_eq : insert j C \ σ.image c = insert j (C \ σ.image c) :=
           Finset.insert_sdiff_of_notMem _ hj_img
-        rw [hnearly] at h_sdiff_eq
-        have hj_ne_i₀ : j ≠ i₀ := by
-          intro h; subst h; exact hj hi₀C
-        have hcard_2 : (insert j C \ σ.image c).card = 2 := by
-          rw [h_sdiff_eq, Finset.card_insert_of_notMem (by simp [hj_ne_i₀])]
-          simp
-        -- This contradicts IsScarfVtx for q = (σ, insert j C)
-        rcases hqscarf with ⟨_, hq_eq'⟩ | ⟨_, hq_sdiff⟩ | ⟨_, hq_sdiff⟩
-        · simp only at hq_eq'; rw [hq_eq'] at hcard_2; simp at hcard_2
-        · simp only at hq_sdiff; rw [hq_sdiff] at hcard_2; simp at hcard_2
-        · simp only at hq_sdiff; rw [hq_sdiff] at hcard_2; simp at hcard_2
+        grind
   · -- Case B: q is the room, (σ, C) is obtained from q
-    exfalso
-    rcases hB with ⟨x, hx, hσ_eq, hC_eq⟩ | ⟨j, hj, hσ_eq, hC_eq⟩
-    · -- σ = q.1.erase x: |σ| = |q.1| - 1 = |q.2| - 1, but |σ| = |C| and C = q.2
-      simp only at hσ_eq hC_eq
-      have hxpos : 0 < q.1.card := Finset.card_pos.mpr ⟨x, hx⟩
-      rw [hσ_eq, Finset.card_erase_of_mem hx] at hcard
-      rw [← hC_eq] at hBcard
-      omega
-    · -- σ = q.1, C = insert j q.2: |C| = |q.2| + 1 = |q.1| + 1, but |σ| = |C| and σ = q.1
-      simp only at hσ_eq hC_eq
-      rw [hσ_eq] at hcard
-      rw [hC_eq, Finset.card_insert_of_notMem hj] at hcard
-      omega
+    grind
 
 /-- Verifies that (σ.erase y, C) is an IsScarfVtx when y is the unique element with
     c(y) ∉ C, in the injective case.
@@ -1055,31 +865,9 @@ lemma ncr_injective_p1_isScarfVtx {n : ℕ} {T : Type} [DecidableEq T]
     (hcard : σ.card = C.card)
     (hnearly : C \ σ.image c = {i₀})
     (himg : (σ.image c).card = σ.card)
-    (y : T) (hy : y ∈ σ) (hcy : c y ∉ C)
-    (hinj_erase : c y ∉ (σ.erase y).image c) :
+    (y : T) (hy : y ∈ σ) (hcy : c y ∉ C) :
     IsScarfVtx ords c i₀ (σ.erase y, C) := by
-  refine ⟨hnonempty_C, isDominant_erase ords σ C y hdom, Or.inr (Or.inr ⟨?_, ?_⟩)⟩
-  · -- C.card = (σ.erase y).card + 1
-    show C.card = (σ.erase y).card + 1
-    have h1 := Finset.card_erase_of_mem hy
-    have hσpos : 0 < σ.card := Finset.card_pos.mpr ⟨y, hy⟩
-    omega
-  · -- C \ (σ.erase y).image c = {i₀}
-    show C \ Finset.image c (σ.erase y) = {i₀}
-    have hsub : Finset.image c (σ.erase y) ⊆ Finset.image c σ :=
-      Finset.image_mono c (Finset.erase_subset y σ)
-    have hkey : ∀ j ∈ C, (j ∈ Finset.image c σ ↔ j ∈ Finset.image c (σ.erase y)) := by
-      intro j hj
-      constructor
-      · intro hjimg
-        rw [Finset.mem_image] at hjimg ⊢
-        obtain ⟨x, hx, rfl⟩ := hjimg
-        exact ⟨x, Finset.mem_erase.mpr ⟨by intro h; subst h; exact hcy hj, hx⟩, rfl⟩
-      · exact fun h => hsub h
-    rw [← hnearly]; ext j; simp only [Finset.mem_sdiff]
-    constructor
-    · intro ⟨hj, hj'⟩; exact ⟨hj, fun h => hj' ((hkey j hj).mp h)⟩
-    · intro ⟨hj, hj'⟩; exact ⟨hj, fun h => hj' (hsub h)⟩
+  refine ⟨hnonempty_C, isDominant_erase ords σ C y hdom, Or.inr (Or.inr ⟨?_, ?_⟩)⟩ <;> grind
 
 /-- Verifies that (σ, insert (c y) C) is an IsScarfVtx when y is the unique element
     with c(y) ∉ C, in the injective case.
@@ -1131,31 +919,22 @@ lemma ncr_injective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
   -- Step 2: Define the two candidates
   refine ⟨(σ.erase y, C), (σ, insert (c y) C), ?_, ?_, ?_, ?_, ?_, ?_⟩
   · -- p₁ ≠ p₂: first components differ since y ∈ σ
-    intro heq
-    have h1 : (σ.erase y, C).1 = (σ, insert (c y) C).1 := congr_arg Prod.fst heq
-    simp at h1
-    exact h1 hy
+    grind
   · -- IsScarfVtx for p₁
     exact ncr_injective_p1_isScarfVtx ords c i₀ σ C hnonempty_C hdom hcard hnearly himg
-      y hy hcy (hinj_erase y hy)
+      y hy hcy
   · -- scarfAdjRel for p₁ = (σ.erase y, C)
     refine ⟨?_, Or.inl ⟨hcard, Or.inl ⟨y, hy, rfl, rfl⟩⟩⟩
-    intro heq
-    have h1 := (Prod.ext_iff.mp heq).1
-    simp at h1
-    exact Finset.notMem_erase y σ (h1 ▸ hy)
+    grind
   · -- IsScarfVtx for p₂
     exact ncr_injective_p2_isScarfVtx ords c i₀ σ C hdom hcard hnearly
       y hy hcy
   · -- scarfAdjRel for p₂ = (σ, insert (c y) C)
     refine ⟨?_, Or.inl ⟨hcard, Or.inr ⟨c y, hcy, rfl, rfl⟩⟩⟩
-    intro heq
-    have h1 := (Prod.ext_iff.mp heq).2
-    simp at h1
-    exact hcy (h1 ▸ Finset.mem_insert_self (c y) C)
+    grind
   · -- Uniqueness
     exact ncr_injective_uniqueness ords c i₀ σ C hcard hnearly
-      y hy hcy hsdiff_cy huniq hinj_erase
+      y hy hcy huniq hinj_erase
 
 lemma scarf_degree_ncr_case_injective {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
@@ -1202,9 +981,7 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (hnearly : v.val.2 \ v.val.1.image c = {i₀})
     (hempty : v.val.1 = ∅) :
     G.degree v = 1 := by
-  have hC : v.val.2 = {i₀} := by
-    have : v.val.1.image c = ∅ := by simp [hempty]
-    rw [this] at hnearly; simp at hnearly; exact hnearly
+  have hC : v.val.2 = {i₀} := by grind
   have hv_not_room : v.val.1.card ≠ v.val.2.card := by
     rw [hempty, hC]; simp
   -- Any neighbor w must have w.val = ({x}, {i₀}) for some x
@@ -1273,10 +1050,7 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     rw [hG]
     constructor
     · -- v.val ≠ w_max.val
-      intro heq
-      have : (∅ : Finset T) = {x_max} := by
-        have := congr_arg Prod.fst heq; simp [hempty] at this; exact this
-      exact absurd this (by simp)
+      grind
     · -- scarfAdjRel structural part
       right; constructor
       · -- w_max is a room: ({x_max} : Finset T).card = ({i₀} : Finset (Fin (n+1))).card
@@ -1378,24 +1152,10 @@ lemma ordMin_collision_unique {n : ℕ} {T : Type} [DecidableEq T]
       ({c, d} : Finset (Fin (n + 1))) = {a, b} := by
   have himg_erase : Finset.image (ordMin ords τ hne) (D.erase b) = τ := by
     have hfull := ordMin_image_eq_tau ords τ D hne hdom
-    ext t
-    simp only [Finset.mem_image, Finset.mem_erase]
-    constructor
-    · rintro ⟨i, ⟨_, _⟩, rfl⟩
-      exact ordMin_mem ords τ hne i
-    · intro ht
-      rw [← hfull] at ht
-      simp only [Finset.mem_image] at ht
-      obtain ⟨i, hi, rfl⟩ := ht
-      by_cases hib : i = b
-      · exact ⟨a, ⟨fun h => hab (h ▸ rfl), ha⟩, by rw [heq, hib]⟩
-      · exact ⟨i, ⟨hib, hi⟩, rfl⟩
+    grind
   have hcard_erase : (D.erase b).card = τ.card := by
     rw [Finset.card_erase_of_mem hb]; omega
-  have hinj : Set.InjOn (ordMin ords τ hne) ↑(D.erase b) := by
-    rw [← Finset.card_image_iff]
-    rw [himg_erase]
-    exact hcard_erase.symm
+  have hinj : Set.InjOn (ordMin ords τ hne) ↑(D.erase b) := by grind
   have ha_erase : a ∈ D.erase b := Finset.mem_erase.mpr ⟨fun h => hab (h ▸ rfl), ha⟩
   intro c hc d hd hcd hcd_eq
   by_cases hcb : c = b
@@ -1515,10 +1275,7 @@ lemma erase_eq_image_of_eq_i₀ {n : ℕ} {T : Type} [DecidableEq T]
     have hx' : x ∈ D.erase i₀ \ τ.image c := Finset.mem_sdiff.mpr ⟨hx, hxnot⟩
     rw [Finset.erase_sdiff_comm, hnearly] at hx'
     simp at hx'
-  have hcard : (τ.image c).card ≤ (D.erase i₀).card := by
-    rw [Finset.card_erase_of_mem hiD, hdoor]
-    have := Finset.card_image_le (s := τ) (f := c)
-    omega
+  have hcard : (τ.image c).card ≤ (D.erase i₀).card := by grind
   exact (Finset.eq_of_superset_of_card_ge hsub hcard).symm
 
 lemma erase_sdiff_image_eq_singleton {n : ℕ} {T : Type} [DecidableEq T]
@@ -1528,8 +1285,7 @@ lemma erase_sdiff_image_eq_singleton {n : ℕ} {T : Type} [DecidableEq T]
     (hne : i ≠ i₀)
     (hnearly : D \ τ.image c = {i₀}) :
     (D.erase i) \ τ.image c = {i₀} := by
-  rw [Finset.erase_sdiff_comm, hnearly]
-  exact Finset.erase_eq_of_notMem (Finset.notMem_singleton.mpr hne)
+  grind
 
 lemma isScarfVtx_erase_case {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -1551,34 +1307,26 @@ lemma isScarfVtx_erase_case {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Decid
   · right; left
     exact ⟨hcard_erase.symm, erase_sdiff_image_eq_singleton c τ D i i₀ h hnearly⟩
 
-set_option maxRecDepth 5000 in
 lemma scarfAdjRel_erase {n : ℕ} {T : Type} [DecidableEq T]
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdoor : D.card = τ.card + 1)
     (i : Fin (n + 1)) (hiD : i ∈ D) :
     scarfAdjRel (τ, D) (τ, D.erase i) := by
-  have h_ne : (τ, D) ≠ (τ, D.erase i) := by grind
-  have h_card : (D.erase i).card = τ.card := by grind
   have h_i_not_in_erase : i ∉ D.erase i := by grind
-  have h_insert_erase : D = insert i (D.erase i) := by grind
-  have h_main : scarfAdjRel (τ, D) (τ, D.erase i) := by grind [=scarfAdjRel]
-  exact h_main
+  grind [=scarfAdjRel]
 
 lemma not_lt_ordMin_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
     (hnonempty : τ.Nonempty)
-    (i : Fin (n + 1)) (hiD : i ∈ D)
+    (i : Fin (n + 1))
     (x : T) (hx_in_Mi : ∀ k ∈ D.erase i, (ords k).lt (ordMin ords τ hnonempty k) x) :
     ¬ (ords i).lt (ordMin ords τ hnonempty i) x := by
   intro hcontra
   obtain ⟨k, hkD, hk⟩ := hdom x
   have hmin_mem := ordMin_mem ords τ hnonempty k
-  have hnotlt := hk (ordMin ords τ hnonempty k) hmin_mem
-  by_cases hki : k = i
-  · subst hki; exact hnotlt hcontra
-  · exact hnotlt (hx_in_Mi k (Finset.mem_erase.mpr ⟨hki, hkD⟩))
+  grind
 
 lemma ordMin_eq_of_mem_of_not_lt {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
@@ -1624,14 +1372,7 @@ lemma isDominant_insert_case1 {n : ℕ} {T : Type} [DecidableEq T]
     (hk₀_τ : ∀ z ∈ τ, ¬ (ords k₀).lt z y)
     (hk₀_x : ¬ (ords k₀).lt x y) :
     ∀ z ∈ insert x τ, ¬ (ords k₀).lt z y := by
-  intro z hz
-  have h : z = x ∨ z ∈ τ := by simpa using hz
-  cases h with
-  | inl h =>
-    rw [h]
-    exact hk₀_x
-  | inr h =>
-    exact hk₀_τ z h
+  grind
 
 lemma case2_k0_eq_i {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
@@ -1781,14 +1522,7 @@ lemma scarfAdjRel_insert {n : ℕ} {T : Type} [DecidableEq T]
     (hdoor : D.card = τ.card + 1)
     (x : T) (hx_not_mem : x ∉ τ) :
     scarfAdjRel (τ, D) (insert x τ, D) := by
-  refine ⟨?_, Or.inr ⟨?_, Or.inl ⟨x, Finset.mem_insert_self x τ, ?_, rfl⟩⟩⟩
-  · intro h
-    have : τ = (insert x τ, D).1 := congr_arg Prod.fst h
-    simp at this
-    exact hx_not_mem (this ▸ Finset.mem_insert_self x τ)
-  · rw [Finset.card_insert_of_notMem hx_not_mem]
-    exact hdoor.symm
-  · exact (Finset.erase_insert hx_not_mem).symm
+  refine ⟨?_, Or.inr ⟨?_, Or.inl ⟨x, Finset.mem_insert_self x τ, ?_, rfl⟩⟩⟩ <;> grind
 
 /-- For each i ∈ {a, b} (the colliding pair), exactly one of two cases holds:
     (1) M_i = ∅ (no y strictly above all ordMin k for k ∈ D \ {i}), giving neighbor (τ, D.erase i)
@@ -1844,7 +1578,7 @@ lemma scarf_neighbor_from_collision_index {n : ℕ} {T : Type} [Fintype T] [None
       have hy_mem : y ∈ Mi := Finset.mem_filter.mpr ⟨Finset.mem_univ y, hy⟩
       have hle := @Finset.le_max' T (ords i) Mi y hy_mem
       exact absurd hlt (@not_lt_of_ge T (ords i).toPreorder y mi hle)
-    have hmi_not_lt := not_lt_ordMin_of_max_Mi ords τ D hdom hnonempty i hiD mi hmi_in_Mi
+    have hmi_not_lt := not_lt_ordMin_of_max_Mi ords τ D hdom hnonempty i mi hmi_in_Mi
     have hmi_not_mem := not_mem_tau_of_max_Mi ords τ D hnonempty a b ha hb hab hcoll
       i hi mi hmi_in_Mi hmi_not_lt
     have hdom_ins := isDominant_insert_of_max_Mi ords τ D hdom hnonempty i hiD mi
@@ -1874,10 +1608,7 @@ lemma insert_elements_ne_of_collision {n : ℕ} {T : Type}
     (hx₂_lt : ∀ k ∈ D.erase b, (ords k).lt (ordMin ords τ hnonempty k) x₂)
     (_hx₂_not : ¬ (ords b).lt (ordMin ords τ hnonempty b) x₂) :
     x₁ ≠ x₂ := by
-  intro heq
-  subst heq
-  have ha_mem : a ∈ D.erase b := Finset.mem_erase.mpr ⟨hab, ha⟩
-  exact hx₁_not (hx₂_lt a ha_mem)
+  grind
 
 lemma scarf_two_neighbors_distinct {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
@@ -2022,10 +1753,7 @@ lemma insert_dominant_gives_ordMin_conditions {n : ℕ} {T : Type} [Fintype T] [
   set f := ordMin ords (insert x τ) hne' with hf_def
   have hsurj : ∀ t ∈ insert x τ, ∃ i ∈ D, f i = t :=
     fun t ht => ordMin_surj_on_tau ords (insert x τ) D hne' hdom_ins t ht
-  have himg_supset : insert x τ ⊆ D.image f := by
-    intro t ht
-    obtain ⟨i, hiD, hfi⟩ := hsurj t ht
-    exact Finset.mem_image.mpr ⟨i, hiD, hfi⟩
+  have himg_supset : insert x τ ⊆ D.image f := by grind
   have himg_subset : D.image f ⊆ insert x τ := by
     intro t ht
     rw [Finset.mem_image] at ht
@@ -2112,15 +1840,7 @@ lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] [Decidab
     intro t ht
     have ht_ins : t ∈ insert x τ := Finset.mem_insert_of_mem ht
     obtain ⟨j, hj_mem, hj_eq⟩ := ordMin_surj_on_tau ords (insert x τ) D hne_ins hdom_ins t ht_ins
-    have hj_ne_i : j ≠ i := by
-      intro hje
-      rw [hje] at hj_eq
-      rw [← hjx_eq_i] at hj_eq
-      rw [hjx_eq] at hj_eq
-      exact hx (hj_eq ▸ ht)
-    have hj_ei : j ∈ D.erase i := Finset.mem_erase.mpr ⟨hj_ne_i, hj_mem⟩
-    rw [hordMin_eq j hj_ei] at hj_eq
-    exact Finset.mem_image.mpr ⟨j, hj_ei, hj_eq⟩
+    grind
   have ha_ei : a ∈ D.erase i := Finset.mem_erase.mpr ⟨hia.symm, ha⟩
   have hb_ei : b ∈ D.erase i := Finset.mem_erase.mpr ⟨hib.symm, hb⟩
   have hcard_ei : (D.erase i).card = τ.card := by
@@ -2468,12 +2188,8 @@ lemma max_isScarfVtx {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq 
     IsScarfVtx ords c i₀ ({x_max}, {i₀}) := by
   refine ⟨Finset.singleton_nonempty _, ?_, ?_⟩
   · intro y
-    exact ⟨i₀, Finset.mem_singleton_self _, fun x hx => by
-      rw [Finset.mem_singleton] at hx; subst hx; exact hmax y⟩
-  · by_cases h : c x_max = i₀
-    · left; exact ⟨by simp, by simp [h]⟩
-    · right; left
-      exact ⟨by simp, by simp [Finset.sdiff_eq_filter, Finset.filter_singleton, Ne.symm h]⟩
+    exact ⟨i₀, Finset.mem_singleton_self _, fun x hx => by grind⟩
+  · grind
 
 lemma scarf_v0_degree_one {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
@@ -2542,16 +2258,12 @@ lemma admSet_disjoint {n : ℕ} {T : Type} [Fintype T]
     (σ : Finset T) (CC : Finset (Fin (n + 1)))
     (hσne : σ.Nonempty)
     (hDom : isDominant ords σ CC)
-    (a b : Fin (n + 1)) (ha : a ∈ CC) (hab : a ≠ b) :
+    (a b : Fin (n + 1)) (hab : a ≠ b) :
     Disjoint (admSet ords σ hσne CC a) (admSet ords σ hσne CC b) := by
   simp only [admSet]
   rw [Finset.disjoint_filter]
   intro y _ hya hyb
-  have : ∀ k ∈ CC, (ords k).lt (μ' ords σ hσne k) y := by
-    intro k hk
-    by_cases hka : k = a
-    · rw [hka]; exact hyb a (Finset.mem_erase.mpr ⟨hab, ha⟩)
-    · exact hya k (Finset.mem_erase.mpr ⟨hka, hk⟩)
+  have : ∀ k ∈ CC, (ords k).lt (μ' ords σ hσne k) y := by grind
   obtain ⟨i, hi, hmin⟩ := hDom y
   exact hmin _ (@Finset.min'_mem T (ords i) σ hσne) (this i hi)
 
@@ -2570,8 +2282,7 @@ lemma isDominant_erase_of_admSet_empty {n : ℕ} {T : Type} [Fintype T]
   intro y
   have hy : y ∉ admSet ords σ hσne CC i := by rw [hempty]; exact Finset.notMem_empty _
   simp only [admSet, Finset.mem_filter, Finset.mem_univ, true_and] at hy
-  have hy' : ∃ k ∈ CC.erase i, ¬(ords k).lt (μ' ords σ hσne k) y := by
-    by_contra hall; apply hy; push_neg at hall; exact hall
+  have hy' : ∃ k ∈ CC.erase i, ¬(ords k).lt (μ' ords σ hσne k) y := by grind
   obtain ⟨k, hk, hle⟩ := hy'
   exact ⟨k, hk, fun x hx hxy =>
     hle (@lt_of_le_of_lt T (ords k).toPreorder _ _ _
@@ -2657,11 +2368,7 @@ lemma isDominant_insert_of_admSet_max {n : ℕ} {T : Type} [Fintype T] [Decidabl
   · have hμi_lt : (ords i).lt (μ' ords σ hσne i) y :=
       @lt_of_le_of_lt T (ords i).toPreorder _ _ _
         (@Finset.min'_le T (ords i) σ x hx) hlt_i
-    have hall : ∀ k ∈ CC, (ords k).lt (μ' ords σ hσne k) y := by
-      intro k hk
-      by_cases hki : k = i
-      · rw [hki]; exact hμi_lt
-      · exact h_adm_y k (Finset.mem_erase.mpr ⟨hki, hk⟩)
+    have hall : ∀ k ∈ CC, (ords k).lt (μ' ords σ hσne k) y := by grind
     obtain ⟨k, hk, hmin⟩ := hDom y
     exact hmin _ (@Finset.min'_mem T (ords k) σ hσne) (hall k hk)
 
@@ -2769,21 +2476,6 @@ lemma isScarfVtx_insert {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     exact ⟨hcard, Finset.eq_singleton_iff_nonempty_unique_mem.mpr
         ⟨h, fun x hx => Finset.mem_singleton.mp (hsub hx)⟩⟩
 
-/-- If c(x) = c(y) with x ≠ y both in σ, then (σ.erase x).image c = σ.image c.
-    Erasing x doesn't remove c(x) from the image since y still witnesses c(x) = c(y).
-    Uses `Finset.ext_iff`, `Finset.mem_image`, `Finset.mem_erase`.
-    No direct Mathlib equivalent. -/
-lemma image_erase_of_collision {T : Type} [DecidableEq T] {n : ℕ}
-    (σ : Finset T) (c : T → Fin (n + 1))
-    (x y : T) (hx : x ∈ σ) (hy : y ∈ σ) (hxy : x ≠ y) (hcxy : c x = c y) :
-    (σ.erase x).image c = σ.image c := by
-  ext j; simp only [Finset.mem_image]; constructor
-  · rintro ⟨a, ha, rfl⟩; exact ⟨a, (Finset.mem_erase.mp ha).2, rfl⟩
-  · rintro ⟨a, ha, rfl⟩
-    by_cases hax : a = x
-    · subst hax; exact ⟨y, Finset.mem_erase.mpr ⟨hxy.symm, hy⟩, hcxy.symm⟩
-    · exact ⟨a, Finset.mem_erase.mpr ⟨hax, ha⟩, rfl⟩
-
 /-- If c is injective on σ and y ∈ σ, then (σ.erase y).image c = (σ.image c).erase (c y).
     Uses `Set.InjOn c ↑σ` to ensure c(y) is uniquely realized by y.
     No direct Mathlib equivalent. -/
@@ -2805,19 +2497,7 @@ lemma sdiff_erase_of_not_mem {α : Type} [DecidableEq α]
     (CC Im : Finset α) (i₀ j : α) (hj : j ∉ CC)
     (h : CC \ Im = {i₀}) :
     CC \ Im.erase j = {i₀} := by
-  ext x; constructor
-  · intro hx
-    rw [Finset.mem_sdiff] at hx
-    rw [Finset.mem_singleton]
-    have hxIm : x ∉ Im := fun hi =>
-      hx.2 (Finset.mem_erase.mpr ⟨fun hxj => hj (hxj ▸ hx.1), hi⟩)
-    have : x ∈ CC \ Im := Finset.mem_sdiff.mpr ⟨hx.1, hxIm⟩
-    rwa [h, Finset.mem_singleton] at this
-  · intro hx
-    rw [Finset.mem_singleton] at hx; rw [hx, Finset.mem_sdiff]
-    have hmem : _ ∈ CC \ Im := h ▸ Finset.mem_singleton_self _
-    exact ⟨(Finset.mem_sdiff.mp hmem).1, fun he =>
-      (Finset.mem_sdiff.mp hmem).2 (Finset.mem_of_mem_erase he)⟩
+  grind
 
 /-- If CC \ Im = {i₀} and j ∈ Im, then (insert j CC) \ Im = {i₀}.
     Uses `Finset.insert_sdiff_of_mem : a ∈ t → insert a s \ t = s \ t`. -/
@@ -2914,15 +2594,7 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
           rw [Finset.card_erase_of_mem ha]; omega
       have hadj_b : scarfAdjRel v.val (insert m_b σ, CC) := by
         rw [hv]; show scarfAdjRel (σ, CC) (insert m_b σ, CC)
-        refine ⟨?_, Or.inr ⟨?_, Or.inl ⟨m_b, Finset.mem_insert_self _ _, ?_, rfl⟩⟩⟩
-        · intro h
-          have h1 : σ = insert m_b σ := congr_arg Prod.fst h
-          have : m_b ∈ σ := by rw [h1]; exact Finset.mem_insert_self _ _
-          exact hm_b_not_σ this
-        · show (insert m_b σ).card = CC.card
-          rw [Finset.card_insert_of_notMem hm_b_not_σ]; omega
-        · show σ = (insert m_b σ).erase m_b
-          rw [Finset.erase_insert hm_b_not_σ]
+        refine ⟨?_, Or.inr ⟨?_, Or.inl ⟨m_b, Finset.mem_insert_self _ _, ?_, rfl⟩⟩⟩ <;> grind
       have hdist : (⟨(σ, CC.erase a), hvtx_a⟩ : {p // IsScarfVtx ords c i₀ p}) ≠
                    ⟨(insert m_b σ, CC), hvtx_b⟩ := by
         intro h
@@ -2992,7 +2664,7 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
       -- m_a ≠ m_b because admSet(a) ∩ admSet(b) = ∅
       have hm_ne : m_a ≠ m_b := by
         intro heq
-        have hdisj := admSet_disjoint ords σ CC hσne hDom a b ha hab
+        have hdisj := admSet_disjoint ords σ CC hσne hDom a b hab
         exact Finset.disjoint_iff_ne.mp hdisj m_a hm_a_mem m_b hm_b_mem heq
       have hadj_a : scarfAdjRel v.val (insert m_a σ, CC) := by
         rw [hv]; show scarfAdjRel (σ, CC) (insert m_a σ, CC)
@@ -3127,22 +2799,10 @@ lemma scarf_degree_one_is_colorful {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       obtain ⟨x, hx, y, hy, hxy, hcxy⟩ := this
       have hvtx1 : IsScarfVtx ords c i₀ (σ.erase x, CC) := by
         refine ⟨hCne, isDominant_subset ords σ _ CC (Finset.erase_subset x σ) hDom, ?_⟩
-        right; right
-        constructor
-        · show CC.card = (σ.erase x).card + 1
-          have h1 := Finset.card_erase_of_mem hx
-          have hpos : 0 < σ.card := Finset.card_pos.mpr ⟨x, hx⟩
-          omega
-        · rw [image_erase_of_collision σ c x y hx hy hxy hcxy]; exact hnear
+        grind
       have hvtx2 : IsScarfVtx ords c i₀ (σ.erase y, CC) := by
         refine ⟨hCne, isDominant_subset ords σ _ CC (Finset.erase_subset y σ) hDom, ?_⟩
-        right; right
-        constructor
-        · show CC.card = (σ.erase y).card + 1
-          have h1 := Finset.card_erase_of_mem hy
-          have hpos : 0 < σ.card := Finset.card_pos.mpr ⟨y, hy⟩
-          omega
-        · rw [image_erase_of_collision σ c y x hy hx hxy.symm hcxy.symm]; exact hnear
+        grind
       have hadj1 : scarfAdjRel v.val (σ.erase x, CC) := by
         show scarfAdjRel (σ, CC) (σ.erase x, CC)
         refine ⟨?_, Or.inl ⟨hcard, Or.inl ⟨x, hx, rfl, rfl⟩⟩⟩
@@ -3253,40 +2913,8 @@ lemma degree_two_other_adj {V : Type} [Fintype V] [DecidableEq V]
     have h₇₁ : u ∈ G.neighborFinset v := by
       rw [SimpleGraph.mem_neighborFinset]
       exact hu
-    have h₇₂ : u ∈ ({a, b} : Finset V) := by
-      rw [h₃] at h₇₁
-      exact h₇₁
-    have h₇₃ : u = a ∨ u = b := by
-      simp only [Finset.mem_insert, Finset.mem_singleton] at h₇₂
-      tauto
-    cases h₇₃ with
-    | inl h₇₃ =>
-      have h₇₄ : w = a ∨ w = b := h₄
-      cases h₇₄ with
-      | inl h₇₄ =>
-        have h₇₅ : u = w := by simp_all
-        exact Or.inl h₇₅
-      | inr h₇₄ =>
-        have h₇₇ : u = (if w = a then b else a) := by
-          simp_all
-        exact Or.inr h₇₇
-    | inr h₇₃ =>
-      have h₇₄ : w = a ∨ w = b := h₄
-      cases h₇₄ with
-      | inl h₇₄ =>
-        have h₇₆ : u = (if w = a then b else a) := by
-          simp_all
-        exact Or.inr h₇₆
-      | inr h₇₄ =>
-        have h₇₅ : u = w := by simp_all
-        exact Or.inl h₇₅
-  have h₈ : ∃ (w' : V), w' ≠ w ∧ G.Adj v w' ∧ ∀ (u : V), G.Adj v u → u = w ∨ u = w' := by
-    refine' ⟨if w = a then b else a, _, h₆, _⟩
-    · exact h₅
-    · intro u hu
-      have h₈₁ : u = w ∨ u = (if w = a then b else a) := h₇ u hu
-      tauto
-  exact h₈
+    grind
+  grind
 
 lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
@@ -3415,28 +3043,6 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
           linarith [Finset.card_le_card hsub]
         have := hdeg w
         omega
-
-lemma ncard_neighborSet_eq_degree {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj] (v : V) :
-    (G.neighborSet v).ncard = G.degree v := by
-  rw [Set.ncard_eq_toFinset_card', ← SimpleGraph.card_neighborFinset_eq_degree,
-      SimpleGraph.neighborFinset_def]
-
--- Helper: two distinct neighbors implies degree ≥ 2
-
-lemma degree_ge_two_of_adj {V : Type} [Fintype V] [DecidableEq V]
-    (G : SimpleGraph V) [DecidableRel G.Adj]
-    (v a b : V) (ha : G.Adj v a) (hb : G.Adj v b) (hab : a ≠ b) :
-    2 ≤ G.degree v := by
-  have ha_mem : a ∈ G.neighborFinset v := (G.mem_neighborFinset v a).mpr ha
-  have hb_mem : b ∈ G.neighborFinset v := (G.mem_neighborFinset v b).mpr hb
-  have hsub : {a, b} ⊆ G.neighborFinset v := by
-    intro x hx; simp only [Finset.mem_insert, Finset.mem_singleton] at hx
-    rcases hx with rfl | rfl <;> assumption
-  calc G.degree v = (G.neighborFinset v).card := by
-        rw [SimpleGraph.card_neighborFinset_eq_degree]
-    _ ≥ ({a, b} : Finset V).card := Finset.card_le_card hsub
-    _ = 2 := by simp [hab]
 
 lemma degree_one_two_path_aux {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
@@ -3751,13 +3357,7 @@ lemma construct_simplex_point (n : ℕ)
   show (fun i => (if i ∈ C then v i else 0) + (if i = (0 : Fin (n + 1)) then 1 - C.sum v else 0)) ∈ stdSimplex ℝ (Fin (n + 1))
   refine ⟨fun i => ?_, ?_⟩
   · -- Nonneg
-    by_cases hiC : i ∈ C <;> by_cases hi0 : i = (0 : Fin (n + 1))
-    · subst hi0; simp [hiC]
-      have := hv_nonneg 0 hiC
-      linarith
-    · simp [hiC, hi0]; exact hv_nonneg i hiC
-    · subst hi0; simp [hiC]; linarith
-    · simp [hiC, hi0]
+    grind
   · -- Sum = 1
     rw [Finset.sum_add_distrib]
     have h1 : ∑ i : Fin (n + 1), (if i ∈ C then v i else 0) = C.sum v := by
