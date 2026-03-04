@@ -1,12 +1,34 @@
 module
 
-public import Mathlib.Algebra.Order.Ring.Star
-public import Mathlib.Analysis.Convex.PartitionOfUnity
 public import Mathlib.Analysis.InnerProductSpace.Basic
 public import Mathlib.Analysis.RCLike.Lemmas
-public import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
-public import Mathlib.Data.Int.Star
-public import Mathlib.Data.Nat.Nth
+
+import Mathlib.Algebra.Order.Ring.Star
+import Mathlib.Analysis.Convex.PartitionOfUnity
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
+import Mathlib.Data.Int.Star
+import Mathlib.Data.Nat.Nth
+
+/-!
+# Schauder's fixed point theorem
+This file contains an auto-formalisation of Schauder's fixed point theorem, a generalisation of
+Brouwer's fixed point theorem stating that every continuous map from a nonempty compact convex
+subset of a Hausdorff locally convex topological vector space to itself has at least one fixed
+point.
+
+All declarations used in the proof are kept private; the only three public declarations of this
+file are:
+* `FiniteDimensional.locallyConvexSpace`, an instance showing that Schauder's theorem applies in
+  particular in finite-dimensional Hausdorff topological vector spaces and hence generalises
+  Brouwer's theorem,
+* `Continuous.exists_fixedPt_of_isConvex_isCompact`, Schauder's theorem stated in terms of
+  continuous maps between subtypes,
+* `ContinuousOn.exists_fixedPt_of_isConvex_isCompact`, Schauder's theorem stated in terms of
+  `ContinuousOn` and `Set.MapsTo`.
+
+The formalisation is based on https://arxiv.org/abs/1902.00827 and
+https://planetmath.org/proofofschauderfixedpointtheorem.
+-/
 
 noncomputable section
 
