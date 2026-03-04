@@ -34,8 +34,6 @@ noncomputable section
 
 open Classical
 
-set_option linter.style.longLine false
-
 def isDominant {n : ℕ} {T : Type}
     (ords : Fin (n + 1) → LinearOrder T)
     (σ : Finset T) (C : Finset (Fin (n + 1))) : Prop :=
@@ -219,7 +217,7 @@ lemma isScarfVtx_insert_of_not_mem {n : ℕ} {T : Type} [DecidableEq T]
     (hdom : isDominant ords σ C) (_hC : C.Nonempty)
     (hi₀ : i₀ ∉ C) :
     IsScarfVtx ords c i₀ (σ, insert i₀ C) := by
-  refine ⟨Finset.insert_nonempty i₀ C, isDominant_mono ords σ C _ hdom (Finset.subset_insert i₀ C), ?_⟩
+  use Finset.insert_nonempty i₀ C, isDominant_mono ords σ C _ hdom (Finset.subset_insert i₀ C)
   grind
 
 lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
@@ -371,7 +369,8 @@ lemma erase_image_eq_of_duplicate {n : ℕ} {T : Type} [DecidableEq T]
 -- This means (σ.erase x).card = (σ.erase x).image c.card = σ.image c.card = σ.card - 1.
 -- If there were a third z with c z = c x, then σ.erase x would still have a collision
 -- (between y and z), so its image would have < |σ.erase x| elements, contradicting
--- our knowledge that the image equals σ.image c which has exactly σ.card - 1 = |σ.erase x| elements.
+-- our knowledge that the image equals σ.image c which has exactly σ.card - 1 = |σ.erase x|
+-- elements.
 
 lemma collision_with_uniqueness {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1))
@@ -431,7 +430,8 @@ lemma noninjective_pair_exists {n : ℕ} {T : Type} [DecidableEq T]
     we have |C ∩ σ.image c| = |C| - 1 = |σ.image c|. Since C ∩ σ.image c ⊆ σ.image c and
     they have the same cardinality, σ.image c = C ∩ σ.image c ⊆ C.
     Uses `Finset.card_sdiff_eq_sub : (t \ s).card = t.card - s.card` (when s ⊆ t, but here
-    we use the general version or `Finset.card_sdiff_inter_add : (s \ t).card + (s ∩ t).card = s.card`).
+    we use the general version or
+    `Finset.card_sdiff_inter_add : (s \ t).card + (s ∩ t).card = s.card`).
     No direct Mathlib equivalent for this specific combination. -/
 lemma image_subset_of_sdiff_singleton {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1))
@@ -794,25 +794,6 @@ lemma ncr_injective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     intro x hx hne
     by_contra h
     exact hne (huniq x hx h)
-  -- σ.image c has exactly one element outside C, namely c y
-  -- We need img_sub for sdiff_image_erase_card_ge_two: but that lemma needs σ.image c ⊆ C
-  -- Wait, that's not true: c y ∉ C. But sdiff_image_erase_card_ge_two needs himg_sub : σ.image c ⊆ C
-  -- Actually, in the erase case for x with c(x) ∈ C, we'll use sdiff_image_erase_card_ge_two
-  -- but that needs σ.image c ⊆ C, which is false. Let me think...
-  -- Actually, the proof for x ≠ y (when c(x) ∈ C) uses a different argument:
-  -- We need (C \ (σ.erase x).image c).card ≥ 2.
-  -- Since c is injective on σ, c(x) ∉ (σ.erase x).image c.
-  -- And c(x) ∈ C. And i₀ ∈ C \ σ.image c ⊆ C \ (σ.erase x).image c.
-  -- And c(x) ∈ C \ (σ.erase x).image c. And c(x) ≠ i₀ (since i₀ ∉ σ.image c but c(x) ∈ σ.image c).
-  -- So {i₀, c(x)} ⊆ C \ (σ.erase x).image c, giving card ≥ 2.
-  -- This is exactly what sdiff_image_erase_card_ge_two gives, but it requires σ.image c ⊆ C.
-  -- Hmm, that's NOT satisfied here. Let me re-examine sdiff_image_erase_card_ge_two...
-  -- It needs himg_sub : σ.image c ⊆ C and hnearly, hz_unique.
-  -- But we don't have σ.image c ⊆ C (c y ∉ C).
-  -- The argument still works without σ.image c ⊆ C. We just need i₀ ∈ C, i₀ ∉ (σ.erase x).image c,
-  -- c(x) ∈ C, c(x) ∉ (σ.erase x).image c, and c(x) ≠ i₀.
-  -- Let me prove this inline instead of using sdiff_image_erase_card_ge_two.
-  -- Get basic facts about i₀
   have hi₀C : i₀ ∈ C := by
     have := hnearly ▸ Finset.mem_singleton.mpr (rfl : i₀ = i₀)
     exact (Finset.mem_sdiff.mp this).1
@@ -1265,7 +1246,7 @@ lemma isDominant_erase_of_empty_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq
   obtain ⟨k, hk_mem, hk_not_lt⟩ := hMi y
   refine ⟨k, hk_mem, fun x hx hxy => ?_⟩
   have hle := ordMin_le ords τ hnonempty k x hx
-  exact hk_not_lt (@lt_of_le_of_lt T (ords k).toPreorder _ _ _ (@le_of_not_gt T (ords k) _ _ hle) hxy)
+  exact hk_not_lt <| @lt_of_le_of_lt T (_) _ _ _ (@le_of_not_gt T (ords k) _ _ hle) hxy
 
 lemma erase_nonempty_of_card_ge_two {α : Type} [DecidableEq α]
     (D : Finset α) (i : α) (hi : i ∈ D) (hcard : D.card ≥ 2) :
@@ -1479,7 +1460,8 @@ lemma isDominant_insert_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq 
     obtain ⟨k₁, hk₁, hk₁_not⟩ := hnotall
     have hk₁_not' : ¬ (ords k₁).lt (ordMin ords τ hnonempty k₁) y := by
       rwa [@not_lt T (ords k₁)]
-    exact ⟨k₁, Finset.mem_of_mem_erase hk₁, case2_witness_k1 ords τ D hnonempty i x y k₁ hk₁ hk₁_not' hx_in_Mi⟩
+    exact ⟨k₁, Finset.mem_of_mem_erase hk₁,
+      case2_witness_k1 ords τ D hnonempty i x y k₁ hk₁ hk₁_not' hx_in_Mi⟩
   · exact ⟨k₀, hk₀D, isDominant_insert_case1 ords τ x y k₀ hk₀_τ hcase⟩
 
 lemma isScarfVtx_insert_case_cx_eq {n : ℕ} {T : Type} [DecidableEq T]
@@ -1607,7 +1589,7 @@ lemma scarf_neighbor_from_collision_index {n : ℕ} {T : Type} [Fintype T] [None
       hmi_not_mem hmi_in_Mi hmi_not_lt hmi_max
     have hscarf := isScarfVtx_insert_case ords c i₀ τ D mi hmi_not_mem hdom_ins hne hdoor hnearly
     have hadj := scarfAdjRel_insert τ D hdoor mi hmi_not_mem
-    exact ⟨(insert mi τ, D), hscarf, hadj, Or.inr ⟨mi, hmi_not_mem, rfl, rfl, hmi_in_Mi, hmi_not_lt⟩⟩
+    exact ⟨(insert mi τ, D), hscarf, hadj, .inr ⟨mi, hmi_not_mem, rfl, rfl, hmi_in_Mi, hmi_not_lt⟩⟩
   · simp only [inMi] at hMi
     push_neg at hMi
     have hMi_empty : ∀ y : T, ∃ k ∈ D.erase i, ¬ (ords k).lt (ordMin ords τ hnonempty k) y := by
@@ -2114,10 +2096,7 @@ lemma scarf_degree_one_or_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
 lemma scarfAdjRel_symm {n : ℕ} {T : Type} [DecidableEq T]
     (v w : Finset T × Finset (Fin (n + 1)))
     (h : scarfAdjRel v w) : scarfAdjRel w v := by
-  have h₁ : v ≠ w := h.1
-  have h₂ : (v.1.card = v.2.card ∧ ((∃ x ∈ v.1, w.1 = v.1.erase x ∧ w.2 = v.2) ∨ (∃ i, i ∉ v.2 ∧ w.1 = v.1 ∧ w.2 = insert i v.2))) ∨ (w.1.card = w.2.card ∧ ((∃ x ∈ w.1, v.1 = w.1.erase x ∧ v.2 = w.2) ∨ (∃ i, i ∉ w.2 ∧ v.1 = w.1 ∧ v.2 = insert i w.2))) := h.2
-  have h_main : scarfAdjRel w v := by grind [scarfAdjRel]
-  grind
+  grind [scarfAdjRel]
 
 lemma empty_singleton_isScarfVtx {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -2601,9 +2580,9 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
       have hm_b_max : ∀ y ∈ admSet ords σ hσne CC b, ¬(ords b).lt m_b y := by
         intro y hy
         exact (@not_lt T (ords b)).mpr (@Finset.le_max' T (ords b) _ y hy)
-      have hm_b_not_σ : m_b ∉ σ :=
-        fun h => m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq b (Or.inr rfl) m_b hm_b_mem h
-      have hDom_ins := isDominant_insert_of_admSet_max ords σ CC hσne hDom b hb m_b hm_b_mem hm_b_max
+      have hm_b_not_σ : m_b ∉ σ := fun h =>
+        m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq b (Or.inr rfl) m_b hm_b_mem h
+      have hDom_ins := isDominant_insert_of_admSet_max ords σ CC hσne hDom b hb _ hm_b_mem hm_b_max
       have hvtx_b := isScarfVtx_insert ords c i₀ σ CC m_b hm_b_not_σ hCne hDom_ins hdoor_card hnear
       have hadj_a : scarfAdjRel v.val (σ, CC.erase a) := by
         rw [hv]; show scarfAdjRel (σ, CC) (σ, CC.erase a)
@@ -2636,7 +2615,7 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
       exact (@not_lt T (ords a)).mpr (@Finset.le_max' T (ords a) _ y hy)
     have hm_a_not_σ : m_a ∉ σ :=
       fun h => m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq a (Or.inl rfl) m_a hm_a_mem h
-    have hDom_ins_a := isDominant_insert_of_admSet_max ords σ CC hσne hDom a ha m_a hm_a_mem hm_a_max
+    have hDom_ins_a := isDominant_insert_of_admSet_max ords σ CC hσne hDom a ha _ hm_a_mem hm_a_max
     have hvtx_a := isScarfVtx_insert ords c i₀ σ CC m_a hm_a_not_σ hCne hDom_ins_a hdoor_card hnear
     by_cases hb_empty : admSet ords σ hσne CC b = ∅
     · -- admSet(b) empty → room b is (σ, CC.erase b)
@@ -2679,10 +2658,10 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
       have hm_b_max : ∀ y ∈ admSet ords σ hσne CC b, ¬(ords b).lt m_b y := by
         intro y hy
         exact (@not_lt T (ords b)).mpr (@Finset.le_max' T (ords b) _ y hy)
-      have hm_b_not_σ : m_b ∉ σ :=
-        fun h => m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq b (Or.inr rfl) m_b hm_b_mem h
-      have hDom_ins_b := isDominant_insert_of_admSet_max ords σ CC hσne hDom b hb m_b hm_b_mem hm_b_max
-      have hvtx_b := isScarfVtx_insert ords c i₀ σ CC m_b hm_b_not_σ hCne hDom_ins_b hdoor_card hnear
+      have hm_b_not_σ : m_b ∉ σ := fun h =>
+        m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq b (Or.inr rfl) m_b hm_b_mem h
+      have hDom_ins_b := isDominant_insert_of_admSet_max ords σ _ hσne hDom b hb _ hm_b_mem hm_b_max
+      have hvtx_b := isScarfVtx_insert ords c i₀ σ CC _ hm_b_not_σ hCne hDom_ins_b hdoor_card hnear
       -- m_a ≠ m_b because admSet(a) ∩ admSet(b) = ∅
       have hm_ne : m_a ≠ m_b := by
         intro heq
@@ -3221,7 +3200,7 @@ def rotateCoord (n l : ℕ) (i : Fin (n + 1)) (x : DiscreteSimplex n l) :
 lemma rotateCoord_injective (n l : ℕ) (i : Fin (n + 1)) :
     Function.Injective (rotateCoord n l i : DiscreteSimplex n l → Lex (Fin (n + 1) → ℝ)) := by
   intro a b hab
-  have hab' : (fun j => (a.1 : Fin (n + 1) → ℝ) (i + j)) = fun j => (b.1 : Fin (n + 1) → ℝ) (i + j) := by
+  have hab' : (fun j => (a.1 : Fin (n + 1) → ℝ) (i + j)) = fun j => b.1 (i + j) := by
     exact toLex_inj.mp hab
   have heq : (a.1 : Fin (n + 1) → ℝ) = (b.1 : Fin (n + 1) → ℝ) := by
     ext k
@@ -3376,7 +3355,7 @@ lemma construct_simplex_point (n : ℕ)
     let M : Fin (n + 1) → ℝ := fun i =>
       (if i ∈ C then v i else 0) + (if i = (0 : Fin (n + 1)) then 1 - C.sum v else 0)
     M ∈ stdSimplex ℝ (Fin (n + 1)) := by
-  show (fun i => (if i ∈ C then v i else 0) + (if i = (0 : Fin (n + 1)) then 1 - C.sum v else 0)) ∈ stdSimplex ℝ (Fin (n + 1))
+  show (fun i => (if i ∈ C then v i else 0) + (if i = 0 then 1 - C.sum v else 0)) ∈ stdSimplex ℝ _
   refine ⟨fun i => ?_, ?_⟩
   · -- Nonneg
     grind
@@ -3386,7 +3365,7 @@ lemma construct_simplex_point (n : ℕ)
       rw [← Finset.sum_filter]
       congr 1
       ext i; simp
-    have h2 : ∑ i : Fin (n + 1), (if i = (0 : Fin (n + 1)) then 1 - C.sum v else 0) = 1 - C.sum v := by
+    have h2 : ∑ i : Fin (n + 1), (if i = 0 then 1 - C.sum v else 0) = 1 - C.sum v := by
       rw [Finset.sum_ite_eq']
       simp [Finset.mem_univ]
     linarith
@@ -3466,7 +3445,7 @@ lemma inf'_discrete (n : ℕ) (l : ℕ)
     (hdiscrete : ∀ x ∈ σ, ∀ i : Fin (n + 1), ∃ k : ℕ, (x : Fin (n + 1) → ℝ) i = ↑k / ↑l)
     (i : Fin (n + 1)) :
     ∃ k : ℕ, σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i) = ↑k / ↑l := by
-  obtain ⟨x, hx, hmin⟩ := Finset.exists_mem_eq_inf' hσ (fun z : ↑(stdSimplex ℝ (Fin (n + 1))) => (z : Fin (n + 1) → ℝ) i)
+  obtain ⟨x, hx, hmin⟩ := Finset.exists_mem_eq_inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i)
   rw [hmin]
   exact hdiscrete x hx i
 
@@ -3484,7 +3463,7 @@ lemma inf'_attained (n : ℕ)
     (hσ : σ.Nonempty)
     (i : Fin (n + 1)) :
     ∃ x ∈ σ, σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i) = (x : Fin (n + 1) → ℝ) i := by
-  obtain ⟨x, hx, hmin⟩ := Finset.exists_mem_eq_inf' hσ (fun z : ↑(stdSimplex ℝ (Fin (n + 1))) => (z : Fin (n + 1) → ℝ) i)
+  obtain ⟨x, hx, hmin⟩ := Finset.exists_mem_eq_inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i)
   exact ⟨x, hx, hmin⟩
 
 /-- **Sum rearrangement: from ¬(a < b) to ∑(m_k + 1/l) ≤ 1.**
@@ -3581,7 +3560,7 @@ lemma deviation_in_C (n : ℕ)
     (x : Fin (n + 1) → ℝ) i - σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i) ≤
       1 - C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) := by
   calc (x : Fin (n + 1) → ℝ) i - σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i)
-      ≤ C.sum (fun k => (x : Fin (n + 1) → ℝ) k - σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) := by
+      ≤ C.sum (fun k => (x : Fin (n + 1) → ℝ) k - σ.inf' hσ (fun z => z k)) := by
         exact Finset.single_le_sum (fun k hk => deviation_nonneg n σ hσ x hx k) hi
     _ = C.sum (fun k => (x : Fin (n + 1) → ℝ) k) -
         C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) := by
@@ -3718,24 +3697,20 @@ lemma exists_ge_coord_of_simplex_map (n : ℕ)
   have h₃ : ∑ i : Fin (n + 1), (x : Fin (n + 1) → ℝ) i = 1 := x.2.2
   have h₄ : ∑ i : Fin (n + 1), ((f x) : Fin (n + 1) → ℝ) i = 1 := (f x).2.2
   -- Use the fact that each f(x)_i < x_i to show that the sum of f(x)_i is less than the sum of x_i
-  have h₅ : ∑ i : Fin (n + 1), ((f x) : Fin (n + 1) → ℝ) i < ∑ i : Fin (n + 1), (x : Fin (n + 1) → ℝ) i := by
-    have h₅₁ : ∑ i : Fin (n + 1), ((f x) : Fin (n + 1) → ℝ) i < ∑ i : Fin (n + 1), (x : Fin (n + 1) → ℝ) i := by
-      -- Use the fact that each f(x)_i < x_i to show that the sum of f(x)_i is less than the sum of x_i
-      calc
-        ∑ i : Fin (n + 1), ((f x) : Fin (n + 1) → ℝ) i < ∑ i : Fin (n + 1), (x : Fin (n + 1) → ℝ) i := by
-          -- Use the sum_lt_sum_of_nonempty lemma to compare the sums
-          have h₅₂ : ∑ i : Fin (n + 1), ((f x) : Fin (n + 1) → ℝ) i < ∑ i : Fin (n + 1), (x : Fin (n + 1) → ℝ) i := by
-            -- Use the fact that each f(x)_i < x_i to show that the sum of f(x)_i is less than the sum of x_i
-            apply Finset.sum_lt_sum_of_nonempty
-            · -- Show that the set of indices is nonempty
-              exact Finset.nonempty_of_ne_empty (by grind)
-            · -- Show that each term in the sum is less than the corresponding term in the other sum
-              grind
-          exact h₅₂
-        _ = ∑ i : Fin (n + 1), (x : Fin (n + 1) → ℝ) i := by rfl
-    exact h₅₁
-  -- This contradicts the fact that the sums are both 1
-  linarith
+  suffices ∑ i : Fin (n + 1), f x i < ∑ i : Fin (n + 1), x i by linarith
+  -- Use the fact that each f(x)_i < x_i to show that the sum of f(x)_i is less than the sum of x_i
+  calc
+    ∑ i : Fin (n + 1), f x i < ∑ i : Fin (n + 1), x i := by
+      -- Use the sum_lt_sum_of_nonempty lemma to compare the sums
+      have h₅₂ : ∑ i : Fin (n + 1), f x i < ∑ i : Fin (n + 1), x i := by
+        -- Use that each f(x)_i < x_i to show that the sum of f(x)_i is less than the sum of x_i
+        apply Finset.sum_lt_sum_of_nonempty
+        · -- Show that the set of indices is nonempty
+          exact Finset.nonempty_of_ne_empty (by grind)
+        · -- Show that each term in the sum is less than the corresponding term in the other sum
+          grind
+      exact h₅₂
+    _ = ∑ i : Fin (n + 1), (x : Fin (n + 1) → ℝ) i := by rfl
 
 lemma exists_colorful_room (n : ℕ) (l : ℕ) (hl : 0 < l)
     (f : ↑(stdSimplex ℝ (Fin (n + 1))) → ↑(stdSimplex ℝ (Fin (n + 1)))) :
@@ -3840,65 +3815,47 @@ lemma ge_coord_of_tendsto (n : ℕ) (i : Fin (n + 1))
     have h₅ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) :=
       h₃.continuousAt.tendsto.comp h₄
     exact h₅
-  have h₄ : (w i) ≥ (z i) := by
-    -- Use the fact that the limit of a sequence less than or equal to another sequence
-    -- is less than or equal to the limit of the other sequence.
-    have h₅ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) := h₂
-    have h₆ : Filter.Tendsto (fun l ↦ (x l) i) Filter.atTop (nhds (z i)) := h₁
-    have h₈ : (w i) ≥ (z i) := by
-      -- Use the fact that the limit of the difference is non-negative.
-      have h₉ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) := by
-        have h₁₀ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) := h₅
-        have h₁₁ : Filter.Tendsto (fun l ↦ (x l) i) Filter.atTop (nhds (z i)) := h₆
-        have h₁₂ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) :=
-          h₁₀.sub h₁₁
-        exact h₁₂
-      have h₁₀ : ∀ l, (y l) i - (x l) i ≥ 0 := by
-        intro l
-        have h₁₁ : (y l) i ≥ (x l) i := hge l
-        linarith
-      have h₁₁ : (w i - z i) ≥ 0 := by
-        -- Use the fact that the limit of a non-negative sequence is non-negative.
-        have h₁₄ : (w i - z i) ≥ 0 := by
-          by_contra h
-          have h₁₆ : ∃ (l : ℕ), (y l) i - (x l) i < 0 := by
-            -- Use the fact that the sequence is eventually in the neighborhood of the limit.
-            have h₁₈ : ∃ (l : ℕ), (y l) i - (x l) i < 0 := by
-              -- Use the fact that the sequence is eventually in the neighborhood of the limit.
-              have h₂₀ : ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < - (w i - z i) := by
-                -- Use the definition of the limit to find an l such that for all k ≥ l, the sequence is in the neighborhood of the limit.
-                have h₂₂ : ∀ ε > 0, ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < ε := by
-                  -- Use the definition of the limit to find an l such that for all k ≥ l, the sequence is in the neighborhood of the limit.
-                  have h₂₃ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) := h₉
-                  exact Metric.tendsto_atTop.mp h₂₃
-                have h₂₃ : ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < - (w i - z i) := by
-                  -- Use the definition of the limit to find an l such that for all k ≥ l, the sequence is in the neighborhood of the limit.
-                  have h₂₅ : ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < - (w i - z i) := h₂₂ (- (w i - z i)) (by linarith)
-                  exact h₂₅
-                exact h₂₃
-              obtain ⟨l, hl⟩ := h₂₀
-              use l
-              have h₂₁ := hl l (by linarith)
-              have h₂₂ : |(y l) i - (x l) i - (w i - z i)| < - (w i - z i) := h₂₁
-              have h₂₃ : (y l) i - (x l) i - (w i - z i) < - (w i - z i) := by
-                linarith [abs_lt.mp h₂₂]
-              linarith
-            exact h₁₈
-          obtain ⟨l, hl⟩ := h₁₆
-          have h₁₉ : (y l) i - (x l) i ≥ 0 := h₁₀ l
-          linarith
-        exact h₁₄
-      linarith
-    exact h₈
-  exact h₄
+  -- Use the fact that the limit of a sequence less than or equal to another sequence
+  -- is less than or equal to the limit of the other sequence.
+  have h₅ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) := h₂
+  have h₆ : Filter.Tendsto (fun l ↦ (x l) i) Filter.atTop (nhds (z i)) := h₁
+  -- Use the fact that the limit of the difference is non-negative.
+  have h₉ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) := by
+    have h₁₀ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) := h₅
+    have h₁₁ : Filter.Tendsto (fun l ↦ (x l) i) Filter.atTop (nhds (z i)) := h₆
+    have h₁₂ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) :=
+      h₁₀.sub h₁₁
+    exact h₁₂
+  have h₁₀ : ∀ l, (y l) i - (x l) i ≥ 0 := by
+    intro l
+    have h₁₁ : (y l) i ≥ (x l) i := hge l
+    linarith
+  suffices (w i - z i) ≥ 0 by linarith
+  by_contra h
+  have h₁₆ : ∃ (l : ℕ), (y l) i - (x l) i < 0 := by
+    -- Use the fact that the sequence is eventually in the neighborhood of the limit.
+    have h₂₀ : ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < - (w i - z i) := by
+      -- Find an l such that for all k ≥ l, the sequence is in the neighborhood of the limit.
+      have h₂₂ : ∀ ε > 0, ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < ε := by
+        -- Find an l such that for all k ≥ l, the sequence is in the neighborhood of the limit.
+        have h₂₃ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) := h₉
+        exact Metric.tendsto_atTop.mp h₂₃
+      exact h₂₂ (- (w i - z i)) (by linarith)
+    obtain ⟨l, hl⟩ := h₂₀
+    use l
+    have h₂₁ := hl l (by linarith)
+    have h₂₂ : |(y l) i - (x l) i - (w i - z i)| < - (w i - z i) := h₂₁
+    have h₂₃ : (y l) i - (x l) i - (w i - z i) < - (w i - z i) := by
+      linarith [abs_lt.mp h₂₂]
+    linarith
+  obtain ⟨l, hl⟩ := h₁₆
+  have h₁₉ : (y l) i - (x l) i ≥ 0 := h₁₀ l
+  linarith
 
 /-- The bound sequence (n+1)/(φ(l)+1) tends to 0 when φ is strictly monotone.
     Since φ is strictly monotone on ℕ, `StrictMono.tendsto_atTop` gives φ(l) → ∞,
     hence φ(l)+1 → ∞, so (φ(l)+1)⁻¹ → 0, and multiplying by the constant (n+1) gives
-    (n+1)/(φ(l)+1) → 0.
-    Uses `StrictMono.tendsto_atTop : ∀ {φ : ℕ → ℕ}, StrictMono φ → Filter.Tendsto φ Filter.atTop Filter.atTop`
-    and `tendsto_inverse_atTop_nhds_zero_nat : Filter.Tendsto (fun n => (↑n)⁻¹) Filter.atTop (nhds 0)`
-    and `Filter.Tendsto.const_mul : Filter.Tendsto f l (nhds c) → Filter.Tendsto (fun k => b * f k) l (nhds (b * c))`. -/
+    (n+1)/(φ(l)+1) → 0. -/
 lemma tendsto_bound_zero (n : ℕ) (φ : ℕ → ℕ) (hφ : StrictMono φ) :
     Filter.Tendsto (fun l => (↑(n + 1) : ℝ) / (↑(φ l + 1) : ℝ)) Filter.atTop (nhds 0) := by
   have hφ1 : StrictMono (fun l => φ l + 1) := fun a b hab => Nat.add_lt_add_right (hφ hab) 1
@@ -3921,7 +3878,7 @@ lemma coord_zero_of_tendsto_bound (n : ℕ) (i : Fin (n + 1))
   have hconv_i : Filter.Tendsto (fun l => x_seq (φ l) i) Filter.atTop (nhds (z i)) :=
     tendsto_pi_nhds.mp hconv i
   -- Step 2: The bound sequence tends to 0
-  have hbound_tendsto : Filter.Tendsto (fun l => (↑(n + 1) : ℝ) / (↑(φ l + 1) : ℝ)) Filter.atTop (nhds 0) :=
+  have hbound_tendsto : Filter.Tendsto (fun l => (↑(n + 1) : ℝ) / ↑(φ l + 1)) .atTop (nhds 0) :=
     tendsto_bound_zero n φ hφ
   -- Step 3: By squeeze theorem, the i-th coordinate tends to 0
   have htendsto_zero : Filter.Tendsto (fun l => x_seq (φ l) i) Filter.atTop (nhds 0) :=
@@ -3939,7 +3896,7 @@ lemma sum_eq_one_of_zero_outside (n : ℕ)
     exact h₂
   have h₃ : ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i = 0 := by
     calc
-      ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i = ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i := rfl
+      ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i = ∑ i ∈ Finset.univ \ C, z i := rfl
       _ = ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, 0 := by
         apply Finset.sum_congr rfl
         intro i hi
@@ -3949,14 +3906,14 @@ lemma sum_eq_one_of_zero_outside (n : ℕ)
         have h₅ : z i = 0 := hzero i h₄
         rw [h₅]
       _ = 0 := by simp
-  have h₄ : ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))), z i = ∑ i ∈ C, z i + ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i := by
-    have h₅ : ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))), z i = ∑ i ∈ C ∪ ((Finset.univ : Finset (Fin (n + 1))) \ C), z i := by
+  have h₄ : ∑ i ∈ Finset.univ, z i = ∑ i ∈ C, z i + ∑ i ∈ Finset.univ \ C, z i := by
+    have h₅ : ∑ i ∈ Finset.univ, z i = ∑ i ∈ C ∪ (Finset.univ \ C), z i := by
       congr 1
       simp [Finset.ext_iff]
     rw [h₅]
-    have h₆ : C ∪ ((Finset.univ : Finset (Fin (n + 1))) \ C) = C ∪ ((Finset.univ : Finset (Fin (n + 1))) \ C) := rfl
+    have h₆ : C ∪ (Finset.univ \ C) = C ∪ (Finset.univ \ C) := rfl
     rw [h₆]
-    have h₇ : Disjoint C ((Finset.univ : Finset (Fin (n + 1))) \ C) := by
+    have h₇ : Disjoint C (Finset.univ \ C) := by
       simp [Finset.disjoint_left]
     rw [Finset.sum_union h₇]
   have h₅ : ∑ i ∈ C, z i = 1 := by
