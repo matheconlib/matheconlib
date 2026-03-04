@@ -4563,27 +4563,6 @@ private theorem brouwer_fixed_point (n : ℕ)
       z.property (f z).property C₀ hge_limit hzero hsum
   exact ⟨z, Subtype.ext (funext heq)⟩
 
-/-! ## Finite-dimensional spaces are locally convex -/
-
-/-- A finite-dimensional Hausdorff topological vector space over ℝ is locally convex. -/
-lemma finiteDimensional_locallyConvex
-    {E : Type*} [AddCommGroup E] [Module ℝ E]
-    [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
-    [FiniteDimensional ℝ E] :
-    LocallyConvexSpace ℝ E := by
-  set n := Module.finrank ℝ E
-  set φ := ContinuousLinearEquiv.ofFinrankEq
-    (show Module.finrank ℝ E = Module.finrank ℝ (Fin n → ℝ) by rw [Module.finrank_fin_fun])
-  apply LocallyConvexSpace.ofBasisZero ℝ E (fun (s : Set (Fin n → ℝ)) => φ ⁻¹' s)
-    (fun s => s ∈ nhds (0 : Fin n → ℝ) ∧ Convex ℝ s)
-  · rw [show nhds (0 : E) = Filter.comap φ (nhds (0 : Fin n → ℝ)) from by
-      rw [φ.toHomeomorph.nhds_eq_comap]
-      congr 1
-      simp [ContinuousLinearEquiv.toHomeomorph, map_zero]]
-    exact (LocallyConvexSpace.convex_basis_zero ℝ (Fin n → ℝ)).comap φ
-  · intro s ⟨_, hs⟩
-    exact hs.linear_preimage φ.toLinearMap
-
 /-! ## Convex combinations and evaluation maps -/
 
 /-- A convex combination of points in a convex set lies in that set. -/
@@ -4791,33 +4770,59 @@ lemma fixed_point_of_approximate_fixed_points
   obtain ⟨z, hz⟩ := h0
   exact ⟨z, Subtype.val_injective (sub_eq_zero.mp hz)⟩
 
+end
+
 /-! ## Main theorems -/
+@[expose] public section
+
+/-! ## Finite-dimensional spaces are locally convex -/
+
+/-- A finite-dimensional Hausdorff topological vector space over ℝ is locally convex. -/
+instance FiniteDimensional.locallyConvexSpace
+    {E : Type*} [AddCommGroup E] [Module ℝ E]
+    [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
+    [FiniteDimensional ℝ E] :
+    LocallyConvexSpace ℝ E := by
+  set n := Module.finrank ℝ E
+  set φ := ContinuousLinearEquiv.ofFinrankEq
+    (show Module.finrank ℝ E = Module.finrank ℝ (Fin n → ℝ) by rw [Module.finrank_fin_fun])
+  apply LocallyConvexSpace.ofBasisZero ℝ E (fun (s : Set (Fin n → ℝ)) => φ ⁻¹' s)
+    (fun s => s ∈ nhds (0 : Fin n → ℝ) ∧ Convex ℝ s)
+  · rw [show nhds (0 : E) = Filter.comap φ (nhds (0 : Fin n → ℝ)) from by
+      rw [φ.toHomeomorph.nhds_eq_comap]
+      congr 1
+      simp [ContinuousLinearEquiv.toHomeomorph, map_zero]]
+    exact (LocallyConvexSpace.convex_basis_zero ℝ (Fin n → ℝ)).comap φ
+  · intro s ⟨_, hs⟩
+    exact hs.linear_preimage φ.toLinearMap
 
 /-- **Schauder's Fixed Point Theorem.** Every continuous self-map of a nonempty compact convex
 subset of a Hausdorff locally convex topological vector space has a fixed point. -/
-theorem schauder_fixed_point
+theorem Continuous.exists_fixedPt_of_isConvex_isCompact
     {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     [LocallyConvexSpace ℝ E]
-    {K : Set E} (hK_compact : IsCompact K) (hK_convex : Convex ℝ K) (hK_nonempty : K.Nonempty)
-    (f : ↥K → ↥K) (hf : Continuous f) :
-    ∃ x : ↥K, f x = x := by
-  apply fixed_point_of_approximate_fixed_points hK_compact f hf
+    {k : Set E} (hk : IsCompact k) (hk' : Convex ℝ k) (hk'' : k.Nonempty)
+    {f : k → k} (hf : Continuous f) :
+    ∃ x, f x = x := by
+  apply fixed_point_of_approximate_fixed_points hk f hf
   intro U hU_open hU_zero
   obtain ⟨V, ⟨hV_zero, hV_open, hV_convex⟩, hVU⟩ :=
     (LocallyConvexSpace.convex_open_basis_zero ℝ E).mem_iff.mp (hU_open.mem_nhds hU_zero)
-  obtain ⟨z, hz⟩ := approximate_fixed_point_of_brouwer hK_compact hK_convex
-    hK_nonempty f hf hV_open hV_zero hV_convex
+  obtain ⟨z, hz⟩ := approximate_fixed_point_of_brouwer hk hk'
+    hk'' f hf hV_open hV_zero hV_convex
   exact ⟨z, hVU hz⟩
 
-/-- **Brouwer's Fixed Point Theorem** for compact convex subsets of finite-dimensional
-Hausdorff real topological vector spaces, derived from Brouwer on the standard simplex. -/
-theorem brouwer_fixed_point_finite_dimensional
+/-- **Schauder's Fixed Point Theorem.** Every continuous self-map of a nonempty compact convex
+subset of a Hausdorff locally convex topological vector space has a fixed point. -/
+theorem ContinuousOn.exists_fixedPt_of_isConvex_isCompact
     {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
-    [FiniteDimensional ℝ E]
-    {K : Set E} (hK_compact : IsCompact K) (hK_convex : Convex ℝ K) (hK_nonempty : K.Nonempty)
-    (f : ↥K → ↥K) (hf : Continuous f) :
-    ∃ x : ↥K, f x = x := by
-  have := finiteDimensional_locallyConvex (E := E)
-  exact schauder_fixed_point hK_compact hK_convex hK_nonempty f hf
+    [LocallyConvexSpace ℝ E]
+    {k : Set E} (hk : IsCompact k) (hk' : Convex ℝ k) (hk'' : k.Nonempty)
+    {f : E → E} (hf : ContinuousOn f k) (hf' : Set.MapsTo f k k) :
+    ∃ x ∈ k, f x = x := by
+  have ⟨⟨x, hx⟩, hx'⟩ := (hf.mapsToRestrict hf').exists_fixedPt_of_isConvex_isCompact hk hk' hk''
+  exact ⟨x, hx, Subtype.ext_iff.1 hx'⟩
+
+end
