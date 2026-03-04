@@ -72,7 +72,7 @@ lemma isDominant_erase {n : ℕ} {T : Type} [DecidableEq T]
     isDominant ords (σ.erase z) C := by
   intro y
   obtain ⟨i, hi, hx⟩ := hdom y
-  exact ⟨i, hi, fun x hx' => hx x (Finset.mem_of_mem_erase hx')⟩
+  exact ⟨i, hi, fun x hx' ↦ hx x (Finset.mem_of_mem_erase hx')⟩
 
 -- InjOn version of image_erase
 
@@ -84,7 +84,7 @@ lemma image_erase_of_injOn {α β : Type*} [DecidableEq α] [DecidableEq β]
   simp only [Finset.mem_image, Finset.mem_erase]
   constructor
   · rintro ⟨t, ⟨ht_ne, ht_mem⟩, rfl⟩
-    exact ⟨fun h => ht_ne (hinj ht_mem ha h), t, ht_mem, rfl⟩
+    exact ⟨fun h ↦ ht_ne (hinj ht_mem ha h), t, ht_mem, rfl⟩
   · grind
 
 lemma colorful_room_unique_adj_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
@@ -214,7 +214,7 @@ lemma isScarfVtx_insert_of_not_mem {n : ℕ} {T : Type} [DecidableEq T]
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
     (hcard : σ.card = C.card) (hcolor : C = σ.image c)
-    (hdom : isDominant ords σ C) (_hC : C.Nonempty)
+    (hdom : isDominant ords σ C)
     (hi₀ : i₀ ∉ C) :
     IsScarfVtx ords c i₀ (σ, insert i₀ C) := by
   use Finset.insert_nonempty i₀ C, isDominant_mono ords σ C _ hdom (Finset.subset_insert i₀ C)
@@ -225,12 +225,12 @@ lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Fintype T] [Nonempt
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
     (hcard : σ.card = C.card) (hcolor : C = σ.image c)
-    (hdom : isDominant ords σ C) (hC : C.Nonempty)
+    (hdom : isDominant ords σ C)
     (hi₀ : i₀ ∉ C) :
     ∃! w : Finset T × Finset (Fin (n + 1)),
       scarfAdjRel (σ, C) w ∧ IsScarfVtx ords c i₀ w := by
   refine ⟨(σ, insert i₀ C), ⟨adj_insert_of_not_mem σ C i₀ hcard hi₀,
-    isScarfVtx_insert_of_not_mem ords c i₀ σ C hcard hcolor hdom hC hi₀⟩, ?_⟩
+    isScarfVtx_insert_of_not_mem ords c i₀ σ C hcard hcolor hdom hi₀⟩, ?_⟩
   intro w ⟨hadj, hvtx⟩
   have hinj : Set.InjOn c ↑σ := Finset.injOn_of_card_image_eq (by rw [← hcolor, hcard])
   obtain ⟨_, hadj'⟩ := hadj
@@ -242,7 +242,7 @@ lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Fintype T] [Nonempt
     obtain ⟨x, hx, hw1, hw2⟩ := herase
     exfalso
     have hcx_mem : c x ∈ C := hcolor ▸ Finset.mem_image_of_mem c hx
-    have hcx_ne : c x ≠ i₀ := fun h => hi₀ (h ▸ hcx_mem)
+    have hcx_ne : c x ≠ i₀ := fun h ↦ hi₀ (h ▸ hcx_mem)
     have hpos : σ.card ≥ 1 := Finset.card_pos.mpr ⟨x, hx⟩
     rcases hvtx_disj with ⟨hcard', _⟩ | ⟨hcard', _⟩ | ⟨_, hsdiff⟩
     · rw [hw1, hw2, Finset.card_erase_of_mem hx] at hcard'; omega
@@ -285,7 +285,7 @@ lemma colorful_room_unique_adj {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [De
       scarfAdjRel (σ, C) w ∧ IsScarfVtx ords c i₀ w := by
   by_cases hi₀ : i₀ ∈ C
   · exact colorful_room_unique_adj_mem ords c i₀ σ C hcard hcolor hdom hC hi₀
-  · exact colorful_room_unique_adj_not_mem ords c i₀ σ C hcard hcolor hdom hC hi₀
+  · exact colorful_room_unique_adj_not_mem ords c i₀ σ C hcard hcolor hdom hi₀
 
 lemma degree_one_of_unique_adj_raw {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -398,10 +398,9 @@ lemma collision_with_uniqueness {n : ℕ} {T : Type} [DecidableEq T]
   -- which would require injectivity on σ.erase x, contradicting the collision y,z
   have hcard_erase : (σ.erase x).card = σ.card - 1 :=
     Finset.card_erase_of_mem hx
-  have hcard_img : (σ.erase x).image c = σ.image c := heq
   -- So |(σ.erase x).image c| = |σ.image c| = σ.card - 1 = |σ.erase x|
   have hcard_eq : ((σ.erase x).image c).card = (σ.erase x).card := by
-    rw [hcard_img, hcard_erase]; omega
+    rw [heq, hcard_erase]; omega
   -- This means c is injective on σ.erase x
   have hinj : Set.InjOn c (↑(σ.erase x)) :=
     Finset.injOn_of_card_image_eq hcard_eq
@@ -444,11 +443,8 @@ lemma image_subset_of_sdiff_singleton {n : ℕ} {T : Type} [DecidableEq T]
   have h₁ : (C \ σ.image c).card + (C ∩ σ.image c).card = C.card := by grind
   have h₂ : (C \ σ.image c).card = 1 := by grind
   have h₃ : (C ∩ σ.image c).card = (σ.image c).card := by grind
-  have h₄ : C ∩ σ.image c = σ.image c := by
-    have h₄₁ : C ∩ σ.image c ⊆ σ.image c := Finset.inter_subset_right
-    have h₄₂ : (C ∩ σ.image c).card = (σ.image c).card := h₃
-    apply Finset.eq_of_subset_of_card_le h₄₁
-    rw [h₄₂]
+  have h₄ : C ∩ σ.image c = σ.image c :=
+    Finset.eq_of_subset_of_card_le Finset.inter_subset_right h₃.symm.le
   grind
 
 /-- Given a nearly colorful room (σ, C) with non-injective coloring, for any z ∈ σ with
@@ -480,7 +476,7 @@ lemma not_scarf_insert_form {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Decid
     (j : Fin (n + 1)) (hj : j ∉ C) :
     ¬ IsScarfVtx ords c i₀ (σ, insert j C) := by
   intro ⟨_, _, h_disj⟩
-  have hj_not_img : j ∉ σ.image c := fun h => hj (himg_sub h)
+  have hj_not_img : j ∉ σ.image c := fun h ↦ hj (himg_sub h)
   have hsdiff : insert j C \ σ.image c = {i₀, j} := by
     rw [Finset.insert_sdiff_of_notMem _ hj_not_img, hnearly, Finset.pair_comm]
   have hi0_ne_j : i₀ ≠ j := by grind
@@ -559,7 +555,6 @@ lemma not_scarf_vtx_erase_non_colliding' {n : ℕ} {T : Type} [Fintype T] [Nonem
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
     (hC_ne : C.Nonempty)
-    (_hdom : isDominant ords σ C)
     (hcard : σ.card = C.card)
     (hnearly : C \ σ.image c = {i₀})
     (himg_sub : σ.image c ⊆ C)
@@ -593,20 +588,15 @@ lemma ncr_noninjective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
     (hC_ne : C.Nonempty)
-    (hdom : isDominant ords σ C)
     (hcard : σ.card = C.card)
     (hnearly : C \ σ.image c = {i₀})
-    (himg : (σ.image c).card + 1 = σ.card)
     (himg_sub : σ.image c ⊆ C)
     (x y : T) (hx : x ∈ σ) (hy : y ∈ σ) (hxy : x ≠ y)
     (hcxy : c x = c y)
-    (huniq : ∀ z ∈ σ, z ≠ x → z ≠ y → c z ≠ c x)
-    (himg_ex : (σ.erase x).image c = σ.image c)
-    (himg_ey : (σ.erase y).image c = σ.image c) :
+    (huniq : ∀ z ∈ σ, z ≠ x → z ≠ y → c z ≠ c x) :
     ∀ q : Finset T × Finset (Fin (n + 1)),
       IsScarfVtx ords c i₀ q → scarfAdjRel (σ, C) q →
       q = (σ.erase x, C) ∨ q = (σ.erase y, C) := by
-  have _ := himg; have _ := himg_ex; have _ := himg_ey
   intro q hscarf hadj
   obtain ⟨_hne, hadj⟩ := hadj
   rcases hadj with ⟨_, hforms⟩ | ⟨hqroom, hforms⟩
@@ -618,7 +608,7 @@ lemma ncr_noninjective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       · by_cases hzy : z = y
         · right; rw [hzy]
         · exfalso
-          exact not_scarf_vtx_erase_non_colliding' ords c i₀ σ C hC_ne hdom hcard hnearly himg_sub
+          exact not_scarf_vtx_erase_non_colliding' ords c i₀ σ C hC_ne hcard hnearly himg_sub
             x y z hx hy hz hxy hzx hzy hcxy huniq hscarf
     · have hqeq : q = (σ, insert j C) := Prod.ext (by simpa using hq1) (by simpa using hq2)
       rw [hqeq] at hscarf
@@ -663,8 +653,8 @@ lemma ncr_noninjective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty 
     refine ⟨?_, Or.inl ⟨hcard, Or.inl ⟨y, hy, rfl, rfl⟩⟩⟩
     grind
   · -- Uniqueness
-    exact ncr_noninjective_uniqueness ords c i₀ σ C hC_ne hdom hcard hnearly himg
-      himg_sub x y hx hy hxy hcxy huniq himg_ex himg_ey
+    exact ncr_noninjective_uniqueness ords c i₀ σ C hC_ne hcard hnearly
+      himg_sub x y hx hy hxy hcxy huniq
 
 lemma scarf_degree_ncr_case_noninjective {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
@@ -951,8 +941,7 @@ lemma scarf_degree_ncr_case_injective {n : ℕ} {T : Type} [Fintype T] [Nonempty
     (hnearly : v.val.2 \ v.val.1.image c = {i₀})
     (himg : (v.val.1.image c).card = v.val.1.card) :
     G.degree v = 2 := by
-  have hscarf := v.prop
-  obtain ⟨hnonempty_C, hdom, _⟩ := hscarf
+  obtain ⟨hnonempty_C, hdom, _⟩ := v.prop
   obtain ⟨p₁, p₂, hne, hp₁, hadj₁, hp₂, hadj₂, huniq⟩ :=
     ncr_injective_two_adj_pairs ords c i₀ v.val.1 v.val.2 hnonempty_C hdom hcard hnearly himg
   exact scarf_degree_of_two_adj_pairs ords c i₀ G hG v p₁ p₂ hne hp₁ hadj₁ hp₂ hadj₂ huniq
@@ -997,7 +986,7 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     · exact absurd hroom_v hv_not_room
     · rcases hmod with ⟨x, hxw, hv1eq, hv2eq⟩ | ⟨i, _, hv1eq, hv2eq⟩
       · exact ⟨x, Prod.ext
-          (Finset.eq_singleton_iff_unique_mem.mpr ⟨hxw, fun a ha => by
+          (Finset.eq_singleton_iff_unique_mem.mpr ⟨hxw, fun a ha ↦ by
             by_contra hne
             have := Finset.mem_erase.mpr ⟨hne, ha⟩
             rw [← hv1eq, hempty] at this; simp at this⟩)
@@ -1034,12 +1023,12 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
   letI linord := ords i₀
   let x_max : T := @Finset.max' T linord Finset.univ Finset.univ_nonempty
   have hx_max : ∀ y : T, ¬ (ords i₀).lt x_max y :=
-    fun y => not_lt.mpr (@Finset.le_max' T linord Finset.univ y (Finset.mem_univ y))
+    fun y ↦ not_lt.mpr (@Finset.le_max' T linord Finset.univ y (Finset.mem_univ y))
   -- ({x_max}, {i₀}) is a Scarf vertex
   have hscarf : IsScarfVtx ords c i₀ ({x_max}, {i₀}) := by
     refine ⟨⟨i₀, Finset.mem_singleton.mpr rfl⟩, ?_, ?_⟩
     · intro y; exact ⟨i₀, Finset.mem_singleton.mpr rfl,
-        fun z hz => by rw [Finset.mem_singleton] at hz; subst hz; exact hx_max y⟩
+        fun z hz ↦ by rw [Finset.mem_singleton] at hz; subst hz; exact hx_max y⟩
     · by_cases hci : c x_max = i₀
       · left; exact ⟨by simp, by simp [hci]⟩
       · right; left; refine ⟨by simp, ?_⟩
@@ -1067,9 +1056,9 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
           exact hC
   -- Conclude degree = 1
   rw [SimpleGraph.degree.eq_1, Finset.card_eq_one]
-  exact ⟨w_max, Finset.ext (fun u => by
+  exact ⟨w_max, Finset.ext (fun u ↦ by
     rw [SimpleGraph.mem_neighborFinset, Finset.mem_singleton]
-    exact ⟨fun hu => adj_unique u w_max hu hadj, fun hu => hu ▸ hadj⟩)⟩
+    exact ⟨fun hu ↦ adj_unique u w_max hu hadj, fun hu ↦ hu ▸ hadj⟩)⟩
 
 /-- For each i ∈ D, define the minimum of τ under order (ords i) as the element t ∈ τ
     such that t ≤_i x for all x ∈ τ. This exists because τ is nonempty and T has a
@@ -1159,10 +1148,10 @@ lemma ordMin_collision_unique {n : ℕ} {T : Type} [DecidableEq T]
   have hcard_erase : (D.erase b).card = τ.card := by
     rw [Finset.card_erase_of_mem hb]; omega
   have hinj : Set.InjOn (ordMin ords τ hne) ↑(D.erase b) := by grind
-  have ha_erase : a ∈ D.erase b := Finset.mem_erase.mpr ⟨fun h => hab (h ▸ rfl), ha⟩
+  have ha_erase : a ∈ D.erase b := Finset.mem_erase.mpr ⟨fun h ↦ hab (h ▸ rfl), ha⟩
   intro c hc d hd hcd hcd_eq
   by_cases hcb : c = b
-  · have hd_ne_b : d ≠ b := fun h => hcd (hcb.trans h.symm)
+  · have hd_ne_b : d ≠ b := fun h ↦ hcd (hcb.trans h.symm)
     have hd_erase : d ∈ D.erase b := Finset.mem_erase.mpr ⟨hd_ne_b, hd⟩
     have hval : ordMin ords τ hne d = ordMin ords τ hne a := by
       rw [← hcd_eq, hcb, heq]
@@ -1244,7 +1233,7 @@ lemma isDominant_erase_of_empty_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq
     isDominant ords τ (D.erase i) := by
   intro y
   obtain ⟨k, hk_mem, hk_not_lt⟩ := hMi y
-  refine ⟨k, hk_mem, fun x hx hxy => ?_⟩
+  refine ⟨k, hk_mem, fun x hx hxy ↦ ?_⟩
   have hle := ordMin_le ords τ hnonempty k x hx
   exact hk_not_lt <| @lt_of_le_of_lt T (_) _ _ _ (@le_of_not_gt T (ords k) _ _ hle) hxy
 
@@ -1440,14 +1429,11 @@ lemma isDominant_insert_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq 
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hdom : isDominant ords τ D)
     (hnonempty : τ.Nonempty)
-    (i : Fin (n + 1)) (hiD : i ∈ D)
-    (x : T) (hx_not_mem : x ∉ τ)
+    (i : Fin (n + 1)) (x : T)
     (hx_in_Mi : ∀ k ∈ D.erase i, (ords k).lt (ordMin ords τ hnonempty k) x)
-    (hx_not_lt : ¬ (ords i).lt (ordMin ords τ hnonempty i) x)
     (hx_max : ∀ y : T, (∀ k ∈ D.erase i, (ords k).lt (ordMin ords τ hnonempty k) y) →
       ¬ (ords i).lt x y) :
     isDominant ords (insert x τ) D := by
-  have _ := hiD; have _ := hx_not_mem; have _ := hx_not_lt
   intro y
   obtain ⟨k₀, hk₀D, hk₀_τ⟩ := hdom y
   by_cases hcase : (ords k₀).lt x y
@@ -1567,7 +1553,7 @@ lemma scarf_neighbor_from_collision_index {n : ℕ} {T : Type} [Fintype T] [None
     rcases hi with rfl | rfl <;> assumption
   have hcard2 : D.card ≥ 2 := by
     have := hnonempty.card_pos; omega
-  let inMi := fun (y : T) => ∀ k ∈ D.erase i, (ords k).lt (ordMin ords τ hnonempty k) y
+  let inMi := fun y ↦ ∀ k ∈ D.erase i, (ords k).lt (ordMin ords τ hnonempty k) y
   by_cases hMi : ∃ y : T, inMi y
   · obtain ⟨y₀, hy₀⟩ := hMi
     let Mi : Finset T := Finset.univ.filter inMi
@@ -1585,8 +1571,7 @@ lemma scarf_neighbor_from_collision_index {n : ℕ} {T : Type} [Fintype T] [None
     have hmi_not_lt := not_lt_ordMin_of_max_Mi ords τ D hdom hnonempty i mi hmi_in_Mi
     have hmi_not_mem := not_mem_tau_of_max_Mi ords τ D hnonempty a b ha hb hab hcoll
       i hi mi hmi_in_Mi hmi_not_lt
-    have hdom_ins := isDominant_insert_of_max_Mi ords τ D hdom hnonempty i hiD mi
-      hmi_not_mem hmi_in_Mi hmi_not_lt hmi_max
+    have hdom_ins := isDominant_insert_of_max_Mi ords τ D hdom hnonempty i mi hmi_in_Mi hmi_max
     have hscarf := isScarfVtx_insert_case ords c i₀ τ D mi hmi_not_mem hdom_ins hne hdoor hnearly
     have hadj := scarfAdjRel_insert τ D hdoor mi hmi_not_mem
     exact ⟨(insert mi τ, D), hscarf, hadj, .inr ⟨mi, hmi_not_mem, rfl, rfl, hmi_in_Mi, hmi_not_lt⟩⟩
@@ -1605,12 +1590,10 @@ lemma insert_elements_ne_of_collision {n : ℕ} {T : Type}
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (hnonempty : τ.Nonempty)
     (D : Finset (Fin (n + 1)))
-    (a b : Fin (n + 1)) (ha : a ∈ D) (_hb : b ∈ D) (hab : a ≠ b)
+    (a b : Fin (n + 1)) (ha : a ∈ D) (hab : a ≠ b)
     (x₁ x₂ : T)
-    (_hx₁_lt : ∀ k ∈ D.erase a, (ords k).lt (ordMin ords τ hnonempty k) x₁)
     (hx₁_not : ¬ (ords a).lt (ordMin ords τ hnonempty a) x₁)
-    (hx₂_lt : ∀ k ∈ D.erase b, (ords k).lt (ordMin ords τ hnonempty k) x₂)
-    (_hx₂_not : ¬ (ords b).lt (ordMin ords τ hnonempty b) x₂) :
+    (hx₂_lt : ∀ k ∈ D.erase b, (ords k).lt (ordMin ords τ hnonempty k) x₂) :
     x₁ ≠ x₂ := by
   grind
 
@@ -1620,7 +1603,7 @@ lemma scarf_two_neighbors_distinct {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (i₀ : Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
     (hnonempty : τ.Nonempty)
-    (a b : Fin (n + 1)) (ha : a ∈ D) (hb : b ∈ D) (hab : a ≠ b)
+    (a b : Fin (n + 1)) (ha : a ∈ D) (hab : a ≠ b)
     (p₁ p₂ : Finset T × Finset (Fin (n + 1)))
     (hp₁ : IsScarfVtx ords c i₀ p₁ ∧ scarfAdjRel (τ, D) p₁ ∧
       ((p₁.1 = τ ∧ p₁.2 = D.erase a) ∨
@@ -1655,8 +1638,7 @@ lemma scarf_two_neighbors_distinct {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       have : x₁ ∈ τ := hfst ▸ Finset.mem_insert_self x₁ τ
       exact hx₁_nmem this
     · have hne_elts : x₁ ≠ x₂ :=
-        insert_elements_ne_of_collision ords τ hnonempty D a b ha hb hab
-          x₁ x₂ hx₁_lt hx₁_not hx₂_lt hx₂_not
+        insert_elements_ne_of_collision ords τ hnonempty D a b ha hab x₁ x₂ hx₁_not hx₂_lt
       intro heq
       have hfst : insert x₁ τ = insert x₂ τ := by
         have := congr_arg Prod.fst heq; simp only [h1l, h2l] at this; exact this
@@ -1708,9 +1690,7 @@ lemma erase_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
-    (_hne : D.Nonempty)
     (hdoor : D.card = τ.card + 1)
-    (_hnearly : D \ τ.image c = {i₀})
     (hnonempty : τ.Nonempty)
     (a b : Fin (n + 1)) (ha : a ∈ D) (hb : b ∈ D) (hab : a ≠ b)
     (hcoll : ordMin ords τ hnonempty a = ordMin ords τ hnonempty b)
@@ -1756,7 +1736,7 @@ lemma insert_dominant_gives_ordMin_conditions {n : ℕ} {T : Type} [Fintype T] [
   have hne' : (insert x τ).Nonempty := Finset.insert_nonempty x τ
   set f := ordMin ords (insert x τ) hne' with hf_def
   have hsurj : ∀ t ∈ insert x τ, ∃ i ∈ D, f i = t :=
-    fun t ht => ordMin_surj_on_tau ords (insert x τ) D hne' hdom_ins t ht
+    fun t ht ↦ ordMin_surj_on_tau ords (insert x τ) D hne' hdom_ins t ht
   have himg_supset : insert x τ ⊆ D.image f := by grind
   have himg_subset : D.image f ⊆ insert x τ := by
     intro t ht
@@ -1813,25 +1793,20 @@ lemma ordMin_insert_eq_of_lt {n : ℕ} {T : Type} [DecidableEq T]
 lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
-    (hdom : isDominant ords τ D)
     (hdoor : D.card = τ.card + 1)
     (hnonempty : τ.Nonempty)
     (a b : Fin (n + 1)) (ha : a ∈ D) (hb : b ∈ D) (hab : a ≠ b)
     (hcoll : ordMin ords τ hnonempty a = ordMin ords τ hnonempty b)
-    (huniq : ∀ c' ∈ D, ∀ d ∈ D, c' ≠ d →
-      ordMin ords τ hnonempty c' = ordMin ords τ hnonempty d →
-        ({c', d} : Finset (Fin (n + 1))) = {a, b})
     (i : Fin (n + 1)) (hi : i ∈ D)
     (hia : i ≠ a) (hib : i ≠ b)
     (x : T) (hx : x ∉ τ)
     (hdom_ins : isDominant ords (insert x τ) D)
     (hx_Mi : ∀ k ∈ D.erase i, (ords k).lt (ordMin ords τ hnonempty k) x) :
     False := by
-  have _ := huniq; have _ := hdom
   have hne_ins : (insert x τ).Nonempty := Finset.insert_nonempty x τ
   have hordMin_eq : ∀ k ∈ D.erase i,
       ordMin ords (insert x τ) hne_ins k = ordMin ords τ hnonempty k :=
-    fun k hk => ordMin_insert_eq_of_lt ords τ hnonempty k x (hx_Mi k hk)
+    fun k hk ↦ ordMin_insert_eq_of_lt ords τ hnonempty k x (hx_Mi k hk)
   have ⟨jx, hjx_mem, hjx_eq⟩ := ordMin_surj_on_tau ords (insert x τ) D hne_ins hdom_ins x
     (Finset.mem_insert_self x τ)
   have hjx_eq_i : jx = i := by
@@ -1840,7 +1815,7 @@ lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] [Decidab
     have : ordMin ords (insert x τ) hne_ins jx = ordMin ords τ hnonempty jx := hordMin_eq jx hjx_ei
     rw [this] at hjx_eq
     exact hx (hjx_eq ▸ ordMin_mem ords τ hnonempty jx)
-  have hsub : τ ⊆ (D.erase i).image (fun k => ordMin ords τ hnonempty k) := by
+  have hsub : τ ⊆ (D.erase i).image (fun k ↦ ordMin ords τ hnonempty k) := by
     intro t ht
     have ht_ins : t ∈ insert x τ := Finset.mem_insert_of_mem ht
     obtain ⟨j, hj_mem, hj_eq⟩ := ordMin_surj_on_tau ords (insert x τ) D hne_ins hdom_ins t ht_ins
@@ -1849,26 +1824,22 @@ lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] [Decidab
   have hb_ei : b ∈ D.erase i := Finset.mem_erase.mpr ⟨hib.symm, hb⟩
   have hcard_ei : (D.erase i).card = τ.card := by
     rw [Finset.card_erase_of_mem hi, hdoor]; omega
-  have hninj : ¬ Set.InjOn (fun k => ordMin ords τ hnonempty k) ↑(D.erase i) := by
+  have hninj : ¬ Set.InjOn (fun k ↦ ordMin ords τ hnonempty k) ↑(D.erase i) := by
     intro hinj
     exact absurd (hinj ha_ei hb_ei hcoll) hab
-  have hlt : ((D.erase i).image (fun k => ordMin ords τ hnonempty k)).card < τ.card := by
+  have hlt : ((D.erase i).image (fun k ↦ ordMin ords τ hnonempty k)).card < τ.card := by
     rw [← hcard_ei]
-    exact lt_of_le_of_ne Finset.card_image_le (fun h => hninj (Finset.card_image_iff.mp h))
+    exact lt_of_le_of_ne Finset.card_image_le (fun h ↦ hninj (Finset.card_image_iff.mp h))
   have hle := Finset.card_le_card hsub
   omega
 
 lemma ordMin_conditions_index_in_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
     (τ : Finset T) (D : Finset (Fin (n + 1)))
-    (hdom : isDominant ords τ D)
     (hdoor : D.card = τ.card + 1)
     (hnonempty : τ.Nonempty)
     (a b : Fin (n + 1)) (ha : a ∈ D) (hb : b ∈ D) (hab : a ≠ b)
     (hcoll : ordMin ords τ hnonempty a = ordMin ords τ hnonempty b)
-    (huniq : ∀ c' ∈ D, ∀ d ∈ D, c' ≠ d →
-      ordMin ords τ hnonempty c' = ordMin ords τ hnonempty d →
-        ({c', d} : Finset (Fin (n + 1))) = {a, b})
     (i : Fin (n + 1)) (hi : i ∈ D)
     (x : T) (hx : x ∉ τ)
     (hdom_ins : isDominant ords (insert x τ) D)
@@ -1877,7 +1848,7 @@ lemma ordMin_conditions_index_in_ab {n : ℕ} {T : Type} [Fintype T] [DecidableE
   simp only [Finset.mem_insert, Finset.mem_singleton]
   by_contra h
   push_neg at h
-  exact ordMin_conditions_not_outside_ab ords τ D hdom hdoor hnonempty a b ha hb hab hcoll huniq
+  exact ordMin_conditions_not_outside_ab ords τ D hdoor hnonempty a b ha hb hab hcoll
     i hi h.1 h.2 x hx hdom_ins hx_Mi
 
 lemma x_maximal_in_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
@@ -1903,10 +1874,8 @@ lemma x_maximal_in_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
 
 lemma insert_elements_equal {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
-    (τ : Finset T) (D : Finset (Fin (n + 1)))
-    (hnonempty : τ.Nonempty)
-    (i : Fin (n + 1)) (hi : i ∈ D)
-    (x x' : T) (_hx : x ∉ τ) (_hx' : x' ∉ τ)
+    (τ : Finset T) (D : Finset (Fin (n + 1))) (hnonempty : τ.Nonempty)
+    (i : Fin (n + 1)) (hi : i ∈ D) (x x' : T)
     (hdom_x : isDominant ords (insert x τ) D)
     (hdom_x' : isDominant ords (insert x' τ) D)
     (hx_Mi : ∀ k ∈ D.erase i, (ords k).lt (ordMin ords τ hnonempty k) x)
@@ -1923,7 +1892,6 @@ lemma insert_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
-    (hdom : isDominant ords τ D)
     (hdoor : D.card = τ.card + 1)
     (hnonempty : τ.Nonempty)
     (a b : Fin (n + 1)) (ha : a ∈ D) (hb : b ∈ D) (hab : a ≠ b)
@@ -1949,8 +1917,8 @@ lemma insert_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     q = p₁ ∨ q = p₂ := by
   obtain ⟨i, hi, hx_Mi, hx_not_lt⟩ :=
     insert_dominant_gives_ordMin_conditions ords τ D x hx hdom_ins hdoor hnonempty
-  have hi_ab := ordMin_conditions_index_in_ab ords τ D hdom hdoor hnonempty a b ha hb hab
-    hcoll huniq i hi x hx hdom_ins hx_Mi
+  have hi_ab := ordMin_conditions_index_in_ab ords τ D hdoor hnonempty a b ha hb hab
+    hcoll i hi x hx hdom_ins hx_Mi
   simp only [Finset.mem_insert, Finset.mem_singleton] at hi_ab
   obtain hi_eq | hi_eq := hi_ab
   · subst hi_eq
@@ -1964,7 +1932,7 @@ lemma insert_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     · have hdom_x₁ : isDominant ords (insert x₁ τ) D := by
         rw [← hp₁_fst, ← hp₁_snd]; exact hp₁_scarf.2.1
       have hx_eq : x = x₁ :=
-        insert_elements_equal ords τ D hnonempty i hi x x₁ hx hx₁_nmem hdom_ins hdom_x₁ hx_Mi hx₁_Mi
+        insert_elements_equal ords τ D hnonempty i hi x x₁ hdom_ins hdom_x₁ hx_Mi hx₁_Mi
       ext1
       · simp [hq1, hp₁_fst, hx_eq]
       · simp [hq2, hp₁_snd]
@@ -1979,7 +1947,7 @@ lemma insert_case_q_eq_p1_or_p2 {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     · have hdom_x₂ : isDominant ords (insert x₂ τ) D := by
         rw [← hp₂_fst, ← hp₂_snd]; exact hp₂_scarf.2.1
       have hx_eq : x = x₂ :=
-        insert_elements_equal ords τ D hnonempty i hi x x₂ hx hx₂_nmem hdom_ins hdom_x₂ hx_Mi hx₂_Mi
+        insert_elements_equal ords τ D hnonempty i hi x x₂ hdom_ins hdom_x₂ hx_Mi hx₂_Mi
       ext1
       · simp [hq1, hp₂_fst, hx_eq]
       · simp [hq2, hp₂_snd]
@@ -1989,9 +1957,7 @@ lemma scarf_neighbor_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (τ : Finset T) (D : Finset (Fin (n + 1)))
-    (hne : D.Nonempty) (hdom : isDominant ords τ D)
     (hdoor : D.card = τ.card + 1)
-    (hnearly : D \ τ.image c = {i₀})
     (hnonempty : τ.Nonempty)
     (a b : Fin (n + 1)) (ha : a ∈ D) (hb : b ∈ D) (hab : a ≠ b)
     (hcoll : ordMin ords τ hnonempty a = ordMin ords τ hnonempty b)
@@ -2017,10 +1983,10 @@ lemma scarf_neighbor_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
   · obtain ⟨x, hx, hq1, hq2, hdom_ins⟩ := hinsert
     have hqscarf' : IsScarfVtx ords c i₀ (insert x τ, D) := by
       rwa [show q = (insert x τ, D) from Prod.ext hq1 hq2] at hqscarf
-    exact insert_case_q_eq_p1_or_p2 ords c i₀ τ D hdom hdoor hnonempty
+    exact insert_case_q_eq_p1_or_p2 ords c i₀ τ D hdoor hnonempty
       a b ha hb hab hcoll huniq p₁ p₂ hp₁ hp₂ x hx hdom_ins q hq1 hq2
   · obtain ⟨i, hi, hq1, hq2, hdom_er⟩ := herase
-    exact erase_case_q_eq_p1_or_p2 ords c i₀ τ D hne hdoor hnearly hnonempty
+    exact erase_case_q_eq_p1_or_p2 ords c i₀ τ D hdoor hnonempty
       a b ha hb hab hcoll p₁ p₂ hp₁ hp₂ i hi hdom_er q hq1 hq2
 
 lemma scarf_internal_door_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
@@ -2049,13 +2015,12 @@ lemma scarf_internal_door_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonemp
       a b ha hb hab hcoll huniq b (Finset.mem_insert_of_mem (Finset.mem_singleton_self b))
   -- Step 3: Show they are distinct
   have hdist : p₁ ≠ p₂ :=
-    scarf_two_neighbors_distinct ords c i₀ τ D hnonempty a b ha hb hab p₁ p₂
+    scarf_two_neighbors_distinct ords c i₀ τ D hnonempty a b ha hab p₁ p₂
       ⟨hp₁scarf, hp₁adj, hp₁form⟩ ⟨hp₂scarf, hp₂adj, hp₂form⟩
   -- Step 4: Show uniqueness
   exact ⟨p₁, p₂, hdist, hp₁scarf, hp₁adj, hp₂scarf, hp₂adj,
-    fun q hqscarf hqadj =>
-      scarf_neighbor_uniqueness ords c i₀ τ D hne hdom hdoor hnearly hnonempty
-        a b ha hb hab hcoll huniq p₁ p₂
+    fun q hqscarf hqadj ↦
+      scarf_neighbor_uniqueness ords c i₀ τ D hdoor hnonempty a b ha hb hab hcoll huniq p₁ p₂
         ⟨hp₁scarf, hp₁adj, hp₁form⟩ ⟨hp₂scarf, hp₂adj, hp₂form⟩ q hqscarf hqadj⟩
 
 lemma scarf_degree_internal_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
@@ -2070,8 +2035,7 @@ lemma scarf_degree_internal_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (hnearly : v.val.2 \ v.val.1.image c = {i₀})
     (hnonempty : v.val.1.Nonempty) :
     G.degree v = 2 := by
-  have hvtx := v.prop
-  obtain ⟨hDne, hdom, _⟩ := hvtx
+  obtain ⟨hDne, hdom, _⟩ := v.prop
   obtain ⟨p₁, p₂, hne, hp₁, hadj₁, hp₂, hadj₂, huniq⟩ :=
     scarf_internal_door_two_adj_pairs ords c i₀ v.val.1 v.val.2 hDne hdom hdoor hnearly hnonempty
   exact scarf_degree_of_two_adj_pairs ords c i₀ G hG v p₁ p₂ hne hp₁ hadj₁ hp₂ hadj₂ huniq
@@ -2141,17 +2105,15 @@ lemma scarfAdjRel_v0_iff {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Decidabl
     · -- Case 2: w is a room
       rcases hadj' with ⟨x, hx, hv1, hv2⟩ | ⟨i, hi, hv1, hv2⟩
       · -- Sub-case 2a: ∃ x ∈ w.1, ∅ = w.1.erase x ∧ {i₀} = w.2
-        have hv1' : w.1.erase x = ∅ := hv1.symm
-        have hw2 : w.2 = {i₀} := hv2.symm
         have hw1 : w.1 = {x} := by
           ext a; simp only [Finset.mem_singleton]
           constructor
           · intro ha
             by_contra hne'
             have hmem : a ∈ w.1.erase x := Finset.mem_erase.mpr ⟨hne', ha⟩
-            rw [hv1'] at hmem; exact absurd hmem (Finset.notMem_empty _)
+            rw [← hv1] at hmem; exact absurd hmem (Finset.notMem_empty _)
           · intro ha; subst ha; exact hx
-        have hw_eq : w = ({x}, {i₀}) := Prod.ext hw1 hw2
+        have hw_eq : w = ({x}, {i₀}) := Prod.ext hw1 hv2.symm
         refine ⟨x, ?_, hw_eq⟩
         intro y
         have hdom := hw.2.1
@@ -2160,8 +2122,7 @@ lemma scarfAdjRel_v0_iff {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Decidabl
         rw [Finset.mem_singleton] at hj; subst hj
         exact hj' x (Finset.mem_singleton_self x)
       · -- Sub-case 2b: ∃ i ∉ w.2, ∅ = w.1 ∧ {i₀} = insert i w.2
-        have hv1' : w.1 = ∅ := hv1.symm
-        rw [hv1'] at hcard; simp at hcard
+        rw [← hv1] at hcard; simp at hcard
         have : w.2 = ∅ := Finset.card_eq_zero.mp hcard.symm
         exact absurd (this ▸ hw.1) Finset.not_nonempty_empty
   · intro ⟨x, _, hw_eq⟩
@@ -2173,14 +2134,13 @@ lemma exists_unique_max {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (i₀ : Fin (n + 1)) :
     ∃! x : T, ∀ y : T, ¬ (ords i₀).lt x y := by
   letI : LinearOrder T := ords i₀
-  have hne : (Finset.univ : Finset T).Nonempty := Finset.univ_nonempty
-  refine ⟨Finset.max' Finset.univ hne, ?_, ?_⟩
+  refine ⟨Finset.max' Finset.univ Finset.univ_nonempty, ?_, ?_⟩
   · intro y
     exact not_lt.mpr (Finset.le_max' _ _ (Finset.mem_univ y))
   · intro x hx
     apply le_antisymm
     · exact Finset.le_max' _ _ (Finset.mem_univ x)
-    · exact not_lt.mp (hx (Finset.max' Finset.univ hne))
+    · exact not_lt.mp (hx (Finset.max' Finset.univ Finset.univ_nonempty))
 
 lemma max_isScarfVtx {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -2189,7 +2149,7 @@ lemma max_isScarfVtx {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq 
     IsScarfVtx ords c i₀ ({x_max}, {i₀}) := by
   refine ⟨Finset.singleton_nonempty _, ?_, ?_⟩
   · intro y
-    exact ⟨i₀, Finset.mem_singleton_self _, fun x hx => by grind⟩
+    exact ⟨i₀, Finset.mem_singleton_self _, fun x hx ↦ by grind⟩
   · grind
 
 lemma scarf_v0_degree_one {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
@@ -2225,8 +2185,7 @@ def μ' {n : ℕ} {T : Type} (ords : Fin (n + 1) → LinearOrder T)
 def admSet {n : ℕ} {T : Type} [Fintype T]
     (ords : Fin (n + 1) → LinearOrder T) (σ : Finset T)
     (hσne : σ.Nonempty) (CC : Finset (Fin (n + 1))) (i : Fin (n + 1)) : Finset T :=
-  Finset.univ.filter fun y =>
-    ∀ k ∈ CC.erase i, (ords k).lt (μ' ords σ hσne k) y
+  Finset.univ.filter fun y ↦ ∀ k ∈ CC.erase i, (ords k).lt (μ' ords σ hσne k) y
 
 /-- If τ ⊆ σ and σ is dominant w.r.t. C, then τ is dominant w.r.t. C.
     isDominant requires ∀ y, ∃ i ∈ C, ∀ x ∈ σ, ¬(ords i).lt x y.
@@ -2237,7 +2196,7 @@ lemma isDominant_subset {n : ℕ} {T : Type}
     (σ τ : Finset T) (C : Finset (Fin (n + 1)))
     (hsub : τ ⊆ σ) (hdom : isDominant ords σ C) :
     isDominant ords τ C := by
-  intro y; obtain ⟨i, hi, hmin⟩ := hdom y; exact ⟨i, hi, fun x hx => hmin x (hsub hx)⟩
+  intro y; obtain ⟨i, hi, hmin⟩ := hdom y; exact ⟨i, hi, fun x hx ↦ hmin x (hsub hx)⟩
 
 /-- If σ is dominant w.r.t. C and C ⊆ D, then σ is dominant w.r.t. D.
     isDominant requires ∀ y, ∃ i ∈ C, ∀ x ∈ σ, ¬(ords i).lt x y.
@@ -2285,9 +2244,8 @@ lemma isDominant_erase_of_admSet_empty {n : ℕ} {T : Type} [Fintype T]
   simp only [admSet, Finset.mem_filter, Finset.mem_univ, true_and] at hy
   have hy' : ∃ k ∈ CC.erase i, ¬(ords k).lt (μ' ords σ hσne k) y := by grind
   obtain ⟨k, hk, hle⟩ := hy'
-  exact ⟨k, hk, fun x hx hxy =>
-    hle (@lt_of_le_of_lt T (ords k).toPreorder _ _ _
-      (@Finset.min'_le T (ords k) σ x hx) hxy)⟩
+  exact ⟨k, hk, fun x hx hxy ↦
+    hle (@lt_of_le_of_lt T (ords k).toPreorder _ _ _ (@Finset.min'_le T (ords k) σ x hx) hxy)⟩
 
 /-- If (σ, CC) is a nearly colorful door and σ is dominant w.r.t. CC.erase i, then
     (σ, CC.erase i) is IsScarfVtx. Room has σ.card = (CC.erase i).card. The sdiff
@@ -2333,7 +2291,7 @@ lemma isScarfVtx_erase {n : ℕ} {T : Type} [DecidableEq T]
     · show σ.card = (CC.erase i).card; exact hcard_room
     · show (CC.erase i) \ σ.image c = {i₀}
       exact Finset.eq_singleton_iff_nonempty_unique_mem.mpr
-        ⟨h, fun x hx => Finset.mem_singleton.mp (hsub hx)⟩
+        ⟨h, fun x hx ↦ Finset.mem_singleton.mp (hsub hx)⟩
 
 /-- If m is the max of admSet(i) and m ∈ admSet(i), then insert m σ is dominant w.r.t. CC.
     For k ≠ i, μ'(k) <_k m so min_k stays μ'(k). For k = i, m <_i μ'(i). If ∃ y with
@@ -2475,7 +2433,7 @@ lemma isScarfVtx_insert {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     right; left
     show (insert m σ).card = CC.card ∧ CC \ (insert m σ).image c = {i₀}
     exact ⟨hcard, Finset.eq_singleton_iff_nonempty_unique_mem.mpr
-        ⟨h, fun x hx => Finset.mem_singleton.mp (hsub hx)⟩⟩
+        ⟨h, fun x hx ↦ Finset.mem_singleton.mp (hsub hx)⟩⟩
 
 /-- If c is injective on σ and y ∈ σ, then (σ.erase y).image c = (σ.image c).erase (c y).
     Uses `Set.InjOn c ↑σ` to ensure c(y) is uniquely realized by y.
@@ -2486,9 +2444,9 @@ lemma image_erase_of_injOn' {T : Type} [DecidableEq T] {n : ℕ}
     (σ.erase y).image c = (σ.image c).erase (c y) := by
   ext j; simp only [Finset.mem_image, Finset.mem_erase]; constructor
   · rintro ⟨a, ⟨hay, ha⟩, rfl⟩
-    exact ⟨fun h => hay (hinj ha hy h), a, ha, rfl⟩
+    exact ⟨fun h ↦ hay (hinj ha hy h), a, ha, rfl⟩
   · rintro ⟨hjcy, a, ha, rfl⟩
-    exact ⟨a, ⟨fun h => hjcy (h ▸ rfl), ha⟩, rfl⟩
+    exact ⟨a, ⟨fun h ↦ hjcy (h ▸ rfl), ha⟩, rfl⟩
 
 /-- If CC \ Im = {i₀} and j ∉ CC, then CC \ Im.erase j = {i₀}.
     Erasing j from Im cannot affect the sdiff since j ∉ CC.
@@ -2530,7 +2488,7 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
     2 ≤ G.degree v := by
   -- Pigeonhole: find a ≠ b ∈ CC with μ'(a) = μ'(b)
   have hμ_maps : ∀ k ∈ CC, μ' ords σ hσne k ∈ σ :=
-    fun k _ => @Finset.min'_mem T (ords k) σ hσne
+    fun k _ ↦ @Finset.min'_mem T (ords k) σ hσne
   have hcard_lt : σ.card < CC.card := by omega
   obtain ⟨a, ha, b, hb, hab, hμeq⟩ :=
     Finset.exists_ne_map_eq_of_card_lt_of_maps_to hcard_lt hμ_maps
@@ -2580,7 +2538,7 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
       have hm_b_max : ∀ y ∈ admSet ords σ hσne CC b, ¬(ords b).lt m_b y := by
         intro y hy
         exact (@not_lt T (ords b)).mpr (@Finset.le_max' T (ords b) _ y hy)
-      have hm_b_not_σ : m_b ∉ σ := fun h =>
+      have hm_b_not_σ : m_b ∉ σ := fun h ↦
         m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq b (Or.inr rfl) m_b hm_b_mem h
       have hDom_ins := isDominant_insert_of_admSet_max ords σ CC hσne hDom b hb _ hm_b_mem hm_b_max
       have hvtx_b := isScarfVtx_insert ords c i₀ σ CC m_b hm_b_not_σ hCne hDom_ins hdoor_card hnear
@@ -2614,7 +2572,7 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
       intro y hy
       exact (@not_lt T (ords a)).mpr (@Finset.le_max' T (ords a) _ y hy)
     have hm_a_not_σ : m_a ∉ σ :=
-      fun h => m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq a (Or.inl rfl) m_a hm_a_mem h
+      fun h ↦ m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq a (Or.inl rfl) m_a hm_a_mem h
     have hDom_ins_a := isDominant_insert_of_admSet_max ords σ CC hσne hDom a ha _ hm_a_mem hm_a_max
     have hvtx_a := isScarfVtx_insert ords c i₀ σ CC m_a hm_a_not_σ hCne hDom_ins_a hdoor_card hnear
     by_cases hb_empty : admSet ords σ hσne CC b = ∅
@@ -2658,7 +2616,7 @@ lemma internal_door_degree_ge_two {n : ℕ} {T : Type} [Fintype T] [Nonempty T] 
       have hm_b_max : ∀ y ∈ admSet ords σ hσne CC b, ¬(ords b).lt m_b y := by
         intro y hy
         exact (@not_lt T (ords b)).mpr (@Finset.le_max' T (ords b) _ y hy)
-      have hm_b_not_σ : m_b ∉ σ := fun h =>
+      have hm_b_not_σ : m_b ∉ σ := fun h ↦
         m_not_mem_σ_aux ords σ CC hσne hDom a b ha hb hab hμeq b (Or.inr rfl) m_b hm_b_mem h
       have hDom_ins_b := isDominant_insert_of_admSet_max ords σ _ hσne hDom b hb _ hm_b_mem hm_b_max
       have hvtx_b := isScarfVtx_insert ords c i₀ σ CC _ hm_b_not_σ hCne hDom_ins_b hdoor_card hnear
@@ -2836,10 +2794,9 @@ lemma scarf_degree_one_is_colorful {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       omega
     · -- Outside door → v = v₀
       rw [Finset.not_nonempty_iff_eq_empty] at hσne
-      have hσeq : σ = ∅ := hσne
-      simp [hσeq] at hnear
+      simp [hσne] at hnear
       apply hne; apply Subtype.ext; rw [hv₀]
-      exact Prod.ext hσeq hnear
+      exact Prod.ext hσne hnear
 
 lemma scarf_graph_construction (n : ℕ) (T : Type) [Fintype T] [Nonempty T]
     [DecidableEq T]
@@ -2857,9 +2814,9 @@ lemma scarf_graph_construction (n : ℕ) (T : Type) [Fintype T] [Nonempty T]
   let i₀ : Fin (n + 1) := ⟨0, Nat.zero_lt_succ n⟩
   let V := { p : Finset T × Finset (Fin (n + 1)) // IsScarfVtx ords c i₀ p }
   let G : SimpleGraph V := {
-    Adj := fun v w => scarfAdjRel v.val w.val
-    symm := fun v w (h : scarfAdjRel v.val w.val) => scarfAdjRel_symm v.val w.val h
-    loopless := ⟨fun v (h : scarfAdjRel v.val v.val) => h.1 rfl⟩
+    Adj := fun v w ↦ scarfAdjRel v.val w.val
+    symm := fun v w (h : scarfAdjRel v.val w.val) ↦ scarfAdjRel_symm v.val w.val h
+    loopless := ⟨fun v (h : scarfAdjRel v.val v.val) ↦ h.1 rfl⟩
   }
   have hDecAdj : DecidableRel G.Adj := by
     intro v w; exact Classical.dec _
@@ -2869,7 +2826,7 @@ lemma scarf_graph_construction (n : ℕ) (T : Type) [Fintype T] [Nonempty T]
   exact ⟨V, inferInstance, inferInstance, G, hDecAdj, v₀,
     scarf_degree_one_or_two ords c i₀ G hG,
     scarf_v0_degree_one ords c i₀ G hG v₀ rfl,
-    fun v hne hdeg => scarf_degree_one_is_colorful ords c i₀ G hG v₀ rfl v hne hdeg⟩
+    fun v hne hdeg ↦ scarf_degree_one_is_colorful ords c i₀ G hG v₀ rfl v hne hdeg⟩
 
 lemma degree_two_other_adj {V : Type} [Fintype V] [DecidableEq V]
     (G : SimpleGraph V) [DecidableRel G.Adj]
@@ -2956,7 +2913,6 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
           (show p.length ∈ {j | j ≤ p.length} by simp)
           (by rw [← h_snd_supp, ← h_v_last, heq])
         omega
-      have hv_adj : G.Adj v₀ v := hadj.symm
       have : G.degree v₀ ≥ 2 := by
         rw [SimpleGraph.degree]
         have hsub : {p.snd, v} ⊆ G.neighborFinset v₀ := by
@@ -2965,7 +2921,7 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
           rw [SimpleGraph.mem_neighborFinset]
           rcases hx with rfl | rfl
           · exact hsnd_adj
-          · exact hv_adj
+          · exact hadj.symm
         calc (G.neighborFinset v₀).card ≥ ({p.snd, v} : Finset V).card :=
               Finset.card_le_card hsub
           _ = 2 := Finset.card_pair hsnd_ne_v
@@ -2977,7 +2933,6 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
       exact G.irrefl (hi_eq ▸ hadj)
     · -- Case B: 0 < i < p.length, w is internal
       have hi_lt : i < p.length := Nat.lt_of_le_of_ne hi_le hlen
-      have hi_pos : i ≠ 0 := h0
       -- First handle special case: if i + 1 = p.length, then w = penultimate
       by_cases hip1 : i + 1 = p.length
       · have : w = p.penultimate := by
@@ -3005,7 +2960,7 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
             (show i + 1 ∈ {j | j ≤ p.length} by simp; omega)
             h1) (by omega)
         -- w's neighbors in p.toSubgraph are {getVert(i-1), getVert(i+1)}
-        have hns := hp.neighborSet_toSubgraph_internal hi_pos hi_lt
+        have hns := hp.neighborSet_toSubgraph_internal h0 hi_lt
         rw [hi_eq] at hns
         -- getVert(i-1) and getVert(i+1) are neighbors of w in G
         have hadj_prev : G.Adj w (p.getVert (i - 1)) := by
@@ -3016,8 +2971,6 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
           have hmem : p.getVert (i + 1) ∈ p.toSubgraph.neighborSet w := by
             rw [hns]; exact Set.mem_insert_iff.mpr (Or.inr rfl)
           exact ((p.toSubgraph.mem_neighborSet w _).mp hmem).adj_sub
-        -- v is also adjacent to w
-        have hadj_v : G.Adj w v := hadj.symm
         -- getVert(i-1) ≠ getVert(i+1)
         have hprev_ne_next : p.getVert (i - 1) ≠ p.getVert (i + 1) := by
           intro heq
@@ -3035,7 +2988,7 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
             rcases hx with rfl | rfl | rfl
             · exact hadj_prev
             · exact hadj_next
-            · exact hadj_v
+            · exact hadj.symm
           have hcard : ({p.getVert (i - 1), p.getVert (i + 1), v} : Finset V).card = 3 := by
             rw [Finset.card_insert_of_notMem, Finset.card_pair hv_ne_next.symm]
             simp only [Finset.mem_insert, Finset.mem_singleton]
@@ -3059,7 +3012,7 @@ lemma degree_one_two_path_aux {V : Type} [Fintype V] [DecidableEq V]
   let p' := p.concat hw_adj
   have hp' : p'.IsPath := hp.concat hw_notin hw_adj
   rcases hdeg w with hw1 | hw2
-  · exact ⟨w, fun h => hw_notin (h ▸ p.start_mem_support), hw1, p'.reachable⟩
+  · exact ⟨w, fun h ↦ hw_notin (h ▸ p.start_mem_support), hw1, p'.reachable⟩
   · have hnil' : ¬p'.Nil := by
       apply SimpleGraph.Walk.not_nil_of_ne; intro heq
       exact hw_notin (heq ▸ p.start_mem_support)
@@ -3115,10 +3068,8 @@ lemma scarf_abstract (n : ℕ) (T : Type) [Fintype T] [Nonempty T]
       (∀ i ∈ C, ∃ x ∈ σ₀, c x = i) ∧
       (∀ y : T, ∃ i ∈ C, ∀ x ∈ σ₀, ¬ (ords i).lt x y) := by
   obtain ⟨σ₀, C, hσ, hC, hcard, himg, hdom⟩ := scarf_colorful_room_exists n T ords c
-  exact ⟨σ₀, C, hσ, hC, hcard,
-    fun x hx => himg ▸ Finset.mem_image_of_mem c hx,
-    fun i hi => by rw [himg] at hi; exact Finset.mem_image.mp hi,
-    hdom⟩
+  exact ⟨σ₀, C, hσ, hC, hcard, fun x hx ↦ himg ▸ Finset.mem_image_of_mem c hx,
+    fun i hi ↦ by rw [himg] at hi; exact Finset.mem_image.mp hi, hdom⟩
 
 def DiscreteSimplex (n l : ℕ) : Type :=
   { x : ↑(stdSimplex ℝ (Fin (n + 1))) //
@@ -3134,7 +3085,7 @@ lemma scarf_on_finite_type (n l : ℕ)
       (∀ x ∈ σ₀, c x.1 ∈ C) ∧
       (∀ i ∈ C, ∃ x ∈ σ₀, c x.1 = i) ∧
       (∀ y : DiscreteSimplex n l, ∃ i ∈ C, ∀ x ∈ σ₀, ¬ (ords i).lt x y) :=
-  scarf_abstract n (DiscreteSimplex n l) ords (fun x => c x.1)
+  scarf_abstract n (DiscreteSimplex n l) ords (fun x ↦ c x.1)
 
 lemma discreteSimplex_numerator_bound {n l : ℕ} (hl : 0 < l)
     (x : ↑(stdSimplex ℝ (Fin (n + 1))))
@@ -3150,7 +3101,7 @@ lemma discreteSimplex_numerator_bound {n l : ℕ} (hl : 0 < l)
 
 def discreteSimplex_encode (n l : ℕ) (hl : 0 < l) :
     DiscreteSimplex n l → (Fin (n + 1) → Fin (l + 1)) :=
-  fun ⟨x, hx⟩ i => ⟨(hx i).choose, discreteSimplex_numerator_bound hl x hx i⟩
+  fun ⟨x, hx⟩ i ↦ ⟨(hx i).choose, discreteSimplex_numerator_bound hl x hx i⟩
 
 lemma discreteSimplex_encode_injective (n l : ℕ) (hl : 0 < l) :
     Function.Injective (discreteSimplex_encode n l hl) := by
@@ -3173,7 +3124,7 @@ lemma discreteSimplex_finite (n l : ℕ) (hl : 0 < l) :
 
 lemma discreteSimplex_nonempty (n l : ℕ) (hl : 0 < l) :
     Nonempty (DiscreteSimplex n l) := by
-  refine ⟨⟨stdSimplex.vertex 0, fun i => ?_⟩⟩
+  refine ⟨⟨stdSimplex.vertex 0, fun i ↦ ?_⟩⟩
   simp only [stdSimplex.vertex_coe, Pi.single_apply]
   split
   · exact ⟨l, by simp [ne_of_gt (Nat.cast_pos.mpr hl), div_self]⟩
@@ -3186,7 +3137,7 @@ lemma discreteSimplex_nonempty (n l : ℕ) (hl : 0 < l) :
     ensuring that coordinate i is compared first. -/
 def rotateCoord (n l : ℕ) (i : Fin (n + 1)) (x : DiscreteSimplex n l) :
     Lex (Fin (n + 1) → ℝ) :=
-  toLex (fun j => (x.1 : Fin (n + 1) → ℝ) (i + j))
+  toLex (fun j ↦ (x.1 : Fin (n + 1) → ℝ) (i + j))
 
 /-- The rotation map rotateCoord is injective for any fixed i.
 
@@ -3200,7 +3151,7 @@ def rotateCoord (n l : ℕ) (i : Fin (n + 1)) (x : DiscreteSimplex n l) :
 lemma rotateCoord_injective (n l : ℕ) (i : Fin (n + 1)) :
     Function.Injective (rotateCoord n l i : DiscreteSimplex n l → Lex (Fin (n + 1) → ℝ)) := by
   intro a b hab
-  have hab' : (fun j => (a.1 : Fin (n + 1) → ℝ) (i + j)) = fun j => b.1 (i + j) := by
+  have hab' : (fun j ↦ (a.1 : Fin (n + 1) → ℝ) (i + j)) = fun j ↦ b.1 (i + j) := by
     exact toLex_inj.mp hab
   have heq : (a.1 : Fin (n + 1) → ℝ) = (b.1 : Fin (n + 1) → ℝ) := by
     ext k
@@ -3222,17 +3173,17 @@ lemma rotateCoord_lt_of_coord_lt (n l : ℕ) (i : Fin (n + 1))
     (x y : DiscreteSimplex n l)
     (h : (x.1 : Fin (n + 1) → ℝ) i < (y.1 : Fin (n + 1) → ℝ) i) :
     rotateCoord n l i x < rotateCoord n l i y := by
-  show Pi.Lex (· < ·) (fun {_} => (· < ·))
-    (fun j => (x.1 : Fin (n + 1) → ℝ) (i + j))
-    (fun j => (y.1 : Fin (n + 1) → ℝ) (i + j))
+  show Pi.Lex (· < ·) (fun {_} ↦ (· < ·))
+    (fun j ↦ (x.1 : Fin (n + 1) → ℝ) (i + j))
+    (fun j ↦ (y.1 : Fin (n + 1) → ℝ) (i + j))
   rw [Pi.Lex.eq_1]
-  exact ⟨0, fun j hj => absurd hj (Fin.not_lt.mpr (Fin.zero_le j)), by simpa using h⟩
+  exact ⟨0, fun j hj ↦ absurd hj (Fin.not_lt.mpr (Fin.zero_le j)), by simpa using h⟩
 
 lemma build_coord_compatible_orders (n l : ℕ) :
     ∃ ords : Fin (n + 1) → LinearOrder (DiscreteSimplex n l),
       ∀ i : Fin (n + 1), ∀ x y : DiscreteSimplex n l,
         (x.1 : Fin (n + 1) → ℝ) i < (y.1 : Fin (n + 1) → ℝ) i → (ords i).lt x y := by
-  refine ⟨fun i => LinearOrder.lift' (rotateCoord n l i) (rotateCoord_injective n l i), ?_⟩
+  refine ⟨fun i ↦ LinearOrder.lift' (rotateCoord n l i) (rotateCoord_injective n l i), ?_⟩
   intro i x y hlt
   exact rotateCoord_lt_of_coord_lt n l i x y hlt
 
@@ -3317,18 +3268,15 @@ lemma remaining_mass_discrete (n : ℕ) (l : ℕ) (hl : 0 < l)
     (hv_discrete : ∀ k ∈ C, ∃ m : ℕ, v k = ↑m / ↑l)
     (hv_sum : C.sum v ≤ 1) :
     ∃ r : ℕ, 1 - C.sum v = ↑r / ↑l := by
-  -- For each k ∈ C, choose m_k : ℕ with v k = m_k / l
-  -- We define a total function g : Fin (n+1) → ℕ that agrees with the choice on C
-  have : ∀ k ∈ C, ∃ m : ℕ, v k = ↑m / ↑l := hv_discrete
   -- Extend to a total function by defaulting to 0 outside C
-  set g : Fin (n + 1) → ℕ := fun k => if hk : k ∈ C then (hv_discrete k hk).choose else 0
+  set g : Fin (n + 1) → ℕ := fun k ↦ if hk : k ∈ C then (hv_discrete k hk).choose else 0
   have hg : ∀ k ∈ C, v k = ↑(g k) / ↑l := by
     intro k hk; simp only [g, hk, dite_true]; exact (hv_discrete k hk).choose_spec
   -- ∑v = ∑(g k)/l = (∑ g k)/l
   have hl_pos : (0 : ℝ) < ↑l := Nat.cast_pos.mpr hl
   have hsum_eq : C.sum v = (↑(C.sum g) : ℝ) / ↑l := by
     rw [Nat.cast_sum, Finset.sum_div]
-    exact Finset.sum_congr rfl (fun k hk => hg k hk)
+    exact Finset.sum_congr rfl (fun k hk ↦ hg k hk)
   -- 1 = l/l
   have h1_eq : (1 : ℝ) = ↑l / ↑l := by field_simp
   -- We need ∑g k ≤ l (as ℕ)
@@ -3352,11 +3300,11 @@ lemma construct_simplex_point (n : ℕ)
     (v : Fin (n + 1) → ℝ)
     (hv_nonneg : ∀ k ∈ C, 0 ≤ v k)
     (hv_sum : C.sum v ≤ 1) :
-    let M : Fin (n + 1) → ℝ := fun i =>
+    let M : Fin (n + 1) → ℝ := fun i ↦
       (if i ∈ C then v i else 0) + (if i = (0 : Fin (n + 1)) then 1 - C.sum v else 0)
     M ∈ stdSimplex ℝ (Fin (n + 1)) := by
-  show (fun i => (if i ∈ C then v i else 0) + (if i = 0 then 1 - C.sum v else 0)) ∈ stdSimplex ℝ _
-  refine ⟨fun i => ?_, ?_⟩
+  show (fun i ↦ (if i ∈ C then v i else 0) + (if i = 0 then 1 - C.sum v else 0)) ∈ stdSimplex ℝ _
+  refine ⟨fun i ↦ ?_, ?_⟩
   · -- Nonneg
     grind
   · -- Sum = 1
@@ -3394,7 +3342,7 @@ lemma construct_dominating_point (n : ℕ) (l : ℕ) (hl : 0 < l)
       (∀ i : Fin (n + 1), ∃ k : ℕ, (y : Fin (n + 1) → ℝ) i = ↑k / ↑l) ∧
       ∀ k ∈ C, (y : Fin (n + 1) → ℝ) k ≥ v k := by
   -- Define M
-  set M : Fin (n + 1) → ℝ := fun i =>
+  set M : Fin (n + 1) → ℝ := fun i ↦
     (if i ∈ C then v i else 0) + (if i = (0 : Fin (n + 1)) then 1 - C.sum v else 0) with hM_def
   -- M is in the simplex
   have hM_mem : M ∈ stdSimplex ℝ (Fin (n + 1)) := construct_simplex_point n C v hv_nonneg hv_sum
@@ -3430,7 +3378,7 @@ lemma construct_dominating_point (n : ℕ) (l : ℕ) (hl : 0 < l)
 /-- **Infimum of discrete values is attained and is discrete.**
 
     For a nonempty finite set `σ` of points in the standard simplex where each coordinate
-    is a multiple of `1/l`, the infimum `σ.inf' hσ (fun z => z i)` is attained at some
+    is a multiple of `1/l`, the infimum `σ.inf' hσ (fun z ↦ z i)` is attained at some
     element of `σ` and is itself a multiple of `1/l`.
 
     **Proof:** By `Finset.exists_mem_eq_inf'` (which requires `LinearOrder`, but ℝ has one),
@@ -3444,15 +3392,15 @@ lemma inf'_discrete (n : ℕ) (l : ℕ)
     (hσ : σ.Nonempty)
     (hdiscrete : ∀ x ∈ σ, ∀ i : Fin (n + 1), ∃ k : ℕ, (x : Fin (n + 1) → ℝ) i = ↑k / ↑l)
     (i : Fin (n + 1)) :
-    ∃ k : ℕ, σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i) = ↑k / ↑l := by
-  obtain ⟨x, hx, hmin⟩ := Finset.exists_mem_eq_inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i)
+    ∃ k : ℕ, σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i) = ↑k / ↑l := by
+  obtain ⟨x, hx, hmin⟩ := Finset.exists_mem_eq_inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i)
   rw [hmin]
   exact hdiscrete x hx i
 
 /-- **Infimum is attained: there exists x ∈ σ achieving the minimum coordinate.**
 
     For each coordinate `i`, there exists `x ∈ σ` such that
-    `(x : Fin (n+1) → ℝ) i = σ.inf' hσ (fun z => z i)`.
+    `(x : Fin (n+1) → ℝ) i = σ.inf' hσ (fun z ↦ z i)`.
 
     **Proof:** Direct from `Finset.exists_mem_eq_inf'` applied to the linear order on ℝ.
 
@@ -3462,52 +3410,49 @@ lemma inf'_attained (n : ℕ)
     (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1))))
     (hσ : σ.Nonempty)
     (i : Fin (n + 1)) :
-    ∃ x ∈ σ, σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i) = (x : Fin (n + 1) → ℝ) i := by
-  obtain ⟨x, hx, hmin⟩ := Finset.exists_mem_eq_inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i)
+    ∃ x ∈ σ, σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i) = (x : Fin (n + 1) → ℝ) i := by
+  obtain ⟨x, hx, hmin⟩ := Finset.exists_mem_eq_inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i)
   exact ⟨x, hx, hmin⟩
 
 /-- **Sum rearrangement: from ¬(a < b) to ∑(m_k + 1/l) ≤ 1.**
 
     If `¬ (1 - ∑_{k∈C} m_k < C.card / l)` (equivalently `C.card / l ≤ 1 - ∑ m_k`),
-    then `C.sum (fun k => m k + 1/l) ≤ 1`.
+    then `C.sum (fun k ↦ m k + 1/l) ≤ 1`.
 
     **Proof:** From `C.card / l ≤ 1 - ∑ m_k`, we get `∑ m_k + C.card / l ≤ 1`.
     Rewriting `C.card / l` as `∑_{k∈C} (1/l)` and combining with `∑ m_k` gives the result.
 
     Uses: `Finset.sum_add_distrib` and basic real arithmetic. -/
-lemma sum_shifted_le_one (n : ℕ) (l : ℕ) (_hl : 0 < l)
+lemma sum_shifted_le_one (n : ℕ) (l : ℕ)
     (C : Finset (Fin (n + 1)))
     (m : Fin (n + 1) → ℝ)
     (h : ¬ (1 - C.sum m < (↑C.card : ℝ) / (↑l : ℝ))) :
-    C.sum (fun k => m k + 1 / (↑l : ℝ)) ≤ 1 := by
+    C.sum (fun k ↦ m k + 1 / (↑l : ℝ)) ≤ 1 := by
   rw [not_lt] at h
-  have : C.sum (fun k => m k + 1 / (↑l : ℝ)) = C.sum m + C.sum (fun _ => 1 / (↑l : ℝ)) := by
+  have : C.sum (fun k ↦ m k + 1 / (↑l : ℝ)) = C.sum m + C.sum (fun _ ↦ 1 / (↑l : ℝ)) := by
     rw [← Finset.sum_add_distrib]
   rw [this]
-  have : C.sum (fun _ : Fin (n + 1) => 1 / (↑l : ℝ)) = ↑C.card / ↑l := by
+  have : C.sum (fun _ : Fin (n + 1) ↦ 1 / (↑l : ℝ)) = ↑C.card / ↑l := by
     rw [Finset.sum_const, nsmul_eq_mul]; ring
   linarith
 
 lemma key_ineq (n : ℕ) (l : ℕ) (hl : 0 < l)
-    (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1)))
-    (hσ : σ.Nonempty) (hC : C.Nonempty)
+    (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1))) (hσ : σ.Nonempty)
     (hdiscrete : ∀ x ∈ σ, ∀ i : Fin (n + 1), ∃ k : ℕ, (x : Fin (n + 1) → ℝ) i = ↑k / ↑l)
     (hdom : ¬ ∃ y : ↑(stdSimplex ℝ (Fin (n + 1))),
         (∀ i : Fin (n + 1), ∃ k : ℕ, (y : Fin (n + 1) → ℝ) i = ↑k / ↑l) ∧
         ∀ i ∈ C, ∃ x ∈ σ, (x : Fin (n + 1) → ℝ) i < (y : Fin (n + 1) → ℝ) i) :
-    1 - C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) <
+    1 - C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) <
       (↑C.card : ℝ) / (↑l : ℝ) := by
   -- Proof by contradiction
   by_contra h_not_lt
-  -- Let m be the function k ↦ σ.inf' hσ (fun z => z k)
-  set m : Fin (n + 1) → ℝ := fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k) with hm_def
-  -- C is nonempty (used in the proof structure)
-  have _ := hC
+  -- Let m be the function k ↦ σ.inf' hσ (fun z ↦ z k)
+  set m : Fin (n + 1) → ℝ := fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k) with hm_def
   -- From h_not_lt, deduce ∑_{k∈C}(m k + 1/l) ≤ 1
-  have hsum : C.sum (fun k => m k + 1 / (↑l : ℝ)) ≤ 1 :=
-    sum_shifted_le_one n l hl C m h_not_lt
+  have hsum : C.sum (fun k ↦ m k + 1 / (↑l : ℝ)) ≤ 1 :=
+    sum_shifted_le_one n l C m h_not_lt
   -- Each m k for k ∈ C is discrete (multiple of 1/l)
-  have hm_discrete : ∀ k ∈ C, ∃ j : ℕ, m k = ↑j / ↑l := fun k _ =>
+  have hm_discrete : ∀ k ∈ C, ∃ j : ℕ, m k = ↑j / ↑l := fun k _ ↦
     inf'_discrete n l σ hσ hdiscrete k
   -- Each m k + 1/l is nonneg and discrete
   have hv_nonneg : ∀ k ∈ C, 0 ≤ m k + 1 / (↑l : ℝ) := by
@@ -3524,7 +3469,7 @@ lemma key_ineq (n : ℕ) (l : ℕ) (hl : 0 < l)
     exact ⟨j + 1, by rw [hj]; push_cast; ring⟩
   -- Construct the dominating point M
   obtain ⟨M, hM_discrete, hM_ge⟩ := construct_dominating_point n l hl C
-    (fun k => m k + 1 / (↑l : ℝ)) hv_nonneg hv_discrete hsum
+    (fun k ↦ m k + 1 / (↑l : ℝ)) hv_nonneg hv_discrete hsum
   -- Apply hdom to get contradiction
   apply hdom
   refine ⟨M, hM_discrete, ?_⟩
@@ -3532,9 +3477,7 @@ lemma key_ineq (n : ℕ) (l : ℕ) (hl : 0 < l)
   -- Find the minimizer for coordinate i
   obtain ⟨x, hx, hmin⟩ := inf'_attained n σ hσ i
   refine ⟨x, hx, ?_⟩
-  -- x i = m i < m i + 1/l ≤ M i
-  have hxi : (x : Fin (n + 1) → ℝ) i = m i := hmin.symm
-  rw [hxi]
+  rw [hmin.symm]
   calc (m i : ℝ) < m i + 1 / (↑l : ℝ) := by linarith [show (0 : ℝ) < 1 / ↑l from by positivity]
     _ ≤ (M : Fin (n + 1) → ℝ) i := hM_ge i hi
 
@@ -3542,14 +3485,14 @@ lemma deviation_nonneg (n : ℕ)
     (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1))))
     (hσ : σ.Nonempty)
     (x : ↑(stdSimplex ℝ (Fin (n + 1)))) (hx : x ∈ σ) (k : Fin (n + 1)) :
-    0 ≤ (x : Fin (n + 1) → ℝ) k - σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k) :=
+    0 ≤ (x : Fin (n + 1) → ℝ) k - σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k) :=
   sub_nonneg.mpr (Finset.inf'_le _ hx)
 
 lemma sum_subset_le_one (n : ℕ) (C : Finset (Fin (n + 1)))
     (x : ↑(stdSimplex ℝ (Fin (n + 1)))) :
-    C.sum (fun k => (x : Fin (n + 1) → ℝ) k) ≤ 1 := by
-  have h1 := Finset.sum_le_univ_sum_of_nonneg (f := fun k => (x : Fin (n + 1) → ℝ) k)
-    (s := C) (fun k => (mem_Icc_of_mem_stdSimplex x.2 k).1)
+    C.sum (fun k ↦ (x : Fin (n + 1) → ℝ) k) ≤ 1 := by
+  have h1 := Finset.sum_le_univ_sum_of_nonneg (f := fun k ↦ (x : Fin (n + 1) → ℝ) k)
+    (s := C) (fun k ↦ (mem_Icc_of_mem_stdSimplex x.2 k).1)
   rw [stdSimplex.sum_eq_one] at h1
   exact h1
 
@@ -3557,23 +3500,23 @@ lemma deviation_in_C (n : ℕ)
     (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1)))
     (hσ : σ.Nonempty)
     (x : ↑(stdSimplex ℝ (Fin (n + 1)))) (hx : x ∈ σ) (i : Fin (n + 1)) (hi : i ∈ C) :
-    (x : Fin (n + 1) → ℝ) i - σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i) ≤
-      1 - C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) := by
-  calc (x : Fin (n + 1) → ℝ) i - σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i)
-      ≤ C.sum (fun k => (x : Fin (n + 1) → ℝ) k - σ.inf' hσ (fun z => z k)) := by
-        exact Finset.single_le_sum (fun k hk => deviation_nonneg n σ hσ x hx k) hi
-    _ = C.sum (fun k => (x : Fin (n + 1) → ℝ) k) -
-        C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) := by
+    (x : Fin (n + 1) → ℝ) i - σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i) ≤
+      1 - C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) := by
+  calc (x : Fin (n + 1) → ℝ) i - σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i)
+      ≤ C.sum (fun k ↦ (x : Fin (n + 1) → ℝ) k - σ.inf' hσ (fun z ↦ z k)) := by
+        exact Finset.single_le_sum (fun k hk ↦ deviation_nonneg n σ hσ x hx k) hi
+    _ = C.sum (fun k ↦ (x : Fin (n + 1) → ℝ) k) -
+        C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) := by
         exact Finset.sum_sub_distrib _ _
-    _ ≤ 1 - C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) := by
+    _ ≤ 1 - C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) := by
         linarith [sum_subset_le_one n C x]
 
 lemma xi_le_one_sub_sum_C (n : ℕ)
     (x : ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1)))
     (i : Fin (n + 1)) (hi : i ∉ C) :
-    (x : Fin (n + 1) → ℝ) i ≤ 1 - C.sum (fun k => (x : Fin (n + 1) → ℝ) k) := by
+    (x : Fin (n + 1) → ℝ) i ≤ 1 - C.sum (fun k ↦ (x : Fin (n + 1) → ℝ) k) := by
   have hnn : ∀ j ∈ Cᶜ, 0 ≤ (x : Fin (n + 1) → ℝ) j :=
-    fun j _ => stdSimplex.zero_le x j
+    fun j _ ↦ stdSimplex.zero_le x j
   have hmem : i ∈ Cᶜ := Finset.mem_compl.mpr hi
   have h1 : (x : Fin (n + 1) → ℝ) i ≤ ∑ k ∈ Cᶜ, (x : Fin (n + 1) → ℝ) k :=
     Finset.single_le_sum hnn hmem
@@ -3586,35 +3529,34 @@ lemma sum_inf_le_sum_x (n : ℕ)
     (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1)))
     (hσ : σ.Nonempty)
     (x : ↑(stdSimplex ℝ (Fin (n + 1)))) (hx : x ∈ σ) :
-    C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) ≤
-      C.sum (fun k => (x : Fin (n + 1) → ℝ) k) := by
+    C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) ≤
+      C.sum (fun k ↦ (x : Fin (n + 1) → ℝ) k) := by
   apply Finset.sum_le_sum
   intro k _
-  exact Finset.inf'_le (fun (z : ↑(stdSimplex ℝ (Fin (n + 1)))) => (z : Fin (n + 1) → ℝ) k) hx
+  exact Finset.inf'_le (fun (z : ↑(stdSimplex ℝ (Fin (n + 1)))) ↦ (z : Fin (n + 1) → ℝ) k) hx
 
 lemma deviation_not_in_C (n : ℕ)
     (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1)))
     (hσ : σ.Nonempty)
     (x : ↑(stdSimplex ℝ (Fin (n + 1)))) (hx : x ∈ σ) (i : Fin (n + 1)) (hi : i ∉ C) :
     (x : Fin (n + 1) → ℝ) i ≤
-      1 - C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) := by
+      1 - C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) := by
   calc (x : Fin (n + 1) → ℝ) i
-      ≤ 1 - C.sum (fun k => (x : Fin (n + 1) → ℝ) k) := xi_le_one_sub_sum_C n x C i hi
-    _ ≤ 1 - C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) := by
+      ≤ 1 - C.sum (fun k ↦ (x : Fin (n + 1) → ℝ) k) := xi_le_one_sub_sum_C n x C i hi
+    _ ≤ 1 - C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) := by
         linarith [sum_inf_le_sum_x n σ C hσ x hx]
 
 lemma coord_deviation_bound (n : ℕ) (l : ℕ) (hl : 0 < l)
-    (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1)))
-    (hσ : σ.Nonempty) (hC : C.Nonempty)
+    (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1))) (hσ : σ.Nonempty)
     (hdiscrete : ∀ x ∈ σ, ∀ i : Fin (n + 1), ∃ k : ℕ, (x : Fin (n + 1) → ℝ) i = ↑k / ↑l)
     (hdom : ¬ ∃ y : ↑(stdSimplex ℝ (Fin (n + 1))),
         (∀ i : Fin (n + 1), ∃ k : ℕ, (y : Fin (n + 1) → ℝ) i = ↑k / ↑l) ∧
         ∀ i ∈ C, ∃ x ∈ σ, (x : Fin (n + 1) → ℝ) i < (y : Fin (n + 1) → ℝ) i) :
     ∀ x ∈ σ, ∀ i : Fin (n + 1),
       (x : Fin (n + 1) → ℝ) i -
-        (if i ∈ C then σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i) else 0) <
+        (if i ∈ C then σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i) else 0) <
         (↑(n + 1) : ℝ) / (↑l : ℝ) := by
-  have hkey := key_ineq n l hl σ C hσ hC hdiscrete hdom
+  have hkey := key_ineq n l hl σ C hσ hdiscrete hdom
   have hcard : (↑C.card : ℝ) ≤ (↑(n + 1) : ℝ) := by
     have h1 : C.card ≤ Finset.univ.card := Finset.card_le_card (Finset.subset_univ C)
     simp [Finset.card_univ, Fintype.card_fin] at h1
@@ -3623,22 +3565,20 @@ lemma coord_deviation_bound (n : ℕ) (l : ℕ) (hl : 0 < l)
   intro x hx i
   by_cases hi : i ∈ C
   · simp only [hi, ite_true]
-    calc (x : Fin (n + 1) → ℝ) i - σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i)
-        ≤ 1 - C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) :=
+    calc (x : Fin (n + 1) → ℝ) i - σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i)
+        ≤ 1 - C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) :=
           deviation_in_C n σ C hσ x hx i hi
       _ < (↑C.card : ℝ) / (↑l : ℝ) := hkey
       _ ≤ (↑(n + 1) : ℝ) / (↑l : ℝ) := div_le_div_of_nonneg_right hcard hl_pos.le
   · simp only [hi, ite_false, sub_zero]
     calc (x : Fin (n + 1) → ℝ) i
-        ≤ 1 - C.sum (fun k => σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) k)) :=
+        ≤ 1 - C.sum (fun k ↦ σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) k)) :=
           deviation_not_in_C n σ C hσ x hx i hi
       _ < (↑C.card : ℝ) / (↑l : ℝ) := hkey
       _ ≤ (↑(n + 1) : ℝ) / (↑l : ℝ) := div_le_div_of_nonneg_right hcard hl_pos.le
 
 lemma scarf_bounds (n : ℕ) (l : ℕ) (hl : 0 < l)
-    (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1)))
-    (hσ : σ.Nonempty) (hC : C.Nonempty)
-    (_hcard : σ.card = C.card)
+    (σ : Finset ↑(stdSimplex ℝ (Fin (n + 1)))) (C : Finset (Fin (n + 1))) (hσ : σ.Nonempty)
     (hdiscrete : ∀ x ∈ σ, ∀ i : Fin (n + 1), ∃ k : ℕ, (x : Fin (n + 1) → ℝ) i = ↑k / ↑l)
     (hdom : ¬ ∃ y : ↑(stdSimplex ℝ (Fin (n + 1))),
         (∀ i : Fin (n + 1), ∃ k : ℕ, (y : Fin (n + 1) → ℝ) i = ↑k / ↑l) ∧
@@ -3648,12 +3588,12 @@ lemma scarf_bounds (n : ℕ) (l : ℕ) (hl : 0 < l)
         2 * (↑(n + 1) : ℝ) / (↑l : ℝ)) ∧
     (∀ x ∈ σ, ∀ i, i ∉ C →
       (x : Fin (n + 1) → ℝ) i < (↑(n + 1) : ℝ) / (↑l : ℝ)) := by
-  have hdev := coord_deviation_bound n l hl σ C hσ hC hdiscrete hdom
-  refine ⟨fun x hx y hy i => ?_, fun x hx i hi => ?_⟩
+  have hdev := coord_deviation_bound n l hl σ C hσ hdiscrete hdom
+  refine ⟨fun x hx y hy i ↦ ?_, fun x hx i hi ↦ ?_⟩
   · -- Diameter bound: |x_i - y_i| < 2*(n+1)/l
     have hx_dev := hdev x hx i
     have hy_dev := hdev y hy i
-    set mi := if i ∈ C then σ.inf' hσ (fun z => (z : Fin (n + 1) → ℝ) i) else 0 with hmi_def
+    set mi := if i ∈ C then σ.inf' hσ (fun z ↦ (z : Fin (n + 1) → ℝ) i) else 0 with hmi_def
     have hx_ge : mi ≤ (x : Fin (n + 1) → ℝ) i := by
       simp only [hmi_def]; split
       · exact Finset.inf'_le _ hx
@@ -3685,7 +3625,7 @@ lemma exists_colorful_room_with_bounds (n : ℕ) (l : ℕ) (hl : 0 < l)
         (x : Fin (n + 1) → ℝ) i < (↑(n + 1) : ℝ) / (↑l : ℝ)) := by
   obtain ⟨σ, C, hσ, hC, hcard, hcov, hsurj, hdiscrete, hdom⟩ :=
     scarf_colorful_room n l hl c
-  obtain ⟨hbound, hsmall⟩ := scarf_bounds n l hl σ C hσ hC hcard hdiscrete hdom
+  obtain ⟨hbound, hsmall⟩ := scarf_bounds n l hl σ C hσ hdiscrete hdom
   exact ⟨σ, C, hσ, hC, hcard, hcov, hsurj, hbound, hsmall⟩
 
 lemma exists_ge_coord_of_simplex_map (n : ℕ)
@@ -3725,7 +3665,7 @@ lemma exists_colorful_room (n : ℕ) (l : ℕ) (hl : 0 < l)
         (x : Fin (n + 1) → ℝ) i < (↑(n + 1) : ℝ) / (↑l : ℝ)) := by
   -- Define the coloring: c(x) = some i with f(x)_i ≥ x_i
   let c : ↑(stdSimplex ℝ (Fin (n + 1))) → Fin (n + 1) :=
-    fun x => (exists_ge_coord_of_simplex_map n x f).choose
+    fun x ↦ (exists_ge_coord_of_simplex_map n x f).choose
   -- Apply Scarf's theorem with this coloring
   obtain ⟨σ, C, hσne, hCne, hcard, hcσ, hcover, hdiam, hsmall⟩ :=
     exists_colorful_room_with_bounds n l hl c
@@ -3745,24 +3685,22 @@ lemma exists_convergent_subseq (n : ℕ)
     (x : ℕ → ↑(stdSimplex ℝ (Fin (n + 1)))) :
     ∃ (z : ↑(stdSimplex ℝ (Fin (n + 1))))
       (φ : ℕ → ℕ), StrictMono φ ∧
-      Filter.Tendsto (fun l => (x (φ l) : Fin (n + 1) → ℝ)) Filter.atTop
+      Filter.Tendsto (fun l ↦ (x (φ l) : Fin (n + 1) → ℝ)) Filter.atTop
         (nhds (z : Fin (n + 1) → ℝ)) := by
   have hcomp : IsCompact (stdSimplex ℝ (Fin (n + 1))) := isCompact_stdSimplex _
-  have hmem : ∀ m, (x m : Fin (n + 1) → ℝ) ∈ stdSimplex ℝ (Fin (n + 1)) := fun m => (x m).2
+  have hmem : ∀ m, (x m : Fin (n + 1) → ℝ) ∈ stdSimplex ℝ (Fin (n + 1)) := fun m ↦ (x m).2
   obtain ⟨a, ha, φ, hφ, htend⟩ := hcomp.tendsto_subseq hmem
   exact ⟨⟨a, ha⟩, φ, hφ, htend⟩
 
 lemma exists_const_finset_subseq (n : ℕ) (C : ℕ → Finset (Fin (n + 1))) :
     ∃ (C₀ : Finset (Fin (n + 1))) (φ : ℕ → ℕ),
       StrictMono φ ∧ ∀ l, C (φ l) = C₀ := by
-  -- Finset (Fin (n+1)) is Finite, ℕ is Infinite, so pigeonhole gives an infinite fiber
-  have : Finite (Finset (Fin (n + 1))) := inferInstance
   obtain ⟨C₀, hC₀⟩ := Finite.exists_infinite_fiber C
   -- The preimage {k : ℕ | C k = C₀} is infinite
-  let p : ℕ → Prop := fun k => C k = C₀
+  let p : ℕ → Prop := fun k ↦ C k = C₀
   have hp : (setOf p).Infinite := Set.infinite_coe_iff.mp hC₀
   -- Use Nat.nth to enumerate it strictly monotonically
-  refine ⟨C₀, Nat.nth p, Nat.nth_strictMono hp, fun l => ?_⟩
+  refine ⟨C₀, Nat.nth p, Nat.nth_strictMono hp, fun l ↦ ?_⟩
   exact Nat.nth_mem_of_infinite hp l
 
 lemma close_seqs_same_limit (n : ℕ)
@@ -3781,7 +3719,7 @@ lemma close_seqs_same_limit (n : ℕ)
   have hbound_metric : Filter.Tendsto bound Filter.atTop (nhds 0) := hbound
   rw [Metric.tendsto_atTop] at hbound_metric
   obtain ⟨N₂, hN₂⟩ := hbound_metric (ε / 2) hε2
-  refine ⟨max N₁ N₂, fun l hl => ?_⟩
+  refine ⟨max N₁ N₂, fun l hl ↦ ?_⟩
   have hl₁ : l ≥ N₁ := le_of_max_le_left hl
   have hl₂ : l ≥ N₂ := le_of_max_le_right hl
   simp only [Real.dist_eq]
@@ -3804,28 +3742,19 @@ lemma ge_coord_of_tendsto (n : ℕ) (i : Fin (n + 1))
     (hge : ∀ l, (y l) i ≥ (x l) i) :
     w i ≥ z i := by
   have h₁ : Filter.Tendsto (fun l ↦ (x l) i) Filter.atTop (nhds (z i)) := by
-    have h₂ : Continuous (fun p : Fin (n + 1) → ℝ => p i) := by continuity
-    have h₃ : Filter.Tendsto x Filter.atTop (nhds z) := hx
+    have h₂ : Continuous (fun p : Fin (n + 1) → ℝ ↦ p i) := by continuity
     have h₄ : Filter.Tendsto (fun l ↦ (x l) i) Filter.atTop (nhds (z i)) :=
-      h₂.continuousAt.tendsto.comp h₃
+      h₂.continuousAt.tendsto.comp hx
     exact h₄
   have h₂ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) := by
-    have h₃ : Continuous (fun p : Fin (n + 1) → ℝ => p i) := by continuity
+    have h₃ : Continuous (fun p : Fin (n + 1) → ℝ ↦ p i) := by continuity
     have h₄ : Filter.Tendsto y Filter.atTop (nhds w) := hy
     have h₅ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) :=
       h₃.continuousAt.tendsto.comp h₄
     exact h₅
-  -- Use the fact that the limit of a sequence less than or equal to another sequence
-  -- is less than or equal to the limit of the other sequence.
-  have h₅ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) := h₂
-  have h₆ : Filter.Tendsto (fun l ↦ (x l) i) Filter.atTop (nhds (z i)) := h₁
   -- Use the fact that the limit of the difference is non-negative.
   have h₉ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) := by
-    have h₁₀ : Filter.Tendsto (fun l ↦ (y l) i) Filter.atTop (nhds (w i)) := h₅
-    have h₁₁ : Filter.Tendsto (fun l ↦ (x l) i) Filter.atTop (nhds (z i)) := h₆
-    have h₁₂ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) :=
-      h₁₀.sub h₁₁
-    exact h₁₂
+    exact h₂.sub h₁
   have h₁₀ : ∀ l, (y l) i - (x l) i ≥ 0 := by
     intro l
     have h₁₁ : (y l) i ≥ (x l) i := hge l
@@ -3836,18 +3765,13 @@ lemma ge_coord_of_tendsto (n : ℕ) (i : Fin (n + 1))
     -- Use the fact that the sequence is eventually in the neighborhood of the limit.
     have h₂₀ : ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < - (w i - z i) := by
       -- Find an l such that for all k ≥ l, the sequence is in the neighborhood of the limit.
-      have h₂₂ : ∀ ε > 0, ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < ε := by
-        -- Find an l such that for all k ≥ l, the sequence is in the neighborhood of the limit.
-        have h₂₃ : Filter.Tendsto (fun l ↦ (y l) i - (x l) i) Filter.atTop (nhds (w i - z i)) := h₉
-        exact Metric.tendsto_atTop.mp h₂₃
+      have h₂₂ : ∀ ε > 0, ∃ (l : ℕ), ∀ k ≥ l, |(y k) i - (x k) i - (w i - z i)| < ε :=
+        Metric.tendsto_atTop.mp (h₂.sub h₁)
       exact h₂₂ (- (w i - z i)) (by linarith)
     obtain ⟨l, hl⟩ := h₂₀
     use l
     have h₂₁ := hl l (by linarith)
-    have h₂₂ : |(y l) i - (x l) i - (w i - z i)| < - (w i - z i) := h₂₁
-    have h₂₃ : (y l) i - (x l) i - (w i - z i) < - (w i - z i) := by
-      linarith [abs_lt.mp h₂₂]
-    linarith
+    linarith [abs_lt.mp h₂₁]
   obtain ⟨l, hl⟩ := h₁₆
   have h₁₉ : (y l) i - (x l) i ≥ 0 := h₁₀ l
   linarith
@@ -3857,9 +3781,9 @@ lemma ge_coord_of_tendsto (n : ℕ) (i : Fin (n + 1))
     hence φ(l)+1 → ∞, so (φ(l)+1)⁻¹ → 0, and multiplying by the constant (n+1) gives
     (n+1)/(φ(l)+1) → 0. -/
 lemma tendsto_bound_zero (n : ℕ) (φ : ℕ → ℕ) (hφ : StrictMono φ) :
-    Filter.Tendsto (fun l => (↑(n + 1) : ℝ) / (↑(φ l + 1) : ℝ)) Filter.atTop (nhds 0) := by
-  have hφ1 : StrictMono (fun l => φ l + 1) := fun a b hab => Nat.add_lt_add_right (hφ hab) 1
-  have h1 : Filter.Tendsto (fun l => (↑(φ l + 1) : ℝ)⁻¹) Filter.atTop (nhds 0) :=
+    Filter.Tendsto (fun l ↦ (↑(n + 1) : ℝ) / (↑(φ l + 1) : ℝ)) Filter.atTop (nhds 0) := by
+  have hφ1 : StrictMono (fun l ↦ φ l + 1) := fun a b hab ↦ Nat.add_lt_add_right (hφ hab) 1
+  have h1 : Filter.Tendsto (fun l ↦ (↑(φ l + 1) : ℝ)⁻¹) Filter.atTop (nhds 0) :=
     (tendsto_inv_atTop_nhds_zero_nat (𝕜 := ℝ)).comp hφ1.tendsto_atTop
   simp_rw [div_eq_mul_inv]
   have h2 : (0 : ℝ) = (↑(n + 1) : ℝ) * 0 := by ring
@@ -3875,14 +3799,14 @@ lemma coord_zero_of_tendsto_bound (n : ℕ) (i : Fin (n + 1))
     (hnn : ∀ l, 0 ≤ x_seq (φ l) i) :
     z i = 0 := by
   -- Step 1: The i-th coordinate of the subsequence converges to z i
-  have hconv_i : Filter.Tendsto (fun l => x_seq (φ l) i) Filter.atTop (nhds (z i)) :=
+  have hconv_i : Filter.Tendsto (fun l ↦ x_seq (φ l) i) Filter.atTop (nhds (z i)) :=
     tendsto_pi_nhds.mp hconv i
   -- Step 2: The bound sequence tends to 0
-  have hbound_tendsto : Filter.Tendsto (fun l => (↑(n + 1) : ℝ) / ↑(φ l + 1)) .atTop (nhds 0) :=
+  have hbound_tendsto : Filter.Tendsto (fun l ↦ (↑(n + 1) : ℝ) / ↑(φ l + 1)) .atTop (nhds 0) :=
     tendsto_bound_zero n φ hφ
   -- Step 3: By squeeze theorem, the i-th coordinate tends to 0
-  have htendsto_zero : Filter.Tendsto (fun l => x_seq (φ l) i) Filter.atTop (nhds 0) :=
-    squeeze_zero hnn (fun l => le_of_lt (hbound l)) hbound_tendsto
+  have htendsto_zero : Filter.Tendsto (fun l ↦ x_seq (φ l) i) Filter.atTop (nhds 0) :=
+    squeeze_zero hnn (fun l ↦ le_of_lt (hbound l)) hbound_tendsto
   -- Step 4: By uniqueness of limits, z i = 0
   exact tendsto_nhds_unique hconv_i htendsto_zero
 
@@ -3891,12 +3815,9 @@ lemma sum_eq_one_of_zero_outside (n : ℕ)
     (C : Finset (Fin (n + 1)))
     (hzero : ∀ i, i ∉ C → z i = 0) :
     ∑ i ∈ C, z i = 1 := by
-  have h₁ : ∑ i : Fin (n + 1), z i = 1 := by
-    have h₂ : ∑ i : Fin (n + 1), z i = 1 := hz.2
-    exact h₂
   have h₃ : ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i = 0 := by
     calc
-      ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i = ∑ i ∈ Finset.univ \ C, z i := rfl
+      ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, z i
       _ = ∑ i ∈ (Finset.univ : Finset (Fin (n + 1))) \ C, 0 := by
         apply Finset.sum_congr rfl
         intro i hi
@@ -3911,13 +3832,11 @@ lemma sum_eq_one_of_zero_outside (n : ℕ)
       congr 1
       simp [Finset.ext_iff]
     rw [h₅]
-    have h₆ : C ∪ (Finset.univ \ C) = C ∪ (Finset.univ \ C) := rfl
-    rw [h₆]
     have h₇ : Disjoint C (Finset.univ \ C) := by
       simp [Finset.disjoint_left]
     rw [Finset.sum_union h₇]
   have h₅ : ∑ i ∈ C, z i = 1 := by
-    linarith
+    linarith [hz.2]
   exact h₅
 
 lemma sum_compl_eq_zero (n : ℕ)
@@ -3927,13 +3846,11 @@ lemma sum_compl_eq_zero (n : ℕ)
     (hge_sum : ∑ i ∈ C, w i ≥ 1) :
     ∑ i ∈ Cᶜ, w i = 0 := by
   have h1 : ∑ i ∈ Cᶜ, w i + ∑ i ∈ C, w i = ∑ i, w i := Finset.sum_compl_add_sum C w
-  have h2 : ∑ i, w i = 1 := hw.2
-  have h5 : 0 ≤ ∑ i ∈ Cᶜ, w i := Finset.sum_nonneg (fun i _ => hw.1 i)
-  linarith
+  have h5 : 0 ≤ ∑ i ∈ Cᶜ, w i := Finset.sum_nonneg (fun i _ ↦ hw.1 i)
+  linarith [hw.2]
 
 lemma eq_of_ge_sum_one (n : ℕ)
     (z w : Fin (n + 1) → ℝ)
-    (_hz : z ∈ stdSimplex ℝ (Fin (n + 1)))
     (hw : w ∈ stdSimplex ℝ (Fin (n + 1)))
     (C : Finset (Fin (n + 1)))
     (hge : ∀ i ∈ C, w i ≥ z i)
@@ -3942,7 +3859,7 @@ lemma eq_of_ge_sum_one (n : ℕ)
     ∀ i, w i = z i := by
   -- Step 1: ∑_{i∈C} w_i ≥ 1
   have hge_sum : ∑ i ∈ C, w i ≥ 1 := by
-    calc ∑ i ∈ C, w i ≥ ∑ i ∈ C, z i := Finset.sum_le_sum (fun i hi => hge i hi)
+    calc ∑ i ∈ C, w i ≥ ∑ i ∈ C, z i := Finset.sum_le_sum (fun i hi ↦ hge i hi)
     _ = 1 := hsum_z
   -- Step 2: ∑_{i∈Cᶜ} w_i = 0
   have hsc := sum_compl_eq_zero n w hw C hge_sum
@@ -3950,7 +3867,7 @@ lemma eq_of_ge_sum_one (n : ℕ)
   have hwz : ∀ i, i ∉ C → w i = 0 := by
     intro i hi
     have hmem : i ∈ Cᶜ := Finset.mem_compl.mpr hi
-    have := (Finset.sum_eq_zero_iff_of_nonneg (fun j _ => hw.1 j)).mp hsc i hmem
+    have := (Finset.sum_eq_zero_iff_of_nonneg (fun j _ ↦ hw.1 j)).mp hsc i hmem
     exact this
   -- Step 4: ∑_{i∈C} w_i = 1
   have hsumC : ∑ i ∈ C, w i = 1 := by
@@ -3960,7 +3877,7 @@ lemma eq_of_ge_sum_one (n : ℕ)
   -- Step 5: w_i = z_i for i ∈ C (equal sums + pointwise ≥)
   have hweq : ∀ i ∈ C, w i = z i := by
     have heq : ∑ i ∈ C, z i = ∑ i ∈ C, w i := by linarith
-    have := (Finset.sum_eq_sum_iff_of_le (fun i hi => hge i hi)).mp heq
+    have := (Finset.sum_eq_sum_iff_of_le (fun i hi ↦ hge i hi)).mp heq
     intro i hi; exact (this i hi).symm
   -- Step 6: Combine
   intro i
@@ -3990,9 +3907,9 @@ lemma tendsto_apply_of_subtype_tendsto (n : ℕ)
     (hf : Continuous f)
     (x : ℕ → ↑(stdSimplex ℝ (Fin (n + 1))))
     (z : ↑(stdSimplex ℝ (Fin (n + 1))))
-    (hconv : Filter.Tendsto (fun l => (x l : Fin (n + 1) → ℝ))
+    (hconv : Filter.Tendsto (fun l ↦ (x l : Fin (n + 1) → ℝ))
       Filter.atTop (nhds (z : Fin (n + 1) → ℝ))) :
-    Filter.Tendsto (fun l => ((f (x l)) : Fin (n + 1) → ℝ))
+    Filter.Tendsto (fun l ↦ ((f (x l)) : Fin (n + 1) → ℝ))
       Filter.atTop (nhds ((f z) : Fin (n + 1) → ℝ)) := by
   -- Step 1: Lift ambient convergence to subtype convergence
   have hx_sub : Filter.Tendsto x Filter.atTop (nhds z) := by
@@ -4002,13 +3919,12 @@ lemma tendsto_apply_of_subtype_tendsto (n : ℕ)
   exact (continuous_subtype_val.tendsto _).comp ((hf.tendsto z).comp hx_sub)
 
 lemma tendsto_bound_to_zero (n : ℕ) (φ : ℕ → ℕ) (hφ : StrictMono φ) :
-    Filter.Tendsto (fun l => 2 * (↑(n + 1) : ℝ) / (↑(φ l + 1) : ℝ))
+    Filter.Tendsto (fun l ↦ 2 * (↑(n + 1) : ℝ) / (↑(φ l + 1) : ℝ))
       Filter.atTop (nhds 0) := by
   apply Filter.Tendsto.const_div_atTop _ (2 * (↑(n + 1) : ℝ))
-  have h1 : Filter.Tendsto φ Filter.atTop Filter.atTop := hφ.tendsto_atTop
-  have h2 : Filter.Tendsto (fun l => φ l + 1) Filter.atTop Filter.atTop :=
-    Filter.tendsto_atTop_mono (fun l => Nat.le_add_right (φ l) 1) h1
-  have h3 : Filter.Tendsto (fun l => (↑(φ l + 1) : ℝ)) Filter.atTop Filter.atTop :=
+  have h2 : Filter.Tendsto (fun l ↦ φ l + 1) Filter.atTop Filter.atTop :=
+    Filter.tendsto_atTop_mono (fun l ↦ Nat.le_add_right (φ l) 1) hφ.tendsto_atTop
+  have h3 : Filter.Tendsto (fun l ↦ (↑(φ l + 1) : ℝ)) Filter.atTop Filter.atTop :=
     tendsto_natCast_atTop_atTop.comp h2
   exact h3
 
@@ -4031,8 +3947,7 @@ theorem brouwer_fixed_point (n : ℕ)
   -- Choose σ_l, C_l for each l
   choose σ C hσne hCne hcard hcolor hdiam hsmall using hrooms
   -- Step 2: Pick a representative x_l from each σ_l
-  have hx_rep : ∀ l, ∃ x ∈ σ l, True := fun l => let ⟨x, hx⟩ := (hσne l); ⟨x, hx, trivial⟩
-  choose x_rep hx_rep_mem _ using hx_rep
+  choose x_rep hx_rep_mem using hσne
   -- Step 3: Extract convergent subsequence by compactness
   obtain ⟨z, φ₁, hφ₁, hconv₁⟩ := exists_convergent_subseq n x_rep
   -- Step 4: Extract further subsequence with constant C
@@ -4041,7 +3956,7 @@ theorem brouwer_fixed_point (n : ℕ)
   set φ := φ₁ ∘ φ₂ with hφ_def
   have hφ : StrictMono φ := hφ₁.comp hφ₂
   -- The convergence still holds along the further subsequence
-  have hconv : Filter.Tendsto (fun l => (x_rep (φ l) : Fin (n + 1) → ℝ))
+  have hconv : Filter.Tendsto (fun l ↦ (x_rep (φ l) : Fin (n + 1) → ℝ))
       Filter.atTop (nhds (z : Fin (n + 1) → ℝ)) :=
     hconv₁.comp hφ₂.tendsto_atTop
   -- C(φ(l)) = C₀ for all l
@@ -4056,33 +3971,33 @@ theorem brouwer_fixed_point (n : ℕ)
     choose w hw_mem hw_ge using hw
     -- w_l and x_rep(φ l) are close (both in σ(φ l), diameter → 0)
     -- So w_l → z as well
-    have hw_conv : Filter.Tendsto (fun l => (w l : Fin (n + 1) → ℝ))
+    have hw_conv : Filter.Tendsto (fun l ↦ (w l : Fin (n + 1) → ℝ))
         Filter.atTop (nhds (z : Fin (n + 1) → ℝ)) := by
       apply close_seqs_same_limit n
-        (fun l => (w l : Fin (n + 1) → ℝ))
-        (fun l => (x_rep (φ l) : Fin (n + 1) → ℝ))
+        (fun l ↦ (w l : Fin (n + 1) → ℝ))
+        (fun l ↦ (x_rep (φ l) : Fin (n + 1) → ℝ))
         (z : Fin (n + 1) → ℝ)
         hconv
-        (fun l => 2 * (↑(n + 1) : ℝ) / (↑(φ l + 1) : ℝ))
+        (fun l ↦ 2 * (↑(n + 1) : ℝ) / (↑(φ l + 1) : ℝ))
       · exact tendsto_bound_to_zero n φ hφ
       · intro l j
         exact hdiam (φ l) (w l) (hw_mem l) (x_rep (φ l)) (hx_rep_mem (φ l)) j
     -- f(w_l) → f(z) by continuity
-    have hfw_conv : Filter.Tendsto (fun l => ((f (w l)) : Fin (n + 1) → ℝ))
+    have hfw_conv : Filter.Tendsto (fun l ↦ ((f (w l)) : Fin (n + 1) → ℝ))
         Filter.atTop (nhds ((f z) : Fin (n + 1) → ℝ)) :=
       tendsto_apply_of_subtype_tendsto n f hf w z hw_conv
     -- Pass inequality to limit
     exact ge_coord_of_tendsto n i
-      (fun l => (w l : Fin (n + 1) → ℝ))
+      (fun l ↦ (w l : Fin (n + 1) → ℝ))
       (z : Fin (n + 1) → ℝ)
-      (fun l => ((f (w l)) : Fin (n + 1) → ℝ))
+      (fun l ↦ ((f (w l)) : Fin (n + 1) → ℝ))
       ((f z) : Fin (n + 1) → ℝ)
       hw_conv hfw_conv hw_ge
   -- Step 6: For i ∉ C₀, z_i = 0
   have hzero : ∀ i, i ∉ C₀ → (z : Fin (n + 1) → ℝ) i = 0 := by
     intro i hi
     apply coord_zero_of_tendsto_bound n i
-      (fun l => (x_rep l : Fin (n + 1) → ℝ))
+      (fun l ↦ (x_rep l : Fin (n + 1) → ℝ))
       (z : Fin (n + 1) → ℝ) φ hφ hconv
     · intro l
       exact hsmall (φ l) (x_rep (φ l)) (hx_rep_mem (φ l)) i ((hC l).symm ▸ hi)
@@ -4095,7 +4010,7 @@ theorem brouwer_fixed_point (n : ℕ)
   have heq : ∀ i, ((f z) : Fin (n + 1) → ℝ) i = (z : Fin (n + 1) → ℝ) i :=
     eq_of_ge_sum_one n
       (z : Fin (n + 1) → ℝ) ((f z) : Fin (n + 1) → ℝ)
-      z.property (f z).property C₀ hge_limit hzero hsum
+      (f z).property C₀ hge_limit hzero hsum
   exact ⟨z, Subtype.ext (funext heq)⟩
 
 /-! ## Convex combinations and evaluation maps -/
@@ -4106,15 +4021,15 @@ lemma convex_combination_mem {E : Type*} [AddCommGroup E] [Module ℝ E]
     {N : ℕ} (pts : Fin N → E) (hpts : ∀ i, pts i ∈ K)
     (w : Fin N → ℝ) (hw_nonneg : ∀ i, 0 ≤ w i) (hw_sum : ∑ i, w i = 1) :
     ∑ i, w i • pts i ∈ K :=
-  hK_convex.sum_mem (fun i _ => hw_nonneg i) hw_sum (fun i _ => hpts i)
+  hK_convex.sum_mem (fun i _ ↦ hw_nonneg i) hw_sum (fun i _ ↦ hpts i)
 
 /-- The evaluation map sending barycentric coordinates to the
 corresponding convex combination of points is continuous. -/
 lemma eval_map_continuous {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     {N : ℕ} (pts : Fin N → E) :
-    Continuous (fun w : ↥(stdSimplex ℝ (Fin N)) => ∑ i, (w : Fin N → ℝ) i • pts i) :=
-  continuous_finset_sum _ fun i _ =>
+    Continuous (fun w : (stdSimplex ℝ (Fin N)) ↦ ∑ i, (w : Fin N → ℝ) i • pts i) :=
+  continuous_finset_sum _ fun i _ ↦
     ((continuous_apply i).comp continuous_subtype_val).smul continuous_const
 
 /-! ## Finite covers and partitions of unity -/
@@ -4127,15 +4042,15 @@ lemma finite_cover_of_compact
     {U : Set E} (hU_open : IsOpen U) (hU_zero : (0 : E) ∈ U) :
     ∃ (N : ℕ) (pts : Fin (N + 1) → E),
       (∀ i, pts i ∈ K) ∧
-      K ⊆ ⋃ i : Fin (N + 1), (fun u => pts i + u) '' U := by
-  have h_open : ∀ x : E, IsOpen ((fun u => x + u) '' U) := fun x => by
+      K ⊆ ⋃ i : Fin (N + 1), (fun u ↦ pts i + u) '' U := by
+  have h_open : ∀ x : E, IsOpen ((fun u ↦ x + u) '' U) := fun x ↦ by
     rw [Set.image_add_left]
     exact hU_open.preimage (continuous_add_left (-x))
-  have h_mem : ∀ x : E, x ∈ (fun u => x + u) '' U :=
-    fun x => ⟨0, hU_zero, by simp⟩
+  have h_mem : ∀ x : E, x ∈ (fun u ↦ x + u) '' U :=
+    fun x ↦ ⟨0, hU_zero, by simp⟩
   obtain ⟨t, ht_mem, ht_cover⟩ := hK_compact.elim_nhds_subcover
-    (fun x => (fun u => x + u) '' U)
-    (fun x _ => (h_open x).mem_nhds (h_mem x))
+    (fun x ↦ (fun u ↦ x + u) '' U)
+    (fun x _ ↦ (h_open x).mem_nhds (h_mem x))
   have ht_ne : t.Nonempty := by
     by_contra h
     rw [Finset.not_nonempty_iff_eq_empty] at h
@@ -4144,7 +4059,7 @@ lemma finite_cover_of_compact
     simp [h] at this
   have ht_pos : 0 < t.card := ht_ne.card_pos
   let e := t.equivFin
-  refine ⟨t.card - 1, fun i => (e.symm (i.cast (Nat.succ_pred_eq_of_pos ht_pos))).val, ?_, ?_⟩
+  refine ⟨t.card - 1, fun i ↦ (e.symm (i.cast (Nat.succ_pred_eq_of_pos ht_pos))).val, ?_, ?_⟩
   · intro i
     exact ht_mem _ (e.symm (i.cast (Nat.succ_pred_eq_of_pos ht_pos))).prop
   · intro x hx
@@ -4166,9 +4081,9 @@ lemma partition_of_unity_maps_to_simplex
     {X : Type*} [TopologicalSpace X] {N : ℕ}
     (ρ : PartitionOfUnity (Fin (N + 1)) X Set.univ)
     (x : X) :
-    (fun i => (ρ i) x) ∈ stdSimplex ℝ (Fin (N + 1)) := by
+    (fun i ↦ (ρ i) x) ∈ stdSimplex ℝ (Fin (N + 1)) := by
   rw [stdSimplex.eq_1]
-  refine ⟨fun i => ρ.nonneg i x, ?_⟩
+  refine ⟨fun i ↦ ρ.nonneg i x, ?_⟩
   have := ρ.sum_eq_one (Set.mem_univ x)
   rwa [finsum_eq_sum_of_fintype] at this
 
@@ -4176,9 +4091,9 @@ lemma partition_of_unity_maps_to_simplex
 lemma partition_of_unity_phi_continuous
     {X : Type*} [TopologicalSpace X] {N : ℕ}
     (ρ : PartitionOfUnity (Fin (N + 1)) X Set.univ) :
-    Continuous (fun x : X => (⟨fun i => (ρ i) x,
-      partition_of_unity_maps_to_simplex ρ x⟩ : ↥(stdSimplex ℝ (Fin (N + 1))))) :=
-  Continuous.subtype_mk (continuous_pi (fun i => (ρ i).continuous)) _
+    Continuous (fun x : X ↦ (⟨fun i ↦ (ρ i) x,
+      partition_of_unity_maps_to_simplex ρ x⟩ : (stdSimplex ℝ (Fin (N + 1))))) :=
+  Continuous.subtype_mk (continuous_pi (fun i ↦ (ρ i).continuous)) _
 
 /-! ## Subordination and approximation -/
 
@@ -4188,9 +4103,9 @@ lemma subordination_gives_mem_U
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     {K : Set E} {U : Set E}
     {N : ℕ} (pts : Fin (N + 1) → E)
-    (ρ : PartitionOfUnity (Fin (N + 1)) (↥K) Set.univ)
-    (hρ_sub : ρ.IsSubordinate (fun i => Subtype.val ⁻¹' ((fun u => pts i + u) '' U)))
-    (i : Fin (N + 1)) (x : ↥K) (hne : (ρ i) x ≠ 0) :
+    (ρ : PartitionOfUnity (Fin (N + 1)) K Set.univ)
+    (hρ_sub : ρ.IsSubordinate (fun i ↦ Subtype.val ⁻¹' ((fun u ↦ pts i + u) '' U)))
+    (i : Fin (N + 1)) (x : K) (hne : (ρ i) x ≠ 0) :
     (x : E) - pts i ∈ U := by
   have hx_pre := hρ_sub i (subset_tsupport _ (Function.mem_support.mpr hne))
   rw [Set.mem_preimage] at hx_pre
@@ -4206,8 +4121,8 @@ lemma finsum_smul_sub_eq
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     {K : Set E}
     {N : ℕ} (pts : Fin (N + 1) → E)
-    (ρ : PartitionOfUnity (Fin (N + 1)) (↥K) Set.univ)
-    (x : ↥K) :
+    (ρ : PartitionOfUnity (Fin (N + 1)) K Set.univ)
+    (x : K) :
     ∑ᶠ i, (ρ i) x • ((x : E) - pts i) = (x : E) - ∑ i, (ρ i) x • pts i := by
   rw [finsum_eq_sum_of_fintype]
   simp_rw [smul_sub]
@@ -4221,15 +4136,15 @@ lemma approximation_from_partition_of_unity
     {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     {K : Set E} {U : Set E} (hU_convex : Convex ℝ U)
-    {N : ℕ} (pts : Fin (N + 1) → E) (_hpts : ∀ i, pts i ∈ K)
-    (ρ : PartitionOfUnity (Fin (N + 1)) (↥K) Set.univ)
-    (hρ_sub : ρ.IsSubordinate (fun i => Subtype.val ⁻¹' ((fun u => pts i + u) '' U)))
-    (x : ↥K) :
+    {N : ℕ} (pts : Fin (N + 1) → E)
+    (ρ : PartitionOfUnity (Fin (N + 1)) K Set.univ)
+    (hρ_sub : ρ.IsSubordinate (fun i ↦ Subtype.val ⁻¹' ((fun u ↦ pts i + u) '' U)))
+    (x : K) :
     (x : E) - ∑ i, (ρ i) x • pts i ∈ U := by
   rw [← finsum_smul_sub_eq pts ρ x]
-  exact ρ.finsum_smul_mem_convex (g := fun i _ => (x : E) - pts i)
+  exact ρ.finsum_smul_mem_convex (g := fun i _ ↦ (x : E) - pts i)
     (Set.mem_univ x)
-    (fun i hne => subordination_gives_mem_U pts ρ hρ_sub i x hne) hU_convex
+    (fun i hne ↦ subordination_gives_mem_U pts ρ hρ_sub i x hne) hU_convex
 
 /-! ## Schauder projection-evaluation pair -/
 
@@ -4240,30 +4155,30 @@ lemma schauder_projection_eval_pair
     [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     {K : Set E} (hK_compact : IsCompact K) (hK_convex : Convex ℝ K) (hK_nonempty : K.Nonempty)
     {U : Set E} (hU_open : IsOpen U) (hU_zero : (0 : E) ∈ U) (hU_convex : Convex ℝ U) :
-    ∃ (N : ℕ) (φ : ↥K → ↥(stdSimplex ℝ (Fin (N + 1))))
-      (ψ : ↥(stdSimplex ℝ (Fin (N + 1))) → ↥K),
+    ∃ (N : ℕ) (φ : K → stdSimplex ℝ (Fin (N + 1)))
+      (ψ : stdSimplex ℝ (Fin (N + 1)) → K),
       Continuous φ ∧ Continuous ψ ∧
-      ∀ x : ↥K, (x : E) - (ψ (φ x) : E) ∈ U := by
+      ∀ x : K, (x : E) - (ψ (φ x) : E) ∈ U := by
   obtain ⟨N, pts, hpts_mem, hK_cover⟩ :=
     finite_cover_of_compact hK_compact hK_nonempty hU_open hU_zero
   have hV_open : ∀ i : Fin (N + 1),
-      IsOpen (Subtype.val ⁻¹' ((fun u => pts i + u) '' U) : Set ↥K) :=
-    fun i => ((isOpenMap_add_left (pts i)) U hU_open).preimage continuous_subtype_val
+      IsOpen (Subtype.val ⁻¹' ((fun u ↦ pts i + u) '' U) : Set K) :=
+    fun i ↦ ((isOpenMap_add_left (pts i)) U hU_open).preimage continuous_subtype_val
   have hV_cover : Set.univ ⊆
-      ⋃ i : Fin (N + 1), (Subtype.val ⁻¹' ((fun u => pts i + u) '' U) : Set ↥K) := by
+      ⋃ i : Fin (N + 1), (Subtype.val ⁻¹' ((fun u ↦ pts i + u) '' U) : Set K) := by
     intro ⟨x, hx⟩ _
     simp only [Set.mem_iUnion, Set.mem_preimage]
     exact Set.mem_iUnion.mp (hK_cover hx)
-  have : CompactSpace ↥K := isCompact_iff_compactSpace.mp hK_compact
+  have : CompactSpace K := isCompact_iff_compactSpace.mp hK_compact
   obtain ⟨ρ, hρ_sub⟩ := PartitionOfUnity.exists_isSubordinate isClosed_univ
-    (fun i => Subtype.val ⁻¹' ((fun u => pts i + u) '' U)) hV_open hV_cover
+    (fun i ↦ Subtype.val ⁻¹' ((fun u ↦ pts i + u) '' U)) hV_open hV_cover
   exact ⟨N,
-    fun x => ⟨fun i => (ρ i) x, partition_of_unity_maps_to_simplex ρ x⟩,
-    fun w => ⟨∑ i, (w : Fin (N + 1) → ℝ) i • pts i,
-      convex_combination_mem hK_convex pts hpts_mem _ (fun i => w.2.1 i) w.2.2⟩,
+    fun x ↦ ⟨fun i ↦ (ρ i) x, partition_of_unity_maps_to_simplex ρ x⟩,
+    fun w ↦ ⟨∑ i, (w : Fin (N + 1) → ℝ) i • pts i,
+      convex_combination_mem hK_convex pts hpts_mem _ (fun i ↦ w.2.1 i) w.2.2⟩,
     partition_of_unity_phi_continuous ρ,
     continuous_induced_rng.mpr (eval_map_continuous pts),
-    fun x => approximation_from_partition_of_unity hU_convex pts hpts_mem ρ hρ_sub x⟩
+    fun x ↦ approximation_from_partition_of_unity hU_convex pts ρ hρ_sub x⟩
 
 /-! ## Approximate and exact fixed points -/
 
@@ -4273,9 +4188,9 @@ lemma approximate_fixed_point_of_brouwer
     {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     {K : Set E} (hK_compact : IsCompact K) (hK_convex : Convex ℝ K) (hK_nonempty : K.Nonempty)
-    (f : ↥K → ↥K) (hf : Continuous f)
+    (f : K → K) (hf : Continuous f)
     {U : Set E} (hU_open : IsOpen U) (hU_zero : (0 : E) ∈ U) (hU_convex : Convex ℝ U) :
-    ∃ z : ↥K, (f z : E) - (z : E) ∈ U := by
+    ∃ z : K, (f z : E) - (z : E) ∈ U := by
   obtain ⟨N, φ, ψ, hφ_cont, hψ_cont, happrox⟩ :=
     schauder_projection_eval_pair hK_compact hK_convex hK_nonempty hU_open hU_zero hU_convex
   obtain ⟨y, hy⟩ := brouwer_fixed_point N (φ ∘ f ∘ ψ) (hφ_cont.comp (hf.comp hψ_cont))
@@ -4289,14 +4204,14 @@ lemma fixed_point_of_approximate_fixed_points
     {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     {K : Set E} (hK_compact : IsCompact K)
-    (f : ↥K → ↥K) (hf : Continuous f)
+    (f : K → K) (hf : Continuous f)
     (happrox : ∀ U : Set E, IsOpen U → (0 : E) ∈ U →
-      ∃ z : ↥K, (f z : E) - (z : E) ∈ U) :
-    ∃ x : ↥K, f x = x := by
-  have : CompactSpace ↥K := isCompact_iff_compactSpace.mp hK_compact
-  have hclosed : IsClosed (Set.range (fun z : ↥K => (f z : E) - (z : E))) :=
+      ∃ z : K, (f z : E) - (z : E) ∈ U) :
+    ∃ x : K, f x = x := by
+  have : CompactSpace K := isCompact_iff_compactSpace.mp hK_compact
+  have hclosed : IsClosed (Set.range (fun z : K ↦ (f z : E) - (z : E))) :=
     (isCompact_range (hf.subtype_val.sub continuous_subtype_val)).isClosed
-  have h0 : (0 : E) ∈ closure (Set.range (fun z : ↥K => (f z : E) - (z : E))) := by
+  have h0 : (0 : E) ∈ closure (Set.range (fun z : K ↦ (f z : E) - (z : E))) := by
     rw [mem_closure_iff]
     intro U hU hU0
     obtain ⟨z, hz⟩ := happrox U hU hU0
@@ -4321,8 +4236,8 @@ instance FiniteDimensional.locallyConvexSpace
   set n := Module.finrank ℝ E
   set φ := ContinuousLinearEquiv.ofFinrankEq
     (show Module.finrank ℝ E = Module.finrank ℝ (Fin n → ℝ) by rw [Module.finrank_fin_fun])
-  apply LocallyConvexSpace.ofBasisZero ℝ E (fun (s : Set (Fin n → ℝ)) => φ ⁻¹' s)
-    (fun s => s ∈ nhds (0 : Fin n → ℝ) ∧ Convex ℝ s)
+  apply LocallyConvexSpace.ofBasisZero ℝ E (fun (s : Set (Fin n → ℝ)) ↦ φ ⁻¹' s)
+    (fun s ↦ s ∈ nhds (0 : Fin n → ℝ) ∧ Convex ℝ s)
   · rw [show nhds (0 : E) = Filter.comap φ (nhds (0 : Fin n → ℝ)) from by
       rw [φ.toHomeomorph.nhds_eq_comap]
       congr 1
