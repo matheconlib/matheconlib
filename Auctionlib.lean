@@ -2,6 +2,7 @@ import Auctionlib.AllPurchase.Definitions
 import Auctionlib.AllPurchase.Envelope
 import Auctionlib.AllPurchase.Monotonicity
 import Auctionlib.AllPurchase.NetPayment
+import Auctionlib.AllPurchase.StrictMonotonicity
 import Auctionlib.Envelope.Mathematics
 import Auctionlib.Envelope.Myerson
 import Auctionlib.Envelope.Theorem
