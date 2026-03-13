@@ -52,6 +52,21 @@ Built on [`MyersonSetUpMathsCore`](Auctionlib/Envelope/Mathematics.lean) (necess
 | [`total_revenue`](Auctionlib/RevenueEquivalence/Theorem.lean) | Expected revenue $= \mathbb{E}[S_2]$ under efficient allocation + IC + IR |
 | [`revenue_equivalence`](Auctionlib/RevenueEquivalence/Theorem.lean) | Any two IC, IR mechanisms with the same $q$ yield the same total expected revenue (no efficiency needed) |
 
+### All-Purchase Auction (Chapter 6)
+
+[`AllPurchaseCore`](Auctionlib/AllPurchase/Definitions.lean) captures the pure analytic content: winning probability `G`, net expenditure `C`, equilibrium strategy `β`, and the IC inequality. It coerces to `EnvelopeSetUpMathsCore`, making the envelope theorem directly applicable. [`AllPurchaseSetup`](Auctionlib/AllPurchase/Definitions.lean) extends `RevenueEquivalenceSetup` with a posted price and scarcity function.
+
+| Result | Statement |
+|--------|-----------|
+| [`q_monotoneOn`](Auctionlib/AllPurchase/Monotonicity.lean) | $q = G \circ \beta$ is nondecreasing on $[a, b]$ |
+| [`weakMonotonicity`](Auctionlib/AllPurchase/Monotonicity.lean) | Lemma 6.1: $\beta$ is weakly increasing under strict $G$ |
+| [`lipschitz`](Auctionlib/AllPurchase/Envelope.lean) | $U$ is 1-Lipschitz on $[a, b]$ |
+| [`aeDifferentiable`](Auctionlib/AllPurchase/Envelope.lean) | $U'(v) = q(v)$ a.e. |
+| [`integral_rep`](Auctionlib/AllPurchase/Envelope.lean) | Lemma 6.3: $U(v) = U(a) + \int_a^v q(\psi)\, d\psi$ |
+| [`netPaymentIdentity`](Auctionlib/AllPurchase/NetPayment.lean) | Proposition 6.4: $C(\beta(v)) = b^{AP}(v) - U(a)$ |
+
+Lemma 6.2 (strict monotonicity) is stated in [`StrictMonotonicity.lean`](Auctionlib/AllPurchase/StrictMonotonicity.lean) with a self-contained setup importing only Mathlib; proof is in progress.
+
 ### Order Statistics
 
 [`OrderStatisticsSetup`](Auctionlib/Statistics/OrderStatistics.lean) formalizes $n$ i.i.d. real-valued random variables with a common density.
@@ -84,3 +99,5 @@ lake build                                # build the project
 - [x] Envelope Theorem (Section 5.1)
 - [x] Myerson's Lemma (Section 5.2)
 - [x] Revenue Equivalence Theorem (Section 5.3)
+- [x] All-Purchase Auction (Chapter 6, excluding Lemma 6.2)
+- [ ] Lemma 6.2 — Strict Monotonicity (Chapter 6)
