@@ -75,4 +75,22 @@ lemma ProbabilityMeasure.measurable_integral {α : Type*} [MeasurableSpace α]
     Measure.measurable_lintegral <| by fun_prop
   fun_prop
 
+@[simps]
+noncomputable def ProbabilityMeasure.equivStdSimplex {α : Type} [MeasurableSpace α]
+    [DiscreteMeasurableSpace α ] [Fintype α] : ProbabilityMeasure α ≃ stdSimplex ℝ α where
+  toFun μ := ⟨fun a ↦ μ {a}, by simp, by
+    simp_rw [← μ.measureReal_eq_coe_coeFn, sum_measureReal_singleton]; simp⟩
+  invFun x := ⟨∑ a, ENNReal.ofNNReal ⟨x a, x.2.1 a⟩ • Measure.dirac a, ⟨by
+    simp [← ENNReal.toReal_eq_one_iff, ← ENNReal.coe_finset_sum]⟩⟩
+  left_inv μ := by
+    refine ProbabilityMeasure.toMeasure_injective <| Measure.ext_of_singleton fun a ↦ ?_
+    classical
+    simp [Set.indicator]
+    exact μ.ennreal_coeFn_eq_coeFn_toMeasure _
+  right_inv x := by
+    ext a
+    classical
+    simp [Set.indicator]
+    rfl
+
 end MeasureTheory

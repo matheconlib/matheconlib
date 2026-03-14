@@ -9,70 +9,14 @@ import Auctionlib.ForMathlib.Schauder
 This file contains an auto-formalisation of the existence of mixed-strategy Nash equilibria for
 finite games. More classic results on the existence of Nash equilibria in other situations will be
 added later on.
+
+Currently, the only public declaration in this file is
+`GameTheory.Game.exists_isNashEquilibrium_of_finite`; all other declarations are kept private.
 -/
 
 set_option linter.unusedSectionVars false
 
 namespace GameTheory
-
-def Schauder : Prop := ∀ {E : Type} [AddCommGroup E] [Module ℝ E]
-  [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E]
-  [LocallyConvexSpace ℝ E]
-  {k : Set E} (_hk : IsCompact k) (_hk' : Convex ℝ k) (_hk'' : k.Nonempty)
-  {f : k → k} (_hf : Continuous f), ∃ x, f x = x
-
-/-! ## Equivalence between probability measures and the standard simplex -/
-
-section EquivStdSimplex
-
-open MeasureTheory Classical
-
-private noncomputable def equivStdSimplex_toFun
-    {α : Type} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α]
-    (μ : ProbabilityMeasure α) : stdSimplex ℝ α :=
-  ⟨fun a ↦ (μ {a}).toReal, fun a ↦ ENNReal.toReal_nonneg, by
-    simp_rw [← μ.measureReal_eq_coe_coeFn, sum_measureReal_singleton]
-    simp⟩
-
-private lemma equivStdSimplex_invFun_isProbabilityMeasure
-    {α : Type} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α]
-    (x : stdSimplex ℝ α) :
-    IsProbabilityMeasure (∑ a, ENNReal.ofNNReal ⟨x.1 a, x.2.1 a⟩ • Measure.dirac a) where
-  measure_univ := by
-    change (∑ a, ENNReal.ofNNReal ⟨(x : α → ℝ) a, x.2.1 a⟩ • Measure.dirac a) Set.univ = 1
-    simp [← ENNReal.toReal_eq_one_iff, ← ENNReal.coe_finset_sum]
-
-private noncomputable def equivStdSimplex_invFun
-    {α : Type} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α]
-    (x : stdSimplex ℝ α) : ProbabilityMeasure α :=
-  ⟨∑ a, ENNReal.ofNNReal ⟨x.1 a, x.2.1 a⟩ • Measure.dirac a,
-    equivStdSimplex_invFun_isProbabilityMeasure x⟩
-
-private lemma equivStdSimplex_left_inv
-    {α : Type} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α]
-    (μ : ProbabilityMeasure α) :
-    equivStdSimplex_invFun (equivStdSimplex_toFun μ) = μ :=
-  ProbabilityMeasure.toMeasure_injective <| Measure.ext_of_singleton fun a ↦ by
-    simp [equivStdSimplex_invFun, equivStdSimplex_toFun, Set.indicator]
-    exact μ.ennreal_coeFn_eq_coeFn_toMeasure _
-
-private lemma equivStdSimplex_right_inv
-    {α : Type} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α]
-    (x : stdSimplex ℝ α) :
-    equivStdSimplex_toFun (equivStdSimplex_invFun x) = x := by
-  ext a
-  simp [equivStdSimplex_toFun, equivStdSimplex_invFun, Set.indicator]
-
-@[simps]
-noncomputable def _root_.MeasureTheory.ProbabilityMeasure.equivStdSimplex
-    {α : Type} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α] :
-    ProbabilityMeasure α ≃ stdSimplex ℝ α where
-  toFun := equivStdSimplex_toFun
-  invFun := equivStdSimplex_invFun
-  left_inv := equivStdSimplex_left_inv
-  right_inv := equivStdSimplex_right_inv
-
-end EquivStdSimplex
 
 /-! ## Nash equilibrium existence via the best-response map -/
 
@@ -225,7 +169,7 @@ private lemma equivStdSimplex_symm_singleton_toReal
     {α : Type} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α]
     (w : α → ℝ) (hw : w ∈ stdSimplex ℝ α) (a : α) :
     ((↑(ProbabilityMeasure.equivStdSimplex.symm ⟨w, hw⟩) : Measure α) {a}).toReal = w a := by
-  simp [ProbabilityMeasure.equivStdSimplex_symm_apply, equivStdSimplex_invFun, Set.indicator]
+  simp [ProbabilityMeasure.equivStdSimplex, Set.indicator]; rfl
 
 lemma integral_pi_eq_weighted_sum
     (σ : (j : ι) → ProbabilityMeasure (A j))
@@ -300,15 +244,17 @@ lemma nash_from_simplex_le (x : (i : ι) → A i → ℝ)
 
 end NashExistence
 
+@[expose] public section
+
 variable {ι : Type} {A : ι → Type} {O : Type}
 
 lemma Game.exists_isNashEquilibrium_of_finite (G : Game A O) (P : PayoffStructure O ι)
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
     [∀ i, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O] [G.Measurable]
-    [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)]
-    (schauder : Schauder) :
+    [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)] :
     ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a := by
-  obtain ⟨⟨x, hx⟩, hfixed⟩ := schauder (isCompact_univ_pi fun i ↦ isCompact_stdSimplex (A i))
+  obtain ⟨⟨x, hx⟩, hfixed⟩ := Continuous.exists_fixedPt_of_isConvex_isCompact
+    (isCompact_univ_pi fun i ↦ isCompact_stdSimplex (A i))
     (convex_pi fun i _ ↦ convex_stdSimplex ℝ (A i))
     (Set.univ_pi_nonempty_iff.mpr fun i ↦
       ⟨_, (stdSimplex.instNonemptyElemForall (S := ℝ) (X := A i)).some.2⟩)
@@ -319,5 +265,7 @@ lemma Game.exists_isNashEquilibrium_of_finite (G : Game A O) (P : PayoffStructur
     have h := fixedPoint_gains_zero G P x hx hfixed' i s
     simp only [gain, max_eq_left_iff] at h
     linarith⟩
+
+end
 
 end GameTheory
