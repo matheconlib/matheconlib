@@ -1,6 +1,7 @@
 module
 
 public import Mathlib.MeasureTheory.Measure.FiniteMeasurePi
+public import Mathlib.Probability.Notation
 
 /-!
 Some results on probability measures.
@@ -10,9 +11,16 @@ Some results on probability measures.
 
 namespace MeasureTheory
 
+open scoped ProbabilityTheory
+
 lemma ProbabilityMeasure.measurableEmbedding_toMeasure {α : Type*}
     [MeasurableSpace α] : MeasurableEmbedding (toMeasure (Ω := α)) :=
   .subtype_coe measurableSet_isProbabilityMeasure
+
+@[fun_prop]
+lemma ProbabilityMeasure.measurable_toMeasure {α : Type*}
+    [MeasurableSpace α] : Measurable (toMeasure (Ω := α)) :=
+  measurableEmbedding_toMeasure.measurable
 
 lemma ProbabilityMeasure.measurable_map {α β : Type*} [MeasurableSpace α]
     [MeasurableSpace β] {f : α → β} (hf : Measurable f) :
@@ -51,5 +59,20 @@ lemma ProbabilityMeasure.measurable_join {α : Type*} [MeasurableSpace α] :
   dsimp [Function.comp_def, join]
   exact Measure.measurable_join.comp <| (Measure.measurable_map _ measurable_subtype_coe).comp
     measurable_subtype_coe
+
+lemma ProbabilityMeasure.measurable_integral {α : Type*} [MeasurableSpace α]
+    {f : α → ℝ} (hf : Measurable f) (hf' : Bornology.IsBounded (Set.range f)) :
+    Measurable (fun μ : ProbabilityMeasure α ↦ μ[f]) := by
+  rw [show (fun μ : ProbabilityMeasure α ↦ μ[f]) = fun μ ↦
+      (∫⁻ a, .ofReal (f a) ∂μ.toMeasure).toReal - (∫⁻ a, .ofReal (-f a) ∂μ.toMeasure).toReal by
+    ext μ
+    have ⟨C, hC⟩ := hf'.exists_norm_le
+    rw [integral_eq_lintegral_pos_part_sub_lintegral_neg_part <| .of_bound hf.aestronglyMeasurable
+      C <| .of_forall <| by simpa using hC]]
+  have : Measurable fun μ : Measure α ↦ ∫⁻ a, .ofReal (f a) ∂μ :=
+    Measure.measurable_lintegral <| by fun_prop
+  have : Measurable fun μ : Measure α ↦ ∫⁻ a, .ofReal (-f a) ∂μ :=
+    Measure.measurable_lintegral <| by fun_prop
+  fun_prop
 
 end MeasureTheory
