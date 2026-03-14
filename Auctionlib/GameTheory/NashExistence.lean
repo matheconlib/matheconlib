@@ -14,23 +14,17 @@ Currently, the only public declaration in this file is
 `GameTheory.Game.exists_isNashEquilibrium_of_finite`; all other declarations are kept private.
 -/
 
-set_option linter.unusedSectionVars false
-
 namespace GameTheory
 
 /-! ## Nash equilibrium existence via the best-response map -/
 
 section NashExistence
 
-set_option linter.unusedSectionVars false
-
 open MeasureTheory Classical
 
 variable {ι : Type} {A : ι → Type} {O : Type}
-variable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
-variable [∀ i, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O]
-variable [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)]
-variable (G : Game A O) [G.Measurable] (P : PayoffStructure O ι)
+  [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)]
+  (G : Game A O) (P : PayoffStructure O ι)
 
 noncomputable def expectedPayoffPure (x : (i : ι) → A i → ℝ) (i : ι) (s : A i) : ℝ :=
   ∑ a : (j : ι) → A j,
@@ -81,13 +75,6 @@ lemma bestResponseMap_mapsTo :
   show ∑ s, unnormalizedResponse G P x i s / normDenom G P x i = 1
   rw [← Finset.sum_div]
   exact div_self hnd_pos.ne'
-
-private lemma continuous_weightedPayoffSum (S : Finset ι) (c : ((j : ι) → A j) → ℝ) :
-    Continuous (fun x : (i : ι) → A i → ℝ ↦
-      ∑ a : (j : ι) → A j, (∏ j ∈ S, x j (a j)) * c a) :=
-  continuous_finset_sum _ fun a _ ↦
-    (continuous_finset_prod _ fun j _ ↦
-      (continuous_apply (a j)).comp (continuous_apply j)).mul continuous_const
 
 private lemma continuous_unnormalizedResponse (i : ι) (s : A i) :
     Continuous (fun x ↦ unnormalizedResponse G P x i s) := by
@@ -170,6 +157,9 @@ private lemma equivStdSimplex_symm_singleton_toReal
     (w : α → ℝ) (hw : w ∈ stdSimplex ℝ α) (a : α) :
     ((↑(ProbabilityMeasure.equivStdSimplex.symm ⟨w, hw⟩) : Measure α) {a}).toReal = w a := by
   simp [ProbabilityMeasure.equivStdSimplex, Set.indicator]; rfl
+
+variable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
+  [∀ i, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O] [G.Measurable]
 
 lemma integral_pi_eq_weighted_sum
     (σ : (j : ι) → ProbabilityMeasure (A j))
