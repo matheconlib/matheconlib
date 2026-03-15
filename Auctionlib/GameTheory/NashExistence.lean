@@ -22,7 +22,7 @@ section NashExistence
 
 open MeasureTheory Classical
 
-variable {ι : Type} {A : ι → Type} {O : Type}
+variable {ι : Type*} {A : ι → Type*} {O : Type*}
   [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)]
   (G : Game A O) (P : PayoffStructure O ι)
 
@@ -113,7 +113,7 @@ lemma gain_eq_mul_sub (x : (i : ι) → A i → ℝ)
   simp only [unnormalizedResponse] at key
   linarith
 
-private lemma weighted_avg_lt {α : Type} [Fintype α] (w : α → ℝ) (f : α → ℝ) (c : ℝ)
+private lemma weighted_avg_lt {α : Type*} [Fintype α] (w : α → ℝ) (f : α → ℝ) (c : ℝ)
     (hw_nonneg : ∀ a, 0 ≤ w a) (hw_sum : ∑ a, w a = 1)
     (hcf : ∀ a, 0 < w a → c < f a) (ha : ∃ a, 0 < w a) :
     c < ∑ a, w a * f a := by
@@ -153,7 +153,7 @@ lemma fixedPoint_gains_zero (x : (i : ι) → A i → ℝ)
 /-! ### Connecting the simplex formulation to the measure-theoretic one -/
 
 private lemma equivStdSimplex_symm_singleton_toReal
-    {α : Type} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α]
+    {α : Type*} [MeasurableSpace α] [DiscreteMeasurableSpace α] [Fintype α]
     (w : α → ℝ) (hw : w ∈ stdSimplex ℝ α) (a : α) :
     ((↑(ProbabilityMeasure.equivStdSimplex.symm ⟨w, hw⟩) : Measure α) {a}).toReal = w a := by
   simp [ProbabilityMeasure.equivStdSimplex, Set.indicator]; rfl
@@ -236,7 +236,7 @@ end NashExistence
 
 @[expose] public section
 
-variable {ι : Type} {A : ι → Type} {O : Type}
+variable {ι : Type*} {A : ι → Type*} {O : Type*}
 
 lemma Game.exists_isNashEquilibrium_of_finite (G : Game A O) (P : PayoffStructure O ι)
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
