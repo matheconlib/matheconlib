@@ -39,21 +39,21 @@ open Uniformity Pointwise Topology Set
 @[expose]
 public def IsApproxSelection {X Y : Type*} [UniformSpace X] [TopologicalSpace Y] [AddCommMonoid Y]
     (F : X → Set Y) (U : Set (X × X)) (W : Set Y) (f : X → Y) : Prop :=
-  Continuous f ∧ ∀ x : X, ∃ x' : X, (x, x') ∈ U ∧ f x ∈ F x' + W
+  ∀ x : X, ∃ x' : X, (x, x') ∈ U ∧ f x ∈ F x' + W
 
 /-! ### API lemmas -/
 
 public theorem isApproxSelection_metric_iff {X Y : Type*} [PseudoMetricSpace X]
     [SeminormedAddCommGroup Y] (F : X → Set Y) (ε : ℝ) (f : X → Y) :
     IsApproxSelection F {p : X × X | dist p.1 p.2 < ε} (Metric.ball 0 ε) f ↔
-      Continuous f ∧ ∀ x : X, ∃ x', dist x x' < ε ∧ f x ∈ F x' + Metric.ball 0 ε :=
+      ∀ x : X, ∃ x', dist x x' < ε ∧ f x ∈ F x' + Metric.ball 0 ε :=
   Iff.rfl
 
 public theorem IsApproxSelection.mono {X Y : Type*} [UniformSpace X] [TopologicalSpace Y]
     [AddCommMonoid Y] {F F' : X → Set Y} {U U' : Set (X × X)} {W W' : Set Y} {f : X → Y}
     (hf : IsApproxSelection F U W f) (hF' : ∀ x, F x ⊆ F' x) (hU' : U ⊆ U') (hW' : W ⊆ W') :
     IsApproxSelection F' U' W' f := by
-  refine ⟨hf.1, fun x ↦ (hf.2 x).imp fun x' h ↦ ?_⟩
+  refine fun x ↦ (hf x).imp fun x' h ↦ ?_
   grind [add_subset_add (hF' x') hW']
 
 
@@ -238,7 +238,7 @@ public theorem UpperHemicontinuous.exists_isApproxSelection
     [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] {F : X → Set E}
     (hF : UpperHemicontinuous F) (hF' : ∀ x, (F x).Nonempty) (hF'' : ∀ x, Convex ℝ (F x))
     {U : Set (X × X)} (hU : U ∈ 𝓤 X) {W : Set E} (hW : IsOpen W) (hW' : 0 ∈ W) (hW'' : Convex ℝ W) :
-    ∃ f : X → E, IsApproxSelection F U W f := by
+    ∃ f : X → E, Continuous f ∧ IsApproxSelection F U W f := by
   obtain ⟨V, hV_mem, hV_open, hV_symm, hV_comp⟩ := exists_open_symm_entourage_comp U hU
   let C : X → Set X := fun x₀ ↦ {z | F z ⊆ F x₀ + W} ∩ {z | (x₀, z) ∈ V}
   have hC_open : ∀ x₀, IsOpen (C x₀) :=
@@ -285,10 +285,10 @@ public theorem UpperHemicontinuous.exists_isApproxSelection'
     [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [LocallyConvexSpace ℝ E] {F : X → Set E}
     (hF : UpperHemicontinuous F) (hF' : ∀ x, (F x).Nonempty) (hF'' : ∀ x, Convex ℝ (F x))
     {U : Set (X × X)} (hU : U ∈ 𝓤 X) {W : Set E} (hW : W ∈ 𝓝 0) :
-    ∃ f : X → E, IsApproxSelection F U W f := by
+    ∃ f : X → E, Continuous f ∧ IsApproxSelection F U W f := by
   obtain ⟨V, hV⟩ := (LocallyConvexSpace.convex_open_basis_zero ℝ E).mem_iff.1 hW
   obtain ⟨f, hf⟩ := hF.exists_isApproxSelection hF' hF'' hU hV.1.2.1 hV.1.1 hV.1.2.2
-  exact ⟨f, hf.mono (by simp) (by simp) hV.2⟩
+  exact ⟨f, hf.1, hf.2.mono (by simp) (by simp) hV.2⟩
 
 /-- Every upper hemicontinuous function `F` from a metric space `X` to a normed space `E` that is
 valued in nonempty convex sets admits arbitrarily good continuous approximate selections:
