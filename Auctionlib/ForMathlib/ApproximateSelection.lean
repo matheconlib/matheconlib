@@ -1,9 +1,38 @@
+module
+
+public import Mathlib.Analysis.Normed.Module.Basic
+public import Mathlib.Topology.Algebra.Module.LocallyConvex
+public import Mathlib.Topology.Compactness.Paracompact
+public import Mathlib.Topology.MetricSpace.HausdorffDistance
+public import Mathlib.Topology.Semicontinuity.Hemicontinuity
+
 import Mathlib.Analysis.Convex.PartitionOfUnity
 import Mathlib.Analysis.LocallyConvex.WithSeminorms
 import Mathlib.Analysis.Normed.Module.Convex
-import Mathlib.Analysis.RCLike.Basic
 import Mathlib.Topology.EMetricSpace.Paracompact
-import Mathlib.Topology.Semicontinuity.Hemicontinuity
+
+/-!
+# Approximate selections of upper hemi-continuous functions
+This file contains an auto-formalisation of existence theorems for continuous approximate selections
+of set-valued functions.
+
+Most declarations are kept private; the only public declarations in this file are the following:
+* `IsApproxSelection`: definition of approximate selections
+* `upperHemicontinuous_iff_isOpen_of_isOpen` and `UpperHemicontinuous.isOpen_of_isOpen`: two missing
+  API lemmas on hemicontinuous functions
+* `exists_star_refinement`: proof that every open cover of a paracompact Hausdorff space admits a
+  locally finite star-refinement consisting only of nonempty sets
+* `UpperHemicontinuous.exists_isApproxSelection`: existence of continuous approximate selections
+  for upper hemicontinuous functions from paracompact Hausdorff uniform spaces to locally convex
+  vector spaces that are valued in nonempty convex sets.
+* `UpperHemicontinuous.exists_isApproxSelection_metric`: existence of continuous approximate
+  selections for upper hemicontinuous functions from metric spaces to normed spaces that are valued
+  in nonempty convex sets, restated in terms of numerical bounds `ε` instead of neighbourhoods.
+
+## TODOs:
+* get rid of the unnecessary symmetry assumption in
+  `UpperHemicontinuous.exists_isApproxSelection`
+-/
 
 set_option linter.unusedVariables false
 
@@ -11,35 +40,35 @@ open Uniformity Pointwise Topology Set
 
 /-! ### Definitions -/
 
-def IsApproxSelection {X Y : Type} [UniformSpace X] [TopologicalSpace Y] [AddCommMonoid Y]
+@[expose]
+public def IsApproxSelection {X Y : Type} [UniformSpace X] [TopologicalSpace Y] [AddCommMonoid Y]
     (F : X → Set Y) (U : Set (X × X)) (W : Set Y) (f : X → Y) : Prop :=
   Continuous f ∧ ∀ x : X, ∃ x' : X, (x, x') ∈ U ∧ f x ∈ F x' + W
 
 /-! ### Correctness lemmas -/
 
-theorem upperHemicontinuous_iff_isOpen_of_isOpen {X Y : Type} [TopologicalSpace X]
+theorem isApproxSelection_metric_iff {X Y : Type} [PseudoMetricSpace X]
+    [SeminormedAddCommGroup Y] (F : X → Set Y) (ε : ℝ) (f : X → Y) :
+    IsApproxSelection F {p : X × X | dist p.1 p.2 < ε} (Metric.ball 0 ε) f ↔
+      Continuous f ∧ ∀ x : X, ∃ x', dist x x' < ε ∧ f x ∈ F x' + Metric.ball 0 ε :=
+  Iff.rfl
+
+/-! ### Helper lemmas -/
+
+public theorem upperHemicontinuous_iff_isOpen_of_isOpen {X Y : Type} [TopologicalSpace X]
     [TopologicalSpace Y] {F : X → Set Y} :
     UpperHemicontinuous F ↔ ∀ V : Set Y, IsOpen V → IsOpen {x | F x ⊆ V} := by
   rw [upperHemicontinuous_iff_forall_isOpen]
   exact ⟨fun h v hv ↦ isOpen_iff_mem_nhds.2 fun x hx ↦ h x v hv hx,
     fun h x v hv hx ↦ isOpen_iff_mem_nhds.1 (h v hv) x hx⟩
 
-theorem UpperHemicontinuous.isOpen_of_isOpen {X Y : Type} [TopologicalSpace X]
+public theorem UpperHemicontinuous.isOpen_of_isOpen {X Y : Type} [TopologicalSpace X]
     [TopologicalSpace Y] {F : X → Set Y} (hF : UpperHemicontinuous F) :
     ∀ V : Set Y, IsOpen V → IsOpen {x | F x ⊆ V} :=
   upperHemicontinuous_iff_isOpen_of_isOpen.1 hF
 
-theorem isApproxSelection_metric_iff {X Y : Type} [PseudoMetricSpace X]
-    [SeminormedAddCommGroup Y] (F : X → Set Y) (ε : ℝ) (f : X → Y) :
-    IsApproxSelection F {p : X × X | dist p.1 p.2 < ε} (Metric.ball (0 : Y) ε) f ↔
-      Continuous f ∧
-        ∀ x : X, ∃ x' : X, dist x x' < ε ∧ f x ∈ F x' + Metric.ball (0 : Y) ε :=
-  Iff.rfl
-
-/-! ### Helper lemmas -/
-
 /-- There exists an open symmetric entourage V with V ○ V ⊆ U. -/
-private lemma exists_open_symm_entourage_comp {X : Type} [UniformSpace X]
+lemma exists_open_symm_entourage_comp {X : Type} [UniformSpace X]
     (U : Set (X × X)) (hU : U ∈ 𝓤 X) :
     ∃ V ∈ 𝓤 X, IsOpen V ∧
       (∀ x y : X, (x, y) ∈ V → (y, x) ∈ V) ∧
@@ -49,7 +78,7 @@ private lemma exists_open_symm_entourage_comp {X : Type} [UniformSpace X]
     fun x y z hxy hyz => hComp (SetRel.prodMk_mem_comp hxy hyz)⟩
 
 /-- The cover set is open. -/
-private lemma coverSet_isOpen
+lemma coverSet_isOpen
     {X : Type} [UniformSpace X]
     {Y : Type} [AddCommGroup Y] [TopologicalSpace Y] [IsTopologicalAddGroup Y]
     (F : X → Set Y) (hF_uhc : UpperHemicontinuous F) (W : Set Y) (hW : IsOpen W)
@@ -58,7 +87,7 @@ private lemma coverSet_isOpen
   (hF_uhc.isOpen_of_isOpen _ (IsOpen.add_left hW)).inter (UniformSpace.isOpen_ball x₀ hV)
 
 /-- Each x₀ is in its own cover set. -/
-private lemma mem_own_coverSet
+lemma mem_own_coverSet
     {X : Type} [UniformSpace X] {Y : Type} [AddCommGroup Y]
     (F : X → Set Y) (W : Set Y) (hW : (0 : Y) ∈ W)
     (V : Set (X × X)) (hV : V ∈ 𝓤 X) (x₀ : X) :
@@ -68,7 +97,7 @@ private lemma mem_own_coverSet
   exact Set.add_mem_add hy hW
 
 /-- Cover sets cover all of X. -/
-private lemma coverSets_cover
+lemma coverSets_cover
     {X : Type} [UniformSpace X] {Y : Type} [AddCommGroup Y]
     (F : X → Set Y) (W : Set Y) (hW : (0 : Y) ∈ W)
     (V : Set (X × X)) (hV : V ∈ 𝓤 X) :
@@ -76,7 +105,7 @@ private lemma coverSets_cover
   eq_univ_of_forall fun x => mem_iUnion.mpr ⟨x, mem_own_coverSet F W hW V hV x⟩
 
 /-- If φ is subordinate and φ(k)(x) ≠ 0, then x ∈ S(k). -/
-private lemma active_mem_of_subordinate
+lemma active_mem_of_subordinate
     {X κ : Type} [TopologicalSpace X]
     (S : κ → Set X) (φ : PartitionOfUnity κ X univ)
     (hφ : φ.IsSubordinate S)
@@ -84,7 +113,7 @@ private lemma active_mem_of_subordinate
   hφ k (subset_tsupport _ (Function.mem_support.mpr hk))
 
 /-- If ∑ᶠ i, f i ≠ 0, there exists i with f i ≠ 0. -/
-private lemma exists_ne_zero_of_finsum
+lemma exists_ne_zero_of_finsum
     {κ : Type} {f : κ → ℝ} (h : ∑ᶠ k, f k ≠ 0) : ∃ k, f k ≠ 0 := by
   by_contra! h'
   exact h (by simp [funext h'])
@@ -92,7 +121,7 @@ private lemma exists_ne_zero_of_finsum
 /-! ### Metric specialization helpers -/
 
 /-- If y ∈ s + Metric.ball 0 ε and s is nonempty, then Metric.infDist y s < ε. -/
-private lemma infDist_lt_of_mem_add_ball
+lemma infDist_lt_of_mem_add_ball
     {Y : Type} [SeminormedAddCommGroup Y]
     (s : Set Y) (hs : s.Nonempty) (y : Y) (ε : ℝ)
     (hy : y ∈ s + Metric.ball (0 : Y) ε) :
@@ -104,7 +133,7 @@ private lemma infDist_lt_of_mem_add_ball
     exact mem_ball_zero_iff.mp hb⟩
 
 /-- Properties of Metric.ball 0 ε for ε > 0: open, contains 0, convex, symmetric. -/
-private lemma metric_ball_props
+lemma metric_ball_props
     {Y : Type} [SeminormedAddCommGroup Y] [NormedSpace ℝ Y] {ε : ℝ} (hε : 0 < ε) :
     IsOpen (Metric.ball (0 : Y) ε) ∧ (0 : Y) ∈ Metric.ball (0 : Y) ε ∧
     Convex ℝ (Metric.ball (0 : Y) ε) ∧ -Metric.ball (0 : Y) ε = Metric.ball (0 : Y) ε :=
@@ -182,8 +211,9 @@ lemma star_refinement_assembly
       _ ⊆ R (π k₂) := Set.diff_subset.trans (Set.biInter_subset_of_mem hτR)
       _ ⊆ C (π k₂) := hRC (π k₂)
 
-/-- Star-refinement of an open cover of a paracompact Hausdorff space. -/
-lemma exists_star_refinement
+/-- Every open cover of a paracompact Hausdorff space admits a locally finite star-refinement
+consisting only of nonempty sets. -/
+public lemma exists_star_refinement
     {X : Type} [TopologicalSpace X] [ParacompactSpace X] [T2Space X]
     {ι : Type} (C : ι → Set X) (hC_open : ∀ i, IsOpen (C i)) (hC_cover : ⋃ i, C i = univ) :
     ∃ (κ : Type) (S : κ → Set X) (π : κ → ι),
@@ -200,7 +230,12 @@ lemma exists_star_refinement
 
 /-! ### Main theorems -/
 
-theorem approxSelection_of_uhc
+/-- Every upper hemicontinuous function `F` from a paracompact Hausdorff uniform space `X` to a
+locally convex vector space `Y` that is valued in nonempty convex sets admits arbitrarily good
+continuous approximate selections: for every entourage `U : Set (X × X)` and every symmetric open
+convex neighbourhood `W` of `0` in `Y` there exists a function `f : X → Y` such that for every
+`x : X`, there exists an `x' : X` with `(x,x') ∈ U` and `f x ∈ F x' + W`. -/
+public theorem UpperHemicontinuous.exists_isApproxSelection
     {X : Type} [UniformSpace X] [ParacompactSpace X] [T2Space X]
     {Y : Type} [AddCommGroup Y] [Module ℝ Y] [TopologicalSpace Y]
     [IsTopologicalAddGroup Y] [ContinuousSMul ℝ Y] [LocallyConvexSpace ℝ Y]
@@ -243,19 +278,22 @@ theorem approxSelection_of_uhc
       have hxSk₀ := active_mem_of_subordinate S φ hφ k₀ x hk₀
       exact (hS_star k k₀ ⟨x, hxSk, hxSk₀⟩ (hp k ⟨x, hxSk⟩)).1 (hy k)
 
-theorem approxSelection_of_uhc_metric
-    {X : Type} [MetricSpace X]
-    {Y : Type} [NormedAddCommGroup Y] [NormedSpace ℝ Y]
-    (F : X → Set Y)
-    (hF_uhc : UpperHemicontinuous F)
-    (hF_nonempty : ∀ x, (F x).Nonempty)
-    (hF_convex : ∀ x, Convex ℝ (F x))
-    {ε : ℝ} (hε : 0 < ε) :
+/-- Every upper hemicontinuous function `F` from a metric space `X` to a normed space `Y` that is
+valued in nonempty convex sets admits arbitrarily good continuous approximate selections:
+for every `ε > 0` there exists a function `f : X → Y` such that for every `x : X`, there exists an
+`x' : X` with `dist x x' < ε` and `Metric.infDist (f x) (F x') < ε`.
+
+This is a special case of `UpperHemicontinuous.exists_isApproxSelection` restated in terms of
+distances instead of neighbourhoods. -/
+public theorem UpperHemicontinuous.exists_isApproxSelection_metric
+    {X : Type} [MetricSpace X] {Y : Type} [NormedAddCommGroup Y] [NormedSpace ℝ Y]
+    (F : X → Set Y) (hF_uhc : UpperHemicontinuous F) (hF_nonempty : ∀ x, (F x).Nonempty)
+    (hF_convex : ∀ x, Convex ℝ (F x)) {ε : ℝ} (hε : 0 < ε) :
     ∃ f : X → Y, Continuous f ∧
       ∀ x : X, ∃ x' : X, dist x x' < ε ∧ Metric.infDist (f x) (F x') < ε := by
   obtain ⟨hBo, hBm, hBc, hBs⟩ := metric_ball_props (Y := Y) hε
   obtain ⟨f, hf_cont, hf_approx⟩ :=
-    approxSelection_of_uhc F hF_uhc hF_nonempty hF_convex
+    hF_uhc.exists_isApproxSelection F  hF_nonempty hF_convex
       {p : X × X | dist p.1 p.2 < ε} (Metric.dist_mem_uniformity hε)
       (Metric.ball (0 : Y) ε) hBo hBm hBc hBs
   exact ⟨f, hf_cont, fun x => by
