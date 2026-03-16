@@ -28,13 +28,7 @@ Most declarations are kept private; the only public declarations in this file ar
 * `UpperHemicontinuous.exists_isApproxSelection_metric`: existence of continuous approximate
   selections for upper hemicontinuous functions from metric spaces to normed spaces that are valued
   in nonempty convex sets, restated in terms of numerical bounds `ε` instead of neighbourhoods.
-
-## TODOs:
-* get rid of the unnecessary symmetry assumption in
-  `UpperHemicontinuous.exists_isApproxSelection`
 -/
-
-set_option linter.unusedVariables false
 
 open Uniformity Pointwise Topology Set
 
@@ -170,7 +164,7 @@ lemma locallyFinite_isClosed_biUnion
 lemma star_refinement_assembly
     {X : Type} [TopologicalSpace X] [ParacompactSpace X] [NormalSpace X]
     {ι : Type} (C R W : ι → Set X)
-    (hR_open : ∀ i, IsOpen (R i)) (hR_cover : ⋃ i, R i = univ)
+    (hR_open : ∀ i, IsOpen (R i))
     (hR_lf : LocallyFinite R) (hRC : ∀ i, R i ⊆ C i)
     (hW_open : ∀ i, IsOpen (W i)) (hW_cover : ⋃ i, W i = univ)
     (hW_lf : LocallyFinite W) (hWR : ∀ i, closure (W i) ⊆ R i) :
@@ -225,27 +219,24 @@ public lemma exists_star_refinement
     star_refinement_shrinking C hC_open hC_cover
   have hW_lf : LocallyFinite W :=
     (hR_lf.subset fun i => hWR i).subset fun i => subset_closure
-  exact star_refinement_assembly C R W hR_open hR_cover hR_lf hRC
+  exact star_refinement_assembly C R W hR_open hR_lf hRC
     hW_open hW_cover hW_lf hWR
 
 /-! ### Main theorems -/
 
 /-- Every upper hemicontinuous function `F` from a paracompact Hausdorff uniform space `X` to a
 locally convex vector space `Y` that is valued in nonempty convex sets admits arbitrarily good
-continuous approximate selections: for every entourage `U : Set (X × X)` and every symmetric open
+continuous approximate selections: for every entourage `U : Set (X × X)` and every open
 convex neighbourhood `W` of `0` in `Y` there exists a function `f : X → Y` such that for every
 `x : X`, there exists an `x' : X` with `(x,x') ∈ U` and `f x ∈ F x' + W`. -/
 public theorem UpperHemicontinuous.exists_isApproxSelection
     {X : Type} [UniformSpace X] [ParacompactSpace X] [T2Space X]
     {Y : Type} [AddCommGroup Y] [Module ℝ Y] [TopologicalSpace Y]
     [IsTopologicalAddGroup Y] [ContinuousSMul ℝ Y] [LocallyConvexSpace ℝ Y]
-    (F : X → Set Y)
-    (hF_uhc : UpperHemicontinuous F)
-    (hF_nonempty : ∀ x, (F x).Nonempty)
+    (F : X → Set Y) (hF_uhc : UpperHemicontinuous F) (hF_nonempty : ∀ x, (F x).Nonempty)
     (hF_convex : ∀ x, Convex ℝ (F x))
     (U : Set (X × X)) (hU : U ∈ 𝓤 X)
-    (W : Set Y) (hW_open : IsOpen W) (hW_mem : (0 : Y) ∈ W)
-    (hW_convex : Convex ℝ W) (hW_symm : -W = W) :
+    (W : Set Y) (hW_open : IsOpen W) (hW_mem : 0 ∈ W) (hW_convex : Convex ℝ W) :
     ∃ f : X → Y, IsApproxSelection F U W f := by
   obtain ⟨V, hV_mem, hV_open, hV_symm, hV_comp⟩ := exists_open_symm_entourage_comp U hU
   let C : X → Set X := fun x₀ => {z | F z ⊆ F x₀ + W} ∩ {z | (x₀, z) ∈ V}
@@ -293,9 +284,8 @@ public theorem UpperHemicontinuous.exists_isApproxSelection_metric
       ∀ x : X, ∃ x' : X, dist x x' < ε ∧ Metric.infDist (f x) (F x') < ε := by
   obtain ⟨hBo, hBm, hBc, hBs⟩ := metric_ball_props (Y := Y) hε
   obtain ⟨f, hf_cont, hf_approx⟩ :=
-    hF_uhc.exists_isApproxSelection F  hF_nonempty hF_convex
-      {p : X × X | dist p.1 p.2 < ε} (Metric.dist_mem_uniformity hε)
-      (Metric.ball (0 : Y) ε) hBo hBm hBc hBs
+    hF_uhc.exists_isApproxSelection F  hF_nonempty hF_convex {p : X × X | dist p.1 p.2 < ε}
+      (Metric.dist_mem_uniformity hε) (Metric.ball (0 : Y) ε) hBo hBm hBc
   exact ⟨f, hf_cont, fun x => by
     obtain ⟨x', hx'_dist, hx'_mem⟩ := hf_approx x
     exact ⟨x', hx'_dist, infDist_lt_of_mem_add_ball (F x') (hF_nonempty x') (f x) ε hx'_mem⟩⟩
