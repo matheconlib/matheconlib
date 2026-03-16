@@ -3,6 +3,7 @@ import Mathlib.Analysis.LocallyConvex.WithSeminorms
 import Mathlib.Analysis.Normed.Module.Convex
 import Mathlib.Analysis.RCLike.Basic
 import Mathlib.Topology.EMetricSpace.Paracompact
+import Mathlib.Topology.Semicontinuity.Hemicontinuity
 
 set_option linter.unusedVariables false
 
@@ -10,20 +11,23 @@ open Uniformity Pointwise Topology Set
 
 /-! ### Definitions -/
 
-def UpperHemicontinuous' {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
-    (F : X → Set Y) : Prop :=
-  ∀ V : Set Y, IsOpen V → IsOpen {x | F x ⊆ V}
-
 def IsApproxSelection {X Y : Type} [UniformSpace X] [TopologicalSpace Y] [AddCommMonoid Y]
     (F : X → Set Y) (U : Set (X × X)) (W : Set Y) (f : X → Y) : Prop :=
   Continuous f ∧ ∀ x : X, ∃ x' : X, (x, x') ∈ U ∧ f x ∈ F x' + W
 
 /-! ### Correctness lemmas -/
 
-theorem upperHemicontinuous_iff' {X Y : Type} [TopologicalSpace X] [TopologicalSpace Y]
-    (F : X → Set Y) :
-    UpperHemicontinuous' F ↔ ∀ V : Set Y, IsOpen V → IsOpen {x | F x ⊆ V} :=
-  Iff.rfl
+theorem upperHemicontinuous_iff_isOpen_of_isOpen {X Y : Type} [TopologicalSpace X]
+    [TopologicalSpace Y] {F : X → Set Y} :
+    UpperHemicontinuous F ↔ ∀ V : Set Y, IsOpen V → IsOpen {x | F x ⊆ V} := by
+  rw [upperHemicontinuous_iff_forall_isOpen]
+  exact ⟨fun h v hv ↦ isOpen_iff_mem_nhds.2 fun x hx ↦ h x v hv hx,
+    fun h x v hv hx ↦ isOpen_iff_mem_nhds.1 (h v hv) x hx⟩
+
+theorem UpperHemicontinuous.isOpen_of_isOpen {X Y : Type} [TopologicalSpace X]
+    [TopologicalSpace Y] {F : X → Set Y} (hF : UpperHemicontinuous F) :
+    ∀ V : Set Y, IsOpen V → IsOpen {x | F x ⊆ V} :=
+  upperHemicontinuous_iff_isOpen_of_isOpen.1 hF
 
 theorem isApproxSelection_metric_iff {X Y : Type} [PseudoMetricSpace X]
     [SeminormedAddCommGroup Y] (F : X → Set Y) (ε : ℝ) (f : X → Y) :
@@ -48,10 +52,10 @@ private lemma exists_open_symm_entourage_comp {X : Type} [UniformSpace X]
 private lemma coverSet_isOpen
     {X : Type} [UniformSpace X]
     {Y : Type} [AddCommGroup Y] [TopologicalSpace Y] [IsTopologicalAddGroup Y]
-    (F : X → Set Y) (hF_uhc : UpperHemicontinuous' F) (W : Set Y) (hW : IsOpen W)
+    (F : X → Set Y) (hF_uhc : UpperHemicontinuous F) (W : Set Y) (hW : IsOpen W)
     (V : Set (X × X)) (hV : IsOpen V) (x₀ : X) :
     IsOpen ({z : X | F z ⊆ F x₀ + W} ∩ {z : X | (x₀, z) ∈ V}) :=
-  (hF_uhc _ (IsOpen.add_left hW)).inter (UniformSpace.isOpen_ball x₀ hV)
+  (hF_uhc.isOpen_of_isOpen _ (IsOpen.add_left hW)).inter (UniformSpace.isOpen_ball x₀ hV)
 
 /-- Each x₀ is in its own cover set. -/
 private lemma mem_own_coverSet
@@ -201,7 +205,7 @@ theorem approxSelection_of_uhc
     {Y : Type} [AddCommGroup Y] [Module ℝ Y] [TopologicalSpace Y]
     [IsTopologicalAddGroup Y] [ContinuousSMul ℝ Y] [LocallyConvexSpace ℝ Y]
     (F : X → Set Y)
-    (hF_uhc : UpperHemicontinuous' F)
+    (hF_uhc : UpperHemicontinuous F)
     (hF_nonempty : ∀ x, (F x).Nonempty)
     (hF_convex : ∀ x, Convex ℝ (F x))
     (U : Set (X × X)) (hU : U ∈ 𝓤 X)
@@ -243,7 +247,7 @@ theorem approxSelection_of_uhc_metric
     {X : Type} [MetricSpace X]
     {Y : Type} [NormedAddCommGroup Y] [NormedSpace ℝ Y]
     (F : X → Set Y)
-    (hF_uhc : UpperHemicontinuous' F)
+    (hF_uhc : UpperHemicontinuous F)
     (hF_nonempty : ∀ x, (F x).Nonempty)
     (hF_convex : ∀ x, Convex ℝ (F x))
     {ε : ℝ} (hε : 0 < ε) :
