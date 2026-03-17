@@ -17,7 +17,6 @@ Most declarations are kept private; the only public declarations in this file ar
 * `UpperHemicontinuous.isClosed_graph`: API lemma stating that every upper hemicontinuous function
   whose codomain is Hausdorff and whose values are compact has a closed graph.
 * `kakutaniGlicksbergFan`: the Kakutani-Glicksberg-Fan fixed point theorem.
-
 -/
 
 universe u
@@ -46,7 +45,7 @@ public lemma UpperHemicontinuous.isClosed_graph {X : Type*} [TopologicalSpace X]
 
 /-- For every entourage `U` and neighborhood `W ∈ 𝓝 0`, Schauder + approximate selection
 yield `x x' : k` and `y ∈ F x'` with `(x, x') ∈ U` and `↑x - y ∈ W`. -/
-lemma approx_fixed_point_data {E : Type u} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
+lemma approx_fixed_point_data {E : Type*} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
     [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E] [LocallyConvexSpace ℝ E]
     {k : Set E} (hk : IsCompact k) (hk' : Convex ℝ k) (hk'' : k.Nonempty)
     {F : k → Set E} (hF : UpperHemicontinuous F) (hFk : ∀ x, F x ⊆ k)
@@ -70,7 +69,7 @@ lemma approx_fixed_point_data {E : Type u} [AddCommGroup E] [Module ℝ E] [Topo
 /-! ## Constructing convergent nets from approximate data -/
 
 /-- A `V ∈ 𝓝 0` lifts to an entourage in the subtype uniformity. -/
-lemma nhd_zero_mem_entourage_subtype {E : Type u} [AddCommGroup E] [Module ℝ E]
+lemma nhd_zero_mem_entourage_subtype {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E]
     [LocallyConvexSpace ℝ E]
     {k : Set E} {V : Set E} (hV : V ∈ 𝓝 (0 : E)) :
@@ -82,7 +81,7 @@ lemma nhd_zero_mem_entourage_subtype {E : Type u} [AddCommGroup E] [Module ℝ E
         Filter.comap (fun (p : E × E) => p.2 - p.1) (𝓝 0) from rfl, Filter.comap_comap]
   exact Filter.preimage_mem_comap hV
 
-lemma raw_approx_index_codirected {E : Type u} [AddCommGroup E] [Module ℝ E]
+lemma raw_approx_index_codirected {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E]
     [LocallyConvexSpace ℝ E]
     {k : Set E} :
@@ -98,7 +97,7 @@ lemma raw_approx_index_codirected {E : Type u} [AddCommGroup E] [Module ℝ E]
        ⟨inter_subset_left, inter_subset_left⟩,
        ⟨inter_subset_right, inter_subset_right⟩⟩⟩⟩
 
-lemma tendsto_diff_of_entourage_atBot {E : Type u} [AddCommGroup E] [Module ℝ E]
+lemma tendsto_diff_of_entourage_atBot {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E]
     [LocallyConvexSpace ℝ E]
     {k : Set E}
@@ -114,7 +113,7 @@ lemma tendsto_diff_of_entourage_atBot {E : Type u} [AddCommGroup E] [Module ℝ 
     nhd_zero_mem_entourage_subtype hV, univ_mem⟩, fun i hi => ?_⟩
   exact hi.1 (hmem i)
 
-lemma tendsto_sub_of_nhd_atBot {E : Type u} [AddCommGroup E] [Module ℝ E]
+lemma tendsto_sub_of_nhd_atBot {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E]
     [LocallyConvexSpace ℝ E]
     {k : Set E}
@@ -202,7 +201,7 @@ lemma approx_data_cluster_point {E : Type u} [AddCommGroup E] [Module ℝ E]
 
 /-! ## Main theorem -/
 
-public theorem kakutaniGlicksbergFan {E : Type u} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
+public theorem kakutaniGlicksbergFan {E : Type*} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
     [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E] [LocallyConvexSpace ℝ E]
     {k : Set E} (hk : IsCompact k) (hk' : Convex ℝ k) (hk'' : k.Nonempty)
     {F : k → Set E} {hF : UpperHemicontinuous F} (hF' : ∀ x, F x ⊆ k)
