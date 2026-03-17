@@ -1,34 +1,41 @@
+module
+
+public import Mathlib.Topology.Algebra.Module.LocallyConvex
+public import Mathlib.Topology.Semicontinuity.Defs
+
 import Auctionlib.ForMathlib.ApproximateSelection
 import Auctionlib.ForMathlib.Schauder
+
+/-!
+# The Kakutani-Glicksberg-Fan fixed point theorem
+This file contains a mostly auto-generated proof of the Kakutani-Glicksberg-Fan fixed point theorem,
+stating that for every nonempty compact convex subset `k` of a Hausdorff topological vector space
+`E`, any upper hemicontinuous function `F : k → Set E` valued in nonempty compact convex subsets
+of `k` has a fixed point, i.e. a point `x` for which `↑x ∈ F x`.
+
+Most declarations are kept private; the only public declarations in this file are the following:
+* `UpperHemicontinuous.isClosed_graph`: API lemma stating that every upper hemicontinuous function
+  whose codomain is Hausdorff and whose values are compact has a closed graph.
+* `kakutaniGlicksbergFan`: the Kakutani-Glicksberg-Fan fixed point theorem.
+
+-/
 
 universe u
 
 open Uniformity Pointwise Topology Set Filter
 
-def Schauder : Prop := ∀ {E : Type*} [AddCommGroup E] [Module ℝ E]
-  [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E]
-  [LocallyConvexSpace ℝ E]
-  {k : Set E} (_hk : IsCompact k) (_hk' : Convex ℝ k) (_hk'' : k.Nonempty)
-  {f : k → k} (_hf : Continuous f), ∃ x, f x = x
-
-def ApproxSelectionExistence : Prop :=
-    ∀ {X : Type*} [UniformSpace X] [ParacompactSpace X] [T2Space X]
-    {E : Type*} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
-    [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [LocallyConvexSpace ℝ E] {F : X → Set E}
-    (_hF : UpperHemicontinuous F) (_hF' : ∀ x, (F x).Nonempty) (_hF'' : ∀ x, Convex ℝ (F x))
-    {U : Set (X × X)} (_hU : U ∈ 𝓤 X) {W : Set E} (_hW : W ∈ 𝓝 0)
-    {s : Set E} (_hs : Convex ℝ s) (_hFs : ∀ x, F x ⊆ s),
-    ∃ f : X → E, Continuous f ∧ Set.range f ⊆ s ∧ IsApproxSelection F U W f
-
 /-! ## Closed graph of an upper hemicontinuous map -/
 
-lemma graphF_isClosed {X : Type*} [TopologicalSpace X] {E : Type*} [TopologicalSpace E]
-    [T2Space E] {F : X → Set E} (hF : UpperHemicontinuous F) (hFc : ∀ x, IsCompact (F x)) :
-    IsClosed {p : X × E | p.2 ∈ F p.1} := by
+/-- The graph of any upper hemicontinuous function whose codomain is Hausdorff and whose values are
+compact is closed. -/
+public lemma UpperHemicontinuous.isClosed_graph {X : Type*} [TopologicalSpace X]
+    {Y : Type*} [TopologicalSpace Y] [T2Space Y] {F : X → Set Y}
+    (hF : UpperHemicontinuous F) (hF' : ∀ x, IsCompact (F x)) :
+    IsClosed {p : X × Y | p.2 ∈ F p.1} := by
   rw [← isOpen_compl_iff, isOpen_prod_iff]
   intro x₀ y₀ hy₀
   simp only [mem_compl_iff, mem_setOf_eq] at hy₀
-  have hsep := SeparatedNhds.of_isCompact_isCompact isCompact_singleton (hFc x₀)
+  have hsep := SeparatedNhds.of_isCompact_isCompact isCompact_singleton (hF' x₀)
     (Set.disjoint_singleton_left.mpr hy₀)
   rw [SeparatedNhds.eq_1] at hsep
   obtain ⟨Vy, VF, hVy_open, hVF_open, hy_sub, hF_sub, hd⟩ := hsep
@@ -44,7 +51,6 @@ lemma approx_fixed_point_data {E : Type u} [AddCommGroup E] [Module ℝ E] [Topo
     {k : Set E} (hk : IsCompact k) (hk' : Convex ℝ k) (hk'' : k.Nonempty)
     {F : k → Set E} (hF : UpperHemicontinuous F) (hFk : ∀ x, F x ⊆ k)
     (hFconv : ∀ x, Convex ℝ (F x)) (hFne : ∀ x, (F x).Nonempty)
-    (hSchauder : Schauder.{u}) (hApprox : ApproxSelectionExistence.{u,u})
     {U : Set (k × k)} (hU : U ∈ @uniformity k (instUniformSpaceSubtype (p := (· ∈ k))
       (t := IsTopologicalAddGroup.rightUniformSpace E)))
     {W : Set E} (hW : W ∈ 𝓝 (0 : E)) :
@@ -52,9 +58,9 @@ lemma approx_fixed_point_data {E : Type u} [AddCommGroup E] [Module ℝ E] [Topo
   letI : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
   haveI : CompactSpace k := isCompact_iff_compactSpace.mp hk
   haveI : ParacompactSpace k := paracompact_of_compact
-  obtain ⟨f, hf_cont, hf_range, hf_approx⟩ := hApprox hF hFne hFconv hU hW hk' hFk
+  obtain ⟨f, hf_cont, hf_range, hf_approx⟩ := hF.exists_isApproxSelection' hFne hFconv hU hW hk' hFk
   have hf_mem : ∀ a : k, f a ∈ k := Set.range_subset_iff.mp hf_range
-  obtain ⟨x, hx⟩ := hSchauder hk hk' hk'' (hf_cont.codRestrict hf_mem)
+  obtain ⟨x, hx⟩ := (hf_cont.codRestrict hf_mem).exists_fixedPt_of_isConvex_isCompact hk hk' hk''
   have hfx : f x = ↑x := congr_arg Subtype.val hx
   obtain ⟨x', hxx', hfx_mem⟩ := hf_approx x
   rw [hfx, Set.mem_add] at hfx_mem
@@ -196,17 +202,15 @@ lemma approx_data_cluster_point {E : Type u} [AddCommGroup E] [Module ℝ E]
 
 /-! ## Main theorem -/
 
-theorem kakutaniGlicksbergFan {E : Type u} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
+public theorem kakutaniGlicksbergFan {E : Type u} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
     [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E] [LocallyConvexSpace ℝ E]
     {k : Set E} (hk : IsCompact k) (hk' : Convex ℝ k) (hk'' : k.Nonempty)
-    {F : k → Set E} {hF : UpperHemicontinuous F} (hF' : ∀ x, F x ⊆ k) (_hF'' : ∀ x, F x ⊆ k)
-    (hF''' : ∀ x, IsCompact (F x)) (hF'''' : ∀ x, Convex ℝ (F x))
-    (hF''''' : ∀ x, (F x).Nonempty) :
-    Schauder.{u} ∧ ApproxSelectionExistence.{u,u} → ∃ x, ↑x ∈ F x := by
-  intro ⟨hSchauder, hApproxSel⟩
-  have hGraph := graphF_isClosed hF hF'''
-  have hData := fun U hU W hW => approx_fixed_point_data hk hk' hk'' hF hF' hF'''' hF'''''
-    hSchauder hApproxSel (U := U) hU (W := W) hW
+    {F : k → Set E} {hF : UpperHemicontinuous F} (hF' : ∀ x, F x ⊆ k)
+    (hF'' : ∀ x, IsCompact (F x)) (hF''' : ∀ x, Convex ℝ (F x)) (hF'''' : ∀ x, (F x).Nonempty) :
+    ∃ x, ↑x ∈ F x := by
+  have hGraph := hF.isClosed_graph hF''
+  have hData U hU W hW := approx_fixed_point_data hk hk' hk'' hF hF' hF''' hF''''
+    (U := U) hU (W := W) hW
   obtain ⟨ι, l, hl, xι, x'ι, yι, hmem, x₀, hx, hx', hy⟩ :=
     approx_data_cluster_point hk hData
   exact ⟨x₀, hGraph.mem_of_tendsto ((tendsto_subtype_rng.mpr hx').prodMk_nhds hy) hmem⟩
