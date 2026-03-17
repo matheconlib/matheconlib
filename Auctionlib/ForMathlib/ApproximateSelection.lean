@@ -228,7 +228,8 @@ public lemma exists_star_refinement
 topological vector space `E` that is valued in nonempty convex sets admits arbitrarily good
 continuous approximate selections: for every entourage `U : Set (X × X)` and every open
 convex neighbourhood `W` of `0` in `E` there exists a function `f : X → E` such that for every
-`x : X`, there exists an `x' : X` with `(x,x') ∈ U` and `f x ∈ F x' + W`.
+`x : X`, there exists an `x' : X` with `(x,x') ∈ U` and `f x ∈ F x' + W`. Furthermore,
+if `F` takes values only in some convex set `s`, `f` can be chosen to take values in `s` too.
 
 Note that in locally convex vector spaces this holds for arbitrary neighbourhoods `W` of `0`,
 not just open and convex ones: see `UpperHemicontinuous.exists_isApproxSelection'`. -/
@@ -237,8 +238,9 @@ public theorem UpperHemicontinuous.exists_isApproxSelection
     {E : Type*} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
     [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] {F : X → Set E}
     (hF : UpperHemicontinuous F) (hF' : ∀ x, (F x).Nonempty) (hF'' : ∀ x, Convex ℝ (F x))
-    {U : Set (X × X)} (hU : U ∈ 𝓤 X) {W : Set E} (hW : IsOpen W) (hW' : 0 ∈ W) (hW'' : Convex ℝ W) :
-    ∃ f : X → E, Continuous f ∧ IsApproxSelection F U W f := by
+    {U : Set (X × X)} (hU : U ∈ 𝓤 X) {W : Set E} (hW : IsOpen W) (hW' : 0 ∈ W) (hW'' : Convex ℝ W)
+    {s : Set E} (hs : Convex ℝ s) (hFs : ∀ x, F x ⊆ s) :
+    ∃ f : X → E, Continuous f ∧ Set.range f ⊆ s ∧ IsApproxSelection F U W f := by
   obtain ⟨V, hV_mem, hV_open, hV_symm, hV_comp⟩ := exists_open_symm_entourage_comp U hU
   let C : X → Set X := fun x₀ ↦ {z | F z ⊆ F x₀ + W} ∩ {z | (x₀, z) ∈ V}
   have hC_open : ∀ x₀, IsOpen (C x₀) :=
@@ -256,8 +258,10 @@ public theorem UpperHemicontinuous.exists_isApproxSelection
     · exact ⟨π k, fun h' ↦ absurd h' h⟩
   choose p hp using hS_choice
   choose y hy using fun k ↦ hF' (p k)
-  refine ⟨fun x ↦ ∑ᶠ k, (φ k x) • y k, ?_, ?_⟩
+  refine ⟨fun x ↦ ∑ᶠ k, (φ k x) • y k, ?_, ?_, ?_⟩
   · exact hφ.continuous_finsum_smul hS_open (fun _ ↦ continuousOn_const)
+  · refine Set.range_subset_iff.2 fun x ↦ ?_
+    exact φ.finsum_smul_mem_convex (g := fun k _ ↦ y k) (mem_univ x) (fun k _ ↦ hFs _ (hy k)) hs
   · intro x
     have hone : (∑ᶠ k, (φ k) x) = 1 := φ.sum_eq_one (mem_univ x)
     obtain ⟨k₀, hk₀⟩ := exists_ne_zero_of_finsum (hone ▸ one_ne_zero)
@@ -275,7 +279,8 @@ public theorem UpperHemicontinuous.exists_isApproxSelection
 topological vector space `E` that is valued in nonempty convex sets admits arbitrarily good
 continuous approximate selections: for every entourage `U : Set (X × X)` and every
 neighbourhood `W` of `0` in `E` there exists a function `f : X → E` such that for every
-`x : X`, there exists an `x' : X` with `(x,x') ∈ U` and `f x ∈ F x' + W`.
+`x : X`, there exists an `x' : X` with `(x,x') ∈ U` and `f x ∈ F x' + W`. Furthermore,
+if `F` takes values only in some convex set `s`, `f` can be chosen to take values in `s` too.
 
 This is a convenient special case of `UpperHemicontinuous.exists_isApproxSelection` for locally
 convex vector spaces. -/
@@ -284,27 +289,31 @@ public theorem UpperHemicontinuous.exists_isApproxSelection'
     {E : Type*} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
     [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [LocallyConvexSpace ℝ E] {F : X → Set E}
     (hF : UpperHemicontinuous F) (hF' : ∀ x, (F x).Nonempty) (hF'' : ∀ x, Convex ℝ (F x))
-    {U : Set (X × X)} (hU : U ∈ 𝓤 X) {W : Set E} (hW : W ∈ 𝓝 0) :
-    ∃ f : X → E, Continuous f ∧ IsApproxSelection F U W f := by
+    {U : Set (X × X)} (hU : U ∈ 𝓤 X) {W : Set E} (hW : W ∈ 𝓝 0)
+    {s : Set E} (hs : Convex ℝ s) (hFs : ∀ x, F x ⊆ s) :
+    ∃ f : X → E, Continuous f ∧ Set.range f ⊆ s ∧ IsApproxSelection F U W f := by
   obtain ⟨V, hV⟩ := (LocallyConvexSpace.convex_open_basis_zero ℝ E).mem_iff.1 hW
-  obtain ⟨f, hf⟩ := hF.exists_isApproxSelection hF' hF'' hU hV.1.2.1 hV.1.1 hV.1.2.2
-  exact ⟨f, hf.1, hf.2.mono (by simp) (by simp) hV.2⟩
+  obtain ⟨f, hf⟩ := hF.exists_isApproxSelection hF' hF'' hU hV.1.2.1 hV.1.1 hV.1.2.2 hs hFs
+  exact ⟨f, hf.1, hf.2.1, hf.2.2.mono (by simp) (by simp) hV.2⟩
 
 /-- Every upper hemicontinuous function `F` from a metric space `X` to a normed space `E` that is
 valued in nonempty convex sets admits arbitrarily good continuous approximate selections:
 for every `ε > 0` there exists a function `f : X → E` such that for every `x : X`, there exists an
-`x' : X` with `dist x x' < ε` and `Metric.infDist (f x) (F x') < ε`.
+`x' : X` with `dist x x' < ε` and `Metric.infDist (f x) (F x') < ε`. Furthermore,
+if `F` takes values only in some convex set `s`, `f` can be chosen to take values in `s` too.
 
 This is a special case of `UpperHemicontinuous.exists_isApproxSelection` restated in terms of
 distances instead of neighbourhoods. -/
 public theorem UpperHemicontinuous.exists_isApproxSelection_metric
     {X : Type*} [MetricSpace X] {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     {F : X → Set E} (hF : UpperHemicontinuous F) (hF' : ∀ x, (F x).Nonempty)
-    (hF'' : ∀ x, Convex ℝ (F x)) {ε : ℝ} (hε : 0 < ε) :
-    ∃ f : X → E, Continuous f ∧
+    (hF'' : ∀ x, Convex ℝ (F x)) {ε : ℝ} (hε : 0 < ε)
+    {s : Set E} (hs : Convex ℝ s) (hFs : ∀ x, F x ⊆ s) :
+    ∃ f : X → E, Continuous f ∧ Set.range f ⊆ s ∧
       ∀ x : X, ∃ x' : X, dist x x' < ε ∧ Metric.infDist (f x) (F x') < ε := by
-  obtain ⟨f, hf_cont, hf_approx⟩ := hF.exists_isApproxSelection hF' hF''
-    (Metric.dist_mem_uniformity hε) Metric.isOpen_ball (Metric.mem_ball_self hε) (convex_ball _ _)
-  exact ⟨f, hf_cont, fun x ↦ by
-    obtain ⟨x', hx'_dist, hx'_mem⟩ := hf_approx x
+  obtain ⟨f, hf_cont, hf_approx⟩ :=
+    hF.exists_isApproxSelection hF' hF'' (Metric.dist_mem_uniformity hε) Metric.isOpen_ball
+      (Metric.mem_ball_self hε) (convex_ball _ _) hs hFs
+  exact ⟨f, hf_cont, hf_approx.1, fun x ↦ by
+    obtain ⟨x', hx'_dist, hx'_mem⟩ := hf_approx.2 x
     exact ⟨x', hx'_dist, infDist_lt_of_mem_add_ball (F x') (hF' x') (f x) ε hx'_mem⟩⟩
