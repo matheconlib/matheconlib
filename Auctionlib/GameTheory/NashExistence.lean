@@ -12,9 +12,7 @@ import Mathlib.MeasureTheory.Measure.Prokhorov
 
 /-!
 # Existence of Nash equilibria
-This file contains an auto-formalisation of the existence of mixed-strategy Nash equilibria for
-finite games. More classic results on the existence of Nash equilibria in other situations will be
-added later on.
+This file contains classical, mostly auto-formalised results on the existence of Nash equilibria.
 
 Currently, the only public declaration in this file are:
 * `Game.Continuous`: typeclass stating that the outcome function of a game whose action spaces and
@@ -28,35 +26,19 @@ Currently, the only public declaration in this file are:
   nonempty compact metrisable action spaces and continuous payoff functions.
 * `Game.exists_isNashEquilibrium_of_finite`: existence of mixed Nash equilibria for finite games.
 All other declarations used in the proofs are kept private.
+
+## TODOs:
+* get rid of unnecessary assumption `P.toExpected.Continuous` in
+  `Game.exists_isNashEquilibrium_of_isCompact`.
+* get rid of unnecessary assumptions `∀ i, DiscreteMeasurableSpace (A i)`,
+  `DiscreteMeasurableSpace O` and `Fintype O` in`Game.exists_isNashEquilibrium_of_finite`.
 -/
 
 namespace GameTheory
 
 variable {ι : Type*} {A : ι → Type*} {O : Type*}
 
-section Continuous
-
-variable [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
-
-namespace Game
-
-public protected class Continuous (G : Game A O) where
-  continuous_outcome : Continuous G.outcome
-
-export Continuous (continuous_outcome)
-
-end Game
-
-namespace PayoffStructure
-
-public protected class Continuous (P : PayoffStructure O ι) where
-  continuous_payoff i : Continuous (P.payoff i)
-
-export Continuous (continuous_payoff)
-
-end PayoffStructure
-
-end Continuous
+section Helpers
 
 /-! ## Encoding/decoding between strategy profiles and product spaces -/
 
@@ -393,6 +375,8 @@ lemma fixed_point_is_nash {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι �
   rwa [show (e i).symm ⟨x.val i, hy i⟩ = decode e x i from by simp [decode],
     Function.update_eq_self] at this
 
+end Helpers
+
 /-- Any game whose action spaces are nonempty compact convex subsets of locally convex vector spaces
 and whose payoff functions are quasiconcave admits a pure Nash equilibrium.
 Instead of requiring the action spaces to be literal subsets of vector spaces, we simply ask
@@ -421,45 +405,6 @@ public theorem Game.exists_isNashEquilibrium_of_quasiconcaveOn
     (bestResponseCorr_convex G P e hs h_quasiconcave)
     (bestResponseCorr_nonempty G P e)
   exact ⟨decode e x_star, fixed_point_is_nash G P e x_star hx_star⟩
-
-end GameTheory
-
-namespace GameTheory
-
-variable {ι : Type*} {A : ι → Type*} {O : Type*}
-
-section Measurable
-
-open MeasureTheory
-
-open scoped ProbabilityTheory
-
-variable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
-
-end Measurable
-
-section Continuous
-
-variable [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
-
-namespace Game
-
-instance Continuous.instMeasurable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [Countable ι]
-    [∀ i, OpensMeasurableSpace (A i)] [∀ i, SecondCountableTopology (A i)] [BorelSpace O]
-    (G : Game A O) [G.Continuous] : G.Measurable where
-  measurable_outcome := continuous_outcome.measurable
-
-end Game
-
-namespace PayoffStructure
-
-instance Continuous.instMeasurable [MeasurableSpace O] [OpensMeasurableSpace O]
-    (P : PayoffStructure O ι) [P.Continuous] : P.Measurable where
-  measurable_payoff i := (continuous_payoff i).measurable
-
-end PayoffStructure
-
-end Continuous
 
 section Helpers
 
@@ -577,7 +522,7 @@ public theorem Game.exists_isNashEquilibrium_of_isCompact {ι : Type*} {A : ι �
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
-    [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous] :
+    [G.Continuous] [P.Continuous] [P.toExpected.Continuous] :
     ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a := by
   haveI : ∀ i, Nonempty (MeasureTheory.ProbabilityMeasure (A i)) :=
     fun i ↦ ⟨⟨MeasureTheory.Measure.dirac (Classical.arbitrary (A i)),
@@ -588,28 +533,6 @@ public theorem Game.exists_isNashEquilibrium_of_isCompact {ι : Type*} {A : ι �
     (fun _ ↦ toWeakDualContinuousMap_homeomorph)
     (fun _ ↦ MeasureTheory.ProbabilityMeasure.convex_range_toWeakDualContinuousMap)
     (fun a i ↦ payoff_quasiconcave G P a i)
-
-end GameTheory
-
-namespace GameTheory
-
-section
-
-variable {ι : Type*} {A : ι → Type*} {O : Type*}
-
-instance (G : Game A O) [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [G.Measurable]
-    [∀ i, TopologicalSpace (A i)] [TopologicalSpace O] [G.Continuous]
-    [∀ i, OpensMeasurableSpace (A i)] [BorelSpace O] [Fintype ι]
-    [∀ i, SecondCountableTopology (A i)] [∀ i, TopologicalSpace.PseudoMetrizableSpace (A i)] :
-    G.toMixed.Continuous where
-  continuous_outcome := (MeasureTheory.ProbabilityMeasure.continuous_map G.continuous_outcome).comp
-      MeasureTheory.ProbabilityMeasure.continuous_pi
-
-instance (P : PayoffStructure O ι) [MeasurableSpace O] [P.Measurable] [TopologicalSpace O]
-    [P.Continuous] [OpensMeasurableSpace O] [CompactSpace O] :
-    P.toExpected.Continuous where
-  continuous_payoff i := MeasureTheory.ProbabilityMeasure.continuous_integral_continuousMap <|
-    ContinuousMap.mk _ <| P.continuous_payoff i
 
 /-- Any finite game (i.e. any game with finitely many players and finite action spaces)
 admits a mixed Nash equilibrium. -/
@@ -625,7 +548,5 @@ public theorem Game.exists_isNashEquilibrium_of_finite (G : Game A O) (P : Payof
   have : G.Continuous := ⟨continuous_of_discreteTopology⟩
   have : P.Continuous := ⟨fun i ↦ continuous_of_discreteTopology⟩
   exact G.exists_isNashEquilibrium_of_isCompact P
-
-end
 
 end GameTheory
