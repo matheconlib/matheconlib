@@ -406,16 +406,17 @@ public theorem Game.exists_isNashEquilibrium_of_quasiconcaveOn
     (bestResponseCorr_nonempty G P e)
   exact ⟨decode e x_star, fixed_point_is_nash G P e x_star hx_star⟩
 
+open MeasureTheory ProbabilityMeasure
+
 section Helpers
 
-open MeasureTheory ProbabilityTheory
 
 /-- Homeomorphism from `ProbabilityMeasure α` onto the range of `toWeakDualContinuousMap`,
 via continuous injection from compact to Hausdorff being a closed embedding. -/
 noncomputable def toWeakDualContinuousMap_homeomorph {α : Type*} [TopologicalSpace α]
     [MeasurableSpace α] [BorelSpace α] [CompactSpace α] [TopologicalSpace.MetrizableSpace α] :
-    ProbabilityMeasure α ≃ₜ Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := α)) :=
-  ProbabilityMeasure.toWeakDualContinuousMap_isClosedEmbedding.toHomeomorph
+    ProbabilityMeasure α ≃ₜ Set.range (toWeakDualContinuousMap (α := α)) :=
+  toWeakDualContinuousMap_isClosedEmbedding.toHomeomorph
 
 /-- The expected payoff for player `i` with mixed strategy `μ` equals a weak dual evaluation
 `(toWeakDualContinuousMap μ)(φ)` for an appropriate `φ : C(A i, ℝ)`, using linearity of
@@ -429,12 +430,12 @@ lemma payoff_eq_eval_weakDual {ι : Type*} {A : ι → Type*} {O : Type*}
     (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι) :
     ∀ μ : ProbabilityMeasure (A i),
       P.toExpected.payoff i (G.toMixed.outcome (Function.update a i μ)) =
-        (ProbabilityMeasure.toWeakDualContinuousMap μ)
+        toWeakDualContinuousMap μ
           ⟨(fun μ ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i μ))) ∘ diracProba,
             (PayoffStructure.continuous_payoff i).comp <| Game.continuous_outcome.comp <|
               continuous_const.update _  continuous_diracProba⟩ := by
   intro μ
-  dsimp [ProbabilityMeasure.toWeakDualContinuousMap]
+  dsimp [toWeakDualContinuousMap]
   change _ = integral _ _
   dsimp [PayoffStructure.toExpected]
   rw [integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
@@ -467,25 +468,19 @@ lemma extend_payoff_eq_eval {ι : Type*} {A : ι → Type*} {O : Type*}
       (Function.update a i μ))) ∘ diracProba,
       (PayoffStructure.continuous_payoff i).comp <| Game.continuous_outcome.comp <|
         continuous_const.update _ continuous_diracProba⟩
-    ∀ v ∈ Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := A i)),
-      (Subtype.val.extend
-        ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
-          toWeakDualContinuousMap_homeomorph.symm) 0) v =
-      v φ := by
+    ∀ v ∈ Set.range (toWeakDualContinuousMap (α := A i)), (Subtype.val.extend
+      ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
+        toWeakDualContinuousMap_homeomorph.symm) 0) v = v φ := by
   intro φ v ⟨μ, hμ⟩
   subst hμ
   simp only [Function.comp_def]
   have h := Subtype.val_injective.extend_apply
     ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
-      toWeakDualContinuousMap_homeomorph.symm)
-    (0 : WeakDual ℝ C(A i, ℝ) → ℝ)
-    ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
+      toWeakDualContinuousMap_homeomorph.symm) 0 ⟨toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
   simp only [Function.comp_def] at h
-  have hsymm : toWeakDualContinuousMap_homeomorph.symm
-      ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩ = μ :=
-    ProbabilityMeasure.toWeakDualContinuousMap_injective <| congrArg Subtype.val <| by
-      have := toWeakDualContinuousMap_homeomorph.apply_symm_apply
-        ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
+  have hsymm : toWeakDualContinuousMap_homeomorph.symm ⟨toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩ = μ :=
+    toWeakDualContinuousMap_injective <| congrArg Subtype.val <| by
+      have := toWeakDualContinuousMap_homeomorph.apply_symm_apply ⟨_, ⟨μ, rfl⟩⟩
       simp only [toWeakDualContinuousMap_homeomorph, Topology.IsEmbedding.toHomeomorph] at this
       exact this
   rw [h, hsymm]
@@ -500,11 +495,11 @@ lemma payoff_quasiconcave {ι : Type*} {A : ι → Type*} {O : Type*}
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
     [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous]
     (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι) :
-    QuasiconcaveOn ℝ (Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := A i)))
+    QuasiconcaveOn ℝ (Set.range (toWeakDualContinuousMap (α := A i)))
       (Subtype.val.extend
         ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
           toWeakDualContinuousMap_homeomorph.symm) 0) := by
-  have hconv := ProbabilityMeasure.convex_range_toWeakDualContinuousMap (α := A i)
+  have hconv := convex_range_toWeakDualContinuousMap (α := A i)
   have heq := extend_payoff_eq_eval G P a i
   let φ : C(A i, ℝ) := ⟨(fun μ ↦ P.toExpected.payoff i (G.toMixed.outcome
     (Function.update a i μ))) ∘ diracProba,
@@ -524,14 +519,11 @@ public theorem Game.exists_isNashEquilibrium_of_isCompact {ι : Type*} {A : ι �
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
     [G.Continuous] [P.Continuous] [P.toExpected.Continuous] :
     ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a := by
-  haveI : ∀ i, Nonempty (MeasureTheory.ProbabilityMeasure (A i)) :=
-    fun i ↦ ⟨⟨MeasureTheory.Measure.dirac (Classical.arbitrary (A i)),
-      MeasureTheory.Measure.dirac.isProbabilityMeasure⟩⟩
-  haveI : ∀ i, LocallyConvexSpace ℝ (WeakDual ℝ C(A i, ℝ)) :=
-    fun _ ↦ WeakBilin.locallyConvexSpace
+  have : ∀ i, Nonempty (ProbabilityMeasure (A i)) := fun i ↦ ⟨diracProba (Classical.arbitrary _)⟩
+  have : ∀ i, LocallyConvexSpace ℝ (WeakDual ℝ C(A i, ℝ)) := fun _ ↦ WeakBilin.locallyConvexSpace
   exact G.toMixed.exists_isNashEquilibrium_of_quasiconcaveOn P.toExpected
     (fun _ ↦ toWeakDualContinuousMap_homeomorph)
-    (fun _ ↦ MeasureTheory.ProbabilityMeasure.convex_range_toWeakDualContinuousMap)
+    (fun _ ↦ convex_range_toWeakDualContinuousMap)
     (fun a i ↦ payoff_quasiconcave G P a i)
 
 /-- Any finite game (i.e. any game with finitely many players and finite action spaces)
