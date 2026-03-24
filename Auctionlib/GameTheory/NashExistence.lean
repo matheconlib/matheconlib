@@ -31,8 +31,6 @@ Currently, the only public declaration in this file are:
 All other declarations used in the proofs are kept private.
 -/
 
-universe u
-
 namespace GameTheory
 
 variable {ι : Type*} {A : ι → Type*} {O : Type*}
@@ -497,7 +495,7 @@ section Helpers
 
 open MeasureTheory ProbabilityTheory
 
-variable {α : Type u} [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α]
+variable {α : Type*} [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α]
   [CompactSpace α] [TopologicalSpace.MetrizableSpace α]
 
 /-- `toWeakDualContinuousMap` is injective: probability measures on a compact metrizable Borel
@@ -602,7 +600,7 @@ end MeasurableEquivLemmas
 /-- The expected payoff for player `i` with mixed strategy `μ` equals a weak dual evaluation
 `(toWeakDualContinuousMap μ)(φ)` for an appropriate `φ : C(A i, ℝ)`, using linearity of
 integration and Fubini on pi types. -/
-lemma payoff_eq_eval_weakDual {ι : Type u} {A : ι → Type u} {O : Type u}
+lemma payoff_eq_eval_weakDual {ι : Type*} {A : ι → Type*} {O : Type*}
     (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
@@ -638,7 +636,7 @@ lemma payoff_eq_eval_weakDual {ι : Type u} {A : ι → Type u} {O : Type u}
 
 /-- The `Function.extend` of the payoff via `Subtype.val` agrees with the weak dual evaluation
 on the range of `toWeakDualContinuousMap`. -/
-lemma extend_payoff_eq_eval {ι : Type u} {A : ι → Type u} {O : Type u}
+lemma extend_payoff_eq_eval {ι : Type*} {A : ι → Type*} {O : Type*}
     (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
@@ -675,7 +673,7 @@ lemma extend_payoff_eq_eval {ι : Type u} {A : ι → Type u} {O : Type u}
 
 /-- The expected payoff, extended to the weak dual, is quasiconcave on the range of
 `toWeakDualContinuousMap`: it agrees with a linear functional on this convex set. -/
-lemma payoff_quasiconcave {ι : Type u} {A : ι → Type u} {O : Type u}
+lemma payoff_quasiconcave {ι : Type*} {A : ι → Type*} {O : Type*}
     (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
@@ -699,7 +697,7 @@ end Helpers
 
 /-- Any game with nonempty compact metrisable action spaces and continuous payoff functions
 admits a mixed Nash equilibrium. -/
-public theorem Game.exists_isNashEquilibrium_of_isCompact {ι : Type u} {A : ι → Type u} {O : Type u}
+public theorem Game.exists_isNashEquilibrium_of_isCompact {ι : Type*} {A : ι → Type*} {O : Type*}
     (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
