@@ -27,7 +27,7 @@ All other declarations used in the proofs are kept private.
 
 namespace GameTheory
 
-variable {ι : Type} {A : ι → Type} {O : Type}
+variable {ι : Type*} {A : ι → Type*} {O : Type*}
 
 section Continuous
 
@@ -55,7 +55,7 @@ end Continuous
 
 /-! ## Encoding/decoding between strategy profiles and product spaces -/
 
-lemma isCompact_ki {ι : Type} {A : ι → Type} {E : ι → Type}
+lemma isCompact_ki {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)]
     [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (i : ι) :
@@ -64,7 +64,7 @@ lemma isCompact_ki {ι : Type} {A : ι → Type} {E : ι → Type}
     ⟨fun hx => ⟨(e i).symm ⟨x, hx⟩, by simp⟩, fun ⟨a, ha⟩ => ha ▸ (e i a).property⟩]
   exact isCompact_range (continuous_subtype_val.comp (e i).continuous)
 
-lemma nonempty_ki {ι : Type} {A : ι → Type} {E : ι → Type}
+lemma nonempty_ki {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (i : ι) :
@@ -72,20 +72,20 @@ lemma nonempty_ki {ι : Type} {A : ι → Type} {E : ι → Type}
   ⟨_, (e i (Classical.arbitrary (A i))).property⟩
 
 /-- Decode a point in the product space `∏ k i` to a strategy profile. -/
-noncomputable def decode {ι : Type} {A : ι → Type} {E : ι → Type}
+noncomputable def decode {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (x : ↑(Set.univ.pi k)) : (i : ι) → A i :=
   fun i => (e i).symm ⟨x.val i, x.property i (Set.mem_univ i)⟩
 
 /-- Encode a strategy profile as a point in `∏ E i`. -/
-noncomputable def encode {ι : Type} {A : ι → Type} {E : ι → Type}
+noncomputable def encode {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (a : (i : ι) → A i) : (i : ι) → E i :=
   fun i => ((e i) (a i)).val
 
-lemma encode_mem {ι : Type} {A : ι → Type} {E : ι → Type}
+lemma encode_mem {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (a : (i : ι) → A i) : encode e a ∈ Set.univ.pi k :=
@@ -95,7 +95,7 @@ lemma encode_mem {ι : Type} {A : ι → Type} {E : ι → Type}
 
 /-- The best response correspondence maps a point in the product space to the set of
 strategy profiles where each player plays a best response. -/
-noncomputable def bestResponseCorr {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+noncomputable def bestResponseCorr {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
@@ -107,7 +107,7 @@ noncomputable def bestResponseCorr {ι : Type} {A : ι → Type} {O : Type} {E :
       ∀ i (s : A i), P.payoff i (G.outcome (Function.update a i s)) ≤
         P.payoff i (G.outcome (Function.update a i ((e i).symm ⟨y i, hy i⟩))) }
 
-lemma bestResponseCorr_subset {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma bestResponseCorr_subset {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
@@ -115,7 +115,7 @@ lemma bestResponseCorr_subset {ι : Type} {A : ι → Type} {O : Type} {E : ι �
     (x : ↑(Set.univ.pi k)) :
     bestResponseCorr e G P x ⊆ Set.univ.pi k := fun _ ⟨hyk, _⟩ i _ => hyk i
 
-lemma payoff_update_continuous {ι : Type} {A : ι → Type} {O : Type}
+lemma payoff_update_continuous {ι : Type*} {A : ι → Type*} {O : Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     (G : Game A O) (P : PayoffStructure O ι)
     [G.Continuous] [P.Continuous]
@@ -124,7 +124,7 @@ lemma payoff_update_continuous {ι : Type} {A : ι → Type} {O : Type}
   (PayoffStructure.continuous_payoff i).comp <|
     (Game.continuous_outcome (G := G)).comp (continuous_const.update i continuous_id)
 
-lemma exists_payoff_maximizer {ι : Type} {A : ι → Type} {O : Type}
+lemma exists_payoff_maximizer {ι : Type*} {A : ι → Type*} {O : Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     (G : Game A O) (P : PayoffStructure O ι)
     [G.Continuous] [P.Continuous]
@@ -137,7 +137,7 @@ lemma exists_payoff_maximizer {ι : Type} {A : ι → Type} {O : Type}
     (payoff_update_continuous G P a i).continuousOn
   ⟨x, fun s => hx (Set.mem_univ s)⟩
 
-lemma decode_encode_component {ι : Type} {A : ι → Type} {E : ι → Type}
+lemma decode_encode_component {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (maximizers : (i : ι) → A i) (i : ι)
@@ -145,7 +145,7 @@ lemma decode_encode_component {ι : Type} {A : ι → Type} {E : ι → Type}
     (e i).symm ⟨encode e maximizers i, hy i⟩ = maximizers i :=
   (congrArg (e i).symm (Subtype.ext rfl)).trans ((e i).symm_apply_apply (maximizers i))
 
-lemma bestResponseCorr_nonempty {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma bestResponseCorr_nonempty {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)]
@@ -160,7 +160,7 @@ lemma bestResponseCorr_nonempty {ι : Type} {A : ι → Type} {O : Type} {E : ι
   exact ⟨encode e maximizers, hy, fun i s =>
     (decode_encode_component e maximizers i hy) ▸ hmax i s⟩
 
-lemma extend_eq_payoff {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma extend_eq_payoff {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
@@ -172,7 +172,7 @@ lemma extend_eq_payoff {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type
   simpa using Subtype.val_injective.extend_apply
     ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0 ⟨z, hz⟩
 
-lemma bestResponseCorr_convex {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma bestResponseCorr_convex {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
@@ -198,7 +198,7 @@ lemma bestResponseCorr_convex {ι : Type} {A : ι → Type} {O : Type} {E : ι �
     ⟨hy₁.1 i, superlevel y₁ hy₁ i s⟩ ⟨hy₂.1 i, superlevel y₂ hy₂ i s⟩ ha hb hab).2
   rwa [extend_eq_payoff] at this
 
-lemma bestResponse_isCompact {ι : Type} {A : ι → Type} {O : Type}
+lemma bestResponse_isCompact {ι : Type*} {A : ι → Type*} {O : Type*}
     [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)]
     [TopologicalSpace O]
@@ -217,7 +217,7 @@ lemma bestResponse_isCompact {ι : Type} {A : ι → Type} {O : Type}
     simp [Set.mem_iInter]]
   exact isClosed_iInter fun t => isClosed_le continuous_const (payoff_update_continuous G P a i)
 
-lemma bestResponseCorr_eq_pi {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma bestResponseCorr_eq_pi {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
@@ -241,7 +241,7 @@ lemma bestResponseCorr_eq_pi {ι : Type} {A : ι → Type} {O : Type} {E : ι �
       rw [decode_encode_component]
       exact hsi_br i s⟩
 
-lemma bestResponseCorr_compact {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma bestResponseCorr_compact {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)]
@@ -255,14 +255,14 @@ lemma bestResponseCorr_compact {ι : Type} {A : ι → Type} {O : Type} {E : ι 
   exact isCompact_univ_pi fun i =>
     (bestResponse_isCompact G P (decode e x) i).image (continuous_subtype_val.comp (e i).continuous)
 
-lemma continuous_decode {ι : Type} {A : ι → Type} {E : ι → Type}
+lemma continuous_decode {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) :
     Continuous (decode e) :=
   continuous_pi fun i => (e i).symm.continuous.comp
     (Continuous.subtype_mk ((continuous_apply i).comp continuous_subtype_val) _)
 
-lemma isClosed_payoff_le {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma isClosed_payoff_le {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
@@ -283,7 +283,7 @@ lemma isClosed_payoff_le {ι : Type} {A : ι → Type} {O : Type} {E : ι → Ty
       (Continuous.update (hcd.comp continuous_fst) i
         ((continuous_apply i).comp (hcd.comp continuous_snd)))))
 
-lemma graph_eq_iInter {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma graph_eq_iInter {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)] [TopologicalSpace O]
@@ -297,7 +297,7 @@ lemma graph_eq_iInter {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
   simp only [Set.mem_setOf_eq, Set.mem_iInter]
   exact ⟨fun ⟨_, h⟩ => h, fun hp => ⟨fun i => p.2.property i (Set.mem_univ i), hp⟩⟩
 
-lemma bestResponseCorr_isClosed_graph {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma bestResponseCorr_isClosed_graph {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
@@ -337,7 +337,7 @@ private lemma uhc_compl_eq_fst_image {X Y : Type*} [TopologicalSpace X] [Topolog
       exact ⟨(x, y), ⟨hy_mem, Set.mem_compl hy_not⟩, rfl⟩,
     fun ⟨⟨_, b⟩, ⟨hb_mem, hb_compl⟩, rfl⟩ h => hb_compl (h hb_mem)⟩
 
-lemma uhc_of_closedGraph_compact {ι : Type} {E : ι → Type}
+lemma uhc_of_closedGraph_compact {ι : Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (E i)]
     [∀ i, T2Space (E i)]
     {k : (i : ι) → Set (E i)}
@@ -355,7 +355,7 @@ lemma uhc_of_closedGraph_compact {ι : Type} {E : ι → Type}
     (hF_closed.inter (IsClosed.prod isClosed_univ hV.isClosed_compl))
     (fun p hp => ⟨Set.mem_univ _, hF_sub p.1 hp.1⟩)).image continuous_fst).isClosed
 
-lemma bestResponseCorr_uhc {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma bestResponseCorr_uhc {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
@@ -373,7 +373,7 @@ lemma bestResponseCorr_uhc {ι : Type} {A : ι → Type} {O : Type} {E : ι → 
 /-! ## Fixed point to Nash equilibrium -/
 
 /-- A fixed point of the best response correspondence yields a Nash equilibrium. -/
-lemma fixed_point_is_nash {ι : Type} {A : ι → Type} {O : Type} {E : ι → Type}
+lemma fixed_point_is_nash {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)] [TopologicalSpace O]
@@ -398,7 +398,7 @@ public theorem Game.exists_isNashEquilibrium_of_quasiconcaveOn
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [TopologicalSpace O] [G.Continuous] [P.Continuous]
     [Fintype ι] [DecidableEq ι]
-    {E : ι → Type} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
+    {E : ι → Type*} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)]
     [∀ i, LocallyConvexSpace ℝ (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (hs : ∀ i, Convex ℝ (k i))
