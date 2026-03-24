@@ -76,45 +76,52 @@ part of the structure. -/
 structure Game {ι : Type*} (A : ι → Type*) (O : Type*) where
   outcome (a : (i : ι) → A i) : O
 
-namespace Game
+/-- We say that a payoff structure on a type `O` with respect to `ι` is simply an `ι`-indexed family
+of payoff functions `O → ℝ`. Usually `O` will be the type of outcomes of a game with players `ι`. -/
+structure PayoffStructure (O : Type*) (ι : Type*) where
+  payoff (i : ι) : O → ℝ
 
 variable {ι : Type*} {A : ι → Type*} {O : Type*}
+
+namespace Game
 
 section Strategies
 
 set_option linter.unusedVariables false in
 /-- A type synonym for the type `A i` of pure strategies available to player `i` in the game
-`G : Game A O`, equipped with the preorder given by weak dominance with respect to a given
-utility function `u`. -/
-def Strategy (G : Game A O) {O' : Type*} (u : O → O') (i : ι) := A i
+`G : Game A O`, equipped with the preorder given by weak dominance with respect to the payoff
+structure `P`. -/
+def Strategy (G : Game A O) (P : PayoffStructure O ι) (i : ι) := A i
 
 namespace Strategy
 
-instance (G : Game A O) {O' : Type*} [LE O'] (u : O → O') (i : ι) :
-    LE (G.Strategy u i) where
-  le s s' := ∀ (a a' : (i : ι) → A i),
-    a i = s → a' i = s' → (∀ j ≠ i, a j = a' j) → u (G.outcome a) ≤ u (G.outcome a')
+instance (G : Game A O) (P : PayoffStructure O ι) (i : ι) :
+    LE (G.Strategy P i) where
+  le s s' := ∀ (a a' : (i : ι) → A i), a i = s → a' i = s' → (∀ j ≠ i, a j = a' j) →
+    P.payoff i (G.outcome a) ≤ P.payoff i (G.outcome a')
 
-protected lemma le_def {G : Game A O} {O' : Type*} [LE O'] {u : O → O'} {i : ι}
-    {s s' : G.Strategy u i} : s ≤ s' ↔ ∀ (a a' : (i : ι) → A i),
-      a i = s → a' i = s' → (∀ j ≠ i, a j = a' j) → u (G.outcome a) ≤ u (G.outcome a') :=
+protected lemma le_def {G : Game A O} {P : PayoffStructure O ι} {i : ι} {s s' : G.Strategy P i} :
+    s ≤ s' ↔ ∀ (a a' : (i : ι) → A i), a i = s → a' i = s' → (∀ j ≠ i, a j = a' j) →
+      P.payoff i (G.outcome a) ≤ P.payoff i (G.outcome a') :=
   Iff.rfl
 
-protected lemma le_iff [DecidableEq ι] {G : Game A O} {O' : Type*} [LE O']
-    {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s ≤ s' ↔ ∀ (a a' : (i : ι) → A i),
-      a i = s → a' = Function.update a i s' → u (G.outcome a) ≤ u (G.outcome a') := by
+protected lemma le_iff [DecidableEq ι] {G : Game A O} {P : PayoffStructure O ι} {i : ι}
+    {s s' : G.Strategy P i} :
+    s ≤ s' ↔ ∀ (a a' : (i : ι) → A i), a i = s → a' = Function.update a i s' →
+      P.payoff i (G.outcome a) ≤ P.payoff i (G.outcome a') := by
   simp only [Strategy.le_def, Function.eq_update_iff, and_imp, eq_comm]
 
-protected lemma le_iff' [DecidableEq ι] {G : Game A O} {O' : Type*} [LE O']
-    {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s ≤ s' ↔ ∀ a : (i : ι) → A i,
-      u (G.outcome (Function.update a i s)) ≤ u (G.outcome (Function.update a i s')) := by
+protected lemma le_iff' [DecidableEq ι] {G : Game A O} {P : PayoffStructure O ι} {i : ι}
+    {s s' : G.Strategy P i} :
+    s ≤ s' ↔ ∀ a : (i : ι) → A i, P.payoff i (G.outcome (Function.update a i s)) ≤
+      P.payoff i (G.outcome (Function.update a i s')) := by
   rw [Strategy.le_iff]
   refine ⟨fun h a ↦ h _ _ (by simp) (by simp), fun h a a' ha ha' ↦ ?_⟩
   rw [Function.eq_update_self_iff.2 ha, ha']
   exact h a
 
-instance (G : Game A O) {O' : Type*} [Preorder O'] (u : O → O') (i : ι) :
-    Preorder (G.Strategy u i) where
+instance (G : Game A O) (P : PayoffStructure O ι) (i : ι) :
+    Preorder (G.Strategy P i) where
   le_refl s a a' hai hai' h := Eq.le <| by congr; grind
   le_trans s s' s'' := by
     classical
@@ -123,22 +130,23 @@ instance (G : Game A O) {O' : Type*} [Preorder O'] (u : O → O') (i : ι) :
 
 /-- A strategy strictly dominates another iff it weakly dominates it and there is at least one
 scenario in which it is strictly better. -/
-protected lemma lt_iff [DecidableEq ι] {G : Game A O} {O' : Type*} [Preorder O']
-      {u : O → O'} {i : ι} {s s' : G.Strategy u i} : s < s' ↔ s ≤ s' ∧ ∃ a : (i : ι) → A i,
-      u (G.outcome (Function.update a i s)) < u (G.outcome (Function.update a i s')) := by
+protected lemma lt_iff [DecidableEq ι] {G : Game A O} (P : PayoffStructure O ι) (i : ι)
+    {s s' : G.Strategy P i} :
+    s < s' ↔ s ≤ s' ∧ ∃ a : (i : ι) → A i, P.payoff i (G.outcome (Function.update a i s)) <
+      P.payoff i (G.outcome (Function.update a i s')) := by
     refine lt_iff_le_not_ge.trans <| and_congr_right fun h ↦ ?_
     simp only [Strategy.le_iff', not_forall, lt_iff_le_not_ge, Strategy.le_iff'.1 h, true_and]
 
 /-- A strategy is called weakly dominant iff it weakly dominates every strategy. -/
-def IsDominant {G : Game A O} {O' : Type*} [LE O']
-    {u : O → O'} {i : ι} (s : G.Strategy u i) := IsTop s
+def IsDominant {G : Game A O} {P : PayoffStructure O ι} {i : ι} (s : G.Strategy P i) :=
+  IsTop s
 
 /-- A strategy is called strictly dominant iff it strictly dominates every other strategy. -/
-def IsStrictlyDominant {G : Game A O} {O' : Type*} [Preorder O']
-    {u : O → O'} {i : ι} (s : G.Strategy u i) := ∀ s' ≠ s, s' < s
+def IsStrictlyDominant {G : Game A O} {P : PayoffStructure O ι} {i : ι} (s : G.Strategy P i) :=
+  ∀ s' ≠ s, s' < s
 
-lemma IsStrictlyDominant.isDominant {G : Game A O} {O' : Type*} [Preorder O']
-    {u : O → O'} {i : ι} {s : G.Strategy u i} (hs : s.IsStrictlyDominant) : s.IsDominant := by
+lemma IsStrictlyDominant.isDominant {G : Game A O} {P : PayoffStructure O ι} {i : ι}
+    {s : G.Strategy P i} (hs : s.IsStrictlyDominant) : s.IsDominant := by
   intro s'
   by_cases h : s' = s
   · exact h.le
@@ -152,20 +160,20 @@ section Equilibria
 
 /-- A family of strategies `a i` is called a Nash equilibrium with respect to a family
 of utility functions `u i` if no player can benefit from changing their strategy. -/
-def IsNashEquilibrium [DecidableEq ι] (G : Game A O) {O' : ι → Type*} [∀ i, LE (O' i)]
-    (u : (i : ι) → O → O' i) (a : (i : ι) → A i) :=
-  ∀ i (s : A i), u i (G.outcome (Function.update a i s)) ≤ u i (G.outcome a)
+def IsNashEquilibrium [DecidableEq ι] (G : Game A O) (P : PayoffStructure O ι)
+    (a : (i : ι) → A i) :=
+  ∀ i (s : A i), P.payoff i (G.outcome (Function.update a i s)) ≤ P.payoff i (G.outcome a)
 
 /-- A family of strategies `a i` is called a strict Nash equilibrium with respect to a family
 of utility functions `u i` if every player would suffer a loss when changing their strategy. -/
-def IsStrictNashEquilibrium [DecidableEq ι] (G : Game A O) {O' : ι → Type*} [∀ i, Preorder (O' i)]
-    (u : (i : ι) → O → O' i) (a : (i : ι) → A i) :=
-  ∀ i, ∀ s ≠ a i, u i (G.outcome (Function.update a i s)) < u i (G.outcome a)
+def IsStrictNashEquilibrium [DecidableEq ι] (G : Game A O) (P : PayoffStructure O ι)
+    (a : (i : ι) → A i) :=
+  ∀ i, ∀ s ≠ a i, P.payoff i (G.outcome (Function.update a i s)) < P.payoff i (G.outcome a)
 
 /-- Every strict Nash equilibrium is a Nash equilibrium. -/
-lemma IsStrictNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} {O' : ι → Type*}
-    [∀ i, Preorder (O' i)] {u : (i : ι) → O → O' i} {a : (i : ι) → A i}
-    (ha : G.IsStrictNashEquilibrium u a) : G.IsNashEquilibrium u a := by
+lemma IsStrictNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O}
+    {P : PayoffStructure O ι} {a : (i : ι) → A i} (ha : G.IsStrictNashEquilibrium P a) :
+    G.IsNashEquilibrium P a := by
   intro i s
   by_cases h : s = a i
   · simp [h]
@@ -173,22 +181,22 @@ lemma IsStrictNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} 
 
 /-- Any family of weakly dominant strategies is a nash equilibrium. Note however that the
 corresponding statement for strictly dominant strategies and strict nash equilibria isn't true. -/
-lemma isNashEquilibrium_of_isDominant [DecidableEq ι] {G : Game A O} {O' : ι → Type*}
-    [∀ i, LE (O' i)] {u : (i : ι) → O → O' i} {a : (i : ι) → A i}
-    (ha : ∀ i, Strategy.IsDominant (G := G) (u := u i) (a i)) : G.IsNashEquilibrium u a :=
+lemma isNashEquilibrium_of_isDominant [DecidableEq ι] {G : Game A O} {P : PayoffStructure O ι}
+    {a : (i : ι) → A i} (ha : ∀ i, Strategy.IsDominant (G := G) (P := P) (a i)) :
+    G.IsNashEquilibrium P a :=
   fun i s ↦ ha i s _ _ (by simp) rfl (by grind)
 
 /-- A family of strategies `a i` is called a strong Nash equilibrium if every other strategy leaves
 at least one player who changed their strategy no better off than they were before, i.e. if it is
 impossible for a coalition to form that strictly benefits each of its members. -/
-def IsStrongNashEquilibrium (G : Game A O) {O' : ι → Type*} [∀ i, Preorder (O' i)]
-    (u : (i : ι) → O → O' i) (a : (i : ι) → A i) :=
-  ∀ a' ≠ a, ∃ i, a i ≠ a' i ∧ u i (G.outcome a') ≤ u i (G.outcome a)
+def IsStrongNashEquilibrium (G : Game A O) (P : PayoffStructure O ι)
+    (a : (i : ι) → A i) :=
+  ∀ a' ≠ a, ∃ i, a i ≠ a' i ∧ P.payoff i (G.outcome a') ≤ P.payoff i (G.outcome a)
 
 /-- Every strong Nash equilibrium is a Nash equilibrium. -/
-lemma IsStrongNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} {O' : ι → Type*}
-    [∀ i, Preorder (O' i)] {u : (i : ι) → O → O' i} {a : (i : ι) → A i}
-    (ha : G.IsStrongNashEquilibrium u a) : G.IsNashEquilibrium u a := by
+lemma IsStrongNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O}
+    {P : PayoffStructure O ι} {a : (i : ι) → A i}
+    (ha : G.IsStrongNashEquilibrium P a) : G.IsNashEquilibrium P a := by
   intro i s
   by_cases h : s = a i
   · simp [h]
@@ -198,11 +206,17 @@ lemma IsStrongNashEquilibrium.isNashEquilibrium [DecidableEq ι] {G : Game A O} 
 
 end Equilibria
 
+end Game
+
 section Measurable
 
 open MeasureTheory
 
+open scoped ProbabilityTheory
+
 variable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
+
+namespace Game
 
 /-- We call a game measurable if its action spaces and outcome space are measurable spaces, and
 the outcome function `G.outcome : ((i : ι) → A i) → O` is measurable. -/
@@ -248,8 +262,42 @@ instance (G : Game A (ProbabilityMeasure O)) [G.Measurable] [Fintype ι] :
   measurable_outcome :=
     (ProbabilityMeasure.measurable_join (α := O)).comp G.toMixed.measurable_outcome
 
-end Measurable
-
 end Game
+
+namespace PayoffStructure
+
+/-- We call a payoff structure measurable if its arguments are measurable spaces and the payoff
+functions it consists of are all measurable. -/
+protected class Measurable (P : PayoffStructure O ι) where
+  measurable_payoff i : Measurable (P.payoff i)
+
+/-- We call a payoff structure bounded if each payoff function is bounded. -/
+protected class Bounded (P : PayoffStructure O ι) where
+  isBounded_payoff_range i : Bornology.IsBounded (Set.range (P.payoff i))
+
+export PayoffStructure.Measurable (measurable_payoff)
+
+export PayoffStructure.Bounded (isBounded_payoff_range)
+
+/-- The payoff structure on `ProbabilityMeasure O` induced by a payoff
+structure on `O` via taking expected values. -/
+noncomputable def toExpected (P : PayoffStructure O ι) :
+    PayoffStructure (ProbabilityMeasure O) ι where
+  payoff i μ := μ[P.payoff i]
+
+instance (P : PayoffStructure O ι) [P.Measurable] [P.Bounded] : P.toExpected.Measurable where
+  measurable_payoff i :=
+    ProbabilityMeasure.measurable_integral (P.measurable_payoff i) (P.isBounded_payoff_range i)
+
+instance (P : PayoffStructure O ι) [P.Bounded] : P.toExpected.Bounded where
+  isBounded_payoff_range i := by
+    have h := P.isBounded_payoff_range i
+    simp_rw [isBounded_iff_forall_norm_le, Set.forall_mem_range] at h ⊢
+    refine h.imp fun C hC μ ↦ ?_
+    simpa using norm_integral_le_of_norm_le_const (μ := μ) <| .of_forall hC
+
+end PayoffStructure
+
+end Measurable
 
 end GameTheory

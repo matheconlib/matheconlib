@@ -7,5 +7,6 @@ import Auctionlib.ForMathlib.Kakutani
 import Auctionlib.ForMathlib.ProbabilityMeasure
 import Auctionlib.ForMathlib.Schauder
 import Auctionlib.GameTheory.Basic
+import Auctionlib.GameTheory.NashExistence
 import Auctionlib.RevenueEquivalence.Theorem
 import Auctionlib.Statistics.OrderStatistics
