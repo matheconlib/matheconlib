@@ -4,6 +4,7 @@ public import Auctionlib.GameTheory.Basic
 public import Mathlib.Analysis.Convex.Quasiconvex
 
 import Auctionlib.ForMathlib.ApproximateSelection
+import Auctionlib.ForMathlib.Kakutani
 import Auctionlib.ForMathlib.Schauder
 
 /-!
@@ -13,8 +14,15 @@ finite games. More classic results on the existence of Nash equilibria in other 
 added later on.
 
 Currently, the only public declaration in this file are:
-* Todo.
-All other declarations are kept private.
+* `Game.Continuous`: typeclass stating that the outcome function of a game whose action spaces and
+  outcome space are topological spaces is continuous.
+* `PayoffStructure.Continuous`: typeclass stating that the payoff functions of a payoff structure on
+  a topological space are continuous.
+* `Game.exists_isNashEquilibrium_of_quasiconcaveOn`: existence of pure Nash equilibria for games
+  whose action spaces are homeomorphic to nonempty compact convex subsets of locally convex vector
+  spaces in such a way that their payoff functions are quasiconcave.
+* `Game.exists_isNashEquilibrium_of_finite`: existence of mixed Nash equilibria for finite games
+All other declarations used in the proofs are kept private.
 -/
 
 namespace GameTheory
@@ -27,7 +35,7 @@ variable [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
 
 namespace Game
 
-protected class Continuous (G : Game A O) where
+public protected class Continuous (G : Game A O) where
   continuous_outcome : Continuous G.outcome
 
 export Continuous (continuous_outcome)
@@ -36,7 +44,7 @@ end Game
 
 namespace PayoffStructure
 
-protected class Continuous (P : PayoffStructure O ι) where
+public protected class Continuous (P : PayoffStructure O ι) where
   continuous_payoff i : Continuous (P.payoff i)
 
 export Continuous (continuous_payoff)
@@ -44,15 +52,6 @@ export Continuous (continuous_payoff)
 end PayoffStructure
 
 end Continuous
-
-def KakutaniGlicksbergFan : Prop :=
-  ∀ {E : Type} [AddCommGroup E] [Module ℝ E] [TopologicalSpace E]
-    [IsTopologicalAddGroup E] [ContinuousSMul ℝ E] [T2Space E] [LocallyConvexSpace ℝ E]
-    {k : Set E} (_hk : IsCompact k) (_hk' : Convex ℝ k) (_hk'' : k.Nonempty)
-    {F : k → Set E} {_hF : UpperHemicontinuous F} (_hF' : ∀ x, F x ⊆ k)
-    (_hF'' : ∀ x, IsCompact (F x)) (_hF''' : ∀ x, Convex ℝ (F x))
-    (_hF'''' : ∀ x, (F x).Nonempty),
-    ∃ x, ↑x ∈ F x
 
 /-! ## Encoding/decoding between strategy profiles and product spaces -/
 
@@ -182,8 +181,8 @@ lemma bestResponseCorr_convex {ι : Type} {A : ι → Type} {O : Type} {E : ι �
     [G.Continuous] [P.Continuous]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (hs : ∀ i, Convex ℝ (k i))
-    (h_quasiconcave : ∀ (a : (i : ι) → A i) i, QuasiconcaveOn ℝ (k i)
-      (Subtype.val.extend ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0))
+    (h_quasiconcave : ∀ a i, QuasiconcaveOn ℝ (k i) <| Subtype.val.extend
+      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0)
     (x : ↑(Set.univ.pi k)) :
     Convex ℝ (bestResponseCorr e G P x) := by
   have superlevel : ∀ y, y ∈ bestResponseCorr e G P x → ∀ i (s : A i),
@@ -389,9 +388,13 @@ lemma fixed_point_is_nash {ι : Type} {A : ι → Type} {O : Type} {E : ι → T
   rwa [show (e i).symm ⟨x.val i, hy i⟩ = decode e x i from by simp [decode],
     Function.update_eq_self] at this
 
-/-! ## Main theorem -/
-
-theorem exists_isNashEquilibrium_of_isCompact_convex (G : Game A O) (P : PayoffStructure O ι)
+/-- Any game whose action spaces are nonempty compact convex subsets of locally convex vector spaces
+and whose payoff functions are quasiconcave admits a pure Nash equilibrium.
+Instead of requiring the action spaces to be literal subsets of vector spaces, we simply ask
+homeomorphisms between the action spaces and such subsets for which the appropriate compositions
+with the payoff functions are quasiconcave. -/
+public theorem Game.exists_isNashEquilibrium_of_quasiconcaveOn
+    (G : Game A O) (P : PayoffStructure O ι)
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [TopologicalSpace O] [G.Continuous] [P.Continuous]
     [Fintype ι] [DecidableEq ι]
@@ -399,16 +402,15 @@ theorem exists_isNashEquilibrium_of_isCompact_convex (G : Game A O) (P : PayoffS
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)]
     [∀ i, LocallyConvexSpace ℝ (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (hs : ∀ i, Convex ℝ (k i))
-    (h_quasiconcave : ∀ (a : (i : ι) → A i) i, QuasiconcaveOn ℝ (k i)
-      (Subtype.val.extend ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0))
-    (kakutani : KakutaniGlicksbergFan) :
+    (h_quasiconcave : ∀ a i, QuasiconcaveOn ℝ (k i) <| Subtype.val.extend
+      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0) :
     ∃ a, G.IsNashEquilibrium P a := by
   -- Apply Kakutani-Glicksberg-Fan to the product space with best response correspondence
-  obtain ⟨x_star, hx_star⟩ := kakutani (E := (i : ι) → E i) (k := Set.univ.pi k)
+  obtain ⟨x_star, hx_star⟩ := kakutaniGlicksbergFan (E := (i : ι) → E i) (k := Set.univ.pi k)
     (isCompact_univ_pi fun i => isCompact_ki e i)
     (convex_pi fun i _ => hs i)
     (Set.univ_pi_nonempty_iff.mpr fun i => nonempty_ki e i)
-    (F := bestResponseCorr e G P) (_hF := bestResponseCorr_uhc G P e)
+    (F := bestResponseCorr e G P) (hF := bestResponseCorr_uhc G P e)
     (bestResponseCorr_subset e G P)
     (bestResponseCorr_compact G P e)
     (bestResponseCorr_convex G P e hs h_quasiconcave)
@@ -641,6 +643,8 @@ end NashExistence
 
 variable {ι : Type*} {A : ι → Type*} {O : Type*}
 
+/-- Any finite game (i.e. any game with finitely many players and finite action spaces)
+admits a mixed Nash equilibrium. -/
 lemma Game.exists_isNashEquilibrium_of_finite (G : Game A O) (P : PayoffStructure O ι)
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
     [∀ i, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O] [G.Measurable]
