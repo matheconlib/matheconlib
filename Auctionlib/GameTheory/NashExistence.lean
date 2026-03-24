@@ -6,6 +6,10 @@ public import Mathlib.Analysis.Convex.Quasiconvex
 import Auctionlib.ForMathlib.ApproximateSelection
 import Auctionlib.ForMathlib.Kakutani
 import Auctionlib.ForMathlib.Schauder
+import Mathlib.Analysis.LocallyConvex.WeakDual
+import Mathlib.MeasureTheory.Integral.Prod
+import Mathlib.MeasureTheory.Measure.DiracProba
+import Mathlib.MeasureTheory.Measure.Prokhorov
 
 /-!
 # Existence of Nash equilibria
@@ -24,6 +28,8 @@ Currently, the only public declaration in this file are:
 * `Game.exists_isNashEquilibrium_of_finite`: existence of mixed Nash equilibria for finite games
 All other declarations used in the proofs are kept private.
 -/
+
+universe u
 
 namespace GameTheory
 
@@ -416,6 +422,317 @@ public theorem Game.exists_isNashEquilibrium_of_quasiconcaveOn
     (bestResponseCorr_convex G P e hs h_quasiconcave)
     (bestResponseCorr_nonempty G P e)
   exact ⟨decode e x_star, fixed_point_is_nash G P e x_star hx_star⟩
+
+end GameTheory
+
+namespace GameTheory
+
+variable {ι : Type*} {A : ι → Type*} {O : Type*}
+
+section Measurable
+
+open MeasureTheory
+
+open scoped ProbabilityTheory
+
+variable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
+
+end Measurable
+
+section Continuous
+
+variable [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
+
+namespace Game
+
+instance Continuous.instMeasurable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [Countable ι]
+    [∀ i, OpensMeasurableSpace (A i)] [∀ i, SecondCountableTopology (A i)] [BorelSpace O]
+    (G : Game A O) [G.Continuous] : G.Measurable where
+  measurable_outcome := continuous_outcome.measurable
+
+end Game
+
+namespace PayoffStructure
+
+instance Continuous.instMeasurable [MeasurableSpace O] [OpensMeasurableSpace O]
+    (P : PayoffStructure O ι) [P.Continuous] : P.Measurable where
+  measurable_payoff i := (continuous_payoff i).measurable
+
+end PayoffStructure
+
+end Continuous
+
+def PureNashExistence : Prop := ∀ {ι : Type*} {A : ι → Type*} {O : Type*}
+    (G : Game A O) (P : PayoffStructure O ι)
+    [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
+    [TopologicalSpace O] [G.Continuous] [P.Continuous]
+    [Fintype ι] [DecidableEq ι]
+    {E : ι → Type*} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
+    [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)]
+    [∀ i, LocallyConvexSpace ℝ (E i)]
+    {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (_hs : ∀ i, Convex ℝ (k i))
+    (_h_quasiconcave : ∀ (a : (i : ι) → A i) i, QuasiconcaveOn ℝ (k i)
+      (Subtype.val.extend ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0)),
+    ∃ a, G.IsNashEquilibrium P a
+
+section MixedStrategySetup
+
+open MeasureTheory ProbabilityTheory
+
+@[fun_prop]
+lemma _root_.Continuous.integrable {α : Type*} [TopologicalSpace α] [MeasurableSpace α]
+    [OpensMeasurableSpace α] {μ : Measure α} [IsFiniteMeasureOnCompacts μ] [CompactSpace α]
+    {E : Type*} [NormedAddCommGroup E] {f : α → E} (hf : Continuous f) : Integrable f μ :=
+  hf.integrable_of_hasCompactSupport <| .of_compactSpace _
+
+@[simps]
+noncomputable def _root_.MeasureTheory.ProbabilityMeasure.toWeakDualContinuousMap
+    {α : Type*} [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α] [CompactSpace α] :
+    C(ProbabilityMeasure α, WeakDual ℝ C(α, ℝ)) where
+  toFun μ := {
+    toFun f := μ[f]
+    map_add' f g := integral_add (by fun_prop) (by fun_prop)
+    map_smul' x f := by simp [-smul_eq_mul, integral_smul]
+    cont := by
+      convert continuous_integral.comp
+        (ContinuousMap.toLp (E := ℝ) 1 μ.toMeasure ℝ).continuous using 1
+      ext f
+      exact (L1.integral_of_fun_eq_integral' f.continuous.integrable).symm
+  }
+  continuous_toFun :=
+    WeakDual.continuous_of_continuous_eval ProbabilityMeasure.continuous_integral_continuousMap
+
+end MixedStrategySetup
+
+section Helpers
+
+open MeasureTheory ProbabilityTheory
+
+variable {α : Type u} [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α]
+  [CompactSpace α] [TopologicalSpace.MetrizableSpace α] [Nonempty α]
+
+set_option linter.unusedSectionVars false in
+/-- `toWeakDualContinuousMap` is injective: probability measures on a compact metrizable Borel
+space are determined by their integrals against continuous functions. -/
+lemma toWeakDualContinuousMap_injective :
+    Function.Injective (ProbabilityMeasure.toWeakDualContinuousMap (α := α)) := by
+  intro μ ν h
+  apply ProbabilityMeasure.toMeasure_injective
+  exact ext_of_forall_integral_eq_of_IsFiniteMeasure fun f ↦ congr_arg (· f.toContinuousMap) h
+
+/-- Homeomorphism from `ProbabilityMeasure α` onto the range of `toWeakDualContinuousMap`,
+via continuous injection from compact to Hausdorff being a closed embedding. -/
+noncomputable def toWeakDualContinuousMap_homeomorph
+    (hinj : Function.Injective (ProbabilityMeasure.toWeakDualContinuousMap (α := α))) :
+    ProbabilityMeasure α ≃ₜ Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := α)) :=
+  (ProbabilityMeasure.toWeakDualContinuousMap.continuous.isClosedEmbedding
+    hinj).isEmbedding.toHomeomorph
+
+set_option linter.unusedSectionVars false in
+lemma toWeakDualContinuousMap_range_convex :
+    Convex ℝ (Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := α))) := by
+  intro x hx y hy a b ha hb hab
+  obtain ⟨μ₁, rfl⟩ := hx
+  obtain ⟨μ₂, rfl⟩ := hy
+  have hν : IsProbabilityMeasure
+      (ENNReal.ofReal a • μ₁.toMeasure + ENNReal.ofReal b • μ₂.toMeasure) := ⟨by
+    simp [Measure.add_apply, Measure.smul_apply, smul_eq_mul,
+      ← ENNReal.ofReal_add ha hb, hab]⟩
+  refine ⟨⟨_, hν⟩, ContinuousLinearMap.ext fun f ↦ ?_⟩
+  simp only [ProbabilityMeasure.toWeakDualContinuousMap, ContinuousMap.coe_mk]
+  show ∫ x, f x ∂(ENNReal.ofReal a • μ₁.toMeasure + ENNReal.ofReal b • μ₂.toMeasure) =
+    a * ∫ x, f x ∂μ₁ + b * ∫ x, f x ∂μ₂
+  rw [integral_add_measure (f.continuous.integrable.smul_measure ENNReal.ofReal_ne_top)
+      (f.continuous.integrable.smul_measure ENNReal.ofReal_ne_top),
+    integral_smul_measure, integral_smul_measure,
+    ENNReal.toReal_ofReal ha, ENNReal.toReal_ofReal hb, smul_eq_mul, smul_eq_mul]
+
+@[simps!]
+def _root_.MeasurableEquiv.piSplitAt {ι : Type*} [DecidableEq ι] (i : ι) (α : ι → Type*)
+    [∀ i, MeasurableSpace (α i)] :
+    ((i : ι) → α i) ≃ᵐ α i × ((j : {j : ι // j ≠ i}) → α j) where
+  toEquiv := .piSplitAt i α
+  measurable_toFun := by fun_prop
+  measurable_invFun := measurable_pi_iff.2 fun i ↦ by
+    dsimp [Equiv.piSplitAt]
+    split_ifs with h
+    · subst h
+      fun_prop
+    · fun_prop
+
+section MeasurableEquivLemmas
+
+open MeasurableEquiv
+
+lemma _root_.MeasurableEquiv.piSplitAt_eq_piCongrLeft_trans_piOptionEquivProd
+    {ι : Type*} [DecidableEq ι] (i : ι) (α : ι → Type*)
+    [∀ i, MeasurableSpace (α i)] :
+    piSplitAt i α =
+    ((piCongrLeft _ (Equiv.optionSubtypeNe i)).symm.trans <|
+      (piOptionEquivProd _).trans prodComm) := by
+  ext <;> rfl
+
+@[simp]
+lemma _root_.MeasurableEquiv.trans_symm {α β γ : Type*}
+    [MeasurableSpace α] [MeasurableSpace β] [MeasurableSpace γ]
+    (e : α ≃ᵐ β) (e' : β ≃ᵐ γ) : (e.trans e').symm = e'.symm.trans e.symm :=
+  rfl
+
+@[simp]
+lemma _root_.MeasurableEquiv.map_trans {α β γ : Type*}
+    [MeasurableSpace α] [MeasurableSpace β] [MeasurableSpace γ]
+    {μ : Measure α} (e : α ≃ᵐ β) (e' : β ≃ᵐ γ) :
+    μ.map (e.trans e') = (μ.map e).map e' :=
+  (μ.map_map e'.measurable e.measurable).symm
+
+@[simp]
+lemma _root_.MeasurableEquiv.prodComm_symm {α β : Type*}
+    [MeasurableSpace α] [MeasurableSpace β] :
+    (MeasurableEquiv.prodComm (α := α) (β := β)).symm = MeasurableEquiv.prodComm :=
+  rfl
+
+@[simp]
+lemma _root_.MeasurableEquiv.prodComm_prod {α β : Type*}
+    [MeasurableSpace α] [MeasurableSpace β]
+    {μ : Measure α} {ν : Measure β} [SFinite μ] [SFinite ν] :
+    (μ.prod ν).map MeasurableEquiv.prodComm = (ν.prod μ) :=
+  Measure.prod_swap
+
+lemma _root_.MeasureTheory.Measure.pi_map_piSplitAt
+    {ι : Type*} [Fintype ι] [DecidableEq ι]
+    {α : ι → Type*} [∀ i, MeasurableSpace (α i)] (i : ι)
+    (μ : (i : ι) → Measure (α i)) [∀ i, SigmaFinite (μ i)] :
+    ((μ i).prod (Measure.pi fun i ↦ μ i.1)).map
+      (MeasurableEquiv.piSplitAt i α).symm = Measure.pi μ := by
+  simp_rw [MeasurableEquiv.piSplitAt_eq_piCongrLeft_trans_piOptionEquivProd,
+    MeasurableEquiv.trans_symm, MeasurableEquiv.symm_symm, MeasurableEquiv.map_trans]
+  simp only [ne_eq, Equiv.optionSubtypeNe_apply, Option.casesOn'_some,
+    Option.casesOn'_none, MeasurableEquiv.prodComm_symm, MeasurableEquiv.prodComm_prod]
+  refine .trans (congr_arg _ ?_) <| Measure.pi_map_piCongrLeft _ _
+  exact Measure.pi_map_piOptionEquivProd fun b ↦ μ ((Equiv.optionSubtypeNe i) b)
+
+end MeasurableEquivLemmas
+
+/-- The expected payoff for player `i` with mixed strategy `μ` equals a weak dual evaluation
+`(toWeakDualContinuousMap μ)(φ)` for an appropriate `φ : C(A i, ℝ)`, using linearity of
+integration and Fubini on pi types. -/
+lemma payoff_eq_eval_weakDual {ι : Type u} {A : ι → Type u} {O : Type u}
+    (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
+    [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
+    [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
+    [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
+    [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous]
+    (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι) :
+    ∀ μ : ProbabilityMeasure (A i),
+      P.toExpected.payoff i (G.toMixed.outcome (Function.update a i μ)) =
+        (ProbabilityMeasure.toWeakDualContinuousMap μ)
+          ⟨(fun μ ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i μ))) ∘ diracProba,
+            (PayoffStructure.continuous_payoff i).comp <| Game.continuous_outcome.comp <|
+              continuous_const.update _  continuous_diracProba⟩ := by
+  intro μ
+  dsimp [ProbabilityMeasure.toWeakDualContinuousMap]
+  change _ = integral _ _
+  dsimp [PayoffStructure.toExpected]
+  rw [integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
+    ← Measure.pi_map_piSplitAt i, integral_map (MeasurableEquiv.measurable _).aemeasurable
+      (by exact ((P.measurable_payoff i).comp G.measurable_outcome).aestronglyMeasurable),
+    Function.update_self, integral_prod]
+  · congr 1
+    ext x
+    rw [integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
+      ← Measure.pi_map_piSplitAt i, integral_map (MeasurableEquiv.measurable _).aemeasurable
+        (by exact ((P.measurable_payoff i).comp G.measurable_outcome).aestronglyMeasurable),
+      Function.update_self, integral_prod,
+      show (diracProba x).toMeasure = Measure.dirac x from rfl, integral_dirac]
+    · grind
+    · exact ((P.continuous_payoff i).comp <|
+        G.continuous_outcome.comp (Homeomorph.piSplitAt i _).continuous_invFun).integrable
+  · exact ((P.continuous_payoff i).comp <|
+      G.continuous_outcome.comp (Homeomorph.piSplitAt i _).continuous_invFun).integrable
+
+/-- The `Function.extend` of the payoff via `Subtype.val` agrees with the weak dual evaluation
+on the range of `toWeakDualContinuousMap`. -/
+lemma extend_payoff_eq_eval {ι : Type u} {A : ι → Type u} {O : Type u}
+    (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
+    [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
+    [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
+    [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
+    [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous]
+    (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι)
+    (hinj : Function.Injective (ProbabilityMeasure.toWeakDualContinuousMap (α := A i))) :
+    let φ : C(A i, ℝ) := ⟨(fun μ ↦ P.toExpected.payoff i (G.toMixed.outcome
+      (Function.update a i μ))) ∘ diracProba,
+      (PayoffStructure.continuous_payoff i).comp <| Game.continuous_outcome.comp <|
+        continuous_const.update _ continuous_diracProba⟩
+    ∀ v ∈ Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := A i)),
+      (Subtype.val.extend
+        ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
+          (toWeakDualContinuousMap_homeomorph (α := A i) hinj).symm) 0) v =
+      v φ := by
+  intro φ v ⟨μ, hμ⟩
+  subst hμ
+  simp only [Function.comp_def]
+  have h := Subtype.val_injective.extend_apply
+    ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
+      (toWeakDualContinuousMap_homeomorph hinj).symm)
+    (0 : WeakDual ℝ C(A i, ℝ) → ℝ)
+    ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
+  simp only [Function.comp_def] at h
+  have hsymm : (toWeakDualContinuousMap_homeomorph hinj).symm
+      ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩ = μ := hinj <|
+    congrArg Subtype.val <| by
+      have := (toWeakDualContinuousMap_homeomorph hinj).apply_symm_apply
+        ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
+      simp only [toWeakDualContinuousMap_homeomorph, Topology.IsEmbedding.toHomeomorph] at this
+      exact this
+  rw [h, hsymm]
+  exact payoff_eq_eval_weakDual G P a i μ
+
+/-- The expected payoff, extended to the weak dual, is quasiconcave on the range of
+`toWeakDualContinuousMap`: it agrees with a linear functional on this convex set. -/
+lemma payoff_quasiconcave {ι : Type u} {A : ι → Type u} {O : Type u}
+    (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
+    [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
+    [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
+    [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
+    [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous]
+    (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι)
+    (hinj : Function.Injective (ProbabilityMeasure.toWeakDualContinuousMap (α := A i))) :
+    QuasiconcaveOn ℝ (Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := A i)))
+      (Subtype.val.extend
+        ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
+          (toWeakDualContinuousMap_homeomorph (α := A i) hinj).symm) 0) := by
+  have hconv := toWeakDualContinuousMap_range_convex (α := A i)
+  have heq := extend_payoff_eq_eval G P a i hinj
+  let φ : C(A i, ℝ) := ⟨(fun μ ↦ P.toExpected.payoff i (G.toMixed.outcome
+    (Function.update a i μ))) ∘ diracProba,
+    (PayoffStructure.continuous_payoff i).comp <| Game.continuous_outcome.comp <|
+      continuous_const.update _ continuous_diracProba⟩
+  exact ((((WeakBilin.eval (topDualPairing ℝ C(A i, ℝ)) φ).toLinearMap).concaveOn hconv).congr
+    (fun v hv ↦ (heq v hv).symm)).quasiconcaveOn
+
+end Helpers
+
+lemma Game.exists_isNashEquilibrium_of_isCompact {ι : Type u} {A : ι → Type u} {O : Type u}
+    (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
+    [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
+    [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
+    [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
+    [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous]
+    (pureNashExistence : PureNashExistence.{u,u,u,u}) :
+    ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a := by
+  haveI : ∀ i, Nonempty (MeasureTheory.ProbabilityMeasure (A i)) :=
+    fun i ↦ ⟨⟨MeasureTheory.Measure.dirac (Classical.arbitrary (A i)),
+      MeasureTheory.Measure.dirac.isProbabilityMeasure⟩⟩
+  haveI : ∀ i, LocallyConvexSpace ℝ (WeakDual ℝ C(A i, ℝ)) :=
+    fun _ ↦ WeakBilin.locallyConvexSpace
+  have hinj : ∀ i, Function.Injective
+      (MeasureTheory.ProbabilityMeasure.toWeakDualContinuousMap (α := A i)) :=
+    fun i ↦ toWeakDualContinuousMap_injective (α := A i)
+  exact pureNashExistence (E := fun i ↦ WeakDual ℝ C(A i, ℝ)) G.toMixed P.toExpected
+    (fun i ↦ toWeakDualContinuousMap_homeomorph (α := A i) (hinj i))
+    (fun i ↦ toWeakDualContinuousMap_range_convex (α := A i))
+    (fun a i ↦ payoff_quasiconcave G P a i (hinj i))
 
 end GameTheory
 
