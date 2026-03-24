@@ -25,7 +25,9 @@ Currently, the only public declaration in this file are:
 * `Game.exists_isNashEquilibrium_of_quasiconcaveOn`: existence of pure Nash equilibria for games
   whose action spaces are homeomorphic to nonempty compact convex subsets of locally convex vector
   spaces in such a way that their payoff functions are quasiconcave.
-* `Game.exists_isNashEquilibrium_of_finite`: existence of mixed Nash equilibria for finite games
+* `Game.exists_isNashEquilibrium_of_isCompact`: existence of mixed Nash equlibria for games with
+  nonempty compact metrisable action spaces and continuous payoff functions.
+* `Game.exists_isNashEquilibrium_of_finite`: existence of mixed Nash equilibria for finite games.
 All other declarations used in the proofs are kept private.
 -/
 
@@ -462,19 +464,6 @@ end PayoffStructure
 
 end Continuous
 
-def PureNashExistence : Prop := ∀ {ι : Type*} {A : ι → Type*} {O : Type*}
-    (G : Game A O) (P : PayoffStructure O ι)
-    [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
-    [TopologicalSpace O] [G.Continuous] [P.Continuous]
-    [Fintype ι] [DecidableEq ι]
-    {E : ι → Type*} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
-    [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)]
-    [∀ i, LocallyConvexSpace ℝ (E i)]
-    {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (_hs : ∀ i, Convex ℝ (k i))
-    (_h_quasiconcave : ∀ (a : (i : ι) → A i) i, QuasiconcaveOn ℝ (k i)
-      (Subtype.val.extend ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0)),
-    ∃ a, G.IsNashEquilibrium P a
-
 section MixedStrategySetup
 
 open MeasureTheory ProbabilityTheory
@@ -509,9 +498,8 @@ section Helpers
 open MeasureTheory ProbabilityTheory
 
 variable {α : Type u} [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α]
-  [CompactSpace α] [TopologicalSpace.MetrizableSpace α] [Nonempty α]
+  [CompactSpace α] [TopologicalSpace.MetrizableSpace α]
 
-set_option linter.unusedSectionVars false in
 /-- `toWeakDualContinuousMap` is injective: probability measures on a compact metrizable Borel
 space are determined by their integrals against continuous functions. -/
 lemma toWeakDualContinuousMap_injective :
@@ -522,13 +510,11 @@ lemma toWeakDualContinuousMap_injective :
 
 /-- Homeomorphism from `ProbabilityMeasure α` onto the range of `toWeakDualContinuousMap`,
 via continuous injection from compact to Hausdorff being a closed embedding. -/
-noncomputable def toWeakDualContinuousMap_homeomorph
-    (hinj : Function.Injective (ProbabilityMeasure.toWeakDualContinuousMap (α := α))) :
+noncomputable def toWeakDualContinuousMap_homeomorph :
     ProbabilityMeasure α ≃ₜ Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := α)) :=
   (ProbabilityMeasure.toWeakDualContinuousMap.continuous.isClosedEmbedding
-    hinj).isEmbedding.toHomeomorph
+    toWeakDualContinuousMap_injective).isEmbedding.toHomeomorph
 
-set_option linter.unusedSectionVars false in
 lemma toWeakDualContinuousMap_range_convex :
     Convex ℝ (Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := α))) := by
   intro x hx y hy a b ha hb hab
@@ -658,8 +644,7 @@ lemma extend_payoff_eq_eval {ι : Type u} {A : ι → Type u} {O : Type u}
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
     [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous]
-    (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι)
-    (hinj : Function.Injective (ProbabilityMeasure.toWeakDualContinuousMap (α := A i))) :
+    (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι) :
     let φ : C(A i, ℝ) := ⟨(fun μ ↦ P.toExpected.payoff i (G.toMixed.outcome
       (Function.update a i μ))) ∘ diracProba,
       (PayoffStructure.continuous_payoff i).comp <| Game.continuous_outcome.comp <|
@@ -667,21 +652,21 @@ lemma extend_payoff_eq_eval {ι : Type u} {A : ι → Type u} {O : Type u}
     ∀ v ∈ Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := A i)),
       (Subtype.val.extend
         ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
-          (toWeakDualContinuousMap_homeomorph (α := A i) hinj).symm) 0) v =
+          toWeakDualContinuousMap_homeomorph.symm) 0) v =
       v φ := by
   intro φ v ⟨μ, hμ⟩
   subst hμ
   simp only [Function.comp_def]
   have h := Subtype.val_injective.extend_apply
     ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
-      (toWeakDualContinuousMap_homeomorph hinj).symm)
+      toWeakDualContinuousMap_homeomorph.symm)
     (0 : WeakDual ℝ C(A i, ℝ) → ℝ)
     ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
   simp only [Function.comp_def] at h
-  have hsymm : (toWeakDualContinuousMap_homeomorph hinj).symm
-      ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩ = μ := hinj <|
-    congrArg Subtype.val <| by
-      have := (toWeakDualContinuousMap_homeomorph hinj).apply_symm_apply
+  have hsymm : toWeakDualContinuousMap_homeomorph.symm
+      ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩ = μ :=
+    toWeakDualContinuousMap_injective <| congrArg Subtype.val <| by
+      have := toWeakDualContinuousMap_homeomorph.apply_symm_apply
         ⟨ProbabilityMeasure.toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
       simp only [toWeakDualContinuousMap_homeomorph, Topology.IsEmbedding.toHomeomorph] at this
       exact this
@@ -696,14 +681,13 @@ lemma payoff_quasiconcave {ι : Type u} {A : ι → Type u} {O : Type u}
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
     [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous]
-    (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι)
-    (hinj : Function.Injective (ProbabilityMeasure.toWeakDualContinuousMap (α := A i))) :
+    (a : (i : ι) → ProbabilityMeasure (A i)) (i : ι) :
     QuasiconcaveOn ℝ (Set.range (ProbabilityMeasure.toWeakDualContinuousMap (α := A i)))
       (Subtype.val.extend
         ((fun s ↦ P.toExpected.payoff i (G.toMixed.outcome (Function.update a i s))) ∘
-          (toWeakDualContinuousMap_homeomorph (α := A i) hinj).symm) 0) := by
+          toWeakDualContinuousMap_homeomorph.symm) 0) := by
   have hconv := toWeakDualContinuousMap_range_convex (α := A i)
-  have heq := extend_payoff_eq_eval G P a i hinj
+  have heq := extend_payoff_eq_eval G P a i
   let φ : C(A i, ℝ) := ⟨(fun μ ↦ P.toExpected.payoff i (G.toMixed.outcome
     (Function.update a i μ))) ∘ diracProba,
     (PayoffStructure.continuous_payoff i).comp <| Game.continuous_outcome.comp <|
@@ -713,26 +697,24 @@ lemma payoff_quasiconcave {ι : Type u} {A : ι → Type u} {O : Type u}
 
 end Helpers
 
-lemma Game.exists_isNashEquilibrium_of_isCompact {ι : Type u} {A : ι → Type u} {O : Type u}
+/-- Any game with nonempty compact metrisable action spaces and continuous payoff functions
+admits a mixed Nash equilibrium. -/
+public theorem Game.exists_isNashEquilibrium_of_isCompact {ι : Type u} {A : ι → Type u} {O : Type u}
     (G : Game A O) (P : PayoffStructure O ι) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
-    [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous]
-    (pureNashExistence : PureNashExistence.{u,u,u,u}) :
+    [G.Continuous] [P.Continuous] [G.Measurable] [G.toMixed.Continuous] [P.toExpected.Continuous] :
     ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a := by
   haveI : ∀ i, Nonempty (MeasureTheory.ProbabilityMeasure (A i)) :=
     fun i ↦ ⟨⟨MeasureTheory.Measure.dirac (Classical.arbitrary (A i)),
       MeasureTheory.Measure.dirac.isProbabilityMeasure⟩⟩
   haveI : ∀ i, LocallyConvexSpace ℝ (WeakDual ℝ C(A i, ℝ)) :=
     fun _ ↦ WeakBilin.locallyConvexSpace
-  have hinj : ∀ i, Function.Injective
-      (MeasureTheory.ProbabilityMeasure.toWeakDualContinuousMap (α := A i)) :=
-    fun i ↦ toWeakDualContinuousMap_injective (α := A i)
-  exact pureNashExistence (E := fun i ↦ WeakDual ℝ C(A i, ℝ)) G.toMixed P.toExpected
-    (fun i ↦ toWeakDualContinuousMap_homeomorph (α := A i) (hinj i))
-    (fun i ↦ toWeakDualContinuousMap_range_convex (α := A i))
-    (fun a i ↦ payoff_quasiconcave G P a i (hinj i))
+  exact G.toMixed.exists_isNashEquilibrium_of_quasiconcaveOn P.toExpected
+    (fun _ ↦ toWeakDualContinuousMap_homeomorph)
+    (fun _ ↦ toWeakDualContinuousMap_range_convex)
+    (fun a i ↦ payoff_quasiconcave G P a i)
 
 end GameTheory
 
