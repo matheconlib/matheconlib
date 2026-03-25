@@ -4,10 +4,18 @@ To achieve good formalization, we try to split the argument into two parts, the 
 
 The mathematical part is the core idea involving analysis, combinatorics etc. Then we just "specialize" the mathematical version to achieve the theorem we want.
 
-Task: 
-- [x] formalize ‹The Envelop Theorem› in section 5.1.
+Task:
+- [x] formalize ‹The Envelope Theorem› in section 5.1
 - [x] formalize ‹Myerson's Lemma› in section 5.2
 - [x] formalize ‹Revenue Equivalence Theorem› in section 5.3
+  - [x] generalize: `payment_equivalence` in `Envelope/Theorem.lean` (no efficiency/symmetry/distributional assumptions)
+  - [x] generalize: `revenue_equivalence` no longer requires efficiency; uses general `payment_equivalence`
+  - [x] refactor: `Efficient` is now a separate predicate, not baked into `RevenueEquivalenceSetup`
+- [x] formalize ‹All-Purchase Auction› in chapter 6
+  - [x] Lemma 6.1 — weak monotonicity (`AllPurchase/Monotonicity.lean`)
+  - [x] Lemma 6.2 — strict monotonicity (`AllPurchase/StrictMonotonicity.lean`)
+  - [x] Lemma 6.3 — envelope / integral representation (`AllPurchase/Envelope.lean`)
+  - [x] Proposition 6.4 — net payment identity (`AllPurchase/NetPayment.lean`)
 - [ ] formalize game theoretic concepts in section 3
 
 ## Useful Lean commands

@@ -65,7 +65,10 @@ Built on [`MyersonSetUpMathsCore`](Auctionlib/Envelope/Mathematics.lean) (necess
 | [`integral_rep`](Auctionlib/AllPurchase/Envelope.lean) | Lemma 6.3: $U(v) = U(a) + \int_a^v q(\psi)\, d\psi$ |
 | [`netPaymentIdentity`](Auctionlib/AllPurchase/NetPayment.lean) | Proposition 6.4: $C(\beta(v)) = b^{AP}(v) - U(a)$ |
 
-Lemma 6.2 (strict monotonicity) is stated in [`StrictMonotonicity.lean`](Auctionlib/AllPurchase/StrictMonotonicity.lean) with a self-contained setup importing only Mathlib; proof is in progress.
+| [`strictMonotonicity`](Auctionlib/AllPurchase/StrictMonotonicity.lean) | Lemma 6.2: $\beta$ is strictly increasing on $[0, \bar{v}]$ |
+| [`no_ties`](Auctionlib/AllPurchase/StrictMonotonicity.lean) | Distinct types have distinct bids in the interior |
+
+Lemma 6.2 is proved in a self-contained setup ([`StrictMonoSetup`](Auctionlib/AllPurchase/StrictMonotonicity.lean)) importing only Mathlib, via contradiction using strict monotonicity of $F^{n-1}$ and continuity of $C$.
 
 ### Order Statistics
 
@@ -99,5 +102,4 @@ lake build                                # build the project
 - [x] Envelope Theorem (Section 5.1)
 - [x] Myerson's Lemma (Section 5.2)
 - [x] Revenue Equivalence Theorem (Section 5.3)
-- [x] All-Purchase Auction (Chapter 6, excluding Lemma 6.2)
-- [ ] Lemma 6.2 — Strict Monotonicity (Chapter 6)
+- [x] All-Purchase Auction (Chapter 6)
