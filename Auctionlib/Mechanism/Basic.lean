@@ -31,6 +31,8 @@ given bid profile `b`, and `tᵢ(b)` is the payment of bidder `i`. -/
 structure Mechanism (n : ℕ) where
   /-- Allocation rule: `x i b` is the probability bidder `i` wins given bids `b` -/
   x : Fin n → (Fin n → ℝ) → ℝ
+  /-- Measurability of allocation -/
+  x_measurable : ∀ i, Measurable (x i)
   /-- Payment rule: `t i b` is the payment of bidder `i` given bids `b` -/
   t : Fin n → (Fin n → ℝ) → ℝ
 
@@ -50,16 +52,5 @@ def IsEfficient : Prop :=
 
 end Mechanism
 
-/-! ### Standard auction formats -/
-
-/-- First-price auction: highest bidder wins, pays own bid. -/
-noncomputable def Mechanism.firstPrice (n : ℕ) : Mechanism n where
-  x i b := if ∀ j ≠ i, b j < b i then 1 else 0
-  t i b := b i * (if ∀ j ≠ i, b j < b i then 1 else 0)
-
-/-- All-pay auction: highest bidder wins, everyone pays their bid. -/
-noncomputable def Mechanism.allPay (n : ℕ) : Mechanism n where
-  x i b := if ∀ j ≠ i, b j < b i then 1 else 0
-  t i b := b i
 
 end

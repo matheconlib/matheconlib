@@ -63,6 +63,27 @@ noncomputable def p (i : Fin n) (s : ℝ) : ℝ :=
 /-- Interim utility: `U(i, s) = s · q(i, s) - p(i, s)`. -/
 noncomputable def U (i : Fin n) (s : ℝ) : ℝ := s * A.q i s - A.p i s
 
+/-- Interim allocation takes values in `[0, 1]`.
+Requires `x_range` on the mechanism's allocation rule. -/
+lemma q_range (hx : A.rules.HasValidAllocation) (i : Fin n) (s : ℝ) :
+    A.q i s ∈ Icc 0 1 := by
+  simp only [q, mem_Icc]
+  have hmeas : Measurable fun ω => A.rules.x i <| Function.update (A.θ · ω) i s :=
+    (A.rules.x_measurable i).comp (measurable_pi_lambda _ fun j => by
+      simp only [Function.update_apply]
+      split_ifs
+      · exact measurable_const
+      · exact A.θ_measurable j)
+  have hint : Integrable (fun ω => A.rules.x i <| Function.update (A.θ · ω) i s) ℙ :=
+    integrable_const (1 : ℝ) |>.mono hmeas.aestronglyMeasurable <|
+      ae_of_all _ fun ω => by
+        simpa [Real.norm_eq_abs, abs_of_nonneg (hx i _).1] using (hx i _).2
+  refine ⟨integral_nonneg fun ω => (hx i _).1, ?_⟩
+  calc 𝔼[fun ω => A.rules.x i (Function.update (A.θ · ω) i s)]
+    _ ≤ ∫ _, (1 : ℝ) ∂ℙ :=
+      integral_mono hint (integrable_const 1) fun ω => (hx i _).2
+    _ = 1 := by rw [integral_const]; simp [Measure.real, measure_univ]
+
 /-! ### BIC -/
 
 /-- Bayesian incentive compatibility: truthful reporting maximizes each
@@ -70,6 +91,64 @@ bidder's interim utility. -/
 def BIC : Prop :=
   ∀ i, ∀ s ∈ A.interval i, ∀ s' ∈ A.interval i,
     s * A.q i s' - A.p i s' ≤ A.U i s
+
+/-! ### Bridge: Auction → ReducedForm -/
+
+/-- Construct the reduced-form direct mechanism for bidder `i`.
+In the direct mechanism, `strategy = id` (truthful), `winProb = q(i, ·)`,
+`cost = p(i, ·)`. -/
+noncomputable def toReducedForm (hx : A.rules.HasValidAllocation) (i : Fin n) :
+    ReducedForm where
+  lowestType := A.θmin i
+  highestType := A.θmax i
+  winProb := A.q i
+  winProb_range s := A.q_range hx i s
+  cost := A.p i
+  strategy := id
+
+@[simp] lemma toReducedForm_winProb (hx : A.rules.HasValidAllocation) (i : Fin n) :
+    (A.toReducedForm hx i).winProb = A.q i := rfl
+@[simp] lemma toReducedForm_cost (hx : A.rules.HasValidAllocation) (i : Fin n) :
+    (A.toReducedForm hx i).cost = A.p i := rfl
+@[simp] lemma toReducedForm_strategy (hx : A.rules.HasValidAllocation) (i : Fin n) :
+    (A.toReducedForm hx i).strategy = id := rfl
+
+/-- `ReducedForm.q` equals the interim allocation `q`. -/
+@[simp] lemma toReducedForm_q (hx : A.rules.HasValidAllocation) (i : Fin n) (v : ℝ) :
+    (A.toReducedForm hx i).q v = A.q i v := rfl
+
+/-- `ReducedForm.U` equals the interim utility `U`. -/
+@[simp] lemma toReducedForm_U (hx : A.rules.HasValidAllocation) (i : Fin n) (v : ℝ) :
+    (A.toReducedForm hx i).U v = A.U i v := rfl
+
+/-! ### BIC → HasTypeDeviationIC -/
+
+/-- BIC implies `HasTypeDeviationIC` on the reduced form for each bidder. -/
+theorem hasTypeDeviationIC_of_bic
+    (hx : A.rules.HasValidAllocation) (hbic : A.BIC) (i : Fin n) :
+    ReducedForm.HasTypeDeviationIC (A.toReducedForm hx i) where
+  typeDeviationIC v hv v' hv' := by
+    simp only [ReducedForm.payoff, toReducedForm, id]
+    exact hbic i v hv v' hv'
+
+/-! ### Consequences
+
+Once `HasTypeDeviationIC` is established on the reduced form, all results
+from the `ReducedForm` framework are automatically available:
+
+- **Envelope theorem**: `lipschitz`, `q_monotoneOn`, `aeDifferentiable`,
+  `integral_rep` (via `HasTypeDeviationIC → HasEnvelopeIC`)
+
+- **Myerson**: `payment_identity`, `payment_unique`
+-/
+
+/-- Payment formula: under BIC, interim payment is determined by `q`. -/
+theorem payment_formula (hx : A.rules.HasValidAllocation) (hbic : A.BIC)
+    (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) :
+    A.p i s = s * A.q i s - A.U i (A.θmin i) -
+      ∫ ψ in A.θmin i..s, A.q i ψ := by
+  have := A.hasTypeDeviationIC_of_bic hx hbic i
+  exact (A.toReducedForm hx i).payment_identity s hs
 
 end Auction
 
