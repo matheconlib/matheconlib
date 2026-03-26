@@ -10,7 +10,7 @@ following the project's mathematics/economics split.
 
 ## Mathematical core
 
-`AllPurchaseCore` captures the pure analytic content of the all-purchase auction equilibrium
+`AllPurchaseCore` captures the pure analytic content of the all-purchase auction model
 without probability:
 - An interval `[a, b]` (type space),
 - A winning probability function `G : ℝ → ℝ` (abstract, values in `[0, 1]`),
