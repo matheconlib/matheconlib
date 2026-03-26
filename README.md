@@ -70,6 +70,27 @@ Built on [`MyersonSetUpMathsCore`](Auctionlib/Envelope/Mathematics.lean) (necess
 
 Lemma 6.2 is proved in a self-contained setup ([`StrictMonoSetup`](Auctionlib/AllPurchase/StrictMonotonicity.lean)) importing only Mathlib, via contradiction using strict monotonicity of $F^{n-1}$ and continuity of $C$.
 
+#### Planned: Baseline Demand & Explicit Solutions (Chapter 6)
+
+The following results from the reference document are not yet formalized:
+
+| Result | Statement |
+|--------|-----------|
+| Corollary (`cor:regimes`) | Boundary regime ($\beta(0)=0 \Rightarrow \mathcal{U}(0)=0$) vs interior regime ($\beta(0)>0$) |
+| Proposition (`prop:constant`) | Constant scarcity equilibrium: $\beta(v) = b^{AP}(v)/(p - u_0)$ |
+| Proposition (`prop:boundary`) | Boundary regime equilibrium via fixed-point in $K$ |
+| Proposition (`prop:interior`) | Interior regime equilibrium: $\beta(v) = A/(2\alpha) + \sqrt{b^{AP}(v)/\alpha}$ |
+| Proposition (`prop:uniform`) | Closed-form solutions under uniform distribution |
+
+#### Planned: Economic Analysis (Chapter 6)
+
+| Result | Statement |
+|--------|-----------|
+| Proposition (`prop:revenue`) | Revenue decomposition: $\mathbb{E}[pB] = n\mathbb{E}[b^{AP}(V)] - n\mathcal{U}(0) + \mathbb{E}[B\phi(B)]$ |
+| Corollary (`cor:revenue_comparison`) | Revenue comparison to standalone mechanisms |
+| Proposition (`prop:optimal_price`) | Optimal price in interior regime: $p^* = (\bar\phi + c + 2\sqrt\alpha M)/2$ |
+| Proposition (`prop:welfare`) | Welfare decomposition: $W^* - W^C = \mathcal{L}_{\text{Cournot}} + \mathcal{L}_{\text{Contest}}$ |
+
 ### Order Statistics
 
 [`OrderStatisticsSetup`](Auctionlib/Statistics/OrderStatistics.lean) formalizes $n$ i.i.d. real-valued random variables with a common density.
@@ -102,4 +123,6 @@ lake build                                # build the project
 - [x] Envelope Theorem (Section 5.1)
 - [x] Myerson's Lemma (Section 5.2)
 - [x] Revenue Equivalence Theorem (Section 5.3)
-- [x] All-Purchase Auction (Chapter 6)
+- [x] All-Purchase Auction — equilibrium characterization (Chapter 6)
+- [ ] All-Purchase Auction — baseline demand & explicit solutions (Chapter 6)
+- [ ] All-Purchase Auction — economic analysis (Chapter 6)

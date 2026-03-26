@@ -1,3 +1,4 @@
+import Auctionlib.AllPurchase.Definitions
 import Mathlib
 
 open MeasureTheory Set
@@ -27,13 +28,25 @@ structure StrictMonoSetup where
     (∀ v ∈ Icc 0 v_bar, β v < b → v ≤ v₀) ∧
     G b = F v₀ ^ (n - 1)
   C : ℝ → ℝ
-  C_continuous : Continuous C
+  C_continuous : Continuous C := by continuity
   ic : ∀ v ∈ Icc 0 v_bar, ∀ b, 0 ≤ b →
     v * G b - C b ≤ v * G (β v) - C (β v)
 
 namespace StrictMonoSetup
 
 variable (S : StrictMonoSetup)
+
+/-- Coercion to `AllPurchaseCore`: the type space is `[0, v̄]`, and the
+all-purchase IC follows from the stronger IC (which allows any nonneg bid)
+by specialising to `b := β v'` and using `β_nonneg`. -/
+def toAllPurchaseCore : AllPurchaseCore where
+  a := 0
+  b := S.v_bar
+  G := S.G
+  G_range := S.G_range
+  C := S.C
+  β := S.β
+  ic v hv v' hv' := S.ic v hv (S.β v') (S.β_nonneg v' hv')
 
 /-- If β is constant on endpoints of [v₁, v₂], it is constant throughout. -/
 lemma beta_constant_on_flat

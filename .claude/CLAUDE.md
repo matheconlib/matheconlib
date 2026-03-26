@@ -11,11 +11,22 @@ Task:
   - [x] generalize: `payment_equivalence` in `Envelope/Theorem.lean` (no efficiency/symmetry/distributional assumptions)
   - [x] generalize: `revenue_equivalence` no longer requires efficiency; uses general `payment_equivalence`
   - [x] refactor: `Efficient` is now a separate predicate, not baked into `RevenueEquivalenceSetup`
-- [x] formalize ‹All-Purchase Auction› in chapter 6
+- [x] formalize ‹All-Purchase Auction› equilibrium characterization (chapter 6)
   - [x] Lemma 6.1 — weak monotonicity (`AllPurchase/Monotonicity.lean`)
   - [x] Lemma 6.2 — strict monotonicity (`AllPurchase/StrictMonotonicity.lean`)
   - [x] Lemma 6.3 — envelope / integral representation (`AllPurchase/Envelope.lean`)
   - [x] Proposition 6.4 — net payment identity (`AllPurchase/NetPayment.lean`)
+- [ ] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
+  - [ ] Corollary — boundary vs interior regime (`cor:regimes`)
+  - [ ] Proposition — constant scarcity equilibrium (`prop:constant`)
+  - [ ] Proposition — boundary regime equilibrium (`prop:boundary`)
+  - [ ] Proposition — interior regime equilibrium (`prop:interior`)
+  - [ ] Proposition — uniform distribution equilibrium (`prop:uniform`)
+- [ ] formalize ‹All-Purchase Auction› economic analysis (chapter 6)
+  - [ ] Proposition — revenue decomposition (`prop:revenue`)
+  - [ ] Corollary — revenue comparison (`cor:revenue_comparison`)
+  - [ ] Proposition — optimal price in interior regime (`prop:optimal_price`)
+  - [ ] Proposition — welfare decomposition (`prop:welfare`)
 - [ ] formalize game theoretic concepts in section 3
 
 ## Useful Lean commands
