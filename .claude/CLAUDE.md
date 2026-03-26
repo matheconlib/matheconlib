@@ -5,6 +5,11 @@ To achieve good formalization, we try to split the argument into two parts, the 
 The mathematical part is the core idea involving analysis, combinatorics etc. Then we just "specialize" the mathematical version to achieve the theorem we want.
 
 Task:
+- [x] introduce general `Mechanism` with IC typeclass hierarchy (`Mechanism/`)
+  - [x] `Mechanism/Basic.lean` — structure, payoff, q, U
+  - [x] `Mechanism/EnvelopeIC.lean` — HasEnvelopeIC + envelope theorem
+  - [x] `Mechanism/TypeDeviationIC.lean` — HasTypeDeviationIC + Myerson
+  - [x] `Mechanism/UniversalIC.lean` — HasUniversalIC
 - [x] formalize ‹The Envelope Theorem› in section 5.1
 - [x] formalize ‹Myerson's Lemma› in section 5.2
 - [x] formalize ‹Revenue Equivalence Theorem› in section 5.3

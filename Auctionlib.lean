@@ -7,5 +7,10 @@ import Auctionlib.Envelope.Mathematics
 import Auctionlib.Envelope.Myerson
 import Auctionlib.Envelope.Theorem
 import Auctionlib.ForMathlib.AbsolutelyContinuous
+import Auctionlib.Mechanism
+import Auctionlib.Mechanism.Basic
+import Auctionlib.Mechanism.EnvelopeIC
+import Auctionlib.Mechanism.TypeDeviationIC
+import Auctionlib.Mechanism.UniversalIC
 import Auctionlib.RevenueEquivalence.Theorem
 import Auctionlib.Statistics.OrderStatistics

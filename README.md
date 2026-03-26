@@ -4,6 +4,28 @@ A Lean 4 formalization of fundamental theorems in auction theory, built on [Math
 
 ## Formalized Results
 
+### General Mechanism Framework
+
+[`Mechanism`](Auctionlib/Mechanism/Basic.lean) captures any single-item auction with quasi-linear interim payoff $\pi(v, b) = v \cdot \text{winProb}(b) - \text{cost}(b)$. Different auction formats are special cases:
+
+| Auction | $\text{winProb}(\text{bid})$ | $\text{cost}(\text{bid})$ |
+|---------|-----------------|------------------|
+| All-purchase | $G(\text{bid})$ | $C(\text{bid})$ |
+| First-price | $G(\text{bid})$ | $\text{bid} \cdot G(\text{bid})$ |
+| All-pay | $G(\text{bid})$ | $\text{bid}$ |
+| Second-price | $G(\text{bid})$ | $\mathbb{E}[\text{payment} \mid \text{bid}]$ |
+
+Three levels of incentive compatibility form a typeclass chain:
+
+$$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \texttt{HasEnvelopeIC}$$
+
+| File | Contents |
+|------|----------|
+| [`Mechanism/Basic.lean`](Auctionlib/Mechanism/Basic.lean) | `Mechanism` structure, `payoff`, `q`, `U` |
+| [`Mechanism/EnvelopeIC.lean`](Auctionlib/Mechanism/EnvelopeIC.lean) | `HasEnvelopeIC` + envelope theorem (`lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`) |
+| [`Mechanism/TypeDeviationIC.lean`](Auctionlib/Mechanism/TypeDeviationIC.lean) | `HasTypeDeviationIC` + Myerson results (`payment_identity`, `payment_unique`) |
+| [`Mechanism/UniversalIC.lean`](Auctionlib/Mechanism/UniversalIC.lean) | `HasUniversalIC` (strongest IC) |
+
 ### Envelope Theorem (Section 5.1)
 
 The main auction setup is [`EnvelopeSetup`](Auctionlib/Envelope/Theorem.lean), encoding an $n$-bidder independent private values (IPV) auction with allocation rule, payment rule, and interim utility. The key economic properties are:
@@ -119,6 +141,7 @@ lake build                                # build the project
 ## Roadmap
 
 
+- [x] General Mechanism framework with IC hierarchy
 - [ ] Game-theoretic concepts (Section 3)
 - [x] Envelope Theorem (Section 5.1)
 - [x] Myerson's Lemma (Section 5.2)
