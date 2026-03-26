@@ -84,6 +84,24 @@ lemma q_range (hx : A.rules.HasValidAllocation) (i : Fin n) (s : ℝ) :
       integral_mono hint (integrable_const 1) fun ω => (hx i _).2
     _ = 1 := by rw [integral_const]; simp [Measure.real, measure_univ]
 
+/-! ### Individual rationality -/
+
+/-- Ex-post individual rationality: every bidder gets non-negative utility
+for every type realization. -/
+def ExPostIR : Prop :=
+  ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ A.interval j) →
+    0 ≤ θ i * A.rules.x i θ - A.rules.t i θ
+
+/-- Interim individual rationality: every bidder gets non-negative
+expected utility for every type. -/
+def InterimIR : Prop :=
+  ∀ i, ∀ s ∈ A.interval i, 0 ≤ A.U i s
+
+/-- Ex-ante individual rationality: every bidder gets non-negative
+ex-ante expected utility. -/
+def ExAnteIR : Prop :=
+  ∀ i, 0 ≤ 𝔼[fun ω => A.θ i ω * A.rules.x i (A.θ · ω) - A.rules.t i (A.θ · ω)]
+
 /-! ### BIC -/
 
 /-- Bayesian incentive compatibility: truthful reporting maximizes each
@@ -149,6 +167,30 @@ theorem payment_formula (hx : A.rules.HasValidAllocation) (hbic : A.BIC)
       ∫ ψ in A.θmin i..s, A.q i ψ := by
   have := A.hasTypeDeviationIC_of_bic hx hbic i
   exact (A.toReducedForm hx i).payment_identity s hs
+
+/-- **General Payment Equivalence.**
+
+Two BIC auctions with the same interim allocation `q`, same type bounds,
+and same base utility `U(θmin)` have the same interim payment for every type.
+
+No efficiency, symmetry, or distributional assumptions needed.
+The two auctions may live on different probability spaces. -/
+theorem payment_equivalence
+    {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
+    (A₂ : Auction Ω₂ n)
+    (hx₁ : A.rules.HasValidAllocation) (hx₂ : A₂.rules.HasValidAllocation)
+    (hbic₁ : A.BIC) (hbic₂ : A₂.BIC)
+    (i j : Fin n)
+    (hθmin : A.θmin i = A₂.θmin j)
+    (hθmax : A.θmax i = A₂.θmax j)
+    (hq : A.q i = A₂.q j)
+    (hU : A.U i (A.θmin i) = A₂.U j (A₂.θmin j))
+    {s : ℝ} (hs₁ : s ∈ A.interval i) :
+    A.p i s = A₂.p j s := by
+  have h_td1 := A.hasTypeDeviationIC_of_bic hx₁ hbic₁ i
+  have h_td2 := A₂.hasTypeDeviationIC_of_bic hx₂ hbic₂ j
+  exact (A.toReducedForm hx₁ i).payment_unique (A₂.toReducedForm hx₂ j)
+    hθmin hθmax hq hU s hs₁
 
 end Auction
 
