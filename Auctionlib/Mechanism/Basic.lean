@@ -73,6 +73,23 @@ def U (v : ℝ) : ℝ := M.payoff v (M.strategy v)
 
 lemma q_range (v : ℝ) : M.q v ∈ Icc 0 1 := M.winProb_range (M.strategy v)
 
+/-! ### Regular equilibrium -/
+
+/-- A mechanism is a **regular equilibrium** if the strategy is monotone and
+nonnegative, the winning probability is monotone, and the cost is continuous.
+
+These are the standard regularity conditions satisfied by any well-behaved
+symmetric equilibrium in a single-item auction. -/
+class IsRegular (M : Mechanism) : Prop where
+  /-- winning probability is monotone -/
+  winProb_mono : Monotone M.winProb
+  /-- equilibrium strategy is weakly increasing -/
+  strategy_mono : MonotoneOn M.strategy M.typeInterval
+  /-- equilibrium bids are nonneg -/
+  strategy_nonneg : ∀ v ∈ M.typeInterval, 0 ≤ M.strategy v
+  /-- cost function is continuous -/
+  cost_continuous : Continuous M.cost
+
 end Mechanism
 
 end
