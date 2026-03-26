@@ -11,8 +11,10 @@ import Auctionlib.Envelope.Theorem
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.Mechanism
 import Auctionlib.Mechanism.Basic
-import Auctionlib.Mechanism.EnvelopeIC
-import Auctionlib.Mechanism.TypeDeviationIC
-import Auctionlib.Mechanism.UniversalIC
+import Auctionlib.ReducedForm
+import Auctionlib.ReducedForm.Basic
+import Auctionlib.ReducedForm.EnvelopeIC
+import Auctionlib.ReducedForm.TypeDeviationIC
+import Auctionlib.ReducedForm.UniversalIC
 import Auctionlib.RevenueEquivalence.Theorem
 import Auctionlib.Statistics.OrderStatistics

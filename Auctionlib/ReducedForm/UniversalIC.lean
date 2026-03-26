@@ -1,16 +1,16 @@
 module
 
-public import Auctionlib.Mechanism.TypeDeviationIC
+public import Auctionlib.ReducedForm.TypeDeviationIC
 
 /-!
 # Universal IC (Level 2)
 
-`HasUniversalIC M S` is the strongest IC: type `v` weakly prefers `strategy(v)` to
+`HasUniversalIC R S` is the strongest IC: type `v` weakly prefers `strategy(v)` to
 every bid in the feasible set `S`.
 
 ## Instance chain
 
-An instance `HasUniversalIC M S → HasTypeDeviationIC M` is provided, so all
+An instance `HasUniversalIC R S → HasTypeDeviationIC M` is provided, so all
 type-deviation IC results (Myerson's lemma) and envelope theorem results are
 automatically available.
 
@@ -26,25 +26,25 @@ access to the probability space and type distribution.
 
 open Set
 
-namespace Mechanism
+namespace ReducedForm
 
-variable (M : Mechanism)
+variable (R : ReducedForm)
 
 /-- **Universal IC** (Level 2): type `v` weakly prefers `strategy(v)` to every
 bid in the feasible set `S`.  `S` is an `outParam` so that instance resolution
 can find it. -/
-class HasUniversalIC (M : Mechanism) (S : outParam (Set ℝ)) : Prop where
-  strategyInS : ∀ v ∈ M.typeInterval, M.strategy v ∈ S
-  universalIC : ∀ v ∈ M.typeInterval, ∀ bid ∈ S,
-    M.payoff v bid ≤ M.payoff v (M.strategy v)
+class HasUniversalIC (R : ReducedForm) (S : outParam (Set ℝ)) : Prop where
+  strategyInS : ∀ v ∈ R.typeInterval, R.strategy v ∈ S
+  universalIC : ∀ v ∈ R.typeInterval, ∀ bid ∈ S,
+    R.payoff v bid ≤ R.payoff v (R.strategy v)
 
 /-! ### Instance: Level 2 → Level 1 -/
 
-instance {M : Mechanism} {S : Set ℝ} [h : HasUniversalIC M S] :
-    HasTypeDeviationIC M where
+instance {R : ReducedForm} {S : Set ℝ} [h : HasUniversalIC R S] :
+    HasTypeDeviationIC R where
   typeDeviationIC v hv v' hv' :=
-    h.universalIC v hv (M.strategy v') (h.strategyInS v' hv')
+    h.universalIC v hv (R.strategy v') (h.strategyInS v' hv')
 
-end Mechanism
+end ReducedForm
 
 end

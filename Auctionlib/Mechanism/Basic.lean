@@ -1,95 +1,65 @@
 module
 
-public import Mathlib.MeasureTheory.Integral.DivergenceTheorem
+public import Mathlib
 
 /-!
-# General Mechanism — Structure and Derived Quantities
+# Mechanism — Allocation and Payment Rules
 
-This file defines `Mechanism`, the single type for all single-item auction mechanisms
-with quasi-linear payoffs:
+A `Mechanism` in the standard auction-theoretic sense: a tuple of allocation
+rule `x` and payment rule `t`, both functions of the full bid/message vector.
 
-  `π(v, bid) = v · winProb(bid) - cost(bid)`
+Different auction formats are different `Mechanism` values:
+- First-price: highest bidder wins, pays own bid
+- Second-price: highest bidder wins, pays second-highest bid
+- All-pay: highest bidder wins, all pay their bids
 
-## Auction formats as special cases
+## Reference
 
-| Auction        | `winProb(bid)` | `cost(bid)`           |
-|----------------|----------------|-----------------------|
-| All-purchase   | `G(bid)`       | `C(bid)`              |
-| First-price    | `G(bid)`       | `bid · G(bid)`        |
-| All-pay        | `G(bid)`       | `bid`                 |
-| Second-price   | `G(bid)`       | `E[payment ∣ bid]`    |
+Section 2(c) and 3(b) of the mathematical reference: "A mechanism consists of
+message spaces (M₁,...,Mₙ) and an outcome function g : M → O."
 -/
 
 @[expose] public section
 
 open Set
 
-/-- A single-crossing mechanism with quasi-linear payoffs.
+/-- A mechanism for `n` bidders: allocation rule and payment rule, both
+functions of the full bid vector `b = (b₁,...,bₙ)`.
 
-A bidder with type `v ∈ [lowestType, highestType]` uses `strategy`,
-experiences winning component `winProb(bid)` and cost component `cost(bid)`.
-The interim payoff is `π(v, bid) = v · winProb(bid) - cost(bid)`.
-
-This captures every standard single-item IPV auction format. -/
-structure Mechanism where
-  /-- lower bound of type space -/
-  lowestType : ℝ
-  /-- upper bound of type space -/
-  highestType : ℝ
-  /-- winning/allocation probability as a function of bid -/
-  winProb : ℝ → ℝ
-  /-- winning probability takes values in `[0, 1]` -/
-  winProb_range : ∀ x, winProb x ∈ Icc 0 1
-  /-- cost/expenditure as a function of bid -/
-  cost : ℝ → ℝ
-  /-- equilibrium bidding strategy: maps types to bids -/
-  strategy : ℝ → ℝ
+In the standard setting, `xᵢ(b)` is the probability that bidder `i` wins
+given bid profile `b`, and `tᵢ(b)` is the payment of bidder `i`. -/
+structure Mechanism (n : ℕ) where
+  /-- Allocation rule: `x i b` is the probability bidder `i` wins given bids `b` -/
+  x : Fin n → (Fin n → ℝ) → ℝ
+  /-- Payment rule: `t i b` is the payment of bidder `i` given bids `b` -/
+  t : Fin n → (Fin n → ℝ) → ℝ
 
 namespace Mechanism
 
-variable (M : Mechanism)
+variable {n : ℕ} (M : Mechanism n)
 
-/-- The type interval `[lowestType, highestType]`. -/
-abbrev typeInterval : Set ℝ := Icc M.lowestType M.highestType
+/-- Allocation takes values in `[0, 1]`. -/
+def HasValidAllocation : Prop := ∀ i b, M.x i b ∈ Icc 0 1
 
-/-! ### Derived quantities -/
+/-- Feasibility: total allocation ≤ 1 (single indivisible good). -/
+def IsFeasible : Prop := ∀ b, ∑ i, M.x i b ≤ 1
 
-/-- Interim payoff for type `v` choosing bid `bid`:
-`payoff v bid = v · winProb(bid) - cost(bid)`. -/
-def payoff (v bid : ℝ) : ℝ := v * M.winProb bid - M.cost bid
-
-/-- Equilibrium allocation: `q(v) = winProb(strategy(v))`, the winning probability
-for type `v` when following the equilibrium strategy. -/
-def q : ℝ → ℝ := M.winProb ∘ M.strategy
-
-/-- Equilibrium utility: `U(v) = payoff(v, strategy(v))`. -/
-def U (v : ℝ) : ℝ := M.payoff v (M.strategy v)
-
-@[simp] lemma payoff_eq (v bid : ℝ) :
-    M.payoff v bid = v * M.winProb bid - M.cost bid := rfl
-@[simp] lemma q_eq (v : ℝ) : M.q v = M.winProb (M.strategy v) := rfl
-@[simp] lemma U_eq (v : ℝ) :
-    M.U v = v * M.winProb (M.strategy v) - M.cost (M.strategy v) := rfl
-
-lemma q_range (v : ℝ) : M.q v ∈ Icc 0 1 := M.winProb_range (M.strategy v)
-
-/-! ### Regular equilibrium -/
-
-/-- A mechanism is a **regular equilibrium** if the strategy is monotone and
-nonnegative, the winning probability is monotone, and the cost is continuous.
-
-These are the standard regularity conditions satisfied by any well-behaved
-symmetric equilibrium in a single-item auction. -/
-class IsRegular (M : Mechanism) : Prop where
-  /-- winning probability is monotone -/
-  winProb_mono : Monotone M.winProb
-  /-- equilibrium strategy is weakly increasing -/
-  strategy_mono : MonotoneOn M.strategy M.typeInterval
-  /-- equilibrium bids are nonneg -/
-  strategy_nonneg : ∀ v ∈ M.typeInterval, 0 ≤ M.strategy v
-  /-- cost function is continuous -/
-  cost_continuous : Continuous M.cost
+/-- Efficient allocation: the highest-type bidder wins. -/
+def IsEfficient : Prop :=
+  ∀ i, M.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
 
 end Mechanism
+
+/-! ### Standard auction formats -/
+
+/-- First-price auction: highest bidder wins, pays own bid. -/
+noncomputable def Mechanism.firstPrice (n : ℕ) : Mechanism n where
+  x i b := if ∀ j ≠ i, b j < b i then 1 else 0
+  t i b := b i * (if ∀ j ≠ i, b j < b i then 1 else 0)
+
+/-- All-pay auction: highest bidder wins, everyone pays their bid. -/
+noncomputable def Mechanism.allPay (n : ℕ) : Mechanism n where
+  x i b := if ∀ j ≠ i, b j < b i then 1 else 0
+  t i b := b i
 
 end
