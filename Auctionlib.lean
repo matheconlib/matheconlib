@@ -4,6 +4,7 @@ import Auctionlib.AllPurchase.Monotonicity
 import Auctionlib.AllPurchase.NetPayment
 import Auctionlib.AllPurchase.StrictMonotonicity
 import Auctionlib.Auction
+import Auctionlib.Auction.AllPurchase
 import Auctionlib.Auction.Basic
 import Auctionlib.Auction.RevenueEquivalence
 import Auctionlib.Auction.SymmetricIPV
