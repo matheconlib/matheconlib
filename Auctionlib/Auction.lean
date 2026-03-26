@@ -2,3 +2,4 @@ import Auctionlib.Auction.Basic
 import Auctionlib.Auction.SymmetricIPV
 import Auctionlib.Auction.RevenueEquivalence
 import Auctionlib.Auction.AllPurchase
+import Auctionlib.Auction.StrictMonotonicity

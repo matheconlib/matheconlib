@@ -7,6 +7,7 @@ import Auctionlib.Auction
 import Auctionlib.Auction.AllPurchase
 import Auctionlib.Auction.Basic
 import Auctionlib.Auction.RevenueEquivalence
+import Auctionlib.Auction.StrictMonotonicity
 import Auctionlib.Auction.SymmetricIPV
 import Auctionlib.Envelope.Mathematics
 import Auctionlib.Envelope.Myerson
