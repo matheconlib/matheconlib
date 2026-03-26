@@ -5,6 +5,8 @@ import Auctionlib.AllPurchase.NetPayment
 import Auctionlib.AllPurchase.StrictMonotonicity
 import Auctionlib.Auction
 import Auctionlib.Auction.Basic
+import Auctionlib.Auction.RevenueEquivalence
+import Auctionlib.Auction.SymmetricIPV
 import Auctionlib.Envelope.Mathematics
 import Auctionlib.Envelope.Myerson
 import Auctionlib.Envelope.Theorem
