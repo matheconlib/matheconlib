@@ -68,7 +68,7 @@ theorem revenue_equivalence
       ir₁ i, ir₂ i]
   have heq (ω) : A.p i (A.θ i ω) = A₂.p i (A.θ i ω) :=
     (A.toReducedForm hx₁ i).payment_unique (A₂.toReducedForm hx₂ i)
-      hθmin hθmax (hq i) hU (A.θ i ω) (IsSymmetricIPV.θ_in i ω)
+      hθmin hθmax (hq i) hU (A.θ i ω) (HasBoundedTypes.θ_in i ω)
   calc ∫ ω, A.p i (A.θ i ω) ∂ℙ
       = ∫ ω, A₂.p i (A.θ i ω) ∂ℙ := integral_congr_ae (ae_of_all _ heq)
     _ = ∫ ω, A₂.p i (A₂.θ i ω) ∂ℙ :=

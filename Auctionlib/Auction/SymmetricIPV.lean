@@ -6,21 +6,24 @@ public import Mathlib.Probability.IdentDistrib
 public import Auctionlib.Statistics.OrderStatistics
 
 /-!
-# Symmetric IPV Auctions
+# Auction Environment Typeclasses
 
-`IsSymmetricIPV` is a typeclass on `Auction` asserting that types are
-i.i.d. with density and atomless distribution.
+Composable typeclasses describing properties of the auction environment.
+These follow the reference (Section 3a):
 
-## Main definitions
+- `HasIndependentTypes` — types are mutually independent (IPV)
+- `HasIdenticalTypes` — all bidders share the same distribution (symmetric)
+- `HasBoundedTypes` — each type lies in its declared interval
+- `HasDensity` — type distribution has a density (HasPDF)
+- `HasAtomlessTypes` — type distribution is atomless
 
-- `Auction.lowestType`, `Auction.highestType` — common type bounds
-- `Auction.commonCDF` — the shared CDF via `ProbabilityTheory.cdf`
+`IsSymmetricIPV` bundles all five for convenience.
 
 ## Main results
 
-- `Auction.q_eq_pow`: under efficient allocation, `q(i, s) = F(s)^(n-1)`
-- `Auction.commonCDF_lowestType`: `F(lowestType) = 0`
-- `Auction.commonCDF_highestType`: `F(highestType) = 1`
+- `Auction.q_eq_pow`: under efficiency + independence + identical + bounded,
+  `q(i, s) = F(s)^(n-1)`
+- `commonCDF_lowestType / highestType`: CDF boundary values (needs bounded + atomless)
 -/
 
 @[expose] public section
@@ -28,64 +31,92 @@ i.i.d. with density and atomless distribution.
 open MeasureTheory ProbabilityTheory Set
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
-variable {n : ℕ} [n.AtLeastTwo]
-
-/-- Symmetric IPV: types are i.i.d. with density and atomless distribution,
-and all bidders share the same type bounds. -/
-class Auction.IsSymmetricIPV (A : Auction Ω n) : Prop where
-  /-- Types are mutually independent -/
-  θ_indep : iIndepFun A.θ ℙ
-  /-- Types are identically distributed -/
-  θ_identical : ∀ i j, IdentDistrib (A.θ i) (A.θ j) ℙ ℙ
-  /-- Each type lies in its interval -/
-  θ_in : ∀ i (ω : Ω), A.θ i ω ∈ Icc (A.θmin i) (A.θmax i)
-  /-- Each type has a density -/
-  θ_hasPDF : ∀ i, HasPDF (A.θ i) ℙ volume
-  /-- Type distribution is atomless -/
-  θ_noAtoms : NoAtoms (Measure.map (A.θ 0) ℙ)
-  /-- Common lower type bound -/
-  θmin_eq : ∀ i, A.θmin i = A.θmin 0
-  /-- Common upper type bound -/
-  θmax_eq : ∀ i, A.θmax i = A.θmax 0
+variable {n : ℕ} [NeZero n]
 
 namespace Auction
 
-variable (A : Auction Ω n) [A.IsSymmetricIPV]
+/-! ### Composable typeclasses -/
 
-instance noAtoms_map_θ₀ : NoAtoms (Measure.map (A.θ 0) ℙ) :=
-  IsSymmetricIPV.θ_noAtoms
+/-- Types are mutually independent (the "I" in IPV). -/
+class HasIndependentTypes (A : Auction Ω n) : Prop where
+  θ_indep : iIndepFun A.θ ℙ
 
-/-! ### Common type bounds and CDF -/
+/-- All bidders share the same type distribution and bounds (symmetric bidders). -/
+class HasIdenticalTypes (A : Auction Ω n) : Prop where
+  θ_identical : ∀ i j, IdentDistrib (A.θ i) (A.θ j) ℙ ℙ
+  θmin_eq : ∀ i, A.θmin i = A.θmin 0
+  θmax_eq : ∀ i, A.θmax i = A.θmax 0
 
-noncomputable def lowestType : ℝ := A.θmin 0
+/-- Each bidder's type lies in the declared interval. -/
+class HasBoundedTypes (A : Auction Ω n) : Prop where
+  θ_in : ∀ i (ω : Ω), A.θ i ω ∈ Icc (A.θmin i) (A.θmax i)
 
-@[simp] lemma θmin_eq_lowestType (i) : A.θmin i = A.lowestType := by
-  rw [IsSymmetricIPV.θmin_eq]; rfl
+/-- Each bidder's type distribution has a density w.r.t. Lebesgue measure. -/
+class HasDensity (A : Auction Ω n) : Prop where
+  θ_hasPDF : ∀ i, HasPDF (A.θ i) ℙ volume
 
-noncomputable def highestType : ℝ := A.θmax 0
+/-- The type distribution is atomless. -/
+class HasAtomlessTypes (A : Auction Ω n) : Prop where
+  θ_noAtoms : NoAtoms (Measure.map (A.θ 0) ℙ)
 
-@[simp] lemma θmax_eq_highestType (i) : A.θmax i = A.highestType := by
-  rw [IsSymmetricIPV.θmax_eq]; rfl
+/-! ### IsSymmetricIPV (convenience bundle) -/
 
-/-- The common CDF: `F(s) = cdf(Measure.map (θ₀) ℙ)(s)`. -/
-noncomputable abbrev commonCDF (s : ℝ) : ℝ :=
-  ProbabilityTheory.cdf (Measure.map (A.θ 0) ℙ) s
+/-- Symmetric IPV: all five properties bundled. -/
+class IsSymmetricIPV (A : Auction Ω n) : Prop extends
+    HasIndependentTypes A, HasIdenticalTypes A, HasBoundedTypes A,
+    HasDensity A, HasAtomlessTypes A
+
+/-! ### Common type bounds (needs HasIdenticalTypes) -/
+
+variable (A : Auction Ω n)
+
+noncomputable def lowestType [HasIdenticalTypes A] : ℝ := A.θmin 0
+
+@[simp] lemma θmin_eq_lowestType [HasIdenticalTypes A] (i) :
+    A.θmin i = A.lowestType := by
+  rw [HasIdenticalTypes.θmin_eq]; rfl
+
+noncomputable def highestType [HasIdenticalTypes A] : ℝ := A.θmax 0
+
+@[simp] lemma θmax_eq_highestType [HasIdenticalTypes A] (i) :
+    A.θmax i = A.highestType := by
+  rw [HasIdenticalTypes.θmax_eq]; rfl
+
+/-! ### Common CDF (needs HasIdenticalTypes) -/
 
 instance isProbabilityMeasure_map_θ₀ :
     IsProbabilityMeasure (Measure.map (A.θ 0) ℙ) :=
   Measure.isProbabilityMeasure_map (A.θ_measurable 0).aemeasurable
 
-lemma commonCDF_nonneg (s : ℝ) : 0 ≤ A.commonCDF s := cdf_nonneg _ s
-lemma commonCDF_le_one (s : ℝ) : A.commonCDF s ≤ 1 := cdf_le_one _ s
-lemma commonCDF_mono : Monotone A.commonCDF := monotone_cdf _
-lemma commonCDF_measurable : Measurable A.commonCDF := A.commonCDF_mono.measurable
+/-- The common CDF: `F(s) = cdf(Measure.map (θ₀) ℙ)(s)`. -/
+noncomputable abbrev commonCDF [HasIdenticalTypes A] (s : ℝ) : ℝ :=
+  ProbabilityTheory.cdf (Measure.map (A.θ 0) ℙ) s
 
-lemma commonCDF_eq (s : ℝ) :
+set_option linter.unusedSectionVars false in
+lemma commonCDF_nonneg [HasIdenticalTypes A] (s : ℝ) :
+    0 ≤ A.commonCDF s := cdf_nonneg _ s
+
+set_option linter.unusedSectionVars false in
+lemma commonCDF_le_one [HasIdenticalTypes A] (s : ℝ) :
+    A.commonCDF s ≤ 1 := cdf_le_one _ s
+
+set_option linter.unusedSectionVars false in
+lemma commonCDF_mono [HasIdenticalTypes A] :
+    Monotone A.commonCDF := monotone_cdf _
+
+lemma commonCDF_measurable [HasIdenticalTypes A] :
+    Measurable A.commonCDF := (A.commonCDF_mono).measurable
+
+lemma commonCDF_eq [HasIdenticalTypes A] (s : ℝ) :
     A.commonCDF s = Measure.real ℙ (A.θ 0 ⁻¹' Iic s) := by
   simp [ProbabilityTheory.cdf_eq_real, Measure.real,
     Measure.map_apply (A.θ_measurable 0) measurableSet_Iic]
 
-@[simp] lemma commonCDF_lowestType : A.commonCDF A.lowestType = 0 := by
+/-! ### CDF boundary values (needs HasIdenticalTypes + HasBoundedTypes + HasAtomlessTypes) -/
+
+@[simp] lemma commonCDF_lowestType
+    [HasIdenticalTypes A] [HasBoundedTypes A] [HasAtomlessTypes A] :
+    A.commonCDF A.lowestType = 0 := by
   rw [A.commonCDF_eq, Measure.real]
   suffices h : ℙ (A.θ 0 ⁻¹' Iic A.lowestType) = 0 by simp [h]
   have heq : A.θ 0 ⁻¹' Iic A.lowestType = A.θ 0 ⁻¹' {A.lowestType} := by
@@ -93,32 +124,39 @@ lemma commonCDF_eq (s : ℝ) :
     simp only [mem_preimage, mem_Iic, mem_singleton_iff]
     constructor
     · intro h
-      have hθ := IsSymmetricIPV.θ_in (A := A) 0 ω
+      have hθ := HasBoundedTypes.θ_in (A := A) 0 ω
       rw [A.θmin_eq_lowestType] at hθ
       exact le_antisymm h hθ.1
     · intro h; exact le_of_eq h
-  rw [heq, ← Measure.map_apply (A.θ_measurable 0) (measurableSet_singleton _),
-    measure_singleton]
+  rw [heq, ← Measure.map_apply (A.θ_measurable 0) (measurableSet_singleton _)]
+  have : NoAtoms (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
+  exact measure_singleton _
 
-@[simp] lemma commonCDF_highestType : A.commonCDF A.highestType = 1 := by
+@[simp] lemma commonCDF_highestType
+    [HasIdenticalTypes A] [HasBoundedTypes A] :
+    A.commonCDF A.highestType = 1 := by
   rw [A.commonCDF_eq]
   have huniv : A.θ 0 ⁻¹' Iic A.highestType = Set.univ := by
     ext ω
     simp only [mem_preimage, mem_Iic, mem_univ, iff_true]
-    have hθ := IsSymmetricIPV.θ_in (A := A) 0 ω
+    have hθ := HasBoundedTypes.θ_in (A := A) 0 ω
     rw [A.θmax_eq_highestType] at hθ
     exact hθ.2
   simp [huniv]
 
-/-! ### Bridge to OrderStatistics -/
+/-! ### Bridge to OrderStatistics (needs independence + identical + density) -/
+
+variable [n.AtLeastTwo]
 
 @[simps]
-noncomputable def toOrderStatisticsSetup : OrderStatisticsSetup Ω n where
+noncomputable def toOrderStatisticsSetup
+    [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity A] :
+    OrderStatisticsSetup Ω n where
   X := A.θ
   X_measurable := A.θ_measurable
-  X_indep := IsSymmetricIPV.θ_indep
-  X_ident := IsSymmetricIPV.θ_identical
-  X_hasPDF := IsSymmetricIPV.θ_hasPDF
+  X_indep := HasIndependentTypes.θ_indep
+  X_ident := HasIdenticalTypes.θ_identical
+  X_hasPDF := HasDensity.θ_hasPDF
 
 /-! ### Efficient allocation → q = F^(n-1) -/
 
@@ -126,8 +164,10 @@ noncomputable def toOrderStatisticsSetup : OrderStatisticsSetup Ω n where
 def Efficient : Prop :=
   ∀ i, A.rules.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
 
-/-- Under efficient allocation, `q(i, s) = F(s)^(n-1)`. -/
-lemma q_eq_pow (eff : A.Efficient) (i : Fin n) (s : ℝ) :
+/-- Under efficient allocation, `q(i, s) = F(s)^(n-1)`.
+Needs: independence + identical + atomless. -/
+lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A]
+    (eff : A.Efficient) (i : Fin n) (s : ℝ) :
     A.q i s = A.commonCDF s ^ (n - 1) := by
   simp only [q, eff i, ne_eq]
   have hrw (ω) :
@@ -141,7 +181,7 @@ lemma q_eq_pow (eff : A.Efficient) (i : Fin n) (s : ℝ) :
     MeasurableSet.iInter fun j => MeasurableSet.iInter fun _ =>
       A.θ_measurable j measurableSet_Iio
   rw [integral_indicator_one hmeas, Measure.real,
-    IsSymmetricIPV.θ_indep.meas_biInter fun j _ =>
+    HasIndependentTypes.θ_indep.meas_biInter fun j _ =>
       ⟨Iio s, measurableSet_Iio, rfl⟩, ENNReal.toReal_prod]
   have hfactor j :
       (ℙ (A.θ j ⁻¹' Iio s)).toReal = A.commonCDF s := by
@@ -149,10 +189,12 @@ lemma q_eq_pow (eff : A.Efficient) (i : Fin n) (s : ℝ) :
     congr 1
     calc ℙ (A.θ j ⁻¹' Iio s)
         _ = ℙ (A.θ 0 ⁻¹' Iio s) :=
-          (IsSymmetricIPV.θ_identical j 0).measure_mem_eq measurableSet_Iio
+          (HasIdenticalTypes.θ_identical j 0).measure_mem_eq measurableSet_Iio
         _ = (Measure.map (A.θ 0) ℙ) (Iio s) :=
           (Measure.map_apply (A.θ_measurable 0) measurableSet_Iio).symm
-        _ = (Measure.map (A.θ 0) ℙ) (Iic s) := measure_congr Iio_ae_eq_Iic
+        _ = (Measure.map (A.θ 0) ℙ) (Iic s) := by
+          have : NoAtoms (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
+          exact measure_congr Iio_ae_eq_Iic
         _ = ℙ (A.θ 0 ⁻¹' Iic s) :=
           Measure.map_apply (A.θ_measurable 0) measurableSet_Iic
   simp_rw [hfactor, Finset.prod_const,
@@ -162,14 +204,16 @@ lemma q_eq_pow (eff : A.Efficient) (i : Fin n) (s : ℝ) :
 /-! ### Individual rationality and revenue -/
 
 /-- Individual rationality: lowest type gets zero utility. -/
-def IndividuallyRational : Prop := ∀ i, A.U i A.lowestType = 0
+def IndividuallyRational [HasIdenticalTypes A] : Prop :=
+  ∀ i, A.U i A.lowestType = 0
 
 /-- Expected total revenue. -/
 noncomputable def expectedRevenue : ℝ :=
   𝔼[fun ω => ∑ i : Fin n, A.p i (A.θ i ω)]
 
 /-- The second-highest order statistic. -/
-noncomputable def S₂ (ω : Ω) : ℝ :=
+noncomputable def S₂ [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity A]
+    (ω : Ω) : ℝ :=
   A.toOrderStatisticsSetup.val ⟨n - 2, by grind [Nat.AtLeastTwo.prop (n := n)]⟩ ω
 
 end Auction
