@@ -66,14 +66,6 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 | [`Statistics/OrderStatistics.lean`](Auctionlib/Statistics/OrderStatistics.lean) | CDF/PDF of order statistics, `expected_second_highest` |
 | [`ForMathlib/AbsolutelyContinuous.lean`](Auctionlib/ForMathlib/AbsolutelyContinuous.lean) | AC function raised to a power, CDF of AC measure |
 
-### Legacy (to be deleted)
-
-The following files use the old framework and are superseded by the new architecture:
-
-- `Envelope/Mathematics.lean`, `Envelope/Theorem.lean`, `Envelope/Myerson.lean`
-- `AllPurchase/Definitions.lean`, `AllPurchase/Monotonicity.lean`, `AllPurchase/Envelope.lean`, `AllPurchase/NetPayment.lean`, `AllPurchase/StrictMonotonicity.lean`
-- `RevenueEquivalence/Theorem.lean`
-
 ## Building
 
 ```bash
@@ -91,4 +83,4 @@ lake build                                # build the project
 - [ ] All-Purchase Auction — baseline demand & explicit solutions (Chapter 6)
 - [ ] All-Purchase Auction — economic analysis (Chapter 6)
 - [ ] Game-theoretic concepts (Section 3)
-- [ ] Delete legacy files
+- [x] Delete legacy files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/`)
