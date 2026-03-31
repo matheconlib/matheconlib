@@ -27,7 +27,7 @@ Typeclasses on ReducedForm: `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversal
 - [ ] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
 - [ ] formalize ‹All-Purchase Auction› economic analysis (chapter 6)
 - [ ] formalize game theoretic concepts in section 3
-- [ ] delete old framework files (`Envelope/`, `AllPurchase/` using old structures)
+- [x] delete old framework files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/` using old structures)
 
 ## Useful Lean commands
 

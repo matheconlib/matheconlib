@@ -9,9 +9,4 @@
    "Mathlib.MeasureTheory.Measure.RegularityCompacts",
    "Mathlib.Topology.EMetricSpace.Paracompact",
    "Mathlib.Topology.UniformSpace.Uniformizable"],
-  "Auctionlib.Envelope.Theorem": ["Mathlib.Probability.Notation"],
-  "Auctionlib.Envelope.Mathematics":
-  ["Mathlib.MeasureTheory.Integral.DivergenceTheorem"],
-  "Auctionlib.Auction.Basic": ["Mathlib.Probability.Notation"],
-  "Auctionlib.AllPurchase.NetPayment": ["Auctionlib.AllPurchase.Envelope"],
-  "Auctionlib.AllPurchase.Envelope": ["Auctionlib.AllPurchase.Monotonicity"]}}
+  "Auctionlib.Auction.Basic": ["Mathlib.Probability.Notation"]}}
