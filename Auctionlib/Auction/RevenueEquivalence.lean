@@ -107,7 +107,7 @@ lemma total_revenue
       ((hφ_meas.comp (A.θ_measurable i)).aestronglyMeasurable) ?_
     filter_upwards with ω
     have hs := HasBoundedTypes.θ_in (A := A) i ω
-    simp only [interval, A.θmin_eq_lowestType, A.θmax_eq_highestType] at hs
+    simp only [A.θmin_eq_lowestType, A.θmax_eq_highestType] at hs
     obtain ⟨hlo, hhi⟩ := hs
     have hpow_nn t : 0 ≤ A.commonCDF t ^ (n - 1) :=
       pow_nonneg (A.commonCDF_nonneg t) _
@@ -145,7 +145,7 @@ lemma total_revenue
           _ ≤ |-(A.lowestType)| := le_abs_self _
           _ = |A.lowestType| := abs_neg _
           _ ≤ max |A.lowestType| |A.highestType| := le_max_left _ _
-    simp only [φ, Real.norm_eq_abs, Function.comp]
+    simp only [φ, Real.norm_eq_abs]
     rw [abs_le]
     exact ⟨by linarith [neg_abs_le (A.θ i ω * A.commonCDF (A.θ i ω) ^ (n - 1))],
            by linarith [le_abs_self (A.θ i ω * A.commonCDF (A.θ i ω) ^ (n - 1))]⟩]
@@ -164,7 +164,7 @@ lemma total_revenue
         Icc A.lowestType A.highestType := by
     filter_upwards with ω
     have h := HasBoundedTypes.θ_in (A := A) i ω
-    simp only [interval, A.θmin_eq_lowestType, A.θmax_eq_highestType] at h
+    simp only [A.θmin_eq_lowestType, A.θmax_eq_highestType] at h
     simpa [toOrderStatisticsSetup] using h
   have hab : A.lowestType ≤ A.highestType := by
     obtain ⟨ω, hω⟩ := (hbounded 0).exists; exact hω.1.trans hω.2

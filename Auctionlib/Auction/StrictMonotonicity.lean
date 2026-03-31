@@ -56,6 +56,7 @@ def HasOrderStatWinProb (A : Auction Ω n) [HasIdenticalTypes A]
 variable (A : Auction Ω n) [HasIdenticalTypes A] [HasBoundedTypes A]
   [HasAtomlessTypes A] [HasPosDensity A]
 
+omit [n.AtLeastTwo] [HasBoundedTypes A] [HasAtomlessTypes A] [HasPosDensity A] in
 /-- The reduced form's type interval equals the auction's common type interval. -/
 lemma toReducedForm_typeInterval_eq
     (hx : A.rules.HasValidAllocation) (i : Fin n) :
@@ -108,6 +109,7 @@ private lemma exists_interior_flat_pair
         ((a + 2 * b) / 3) (show _ ∈ Icc a b by constructor <;> linarith)
     rw [h1, h2]
 
+omit [n.AtLeastTwo] [HasBoundedTypes A] [HasAtomlessTypes A] in
 private lemma F_strictMono_interior
     (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°) (hlt : v₁ < v₂) :
     F v₁ < F v₂ := by
@@ -141,6 +143,7 @@ private lemma F_strictMono_interior
       rw [Set.uIcc_of_le (le_of_lt hlt)]; exact hcont).intervalIntegrable
   linarith [intervalIntegral.integral_add_adjacent_intervals hint1 hint2]
 
+omit [HasBoundedTypes A] [HasAtomlessTypes A] in
 private lemma F_pow_strict_mono
     (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°) (hlt : v₁ < v₂) :
     F v₁ ^ (n - 1) < F v₂ ^ (n - 1) :=

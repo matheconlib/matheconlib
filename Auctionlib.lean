@@ -15,6 +15,7 @@ import Auctionlib.Envelope.Theorem
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.Mechanism
 import Auctionlib.Mechanism.Basic
+import Auctionlib.Playground.Probability
 import Auctionlib.ReducedForm
 import Auctionlib.ReducedForm.Basic
 import Auctionlib.ReducedForm.EnvelopeIC

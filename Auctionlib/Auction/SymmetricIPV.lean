@@ -164,6 +164,7 @@ noncomputable def toOrderStatisticsSetup
 def Efficient : Prop :=
   ∀ i, A.rules.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
 
+omit [n.AtLeastTwo] in
 /-- Under efficient allocation, `q(i, s) = F(s)^(n-1)`.
 Needs: independence + identical + atomless. -/
 lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A]
