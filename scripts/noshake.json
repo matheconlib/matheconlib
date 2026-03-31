@@ -1,0 +1,17 @@
+{"ignore":
+ {"Auctionlib.Statistics.OrderStatistics":
+  ["Auctionlib.ForMathlib.AbsolutelyContinuous", "Mathlib"],
+  "Auctionlib.ReducedForm.Basic":
+  ["Mathlib.MeasureTheory.Integral.DivergenceTheorem"],
+  "Auctionlib.Playground.Probability": ["Mathlib"],
+  "Auctionlib.ForMathlib.AbsolutelyContinuous":
+  ["Mathlib.MeasureTheory.Measure.Decomposition.IntegralRNDeriv",
+   "Mathlib.MeasureTheory.Measure.RegularityCompacts",
+   "Mathlib.Topology.EMetricSpace.Paracompact",
+   "Mathlib.Topology.UniformSpace.Uniformizable"],
+  "Auctionlib.Envelope.Theorem": ["Mathlib.Probability.Notation"],
+  "Auctionlib.Envelope.Mathematics":
+  ["Mathlib.MeasureTheory.Integral.DivergenceTheorem"],
+  "Auctionlib.Auction.Basic": ["Mathlib.Probability.Notation"],
+  "Auctionlib.AllPurchase.NetPayment": ["Auctionlib.AllPurchase.Envelope"],
+  "Auctionlib.AllPurchase.Envelope": ["Auctionlib.AllPurchase.Monotonicity"]}}
