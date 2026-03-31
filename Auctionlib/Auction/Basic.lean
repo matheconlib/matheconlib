@@ -61,6 +61,49 @@ noncomputable def p (i : Fin n) (s : ℝ) : ℝ :=
 /-- Interim utility: `U(i, s) = s · q(i, s) - p(i, s)`. -/
 noncomputable def U (i : Fin n) (s : ℝ) : ℝ := s * A.q i s - A.p i s
 
+/-! ### Strategy-dependent interim quantities
+
+When opponents play strategy `σ` instead of reporting truthfully,
+the interim quantities take `σ(θⱼ)` as opponent bids rather than `θⱼ`. -/
+
+/-- Interim allocation when opponents play strategy `σ`:
+`q_strat(σ, i, b) = 𝔼[xᵢ(b, σ(θ₋ᵢ))]`. -/
+noncomputable def q_strat (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) : ℝ :=
+  𝔼[fun ω => A.rules.x i <| Function.update (fun j => σ (A.θ j ω)) i b]
+
+/-- Interim payment when opponents play strategy `σ`:
+`p_strat(σ, i, b) = 𝔼[tᵢ(b, σ(θ₋ᵢ))]`. -/
+noncomputable def p_strat (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) : ℝ :=
+  𝔼[fun ω => A.rules.t i <| Function.update (fun j => σ (A.θ j ω)) i b]
+
+/-- The standard interim allocation is `q_strat` with `σ = id`. -/
+lemma q_eq_q_strat_id (i : Fin n) (s : ℝ) : A.q i s = A.q_strat id i s := rfl
+
+/-- The standard interim payment is `p_strat` with `σ = id`. -/
+lemma p_eq_p_strat_id (i : Fin n) (s : ℝ) : A.p i s = A.p_strat id i s := rfl
+
+/-- `q_strat` takes values in `[0, 1]` when allocation is valid. -/
+lemma q_strat_range (hx : A.rules.HasValidAllocation) {σ : ℝ → ℝ} (hσ : Measurable σ)
+    (i : Fin n) (b : ℝ) : A.q_strat σ i b ∈ Icc 0 1 := by
+  simp only [q_strat, mem_Icc]
+  have hmeas : Measurable fun ω => A.rules.x i
+      (Function.update (fun j => σ (A.θ j ω)) i b) :=
+    (A.rules.x_measurable i).comp (measurable_pi_lambda _ fun j => by
+      simp only [Function.update_apply]
+      split_ifs
+      · exact measurable_const
+      · exact hσ.comp (A.θ_measurable j))
+  have hint : Integrable (fun ω => A.rules.x i
+      (Function.update (fun j => σ (A.θ j ω)) i b)) ℙ :=
+    integrable_const (1 : ℝ) |>.mono hmeas.aestronglyMeasurable <|
+      ae_of_all _ fun ω => by
+        simpa [Real.norm_eq_abs, abs_of_nonneg (hx i _).1] using (hx i _).2
+  refine ⟨integral_nonneg fun ω => (hx i _).1, ?_⟩
+  calc 𝔼[fun ω => A.rules.x i (Function.update (fun j => σ (A.θ j ω)) i b)]
+    _ ≤ ∫ _, (1 : ℝ) ∂ℙ :=
+      integral_mono hint (integrable_const 1) fun ω => (hx i _).2
+    _ = 1 := by rw [integral_const]; simp [Measure.real, measure_univ]
+
 /-- Interim allocation takes values in `[0, 1]`.
 Requires `x_range` on the mechanism's allocation rule. -/
 lemma q_range (hx : A.rules.HasValidAllocation) (i : Fin n) (s : ℝ) :

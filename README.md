@@ -20,6 +20,11 @@ ReducedForm              — per-bidder interim view (winProb, cost, strategy)
 
 [`Mechanism n`](Auctionlib/Mechanism/Basic.lean) defines the rules of an auction: allocation rule $x_i(b)$ and payment rule $t_i(b)$ as functions of the full bid vector $b = (b_1, \ldots, b_n)$.
 
+| File | Contents |
+|------|----------|
+| [`Mechanism/Basic.lean`](Auctionlib/Mechanism/Basic.lean) | `Mechanism` structure, `HasValidAllocation`, `IsFeasible`, `IsEfficient` |
+| [`Mechanism/AllPurchase.lean`](Auctionlib/Mechanism/AllPurchase.lean) | `Mechanism.IsAllPurchase` (posted price + scarcity function + `x_eq`/`t_eq`), `hasValidAllocation` |
+
 ### Reduced Form (`ReducedForm/`)
 
 [`ReducedForm`](Auctionlib/ReducedForm/Basic.lean) captures the per-bidder interim view with quasi-linear payoff $\pi(v, b) = v \cdot \text{winProb}(b) - \text{cost}(b)$.
@@ -41,10 +46,14 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 
 | File | Contents |
 |------|----------|
-| [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) | `Auction` structure, `q`, `p`, `U`, `BIC`, `ExPostIR`/`InterimIR`/`ExAnteIR`, `toReducedForm`, `hasTypeDeviationIC_of_bic`, `payment_formula`, `payment_equivalence` |
+| [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) | `Auction` structure, `q`, `p`, `U`, `q_strat`, `p_strat`, `BIC`, `ExPostIR`/`InterimIR`/`ExAnteIR`, `toReducedForm`, `hasTypeDeviationIC_of_bic`, `payment_formula`, `payment_equivalence` |
 | [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) | Composable typeclasses: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV`. CDF via Mathlib's `ProbabilityTheory.cdf`. `q_eq_pow`, `commonCDF`, `toOrderStatisticsSetup` |
 | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) | `payment_formula_efficient`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
-| [`Auction/AllPurchase.lean`](Auctionlib/Auction/AllPurchase.lean) | `IsAllPurchase` (posted price + scarcity function), `allPayBid` |
+| [`Auction/AllPurchase.lean`](Auctionlib/Auction/AllPurchase.lean) | `allPayBid` (re-exports `Mechanism.IsAllPurchase` via import) |
+| [`Auction/AllPurchase/LinearScarcity.lean`](Auctionlib/Auction/AllPurchase/LinearScarcity.lean) | `HasQuadraticCost`, `HasLinearCost`, `IsBoundaryRegime`, `IsInteriorRegime` (extends `HasQuadraticCost`), `HasLinearScarcity`, `meanPurchase`, `K_linear`, `allPurchaseNetCost`, `toAllPurchaseReducedForm` (winProb = `q_strat`, cost derived from `t_eq`) |
+| [`Auction/AllPurchase/ExplicitSolutions.lean`](Auctionlib/Auction/AllPurchase/ExplicitSolutions.lean) | Propositions 6.5--6.7: `constant_scarcity_strategy`, `boundary_regime_strategy`, `interior_regime_strategy` (ReducedForm + Auction level) |
+| [`Auction/AllPurchase/Welfare.lean`](Auctionlib/Auction/AllPurchase/Welfare.lean) | `editionWelfare`, `firstBestQuantity`, `cournotQuantity`, `welfare_decomposition` |
+| [`Auction/AllPurchase/Revenue.lean`](Auctionlib/Auction/AllPurchase/Revenue.lean) | `revenue_decomposition`, `optimalPrice`, `bundled_exceeds_editionsOnly` |
 | [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, `HasOrderStatWinProb`, `strictMonotonicity` (Lemma 6.2), `no_ties` |
 
 ### Key Theorems
@@ -80,7 +89,7 @@ lake build                                # build the project
 - [x] Myerson's Lemma (Section 5.2)
 - [x] Revenue Equivalence Theorem (Section 5.3)
 - [x] All-Purchase Auction — equilibrium characterization (Chapter 6)
-- [ ] All-Purchase Auction — baseline demand & explicit solutions (Chapter 6)
-- [ ] All-Purchase Auction — economic analysis (Chapter 6)
+- [x] All-Purchase Auction — baseline demand & explicit solutions (Chapter 6)
+- [x] All-Purchase Auction — economic analysis (Chapter 6)
 - [ ] Game-theoretic concepts (Section 3)
 - [x] Delete legacy files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/`)

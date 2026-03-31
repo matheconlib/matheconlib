@@ -1,6 +1,7 @@
 module
 
 public import Auctionlib.Auction.SymmetricIPV
+public import Auctionlib.Mechanism.AllPurchase
 
 /-!
 # All-Purchase Auction (Chapter 6)
@@ -12,9 +13,8 @@ strictly decreasing function `φ`.
 
 ## Typeclass
 
-`IsAllPurchase A` adds all-purchase-specific parameters:
-- `p_price`: posted unit price (positive)
-- `φ`: scarcity function (continuous, strictly decreasing)
+`Mechanism.IsAllPurchase A.rules` constrains the mechanism's allocation and
+payment rules to match the all-purchase format (see `Mechanism/AllPurchase.lean`).
 
 ## Definitions
 
@@ -34,19 +34,6 @@ variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} [NeZero n] [n.AtLeastTwo]
 
 namespace Auction
-
-/-- All-purchase auction parameters: posted unit price and scarcity function. -/
-class IsAllPurchase (A : Auction Ω n) where
-  /-- posted unit price -/
-  p_price : ℝ
-  /-- posted price is positive -/
-  p_price_pos : 0 < p_price
-  /-- scarcity function: per-unit edition value as function of aggregate quantity -/
-  φ : ℝ → ℝ
-  /-- scarcity function is continuous -/
-  φ_continuous : Continuous φ
-  /-- scarcity function is strictly decreasing -/
-  φ_strictAnti : StrictAnti φ
 
 variable (A : Auction Ω n) [HasIdenticalTypes A]
 

@@ -10,9 +10,13 @@ Three-layer design following the mathematical reference (Section 2-3):
 
 Flow: `Auction → toReducedForm → ReducedForm` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem)
 
-Typeclasses on Auction: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV` (bundle), `IsAllPurchase`, `HasPosDensity`
+Strategy-dependent interim quantities: `q_strat σ i b = 𝔼[xᵢ(b, σ(θ₋ᵢ))]`, `p_strat σ i b = 𝔼[tᵢ(b, σ(θ₋ᵢ))]`. Standard `q`/`p` are the `σ = id` case. For the all-purchase auction, `toAllPurchaseReducedForm` derives `winProb` from `q_strat` (via `x_eq`) and `cost` from `allPurchaseNetCost` (via `t_eq`).
 
-Typeclasses on ReducedForm: `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversalIC`, `IsRegular`
+Typeclasses on Mechanism: `IsAllPurchase` (posted price + scarcity function + `x_eq`/`t_eq`, derives `hasValidAllocation`)
+
+Typeclasses on Auction: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV` (bundle), `HasPosDensity`, `HasLinearScarcity` (extends `IsAllPurchase` with linear φ parameters)
+
+Typeclasses on ReducedForm: `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversalIC`, `IsRegular`, `HasQuadraticCost`, `HasLinearCost`, `IsBoundaryRegime`, `IsInteriorRegime` (extends `HasQuadraticCost`)
 
 ## Task status
 
@@ -24,8 +28,8 @@ Typeclasses on ReducedForm: `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversal
   - [x] Lemma 6.2 — strict monotonicity
   - [x] Lemma 6.3 — envelope / integral representation
   - [x] Proposition 6.4 — net payment identity
-- [ ] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
-- [ ] formalize ‹All-Purchase Auction› economic analysis (chapter 6)
+- [x] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
+- [x] formalize ‹All-Purchase Auction› economic analysis (chapter 6)
 - [ ] formalize game theoretic concepts in section 3
 - [x] delete old framework files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/` using old structures)
 
