@@ -1,9 +1,7 @@
 module
 
 public import Auctionlib.Mechanism.Basic
-public import Auctionlib.ReducedForm.UniversalIC
-public import Mathlib.Probability.CDF
-public import Mathlib.Probability.Density
+public import Auctionlib.ReducedForm.TypeDeviationIC
 public import Mathlib.Probability.Notation
 
 /-!
@@ -193,7 +191,5 @@ theorem payment_equivalence
     hθmin hθmax hq hU s hs₁
 
 end Auction
-
-#min_imports
 
 end

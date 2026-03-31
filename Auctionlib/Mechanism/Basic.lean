@@ -1,6 +1,6 @@
 module
 
-public import Mathlib
+public import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 
 /-!
 # Mechanism — Allocation and Payment Rules
@@ -51,6 +51,5 @@ def IsEfficient : Prop :=
   ∀ i, M.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
 
 end Mechanism
-
 
 end
