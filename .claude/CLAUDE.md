@@ -1,38 +1,33 @@
 This is Lean4 project (lean-4.28.0) to formalize theorems in auction theory. The main mathematical reference are located `documents/` folder.
 
-To achieve good formalization, we try to split the argument into two parts, the "mathematcis" and the "econimics".
+## Architecture
 
-The mathematical part is the core idea involving analysis, combinatorics etc. Then we just "specialize" the mathematical version to achieve the theorem we want.
+Three-layer design following the mathematical reference (Section 2-3):
 
-Task:
-- [x] introduce general `Mechanism` with IC typeclass hierarchy (`Mechanism/`)
-  - [x] `Mechanism/Basic.lean` — structure, payoff, q, U
-  - [x] `Mechanism/EnvelopeIC.lean` — HasEnvelopeIC + envelope theorem
-  - [x] `Mechanism/TypeDeviationIC.lean` — HasTypeDeviationIC + Myerson
-  - [x] `Mechanism/UniversalIC.lean` — HasUniversalIC
+1. **Mechanism** (`Mechanism/Basic.lean`): allocation rule `x` + payment rule `t` over bid vectors (the rules of the game, Section 3b)
+2. **Auction** (`Auction/`): mechanism + probabilistic environment (`θ`, `θmin`, `θmax`) on probability space `(Ω, ℙ)` (Section 3a+3b)
+3. **ReducedForm** (`ReducedForm/`): per-bidder interim view (`winProb`, `cost`, `strategy`) with IC typeclass chain
+
+Flow: `Auction → toReducedForm → ReducedForm` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem)
+
+Typeclasses on Auction: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV` (bundle), `IsAllPurchase`, `HasPosDensity`
+
+Typeclasses on ReducedForm: `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversalIC`, `IsRegular`
+
+## Task status
+
 - [x] formalize ‹The Envelope Theorem› in section 5.1
 - [x] formalize ‹Myerson's Lemma› in section 5.2
 - [x] formalize ‹Revenue Equivalence Theorem› in section 5.3
-  - [x] generalize: `payment_equivalence` in `Envelope/Theorem.lean` (no efficiency/symmetry/distributional assumptions)
-  - [x] generalize: `revenue_equivalence` no longer requires efficiency; uses general `payment_equivalence`
-  - [x] refactor: `Efficient` is now a separate predicate, not baked into `RevenueEquivalenceSetup`
 - [x] formalize ‹All-Purchase Auction› equilibrium characterization (chapter 6)
-  - [x] Lemma 6.1 — weak monotonicity (`AllPurchase/Monotonicity.lean`)
-  - [x] Lemma 6.2 — strict monotonicity (`AllPurchase/StrictMonotonicity.lean`)
-  - [x] Lemma 6.3 — envelope / integral representation (`AllPurchase/Envelope.lean`)
-  - [x] Proposition 6.4 — net payment identity (`AllPurchase/NetPayment.lean`)
+  - [x] Lemma 6.1 — weak monotonicity
+  - [x] Lemma 6.2 — strict monotonicity
+  - [x] Lemma 6.3 — envelope / integral representation
+  - [x] Proposition 6.4 — net payment identity
 - [ ] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
-  - [ ] Corollary — boundary vs interior regime (`cor:regimes`)
-  - [ ] Proposition — constant scarcity equilibrium (`prop:constant`)
-  - [ ] Proposition — boundary regime equilibrium (`prop:boundary`)
-  - [ ] Proposition — interior regime equilibrium (`prop:interior`)
-  - [ ] Proposition — uniform distribution equilibrium (`prop:uniform`)
 - [ ] formalize ‹All-Purchase Auction› economic analysis (chapter 6)
-  - [ ] Proposition — revenue decomposition (`prop:revenue`)
-  - [ ] Corollary — revenue comparison (`cor:revenue_comparison`)
-  - [ ] Proposition — optimal price in interior regime (`prop:optimal_price`)
-  - [ ] Proposition — welfare decomposition (`prop:welfare`)
 - [ ] formalize game theoretic concepts in section 3
+- [ ] delete old framework files (`Envelope/`, `AllPurchase/` using old structures)
 
 ## Useful Lean commands
 

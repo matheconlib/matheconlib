@@ -194,4 +194,6 @@ theorem payment_equivalence
 
 end Auction
 
+#min_imports
+
 end
