@@ -48,12 +48,12 @@ class IsAllPurchase (M : Mechanism n) where
   /-- payment is net edition cost: `tᵢ(b) = (p − φ(Σ bⱼ)) · bᵢ` -/
   t_eq : ∀ i b, M.t i b = (p_price - φ (∑ j, b j)) * b i
 
-variable {n : ℕ} {M : Mechanism n} [ap : IsAllPurchase M]
+variable {n : ℕ} {M : Mechanism n} [IsAllPurchase M]
 
 /-- The all-purchase allocation is valid: the indicator takes values in `{0, 1} ⊆ [0, 1]`. -/
 theorem IsAllPurchase.hasValidAllocation : M.HasValidAllocation := by
   intro i b
-  simp only [ap.x_eq, indicator_apply, mem_Icc]
+  simp only [IsAllPurchase.x_eq, indicator_apply, mem_Icc]
   split_ifs <;> norm_num
 
 end Mechanism

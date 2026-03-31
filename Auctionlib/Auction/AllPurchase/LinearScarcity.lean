@@ -97,7 +97,7 @@ class HasLinearScarcity [inst : Mechanism.IsAllPurchase A.rules] where
   /-- the scarcity function is linear -/
   scarcity_is_linear : inst.φ = fun b => φ_bar - α_coeff * b
 
-variable [ap : Mechanism.IsAllPurchase A.rules] [ls : HasLinearScarcity A]
+variable [Mechanism.IsAllPurchase A.rules] [HasLinearScarcity A]
 
 /-- Mean equilibrium purchase per bidder: `μ = 𝔼[β(V₀)]`. -/
 noncomputable def meanPurchase [HasIdenticalTypes A] (β : ℝ → ℝ) : ℝ :=
@@ -106,7 +106,9 @@ noncomputable def meanPurchase [HasIdenticalTypes A] (β : ℝ → ℝ) : ℝ :=
 /-- The effective marginal net cost `K = p − φ̄ + α(n−1)μ`,
 where `μ = 𝔼[β(V₀)]` is computed from the equilibrium strategy. -/
 noncomputable def K_linear [HasIdenticalTypes A] (β : ℝ → ℝ) : ℝ :=
-  ap.p_price - ls.φ_bar + ls.α_coeff * (↑n - 1) * A.meanPurchase β
+  Mechanism.IsAllPurchase.p_price (M := A.rules) -
+    HasLinearScarcity.φ_bar A +
+    HasLinearScarcity.α_coeff A * (↑n - 1) * A.meanPurchase β
 
 /-! ## Expectation computation -/
 
@@ -114,8 +116,9 @@ noncomputable def K_linear [HasIdenticalTypes A] (β : ℝ → ℝ) : ℝ :=
 `C(b) = p·b − b·E[φ(b + Σ_{j≠i} β(V_j))]`. -/
 noncomputable def allPurchaseNetCost
     (β : ℝ → ℝ) (i : Fin n) (b : ℝ) : ℝ :=
-  ap.p_price * b - b *
-    𝔼[fun ω => ap.φ (b + ∑ j ∈ univ.erase i, β (A.θ j ω))]
+  Mechanism.IsAllPurchase.p_price (M := A.rules) * b - b *
+    𝔼[fun ω => Mechanism.IsAllPurchase.φ (M := A.rules) <|
+      b + ∑ j ∈ univ.erase i, β (A.θ j ω)]
 
 omit [n.AtLeastTwo] in
 /-- Under linear scarcity, `E[φ(b + B₋ᵢ)] = φ̄ − α·(b + (n−1)·μ)`,
@@ -124,13 +127,19 @@ theorem expected_scarcity_linear [HasIdenticalTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n) (b : ℝ) :
-    𝔼[fun ω => ap.φ (b + ∑ j ∈ univ.erase i, β (A.θ j ω))] =
-      ls.φ_bar - ls.α_coeff * (b + (↑(n - 1) : ℝ) * A.meanPurchase β) := by
-  have hφ : ∀ ω, ap.φ (b + ∑ j ∈ univ.erase i, β (A.θ j ω)) =
-      (ls.φ_bar - ls.α_coeff * b) +
-        (-ls.α_coeff) * (∑ j ∈ univ.erase i, β (A.θ j ω)) := by
+    𝔼[fun ω => Mechanism.IsAllPurchase.φ (M := A.rules) <|
+      b + ∑ j ∈ univ.erase i, β (A.θ j ω)] =
+      HasLinearScarcity.φ_bar A -
+        HasLinearScarcity.α_coeff A *
+          (b + (↑(n - 1) : ℝ) * A.meanPurchase β) := by
+  have hφ : ∀ ω, (Mechanism.IsAllPurchase.φ (M := A.rules) <|
+      b + ∑ j ∈ univ.erase i, β (A.θ j ω)) =
+      (HasLinearScarcity.φ_bar A - HasLinearScarcity.α_coeff A * b) +
+        (-HasLinearScarcity.α_coeff A) *
+          (∑ j ∈ univ.erase i, β (A.θ j ω)) := by
     intro ω
-    have := congr_fun ls.scarcity_is_linear (b + ∑ j ∈ univ.erase i, β (A.θ j ω))
+    have := congr_fun (HasLinearScarcity.scarcity_is_linear (A := A)) <|
+      b + ∑ j ∈ univ.erase i, β (A.θ j ω)
     rw [this]; ring
   simp_rw [hφ]
   have hS_int : Integrable (fun ω => ∑ j ∈ univ.erase i, β (A.θ j ω)) ℙ :=
@@ -147,7 +156,7 @@ theorem allPurchaseNetCost_eq [HasIdenticalTypes A]
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n) (b : ℝ) :
     A.allPurchaseNetCost β i b =
-      ls.α_coeff * b ^ 2 + A.K_linear β * b := by
+      HasLinearScarcity.α_coeff A * b ^ 2 + A.K_linear β * b := by
   unfold allPurchaseNetCost
   rw [A.expected_scarcity_linear β hβ_meas hβ_int i b]
   unfold K_linear meanPurchase
@@ -169,23 +178,23 @@ noncomputable def toAllPurchaseReducedForm [HasIdenticalTypes A]
   lowestType := A.lowestType
   highestType := A.highestType
   winProb := A.q_strat β i
-  winProb_range := A.q_strat_range ap.hasValidAllocation hβ i
+  winProb_range := A.q_strat_range Mechanism.IsAllPurchase.hasValidAllocation hβ i
   cost := A.allPurchaseNetCost β i
   strategy := β
 
-omit [n.AtLeastTwo] ls in
+omit [n.AtLeastTwo] [HasLinearScarcity A] in
 @[simp]
 theorem toAllPurchaseReducedForm_winProb [HasIdenticalTypes A]
     (β : ℝ → ℝ) (hβ : Measurable β) (i : Fin n) (b : ℝ) :
     (A.toAllPurchaseReducedForm β hβ i).winProb b = A.q_strat β i b := rfl
 
-omit [n.AtLeastTwo] ls in
+omit [n.AtLeastTwo] [HasLinearScarcity A] in
 @[simp]
 theorem toAllPurchaseReducedForm_cost [HasIdenticalTypes A]
     (β : ℝ → ℝ) (hβ : Measurable β) (i : Fin n) (b : ℝ) :
     (A.toAllPurchaseReducedForm β hβ i).cost b = A.allPurchaseNetCost β i b := rfl
 
-omit [n.AtLeastTwo] ls in
+omit [n.AtLeastTwo] [HasLinearScarcity A] in
 @[simp]
 theorem toAllPurchaseReducedForm_strategy [HasIdenticalTypes A]
     (β : ℝ → ℝ) (hβ : Measurable β) (i : Fin n) (v : ℝ) :
@@ -197,9 +206,9 @@ noncomputable def allPurchaseHasQuadraticCost [HasIdenticalTypes A]
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n) :
     ReducedForm.HasQuadraticCost (A.toAllPurchaseReducedForm β hβ_meas i) where
-  α_coeff := ls.α_coeff
+  α_coeff := HasLinearScarcity.α_coeff A
   K_param := A.K_linear β
-  α_pos := ls.α_pos
+  α_pos := HasLinearScarcity.α_pos
   cost_eq b := A.allPurchaseNetCost_eq β hβ_meas hβ_int i b
 
 end Auction
