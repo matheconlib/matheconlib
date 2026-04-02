@@ -45,7 +45,7 @@ class HasPosDensity (A : Auction Ω n) [HasIdenticalTypes A] where
 /-- The winning probability is characterized via order statistics:
 `winProb(b) = F(v₀)^(n-1)` where `v₀` is the threshold type.
 Bundles the type-interval agreement between `R` and `A`. -/
-structure HasOrderStatWinProb (A : Auction Ω n) [HasIdenticalTypes A]
+class HasOrderStatWinProb (A : Auction Ω n) [HasIdenticalTypes A]
     (R : ReducedForm) : Prop where
   typeInterval_eq : R.typeInterval = Icc A.lowestType A.highestType
   orderStat : ∀ b, ∃ v₀ ∈ Icc A.lowestType A.highestType,
@@ -117,15 +117,16 @@ private lemma F_pow_strict_mono
 
 set_option linter.unusedSectionVars false in
 private lemma winProb_gap
-    (R : ReducedForm)
-    (hGβ : A.HasOrderStatWinProb R)
+    (R : ReducedForm) [A.HasOrderStatWinProb R]
     (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°)
     (_hlt : v₁ < v₂) (b₀ : ℝ)
     (hβ₁ : R.strategy v₁ = b₀) (hβ₂ : R.strategy v₂ = b₀)
     (ε : ℝ) (hε : 0 < ε) :
     F v₂ ^ (n - 1) - F v₁ ^ (n - 1) ≤ R.winProb (b₀ + ε) - R.winProb b₀ := by
+  have hGβ : A.HasOrderStatWinProb R := inferInstance
   obtain ⟨v₀, hv₀_mem, hv₀_below, _, hG_b₀⟩ := hGβ.orderStat b₀
-  obtain ⟨v₀_ε, hv₀_ε_mem, _, hv₀_ε_above, hG_bε⟩ := hGβ.orderStat (b₀ + ε)
+  obtain ⟨v₀_ε, hv₀_ε_mem, _, hv₀_ε_above, hG_bε⟩ :=
+    hGβ.orderStat (b₀ + ε)
   have hv₁' := Ioo_subset_Icc_self hv₁
   have hv₂' := Ioo_subset_Icc_self hv₂
   have hv₀_le_v₁ : v₀ ≤ v₁ :=
@@ -171,10 +172,11 @@ positive density, the equilibrium strategy is strictly monotone on the
 type interval. -/
 theorem strictMonotonicity
     (R : ReducedForm) [ReducedForm.IsRegular R]
-    (hGβ : A.HasOrderStatWinProb R)
+    [A.HasOrderStatWinProb R]
     (hlo_nonneg : 0 ≤ lo)
     (ic : ∀ v ∈ I, ∀ b, 0 ≤ b → R.payoff v b ≤ R.U v) :
     StrictMonoOn R.strategy I := by
+  have hGβ : A.HasOrderStatWinProb R := inferInstance
   have β_mono : MonotoneOn R.strategy I := by
     intro a ha b hb hab
     exact ReducedForm.IsRegular.strategy_mono
@@ -205,7 +207,7 @@ theorem strictMonotonicity
     (F v₂ ^ (n - 1) - F v₁ ^ (n - 1))
     (Ioo_subset_Icc_self hv₂) hv₂.1 heq'.symm
     (by linarith [A.F_pow_strict_mono v₁ v₂ hv₁ hv₂ hlt])
-    (fun ε hε => A.winProb_gap R hGβ v₁ v₂ hv₁ hv₂ hlt b₀ rfl heq'.symm ε hε)
+    (fun ε hε => A.winProb_gap R v₁ v₂ hv₁ hv₂ hlt b₀ rfl heq'.symm ε hε)
     (ReducedForm.IsRegular.strategy_nonneg v₁
       (show v₁ ∈ R.typeInterval by rw [hGβ.typeInterval_eq]; exact Ioo_subset_Icc_self hv₁))
     hlo_nonneg ic
@@ -213,12 +215,12 @@ theorem strictMonotonicity
 /-- Distinct types in the interior have distinct bids. -/
 theorem no_ties
     (R : ReducedForm) [ReducedForm.IsRegular R]
-    (hGβ : A.HasOrderStatWinProb R)
+    [A.HasOrderStatWinProb R]
     (hlo_nonneg : 0 ≤ lo)
     (ic : ∀ v ∈ I, ∀ b, 0 ≤ b → R.payoff v b ≤ R.U v) :
     ∀ v₁ ∈ I°, ∀ v₂ ∈ I°, v₁ ≠ v₂ → R.strategy v₁ ≠ R.strategy v₂ := by
   intro v₁ hv₁ v₂ hv₂ hne
-  exact ((A.strictMonotonicity R hGβ hlo_nonneg ic).injOn
+  exact ((A.strictMonotonicity R hlo_nonneg ic).injOn
     (Ioo_subset_Icc_self hv₁) (Ioo_subset_Icc_self hv₂)).mt hne
 
 end Auction
