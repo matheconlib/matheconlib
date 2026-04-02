@@ -169,7 +169,7 @@ Needs: independence + identical + atomless. -/
 lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A]
     (eff : A.Efficient) (i : Fin n) (s : ℝ) :
     A.q i s = A.commonCDF s ^ (n - 1) := by
-  simp only [q, eff i, ne_eq]
+  simp only [q, q_strat, id, eff i, ne_eq]
   have hrw (ω) :
       {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}.indicator 1
         (Function.update (A.θ · ω) i s) =

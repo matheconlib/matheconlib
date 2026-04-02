@@ -48,23 +48,11 @@ variable {n : ℕ} (A : Auction Ω n)
 /-- Type interval for bidder `i`. -/
 abbrev interval (i : Fin n) : Set ℝ := Icc (A.θmin i) (A.θmax i)
 
-/-! ### Interim quantities (computed from probabilistic data) -/
-
-/-- Interim allocation: `q(i, s) = 𝔼[xᵢ(s, θ₋ᵢ)]`. -/
-noncomputable def q (i : Fin n) (s : ℝ) : ℝ :=
-  𝔼[fun ω => A.rules.x i <| Function.update (A.θ · ω) i s]
-
-/-- Interim payment: `p(i, s) = 𝔼[tᵢ(s, θ₋ᵢ)]`. -/
-noncomputable def p (i : Fin n) (s : ℝ) : ℝ :=
-  𝔼[fun ω => A.rules.t i <| Function.update (A.θ · ω) i s]
-
-/-- Interim utility: `U(i, s) = s · q(i, s) - p(i, s)`. -/
-noncomputable def U (i : Fin n) (s : ℝ) : ℝ := s * A.q i s - A.p i s
-
 /-! ### Strategy-dependent interim quantities
 
 When opponents play strategy `σ` instead of reporting truthfully,
-the interim quantities take `σ(θⱼ)` as opponent bids rather than `θⱼ`. -/
+the interim quantities take `σ(θⱼ)` as opponent bids rather than `θⱼ`.
+The standard interim quantities `q`, `p` are the `σ = id` special case. -/
 
 /-- Interim allocation when opponents play strategy `σ`:
 `q_strat(σ, i, b) = 𝔼[xᵢ(b, σ(θ₋ᵢ))]`. -/
@@ -75,6 +63,17 @@ noncomputable def q_strat (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) : ℝ :=
 `p_strat(σ, i, b) = 𝔼[tᵢ(b, σ(θ₋ᵢ))]`. -/
 noncomputable def p_strat (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) : ℝ :=
   𝔼[fun ω => A.rules.t i <| Function.update (fun j => σ (A.θ j ω)) i b]
+
+/-! ### Interim quantities (truthful reporting) -/
+
+/-- Interim allocation: `q(i, s) = q_strat(id, i, s) = 𝔼[xᵢ(s, θ₋ᵢ)]`. -/
+noncomputable def q (i : Fin n) (s : ℝ) : ℝ := A.q_strat id i s
+
+/-- Interim payment: `p(i, s) = p_strat(id, i, s) = 𝔼[tᵢ(s, θ₋ᵢ)]`. -/
+noncomputable def p (i : Fin n) (s : ℝ) : ℝ := A.p_strat id i s
+
+/-- Interim utility: `U(i, s) = s · q(i, s) - p(i, s)`. -/
+noncomputable def U (i : Fin n) (s : ℝ) : ℝ := s * A.q i s - A.p i s
 
 /-- The standard interim allocation is `q_strat` with `σ = id`. -/
 lemma q_eq_q_strat_id (i : Fin n) (s : ℝ) : A.q i s = A.q_strat id i s := rfl
@@ -107,23 +106,8 @@ lemma q_strat_range (hx : A.rules.HasValidAllocation) {σ : ℝ → ℝ} (hσ : 
 /-- Interim allocation takes values in `[0, 1]`.
 Requires `x_range` on the mechanism's allocation rule. -/
 lemma q_range (hx : A.rules.HasValidAllocation) (i : Fin n) (s : ℝ) :
-    A.q i s ∈ Icc 0 1 := by
-  simp only [q, mem_Icc]
-  have hmeas : Measurable fun ω => A.rules.x i <| Function.update (A.θ · ω) i s :=
-    (A.rules.x_measurable i).comp (measurable_pi_lambda _ fun j => by
-      simp only [Function.update_apply]
-      split_ifs
-      · exact measurable_const
-      · exact A.θ_measurable j)
-  have hint : Integrable (fun ω => A.rules.x i <| Function.update (A.θ · ω) i s) ℙ :=
-    integrable_const (1 : ℝ) |>.mono hmeas.aestronglyMeasurable <|
-      ae_of_all _ fun ω => by
-        simpa [Real.norm_eq_abs, abs_of_nonneg (hx i _).1] using (hx i _).2
-  refine ⟨integral_nonneg fun ω => (hx i _).1, ?_⟩
-  calc 𝔼[fun ω => A.rules.x i (Function.update (A.θ · ω) i s)]
-    _ ≤ ∫ _, (1 : ℝ) ∂ℙ :=
-      integral_mono hint (integrable_const 1) fun ω => (hx i _).2
-    _ = 1 := by rw [integral_const]; simp [Measure.real, measure_univ]
+    A.q i s ∈ Icc 0 1 :=
+  A.q_strat_range hx measurable_id i s
 
 /-! ### Individual rationality -/
 
