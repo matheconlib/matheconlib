@@ -1,6 +1,6 @@
 module
 
-public import Auctionlib.Auction.SymmetricIPV
+public import Auctionlib.Auction.Typeclasses
 
 /-!
 # Lemmas requiring only `HasIdenticalTypes`

@@ -8,6 +8,7 @@ import Auctionlib.Auction.IdenticalTypes
 import Auctionlib.Auction.RevenueEquivalence
 import Auctionlib.Auction.StrictMonotonicity
 import Auctionlib.Auction.SymmetricIPV
+import Auctionlib.Auction.Typeclasses
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.Mechanism
 import Auctionlib.Mechanism.AllPurchase

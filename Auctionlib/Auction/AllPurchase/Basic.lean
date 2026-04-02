@@ -1,6 +1,6 @@
 module
 
-public import Auctionlib.Auction.SymmetricIPV
+public import Auctionlib.Auction.Typeclasses
 
 /-!
 # All-Purchase Auction (Chapter 6)

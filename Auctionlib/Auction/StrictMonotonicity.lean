@@ -1,6 +1,6 @@
 module
 
-public import Auctionlib.Auction.SymmetricIPV
+public import Auctionlib.Auction.Typeclasses
 
 /-!
 # Strict Monotonicity of Equilibrium Strategy (Lemma 6.2)
