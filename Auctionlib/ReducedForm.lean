@@ -1,4 +1,6 @@
-import Auctionlib.ReducedForm.Basic
-import Auctionlib.ReducedForm.EnvelopeIC
-import Auctionlib.ReducedForm.TypeDeviationIC
-import Auctionlib.ReducedForm.UniversalIC
+module  -- shake: keep-all
+
+public import Auctionlib.ReducedForm.Basic
+public import Auctionlib.ReducedForm.EnvelopeIC
+public import Auctionlib.ReducedForm.TypeDeviationIC
+public import Auctionlib.ReducedForm.UniversalIC

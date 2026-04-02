@@ -161,8 +161,7 @@ noncomputable def toOrderStatisticsSetup
 /-! ### Efficient allocation → q = F^(n-1) -/
 
 /-- Efficient allocation: bidder i wins iff they have the strictly highest type. -/
-def Efficient : Prop :=
-  ∀ i, A.rules.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
+def Efficient : Prop := A.rules.IsEfficient
 
 omit [n.AtLeastTwo] in
 /-- Under efficient allocation, `q(i, s) = F(s)^(n-1)`.

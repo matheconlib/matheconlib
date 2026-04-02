@@ -1,6 +1,7 @@
 module
 
-public import Auctionlib.Auction.AllPurchase
+public import Auctionlib.Auction.AllPurchase.Basic
+public import Auctionlib.Mechanism.AllPurchase
 
 /-!
 # Linear Scarcity for All-Purchase Auctions (Chapter 6)
