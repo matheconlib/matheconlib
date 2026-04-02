@@ -10,6 +10,12 @@ import Auctionlib.Auction.StrictMonotonicity
 import Auctionlib.Auction.SymmetricIPV
 import Auctionlib.Auction.Typeclasses
 import Auctionlib.ForMathlib.AbsolutelyContinuous
+import Auctionlib.ForMathlib.ApproximateSelection
+import Auctionlib.ForMathlib.Kakutani
+import Auctionlib.ForMathlib.ProbabilityMeasure
+import Auctionlib.ForMathlib.Schauder
+import Auctionlib.GameTheory.Basic
+import Auctionlib.GameTheory.NashExistence
 import Auctionlib.Mechanism
 import Auctionlib.Mechanism.AllPurchase
 import Auctionlib.Mechanism.Basic
