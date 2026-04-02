@@ -12,7 +12,6 @@ monotone on the type interval.
 ## Typeclasses used
 
 - `HasIdenticalTypes` — common CDF
-- `HasBoundedTypes` — types in intervals
 - `HasPosDensity` — CDF has positive continuous density
 - `HasOrderStatWinProb` — winProb = F(v₀)^(n-1) via threshold
 - `ReducedForm.IsRegular` — monotone strategy/winProb, nonneg bids, continuous cost
@@ -23,7 +22,7 @@ monotone on the type interval.
 open Set MeasureTheory ProbabilityTheory
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
-variable {n : ℕ} [NeZero n] [n.AtLeastTwo]
+variable {n : ℕ} [NeZero n]
 
 namespace Auction
 
@@ -55,10 +54,8 @@ class HasOrderStatWinProb (A : Auction Ω n) [HasIdenticalTypes A]
 
 /-! ### Strict monotonicity proof -/
 
-variable (A : Auction Ω n) [HasIdenticalTypes A] [HasBoundedTypes A]
-  [HasAtomlessTypes A] [HasPosDensity A]
+variable (A : Auction Ω n) [HasIdenticalTypes A]
 
-omit [n.AtLeastTwo] [HasBoundedTypes A] [HasAtomlessTypes A] [HasPosDensity A] in
 /-- The reduced form's type interval equals the auction's common type interval. -/
 lemma toReducedForm_typeInterval_eq
     (hx : A.rules.HasValidAllocation) (i : Fin n) :
@@ -73,7 +70,56 @@ local notation "F" => A.commonCDF
 local notation "lo" => A.lowestType
 local notation "hi" => A.highestType
 
-omit [n.AtLeastTwo] [HasBoundedTypes A] [HasAtomlessTypes A] in
+private lemma winProb_gap
+    (R : ReducedForm) [A.HasOrderStatWinProb R]
+    (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°)
+    (_hlt : v₁ < v₂) (b₀ : ℝ)
+    (hβ₁ : R.strategy v₁ = b₀) (hβ₂ : R.strategy v₂ = b₀)
+    (ε : ℝ) (hε : 0 < ε) :
+    F v₂ ^ (n - 1) - F v₁ ^ (n - 1) ≤ R.winProb (b₀ + ε) - R.winProb b₀ := by
+  have hGβ : A.HasOrderStatWinProb R := inferInstance
+  obtain ⟨v₀, hv₀_mem, hv₀_below, _, hG_b₀⟩ := hGβ.orderStat b₀
+  obtain ⟨v₀_ε, hv₀_ε_mem, _, hv₀_ε_above, hG_bε⟩ :=
+    hGβ.orderStat (b₀ + ε)
+  have hv₁' := Ioo_subset_Icc_self hv₁
+  have hv₂' := Ioo_subset_Icc_self hv₂
+  have hv₀_le_v₁ : v₀ ≤ v₁ :=
+    le_of_not_gt fun h => by
+      linarith [hv₀_below v₁ hv₁' h, hβ₁.symm.le]
+  have hv₂_le_v₀_ε : v₂ ≤ v₀_ε :=
+    hv₀_ε_above v₂ hv₂' (by rw [hβ₂]; linarith)
+  rw [hG_bε, hG_b₀]
+  linarith [pow_le_pow_left₀ (A.commonCDF_nonneg v₀)
+              (A.commonCDF_mono hv₀_le_v₁) (n - 1),
+            pow_le_pow_left₀ (A.commonCDF_nonneg v₂)
+              (A.commonCDF_mono hv₂_le_v₀_ε) (n - 1)]
+
+private lemma ic_contradiction
+    (R : ReducedForm) [ReducedForm.IsRegular R]
+    (v₂ b₀ Δ : ℝ) (hv₂_mem : v₂ ∈ I) (hv₂_pos : lo < v₂)
+    (hβ₂ : R.strategy v₂ = b₀) (hΔ : 0 < Δ)
+    (hgap : ∀ ε > 0, Δ ≤ R.winProb (b₀ + ε) - R.winProb b₀)
+    (hb₀_nonneg : 0 ≤ b₀) (hlo_nonneg : 0 ≤ lo)
+    (ic : ∀ v ∈ I, ∀ b, 0 ≤ b → R.payoff v b ≤ R.U v) :
+    False := by
+  have hv₂_pos' : 0 < v₂ := lt_of_le_of_lt hlo_nonneg hv₂_pos
+  obtain ⟨η, hη_pos, hη⟩ :=
+    (Metric.tendsto_nhds_nhds.mp
+      (ReducedForm.IsRegular.cost_continuous (R := R).tendsto b₀))
+      (v₂ * Δ) (mul_pos hv₂_pos' hΔ)
+  have hε : 0 < η / 2 := by linarith
+  have hic := ic v₂ hv₂_mem (b₀ + η / 2) (by linarith)
+  simp only [ReducedForm.payoff_eq, ReducedForm.U_eq] at hic
+  rw [hβ₂] at hic
+  have h_small := hη (show dist (b₀ + η / 2) b₀ < η by
+    rw [Real.dist_eq, show b₀ + η / 2 - b₀ = η / 2 by ring,
+      abs_of_pos hε]; linarith)
+  rw [Real.dist_eq] at h_small
+  linarith [abs_lt.mp h_small, hgap (η / 2) hε,
+    mul_le_mul_of_nonneg_left (hgap (η / 2) hε) (le_of_lt hv₂_pos')]
+
+variable [HasPosDensity A]
+
 private lemma F_strictMono_interior
     (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°) (hlt : v₁ < v₂) :
     F v₁ < F v₂ := by
@@ -107,63 +153,14 @@ private lemma F_strictMono_interior
       rw [Set.uIcc_of_le (le_of_lt hlt)]; exact hcont).intervalIntegrable
   linarith [intervalIntegral.integral_add_adjacent_intervals hint1 hint2]
 
-omit [HasBoundedTypes A] [HasAtomlessTypes A] in
+variable [n.AtLeastTwo]
+
 private lemma F_pow_strict_mono
     (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°) (hlt : v₁ < v₂) :
     F v₁ ^ (n - 1) < F v₂ ^ (n - 1) :=
   pow_lt_pow_left₀ (A.F_strictMono_interior v₁ v₂ hv₁ hv₂ hlt)
     (A.commonCDF_nonneg v₁)
     (by have := Nat.AtLeastTwo.prop (n := n); omega)
-
-set_option linter.unusedSectionVars false in
-private lemma winProb_gap
-    (R : ReducedForm) [A.HasOrderStatWinProb R]
-    (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°)
-    (_hlt : v₁ < v₂) (b₀ : ℝ)
-    (hβ₁ : R.strategy v₁ = b₀) (hβ₂ : R.strategy v₂ = b₀)
-    (ε : ℝ) (hε : 0 < ε) :
-    F v₂ ^ (n - 1) - F v₁ ^ (n - 1) ≤ R.winProb (b₀ + ε) - R.winProb b₀ := by
-  have hGβ : A.HasOrderStatWinProb R := inferInstance
-  obtain ⟨v₀, hv₀_mem, hv₀_below, _, hG_b₀⟩ := hGβ.orderStat b₀
-  obtain ⟨v₀_ε, hv₀_ε_mem, _, hv₀_ε_above, hG_bε⟩ :=
-    hGβ.orderStat (b₀ + ε)
-  have hv₁' := Ioo_subset_Icc_self hv₁
-  have hv₂' := Ioo_subset_Icc_self hv₂
-  have hv₀_le_v₁ : v₀ ≤ v₁ :=
-    le_of_not_gt fun h => by
-      linarith [hv₀_below v₁ hv₁' h, hβ₁.symm.le]
-  have hv₂_le_v₀_ε : v₂ ≤ v₀_ε :=
-    hv₀_ε_above v₂ hv₂' (by rw [hβ₂]; linarith)
-  rw [hG_bε, hG_b₀]
-  linarith [pow_le_pow_left₀ (A.commonCDF_nonneg v₀)
-              (A.commonCDF_mono hv₀_le_v₁) (n - 1),
-            pow_le_pow_left₀ (A.commonCDF_nonneg v₂)
-              (A.commonCDF_mono hv₂_le_v₀_ε) (n - 1)]
-
-set_option linter.unusedSectionVars false in
-private lemma ic_contradiction
-    (R : ReducedForm) [ReducedForm.IsRegular R]
-    (v₂ b₀ Δ : ℝ) (hv₂_mem : v₂ ∈ I) (hv₂_pos : lo < v₂)
-    (hβ₂ : R.strategy v₂ = b₀) (hΔ : 0 < Δ)
-    (hgap : ∀ ε > 0, Δ ≤ R.winProb (b₀ + ε) - R.winProb b₀)
-    (hb₀_nonneg : 0 ≤ b₀) (hlo_nonneg : 0 ≤ lo)
-    (ic : ∀ v ∈ I, ∀ b, 0 ≤ b → R.payoff v b ≤ R.U v) :
-    False := by
-  have hv₂_pos' : 0 < v₂ := lt_of_le_of_lt hlo_nonneg hv₂_pos
-  obtain ⟨η, hη_pos, hη⟩ :=
-    (Metric.tendsto_nhds_nhds.mp
-      (ReducedForm.IsRegular.cost_continuous (R := R).tendsto b₀))
-      (v₂ * Δ) (mul_pos hv₂_pos' hΔ)
-  have hε : 0 < η / 2 := by linarith
-  have hic := ic v₂ hv₂_mem (b₀ + η / 2) (by linarith)
-  simp only [ReducedForm.payoff_eq, ReducedForm.U_eq] at hic
-  rw [hβ₂] at hic
-  have h_small := hη (show dist (b₀ + η / 2) b₀ < η by
-    rw [Real.dist_eq, show b₀ + η / 2 - b₀ = η / 2 by ring,
-      abs_of_pos hε]; linarith)
-  rw [Real.dist_eq] at h_small
-  linarith [abs_lt.mp h_small, hgap (η / 2) hε,
-    mul_le_mul_of_nonneg_left (hgap (η / 2) hε) (le_of_lt hv₂_pos')]
 
 /-! ### Main theorem -/
 

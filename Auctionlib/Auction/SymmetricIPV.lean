@@ -27,26 +27,9 @@ namespace Auction
 
 variable (A : Auction Ω n)
 
-/-! ### Bridge to OrderStatistics (needs independence + identical + density) -/
-
-variable [n.AtLeastTwo]
-
-@[simps]
-noncomputable def toOrderStatisticsSetup
-    [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity A] :
-    OrderStatisticsSetup Ω n where
-  X := A.θ
-  X_measurable := A.θ_measurable
-  X_indep := HasIndependentTypes.θ_indep
-  X_ident := HasIdenticalTypes.θ_identical
-  X_hasPDF := HasDensity.θ_hasPDF
-
-/-! ### Efficient allocation → q = F^(n-1) -/
-
 /-- Efficient allocation: bidder i wins iff they have the strictly highest type. -/
 def Efficient : Prop := A.rules.IsEfficient
 
-omit [n.AtLeastTwo] in
 /-- Under efficient allocation, `q(i, s) = F(s)^(n-1)`.
 Needs: independence + identical + atomless. -/
 lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A]
@@ -84,7 +67,19 @@ lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A
     Finset.card_erase_of_mem (Finset.mem_univ i),
     Finset.card_univ, Fintype.card_fin]
 
-/-! ### Second-highest order statistic -/
+/-! ### Bridge to OrderStatistics and second-highest order statistic -/
+
+variable [n.AtLeastTwo]
+
+@[simps]
+noncomputable def toOrderStatisticsSetup
+    [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity A] :
+    OrderStatisticsSetup Ω n where
+  X := A.θ
+  X_measurable := A.θ_measurable
+  X_indep := HasIndependentTypes.θ_indep
+  X_ident := HasIdenticalTypes.θ_identical
+  X_hasPDF := HasDensity.θ_hasPDF
 
 /-- The second-highest order statistic. -/
 noncomputable def S₂ [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity A]
