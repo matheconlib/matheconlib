@@ -37,7 +37,7 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 |------|----------|
 | [`ReducedForm/Basic.lean`](Auctionlib/ReducedForm/Basic.lean) | `ReducedForm` structure, `payoff`, `q`, `U`, `IsRegular` |
 | [`ReducedForm/EnvelopeIC.lean`](Auctionlib/ReducedForm/EnvelopeIC.lean) | `HasEnvelopeIC` + `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`, `strategy_monotoneOn`, `U_nonneg` |
-| [`ReducedForm/TypeDeviationIC.lean`](Auctionlib/ReducedForm/TypeDeviationIC.lean) | `HasTypeDeviationIC` + `payment_identity`, `payment_unique`, `allpayBid`, `netPaymentIdentity`, Myerson sufficiency |
+| [`ReducedForm/TypeDeviationIC.lean`](Auctionlib/ReducedForm/TypeDeviationIC.lean) | `HasTypeDeviationIC` + `payment_identity`, `payment_unique`, `allPayBid`, `netPaymentIdentity`, Myerson sufficiency |
 | [`ReducedForm/UniversalIC.lean`](Auctionlib/ReducedForm/UniversalIC.lean) | `HasUniversalIC` |
 
 ### Auction (`Auction/`)

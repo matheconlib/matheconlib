@@ -88,33 +88,33 @@ theorem payment_unique [HasTypeDeviationIC R]
 /-! ### All-pay bid function -/
 
 /-- The all-pay bid function:
-`allpayBid(v) = v · q(v) - ∫ lowestType..v, q(ψ) dψ`.
+`allPayBid(v) = v · q(v) - ∫ lowestType..v, q(ψ) dψ`.
 
 At the economic level, `q(v) = F(v)^{n-1}` and this becomes the standard
 all-pay auction equilibrium bid function. -/
-noncomputable def allpayBid [HasTypeDeviationIC R] (v : ℝ) : ℝ :=
+noncomputable def allPayBid [HasTypeDeviationIC R] (v : ℝ) : ℝ :=
   v * R.q v - ∫ ψ in R.lowestType..v, R.q ψ
 
 @[simp]
-lemma allpayBid_lowestType [HasTypeDeviationIC R] :
-    R.allpayBid R.lowestType = R.lowestType * R.q R.lowestType := by
-  simp [allpayBid]
+lemma allPayBid_lowestType [HasTypeDeviationIC R] :
+    R.allPayBid R.lowestType = R.lowestType * R.q R.lowestType := by
+  simp [allPayBid]
 
 /-- **Net-payment identity** (= Proposition 6.4 in the all-purchase setting):
-`cost(strategy(v)) = allpayBid(v) - U(lowestType)`.
+`cost(strategy(v)) = allPayBid(v) - U(lowestType)`.
 
 This is a restatement of `payment_identity`. -/
 theorem netPaymentIdentity [HasTypeDeviationIC R]
     (v : ℝ) (hv : v ∈ R.typeInterval) :
-    R.cost (R.strategy v) = R.allpayBid v - R.U R.lowestType := by
-  simp only [allpayBid]
+    R.cost (R.strategy v) = R.allPayBid v - R.U R.lowestType := by
+  simp only [allPayBid]
   linarith [R.payment_identity v hv]
 
 /-- Non-negativity of the all-pay bid when `lowestType ≥ 0`. -/
-theorem allpayBid_nonneg [HasTypeDeviationIC R]
+theorem allPayBid_nonneg [HasTypeDeviationIC R]
     (hlo : 0 ≤ R.lowestType) (v : ℝ) (hv : v ∈ R.typeInterval) :
-    0 ≤ R.allpayBid v := by
-  simp only [allpayBid]
+    0 ≤ R.allPayBid v := by
+  simp only [allPayBid]
   have hab : R.lowestType ≤ R.highestType := le_trans hv.1 hv.2
   have hlo_mem : R.lowestType ∈ R.typeInterval := ⟨le_refl _, hab⟩
   have hint : IntervalIntegrable R.q volume R.lowestType v :=
