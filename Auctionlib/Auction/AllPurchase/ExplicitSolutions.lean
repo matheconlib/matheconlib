@@ -55,7 +55,6 @@ noncomputable def strategyInterior (α A bAP : ℝ) : ℝ :=
 /-- The boundary strategy satisfies `αy² + Ky = c`. -/
 theorem boundary_regime_quadratic_raw (α K c : ℝ) (hα : 0 < α) (hc : 0 ≤ c) :
     α * strategyBoundary α K c ^ 2 + K * strategyBoundary α K c = c := by
-  -- Verify via completed-square form
   suffices h : netCostLinear α K (strategyBoundary α K c) = c by
     simp only [netCostLinear] at h; linarith
   rw [netCostLinear_completed_square α K _ (ne_of_gt hα)]
@@ -204,10 +203,7 @@ variable (A : Auction Ω n)
 /-- **Proposition 6.6 (Auction level).** In a symmetric all-purchase auction
 with linear scarcity and boundary regime (`K ≥ 0`, `U(0) = 0`), the
 equilibrium strategy satisfies
-`β(v) = (−K + √(K² + 4α · allPayBid(v))) / (2α)`.
-
-The winning probability `q_strat β i` is derived from the mechanism's `x_eq`,
-and the cost `allPurchaseNetCost` from its `t_eq`. -/
+`β(v) = (−K + √(K² + 4α · allPayBid(v))) / (2α)`. -/
 theorem boundary_regime_strategy_auction
     [Mechanism.IsAllPurchase A.rules] [HasLinearScarcity A] [HasIdenticalTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
