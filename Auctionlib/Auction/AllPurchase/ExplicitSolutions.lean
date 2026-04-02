@@ -95,39 +95,39 @@ variable (R : ReducedForm)
 regime `[IsBoundaryRegime R]`, the equilibrium strategy is
 `strategy(v) = allPayBid(v) / p_net`. -/
 theorem constant_scarcity_strategy [HasTypeDeviationIC R]
-    [hc : HasLinearCost R] [hr : IsBoundaryRegime R]
+    [HasLinearCost R] [IsBoundaryRegime R]
     (v : ℝ) (hv : v ∈ R.typeInterval) :
-    R.strategy v = R.allPayBid v / hc.p_net := by
+    R.strategy v = R.allPayBid v / R.linearCost_pNet := by
   have hid := R.netPaymentIdentity v hv
-  rw [hc.cost_eq, hr.U_lowestType_zero, sub_zero] at hid
-  rw [← hid, mul_div_cancel_left₀ _ (ne_of_gt hc.p_net_pos)]
+  rw [HasLinearCost.cost_eq, IsBoundaryRegime.U_lowestType_zero, sub_zero] at hid
+  rw [← hid, mul_div_cancel_left₀ _ (ne_of_gt HasLinearCost.p_net_pos)]
 
 /-! #### Proposition 6.6: Boundary regime equilibrium -/
 
 /-- In the boundary regime with quadratic cost, the strategy satisfies
 `α · β(v)² + K · β(v) = allPayBid(v)`. -/
 theorem boundary_regime_quadratic [HasTypeDeviationIC R]
-    [hc : HasQuadraticCost R] [hr : IsBoundaryRegime R]
+    [HasQuadraticCost R] [IsBoundaryRegime R]
     (v : ℝ) (hv : v ∈ R.typeInterval) :
-    hc.α_coeff * (R.strategy v) ^ 2 + hc.K_param * R.strategy v =
+    R.quadraticCost_α * (R.strategy v) ^ 2 + R.quadraticCost_K * R.strategy v =
       R.allPayBid v := by
   have hid := R.netPaymentIdentity v hv
-  rw [hc.cost_eq, hr.U_lowestType_zero, sub_zero] at hid
+  rw [HasQuadraticCost.cost_eq, IsBoundaryRegime.U_lowestType_zero, sub_zero] at hid
   linarith
 
 /-- **Proposition 6.6.** Under quadratic cost and boundary regime, if the
 strategy is nonneg and `K ≥ 0`, then
 `strategy(v) = (−K + √(K² + 4α · allPayBid(v))) / (2α)`. -/
 theorem boundary_regime_strategy [HasTypeDeviationIC R]
-    [hc : HasQuadraticCost R] [hr : IsBoundaryRegime R]
-    (hK : 0 ≤ hc.K_param)
+    [HasQuadraticCost R] [IsBoundaryRegime R]
+    (hK : 0 ≤ R.quadraticCost_K)
     (v : ℝ) (hv : v ∈ R.typeInterval)
     (h_bAP_nn : 0 ≤ R.allPayBid v)
     (h_strat_nn : 0 ≤ R.strategy v) :
-    R.strategy v = strategyBoundary hc.α_coeff hc.K_param (R.allPayBid v) := by
-  have hα_pos := hc.α_pos
+    R.strategy v = strategyBoundary R.quadraticCost_α R.quadraticCost_K (R.allPayBid v) := by
+  have hα_pos := HasQuadraticCost.α_pos (R := R)
   have hquad := R.boundary_regime_quadratic v hv
-  set α := hc.α_coeff; set K := hc.K_param
+  set α := R.quadraticCost_α; set K := R.quadraticCost_K
   set β := R.strategy v; set c := R.allPayBid v
   set y := strategyBoundary α K c
   have hy_eq : α * y ^ 2 + K * y = c :=
@@ -147,28 +147,28 @@ theorem boundary_regime_strategy [HasTypeDeviationIC R]
 /-- In the interior regime, the strategy satisfies the shifted quadratic
 `α · β(v)² + K · β(v) = allPayBid(v) − K²/(4α)`. -/
 theorem interior_regime_quadratic [HasTypeDeviationIC R]
-    [hr : IsInteriorRegime R]
+    [IsInteriorRegime R]
     (v : ℝ) (hv : v ∈ R.typeInterval) :
-    hr.α_coeff * (R.strategy v) ^ 2 + hr.K_param * R.strategy v =
-      R.allPayBid v - hr.K_param ^ 2 / (4 * hr.α_coeff) := by
+    R.quadraticCost_α * (R.strategy v) ^ 2 + R.quadraticCost_K * R.strategy v =
+      R.allPayBid v - R.quadraticCost_K ^ 2 / (4 * R.quadraticCost_α) := by
   have hid := R.netPaymentIdentity v hv
-  rw [hr.cost_eq, hr.U_lowestType_eq] at hid
+  rw [HasQuadraticCost.cost_eq, IsInteriorRegime.U_lowestType_eq] at hid
   linarith
 
 /-- **Proposition 6.7.** Under quadratic cost and interior regime, if the
 strategy satisfies `strategy(v) ≥ −K/(2α)`, then
 `strategy(v) = −K/(2α) + √(allPayBid(v)/α)`. -/
 theorem interior_regime_strategy [HasTypeDeviationIC R]
-    [hr : IsInteriorRegime R]
+    [IsInteriorRegime R]
     (v : ℝ) (hv : v ∈ R.typeInterval)
     (h_bAP_nn : 0 ≤ R.allPayBid v)
-    (h_strat_ge : -hr.K_param / (2 * hr.α_coeff) ≤ R.strategy v) :
+    (h_strat_ge : -R.quadraticCost_K / (2 * R.quadraticCost_α) ≤ R.strategy v) :
     R.strategy v =
-      strategyInterior hr.α_coeff (-hr.K_param) (R.allPayBid v) := by
-  have hα_pos := hr.α_pos
-  have hα_ne : hr.α_coeff ≠ 0 := ne_of_gt hα_pos
-  have hK_neg := hr.K_neg
-  set α := hr.α_coeff; set K := hr.K_param
+      strategyInterior R.quadraticCost_α (-R.quadraticCost_K) (R.allPayBid v) := by
+  have hα_pos := HasQuadraticCost.α_pos (R := R)
+  have hα_ne : R.quadraticCost_α ≠ 0 := ne_of_gt hα_pos
+  have hK_neg := IsInteriorRegime.K_neg (R := R)
+  set α := R.quadraticCost_α; set K := R.quadraticCost_K
   have hquad := R.interior_regime_quadratic v hv
   unfold strategyInterior
   have hba : 0 ≤ R.allPayBid v / α := div_nonneg h_bAP_nn (le_of_lt hα_pos)
@@ -215,7 +215,7 @@ theorem boundary_regime_strategy_auction
     (v : ℝ) (hv : v ∈ (A.toAllPurchaseReducedForm β hβ_meas i |>.typeInterval))
     (h_bAP_nn : 0 ≤ (A.toAllPurchaseReducedForm β hβ_meas i |>.allPayBid v))
     (h_strat_nn : 0 ≤ β v) :
-    β v = strategyBoundary (HasLinearScarcity.α_coeff A) (A.K_linear β)
+    β v = strategyBoundary A.linearScarcity_α (A.K_linear β)
       (A.toAllPurchaseReducedForm β hβ_meas i |>.allPayBid v) := by
   let R := A.toAllPurchaseReducedForm β hβ_meas i
   letI : R.HasQuadraticCost := A.allPurchaseHasQuadraticCost β hβ_meas hβ_int i

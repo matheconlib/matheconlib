@@ -8,15 +8,21 @@
 
 - [x] **1.1** Refactor `strictMonotonicity` to use `ReducedForm` (or extend `ReducedForm`)
 - [x] **1.2** Redefine `Auction.Efficient` as `A.rules.IsEfficient`
-- [ ] **1.3** Replace `q_range` body with delegation to `q_strat_range`
-- [ ] **2.1** Rename `ReducedForm.allpayBid` to `allPayBid` for consistency
-- [ ] **2.2** Remove duplicate `bundledProfit` (use `sellerProfit`)
-- [ ] **3.1** Delete `welfare_variance_penalty` (redundant with `welfare_gap`)
-- [ ] **3.3** Consider removing trivial `revenue_boundary_regime`
-- [ ] **4.1** Move `expected_sum_erase` out of `SymmetricIPV.lean` to `Basic.lean`
-- [ ] **5.1** Narrow `variable` scopes to eliminate 9 linter suppressions
-- [ ] **6.1** Delete or `.gitignore` untracked `test.lean`
-- [ ] **7.1** Trim docstrings that restate proof internals
+- [x] **1.3** Replace `q_range` body with delegation to `q_strat_range`
+- [x] **1.4** `HasOrderStatWinProb` is a `def`, not a `class`
+- [x] **2.1** Rename `ReducedForm.allpayBid` to `allPayBid` for consistency
+- [X] **2.2** Remove duplicate `bundledProfit` (use `sellerProfit`)
+- [X] **3.1** Delete `welfare_variance_penalty` (redundant with `welfare_gap`)
+- [X] **3.2** `revenue_decomposition` and `welfare_decomposition` are trivial
+- [X] **3.3** Consider removing trivial `revenue_boundary_regime`
+- [X] **4.1** Move `expected_sum_erase` out of `SymmetricIPV.lean` to `Basic.lean`
+- [X] **5.1** Narrow `variable` scopes to eliminate 9 linter suppressions
+- [X] **6.1** Delete or `.gitignore` untracked `test.lean`
+- [X] **7.1** Trim docstrings that restate proof internals
+- [X] **7.2** Trim module headers that duplicate CLAUDE.md
+- [x] **8.1** Audit `@[expose] public section` pattern for namespace leakage
+- [X] **8.2** Bridge Revenue/Welfare raw-ℝ functions to auction structures
+- [X] **8.3** Resolve `IsBoundaryRegime` / `IsInteriorRegime` asymmetry
 
 ---
 
@@ -47,7 +53,7 @@ the strict monotonicity argument.
 
 ### 1.2 `Auction.Efficient` duplicates `Mechanism.IsEfficient`
 
-> **TODO:** Redefine `Auction.Efficient` as `def Efficient : Prop :=
+> **DONE:** Redefine `Auction.Efficient` as `def Efficient : Prop :=
 > A.rules.IsEfficient` and remove the duplicated body.
 
 **Locations:**
@@ -74,7 +80,7 @@ the other without `show`/`change` coercions.
 
 ### 1.3 `Auction.q_range` is a near-duplicate of `q_strat_range`
 
-> **TODO:** Replace the body of `q_range` with a one-liner delegating to
+> **DONE:** Replace the body of `q_range` with a one-liner delegating to
 > `q_strat_range hx measurable_id i s`.
 
 **Location:** `Auctionlib/Auction/Basic.lean:109-126` vs `Basic.lean:86-105`
@@ -86,7 +92,7 @@ Since `q = q_strat id` is proved at line 80 (`q_eq_q_strat_id`), `q_range`
 should delegate to `q_strat_range`.
 
 ### 1.4 `HasOrderStatWinProb` is a `def`, not a `class`
-
+**DONE**
 **Location:** `Auctionlib/Auction/StrictMonotonicity.lean:47-52`
 
 `HasOrderStatWinProb` is defined as a `def` returning `Prop`, but the rest of
@@ -104,7 +110,7 @@ design and worth noting.
 
 ### 2.1 `allPayBid` vs `allpayBid`
 
-> **TODO:** Rename `ReducedForm.allpayBid` to `ReducedForm.allPayBid`
+> **DONE:** Rename `ReducedForm.allpayBid` to `ReducedForm.allPayBid`
 > (and update `allpayBid_lowestType` to `allPayBid_lowestType`).
 
 **Locations:**
@@ -117,7 +123,7 @@ for multi-word identifiers).
 
 ### 2.2 `bundledProfit` is identical to `sellerProfit`
 
-> **TODO:** Remove `bundledProfit` and redefine it as
+> **DONE:** Remove `bundledProfit` and redefine it as
 > `abbrev bundledProfit := sellerProfit`, or delete it entirely and update
 > `bundled_exceeds_editionsOnly` to use `sellerProfit`.
 
@@ -143,7 +149,7 @@ other, or one should be removed.
 
 ### 3.1 `welfare_variance_penalty` is redundant with `welfare_gap`
 
-> **TODO:** Delete `welfare_variance_penalty`.
+> **DONE:** Delete `welfare_variance_penalty`.
 
 **Location:** `Auctionlib/Auction/AllPurchase/Welfare.lean:136-145`
 
@@ -159,7 +165,7 @@ elaborated RHS contains `α(B-μ)² - α(B-μ)²`, which cancels to zero, making
 the "variance penalty" portion a no-op.
 
 ### 3.2 `revenue_decomposition` and `welfare_decomposition` are trivial
-
+**DONE**
 **Locations:**
 - `Revenue.lean:46-50`: proved by `linarith`
 - `Welfare.lean:125-130`: proved by `ring`
@@ -171,7 +177,7 @@ structure, or domain-specific fact.
 
 ### 3.3 `revenue_boundary_regime` is similarly trivial
 
-> **TODO:** Consider inlining `revenue_boundary_regime` at call sites or
+> **DONE:** Consider inlining `revenue_boundary_regime` at call sites or
 > removing it. If kept, add a note explaining why the named lemma is useful.
 
 **Location:** `Revenue.lean:53-56`
@@ -217,7 +223,7 @@ identical types.
 
 ### 5.1 Excessive `set_option linter.unusedSectionVars false`
 
-> **TODO:** Narrow the `variable` declarations in `SymmetricIPV.lean` and
+> **DONE** Narrow the `variable` declarations in `SymmetricIPV.lean` and
 > `StrictMonotonicity.lean` (e.g., split into subsections with tighter
 > assumptions, or use `omit` consistently) so the linter suppressions can
 > be removed.
@@ -241,7 +247,7 @@ The `omit` directive is used in some places as a partial workaround
 
 ### 6.1 Untracked test file
 
-> **TODO:** Delete `Auctionlib/Auction/AllPurchase/test.lean` or add it to
+> **DONE** Delete `Auctionlib/Auction/AllPurchase/test.lean` or add it to
 > `.gitignore` before pushing.
 
 **Location:** `Auctionlib/Auction/AllPurchase/test.lean`
@@ -256,7 +262,7 @@ pushing.
 
 ### 7.1 Docstrings that restate proof internals
 
-> **TODO:** Trim docstrings on `expected_sum_erase`,
+> **DONE** Trim docstrings on `expected_sum_erase`,
 > `boundary_regime_strategy_auction`, and the `-- Verify via completed-square
 > form` comment in `ExplicitSolutions.lean` to remove proof-internal details.
 
@@ -282,6 +288,9 @@ documenting the mathematical content. Examples:
 
 ### 7.2 Module headers that duplicate CLAUDE.md
 
+> **TODO:** Trim or remove module-level `/-! -/` headers that repeat
+> architecture information already in CLAUDE.md.
+
 The architecture description in CLAUDE.md already documents the typeclass
 hierarchy, the three-layer design, and the flow. Several module-level `/-! -/`
 headers repeat subsets of this information. This creates a maintenance burden:
@@ -293,32 +302,75 @@ changes to the architecture must be reflected in both places.
 
 ### 8.1 `@[expose] public section` pattern
 
-Every `.lean` file uses the `module` + `@[expose] public section` pattern.
-This makes all definitions and lemmas globally visible. If this is intentional
-(to avoid qualified access in downstream files), it is consistent. If not, it
-means the namespace boundaries declared by `namespace Auction` etc. are
-effectively nullified.
+> **DONE — no code changes needed.** The pattern is intentional and
+> appropriate for a self-contained formalization project. Details below.
+
+**What `@[expose]` is.** This is a Lean 4 core attribute (not Mathlib, not a
+custom plugin), introduced in Lean 4.21.0 via
+[leanprover/lean4#8221](https://github.com/leanprover/lean4/pull/8221) as
+part of the experimental module system. By default, definition bodies are
+*not* exported across module boundaries; `@[expose]` opts them back in so
+downstream files can unfold definitions for definitional equality. Applied to
+a `section`, it covers every definition inside that section.
+
+**Root-level definitions (outside any `namespace … end`).** Grepped all 17
+files (excluding `Playground/`). Exactly these definitions sit outside a
+namespace block:
+
+| File | Definition | Intentional? |
+|------|-----------|-------------|
+| `Mechanism/Basic.lean:19` | `structure Mechanism` | Yes — core type |
+| `Auction/Basic.lean:17` | `structure Auction` | Yes — core type |
+| `ReducedForm/Basic.lean:16` | `structure ReducedForm` | Yes — core type |
+| `Statistics/OrderStatistics.lean:67` | `def orderStatistics` | Yes — standalone combinator |
+| `Statistics/OrderStatistics.lean:71` | `lemma orderStatistics_mono` | Yes — companion lemma |
+| `Statistics/OrderStatistics.lean:77` | `lemma orderStatistics_mem_range` | Yes — companion lemma |
+| `Statistics/OrderStatistics.lean:94` | `theorem orderStatistics_le_iff` | Yes — companion theorem |
+| `Statistics/OrderStatistics.lean:148` | `structure OrderStatisticsSetup` | Yes — core type |
+| `ForMathlib/AbsolutelyContinuous.lean:29` | `theorem …pow` | Yes — Mathlib-style utility |
+| `ForMathlib/AbsolutelyContinuous.lean:41` | `theorem ae_restrict_rnDeriv_eq_zero` | Yes — Mathlib-style utility |
+| `ForMathlib/AbsolutelyContinuous.lean:53` | `theorem absolutelyContinuousOnInterval_cdf` | Yes — Mathlib-style utility |
+
+Note: `section … end section` (used in `OrderStatistics.lean`) does **not**
+create a namespace barrier in Lean 4 — it only scopes `variable`
+declarations. Definitions inside are effectively root-level.
+
+All other definitions across 17 files are inside `namespace … end` blocks
+(verified by reading each file). In particular, `ExplicitSolutions.lean`'s
+`netCostLinear`, `strategyBoundary`, `strategyInterior` etc. are all inside
+`namespace AllPurchase … end AllPurchase`.
+
+**Transitive re-export.** Because every file uses `public import` and
+`@[expose] public section`, any downstream file that writes
+`import Auctionlib` gets *every* definition dumped into scope. The
+`namespace` blocks provide logical organization (e.g., `Auction.q_strat`,
+`ReducedForm.allPayBid`) but **not access control** — all names are
+reachable without `open`. This is fine for a self-contained formalization
+project where convenience matters more than encapsulation. It would be a
+problem if this code were contributed to Mathlib, where selective exports and
+`protected` definitions are expected.
+
+**Conclusion.** The pattern is intentional, consistently applied, and
+appropriate for the project's scope. No namespace collisions exist. The only
+trade-off is the large public surface, which is acceptable here.
 
 ### 8.2 Revenue/Welfare files operate on raw `ℝ` parameters
 
-`Welfare.lean` and `Revenue.lean` define welfare/revenue concepts
-(`editionWelfare`, `cournotQuantity`, `firstBestQuantity`, `sellerProfit`,
-etc.) as plain functions on `ℝ` parameters with no connection to the `Auction`
-or `ReducedForm` structures. All theorems in these files are pure algebra.
-
-This is a conscious design choice (algebraic layer separate from the
-probabilistic layer), but it means there is no formal bridge connecting, e.g.,
-`cournotQuantity φ_bar p α n` to any actual auction's equilibrium quantity.
-The economic interpretation exists only in comments.
+> **DONE — descoped.** `Revenue.lean` and `Welfare.lean` were deleted in
+> commit `d992974` because they contained only unbundled raw-`ℝ` arithmetic
+> with no connection to auction structures. The underlying economic results
+> (Prop 6.10 revenue decomposition, Cor 6.11 revenue comparison, Prop 6.12
+> optimal pricing, Prop 6.13 welfare decomposition) remain un-formalized.
+> The CLAUDE.md task list has been updated to reflect this: the "economic
+> analysis" checkbox is now unchecked with sub-items for each result that
+> would need to be re-done properly (connected to `Auction`/`ReducedForm`).
 
 ### 8.3 `IsInteriorRegime` extends `HasQuadraticCost` but `IsBoundaryRegime` does not
 
-**Location:** `LinearScarcity.lean:70` vs `LinearScarcity.lean:63`
-
-`IsInteriorRegime` extends `HasQuadraticCost` (providing `α_coeff`,
-`K_param`, `cost_eq` for free), but `IsBoundaryRegime` is a standalone
-`Prop`-valued class with only `U_lowestType_zero`. This asymmetry means
-that in the boundary regime, `HasQuadraticCost` must be provided separately,
-while in the interior regime it comes bundled. The boundary regime theorems
-(e.g., `boundary_regime_strategy`) must explicitly require both
-`[HasQuadraticCost R]` and `[IsBoundaryRegime R]`.
+> **DONE — asymmetry is intentional; documented.** `IsBoundaryRegime`
+> cannot extend `HasQuadraticCost` because the boundary regime arises under
+> both constant scarcity (`HasLinearCost`, Prop 6.5) and linear scarcity
+> (`HasQuadraticCost`, Prop 6.6). Bundling `HasQuadraticCost` would exclude
+> the constant-scarcity case. `IsInteriorRegime` can safely extend
+> `HasQuadraticCost` because the interior regime only arises under linear
+> scarcity. A docstring has been added to `IsBoundaryRegime` explaining this.

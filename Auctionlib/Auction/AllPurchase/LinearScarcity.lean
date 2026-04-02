@@ -61,7 +61,12 @@ class HasLinearCost (R : ReducedForm) where
   cost_eq : ∀ b, R.cost b = p_net * b
 
 /-- **Boundary regime**: the lowest type purchases zero, so `U(lowestType) = 0`.
-Applies when `K ≥ 0`. -/
+Applies when `K ≥ 0`.
+
+Unlike `IsInteriorRegime`, this does not extend `HasQuadraticCost`: the boundary
+regime arises under both constant scarcity (`HasLinearCost`, Prop 6.5) and
+linear scarcity (`HasQuadraticCost`, Prop 6.6), so bundling either would
+exclude the other. -/
 class IsBoundaryRegime (R : ReducedForm) : Prop where
   U_lowestType_zero : R.U R.lowestType = 0
 
@@ -72,6 +77,18 @@ directly accessible. -/
 class IsInteriorRegime (R : ReducedForm) extends HasQuadraticCost R where
   K_neg : K_param < 0
   U_lowestType_eq : R.U R.lowestType = K_param ^ 2 / (4 * α_coeff)
+
+/-! ### Accessor defs for data-carrying typeclasses -/
+
+variable (R : ReducedForm)
+
+noncomputable abbrev quadraticCost_α [HasQuadraticCost R] : ℝ :=
+  HasQuadraticCost.α_coeff (R := R)
+noncomputable abbrev quadraticCost_K [HasQuadraticCost R] : ℝ :=
+  HasQuadraticCost.K_param (R := R)
+
+noncomputable abbrev linearCost_pNet [HasLinearCost R] : ℝ :=
+  HasLinearCost.p_net (R := R)
 
 end ReducedForm
 
@@ -99,6 +116,13 @@ class HasLinearScarcity [inst : Mechanism.IsAllPurchase A.rules] where
   /-- the scarcity function is linear -/
   scarcity_is_linear : inst.φ = fun b => φ_bar - α_coeff * b
 
+/-! ### Accessor defs for `HasLinearScarcity` -/
+
+noncomputable abbrev linearScarcity_φ_bar [Mechanism.IsAllPurchase A.rules]
+    [HasLinearScarcity A] : ℝ := HasLinearScarcity.φ_bar A
+noncomputable abbrev linearScarcity_α [Mechanism.IsAllPurchase A.rules]
+    [HasLinearScarcity A] : ℝ := HasLinearScarcity.α_coeff A
+
 variable [Mechanism.IsAllPurchase A.rules] [HasLinearScarcity A]
 
 /-- Mean equilibrium purchase per bidder: `μ = 𝔼[β(V₀)]`. -/
@@ -109,8 +133,8 @@ noncomputable def meanPurchase [HasIdenticalTypes A] (β : ℝ → ℝ) : ℝ :=
 where `μ = 𝔼[β(V₀)]` is computed from the equilibrium strategy. -/
 noncomputable def K_linear [HasIdenticalTypes A] (β : ℝ → ℝ) : ℝ :=
   Mechanism.IsAllPurchase.p_price (M := A.rules) -
-    HasLinearScarcity.φ_bar A +
-    HasLinearScarcity.α_coeff A * (↑n - 1) * A.meanPurchase β
+    A.linearScarcity_φ_bar +
+    A.linearScarcity_α * (↑n - 1) * A.meanPurchase β
 
 /-! ## Expectation computation -/
 
@@ -131,13 +155,13 @@ theorem expected_scarcity_linear [HasIdenticalTypes A]
     (i : Fin n) (b : ℝ) :
     𝔼[fun ω => Mechanism.IsAllPurchase.φ (M := A.rules) <|
       b + ∑ j ∈ univ.erase i, β (A.θ j ω)] =
-      HasLinearScarcity.φ_bar A -
-        HasLinearScarcity.α_coeff A *
+      A.linearScarcity_φ_bar -
+        A.linearScarcity_α *
           (b + (↑(n - 1) : ℝ) * A.meanPurchase β) := by
   have hφ : ∀ ω, (Mechanism.IsAllPurchase.φ (M := A.rules) <|
       b + ∑ j ∈ univ.erase i, β (A.θ j ω)) =
-      (HasLinearScarcity.φ_bar A - HasLinearScarcity.α_coeff A * b) +
-        (-HasLinearScarcity.α_coeff A) *
+      (A.linearScarcity_φ_bar - A.linearScarcity_α * b) +
+        (-A.linearScarcity_α) *
           (∑ j ∈ univ.erase i, β (A.θ j ω)) := by
     intro ω
     have := congr_fun (HasLinearScarcity.scarcity_is_linear (A := A)) <|
@@ -158,7 +182,7 @@ theorem allPurchaseNetCost_eq [HasIdenticalTypes A]
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n) (b : ℝ) :
     A.allPurchaseNetCost β i b =
-      HasLinearScarcity.α_coeff A * b ^ 2 + A.K_linear β * b := by
+      A.linearScarcity_α * b ^ 2 + A.K_linear β * b := by
   unfold allPurchaseNetCost
   rw [A.expected_scarcity_linear β hβ_meas hβ_int i b]
   unfold K_linear meanPurchase
@@ -208,7 +232,7 @@ noncomputable def allPurchaseHasQuadraticCost [HasIdenticalTypes A]
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n) :
     ReducedForm.HasQuadraticCost (A.toAllPurchaseReducedForm β hβ_meas i) where
-  α_coeff := HasLinearScarcity.α_coeff A
+  α_coeff := A.linearScarcity_α
   K_param := A.K_linear β
   α_pos := HasLinearScarcity.α_pos
   cost_eq b := A.allPurchaseNetCost_eq β hβ_meas hβ_int i b
