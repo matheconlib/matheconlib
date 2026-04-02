@@ -5,24 +5,7 @@ public import Mathlib.Probability.Independence.Basic
 public import Mathlib.Probability.IdentDistrib
 public import Mathlib.Probability.CDF
 
-/-!
-# Auction Environment Typeclasses
-
-Composable typeclasses describing properties of the auction environment.
-These follow the reference (Section 3a):
-
-- `HasIndependentTypes` — types are mutually independent (IPV)
-- `HasIdenticalTypes` — all bidders share the same distribution (symmetric)
-- `HasBoundedTypes` — each type lies in its declared interval
-- `HasDensity` — type distribution has a density (HasPDF)
-- `HasAtomlessTypes` — type distribution is atomless
-
-`IsSymmetricIPV` bundles all five for convenience.
-
-## Main results
-
-- `commonCDF_lowestType / highestType`: CDF boundary values (needs bounded + atomless)
--/
+/-! # Auction Environment Typeclasses (Section 3a) -/
 
 @[expose] public section
 

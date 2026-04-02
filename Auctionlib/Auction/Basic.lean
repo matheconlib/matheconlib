@@ -4,20 +4,7 @@ public import Auctionlib.Mechanism.Basic
 public import Auctionlib.ReducedForm.TypeDeviationIC
 public import Mathlib.Probability.Notation
 
-/-!
-# Auction — Environment + Mechanism + Probability
-
-An `Auction` combines:
-- A `Mechanism n` (the rules: allocation + payment over bid vectors)
-- A probability space `(Ω, ℙ)` with type random variables `θ`
-- Type bounds `θmin`, `θmax`
-
-Interim quantities (`q`, `p`, `U`) and incentive compatibility (`BIC`)
-are defined on `Auction`.
-
-The link to `ReducedForm` (the per-bidder analytic view used for the
-envelope theorem) is via `Auction.toReducedForm`.
--/
+/-! # Auction — Environment + Mechanism + Probability -/
 
 @[expose] public section
 

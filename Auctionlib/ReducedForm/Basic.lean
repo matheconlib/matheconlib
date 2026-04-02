@@ -2,18 +2,7 @@ module
 
 public import Mathlib.MeasureTheory.Integral.DivergenceTheorem
 
-/-!
-# Reduced Form — Per-Bidder Interim View
-
-`ReducedForm` captures the per-bidder interim view of an auction: the winning
-probability, cost, and strategy as functions of a single bidder's action.
-This is the analytic object on which the envelope theorem, Myerson's lemma,
-and payment equivalence are proved.
-
-In the auction theory literature, the "reduced form" is derived from a
-`Mechanism` (allocation + payment rules over bid vectors) by taking
-expectations over opponents' types/strategies.
--/
+/-! # Reduced Form — Per-Bidder Interim View -/
 
 @[expose] public section
 

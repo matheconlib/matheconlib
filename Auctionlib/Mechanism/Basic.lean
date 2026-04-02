@@ -2,21 +2,9 @@ module
 
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 
-/-!
-# Mechanism — Allocation and Payment Rules
+/-! # Mechanism — Allocation and Payment Rules (Section 3b)
 
-A `Mechanism` in the standard auction-theoretic sense: a tuple of allocation
-rule `x` and payment rule `t`, both functions of the full bid/message vector.
-
-Different auction formats are different `Mechanism` values:
-- First-price: highest bidder wins, pays own bid
-- Second-price: highest bidder wins, pays second-highest bid
-- All-pay: highest bidder wins, all pay their bids
-
-## Reference
-
-Section 2(c) and 3(b) of the mathematical reference: "A mechanism consists of
-message spaces (M₁,...,Mₙ) and an outcome function g : M → O."
+Examples: first-price, second-price, all-pay auctions are different `Mechanism` values.
 -/
 
 @[expose] public section
