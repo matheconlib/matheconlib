@@ -1,6 +1,7 @@
 module
 
 public import Auctionlib.Auction.AllPurchase.Basic
+public import Auctionlib.Auction.IdenticalTypes
 public import Auctionlib.Mechanism.AllPurchase
 
 /-!
