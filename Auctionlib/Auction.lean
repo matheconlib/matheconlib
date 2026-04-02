@@ -4,8 +4,6 @@ public import Auctionlib.Auction.AllPurchase
 public import Auctionlib.Auction.AllPurchase.Basic
 public import Auctionlib.Auction.AllPurchase.ExplicitSolutions
 public import Auctionlib.Auction.AllPurchase.LinearScarcity
-public import Auctionlib.Auction.AllPurchase.Revenue
-public import Auctionlib.Auction.AllPurchase.Welfare
 public import Auctionlib.Auction.Basic
 public import Auctionlib.Auction.RevenueEquivalence
 public import Auctionlib.Auction.StrictMonotonicity

@@ -52,8 +52,6 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 | [`Auction/AllPurchase.lean`](Auctionlib/Auction/AllPurchase.lean) | `allPayBid` (re-exports `Mechanism.IsAllPurchase` via import) |
 | [`Auction/AllPurchase/LinearScarcity.lean`](Auctionlib/Auction/AllPurchase/LinearScarcity.lean) | `HasQuadraticCost`, `HasLinearCost`, `IsBoundaryRegime`, `IsInteriorRegime` (extends `HasQuadraticCost`), `HasLinearScarcity`, `meanPurchase`, `K_linear`, `allPurchaseNetCost`, `toAllPurchaseReducedForm` (winProb = `q_strat`, cost derived from `t_eq`) |
 | [`Auction/AllPurchase/ExplicitSolutions.lean`](Auctionlib/Auction/AllPurchase/ExplicitSolutions.lean) | Propositions 6.5--6.7: `constant_scarcity_strategy`, `boundary_regime_strategy`, `interior_regime_strategy` (ReducedForm + Auction level) |
-| [`Auction/AllPurchase/Welfare.lean`](Auctionlib/Auction/AllPurchase/Welfare.lean) | `editionWelfare`, `firstBestQuantity`, `cournotQuantity`, `welfare_decomposition` |
-| [`Auction/AllPurchase/Revenue.lean`](Auctionlib/Auction/AllPurchase/Revenue.lean) | `revenue_decomposition`, `optimalPrice`, `bundled_exceeds_editionsOnly` |
 | [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, `HasOrderStatWinProb`, `strictMonotonicity` (Lemma 6.2), `no_ties` |
 
 ### Key Theorems
