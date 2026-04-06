@@ -2,18 +2,18 @@ module
 
 public import Mathlib.MeasureTheory.Integral.DivergenceTheorem
 
-/-! # Reduced Form — Per-Bidder Interim View -/
+/-! # BidderProblem — Per-Bidder Interim View -/
 
 @[expose] public section
 
 open Set
 
-/-- The per-bidder interim reduced form of an auction.
+/-- The per-bidder interim view of an auction.
 
 `winProb(bid)` is the interim winning probability, `cost(bid)` is the
 interim expected payment, and `strategy` maps types to bids.
 The interim payoff is `π(v, bid) = v · winProb(bid) - cost(bid)`. -/
-structure ReducedForm where
+structure BidderProblem where
   /-- lower bound of type space -/
   lowestType : ℝ
   /-- upper bound of type space -/
@@ -27,35 +27,35 @@ structure ReducedForm where
   /-- equilibrium bidding strategy: maps types to bids -/
   strategy : ℝ → ℝ
 
-namespace ReducedForm
+namespace BidderProblem
 
-variable (R : ReducedForm)
+variable (B : BidderProblem)
 
 /-- The type interval `[lowestType, highestType]`. -/
-abbrev typeInterval : Set ℝ := Icc R.lowestType R.highestType
+abbrev typeInterval : Set ℝ := Icc B.lowestType B.highestType
 
 /-! ### Derived quantities -/
 
-def payoff (v bid : ℝ) : ℝ := v * R.winProb bid - R.cost bid
-def q : ℝ → ℝ := R.winProb ∘ R.strategy
-def U (v : ℝ) : ℝ := R.payoff v (R.strategy v)
+def payoff (v bid : ℝ) : ℝ := v * B.winProb bid - B.cost bid
+def q : ℝ → ℝ := B.winProb ∘ B.strategy
+def U (v : ℝ) : ℝ := B.payoff v (B.strategy v)
 
 @[simp] lemma payoff_eq (v bid : ℝ) :
-    R.payoff v bid = v * R.winProb bid - R.cost bid := rfl
-@[simp] lemma q_eq (v : ℝ) : R.q v = R.winProb (R.strategy v) := rfl
+    B.payoff v bid = v * B.winProb bid - B.cost bid := rfl
+@[simp] lemma q_eq (v : ℝ) : B.q v = B.winProb (B.strategy v) := rfl
 @[simp] lemma U_eq (v : ℝ) :
-    R.U v = v * R.winProb (R.strategy v) - R.cost (R.strategy v) := rfl
+    B.U v = v * B.winProb (B.strategy v) - B.cost (B.strategy v) := rfl
 
-lemma q_range (v : ℝ) : R.q v ∈ Icc 0 1 := R.winProb_range (R.strategy v)
+lemma q_range (v : ℝ) : B.q v ∈ Icc 0 1 := B.winProb_range (B.strategy v)
 
 /-! ### Regular equilibrium -/
 
-class IsRegular (R : ReducedForm) : Prop where
-  winProb_mono : Monotone R.winProb
-  strategy_mono : MonotoneOn R.strategy R.typeInterval
-  strategy_nonneg : ∀ v ∈ R.typeInterval, 0 ≤ R.strategy v
-  cost_continuous : Continuous R.cost
+class IsRegular (B : BidderProblem) : Prop where
+  winProb_mono : Monotone B.winProb
+  strategy_mono : MonotoneOn B.strategy B.typeInterval
+  strategy_nonneg : ∀ v ∈ B.typeInterval, 0 ≤ B.strategy v
+  cost_continuous : Continuous B.cost
 
-end ReducedForm
+end BidderProblem
 
 end

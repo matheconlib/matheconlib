@@ -1,7 +1,7 @@
 module
 
 public import Auctionlib.Mechanism.Basic
-public import Auctionlib.ReducedForm.TypeDeviationIC
+public import Auctionlib.BidderProblem.TypeDeviationIC
 public import Mathlib.Probability.Notation
 
 /-! # Auction — Environment + Mechanism + Probability -/
@@ -122,13 +122,13 @@ def BIC : Prop :=
   ∀ i, ∀ s ∈ A.interval i, ∀ s' ∈ A.interval i,
     s * A.q i s' - A.p i s' ≤ A.U i s
 
-/-! ### Bridge: Auction → ReducedForm -/
+/-! ### Bridge: Auction → BidderProblem -/
 
-/-- Construct the reduced-form direct mechanism for bidder `i`.
+/-- Construct the per-bidder interim view for bidder `i`.
 In the direct mechanism, `strategy = id` (truthful), `winProb = q(i, ·)`,
 `cost = p(i, ·)`. -/
-noncomputable def toReducedForm (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    ReducedForm where
+noncomputable def toBidderProblem (hx : A.rules.HasValidAllocation) (i : Fin n) :
+    BidderProblem where
   lowestType := A.θmin i
   highestType := A.θmax i
   winProb := A.q i
@@ -136,35 +136,35 @@ noncomputable def toReducedForm (hx : A.rules.HasValidAllocation) (i : Fin n) :
   cost := A.p i
   strategy := id
 
-@[simp] lemma toReducedForm_winProb (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    (A.toReducedForm hx i).winProb = A.q i := rfl
-@[simp] lemma toReducedForm_cost (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    (A.toReducedForm hx i).cost = A.p i := rfl
-@[simp] lemma toReducedForm_strategy (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    (A.toReducedForm hx i).strategy = id := rfl
+@[simp] lemma toBidderProblem_winProb (hx : A.rules.HasValidAllocation) (i : Fin n) :
+    (A.toBidderProblem hx i).winProb = A.q i := rfl
+@[simp] lemma toBidderProblem_cost (hx : A.rules.HasValidAllocation) (i : Fin n) :
+    (A.toBidderProblem hx i).cost = A.p i := rfl
+@[simp] lemma toBidderProblem_strategy (hx : A.rules.HasValidAllocation) (i : Fin n) :
+    (A.toBidderProblem hx i).strategy = id := rfl
 
-/-- `ReducedForm.q` equals the interim allocation `q`. -/
-@[simp] lemma toReducedForm_q (hx : A.rules.HasValidAllocation) (i : Fin n) (v : ℝ) :
-    (A.toReducedForm hx i).q v = A.q i v := rfl
+/-- `BidderProblem.q` equals the interim allocation `q`. -/
+@[simp] lemma toBidderProblem_q (hx : A.rules.HasValidAllocation) (i : Fin n) (v : ℝ) :
+    (A.toBidderProblem hx i).q v = A.q i v := rfl
 
-/-- `ReducedForm.U` equals the interim utility `U`. -/
-@[simp] lemma toReducedForm_U (hx : A.rules.HasValidAllocation) (i : Fin n) (v : ℝ) :
-    (A.toReducedForm hx i).U v = A.U i v := rfl
+/-- `BidderProblem.U` equals the interim utility `U`. -/
+@[simp] lemma toBidderProblem_U (hx : A.rules.HasValidAllocation) (i : Fin n) (v : ℝ) :
+    (A.toBidderProblem hx i).U v = A.U i v := rfl
 
 /-! ### BIC → HasTypeDeviationIC -/
 
 /-- BIC implies `HasTypeDeviationIC` on the reduced form for each bidder. -/
 theorem hasTypeDeviationIC_of_bic
     (hx : A.rules.HasValidAllocation) (hbic : A.BIC) (i : Fin n) :
-    ReducedForm.HasTypeDeviationIC (A.toReducedForm hx i) where
+    BidderProblem.HasTypeDeviationIC (A.toBidderProblem hx i) where
   typeDeviationIC v hv v' hv' := by
-    simp only [ReducedForm.payoff, toReducedForm, id]
+    simp only [BidderProblem.payoff, toBidderProblem, id]
     exact hbic i v hv v' hv'
 
 /-! ### Consequences
 
-Once `HasTypeDeviationIC` is established on the reduced form, all results
-from the `ReducedForm` framework are automatically available:
+Once `HasTypeDeviationIC` is established on the bidder problem, all results
+from the `BidderProblem` framework are automatically available:
 
 - **Envelope theorem**: `lipschitz`, `q_monotoneOn`, `aeDifferentiable`,
   `integral_rep` (via `HasTypeDeviationIC → HasEnvelopeIC`)
@@ -178,7 +178,7 @@ theorem payment_formula (hx : A.rules.HasValidAllocation) (hbic : A.BIC)
     A.p i s = s * A.q i s - A.U i (A.θmin i) -
       ∫ ψ in A.θmin i..s, A.q i ψ := by
   have := A.hasTypeDeviationIC_of_bic hx hbic i
-  exact (A.toReducedForm hx i).payment_identity s hs
+  exact (A.toBidderProblem hx i).payment_identity s hs
 
 /-- **General Payment Equivalence.**
 
@@ -201,7 +201,7 @@ theorem payment_equivalence
     A.p i s = A₂.p j s := by
   have h_td1 := A.hasTypeDeviationIC_of_bic hx₁ hbic₁ i
   have h_td2 := A₂.hasTypeDeviationIC_of_bic hx₂ hbic₂ j
-  exact (A.toReducedForm hx₁ i).payment_unique (A₂.toReducedForm hx₂ j)
+  exact (A.toBidderProblem hx₁ i).payment_unique (A₂.toBidderProblem hx₂ j)
     hθmin hθmax hq hU s hs₁
 
 end Auction

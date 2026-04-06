@@ -59,15 +59,15 @@ theorem revenue_equivalence
   congr 1; ext i
   have hθmin : A.θmin i = A₂.θmin i := by simp [hmin]
   have hθmax : A.θmax i = A₂.θmax i := by simp [hmax]
-  -- Use the ReducedForm payment_unique via the bridge
+  -- Use the BidderProblem payment_unique via the bridge
   have h_td1 := A.hasTypeDeviationIC_of_bic hx₁ hbic₁ i
   have h_td2 := A₂.hasTypeDeviationIC_of_bic hx₂ hbic₂ i
-  have hU : (A.toReducedForm hx₁ i).U (A.θmin i) =
-            (A₂.toReducedForm hx₂ i).U (A₂.θmin i) := by
-    simp only [toReducedForm_U, A.θmin_eq_lowestType, A₂.θmin_eq_lowestType,
+  have hU : (A.toBidderProblem hx₁ i).U (A.θmin i) =
+            (A₂.toBidderProblem hx₂ i).U (A₂.θmin i) := by
+    simp only [toBidderProblem_U, A.θmin_eq_lowestType, A₂.θmin_eq_lowestType,
       ir₁ i, ir₂ i]
   have heq (ω) : A.p i (A.θ i ω) = A₂.p i (A.θ i ω) :=
-    (A.toReducedForm hx₁ i).payment_unique (A₂.toReducedForm hx₂ i)
+    (A.toBidderProblem hx₁ i).payment_unique (A₂.toBidderProblem hx₂ i)
       hθmin hθmax (hq i) hU (A.θ i ω) (HasBoundedTypes.θ_in i ω)
   calc ∫ ω, A.p i (A.θ i ω) ∂ℙ
       = ∫ ω, A₂.p i (A.θ i ω) ∂ℙ := integral_congr_ae (ae_of_all _ heq)

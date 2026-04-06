@@ -9,6 +9,11 @@ import Auctionlib.Auction.RevenueEquivalence
 import Auctionlib.Auction.StrictMonotonicity
 import Auctionlib.Auction.SymmetricIPV
 import Auctionlib.Auction.Typeclasses
+import Auctionlib.BidderProblem
+import Auctionlib.BidderProblem.Basic
+import Auctionlib.BidderProblem.EnvelopeIC
+import Auctionlib.BidderProblem.TypeDeviationIC
+import Auctionlib.BidderProblem.UniversalIC
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.ForMathlib.ApproximateSelection
 import Auctionlib.ForMathlib.Kakutani
@@ -19,9 +24,4 @@ import Auctionlib.GameTheory.NashExistence
 import Auctionlib.Mechanism
 import Auctionlib.Mechanism.AllPurchase
 import Auctionlib.Mechanism.Basic
-import Auctionlib.ReducedForm
-import Auctionlib.ReducedForm.Basic
-import Auctionlib.ReducedForm.EnvelopeIC
-import Auctionlib.ReducedForm.TypeDeviationIC
-import Auctionlib.ReducedForm.UniversalIC
 import Auctionlib.Statistics.OrderStatistics

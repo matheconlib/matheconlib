@@ -14,7 +14,7 @@ monotone on the type interval.
 - `HasIdenticalTypes` — common CDF
 - `HasPosDensity` — CDF has positive continuous density
 - `HasOrderStatWinProb` — winProb = F(v₀)^(n-1) via threshold
-- `ReducedForm.IsRegular` — monotone strategy/winProb, nonneg bids, continuous cost
+- `BidderProblem.IsRegular` — monotone strategy/winProb, nonneg bids, continuous cost
 -/
 
 @[expose] public section
@@ -45,7 +45,7 @@ class HasPosDensity (A : Auction Ω n) [HasIdenticalTypes A] where
 `winProb(b) = F(v₀)^(n-1)` where `v₀` is the threshold type.
 Bundles the type-interval agreement between `R` and `A`. -/
 class HasOrderStatWinProb (A : Auction Ω n) [HasIdenticalTypes A]
-    (R : ReducedForm) : Prop where
+    (R : BidderProblem) : Prop where
   typeInterval_eq : R.typeInterval = Icc A.lowestType A.highestType
   orderStat : ∀ b, ∃ v₀ ∈ Icc A.lowestType A.highestType,
     (∀ v ∈ Icc A.lowestType A.highestType, v < v₀ → R.strategy v < b) ∧
@@ -57,9 +57,9 @@ class HasOrderStatWinProb (A : Auction Ω n) [HasIdenticalTypes A]
 variable (A : Auction Ω n) [HasIdenticalTypes A]
 
 /-- The reduced form's type interval equals the auction's common type interval. -/
-lemma toReducedForm_typeInterval_eq
+lemma toBidderProblem_typeInterval_eq
     (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    (A.toReducedForm hx i).typeInterval = Icc A.lowestType A.highestType := by
+    (A.toBidderProblem hx i).typeInterval = Icc A.lowestType A.highestType := by
   show Icc (A.θmin i) (A.θmax i) = Icc (A.θmin 0) (A.θmax 0)
   rw [HasIdenticalTypes.θmin_eq (i := i), HasIdenticalTypes.θmax_eq (i := i)]
 
@@ -71,7 +71,7 @@ local notation "lo" => A.lowestType
 local notation "hi" => A.highestType
 
 private lemma winProb_gap
-    (R : ReducedForm) [A.HasOrderStatWinProb R]
+    (R : BidderProblem) [A.HasOrderStatWinProb R]
     (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°)
     (_hlt : v₁ < v₂) (b₀ : ℝ)
     (hβ₁ : R.strategy v₁ = b₀) (hβ₂ : R.strategy v₂ = b₀)
@@ -95,7 +95,7 @@ private lemma winProb_gap
               (A.commonCDF_mono hv₂_le_v₀_ε) (n - 1)]
 
 private lemma ic_contradiction
-    (R : ReducedForm) [ReducedForm.IsRegular R]
+    (R : BidderProblem) [BidderProblem.IsRegular R]
     (v₂ b₀ Δ : ℝ) (hv₂_mem : v₂ ∈ I) (hv₂_pos : lo < v₂)
     (hβ₂ : R.strategy v₂ = b₀) (hΔ : 0 < Δ)
     (hgap : ∀ ε > 0, Δ ≤ R.winProb (b₀ + ε) - R.winProb b₀)
@@ -105,11 +105,11 @@ private lemma ic_contradiction
   have hv₂_pos' : 0 < v₂ := lt_of_le_of_lt hlo_nonneg hv₂_pos
   obtain ⟨η, hη_pos, hη⟩ :=
     (Metric.tendsto_nhds_nhds.mp
-      (ReducedForm.IsRegular.cost_continuous (R := R).tendsto b₀))
+      (BidderProblem.IsRegular.cost_continuous (B := R).tendsto b₀))
       (v₂ * Δ) (mul_pos hv₂_pos' hΔ)
   have hε : 0 < η / 2 := by linarith
   have hic := ic v₂ hv₂_mem (b₀ + η / 2) (by linarith)
-  simp only [ReducedForm.payoff_eq, ReducedForm.U_eq] at hic
+  simp only [BidderProblem.payoff_eq, BidderProblem.U_eq] at hic
   rw [hβ₂] at hic
   have h_small := hη (show dist (b₀ + η / 2) b₀ < η by
     rw [Real.dist_eq, show b₀ + η / 2 - b₀ = η / 2 by ring,
@@ -168,7 +168,7 @@ private lemma F_pow_strict_mono
 positive density, the equilibrium strategy is strictly monotone on the
 type interval. -/
 theorem strictMonotonicity
-    (R : ReducedForm) [ReducedForm.IsRegular R]
+    (R : BidderProblem) [BidderProblem.IsRegular R]
     [A.HasOrderStatWinProb R]
     (hlo_nonneg : 0 ≤ lo)
     (ic : ∀ v ∈ I, ∀ b, 0 ≤ b → R.payoff v b ≤ R.U v) :
@@ -176,7 +176,7 @@ theorem strictMonotonicity
   have hGβ : A.HasOrderStatWinProb R := inferInstance
   have β_mono : MonotoneOn R.strategy I := by
     intro a ha b hb hab
-    exact ReducedForm.IsRegular.strategy_mono
+    exact BidderProblem.IsRegular.strategy_mono
       (show a ∈ R.typeInterval by rw [hGβ.typeInterval_eq]; exact ha)
       (show b ∈ R.typeInterval by rw [hGβ.typeInterval_eq]; exact hb) hab
   by_contra h
@@ -205,13 +205,13 @@ theorem strictMonotonicity
     (Ioo_subset_Icc_self hv₂) hv₂.1 heq'.symm
     (by linarith [A.F_pow_strict_mono v₁ v₂ hv₁ hv₂ hlt])
     (fun ε hε => A.winProb_gap R v₁ v₂ hv₁ hv₂ hlt b₀ rfl heq'.symm ε hε)
-    (ReducedForm.IsRegular.strategy_nonneg v₁
+    (BidderProblem.IsRegular.strategy_nonneg v₁
       (show v₁ ∈ R.typeInterval by rw [hGβ.typeInterval_eq]; exact Ioo_subset_Icc_self hv₁))
     hlo_nonneg ic
 
 /-- Distinct types in the interior have distinct bids. -/
 theorem no_ties
-    (R : ReducedForm) [ReducedForm.IsRegular R]
+    (R : BidderProblem) [BidderProblem.IsRegular R]
     [A.HasOrderStatWinProb R]
     (hlo_nonneg : 0 ≤ lo)
     (ic : ∀ v ∈ I, ∀ b, 0 ≤ b → R.payoff v b ≤ R.U v) :

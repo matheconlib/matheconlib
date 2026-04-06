@@ -21,7 +21,7 @@ payment rules to match the all-purchase format (see `Mechanism/AllPurchase.lean`
   `v · F(v)^{n-1} - ∫ F(ψ)^{n-1} dψ`
 
 The key formalized results (monotonicity, envelope, strict monotonicity,
-net payment identity) are available at the `ReducedForm` / general `Auction`
+net payment identity) are available at the `BidderProblem` / general `Auction`
 level and do not depend on the all-purchase-specific parameters.
 -/
 

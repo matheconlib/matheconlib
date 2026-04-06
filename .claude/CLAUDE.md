@@ -6,17 +6,23 @@ Three-layer design following the mathematical reference (Section 2-3):
 
 1. **Mechanism** (`Mechanism/Basic.lean`): allocation rule `x` + payment rule `t` over bid vectors (the rules of the game, Section 3b)
 2. **Auction** (`Auction/`): mechanism + probabilistic environment (`θ`, `θmin`, `θmax`) on probability space `(Ω, ℙ)` (Section 3a+3b)
-3. **ReducedForm** (`ReducedForm/`): per-bidder interim view (`winProb`, `cost`, `strategy`) with IC typeclass chain
+3. **BidderProblem** (`BidderProblem/`): per-bidder interim view (`winProb`, `cost`, `strategy`) with IC typeclass chain
 
-Flow: `Auction → toReducedForm → ReducedForm` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem)
+Flow: `Auction → toBidderProblem → BidderProblem` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem)
 
-Strategy-dependent interim quantities: `q_strat σ i b = 𝔼[xᵢ(b, σ(θ₋ᵢ))]`, `p_strat σ i b = 𝔼[tᵢ(b, σ(θ₋ᵢ))]`. Standard `q`/`p` are the `σ = id` case. For the all-purchase auction, `toAllPurchaseReducedForm` derives `winProb` from `q_strat` (via `x_eq`) and `cost` from `allPurchaseNetCost` (via `t_eq`).
+Strategy-dependent interim quantities: `q_strat σ i b = 𝔼[xᵢ(b, σ(θ₋ᵢ))]`, `p_strat σ i b = 𝔼[tᵢ(b, σ(θ₋ᵢ))]`. Standard `q`/`p` are the `σ = id` case. For the all-purchase auction, `toAllPurchaseBidderProblem` derives `winProb` from `q_strat` (via `x_eq`) and `cost` from `allPurchaseNetCost` (via `t_eq`). Under linear scarcity, `LinearScarcityAuction.toQuadraticCostProblem` extends this with the quadratic cost proof.
 
 Typeclasses on Mechanism: `IsAllPurchase` (posted price + scarcity function + `x_eq`/`t_eq`, derives `hasValidAllocation`)
 
-Typeclasses on Auction: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV` (bundle), `HasPosDensity`, `HasLinearScarcity` (extends `IsAllPurchase` with linear φ parameters)
+Typeclasses on Auction: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV` (bundle), `HasPosDensity`
 
-Typeclasses on ReducedForm: `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversalIC`, `IsRegular`, `HasQuadraticCost`, `HasLinearCost`, `IsBoundaryRegime`, `IsInteriorRegime` (extends `HasQuadraticCost`)
+Typeclasses on BidderProblem: `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversalIC`, `IsRegular`, `IsBoundaryRegime`
+
+Structures for parametric families:
+- `LinearScarcityAuction` extends `Auction`: all-purchase auction with linear scarcity `φ(B) = φ̄ − αB`
+- `QuadraticCostProblem` extends `BidderProblem`: cost is `α·b² + K·b`
+- `LinearCostProblem` extends `BidderProblem`: cost is `p_net·b`
+- `InteriorRegimeProblem` extends `QuadraticCostProblem`: `K < 0`, `U(lowestType) = K²/(4α)`
 
 ## Task status
 
@@ -29,7 +35,7 @@ Typeclasses on ReducedForm: `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversal
   - [x] Lemma 6.3 — envelope / integral representation
   - [x] Proposition 6.4 — net payment identity
 - [x] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
-- [ ] formalize ‹All-Purchase Auction› economic analysis (section 6.7) — descoped: raw-ℝ versions deleted; needs redo connected to Auction/ReducedForm structures
+- [ ] formalize ‹All-Purchase Auction› economic analysis (section 6.7) — descoped: raw-ℝ versions deleted; needs redo connected to Auction/BidderProblem structures
   - [ ] Proposition 6.10 — revenue decomposition
   - [ ] Corollary 6.11 — bundled vs standalone revenue comparison
   - [ ] Proposition 6.12 — optimal pricing (interior regime)
