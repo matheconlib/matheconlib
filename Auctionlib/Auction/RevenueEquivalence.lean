@@ -26,13 +26,13 @@ variable (A : Auction Ω n) [A.IsSymmetricIPV]
 /-- Under BIC, efficient allocation, and IR, the per-type expected payment
 is uniquely determined by the common CDF. -/
 lemma payment_formula_efficient
-    (hx : A.rules.HasValidAllocation) (eff : A.Efficient)
-    (hbic : A.BIC) (ir : A.IndividuallyRational)
+    [A.rules.HasValidAllocation] [A.rules.IsEfficient]
+    [A.BIC] [A.IndividuallyRational]
     (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) :
     A.p i s = s * A.commonCDF s ^ (n - 1) -
       ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1) := by
-  have hpf := A.payment_formula hx hbic i hs
-  simp [A.q_eq_pow eff, ir i] at hpf ⊢
+  have hpf := A.payment_formula i hs
+  simp [A.q_eq_pow, IndividuallyRational.ir i] at hpf ⊢
   linarith
 
 /-- **Revenue Equivalence Theorem.**
@@ -42,13 +42,13 @@ and identically distributed types yield the same expected total revenue. -/
 theorem revenue_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.IsSymmetricIPV]
-    (hx₁ : A.rules.HasValidAllocation) (hx₂ : A₂.rules.HasValidAllocation)
+    [A.rules.HasValidAllocation] [A₂.rules.HasValidAllocation]
     (hq : ∀ i, A.q i = A₂.q i)
     (hmin : A.lowestType = A₂.lowestType)
     (hmax : A.highestType = A₂.highestType)
     (ident : ∀ i, IdentDistrib (A.θ i) (A₂.θ i) ℙ ℙ)
-    (hbic₁ : A.BIC) (hbic₂ : A₂.BIC)
-    (ir₁ : A.IndividuallyRational) (ir₂ : A₂.IndividuallyRational)
+    [A.BIC] [A₂.BIC]
+    [A.IndividuallyRational] [A₂.IndividuallyRational]
     (p_meas : ∀ i, Measurable (A₂.p i))
     (hint₁ : ∀ i, Integrable (fun ω => A.p i (A.θ i ω)) ℙ)
     (hint₂ : ∀ i, Integrable (fun ω => A₂.p i (A₂.θ i ω)) ℙ) :
@@ -59,15 +59,12 @@ theorem revenue_equivalence
   congr 1; ext i
   have hθmin : A.θmin i = A₂.θmin i := by simp [hmin]
   have hθmax : A.θmax i = A₂.θmax i := by simp [hmax]
-  -- Use the BidderProblem payment_unique via the bridge
-  have h_td1 := A.hasTypeDeviationIC_of_bic hx₁ hbic₁ i
-  have h_td2 := A₂.hasTypeDeviationIC_of_bic hx₂ hbic₂ i
-  have hU : (A.toBidderProblem hx₁ i).U (A.θmin i) =
-            (A₂.toBidderProblem hx₂ i).U (A₂.θmin i) := by
+  have hU : (A.toBidderProblem id i).U (A.θmin i) =
+            (A₂.toBidderProblem id i).U (A₂.θmin i) := by
     simp only [toBidderProblem_U, A.θmin_eq_lowestType, A₂.θmin_eq_lowestType,
-      ir₁ i, ir₂ i]
+      IndividuallyRational.ir i]
   have heq (ω) : A.p i (A.θ i ω) = A₂.p i (A.θ i ω) :=
-    (A.toBidderProblem hx₁ i).payment_unique (A₂.toBidderProblem hx₂ i)
+    (A.toBidderProblem id i).payment_unique (A₂.toBidderProblem id i)
       hθmin hθmax (hq i) hU (A.θ i ω) (HasBoundedTypes.θ_in i ω)
   calc ∫ ω, A.p i (A.θ i ω) ∂ℙ
       = ∫ ω, A₂.p i (A.θ i ω) ∂ℙ := integral_congr_ae (ae_of_all _ heq)
@@ -77,15 +74,15 @@ theorem revenue_equivalence
 /-- Under efficient allocation, BIC, and IR, the expected total revenue equals
 `𝔼[S₂]`, the expected second-highest order statistic. -/
 lemma total_revenue
-    (hx : A.rules.HasValidAllocation) (eff : A.Efficient)
-    (hbic : A.BIC) (ir : A.IndividuallyRational) :
+    [A.rules.HasValidAllocation] [A.rules.IsEfficient]
+    [A.BIC] [A.IndividuallyRational] :
     A.expectedRevenue = 𝔼[A.S₂] := by
   simp only [expectedRevenue]
   let φ : ℝ → ℝ :=
     fun s => s * A.commonCDF s ^ (n - 1) -
       ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1)
   have hrw (j ω) : A.p j (A.θ j ω) = φ (A.θ j ω) :=
-    A.payment_formula_efficient hx eff hbic ir j (HasBoundedTypes.θ_in j ω)
+    A.payment_formula_efficient j (HasBoundedTypes.θ_in j ω)
   simp_rw [hrw]
   have hφ_meas : Measurable φ := by
     refine Measurable.sub

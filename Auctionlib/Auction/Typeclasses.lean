@@ -128,8 +128,8 @@ lemma commonCDF_eq [HasIdenticalTypes A] (s : ℝ) :
 /-! ### Individual rationality and revenue -/
 
 /-- Individual rationality: lowest type gets zero utility. -/
-def IndividuallyRational [HasIdenticalTypes A] : Prop :=
-  ∀ i, A.U i A.lowestType = 0
+class IndividuallyRational [HasIdenticalTypes A] : Prop where
+  ir : ∀ i, A.U i A.lowestType = 0
 
 /-- Expected total revenue. -/
 noncomputable def expectedRevenue : ℝ :=

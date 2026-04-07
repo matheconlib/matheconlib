@@ -47,12 +47,12 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 | File | Contents |
 |------|----------|
 | [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) | `Auction` structure, `q`, `p`, `U`, `q_strat`, `p_strat`, `BIC`, `ExPostIR`/`InterimIR`/`ExAnteIR`, `toReducedForm`, `hasTypeDeviationIC_of_bic`, `payment_formula`, `payment_equivalence` |
-| [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) | Composable typeclasses: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV`. CDF via Mathlib's `ProbabilityTheory.cdf`. `q_eq_pow`, `commonCDF`, `toOrderStatisticsSetup` |
+| [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) | Composable typeclasses: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV`. CDF via Mathlib's `ProbabilityTheory.cdf`. `bidThreshold`, `q_eq_pow`, `q_strat_eq_cdf_pow`, `commonCDF`, `toOrderStatisticsSetup` |
 | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) | `payment_formula_efficient`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
 | [`Auction/AllPurchase.lean`](Auctionlib/Auction/AllPurchase.lean) | `allPayBid` (re-exports `Mechanism.IsAllPurchase` via import) |
 | [`Auction/AllPurchase/LinearScarcity.lean`](Auctionlib/Auction/AllPurchase/LinearScarcity.lean) | `HasQuadraticCost`, `HasLinearCost`, `IsBoundaryRegime`, `IsInteriorRegime` (extends `HasQuadraticCost`), `HasLinearScarcity`, `meanPurchase`, `K_linear`, `allPurchaseNetCost`, `toAllPurchaseReducedForm` (winProb = `q_strat`, cost derived from `t_eq`) |
 | [`Auction/AllPurchase/ExplicitSolutions.lean`](Auctionlib/Auction/AllPurchase/ExplicitSolutions.lean) | Propositions 6.5--6.7: `constant_scarcity_strategy`, `boundary_regime_strategy`, `interior_regime_strategy` (ReducedForm + Auction level) |
-| [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, `HasOrderStatWinProb`, `strictMonotonicity` (Lemma 6.2), `no_ties` |
+| [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, `strictMonotonicity` (Lemma 6.2), `no_ties` |
 
 ### Key Theorems
 

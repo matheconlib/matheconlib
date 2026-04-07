@@ -201,18 +201,18 @@ with linear scarcity and boundary regime (`K ≥ 0`, `U(0) = 0`), the
 equilibrium strategy satisfies
 `β(v) = (−K + √(K² + 4α · allPayBid(v))) / (2α)`. -/
 theorem boundary_regime_strategy_auction
-    [Auction.HasIdenticalTypes A.toAuction]
+    [A.HasIdenticalTypes]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n)
-    (hIC : (A.bidderProblem β hβ_meas i).HasTypeDeviationIC)
-    (hBR : (A.bidderProblem β hβ_meas i).IsBoundaryRegime)
+    (hIC : (A.toBidderProblem β i).HasTypeDeviationIC)
+    (hBR : (A.toBidderProblem β i).IsBoundaryRegime)
     (hK : 0 ≤ A.K_linear β)
-    (v : ℝ) (hv : v ∈ (A.bidderProblem β hβ_meas i).typeInterval)
-    (h_bAP_nn : 0 ≤ (A.bidderProblem β hβ_meas i).allPayBid v)
+    (v : ℝ) (hv : v ∈ (A.toBidderProblem β i).typeInterval)
+    (h_bAP_nn : 0 ≤ (A.toBidderProblem β i).allPayBid v)
     (h_strat_nn : 0 ≤ β v) :
     β v = strategyBoundary A.α_coeff (A.K_linear β)
-      ((A.bidderProblem β hβ_meas i).allPayBid v) := by
+      ((A.toBidderProblem β i).allPayBid v) := by
   let P := A.toQuadraticCostProblem β hβ_meas hβ_int i
   letI : BidderProblem.HasTypeDeviationIC P.toBidderProblem := hIC
   letI : BidderProblem.IsBoundaryRegime P.toBidderProblem := hBR
@@ -223,19 +223,19 @@ theorem boundary_regime_strategy_auction
 with interior regime (`K < 0`), the equilibrium strategy satisfies
 `β(v) = −K/(2α) + √(allPayBid(v)/α)`. -/
 theorem interior_regime_strategy_auction
-    [Auction.HasIdenticalTypes A.toAuction]
+    [A.HasIdenticalTypes]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n)
-    (hIC : (A.bidderProblem β hβ_meas i).HasTypeDeviationIC)
+    (hIC : (A.toBidderProblem β i).HasTypeDeviationIC)
     (hK_neg : A.K_linear β < 0)
-    (hU_eq : (A.bidderProblem β hβ_meas i).U A.toAuction.lowestType =
+    (hU_eq : (A.toBidderProblem β i).U (A.toBidderProblem β i).lowestType =
         (A.K_linear β) ^ 2 / (4 * A.α_coeff))
-    (v : ℝ) (hv : v ∈ (A.bidderProblem β hβ_meas i).typeInterval)
-    (h_bAP_nn : 0 ≤ (A.bidderProblem β hβ_meas i).allPayBid v)
+    (v : ℝ) (hv : v ∈ (A.toBidderProblem β i).typeInterval)
+    (h_bAP_nn : 0 ≤ (A.toBidderProblem β i).allPayBid v)
     (h_strat_ge : -(A.K_linear β) / (2 * A.α_coeff) ≤ β v) :
     β v = strategyInterior A.α_coeff (-(A.K_linear β))
-      ((A.bidderProblem β hβ_meas i).allPayBid v) := by
+      ((A.toBidderProblem β i).allPayBid v) := by
   let P : InteriorRegimeProblem := {
     A.toQuadraticCostProblem β hβ_meas hβ_int i with
     K_neg := hK_neg

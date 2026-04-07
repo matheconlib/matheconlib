@@ -68,33 +68,24 @@ lemma q_eq_q_strat_id (i : Fin n) (s : ℝ) : A.q i s = A.q_strat id i s := rfl
 /-- The standard interim payment is `p_strat` with `σ = id`. -/
 lemma p_eq_p_strat_id (i : Fin n) (s : ℝ) : A.p i s = A.p_strat id i s := rfl
 
-/-- `q_strat` takes values in `[0, 1]` when allocation is valid. -/
-lemma q_strat_range (hx : A.rules.HasValidAllocation) {σ : ℝ → ℝ} (hσ : Measurable σ)
-    (i : Fin n) (b : ℝ) : A.q_strat σ i b ∈ Icc 0 1 := by
+/-- `q_strat` takes values in `[0, 1]` when allocation is valid.
+No measurability assumption on `σ`: if the integrand is not integrable,
+the Bochner integral defaults to `0 ∈ [0, 1]`. -/
+lemma q_strat_range [A.rules.HasValidAllocation]
+    (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) : A.q_strat σ i b ∈ Icc 0 1 := by
   simp only [q_strat, mem_Icc]
-  have hmeas : Measurable fun ω => A.rules.x i
-      (Function.update (fun j => σ (A.θ j ω)) i b) :=
-    (A.rules.x_measurable i).comp (measurable_pi_lambda _ fun j => by
-      simp only [Function.update_apply]
-      split_ifs
-      · exact measurable_const
-      · exact hσ.comp (A.θ_measurable j))
-  have hint : Integrable (fun ω => A.rules.x i
-      (Function.update (fun j => σ (A.θ j ω)) i b)) ℙ :=
-    integrable_const (1 : ℝ) |>.mono hmeas.aestronglyMeasurable <|
-      ae_of_all _ fun ω => by
-        simpa [Real.norm_eq_abs, abs_of_nonneg (hx i _).1] using (hx i _).2
+  have hx := Mechanism.HasValidAllocation.x_range (M := A.rules)
   refine ⟨integral_nonneg fun ω => (hx i _).1, ?_⟩
   calc 𝔼[fun ω => A.rules.x i (Function.update (fun j => σ (A.θ j ω)) i b)]
     _ ≤ ∫ _, (1 : ℝ) ∂ℙ :=
-      integral_mono hint (integrable_const 1) fun ω => (hx i _).2
+      integral_mono_of_nonneg (ae_of_all _ fun ω => (hx i _).1)
+        (integrable_const 1) (ae_of_all _ fun ω => (hx i _).2)
     _ = 1 := by rw [integral_const]; simp [Measure.real, measure_univ]
 
-/-- Interim allocation takes values in `[0, 1]`.
-Requires `x_range` on the mechanism's allocation rule. -/
-lemma q_range (hx : A.rules.HasValidAllocation) (i : Fin n) (s : ℝ) :
+/-- Interim allocation takes values in `[0, 1]`. -/
+lemma q_range [A.rules.HasValidAllocation] (i : Fin n) (s : ℝ) :
     A.q i s ∈ Icc 0 1 :=
-  A.q_strat_range hx measurable_id i s
+  A.q_strat_range id i s
 
 /-! ### Individual rationality -/
 
@@ -118,48 +109,56 @@ def ExAnteIR : Prop :=
 
 /-- Bayesian incentive compatibility: truthful reporting maximizes each
 bidder's interim utility. -/
-def BIC : Prop :=
-  ∀ i, ∀ s ∈ A.interval i, ∀ s' ∈ A.interval i,
+class BIC : Prop where
+  bic : ∀ i, ∀ s ∈ A.interval i, ∀ s' ∈ A.interval i,
     s * A.q i s' - A.p i s' ≤ A.U i s
 
 /-! ### Bridge: Auction → BidderProblem -/
 
-/-- Construct the per-bidder interim view for bidder `i`.
-In the direct mechanism, `strategy = id` (truthful), `winProb = q(i, ·)`,
-`cost = p(i, ·)`. -/
-noncomputable def toBidderProblem (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    BidderProblem where
+/-- Construct the per-bidder interim view for bidder `i` when opponents
+play strategy `σ`. `winProb = q_strat(σ, i, ·)`, `cost = p_strat(σ, i, ·)`,
+`strategy = σ`. The direct mechanism is the `σ = id` case. -/
+noncomputable def toBidderProblem [A.rules.HasValidAllocation]
+    (σ : ℝ → ℝ) (i : Fin n) : BidderProblem where
   lowestType := A.θmin i
   highestType := A.θmax i
-  winProb := A.q i
-  winProb_range s := A.q_range hx i s
-  cost := A.p i
-  strategy := id
+  winProb := A.q_strat σ i
+  winProb_range := A.q_strat_range σ i
+  cost := A.p_strat σ i
+  strategy := σ
 
-@[simp] lemma toBidderProblem_winProb (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    (A.toBidderProblem hx i).winProb = A.q i := rfl
-@[simp] lemma toBidderProblem_cost (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    (A.toBidderProblem hx i).cost = A.p i := rfl
-@[simp] lemma toBidderProblem_strategy (hx : A.rules.HasValidAllocation) (i : Fin n) :
-    (A.toBidderProblem hx i).strategy = id := rfl
+variable [A.rules.HasValidAllocation] in
+@[simp] lemma toBidderProblem_winProb
+    (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) :
+    (A.toBidderProblem σ i).winProb b = A.q_strat σ i b := rfl
+variable [A.rules.HasValidAllocation] in
+@[simp] lemma toBidderProblem_cost
+    (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) :
+    (A.toBidderProblem σ i).cost b = A.p_strat σ i b := rfl
+variable [A.rules.HasValidAllocation] in
+@[simp] lemma toBidderProblem_strategy
+    (σ : ℝ → ℝ) (i : Fin n) (v : ℝ) :
+    (A.toBidderProblem σ i).strategy v = σ v := rfl
 
-/-- `BidderProblem.q` equals the interim allocation `q`. -/
-@[simp] lemma toBidderProblem_q (hx : A.rules.HasValidAllocation) (i : Fin n) (v : ℝ) :
-    (A.toBidderProblem hx i).q v = A.q i v := rfl
+variable [A.rules.HasValidAllocation] in
+/-- `BidderProblem.q` equals the interim allocation `q` (direct mechanism). -/
+@[simp] lemma toBidderProblem_q (i : Fin n) (v : ℝ) :
+    (A.toBidderProblem id i).q v = A.q i v := rfl
 
-/-- `BidderProblem.U` equals the interim utility `U`. -/
-@[simp] lemma toBidderProblem_U (hx : A.rules.HasValidAllocation) (i : Fin n) (v : ℝ) :
-    (A.toBidderProblem hx i).U v = A.U i v := rfl
+variable [A.rules.HasValidAllocation] in
+/-- `BidderProblem.U` equals the interim utility `U` (direct mechanism). -/
+@[simp] lemma toBidderProblem_U (i : Fin n) (v : ℝ) :
+    (A.toBidderProblem id i).U v = A.U i v := rfl
 
 /-! ### BIC → HasTypeDeviationIC -/
 
-/-- BIC implies `HasTypeDeviationIC` on the reduced form for each bidder. -/
-theorem hasTypeDeviationIC_of_bic
-    (hx : A.rules.HasValidAllocation) (hbic : A.BIC) (i : Fin n) :
-    BidderProblem.HasTypeDeviationIC (A.toBidderProblem hx i) where
+/-- BIC implies `HasTypeDeviationIC` on the bidder problem for each bidder. -/
+instance hasTypeDeviationIC_of_bic
+    [A.rules.HasValidAllocation] [hbic : A.BIC] (i : Fin n) :
+    BidderProblem.HasTypeDeviationIC (A.toBidderProblem id i) where
   typeDeviationIC v hv v' hv' := by
-    simp only [BidderProblem.payoff, toBidderProblem, id]
-    exact hbic i v hv v' hv'
+    simp only [BidderProblem.payoff]
+    exact hbic.bic i v hv v' hv'
 
 /-! ### Consequences
 
@@ -173,12 +172,11 @@ from the `BidderProblem` framework are automatically available:
 -/
 
 /-- Payment formula: under BIC, interim payment is determined by `q`. -/
-theorem payment_formula (hx : A.rules.HasValidAllocation) (hbic : A.BIC)
+theorem payment_formula [A.rules.HasValidAllocation] [A.BIC]
     (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) :
     A.p i s = s * A.q i s - A.U i (A.θmin i) -
-      ∫ ψ in A.θmin i..s, A.q i ψ := by
-  have := A.hasTypeDeviationIC_of_bic hx hbic i
-  exact (A.toBidderProblem hx i).payment_identity s hs
+      ∫ ψ in A.θmin i..s, A.q i ψ :=
+  (A.toBidderProblem id i).payment_identity s hs
 
 /-- **General Payment Equivalence.**
 
@@ -190,18 +188,16 @@ The two auctions may live on different probability spaces. -/
 theorem payment_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n)
-    (hx₁ : A.rules.HasValidAllocation) (hx₂ : A₂.rules.HasValidAllocation)
-    (hbic₁ : A.BIC) (hbic₂ : A₂.BIC)
+    [A.rules.HasValidAllocation] [A₂.rules.HasValidAllocation]
+    [A.BIC] [A₂.BIC]
     (i j : Fin n)
     (hθmin : A.θmin i = A₂.θmin j)
     (hθmax : A.θmax i = A₂.θmax j)
     (hq : A.q i = A₂.q j)
     (hU : A.U i (A.θmin i) = A₂.U j (A₂.θmin j))
     {s : ℝ} (hs₁ : s ∈ A.interval i) :
-    A.p i s = A₂.p j s := by
-  have h_td1 := A.hasTypeDeviationIC_of_bic hx₁ hbic₁ i
-  have h_td2 := A₂.hasTypeDeviationIC_of_bic hx₂ hbic₂ j
-  exact (A.toBidderProblem hx₁ i).payment_unique (A₂.toBidderProblem hx₂ j)
+    A.p i s = A₂.p j s :=
+  (A.toBidderProblem id i).payment_unique (A₂.toBidderProblem id j)
     hθmin hθmax hq hU s hs₁
 
 end Auction

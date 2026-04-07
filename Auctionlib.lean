@@ -16,6 +16,7 @@ import Auctionlib.BidderProblem.TypeDeviationIC
 import Auctionlib.BidderProblem.UniversalIC
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.ForMathlib.ApproximateSelection
+import Auctionlib.ForMathlib.FinsetUpdate
 import Auctionlib.ForMathlib.Kakutani
 import Auctionlib.ForMathlib.ProbabilityMeasure
 import Auctionlib.ForMathlib.Schauder

@@ -29,14 +29,17 @@ namespace Mechanism
 variable {n : ℕ} (M : Mechanism n)
 
 /-- Allocation takes values in `[0, 1]`. -/
-def HasValidAllocation : Prop := ∀ i b, M.x i b ∈ Icc 0 1
-
-/-- Feasibility: total allocation ≤ 1 (single indivisible good). -/
-def IsFeasible : Prop := ∀ b, ∑ i, M.x i b ≤ 1
+class HasValidAllocation : Prop where
+  x_range : ∀ i b, M.x i b ∈ Icc 0 1
 
 /-- Efficient allocation: the highest-type bidder wins. -/
-def IsEfficient : Prop :=
-  ∀ i, M.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
+class IsEfficient : Prop where
+  x_efficient : ∀ i, M.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
+
+/-- Efficient allocation is valid: the indicator takes values in `{0, 1} ⊆ [0, 1]`. -/
+instance IsEfficient.instHasValidAllocation [IsEfficient M] : HasValidAllocation M where
+  x_range i b := by
+    simp only [IsEfficient.x_efficient, indicator_apply, mem_Icc]; split_ifs <;> norm_num
 
 end Mechanism
 
