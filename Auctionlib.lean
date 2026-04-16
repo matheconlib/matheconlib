@@ -32,12 +32,3 @@ import auctionlib.Statistics.OrderStatistics
 import Auctionlib.Envelope.Mathematics
 import Auctionlib.Envelope.Myerson
 import Auctionlib.Envelope.Theorem
-import Auctionlib.ForMathlib.AbsolutelyContinuous
-import Auctionlib.ForMathlib.ApproximateSelection
-import Auctionlib.ForMathlib.Kakutani
-import Auctionlib.ForMathlib.ProbabilityMeasure
-import Auctionlib.ForMathlib.Schauder
-import Auctionlib.GameTheory.Basic
-import Auctionlib.GameTheory.NashExistence
-import Auctionlib.RevenueEquivalence.Theorem
-import Auctionlib.Statistics.OrderStatistics
