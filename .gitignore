@@ -2,3 +2,7 @@
 Auctionlib/Playground/*
 documents/
 logs/
+
+.DS_STORE
+
+reports/
