@@ -3,6 +3,7 @@ import Auctionlib.Auction.AllPurchase
 import Auctionlib.Auction.AllPurchase.Basic
 import Auctionlib.Auction.AllPurchase.ExplicitSolutions
 import Auctionlib.Auction.AllPurchase.LinearScarcity
+import Auctionlib.Auction.AllPurchase.RevenueDecomposition
 import Auctionlib.Auction.Basic
 import Auctionlib.Auction.IdenticalTypes
 import Auctionlib.Auction.RevenueEquivalence
@@ -17,6 +18,7 @@ import Auctionlib.BidderProblem.UniversalIC
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.ForMathlib.ApproximateSelection
 import Auctionlib.ForMathlib.FinsetUpdate
+import Auctionlib.ForMathlib.IndepFun
 import Auctionlib.ForMathlib.Kakutani
 import Auctionlib.ForMathlib.ProbabilityMeasure
 import Auctionlib.ForMathlib.Schauder

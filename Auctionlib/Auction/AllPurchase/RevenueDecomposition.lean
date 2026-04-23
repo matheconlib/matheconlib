@@ -4,6 +4,7 @@ public import Auctionlib.Auction.AllPurchase.Basic
 public import Auctionlib.Auction.AllPurchase.LinearScarcity
 public import Auctionlib.Auction.SymmetricIPV
 public import Auctionlib.Auction.IdenticalTypes
+public import Auctionlib.ForMathlib.IndepFun
 
 /-!
 # Revenue decomposition for the all-purchase auction (§6.7.1)
@@ -248,42 +249,6 @@ lemma sellerGrossRevenue_eq_netPayment_add_editionValue
 
 /-! ### Step 2: identify the net payment with the all-pay bid up to `U(a)` -/
 
-/-- **Fubini helper**: for independent r.v.s `X ⫫ Y`, integrating
-`h(X ω, Y ω)` on `ℙ` equals the iterated integral on `ℙ ⊗ ℙ`.
-
-Proof uses `indepFun_iff_map_prod_eq_prod_map_map` (joint law = product of
-marginals) + `MeasureTheory.integral_prod` (Fubini on product measures) +
-`integral_map` on both sides. -/
-private lemma integral_indep_swap
-    {α γ : Type*} [MeasurableSpace α] [MeasurableSpace γ]
-    {X : Ω → α} {Y : Ω → γ} (hXY : IndepFun X Y ℙ)
-    (hX : Measurable X) (hY : Measurable Y)
-    (h : α → γ → ℝ) (hh : Measurable h.uncurry)
-    (hint : Integrable (fun ω => h (X ω) (Y ω)) ℙ) :
-    ∫ ω, h (X ω) (Y ω) ∂ℙ = ∫ ω, ∫ ω', h (X ω) (Y ω') ∂ℙ ∂ℙ := by
-  -- Joint-law equals product of marginals.
-  have hmap : Measure.map (fun ω => (X ω, Y ω)) ℙ =
-      (Measure.map X ℙ).prod (Measure.map Y ℙ) :=
-    (indepFun_iff_map_prod_eq_prod_map_map hX.aemeasurable hY.aemeasurable).1 hXY
-  -- Integrability on product measure.
-  have hint_prod : Integrable h.uncurry
-      ((Measure.map X ℙ).prod (Measure.map Y ℙ)) := by
-    rw [← hmap]
-    exact (integrable_map_measure hh.aestronglyMeasurable
-      (hX.prodMk hY).aemeasurable).2 hint
-  calc ∫ ω, h (X ω) (Y ω) ∂ℙ
-      = ∫ z, h.uncurry z ∂(Measure.map (fun ω => (X ω, Y ω)) ℙ) := by
-        rw [integral_map (hX.prodMk hY).aemeasurable hh.aestronglyMeasurable]; rfl
-    _ = ∫ z, h.uncurry z ∂((Measure.map X ℙ).prod (Measure.map Y ℙ)) := by rw [hmap]
-    _ = ∫ x, ∫ y, h x y ∂(Measure.map Y ℙ) ∂(Measure.map X ℙ) :=
-        MeasureTheory.integral_prod _ hint_prod
-    _ = ∫ ω, ∫ y, h (X ω) y ∂(Measure.map Y ℙ) ∂ℙ := by
-        rw [integral_map hX.aemeasurable]
-        exact (MeasureTheory.Integrable.integral_prod_left hint_prod).aestronglyMeasurable
-    _ = ∫ ω, ∫ ω', h (X ω) (Y ω') ∂ℙ ∂ℙ := by
-        congr 1 with ω
-        rw [integral_map hY.aemeasurable (hh.of_uncurry_left).aestronglyMeasurable]
-
 omit [NeZero n] [n.AtLeastTwo] [HasIdenticalTypes A] in
 /-- The net payment to a single bidder is the strategy-dependent interim
 payment evaluated at the bidder's own bid: `𝔼[tᵢ(β·θ)] = 𝔼[p_strat β i (β(Vᵢ))]`.
@@ -355,8 +320,10 @@ lemma integral_t_i_eq_integral_p_strat
     rw [this]
   rw [hLHS, hRHS]
   -- Apply the Fubini helper.
-  exact integral_indep_swap hXY hX_meas hY_meas h hh_meas (hLHS ▸ ht_int)
+  exact MeasureTheory.integral_indep_swap hXY hX_meas hY_meas h hh_meas
+    (hLHS ▸ ht_int)
 
+omit [n.AtLeastTwo] in
 /-- **Symmetric net payment identity.**
 
 Under independence + identical types and IC for the bidder problem built from
@@ -434,6 +401,7 @@ lemma expectedNetPayment_eq
 
 /-! ### Proposition 6.10 — Revenue decomposition -/
 
+omit [n.AtLeastTwo] in
 /-- **Proposition 6.10 (Revenue decomposition, general form).**
 
 In any symmetric strictly increasing equilibrium `β` of the all-purchase
@@ -469,6 +437,7 @@ theorem revenue_decomposition
         hallPayBid_meas hallPayBid_int hU_sym]
   ring
 
+omit [n.AtLeastTwo] in
 /-- **Proposition 6.10 (boundary-regime form, `U(lowestType) = 0`).**
 
 When the lowest type earns zero utility (e.g. under `K ≥ 0` and
@@ -496,5 +465,56 @@ theorem revenue_decomposition_boundary
   ring
 
 end Auction
+
+/-! ### LinearScarcity specialization -/
+
+namespace LinearScarcityAuction
+
+variable (A : LinearScarcityAuction Ω n)
+variable [A.HasIdenticalTypes] [A.HasIndependentTypes]
+variable [A.HasBoundedTypes] [A.HasAtomlessTypes]
+
+omit [n.AtLeastTwo] in
+/-- **Proposition 6.10 for `LinearScarcityAuction` in boundary regime.**
+
+When every bidder's induced `BidderProblem` is in the boundary regime
+(`U(lowestType) = 0`), the baseline-utility term drops out and the
+decomposition simplifies to
+`𝔼[p · B] = n · 𝔼[b^{AP}(V)] + 𝔼[B · φ(B)]`.
+
+`IsBoundaryRegime` is the natural economic condition here: for all-purchase
+auctions with linear scarcity it holds whenever `K_linear β ≥ 0` (see
+`QuadraticCostProblem.boundary_regime_strategy`).  Using it we discharge both
+`hU_sym` and `hU0` from the general `revenue_decomposition_boundary`, and
+`hallPayBid_meas` from the reusable `Auction.allPayBid_measurable`. -/
+theorem revenue_decomposition_boundary_of_isBoundaryRegime
+    (β : ℝ → ℝ) (hβ_meas : Measurable β)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
+    (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
+    (hIC : ∀ i, (A.toAuction.toBidderProblem β i).HasTypeDeviationIC)
+    (hBR : ∀ i, (A.toAuction.toBidderProblem β i).IsBoundaryRegime)
+    (ht_int : ∀ i, Integrable
+      (fun ω => A.rules.t i (fun j => β (A.θ j ω))) ℙ)
+    (hedition_int : Integrable
+      (fun ω => A.toAuction.aggregateBid β ω *
+        A.rules.allPurchaseφ (A.toAuction.aggregateBid β ω)) ℙ)
+    (hallPayBid_int : ∀ i, Integrable
+      (fun ω => A.toAuction.allPayBid (A.θ i ω)) ℙ) :
+    A.toAuction.sellerGrossRevenue β =
+      n * A.toAuction.expectedAllPayBid +
+        A.toAuction.expectedEditionValue β := by
+  have hU0 : A.toAuction.lowestTypeUtility β = 0 := by
+    change (A.toAuction.toBidderProblem β 0).U
+      (A.toAuction.toBidderProblem β 0).lowestType = 0
+    exact (hBR 0).U_lowestType_zero
+  have hU_sym : ∀ i,
+      (A.toAuction.toBidderProblem β i).U
+        (A.toAuction.toBidderProblem β i).lowestType =
+        A.toAuction.lowestTypeUtility β := fun i => by
+    rw [(hBR i).U_lowestType_zero, hU0]
+  exact A.toAuction.revenue_decomposition_boundary β hβ_meas hβ_int hβ_mono hIC
+    ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
+
+end LinearScarcityAuction
 
 end
