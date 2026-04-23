@@ -339,7 +339,6 @@ This combines:
 lemma expectedNetPayment_eq
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (_hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
     (hIC : ∀ i, (A.toBidderProblem β i).HasTypeDeviationIC)
     (ht_int : ∀ i, Integrable
@@ -414,7 +413,6 @@ types and continuity of `β` and `φ`; leaving them explicit here matches how
 theorem revenue_decomposition
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
     (hIC : ∀ i, (A.toBidderProblem β i).HasTypeDeviationIC)
     (ht_int : ∀ i, Integrable
@@ -433,7 +431,7 @@ theorem revenue_decomposition
     integrable_finset_sum _ (fun i _ => ht_int i)
   rw [A.sellerGrossRevenue_eq_netPayment_add_editionValue β
         hnet_int hedition_int,
-      A.expectedNetPayment_eq β hβ_meas hβ_int hβ_mono hIC ht_int
+      A.expectedNetPayment_eq β hβ_meas hβ_mono hIC ht_int
         hallPayBid_meas hallPayBid_int hU_sym]
   ring
 
@@ -446,7 +444,6 @@ When the lowest type earns zero utility (e.g. under `K ≥ 0` and
 theorem revenue_decomposition_boundary
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
     (hIC : ∀ i, (A.toBidderProblem β i).HasTypeDeviationIC)
     (ht_int : ∀ i, Integrable
@@ -460,7 +457,7 @@ theorem revenue_decomposition_boundary
     (hU0 : A.lowestTypeUtility β = 0) :
     A.sellerGrossRevenue β =
       n * A.expectedAllPayBid + A.expectedEditionValue β := by
-  rw [A.revenue_decomposition β hβ_meas hβ_int hβ_mono hIC
+  rw [A.revenue_decomposition β hβ_meas hβ_mono hIC
         ht_int hedition_int hallPayBid_meas hallPayBid_int hU_sym, hU0]
   ring
 
@@ -489,7 +486,6 @@ auctions with linear scarcity it holds whenever `K_linear β ≥ 0` (see
 `hallPayBid_meas` from the reusable `Auction.allPayBid_measurable`. -/
 theorem revenue_decomposition_boundary_of_isBoundaryRegime
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
     (hIC : ∀ i, (A.toAuction.toBidderProblem β i).HasTypeDeviationIC)
     (hBR : ∀ i, (A.toAuction.toBidderProblem β i).IsBoundaryRegime)
@@ -512,7 +508,7 @@ theorem revenue_decomposition_boundary_of_isBoundaryRegime
         (A.toAuction.toBidderProblem β i).lowestType =
         A.toAuction.lowestTypeUtility β := fun i => by
     rw [(hBR i).U_lowestType_zero, hU0]
-  exact A.toAuction.revenue_decomposition_boundary β hβ_meas hβ_int hβ_mono hIC
+  exact A.toAuction.revenue_decomposition_boundary β hβ_meas hβ_mono hIC
     ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
 
 end LinearScarcityAuction
