@@ -108,27 +108,29 @@ open MeasureTheory
 
 open scoped ProbabilityTheory
 
-variable [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+variable [MeasurableSpace Ω] {μ μ₁ μ₂ : Measure Ω} [IsProbabilityMeasure μ]
+  [IsProbabilityMeasure μ₁] [IsProbabilityMeasure μ₂]
 
-noncomputable abbrev Partition.probabilityAt (P : Partition Ω) (E : Set Ω) (ω : Ω) : ENNReal :=
-  ℙ (E ∩ P.class ω) / ℙ (P.class ω)
+noncomputable abbrev Partition.probabilityAt (P : Partition Ω)
+    (μ : Measure Ω) [IsProbabilityMeasure μ] (E : Set Ω) (ω : Ω) : ENNReal :=
+  μ (E ∩ P.class ω) / μ (P.class ω)
 
 /-- A partition with all parts of positive measure is countable. -/
-lemma Partition.countable_of_measure_pos
-    {P : Partition Ω} (hP : P.Measurable) (hP' : ∀ s ∈ P, ℙ s > 0) :
+lemma Partition.countable_of_measure_pos {μ : Measure Ω} [IsProbabilityMeasure μ]
+    {P : Partition Ω} (hP : P.Measurable) (hP' : ∀ s ∈ P, μ s > 0) :
     P.val.Countable := by
   rw [← Set.countable_coe_iff, ← Set.countable_univ_iff]
-  convert (ℙ).countable_meas_pos_of_disjoint_iUnion (fun s : P.1 ↦ hP s.1 s.2) ?_ using 1
+  convert μ.countable_meas_pos_of_disjoint_iUnion (fun s : P.1 ↦ hP s.1 s.2) ?_ using 1
   · ext ⟨s, hs⟩; simp [hP' s hs]
   · simpa [Pairwise] using P.2.pairwiseDisjoint
 
 /-- Let `P` be a partition of `Ω` into measurable non-null sets, `Q` a coarser partition and
-`E` a set such that `P.probabilityAt E  ω' = p` for all `ω' ∈ Q.class ω`.
+`E` a set such that `P.probabilityAt E ω' = p` for all `ω' ∈ Q.class ω`.
 Then `Q.probabilityAt E ω = p`. -/
 lemma Partition.probabilityAt_eq_of_le {P Q : Partition Ω} (hP : P.Measurable)
-    (hP' : ∀ s ∈ P, ℙ s > 0) (hQ : P ≤ Q) {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p : ENNReal}
-    (h : ∀ ω' ∈ Q.class ω, P.probabilityAt E ω' = p) :
-    Q.probabilityAt E ω = p := by
+    (hP' : ∀ s ∈ P, μ s > 0) (hQ : P ≤ Q) {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p : ENNReal}
+    (h : ∀ ω' ∈ Q.class ω, P.probabilityAt μ E ω' = p) :
+    Q.probabilityAt μ E ω = p := by
   have hP'' := P.countable_of_measure_pos hP hP'
   rw [eq_comm, ENNReal.eq_div_iff (pos_mono (P.class_mono hQ ω) (hP' _ (P.class_mem ω))).ne'
       (measure_ne_top _ _),
@@ -149,11 +151,13 @@ the information partitions of two agents, `E` a measurable set and `ω` an event
 common knowledge at `ω` that `E` appears to have probability `p₁` to the first agent and probability
 `p₂` to the second agent, `p₁ = p₂` - that is, the two agents agree on the probability of `E`. -/
 lemma agreeToDisagree {P₁ P₂ : Partition Ω} (hP₁ : P₁.Measurable) (hP₂ : P₂.Measurable)
-    (hP₁' : ∀ s ∈ P₁, ℙ s > 0) (hP₂' : ∀ s ∈ P₂, ℙ s > 0)
+    (hP₁' : ∀ s ∈ P₁, μ₁ s > 0) (hP₂' : ∀ s ∈ P₂, μ₂ s > 0)
     {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p₁ p₂ : ENNReal}
-    (h : (P₁ ⊔ P₂).class ω ⊆ {ω' | P₁.probabilityAt E ω' = p₁ ∧ P₂.probabilityAt E ω' = p₂}) :
+    (h : (P₁ ⊔ P₂).class ω ⊆ {ω' | P₁.probabilityAt μ₁ E ω' = p₁ ∧ P₂.probabilityAt μ₂ E ω' = p₂})
+    (h' : (P₁ ⊔ P₂).probabilityAt μ₁ E ω = (P₁ ⊔ P₂).probabilityAt μ₂ E ω) :
     p₁ = p₂ := by
   rw [← P₁.probabilityAt_eq_of_le hP₁ hP₁' le_sup_left hE ω (h.trans inter_subset_left),
     ← P₂.probabilityAt_eq_of_le hP₂ hP₂' le_sup_right hE ω (h.trans inter_subset_right)]
+  exact h'
 
 end AgreeToDisagree
