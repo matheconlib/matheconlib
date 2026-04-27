@@ -18,6 +18,7 @@ import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.ForMathlib.ApproximateSelection
 import Auctionlib.ForMathlib.FinsetUpdate
 import Auctionlib.ForMathlib.Kakutani
+import Auctionlib.ForMathlib.MeasureTheory
 import Auctionlib.ForMathlib.ProbabilityMeasure
 import Auctionlib.ForMathlib.Schauder
 import Auctionlib.GameTheory.Basic
