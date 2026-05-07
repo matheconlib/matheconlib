@@ -1,34 +1,3 @@
-<<<<<<< Updated upstream
-import Auctionlib.Auction
-import Auctionlib.Auction.AllPurchase
-import Auctionlib.Auction.AllPurchase.Basic
-import Auctionlib.Auction.AllPurchase.ExplicitSolutions
-import Auctionlib.Auction.AllPurchase.LinearScarcity
-import Auctionlib.Auction.Basic
-import Auctionlib.Auction.IdenticalTypes
-import Auctionlib.Auction.RevenueEquivalence
-import Auctionlib.Auction.StrictMonotonicity
-import Auctionlib.Auction.SymmetricIPV
-import Auctionlib.Auction.Typeclasses
-import Auctionlib.BidderProblem
-import Auctionlib.BidderProblem.Basic
-import Auctionlib.BidderProblem.EnvelopeIC
-import Auctionlib.BidderProblem.TypeDeviationIC
-import Auctionlib.BidderProblem.UniversalIC
-import Auctionlib.ForMathlib.AbsolutelyContinuous
-import Auctionlib.ForMathlib.ApproximateSelection
-import Auctionlib.ForMathlib.FinsetUpdate
-import Auctionlib.ForMathlib.Kakutani
-import Auctionlib.ForMathlib.MeasureTheory
-import Auctionlib.ForMathlib.ProbabilityMeasure
-import Auctionlib.ForMathlib.Schauder
-import Auctionlib.GameTheory.Basic
-import Auctionlib.GameTheory.NashExistence
-import Auctionlib.Mechanism
-import Auctionlib.Mechanism.AllPurchase
-import Auctionlib.Mechanism.Basic
-import Auctionlib.Statistics.OrderStatistics
-=======
 import auctionlib.Auction
 import auctionlib.Auction.AllPurchase
 import auctionlib.Auction.AllPurchase.Basic
@@ -50,6 +19,7 @@ import auctionlib.ForMathlib.AbsolutelyContinuous
 import auctionlib.ForMathlib.ApproximateSelection
 import auctionlib.ForMathlib.FinsetUpdate
 import auctionlib.ForMathlib.Kakutani
+import auctionlib.ForMathlib.MeasureTheory
 import auctionlib.ForMathlib.ProbabilityMeasure
 import auctionlib.ForMathlib.Schauder
 import auctionlib.GameTheory.Basic
@@ -59,4 +29,3 @@ import auctionlib.Mechanism.AllPurchase
 import auctionlib.Mechanism.Basic
 import auctionlib.Mechanism.FirstAndSecondPay
 import auctionlib.Statistics.OrderStatistics
->>>>>>> Stashed changes
