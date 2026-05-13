@@ -35,10 +35,10 @@ Structures for parametric families:
   - [x] Lemma 6.3 — envelope / integral representation
   - [x] Proposition 6.4 — net payment identity
 - [x] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
-- [ ] formalize ‹All-Purchase Auction› economic analysis (section 6.7) — descoped: raw-ℝ versions deleted; needs redo connected to Auction/BidderProblem structures
-  - [ ] Proposition 6.10 — revenue decomposition
-  - [ ] Corollary 6.11 — bundled vs standalone revenue comparison
-  - [ ] Proposition 6.12 — optimal pricing (interior regime)
+- [ ] formalize ‹All-Purchase Auction› economic analysis (section 6.7)
+  - [x] Proposition 6.10 — revenue decomposition
+  - [x] Corollary 6.11 — bundled vs standalone revenue comparison
+  - [x] Proposition 6.12 — optimal pricing (interior regime)
   - [ ] Proposition 6.13 — welfare decomposition (Cournot + contest losses)
 - [ ] formalize game theoretic concepts in section 3
 - [x] delete old framework files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/` using old structures)

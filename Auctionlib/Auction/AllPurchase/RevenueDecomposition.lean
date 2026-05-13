@@ -79,6 +79,24 @@ shared across bidders (the "baseline edition rent"). -/
 noncomputable def lowestTypeUtility (β : ℝ → ℝ) : ℝ :=
   (A.toBidderProblem β 0).U (A.toBidderProblem β 0).lowestType
 
+/-! ### Seller's three mechanism options (for Corollary 6.11) -/
+
+/-- **Option A — All-pay only.** Seller profit `Π_A = n · 𝔼[b^{AP}(V)]`.
+By revenue equivalence this equals `n · 𝔼[V_{(n-1:n)}]` (Auction.RevenueEquivalence). -/
+noncomputable def allPayBenchmarkProfit : ℝ :=
+  (n : ℝ) * A.expectedAllPayBid
+
+/-- **Option B — Editions only.** Seller profit `Π_B = (p − c) · B^{ed-only}`,
+where `B^{ed-only}` is the symmetric Cournot equilibrium total quantity in
+the editions-only mechanism (a parameter — the Cournot game itself is not
+formalized in this file). -/
+noncomputable def editionsOnlyBenchmarkProfit (c B_ed : ℝ) : ℝ :=
+  (A.rules.allPurchase_p_price - c) * B_ed
+
+/-- **Option C — Bundled all-purchase.** Seller profit `Π_C = (p − c) · 𝔼[B]`. -/
+noncomputable def bundledProfit (β : ℝ → ℝ) (c : ℝ) : ℝ :=
+  (A.rules.allPurchase_p_price - c) * A.expectedAggregateBid β
+
 /-! ### `bidThreshold` identity under strict monotonicity -/
 
 /-- Under strict monotonicity of `β` on `[lo, hi]`, the bid threshold of a type's
@@ -461,6 +479,55 @@ theorem revenue_decomposition_boundary
         ht_int hedition_int hallPayBid_meas hallPayBid_int hU_sym, hU0]
   ring
 
+/-! ### Corollary 6.11 — bundled vs standalone revenue comparison -/
+
+omit [n.AtLeastTwo] in
+/-- **Corollary 6.11 (boundary regime, corrected form).**
+
+In the boundary regime (`U(lowestType) = 0`), the gain from bundling the
+all-pay contest with the editions sale (Option C) relative to running the
+two mechanisms separately (Options A + B) is
+`Π_C − Π_A − Π_B = 𝔼[B·φ(B)] − c · 𝔼[B] − (p − c) · B^{ed-only}`.
+
+The proof is pure algebra given `revenue_decomposition_boundary`: that
+identity gives `p · 𝔼[B] = n · 𝔼[b^{AP}] + 𝔼[B·φ(B)]`, hence
+`Π_C = (p − c) · 𝔼[B] = n · 𝔼[b^{AP}] + 𝔼[B·φ(B)] − c · 𝔼[B]
+     = Π_A + 𝔼[B·φ(B)] − c · 𝔼[B]`,
+and rearranging gives the stated identity.
+
+**Note (§6.7.1).** This identity differs from the closed form in §6.7.1,
+`(p − c)·(𝔼[B] − B^{ed-only}) + c · 𝔼[B·φ(B)] / p`, by the term
+`p · 𝔼[B] − 𝔼[B·φ(B)]·(p − c)/p`.
+-/
+theorem bundling_revenue_gain
+    [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
+    (β : ℝ → ℝ) (hβ_meas : Measurable β)
+    (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
+    (hIC : ∀ i, (A.toBidderProblem β i).HasTypeDeviationIC)
+    (ht_int : ∀ i, Integrable
+      (fun ω => A.rules.t i (fun j => β (A.θ j ω))) ℙ)
+    (hedition_int : Integrable
+      (fun ω => A.aggregateBid β ω * A.rules.allPurchaseφ (A.aggregateBid β ω)) ℙ)
+    (hallPayBid_meas : Measurable A.allPayBid)
+    (hallPayBid_int : ∀ i, Integrable (fun ω => A.allPayBid (A.θ i ω)) ℙ)
+    (hU_sym : ∀ i, (A.toBidderProblem β i).U (A.toBidderProblem β i).lowestType
+        = A.lowestTypeUtility β)
+    (hU0 : A.lowestTypeUtility β = 0)
+    (c B_ed : ℝ) :
+    A.bundledProfit β c -
+        A.allPayBenchmarkProfit -
+        A.editionsOnlyBenchmarkProfit c B_ed =
+      A.expectedEditionValue β -
+        c * A.expectedAggregateBid β -
+        (A.rules.allPurchase_p_price - c) * B_ed := by
+  have h := A.revenue_decomposition_boundary β hβ_meas hβ_mono hIC
+    ht_int hedition_int hallPayBid_meas hallPayBid_int hU_sym hU0
+  -- h : sellerGrossRevenue β = n · expectedAllPayBid + expectedEditionValue β
+  -- i.e. p · 𝔼[B] = n · 𝔼[b^{AP}] + 𝔼[B·φ(B)]
+  simp only [bundledProfit, allPayBenchmarkProfit, editionsOnlyBenchmarkProfit,
+    sellerGrossRevenue] at h ⊢
+  linarith
+
 end Auction
 
 /-! ### LinearScarcity specialization -/
@@ -510,6 +577,60 @@ theorem revenue_decomposition_boundary_of_isBoundaryRegime
     rw [(hBR i).U_lowestType_zero, hU0]
   exact A.toAuction.revenue_decomposition_boundary β hβ_meas hβ_mono hIC
     ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
+
+/-! #### Corollary 6.11 — LinearScarcity specialization -/
+
+/-- **Symmetric Cournot equilibrium total quantity** in the editions-only
+mechanism under linear scarcity:
+`B^{ed-only} = n(φ̄ − p)/(α(n+1))`.
+
+Derived from the symmetric Cournot FOC `φ̄ − p − αB_{−i} − 2αbᵢ = 0` for the
+editions-only payoff `bᵢ · (φ̄ − αB − p)`.  The Cournot mechanism itself is
+not formalized here — this is the algebraic quantity that enters
+Corollary 6.11. -/
+noncomputable def cournotQuantityLinear : ℝ :=
+  (n : ℝ) * (A.φ_bar - A.rules.allPurchase_p_price) /
+    (A.α_coeff * ((n : ℝ) + 1))
+
+omit [n.AtLeastTwo] in
+/-- **Corollary 6.11 for `LinearScarcityAuction` in boundary regime** with
+the linear-scarcity Cournot quantity plugged in.
+
+Discharges `hU_sym`, `hU0`, and `hallPayBid_meas` automatically through
+`IsBoundaryRegime` + `allPayBid_measurable`.  The remaining hypotheses
+(`hβ_meas`, `hβ_mono`, `hIC`, integrability) are the same set already
+required by `revenue_decomposition_boundary_of_isBoundaryRegime`. -/
+theorem bundling_revenue_gain_of_isBoundaryRegime
+    (β : ℝ → ℝ) (hβ_meas : Measurable β)
+    (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
+    (hIC : ∀ i, (A.toAuction.toBidderProblem β i).HasTypeDeviationIC)
+    (hBR : ∀ i, (A.toAuction.toBidderProblem β i).IsBoundaryRegime)
+    (ht_int : ∀ i, Integrable
+      (fun ω => A.rules.t i (fun j => β (A.θ j ω))) ℙ)
+    (hedition_int : Integrable
+      (fun ω => A.toAuction.aggregateBid β ω *
+        A.rules.allPurchaseφ (A.toAuction.aggregateBid β ω)) ℙ)
+    (hallPayBid_int : ∀ i, Integrable
+      (fun ω => A.toAuction.allPayBid (A.θ i ω)) ℙ)
+    (c : ℝ) :
+    A.toAuction.bundledProfit β c -
+        A.toAuction.allPayBenchmarkProfit -
+        A.toAuction.editionsOnlyBenchmarkProfit c A.cournotQuantityLinear =
+      A.toAuction.expectedEditionValue β -
+        c * A.toAuction.expectedAggregateBid β -
+        (A.rules.allPurchase_p_price - c) * A.cournotQuantityLinear := by
+  have hU0 : A.toAuction.lowestTypeUtility β = 0 := by
+    change (A.toAuction.toBidderProblem β 0).U
+      (A.toAuction.toBidderProblem β 0).lowestType = 0
+    exact (hBR 0).U_lowestType_zero
+  have hU_sym : ∀ i,
+      (A.toAuction.toBidderProblem β i).U
+        (A.toAuction.toBidderProblem β i).lowestType =
+        A.toAuction.lowestTypeUtility β := fun i => by
+    rw [(hBR i).U_lowestType_zero, hU0]
+  exact A.toAuction.bundling_revenue_gain β hβ_meas hβ_mono hIC
+    ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
+    c A.cournotQuantityLinear
 
 end LinearScarcityAuction
 
