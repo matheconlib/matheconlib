@@ -1,29 +1,23 @@
 import Mathlib
 
-namespace AgreeToDisagree
-
 open Set
 
 variable {α Ω : Type*}
 
 section Prerequisites
 
-/-- We write `Partition α` for the type of partitions of a set `α`, implemented as a subtype
-of `Set (Set α)`. Mathlib already equips this subtype with the order given by refinement (such that
-`P ≤ Q` iff `P` refines `Q`) and proves that it is a complete lattice, i.e. that arbitrary infima
-and suprema of partitions exist. -/
-abbrev Partition (α : Type*) := Subtype (Setoid.IsPartition (α := α))
+namespace Setoid
 
 /-- When we write `s ∈ P` for a partition `P : Partition α`, we mean that `s` is a `Set α` that is
 an element of the `Set (Set α)` underlying `P`. -/
 @[reducible]
-instance Partition.instSetLike : SetLike (Partition α) (Set α) where
+instance Partitions.instSetLike : SetLike (Partitions α) (Set α) where
   coe := Subtype.val
   coe_injective' := Subtype.val_injective
 
 /-- As expected, a partition `P` refines a partition `Q` iff every set in `P` is contained in
 a set in `Q`. -/
-lemma Partition.le_iff {P Q : Partition α} : P ≤ Q ↔ ∀ s ∈ P, ∃ t ∈ Q, s ⊆ t := by
+lemma Partitions.le_iff {P Q : Partitions α} : P ≤ Q ↔ ∀ s ∈ P, ∃ t ∈ Q, s ⊆ t := by
   refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
   · intro s hs
     have ⟨a, ha⟩ := Setoid.nonempty_of_mem_partition P.2 hs
@@ -39,13 +33,13 @@ lemma Partition.le_iff {P Q : Partition α} : P ≤ Q ↔ ∀ s ∈ P, ∃ t ∈
     exact hs'.2 <| hab t ht hat
 
 /-- We call a partition of a measurable space measurable if it consists of measurable sets. -/
-protected def Partition.Measurable [MeasurableSpace Ω] (P : Partition Ω) :=
+protected def Partitions.Measurable [MeasurableSpace Ω] (P : Partitions Ω) :=
   ∀ s ∈ P, MeasurableSet s
 
 /-- If a countable partition is measurable, every partition it refines is measurable too.
 Note that the countability assumption is necessary because e.g. the partition into singletons is
 usually measurable but refines all other partitions, even nonmeasurable ones. -/
-lemma Partition.Measurable.mono [MeasurableSpace Ω] {P Q : Partition Ω}
+lemma Partitions.Measurable.mono [MeasurableSpace Ω] {P Q : Partitions Ω}
     (hP : P.Measurable) (hP' : P.val.Countable) (hQ : P ≤ Q) : Q.Measurable := by
   intro s hs
   rw [← inter_univ s, ← P.2.sUnion_eq_univ, sUnion_eq_iUnion, inter_iUnion]
@@ -60,7 +54,7 @@ lemma Partition.Measurable.mono [MeasurableSpace Ω] {P Q : Partition Ω}
 
 /-- The supremum of two measurable partitions is measurable if at least one of the two partitions
 is countable. -/
-lemma Partition.Measurable.sup [MeasurableSpace Ω] {P Q : Partition Ω}
+lemma Partitions.Measurable.sup [MeasurableSpace Ω] {P Q : Partitions Ω}
     (hP : P.Measurable) (hQ : Q.Measurable) (h : P.val.Countable ∨ Q.val.Countable) :
     (P ⊔ Q).Measurable := by
   obtain h | h := h
@@ -68,32 +62,32 @@ lemma Partition.Measurable.sup [MeasurableSpace Ω] {P Q : Partition Ω}
   · exact hQ.mono h le_sup_right
 
 /-- `P.class a` is the element of a partition `P : Partition α` that contains `a : α`. -/
-protected def Partition.class (P : Partition α) (a : α) : Set α :=
+protected def Partitions.class (P : Partitions α) (a : α) : Set α :=
   {b | Setoid.mkClasses P.1 P.2.2 b a}
 
-lemma Partition.mem_class (P : Partition α) (a : α) : a ∈ P.class a :=
+lemma Partitions.mem_class (P : Partitions α) (a : α) : a ∈ P.class a :=
   (Setoid.mkClasses P.1 P.2.2).2.refl _
 
-lemma Partition.class_mem (P : Partition α) (a : α) : P.class a ∈ P :=
+lemma Partitions.class_mem (P : Partitions α) (a : α) : P.class a ∈ P :=
   (Setoid.classes_mkClasses P.1 P.2 ▸ (Setoid.mkClasses P.1 P.2.2).mem_classes a:)
 
-lemma Partition.Measurable.measurableSet_class [MeasurableSpace Ω] {P : Partition Ω}
+lemma Partitions.Measurable.measurableSet_class [MeasurableSpace Ω] {P : Partitions Ω}
     (hP : P.Measurable) (ω : Ω) : MeasurableSet (P.class ω) :=
   hP _ (P.class_mem ω)
 
-lemma Partition.class_mono {P Q : Partition α} (h : P ≤ Q) (a : α) :
+lemma Partitions.class_mono {P Q : Partitions α} (h : P ≤ Q) (a : α) :
     P.class a ⊆ Q.class a :=
   fun x ↦ @h x a
 
-lemma Partition.class_eq_class_of_mem {P : Partition α} {a a' : α} (h : a' ∈ P.class a) :
+lemma Partitions.class_eq_class_of_mem {P : Partitions α} {a a' : α} (h : a' ∈ P.class a) :
     P.class a' = P.class a :=
   (Setoid.eq_eqv_class_of_mem P.2.2 (P.class_mem a) h).symm
 
-lemma Partition.class_eq_of_mem {P : Partition α} {s : Set α} {a : α}
+lemma Partitions.class_eq_of_mem {P : Partitions α} {s : Set α} {a : α}
     (hs : s ∈ P) (ha : a ∈ s) : P.class a = s :=
   (Setoid.eq_eqv_class_of_mem P.2.2 hs ha).symm
 
-lemma Partition.class_eq_biUnion_of_le {P Q : Partition α} (h : P ≤ Q) (a : α) :
+lemma Partitions.class_eq_biUnion_of_le {P Q : Partitions α} (h : P ≤ Q) (a : α) :
     Q.class a = ⋃ s ∈ {s ∈ P | s ⊆ Q.class a}, s := by
   ext b
   refine ⟨fun hb ↦ ?_, fun hb ↦ ?_⟩
@@ -102,22 +96,24 @@ lemma Partition.class_eq_biUnion_of_le {P Q : Partition α} (h : P ≤ Q) (a : �
   · obtain ⟨s, hs, hs'⟩ := mem_iUnion₂.mp hb
     exact hs.2 hs'
 
+end Setoid
+
 end Prerequisites
 
-open MeasureTheory
+open Setoid MeasureTheory
 
 open scoped ProbabilityTheory
 
 variable [MeasurableSpace Ω] {μ μ₁ μ₂ : Measure Ω} [IsProbabilityMeasure μ]
   [IsProbabilityMeasure μ₁] [IsProbabilityMeasure μ₂]
 
-noncomputable abbrev Partition.probabilityAt (P : Partition Ω)
+noncomputable abbrev Setoid.Partitions.probabilityAt (P : Partitions Ω)
     (μ : Measure Ω) [IsProbabilityMeasure μ] (E : Set Ω) (ω : Ω) : ENNReal :=
   μ (E ∩ P.class ω) / μ (P.class ω)
 
 /-- A partition with all parts of positive measure is countable. -/
-lemma Partition.countable_of_measure_pos {μ : Measure Ω} [IsProbabilityMeasure μ]
-    {P : Partition Ω} (hP : P.Measurable) (hP' : ∀ s ∈ P, μ s > 0) :
+lemma Setoid.Partitions.countable_of_measure_pos {μ : Measure Ω} [IsProbabilityMeasure μ]
+    {P : Partitions Ω} (hP : P.Measurable) (hP' : ∀ s ∈ P, μ s > 0) :
     P.val.Countable := by
   rw [← Set.countable_coe_iff, ← Set.countable_univ_iff]
   convert μ.countable_meas_pos_of_disjoint_iUnion (fun s : P.1 ↦ hP s.1 s.2) ?_ using 1
@@ -127,7 +123,7 @@ lemma Partition.countable_of_measure_pos {μ : Measure Ω} [IsProbabilityMeasure
 /-- Let `P` be a partition of `Ω` into measurable non-null sets, `Q` a coarser partition and
 `E` a set such that `P.probabilityAt E ω' = p` for all `ω' ∈ Q.class ω`.
 Then `Q.probabilityAt E ω = p`. -/
-lemma Partition.probabilityAt_eq_of_le {P Q : Partition Ω} (hP : P.Measurable)
+lemma Setoid.Partitions.probabilityAt_eq_of_le {P Q : Partitions Ω} (hP : P.Measurable)
     (hP' : ∀ s ∈ P, μ s > 0) (hQ : P ≤ Q) {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p : ENNReal}
     (h : ∀ ω' ∈ Q.class ω, P.probabilityAt μ E ω' = p) :
     Q.probabilityAt μ E ω = p := by
@@ -150,7 +146,7 @@ lemma Partition.probabilityAt_eq_of_le {P Q : Partition Ω} (hP : P.Measurable)
 the information partitions of two agents, `E` a measurable set and `ω` an event. Then if it is
 common knowledge at `ω` that `E` appears to have probability `p₁` to the first agent and probability
 `p₂` to the second agent, `p₁ = p₂` - that is, the two agents agree on the probability of `E`. -/
-lemma agreeToDisagree {P₁ P₂ : Partition Ω} (hP₁ : P₁.Measurable) (hP₂ : P₂.Measurable)
+lemma agreeToDisagree {P₁ P₂ : Partitions Ω} (hP₁ : P₁.Measurable) (hP₂ : P₂.Measurable)
     (hP₁' : ∀ s ∈ P₁, μ₁ s > 0) (hP₂' : ∀ s ∈ P₂, μ₂ s > 0)
     {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p₁ p₂ : ENNReal}
     (h : (P₁ ⊔ P₂).class ω ⊆ {ω' | P₁.probabilityAt μ₁ E ω' = p₁ ∧ P₂.probabilityAt μ₂ E ω' = p₂})
@@ -165,7 +161,7 @@ the information partitions of agents indexed by a type `ι`, `E` a measurable se
 Then if it is common knowledge at `ω` that `E` appears to have probability `p i` to each agent `i`,
 `p i = p j` for all `i`, `j` - that is, all agents agree on the probability of `E`. -/
 lemma agreeToDisagree' {ι : Type*} {μ : ι → Measure Ω} [∀ i, IsProbabilityMeasure (μ i)]
-    {P : ι → Partition Ω} (hP : ∀ i, (P i).Measurable) (hP' : ∀ i, ∀ s ∈ P i, μ i s > 0)
+    {P : ι → Partitions Ω} (hP : ∀ i, (P i).Measurable) (hP' : ∀ i, ∀ s ∈ P i, μ i s > 0)
     {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p : ι → ENNReal}
     (h : (⨆ i, P i).class ω ⊆ {ω' | ∀ i, (P i).probabilityAt (μ i) E ω' = p i})
     (h' : ∀ i j, (⨆ i, P i).probabilityAt (μ i) E ω = (⨆ i, P i).probabilityAt (μ j) E ω) :
@@ -174,5 +170,3 @@ lemma agreeToDisagree' {ι : Type*} {μ : ι → Measure Ω} [∀ i, IsProbabili
   rw [← (P i).probabilityAt_eq_of_le (hP i) (hP' i) (le_iSup _ i) hE ω (fun ω' hω'↦ h hω' i),
     ← (P j).probabilityAt_eq_of_le (hP j) (hP' j) (le_iSup _ j) hE ω (fun ω' hω'↦ h hω' j)]
   exact h' i j
-
-end AgreeToDisagree
