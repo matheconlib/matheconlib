@@ -160,4 +160,19 @@ lemma agreeToDisagree {P₁ P₂ : Partition Ω} (hP₁ : P₁.Measurable) (hP�
     ← P₂.probabilityAt_eq_of_le hP₂ hP₂' le_sup_right hE ω (h.trans inter_subset_right)]
   exact h'
 
+/-- Let `Ω` be a probability measure space, `P` a family of measurable partitions representing
+the information partitions of agents indexed by a type `ι`, `E` a measurable set and `ω` an event.
+Then if it is common knowledge at `ω` that `E` appears to have probability `p i` to each agent `i`,
+`p i = p j` for all `i`, `j` - that is, all agents agree on the probability of `E`. -/
+lemma agreeToDisagree' {ι : Type*} {μ : ι → Measure Ω} [∀ i, IsProbabilityMeasure (μ i)]
+    {P : ι → Partition Ω} (hP : ∀ i, (P i).Measurable) (hP' : ∀ i, ∀ s ∈ P i, μ i s > 0)
+    {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p : ι → ENNReal}
+    (h : (⨆ i, P i).class ω ⊆ {ω' | ∀ i, (P i).probabilityAt (μ i) E ω' = p i})
+    (h' : ∀ i j, (⨆ i, P i).probabilityAt (μ i) E ω = (⨆ i, P i).probabilityAt (μ j) E ω) :
+    ∀ i j, p i = p j := by
+  intro i j
+  rw [← (P i).probabilityAt_eq_of_le (hP i) (hP' i) (le_iSup _ i) hE ω (fun ω' hω'↦ h hω' i),
+    ← (P j).probabilityAt_eq_of_le (hP j) (hP' j) (le_iSup _ j) hE ω (fun ω' hω'↦ h hω' j)]
+  exact h' i j
+
 end AgreeToDisagree
