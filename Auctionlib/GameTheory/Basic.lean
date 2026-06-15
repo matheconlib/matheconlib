@@ -60,8 +60,6 @@ consider for finding the right implementation:
 * `G.toMixed'`: a variant of `G.toMixed` for when the outcome space of `G` is already a space of
   probability distributions.
 * When `G` is measurable, `G.toMixed` and `G.toMixed'` are as well.
-
-
 -/
 
 @[expose] public section
@@ -266,7 +264,7 @@ end Game
 
 namespace PayoffStructure
 
-/-- We call a payoff structure measurable if its arguments are measurable spaces and the payoff
+/-- We call a payoff structure measurable if its domain is a measurable space and the payoff
 functions it consists of are all measurable. -/
 protected class Measurable (P : PayoffStructure O ι) where
   measurable_payoff i : Measurable (P.payoff i)
@@ -299,5 +297,54 @@ instance (P : PayoffStructure O ι) [P.Bounded] : P.toExpected.Bounded where
 end PayoffStructure
 
 end Measurable
+
+section Continuous
+
+variable [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
+
+namespace Game
+
+/-- We call a game continuous if its action spaces and outcome space are topological spaces, and
+the outcome function `G.outcome : ((i : ι) → A i) → O` is continuous. -/
+protected class Continuous (G : Game A O) where
+  continuous_outcome : Continuous G.outcome
+
+export Continuous (continuous_outcome)
+
+instance Continuous.instMeasurable [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [Countable ι]
+    [∀ i, OpensMeasurableSpace (A i)] [∀ i, SecondCountableTopology (A i)] [BorelSpace O]
+    (G : Game A O) [G.Continuous] : G.Measurable where
+  measurable_outcome := continuous_outcome.measurable
+
+instance [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, OpensMeasurableSpace (A i)]
+    [BorelSpace O] [∀ i, SecondCountableTopology (A i)]
+    [∀ i, TopologicalSpace.PseudoMetrizableSpace (A i)] [Fintype ι] (G : Game A O)
+    [G.Continuous] : G.toMixed.Continuous where
+  continuous_outcome := (MeasureTheory.ProbabilityMeasure.continuous_map G.continuous_outcome).comp
+      MeasureTheory.ProbabilityMeasure.continuous_pi
+
+end Game
+
+namespace PayoffStructure
+
+/-- We call a payoff structure continuous if its domain is a topological space and the payoff
+functions it consists of are all continuous. -/
+protected class Continuous (P : PayoffStructure O ι) where
+  continuous_payoff i : Continuous (P.payoff i)
+
+export Continuous (continuous_payoff)
+
+instance Continuous.instMeasurable [MeasurableSpace O] [OpensMeasurableSpace O]
+    (P : PayoffStructure O ι) [P.Continuous] : P.Measurable where
+  measurable_payoff i := (continuous_payoff i).measurable
+
+instance (P : PayoffStructure O ι) [MeasurableSpace O] [OpensMeasurableSpace O] [CompactSpace O]
+    [P.Continuous] : P.toExpected.Continuous where
+  continuous_payoff i := MeasureTheory.ProbabilityMeasure.continuous_integral_continuousMap <|
+    ContinuousMap.mk _ <| P.continuous_payoff i
+
+end PayoffStructure
+
+end Continuous
 
 end GameTheory

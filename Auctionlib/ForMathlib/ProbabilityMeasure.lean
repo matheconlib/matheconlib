@@ -1,7 +1,10 @@
 module
 
+public import Auctionlib.ForMathlib.MeasureTheory
 public import Mathlib.MeasureTheory.Measure.FiniteMeasurePi
 public import Mathlib.Probability.Notation
+
+import Mathlib.MeasureTheory.Measure.Prokhorov
 
 /-!
 Some results on probability measures.
@@ -92,5 +95,55 @@ noncomputable def ProbabilityMeasure.equivStdSimplex {α : Type*} [MeasurableSpa
     classical
     simp [Set.indicator]
     rfl
+
+/-- The map from probability measures on `α` to the weak dual of the space of continuous functions
+on `α` given by integration, as a continuous map. -/
+@[simps]
+noncomputable def ProbabilityMeasure.toWeakDualContinuousMap
+    {α : Type*} [TopologicalSpace α] [MeasurableSpace α] [BorelSpace α] [CompactSpace α] :
+    C(ProbabilityMeasure α, WeakDual ℝ C(α, ℝ)) where
+  toFun μ := {
+    toFun f := μ[f]
+    map_add' f g := integral_add (by fun_prop) (by fun_prop)
+    map_smul' x f := by simp [-smul_eq_mul, integral_smul]
+    cont := by
+      convert continuous_integral.comp
+        (ContinuousMap.toLp (E := ℝ) 1 μ.toMeasure ℝ).continuous using 1
+      ext f
+      exact (L1.integral_of_fun_eq_integral' f.continuous.integrable).symm }
+  continuous_toFun := WeakDual.continuous_of_continuous_eval continuous_integral_continuousMap
+
+/-- On compact metrizable Borel spaces probability measures are determined by their integrals
+against continuous functions, so `toWeakDualContinuousMap` is injective. -/
+lemma ProbabilityMeasure.toWeakDualContinuousMap_injective {α : Type*} [TopologicalSpace α]
+    [MeasurableSpace α] [BorelSpace α] [CompactSpace α] [TopologicalSpace.MetrizableSpace α] :
+    Function.Injective (toWeakDualContinuousMap (α := α)) := by
+  intro μ ν h
+  apply toMeasure_injective
+  exact ext_of_forall_integral_eq_of_IsFiniteMeasure fun f ↦ congr_arg (· f.toContinuousMap) h
+
+lemma ProbabilityMeasure.toWeakDualContinuousMap_isClosedEmbedding {α : Type*} [TopologicalSpace α]
+    [MeasurableSpace α] [BorelSpace α] [CompactSpace α] [TopologicalSpace.MetrizableSpace α] :
+    Topology.IsClosedEmbedding (toWeakDualContinuousMap (α := α)) :=
+  toWeakDualContinuousMap.continuous.isClosedEmbedding toWeakDualContinuousMap_injective
+
+lemma ProbabilityMeasure.convex_range_toWeakDualContinuousMap {α : Type*} [TopologicalSpace α]
+    [MeasurableSpace α] [BorelSpace α] [CompactSpace α] :
+    Convex ℝ (Set.range (toWeakDualContinuousMap (α := α))) := by
+  intro x hx y hy a b ha hb hab
+  obtain ⟨μ₁, rfl⟩ := hx
+  obtain ⟨μ₂, rfl⟩ := hy
+  have hν : IsProbabilityMeasure
+      (ENNReal.ofReal a • μ₁.toMeasure + ENNReal.ofReal b • μ₂.toMeasure) := ⟨by
+    simp [Measure.add_apply, Measure.smul_apply, smul_eq_mul,
+      ← ENNReal.ofReal_add ha hb, hab]⟩
+  refine ⟨⟨_, hν⟩, ContinuousLinearMap.ext fun f ↦ ?_⟩
+  simp only [toWeakDualContinuousMap, ContinuousMap.coe_mk]
+  show ∫ x, f x ∂(ENNReal.ofReal a • μ₁.toMeasure + ENNReal.ofReal b • μ₂.toMeasure) =
+    a * ∫ x, f x ∂μ₁ + b * ∫ x, f x ∂μ₂
+  rw [integral_add_measure (f.continuous.integrable.smul_measure ENNReal.ofReal_ne_top)
+      (f.continuous.integrable.smul_measure ENNReal.ofReal_ne_top),
+    integral_smul_measure, integral_smul_measure,
+    ENNReal.toReal_ofReal ha, ENNReal.toReal_ofReal hb, smul_eq_mul, smul_eq_mul]
 
 end MeasureTheory
