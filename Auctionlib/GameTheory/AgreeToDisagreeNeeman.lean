@@ -1,4 +1,5 @@
 import Mathlib
+import Auctionlib.ForMathlib.Partition
 
 /-! # Neeman's agreement theorem for `p`-beliefs
 This file contains a machine-written formalisation of Neeman's agreement theorem for
@@ -17,109 +18,13 @@ This file contains a machine-written formalisation of Neeman's agreement theorem
   posteriors can differ by at most `1 - p`.
 --/
 
-namespace AgreeToDisagree
-
-open Set MeasureTheory
+open Set Setoid MeasureTheory
 
 open scoped ProbabilityTheory
 
 variable {α Ω : Type*} [MeasurableSpace Ω] {μ : Measure Ω} [IsProbabilityMeasure μ]
 
-section Prerequisites
-
-abbrev Partition (α : Type*) := Subtype (Setoid.IsPartition (α := α))
-
-@[reducible]
-instance Partition.instSetLike : SetLike (Partition α) (Set α) where
-  coe := Subtype.val
-  coe_injective' := Subtype.val_injective
-
-lemma Partition.le_iff {P Q : Partition α} : P ≤ Q ↔ ∀ s ∈ P, ∃ t ∈ Q, s ⊆ t := by
-  refine ⟨fun h ↦ ?_, fun h ↦ ?_⟩
-  · intro s hs
-    have ⟨a, ha⟩ := Setoid.nonempty_of_mem_partition P.2 hs
-    refine ⟨{b | Setoid.mkClasses _ Q.2.2 b a}, ?_, ?_⟩
-    · have := Setoid.mem_classes (Setoid.mkClasses _ Q.2.2) a
-      rwa [Setoid.classes_mkClasses Q.1 Q.2] at this
-    · refine fun b hb ↦ h fun s' hs' hbs' ↦ ?_
-      rwa [← P.2.pairwiseDisjoint.elim hs hs' <| not_disjoint_iff.2 ⟨b, hb, hbs'⟩]
-  · intro a b hab s hs has
-    have ⟨t, ⟨ht, hat⟩, _⟩ := P.2.2 a
-    have ⟨s', hs'⟩ := h t ht
-    rw [Q.2.pairwiseDisjoint.elim hs hs'.1 <| not_disjoint_iff.2 ⟨a, has, hs'.2 hat⟩]
-    exact hs'.2 <| hab t ht hat
-
-protected def Partition.Measurable (P : Partition Ω) :=
-  ∀ s ∈ P, MeasurableSet s
-
-lemma Partition.Measurable.mono {P Q : Partition Ω}
-    (hP : P.Measurable) (hP' : P.val.Countable) (hQ : P ≤ Q) : Q.Measurable := by
-  intro s hs
-  rw [← inter_univ s, ← P.2.sUnion_eq_univ, sUnion_eq_iUnion, inter_iUnion]
-  have := hP'.to_subtype
-  refine MeasurableSet.iUnion fun t ↦ ?_
-  have ⟨s', hs'⟩ := le_iff.1 hQ _ t.2
-  obtain h | h := Q.2.pairwiseDisjoint.eq_or_disjoint hs hs'.1
-  · rw [h, inter_eq_right.2 hs'.2]
-    exact hP _ t.2
-  · suffices s ∩ t ⊆ ∅ by simp_all
-    exact (inter_subset_inter_right s hs'.2).trans <| Set.disjoint_iff.1 h
-
-lemma Partition.Measurable.sup {P Q : Partition Ω}
-    (hP : P.Measurable) (hQ : Q.Measurable) (h : P.val.Countable ∨ Q.val.Countable) :
-    (P ⊔ Q).Measurable := by
-  obtain h | h := h
-  · exact hP.mono h le_sup_left
-  · exact hQ.mono h le_sup_right
-
-protected def Partition.class (P : Partition α) (a : α) : Set α :=
-  {b | Setoid.mkClasses P.1 P.2.2 b a}
-
-lemma Partition.mem_class (P : Partition α) (a : α) : a ∈ P.class a :=
-  (Setoid.mkClasses P.1 P.2.2).2.refl _
-
-lemma Partition.class_mem (P : Partition α) (a : α) : P.class a ∈ P :=
-  (Setoid.classes_mkClasses P.1 P.2 ▸ (Setoid.mkClasses P.1 P.2.2).mem_classes a:)
-
-lemma Partition.Measurable.measurableSet_class {P : Partition Ω}
-    (hP : P.Measurable) (ω : Ω) : MeasurableSet (P.class ω) :=
-  hP _ (P.class_mem ω)
-
-lemma Partition.class_mono {P Q : Partition α} (h : P ≤ Q) (a : α) :
-    P.class a ⊆ Q.class a :=
-  fun x ↦ @h x a
-
-lemma Partition.class_eq_class_of_mem {P : Partition α} {a a' : α} (h : a' ∈ P.class a) :
-    P.class a' = P.class a :=
-  (Setoid.eq_eqv_class_of_mem P.2.2 (P.class_mem a) h).symm
-
-lemma Partition.class_eq_of_mem {P : Partition α} {s : Set α} {a : α}
-    (hs : s ∈ P) (ha : a ∈ s) : P.class a = s :=
-  (Setoid.eq_eqv_class_of_mem P.2.2 hs ha).symm
-
-lemma Partition.class_eq_biUnion_of_le {P Q : Partition α} (h : P ≤ Q) (a : α) :
-    Q.class a = ⋃ s ∈ {s ∈ P | s ⊆ Q.class a}, s := by
-  ext b
-  refine ⟨fun hb ↦ ?_, fun hb ↦ ?_⟩
-  · exact mem_biUnion ⟨P.class_mem b, (P.class_mono h b).trans_eq (Q.class_eq_class_of_mem hb)⟩
-      (P.mem_class b)
-  · obtain ⟨s, hs, hs'⟩ := mem_iUnion₂.mp hb
-    exact hs.2 hs'
-
-noncomputable abbrev Partition.probabilityAt (P : Partition Ω)
-    (μ : Measure Ω) [IsProbabilityMeasure μ] (E : Set Ω) (ω : Ω) : ENNReal :=
-  μ (E ∩ P.class ω) / μ (P.class ω)
-
-lemma Partition.countable_of_measure_pos {μ : Measure Ω} [IsProbabilityMeasure μ]
-    {P : Partition Ω} (hP : P.Measurable) (hP' : ∀ s ∈ P, μ s > 0) :
-    P.val.Countable := by
-  rw [← Set.countable_coe_iff, ← Set.countable_univ_iff]
-  convert μ.countable_meas_pos_of_disjoint_iUnion (fun s : P.1 ↦ hP s.1 s.2) ?_ using 1
-  · ext ⟨s, hs⟩
-    simp [hP' s hs]
-  · simpa [Pairwise] using P.2.pairwiseDisjoint
-
-end Prerequisites
+namespace Setoid
 
 abbrev Partition.belief (P : Partition Ω) (μ : Measure Ω) [IsProbabilityMeasure μ]
     (p : ENNReal) (E : Set Ω) : Set Ω :=
@@ -129,8 +34,8 @@ abbrev Partition.IsEvidentBelief (P : Partition Ω) (μ : Measure Ω) [IsProbabi
     (p : ENNReal) (E : Set Ω) : Prop :=
   E ⊆ P.belief μ p E
 
-abbrev IsCommonBeliefAt {ι : Type*} (P : ι → Partition Ω) (μ : Measure Ω) [IsProbabilityMeasure μ]
-    (p : ENNReal) (C : Set Ω) (ω : Ω) : Prop :=
+abbrev _root_.IsCommonBeliefAt {ι : Type*} (P : ι → Partition Ω) (μ : Measure Ω)
+    [IsProbabilityMeasure μ] (p : ENNReal) (C : Set Ω) (ω : Ω) : Prop :=
   ∃ E : Set Ω, ω ∈ E ∧ (∀ i, (P i).IsEvidentBelief μ p E) ∧ ∀ i, E ⊆ (P i).belief μ p C
 
 /-! ## Helper lemmas -/
@@ -327,6 +232,10 @@ lemma Partition.measure_E_inter_eq_mul_of_posteriors_const {P : Partition Ω} {�
     (E := E)
   rwa [inter_assoc] at this
 
+end Setoid
+
+namespace AgreeToDisagree
+
 /-- Cellwise inequality for J-posterior bounds. -/
 lemma cellwise_pmul_inter_le {P : Partition Ω} {μ : Measure Ω}
     [IsProbabilityMeasure μ] (hP' : ∀ s ∈ P, μ s > 0)
@@ -345,7 +254,7 @@ lemma cellwise_pmul_inter_le {P : Partition Ω} {μ : Measure Ω}
       (.inl (measure_ne_top μ s.val))] at hpost
   · simp [heq]
 
-lemma Partition.measure_J_inter_ge_of_posteriors_ge {P : Partition Ω} {μ : Measure Ω}
+lemma _root_.Setoid.Partition.measure_J_inter_ge_of_posteriors_ge {P : Partition Ω} {μ : Measure Ω}
     [IsProbabilityMeasure μ] (hP : P.Measurable) (hP' : ∀ s ∈ P, μ s > 0)
     {J Q : Set Ω} (hJ : MeasurableSet J) (hQ : MeasurableSet Q)
     (hQ_unionCells : ∀ ω ∈ Q, P.class ω ⊆ Q)
