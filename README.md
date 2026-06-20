@@ -2,73 +2,76 @@
 
 A Lean 4 formalization of fundamental theorems in auction theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4).
 
+## Architecture
+
+Three-layer design following the standard auction theory reference:
+
+```
+Mechanism n              — rules: allocation x + payment t over bid vectors
+Auction Ω n              — rules + environment (θ, distributions) on (Ω, ℙ)
+ReducedForm              — per-bidder interim view (winProb, cost, strategy)
+```
+
+**`Auction → ReducedForm`**: BIC on the auction implies `HasTypeDeviationIC` on the reduced form, unlocking the full analytic toolkit (envelope theorem, Myerson, payment equivalence).
+
 ## Formalized Results
 
-### Envelope Theorem (Section 5.1)
+### Mechanism (`Mechanism/`)
 
-The main auction setup is [`EnvelopeSetup`](Auctionlib/Envelope/Theorem.lean), encoding an $n$-bidder independent private values (IPV) auction with allocation rule, payment rule, and interim utility. The key economic properties are:
+[`Mechanism n`](Auctionlib/Mechanism/Basic.lean) defines the rules of an auction: allocation rule $x_i(b)$ and payment rule $t_i(b)$ as functions of the full bid vector $b = (b_1, \ldots, b_n)$.
 
-- [`IncentiveCompatible`](Auctionlib/Envelope/Theorem.lean) (Bayesian IC): truthful reporting maximizes interim utility
-- [`ExPostIR`](Auctionlib/Envelope/Theorem.lean), [`InterimIR`](Auctionlib/Envelope/Theorem.lean), [`ExAnteIR`](Auctionlib/Envelope/Theorem.lean): three levels of individual rationality
+| File | Contents |
+|------|----------|
+| [`Mechanism/Basic.lean`](Auctionlib/Mechanism/Basic.lean) | `Mechanism` structure, `HasValidAllocation`, `IsFeasible`, `IsEfficient` |
+| [`Mechanism/AllPurchase.lean`](Auctionlib/Mechanism/AllPurchase.lean) | `Mechanism.IsAllPurchase` (posted price + scarcity function + `x_eq`/`t_eq`), `hasValidAllocation` |
 
-The core mathematical analysis lives in [`EnvelopeSetUpMathsCore`](Auctionlib/Envelope/Mathematics.lean):
+### Reduced Form (`ReducedForm/`)
 
-| Result | Statement |
-|--------|-----------|
-| [`lipschitz`](Auctionlib/Envelope/Mathematics.lean) | $U$ is 1-Lipschitz on $[a, b]$ |
-| [`q_monotoneOn`](Auctionlib/Envelope/Mathematics.lean) | $q$ is monotone on $[a, b]$ |
-| [`aeDifferentiable`](Auctionlib/Envelope/Mathematics.lean) | $U' = q$ a.e. on $[a, b]$ |
-| [`integral_rep`](Auctionlib/Envelope/Mathematics.lean) | $U(s) = U(a) + \int_a^s q(\psi)\, d\psi$ |
+[`ReducedForm`](Auctionlib/ReducedForm/Basic.lean) captures the per-bidder interim view with quasi-linear payoff $\pi(v, b) = v \cdot \text{winProb}(b) - \text{cost}(b)$.
 
-These are assembled into [`envelope_theorem`](Auctionlib/Envelope/Theorem.lean): BIC implies all of the above in the auction setting.
+Three IC levels form a typeclass chain:
 
-### Myerson's Lemma (Section 5.2)
+$$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \texttt{HasEnvelopeIC}$$
 
-Built on [`MyersonSetUpMathsCore`](Auctionlib/Envelope/Mathematics.lean) (necessity) and [`MyersonSufficiencySetup`](Auctionlib/Envelope/Mathematics.lean) (sufficiency):
+| File | Contents |
+|------|----------|
+| [`ReducedForm/Basic.lean`](Auctionlib/ReducedForm/Basic.lean) | `ReducedForm` structure, `payoff`, `q`, `U`, `IsRegular` |
+| [`ReducedForm/EnvelopeIC.lean`](Auctionlib/ReducedForm/EnvelopeIC.lean) | `HasEnvelopeIC` + `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`, `strategy_monotoneOn`, `U_nonneg` |
+| [`ReducedForm/TypeDeviationIC.lean`](Auctionlib/ReducedForm/TypeDeviationIC.lean) | `HasTypeDeviationIC` + `payment_identity`, `payment_unique`, `allPayBid`, `netPaymentIdentity`, Myerson sufficiency |
+| [`ReducedForm/UniversalIC.lean`](Auctionlib/ReducedForm/UniversalIC.lean) | `HasUniversalIC` |
 
-| Result | Statement |
-|--------|-----------|
-| [`myerson_necessity`](Auctionlib/Envelope/Myerson.lean) | DSIC $\Rightarrow$ monotone allocation + payment identity |
-| [`myerson_payment_unique`](Auctionlib/Envelope/Myerson.lean) | Payment is uniquely determined by allocation (up to a constant) |
-| [`myerson_sufficiency`](Auctionlib/Envelope/Myerson.lean) | Monotone allocation $\Rightarrow$ canonical integral payment achieves DSIC |
+### Auction (`Auction/`)
 
-### Payment Equivalence (General)
+[`Auction Ω n`](Auctionlib/Auction/Basic.lean) combines a `Mechanism` with the probabilistic environment.
 
-[`EnvelopeSetup.payment_formula`](Auctionlib/Envelope/Theorem.lean) and [`EnvelopeSetup.payment_equivalence`](Auctionlib/Envelope/Theorem.lean) are proved without any efficiency, symmetry, or distributional assumptions:
+| File | Contents |
+|------|----------|
+| [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) | `Auction` structure, `q`, `p`, `U`, `q_strat`, `p_strat`, `BIC`, `ExPostIR`/`InterimIR`/`ExAnteIR`, `toReducedForm`, `hasTypeDeviationIC_of_bic`, `payment_formula`, `payment_equivalence` |
+| [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) | Composable typeclasses: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV`. CDF via Mathlib's `ProbabilityTheory.cdf`. `bidThreshold`, `q_eq_pow`, `q_strat_eq_cdf_pow`, `commonCDF`, `toOrderStatisticsSetup` |
+| [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) | `payment_formula_efficient`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
+| [`Auction/AllPurchase.lean`](Auctionlib/Auction/AllPurchase.lean) | `allPayBid` (re-exports `Mechanism.IsAllPurchase` via import) |
+| [`Auction/AllPurchase/LinearScarcity.lean`](Auctionlib/Auction/AllPurchase/LinearScarcity.lean) | `HasQuadraticCost`, `HasLinearCost`, `IsBoundaryRegime`, `IsInteriorRegime` (extends `HasQuadraticCost`), `HasLinearScarcity`, `meanPurchase`, `K_linear`, `allPurchaseNetCost`, `toAllPurchaseReducedForm` (winProb = `q_strat`, cost derived from `t_eq`) |
+| [`Auction/AllPurchase/ExplicitSolutions.lean`](Auctionlib/Auction/AllPurchase/ExplicitSolutions.lean) | Propositions 6.5--6.7: `constant_scarcity_strategy`, `boundary_regime_strategy`, `interior_regime_strategy` (ReducedForm + Auction level) |
+| [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, `strictMonotonicity` (Lemma 6.2), `no_ties` |
 
-| Result | Statement |
-|--------|-----------|
-| [`payment_formula`](Auctionlib/Envelope/Theorem.lean) | Under IC: $p(s) = s \cdot q(s) - U(\underline\theta) - \int_{\underline\theta}^s q(\psi)\, d\psi$ |
-| [`payment_equivalence`](Auctionlib/Envelope/Theorem.lean) | Same $q$, same $\underline\theta$, same $U(\underline\theta)$ $\Rightarrow$ same $p$ |
+### Key Theorems
 
-### Revenue Equivalence Theorem (Section 5.3)
+| Result | Location |
+|--------|----------|
+| Envelope theorem ($U$ Lipschitz, $U' = q$ a.e., integral representation) | `ReducedForm.EnvelopeIC` |
+| Myerson's lemma (necessity: $q$ monotone + payment identity; sufficiency) | `ReducedForm.TypeDeviationIC` |
+| Payment equivalence (general: same $q$ + BIC $\Rightarrow$ same $p$) | `Auction.Basic` |
+| $q(i, s) = F(s)^{n-1}$ under efficient allocation | `Auction.SymmetricIPV` |
+| Revenue equivalence (same $q$ + BIC + IR $\Rightarrow$ same revenue) | `Auction.RevenueEquivalence` |
+| Total revenue $= \mathbb{E}[S_2]$ | `Auction.RevenueEquivalence` |
+| Strict monotonicity of equilibrium strategy (Lemma 6.2) | `Auction.StrictMonotonicity` |
 
-[`RevenueEquivalenceSetup`](Auctionlib/RevenueEquivalence/Theorem.lean) extends the envelope setup with mutual independence, identical distributions, and atomless types. Efficiency is a separate predicate ([`Efficient`](Auctionlib/RevenueEquivalence/Theorem.lean)), required only where genuinely needed.
+### Auxiliary
 
-| Result | Statement |
-|--------|-----------|
-| [`q_eq_pow`](Auctionlib/RevenueEquivalence/Theorem.lean) | $q(s) = F(s)^{n-1}$ under efficient allocation |
-| [`payment_formula`](Auctionlib/RevenueEquivalence/Theorem.lean) | $p(s) = s \cdot F(s)^{n-1} - \int F(\psi)^{n-1}\, d\psi$ under efficient allocation + IC + IR |
-| [`total_revenue`](Auctionlib/RevenueEquivalence/Theorem.lean) | Expected revenue $= \mathbb{E}[S_2]$ under efficient allocation + IC + IR |
-| [`revenue_equivalence`](Auctionlib/RevenueEquivalence/Theorem.lean) | Any two IC, IR mechanisms with the same $q$ yield the same total expected revenue (no efficiency needed) |
-
-### Order Statistics
-
-[`OrderStatisticsSetup`](Auctionlib/Statistics/OrderStatistics.lean) formalizes $n$ i.i.d. real-valued random variables with a common density.
-
-| Result | Statement |
-|--------|-----------|
-| [`cdf_val`](Auctionlib/Statistics/OrderStatistics.lean) | CDF of the $k$-th order statistic |
-| [`pdf_val`](Auctionlib/Statistics/OrderStatistics.lean) | Density of the $k$-th order statistic |
-| [`expected_val`](Auctionlib/Statistics/OrderStatistics.lean) | Expected value of the $k$-th order statistic |
-| [`expected_second_highest`](Auctionlib/Statistics/OrderStatistics.lean) | Key identity for the Revenue Equivalence Theorem |
-
-### Auxiliary Lemmas
-
-[AbsolutelyContinuous.lean](Auctionlib/ForMathlib/AbsolutelyContinuous.lean) contains results that may be upstreamed to Mathlib:
-
-- [`AbsolutelyContinuousOnInterval.pow`](Auctionlib/ForMathlib/AbsolutelyContinuous.lean): AC function raised to a power is AC
-- [`absolutelyContinuousOnInterval_cdf`](Auctionlib/ForMathlib/AbsolutelyContinuous.lean): CDF of an AC measure is AC
+| File | Contents |
+|------|----------|
+| [`Statistics/OrderStatistics.lean`](Auctionlib/Statistics/OrderStatistics.lean) | CDF/PDF of order statistics, `expected_second_highest` |
+| [`ForMathlib/AbsolutelyContinuous.lean`](Auctionlib/ForMathlib/AbsolutelyContinuous.lean) | AC function raised to a power, CDF of AC measure |
 
 ## Building
 
@@ -79,8 +82,12 @@ lake build                                # build the project
 
 ## Roadmap
 
-
-- [ ] Game-theoretic concepts (Section 3)
+- [x] General Mechanism + ReducedForm + Auction framework
 - [x] Envelope Theorem (Section 5.1)
 - [x] Myerson's Lemma (Section 5.2)
 - [x] Revenue Equivalence Theorem (Section 5.3)
+- [x] All-Purchase Auction — equilibrium characterization (Chapter 6)
+- [x] All-Purchase Auction — baseline demand & explicit solutions (Chapter 6)
+- [x] All-Purchase Auction — economic analysis (Chapter 6)
+- [ ] Game-theoretic concepts (Section 3)
+- [x] Delete legacy files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/`)
