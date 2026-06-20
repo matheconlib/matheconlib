@@ -1,6 +1,14 @@
 import Auctionlib.ForMathlib.Partition
 import Mathlib.Order.CompletePartialOrder
 
+/-! # Auman's agreement theorem
+This file contains a formalisation of Auman's agreement theorem: if the posteriors
+of all players at some point are common knowledge, then they must be equal, i.e. it
+is impossible to agree to disagree.
+
+See also https://github.com/AxiomMath/AgreeToDisagree.
+-/
+
 open Set Setoid
 
 variable {α Ω : Type*}

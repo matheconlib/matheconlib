@@ -16,7 +16,7 @@ This file contains a machine-written formalisation of Neeman's agreement theorem
   `P i` `p`-believes `C`.
 * `agreeToDisagree_beliefs`: whenever the posteriors of all players are common `p`-belief, any two
   posteriors can differ by at most `1 - p`.
---/
+-/
 
 open Set Setoid MeasureTheory
 
