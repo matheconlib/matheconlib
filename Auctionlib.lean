@@ -1,4 +1,5 @@
 import Auctionlib.Auction
+import Auctionlib.Auction.Affiliation.Basic
 import Auctionlib.Auction.AllPurchase
 import Auctionlib.Auction.AllPurchase.Basic
 import Auctionlib.Auction.AllPurchase.ExplicitSolutions
