@@ -5,6 +5,7 @@ import Auctionlib.Auction.AllPurchase.ExplicitSolutions
 import Auctionlib.Auction.AllPurchase.LinearScarcity
 import Auctionlib.Auction.AllPurchase.OptimalPricing
 import Auctionlib.Auction.AllPurchase.RevenueDecomposition
+import Auctionlib.Auction.AllPurchase.UniformDistribution
 import Auctionlib.Auction.AllPurchase.WelfareDecomposition
 import Auctionlib.Auction.Basic
 import Auctionlib.Auction.IdenticalTypes
