@@ -26,6 +26,7 @@ import Auctionlib.ForMathlib.Partition
 import Auctionlib.ForMathlib.ProbabilityMeasure
 import Auctionlib.ForMathlib.Schauder
 import Auctionlib.GameTheory.AgreeToDisagree.Basic
+import Auctionlib.GameTheory.AgreeToDisagree.Iterative
 import Auctionlib.GameTheory.AgreeToDisagree.Neeman
 import Auctionlib.GameTheory.Basic
 import Auctionlib.GameTheory.NashExistence
