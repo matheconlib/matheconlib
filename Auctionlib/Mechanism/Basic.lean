@@ -11,17 +11,18 @@ Examples: first-price, second-price, all-pay auctions are different `Mechanism` 
 
 open Set
 
-/-- A mechanism for `n` bidders: allocation rule and payment rule, both
-functions of the full bid vector `b = (b₁,...,bₙ)`.
+/-- A mechanism for `n` agents: allocation rule and payment rule, both
+functions of the full report vector `r = (r₁,...,rₙ)`.
 
-In the standard setting, `xᵢ(b)` is the probability that bidder `i` wins
-given bid profile `b`, and `tᵢ(b)` is the payment of bidder `i`. -/
+For a report profile `r`, `xᵢ(r)` is the allocation probability for agent `i`,
+and `tᵢ(r)` is the payment of agent `i`. -/
 structure Mechanism (n : ℕ) where
-  /-- Allocation rule: `x i b` is the probability bidder `i` wins given bids `b` -/
+  /-- Allocation rule: `x i r` is the allocation probability for agent `i`
+  given reports `r`. -/
   x : Fin n → (Fin n → ℝ) → ℝ
   /-- Measurability of allocation -/
   x_measurable : ∀ i, Measurable (x i)
-  /-- Payment rule: `t i b` is the payment of bidder `i` given bids `b` -/
+  /-- Payment rule: `t i r` is the payment of agent `i` given reports `r`. -/
   t : Fin n → (Fin n → ℝ) → ℝ
 
 namespace Mechanism
@@ -32,7 +33,8 @@ variable {n : ℕ} (M : Mechanism n)
 class HasValidAllocation : Prop where
   x_range : ∀ i b, M.x i b ∈ Icc 0 1
 
-/-- Efficient allocation: the highest-type bidder wins. -/
+/-- Efficient allocation: the agent with the highest reported type receives
+the allocation. -/
 class IsEfficient : Prop where
   x_efficient : ∀ i, M.x i = {f | ∀ j ≠ i, f j < f i}.indicator 1
 
