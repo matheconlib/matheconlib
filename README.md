@@ -80,8 +80,9 @@ The all-purchase development specializes the general framework to auctions in wh
 | [`Auction/Affiliation/Basic.lean`](Auctionlib/Auction/Affiliation/Basic.lean) | Affiliated densities, product factorization, signal/value environments, private values, and independent and affiliated signals |
 | [`Auction/Affiliation/LogSupermodular.lean`](Auctionlib/Auction/Affiliation/LogSupermodular.lean) | Equivalence between affiliation and log-supermodularity for strictly positive densities |
 | [`Auction/Affiliation/MonotoneCondExp.lean`](Auctionlib/Auction/Affiliation/MonotoneCondExp.lean) | Monotonicity of conditional expectations for affiliated distributions on finite sublattices |
+| [`Auction/Affiliation/WinnersCurse.lean`](Auctionlib/Auction/Affiliation/WinnersCurse.lean) | The winner's-curse inequality for affiliated distributions on finite sublattices |
 
-The continuous conditional-expectation result and later applications such as the winner's curse and Linkage Principle are not yet formalized.
+The continuous conditional-expectation and winner's-curse results, together with later applications such as the Linkage Principle, are not yet formalized.
 
 ### Game Theory (`GameTheory/`)
 
@@ -103,6 +104,7 @@ The continuous conditional-expectation result and later applications such as the
 | All-purchase revenue decomposition and bundled-versus-standalone revenue comparison | [`Auction/AllPurchase/RevenueDecomposition.lean`](Auctionlib/Auction/AllPurchase/RevenueDecomposition.lean) |
 | Interior-regime optimal pricing | [`Auction/AllPurchase/OptimalPricing.lean`](Auctionlib/Auction/AllPurchase/OptimalPricing.lean) |
 | All-purchase welfare decomposition | [`Auction/AllPurchase/WelfareDecomposition.lean`](Auctionlib/Auction/AllPurchase/WelfareDecomposition.lean) |
+| Winner's-curse inequality for affiliated finite-support environments | [`Auction/Affiliation/WinnersCurse.lean`](Auctionlib/Auction/Affiliation/WinnersCurse.lean) |
 | Pure and mixed Nash existence theorems | [`GameTheory/NashExistence.lean`](Auctionlib/GameTheory/NashExistence.lean) |
 
 ### Auxiliary
@@ -129,11 +131,11 @@ The mathematical overview is intentionally broader than the current library. Cur
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
 - [x] All-purchase equilibrium characterization, explicit solutions, revenue analysis, optimal pricing, and welfare decomposition
 - [x] Normal-form game foundations and pure/mixed Nash existence
-- [x] Affiliation definitions, log-supermodularity, and finite monotone conditional expectations
+- [x] Affiliation definitions, log-supermodularity, finite monotone conditional expectations, and the finite winner's-curse inequality
 
 Further work includes:
 
-- [ ] Continuous affiliation results and later applications, including the winner's curse and Linkage Principle
+- [ ] Continuous affiliation results, including the continuous winner's-curse inequality, and later applications such as the Linkage Principle
 - [ ] Remaining game-theoretic concepts and their integration with the auction layer
 - [ ] Extensive-form and obviously strategy-proof mechanisms
 - [ ] Exploratory multi-unit and simultaneous ascending auction models
