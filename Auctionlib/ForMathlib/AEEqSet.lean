@@ -107,12 +107,44 @@ lemma bot_eq : (⊥ : AEEqSet μ) = mk μ ∅ MeasurableSet.empty := rfl
 @[simp]
 lemma top_eq : (⊤ : AEEqSet μ) = mk μ univ MeasurableSet.univ := rfl
 
+/-- The class of a countable union `⟦⋃ i, Aᵢ⟧` is the least upper bound of the classes `⟦Aᵢ⟧` in
+the a.e.-inclusion order. -/
+theorem isLUB_mk_iUnion {ι : Sort*} [Countable ι] {A : ι → Set Ω} (hA : ∀ i, MeasurableSet (A i)) :
+    IsLUB (Set.range fun i ↦ mk μ (A i) (hA i)) (mk μ (⋃ i, A i) (MeasurableSet.iUnion hA)) := by
+  constructor
+  · rintro _ ⟨i, rfl⟩
+    exact (mk_le_mk (hA i) _).2 (Set.subset_iUnion A i).eventuallyLE
+  · intro v hv
+    set V : Set Ω := (Quotient.out v).1 with hVdef
+    have hVmeas : MeasurableSet V := (Quotient.out v).2
+    have hveq : v = mk μ V hVmeas := (Quotient.out_eq' v).symm
+    rw [hveq, mk_le_mk, ae_le_set]
+    have hnull : ∀ i, μ (A i \ V) = 0 := by
+      intro i
+      have hle : mk μ (A i) (hA i) ≤ v := hv ⟨i, rfl⟩
+      rw [hveq, mk_le_mk, ae_le_set] at hle
+      exact hle
+    rw [show (⋃ i, A i) \ V = ⋃ i, (A i \ V) by simp only [Set.iUnion_diff]]
+    exact measure_iUnion_null hnull
+
+/-- Every countable family in the measure algebra has a least upper bound; that is, it is
+countably complete. -/
+theorem exists_isLUB_of_countable {t : Set (AEEqSet μ)} (ht : t.Countable) : ∃ u, IsLUB t u := by
+  haveI := ht.to_subtype
+  have hA : ∀ x : t, MeasurableSet (Quotient.out (x : AEEqSet μ)).1 :=
+    fun x ↦ (Quotient.out (x : AEEqSet μ)).2
+  refine ⟨mk μ (⋃ x : t, (Quotient.out (x : AEEqSet μ)).1) (MeasurableSet.iUnion hA), ?_⟩
+  have hrange : (Set.range fun x : t ↦ mk μ ((Quotient.out (x : AEEqSet μ)).1) (hA x)) = t := by
+    rw [show (fun x : t ↦ mk μ ((Quotient.out (x : AEEqSet μ)).1) (hA x))
+        = ((↑·) : t → AEEqSet μ) from funext fun x ↦ Quotient.out_eq' _]
+    exact Subtype.range_coe
+  simpa only [hrange] using isLUB_mk_iUnion (μ := μ) hA
+
 open Filter Topology ENNReal in
-/-- The measure algebra of any finite measure is complete. -/
-noncomputable instance [IsFiniteMeasure μ] : CompleteBooleanAlgebra (AEEqSet μ) where
-  __ := inferInstanceAs (BooleanAlgebra (AEEqSet μ))
-  __ : CompleteLattice _ := by
-    refine completeLatticeOfSup (H2 := ⟨_⟩) (AEEqSet μ) fun S ↦ (?_ : ∃ u, IsLUB S u).choose_spec
+/-- The measure algebra of a finite measure satisfies the countable chain condition, in that every
+set has a countable subset with the same upper bounds. -/
+theorem exists_countable_upperBounds_eq [IsFiniteMeasure μ] (S : Set (AEEqSet μ)) :
+    ∃ t ⊆ S, t.Countable ∧ upperBounds S = upperBounds t := by
     classical
     -- A measurable representative of each class.
     set rep : AEEqSet μ → Set Ω := fun α ↦ (Quotient.out α).1 with hrepdef
@@ -190,9 +222,14 @@ noncomputable instance [IsFiniteMeasure μ] : CompleteBooleanAlgebra (AEEqSet μ
         have := htend.add h0; rwa [add_zero] at this
       exact ge_of_tendsto htend2 (Eventually.of_forall hB_close)
     have hμU : μ U = c := le_antisymm hμU_le hμU_ge
-    refine ⟨mk μ U hU_meas, ?_, ?_⟩
-    · -- `mk U` is an upper bound of `S`.
-      intro α hα
+    -- The (countable) set of members whose representatives make up `U`.
+    set M : Set (AEEqSet μ) := ⋃ n, (↑(Bset n) : Set (AEEqSet μ)) with hMdef
+    have hMc : M.Countable := Set.countable_iUnion fun n ↦ (Bset n).countable_toSet
+    have hMS : M ⊆ S := Set.iUnion_subset hBset_sub
+    -- Upper bounds of `S` and of `M` coincide, using the absorbing set `U`.
+    refine ⟨M, hMS, hMc, Set.Subset.antisymm (upperBounds_mono_set hMS) fun v hv α hα ↦ ?_⟩
+    -- `α ≤ mk U ≤ v`, so any upper bound `v` of `M` also bounds `α ∈ S`.
+    have hαU : α ≤ mk μ U hU_meas := by
       rw [← hrep α, mk_le_mk, ae_le_set]
       by_contra hne
       have hpos : 0 < μ (rep α \ U) := pos_iff_ne_zero.mpr hne
@@ -225,8 +262,7 @@ noncomputable instance [IsFiniteMeasure μ] : CompleteBooleanAlgebra (AEEqSet μ
       have hcontra : μ (rep α \ U) ≤ 0 :=
         ENNReal.le_of_add_le_add_left hc_ne_top (by rw [add_zero]; exact hμCU)
       exact hne (le_antisymm hcontra (zero_le _))
-    · -- `mk U` is below every upper bound of `S`.
-      intro v hv
+    have hUv : mk μ U hU_meas ≤ v := by
       rw [← hrep v, mk_le_mk, ae_le_set]
       have hB_null : ∀ n, μ (B n \ rep v) = 0 := by
         intro n
@@ -234,10 +270,37 @@ noncomputable instance [IsFiniteMeasure μ] : CompleteBooleanAlgebra (AEEqSet μ
           simp only [hBdef, Set.iUnion_diff]
         rw [hEq]
         refine (measure_biUnion_null_iff (Bset n).countable_toSet).mpr fun x hx ↦ ?_
-        exact hle_null (hv (hBset_sub n hx))
+        exact hle_null (hv (Set.mem_iUnion_of_mem n (Finset.mem_coe.mpr hx)))
       have hUV : U \ rep v = ⋃ n, (B n \ rep v) := by simp only [hUdef, Set.iUnion_diff]
       rw [hUV]
       exact measure_iUnion_null hB_null
+    exact le_trans hαU hUv
+
+/-- The measure algebra of any finite measure is complete. -/
+noncomputable instance [IsFiniteMeasure μ] : CompleteBooleanAlgebra (AEEqSet μ) where
+  __ := inferInstanceAs (BooleanAlgebra (AEEqSet μ))
+  __ : CompleteLattice _ := by
+    refine completeLatticeOfSup (H2 := ⟨_⟩) (AEEqSet μ)
+      fun S ↦ (?_ : ∃ u, IsLUB S u).choose_spec
+    have ⟨t, _, htc, hub⟩ := exists_countable_upperBounds_eq S
+    have ⟨u, hu1, hu2⟩ := exists_isLUB_of_countable htc
+    exact ⟨u, hub.symm ▸ hu1, hub.symm ▸ hu2⟩
+
+/-- For a finite measure, the countable supremum in the measure algebra is the class of the union:
+`⨆ i, ⟦Aᵢ⟧ = ⟦⋃ i, Aᵢ⟧`. Immediate from `isLUB_mk_iUnion` and uniqueness of least upper bounds
+(`⨆` only exists once the algebra is complete, hence `IsFiniteMeasure`). -/
+theorem iSup_mk [IsFiniteMeasure μ] {ι : Sort*} [Countable ι] {A : ι → Set Ω}
+    (hA : ∀ i, MeasurableSet (A i)) :
+    ⨆ i, mk μ (A i) (hA i) = mk μ (⋃ i, A i) (MeasurableSet.iUnion hA) :=
+  (isLUB_sSup _).unique (isLUB_mk_iUnion hA)
+
+/-- Measure algebras of finite measures satisfy the countable chain condition; that is,
+every supremum in the measure algebra is the supremum of a countable subfamily. -/
+theorem exists_countable_sSup_eq [IsFiniteMeasure μ] (S : Set (AEEqSet μ)) :
+    ∃ t ⊆ S, t.Countable ∧ sSup S = sSup t := by
+  obtain ⟨t, hts, htc, hub⟩ := exists_countable_upperBounds_eq S
+  obtain ⟨h1, h2⟩ := isLUB_sSup t
+  exact ⟨t, hts, htc, (isLUB_sSup S).unique ⟨hub.symm ▸ h1, hub.symm ▸ h2⟩⟩
 
 end AEEqSet
 

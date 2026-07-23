@@ -139,121 +139,20 @@ Dedekind-completeness content, and the one place the countable-exhaustion / esse
 argument (and finiteness of `μ`) is used. -/
 
 /-- **`𝐁(𝓕)` is closed under `sSup`.** If every member of `S` has an `m`-measurable
-representative, then so does `sSup S`. The witness is the essential union `U = ⋃ₙ Bₙ` of a
-countable, measure-maximising family of finite unions of `m`-measurable representatives:
-finiteness of `μ` forces `mkₐ U` to be a least upper bound of `S`, and `AEEqSet`'s completeness
-then identifies it with `sSup S`. -/
-theorem sSup_mem_subAlgebra [IsProbabilityMeasure μ] {m : MeasurableSpace Ω} (hm : m ≤ m0)
+representative, then so does `sSup S`. This is `AEEqSet`'s countable chain condition
+(`exists_countable_sSup_eq`) combined with "a countable supremum is the class of a union"
+(`AEEqSet.iSup_mk`): `sSup S` is the class of a *countable* union of `m`-measurable
+representatives, which is again `m`-measurable since `m` is a σ-algebra. -/
+theorem sSup_mem_subAlgebra [IsProbabilityMeasure μ] {m : MeasurableSpace Ω} (_hm : m ≤ m0)
     {S : Set 𝔹} (hS : S ⊆ subAlgebra m) : sSup S ∈ subAlgebra (μ := μ) m := by
-  classical
-  -- An `m`-measurable representative of each member of `S`.
-  set rep : ↥S → Set Ω := fun x => (hS x.2).choose with hrepdef
-  have hrep_m0 : ∀ x, MeasurableSet[m0] (rep x) := fun x => (hS x.2).choose_spec.choose
-  have hrep_m : ∀ x, MeasurableSet[m] (rep x) := fun x => (hS x.2).choose_spec.choose_spec.1
-  have hrep_eq : ∀ x : ↥S, (x : 𝔹) = mkₐ (rep x) (hrep_m0 x) :=
-    fun x => (hS x.2).choose_spec.choose_spec.2
-  -- The finite-union measure of a finite subfamily.
-  set val : Finset ↥S → ENNReal := fun T => μ (⋃ x ∈ T, rep x) with hvaldef
-  set c : ENNReal := ⨆ T : Finset ↥S, val T with hcdef
-  have hval_le_one : ∀ T, val T ≤ 1 := fun T =>
-    (measure_mono (Set.subset_univ _)).trans_eq measure_univ
-  have hc_ne_top : c ≠ ⊤ := ne_top_of_le_ne_top (by simp) (iSup_le hval_le_one)
-  -- Finite subfamilies whose value approaches `c`.
-  have hachieve : ∀ n : ℕ, ∃ T : Finset ↥S, c ≤ val T + (1 : ENNReal) / (n + 1) := by
-    intro n
-    by_cases hc0 : c = 0
-    · exact ⟨∅, by simp [hc0]⟩
-    · have hpos : (0 : ENNReal) < (1 : ENNReal) / (n + 1) :=
-        ENNReal.div_pos_iff.mpr ⟨by norm_num, by simp⟩
-      have hlt : c - (1 : ENNReal) / (n + 1) < c := ENNReal.sub_lt_self hc_ne_top hc0 hpos.ne'
-      rw [hcdef, lt_iSup_iff] at hlt
-      obtain ⟨T, hT⟩ := hlt
-      exact ⟨T, by rw [← tsub_le_iff_right]; exact hT.le⟩
-  choose T0 hT0 using hachieve
-  -- Increasing partial unions `Bₙ := ⋃_{k ≤ n} (T0 k)`.
-  set Bset : ℕ → Finset ↥S := fun n => (Finset.range (n + 1)).biUnion T0 with hBsetdef
-  set B : ℕ → Set Ω := fun n => ⋃ x ∈ Bset n, rep x with hBdef
-  have hB_meas_m : ∀ n, MeasurableSet[m] (B n) :=
-    fun n => Finset.measurableSet_biUnion _ fun x _ => hrep_m x
-  have hB_meas : ∀ n, MeasurableSet[m0] (B n) := fun n => hm _ (hB_meas_m n)
-  have hBset_mono : Monotone Bset := by
-    intro a b hab x hx
-    simp only [hBsetdef, Finset.mem_biUnion, Finset.mem_range] at hx ⊢
-    obtain ⟨k, hk, hkx⟩ := hx
-    exact ⟨k, lt_of_lt_of_le hk (by omega), hkx⟩
-  have hB_mono : Monotone B :=
-    fun a b hab => Set.biUnion_subset_biUnion_left (by exact_mod_cast hBset_mono hab)
-  have hB_val_le : ∀ n, μ (B n) ≤ c := fun n => le_iSup val (Bset n)
-  have hT0_sub_B : ∀ n, T0 n ⊆ Bset n := by
-    intro n x hx
-    simp only [hBsetdef, Finset.mem_biUnion, Finset.mem_range]
-    exact ⟨n, by omega, hx⟩
-  have hB_ge : ∀ n, val (T0 n) ≤ μ (B n) :=
-    fun n => measure_mono (Set.biUnion_subset_biUnion_left (by exact_mod_cast hT0_sub_B n))
-  have hB_close : ∀ n, c ≤ μ (B n) + (1 : ENNReal) / (n + 1) := fun n =>
-    (hT0 n).trans (by gcongr; exact hB_ge n)
-  -- The essential union `U := ⋃ n, B n`.
-  set U : Set Ω := ⋃ n, B n with hUdef
-  have hU_meas_m : MeasurableSet[m] U := MeasurableSet.iUnion hB_meas_m
-  have hU_meas : MeasurableSet[m0] U := hm _ hU_meas_m
-  have htend : Filter.Tendsto (fun n => μ (B n)) Filter.atTop (nhds (μ U)) := by
-    simpa [hUdef] using tendsto_measure_iUnion_atTop (μ := μ) hB_mono
-  have hμU_le : μ U ≤ c := le_of_tendsto htend (Filter.Eventually.of_forall hB_val_le)
-  have hμU_ge : c ≤ μ U := by
-    have htend2 : Filter.Tendsto (fun n => μ (B n) + (1 : ENNReal) / (n + 1))
-        Filter.atTop (nhds (μ U + 0)) := by
-      refine Filter.Tendsto.add htend ?_
-      have hcomp := ENNReal.tendsto_inv_nat_nhds_zero.comp (Filter.tendsto_add_atTop_nat 1)
-      simpa [Function.comp_def, Nat.cast_add, Nat.cast_one, one_div] using hcomp
-    rw [add_zero] at htend2
-    exact ge_of_tendsto htend2 (Filter.Eventually.of_forall hB_close)
-  have hμU : μ U = c := le_antisymm hμU_le hμU_ge
-  -- `mkₐ U` is the least upper bound of `S`; being `m`-measurable, this puts `sSup S` in `𝐁(𝓕)`.
-  have hlub : IsLUB S (mkₐ U hU_meas) := by
-    constructor
-    · -- upper bound
-      intro α hα
-      set x : ↥S := ⟨α, hα⟩ with hxdef
-      show (x : 𝔹) ≤ mkₐ U hU_meas
-      rw [hrep_eq x, le_iff]
-      by_contra hne
-      have hpos : 0 < μ (rep x \ U) := pos_iff_ne_zero.mpr hne
-      -- Adjoining `x` to each `Bset n` gives finite subfamilies with union `B n ∪ rep x`.
-      set C : ℕ → Set Ω := fun n => B n ∪ rep x with hCdef
-      have hC_eq : ∀ n, (⋃ y ∈ insert x (Bset n), rep y) = C n := by
-        intro n
-        simp only [hCdef, Finset.set_biUnion_insert, hBdef]
-        rw [Set.union_comm]
-      have hC_val_le : ∀ n, μ (C n) ≤ c := by
-        intro n
-        have : μ (C n) = val (insert x (Bset n)) := by simp only [hvaldef]; rw [← hC_eq n]
-        rw [this]; exact le_iSup val (insert x (Bset n))
-      have hC_mono : Monotone C := fun a b hab => Set.union_subset_union_left _ (hB_mono hab)
-      have hCtend : Filter.Tendsto (fun n => μ (C n)) Filter.atTop (nhds (μ (⋃ n, C n))) := by
-        simpa using tendsto_measure_iUnion_atTop (μ := μ) hC_mono
-      have hCU : (⋃ n, C n) = U ∪ rep x := by simp only [hCdef, hUdef]; rw [Set.iUnion_union]
-      have hμCU : μ (⋃ n, C n) ≤ c := le_of_tendsto hCtend (Filter.Eventually.of_forall hC_val_le)
-      rw [hCU, ← measure_add_diff hU_meas.nullMeasurableSet (rep x), hμU] at hμCU
-      have hle2 : c + μ (rep x \ U) ≤ c + 0 := by rw [add_zero]; exact hμCU
-      have hle := ENNReal.le_of_add_le_add_left hc_ne_top hle2
-      exact hne (le_antisymm hle (zero_le _))
-    · -- least upper bound
-      intro v hv
-      obtain ⟨V, hV, rfl⟩ := exists_rep v
-      rw [le_iff]
-      have hrep_null : ∀ x : ↥S, μ (rep x \ V) = 0 := by
-        intro x
-        have hxv := hv x.2
-        rw [hrep_eq x, le_iff] at hxv
-        exact hxv
-      have hB_null : ∀ n, μ (B n \ V) = 0 := by
-        intro n
-        rw [show B n \ V = ⋃ x ∈ Bset n, (rep x \ V) by simp only [hBdef, Set.iUnion_diff]]
-        exact (measure_biUnion_null_iff (Bset n).countable_toSet).mpr fun x _ => hrep_null x
-      rw [show U \ V = ⋃ n, (B n \ V) by simp only [hUdef, Set.iUnion_diff]]
-      exact measure_iUnion_null hB_null
-  rw [(isLUB_sSup S).unique hlub]
-  exact ⟨U, hU_meas, hU_meas_m, rfl⟩
+  obtain ⟨t, hts, htc, hst⟩ := @AEEqSet.exists_countable_sSup_eq Ω m0 μ _ S
+  haveI := htc.to_subtype
+  -- an `m`-measurable representative of each element of the countable subfamily `t`
+  choose A hA0 hAm hAeq using fun x : ↥t ↦ hS (hts x.2)
+  rw [hst, sSup_eq_iSup',
+    show (fun x : ↥t ↦ (x : 𝔹)) = fun x ↦ mkₐ (A x) (hA0 x) from funext hAeq,
+    @AEEqSet.iSup_mk Ω m0 μ _ (↥t) _ A hA0]
+  exact ⟨⋃ x : ↥t, A x, MeasurableSet.iUnion hA0, MeasurableSet.iUnion hAm, rfl⟩
 
 /-! ### The knowledge operator `K` -/
 
