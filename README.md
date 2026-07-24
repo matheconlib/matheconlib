@@ -79,6 +79,7 @@ The all-purchase development specializes the general framework to auctions in wh
 |------|----------|
 | [`Auction/Affiliation/Basic.lean`](Auctionlib/Auction/Affiliation/Basic.lean) | Affiliated densities, product factorization, signal/value environments, private values, and independent and affiliated signals |
 | [`Auction/Affiliation/LogSupermodular.lean`](Auctionlib/Auction/Affiliation/LogSupermodular.lean) | Equivalence between affiliation and log-supermodularity for strictly positive densities |
+| [`Auction/Affiliation/FiniteCondExp.lean`](Auctionlib/Auction/Affiliation/FiniteCondExp.lean) | Finite weighted conditional averages and a reusable affiliation comparison for lattice-ordered conditioning events |
 | [`Auction/Affiliation/MonotoneCondExp.lean`](Auctionlib/Auction/Affiliation/MonotoneCondExp.lean) | Monotonicity of conditional expectations for affiliated distributions on finite sublattices |
 
 The continuous conditional-expectation result and later applications such as the winner's curse and Linkage Principle are not yet formalized.

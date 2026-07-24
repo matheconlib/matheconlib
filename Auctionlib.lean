@@ -1,5 +1,6 @@
 import Auctionlib.Auction
 import Auctionlib.Auction.Affiliation.Basic
+import Auctionlib.Auction.Affiliation.FiniteCondExp
 import Auctionlib.Auction.Affiliation.LogSupermodular
 import Auctionlib.Auction.Affiliation.MonotoneCondExp
 import Auctionlib.Auction.Affiliation.WinnersCurse

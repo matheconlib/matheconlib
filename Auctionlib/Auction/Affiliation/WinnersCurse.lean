@@ -28,8 +28,11 @@ The finite theorem assumes:
 * the winning slice is nonempty.
 
 The nonemptiness and positivity assumptions ensure that both conditional
-averages have positive denominators.  The proof reuses
-`sum_mul_sum_le_of_affiliated` from Lemma 7.3.  The proposition's additional
+averages have positive denominators.  The proof shows that the winning slice
+is lattice-lower than the own-signal slice and applies
+`condExpOn_le_condExpOn_of_affiliated_of_nonneg` from
+`FiniteCondExp.lean`.  The own-signal conditional expectation is
+`condExpSlice` from `MonotoneCondExp.lean`.  The proposition's additional
 claim that the inequality is generically strict is outside this first finite
 scope.
 -/
@@ -60,8 +63,7 @@ finite winner's-curse theorem will assume that the winning slice is nonempty
 and that `f` is positive on `S`, ensuring that this denominator is positive. -/
 noncomputable def condExpWinningSlice {n : ℕ} (f g : (Fin n → ℝ) → ℝ)
     (S : Finset (Fin n → ℝ)) (i : Fin n) (t : ℝ) : ℝ :=
-  (∑ x ∈ winningSlice S i t, g x * f x) /
-    (∑ x ∈ winningSlice S i t, f x)
+  condExpOn f g (winningSlice S i t)
 
 /-! ### Lattice bookkeeping for the winning and own-signal slices -/
 
@@ -90,6 +92,17 @@ theorem winningSlice_subset {n : ℕ} {S : Finset (Fin n → ℝ)}
     {i : Fin n} {t : ℝ} : winningSlice S i t ⊆ S := by
   intro x hx
   exact (mem_winningSlice.mp hx).1.1
+
+/-- Every profile in the winning slice also belongs to the full own-signal
+slice.  Winning adds restrictions on the rival signals but does not change
+the bidder's own-signal condition. -/
+theorem winningSlice_subset_ownSignalSlice {n : ℕ}
+    {S : Finset (Fin n → ℝ)} {i : Fin n} {t : ℝ} :
+    winningSlice S i t ⊆ ownSignalSlice S i t := by
+  intro x hx
+  have hxown : x ∈ S ∧ x i = t :=
+    (mem_winningSlice.mp hx).1
+  exact mem_ownSignalSlice.mpr hxown
 
 /-- If `a` is in the winning slice and `b` is in the own-signal slice, then
 their pointwise supremum is in the own-signal slice.  Sublattice closure keeps
@@ -164,9 +177,13 @@ the conditional expected value:
 The winning slice is assumed nonempty so that conditioning on winning is
 meaningful.  Since `f` is positive on `S`, this makes the winning-slice mass
 positive.  The same winning profile also belongs to the full own-signal
-slice, so that slice has positive mass as well.  We can therefore divide the
-cross-multiplied comparison
-`sum_mul_sum_le_winningSlice_of_affiliated` by both masses. -/
+slice, so that slice has positive mass as well.
+
+The winning slice is lattice-lower than the own-signal slice:
+`sup_mem_ownSignalSlice` sends their pointwise supremum to the own-signal
+slice, while `inf_mem_winningSlice` sends their pointwise infimum back to the
+winning slice.  The result is therefore a direct specialization of
+`condExpOn_le_condExpOn_of_affiliated_of_nonneg`. -/
 theorem condExpWinningSlice_le_condExpSlice_of_affiliated {n : ℕ}
     {f g : (Fin n → ℝ) → ℝ} {S : Finset (Fin n → ℝ)}
     (hf : Affiliated f) (hpos : ∀ x ∈ S, 0 < f x)
@@ -174,22 +191,36 @@ theorem condExpWinningSlice_le_condExpSlice_of_affiliated {n : ℕ}
     (hg : Monotone g) (hg0 : ∀ x ∈ S, 0 ≤ g x)
     (i : Fin n) (t : ℝ) (hwin : (winningSlice S i t).Nonempty) :
     condExpWinningSlice f g S i t ≤ condExpSlice f g S i t := by
-  obtain ⟨x, hxwin⟩ := hwin
-  have hxown : x ∈ ownSignalSlice S i t :=
-    mem_ownSignalSlice.mpr (mem_winningSlice.mp hxwin).1
-  have hwinMass : 0 < ∑ y ∈ winningSlice S i t, f y :=
-    Finset.sum_pos
-      (fun y hy => hpos y (winningSlice_subset hy)) ⟨x, hxwin⟩
-  have hownMass : 0 < ∑ y ∈ ownSignalSlice S i t, f y :=
-    Finset.sum_pos
-      (fun y hy => hpos y (ownSignalSlice_subset hy)) ⟨x, hxown⟩
+  -- A winning profile is also an own-signal profile, so nonemptiness of the
+  -- winning slice implies nonemptiness of the larger own-signal slice.
+  have hwin_subset_own : winningSlice S i t ⊆ ownSignalSlice S i t :=
+    winningSlice_subset_ownSignalSlice
+  have hown_nonempty : (ownSignalSlice S i t).Nonempty :=
+    hwin.mono hwin_subset_own
+
+  -- Both slices lie in `S`, and their pairwise supremum and infimum return
+  -- to the upper and lower slices, respectively.
+  have hwin_subset : winningSlice S i t ⊆ S :=
+    winningSlice_subset
+  have hown_subset : ownSignalSlice S i t ⊆ S :=
+    ownSignalSlice_subset
+  have hsupAB : ∀ a ∈ winningSlice S i t, ∀ b ∈ ownSignalSlice S i t,
+      a ⊔ b ∈ ownSignalSlice S i t := by
+    intro a ha b hb
+    exact sup_mem_ownSignalSlice hsub ha hb
+  have hinfAB : ∀ a ∈ winningSlice S i t, ∀ b ∈ ownSignalSlice S i t,
+      a ⊓ b ∈ winningSlice S i t := by
+    intro a ha b hb
+    exact inf_mem_winningSlice hsub ha hb
+
+  -- Positivity of `f` and nonemptiness of the two slices give them positive
+  -- total mass inside the generic theorem.
   change
-    (∑ y ∈ winningSlice S i t, g y * f y) /
-          (∑ y ∈ winningSlice S i t, f y) ≤
-      (∑ y ∈ ownSignalSlice S i t, g y * f y) /
-          (∑ y ∈ ownSignalSlice S i t, f y)
-  rw [div_le_div_iff₀ hwinMass hownMass]
-  exact sum_mul_sum_le_winningSlice_of_affiliated hf hpos hsub hg hg0 i t
+    condExpOn f g (winningSlice S i t) ≤
+      condExpOn f g (ownSignalSlice S i t)
+  exact condExpOn_le_condExpOn_of_affiliated_of_nonneg
+    hf hpos hsub hg hg0
+    hwin_subset hown_subset hwin hown_nonempty hsupAB hinfAB
 
 /-! ### Signal/value environment form -/
 
