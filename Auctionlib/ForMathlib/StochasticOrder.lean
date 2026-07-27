@@ -24,7 +24,12 @@ open MeasureTheory
 
 /-- The likelihood-ratio order `p ≤lr q` on densities `p q : ℝ → ℝ`:
 for all `x ≤ y`, `q x * p y ≤ q y * p x`. Where `p` is positive this says
-`q / p` is nondecreasing. -/
+`q / p` is nondecreasing.
+
+This is a pointwise relation on chosen density representatives, not an a.e.
+relation between the measures `p ∂μ` and `q ∂μ`; a measure-level version would
+quantify over representatives, or require the Radon-Nikodym derivative of one
+with respect to the other to admit a monotone version. -/
 def LikelihoodRatioLE (p q : ℝ → ℝ) : Prop :=
   ∀ ⦃x y : ℝ⦄, x ≤ y → q x * p y ≤ q y * p x
 
