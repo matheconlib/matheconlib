@@ -1,7 +1,10 @@
 import Auctionlib.Auction
 import Auctionlib.Auction.Affiliation.Basic
+import Auctionlib.Auction.Affiliation.CondExpGeneral
+import Auctionlib.Auction.Affiliation.CondMLR
 import Auctionlib.Auction.Affiliation.FiniteCondExp
 import Auctionlib.Auction.Affiliation.LogSupermodular
+import Auctionlib.Auction.Affiliation.Marginal
 import Auctionlib.Auction.Affiliation.MonotoneCondExp
 import Auctionlib.Auction.Affiliation.WinnersCurse
 import Auctionlib.Auction.AllPurchase
@@ -27,12 +30,15 @@ import Auctionlib.BidderProblem.UniversalIC
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.ForMathlib.ApproximateSelection
 import Auctionlib.ForMathlib.FinsetUpdate
+import Auctionlib.ForMathlib.FourFunctions
 import Auctionlib.ForMathlib.IndepFun
 import Auctionlib.ForMathlib.Kakutani
+import Auctionlib.ForMathlib.LatticeLikelihoodRatio
 import Auctionlib.ForMathlib.MeasureTheory
 import Auctionlib.ForMathlib.ProbabilityMeasure
 import Auctionlib.ForMathlib.Schauder
 import Auctionlib.ForMathlib.StochasticOrder
+import Auctionlib.ForMathlib.UpdateLattice
 import Auctionlib.GameTheory.Basic
 import Auctionlib.GameTheory.NashExistence
 import Auctionlib.Mechanism
