@@ -38,4 +38,5 @@ import Auctionlib.Mechanism.AllPurchase
 import Auctionlib.Mechanism.Basic
 import Auctionlib.SingleParameter
 import Auctionlib.SingleParameter.Basic
+import Auctionlib.SingleParameter.IC
 import Auctionlib.Statistics.OrderStatistics

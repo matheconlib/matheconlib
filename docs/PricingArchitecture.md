@@ -16,8 +16,10 @@ the actual public interface rather than preserve stale pseudocode.
 The core `SingleParameterProblem` structure and its elementary derived
 quantities are implemented in
 [`Auctionlib/SingleParameter/Basic.lean`](../Auctionlib/SingleParameter/Basic.lean).
-The incentive-compatibility classes and the bridge from `BidderProblem`
-described below are planned for later commits.
+The incentive-compatibility and participation predicates are implemented in
+[`Auctionlib/SingleParameter/IC.lean`](../Auctionlib/SingleParameter/IC.lean).
+The analytic envelope results and the bridge from `BidderProblem` described
+below are planned for later commits.
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -201,9 +203,8 @@ results usable in settings other than auctions.
 
 ## 4. Lean interface
 
-The core structure and derived definitions in Sections 4.1 and 4.2 are part of
-the Lean library. The incentive-compatibility classes in Sections 4.3 and 4.4
-are proposed syntax for later commits.
+The structure, derived definitions, incentive-compatibility classes, and
+participation predicates in this section are part of the Lean library.
 
 Some notation used below:
 
@@ -283,9 +284,20 @@ end SingleParameterProblem
 
 The names `q` and `U` match the existing `BidderProblem` API.
 
-### 4.3 Type-deviation incentive compatibility
+### 4.3 Envelope incentive compatibility
 
-The following class is planned but not yet implemented:
+```lean
+class HasEnvelopeIC
+    {Action : Type u} (P : SingleParameterProblem Action) : Prop where
+  envelopeIC :
+    ∀ v ∈ P.typeInterval, ∀ v' ∈ P.typeInterval,
+      (v - v') * P.q v' ≤ P.U v - P.U v'
+```
+
+This is the weakest IC condition in the hierarchy. It is the assumption used
+by the analytic envelope results planned for the next commit.
+
+### 4.4 Type-deviation incentive compatibility
 
 ```lean
 class HasTypeDeviationIC
@@ -305,15 +317,15 @@ Reading the quantified variables from left to right:
 5. the inequality says that copying `v'` is no better than following the
    strategy for `v`.
 
-### 4.4 Universal incentive compatibility
+### 4.5 Universal incentive compatibility
 
-Universal incentive compatibility will use a feasible set
+Universal incentive compatibility uses a feasible set
 
 ```lean
 S : Set Action
 ```
 
-instead of the current `Set ℝ`. Its mathematical content will be:
+instead of the `Set ℝ` used by the existing `BidderProblem` API:
 
 ```lean
 class HasUniversalIC
@@ -330,6 +342,44 @@ class HasUniversalIC
 
 The `outParam` annotation follows the existing `BidderProblem` design. It
 allows Lean's typeclass search to infer the intended feasible action set.
+
+### 4.6 The implication chain
+
+The library provides typeclass instances for
+
+```text
+HasUniversalIC → HasTypeDeviationIC → HasEnvelopeIC
+```
+
+Consequently, a theorem that asks Lean for `HasEnvelopeIC P` can also be used
+when the available assumption is one of the two stronger IC conditions.
+
+### 4.7 Participation
+
+Participation compares the utility from the strategy with an outside option.
+The outside option is allowed to depend on the type:
+
+```lean
+def SatisfiesParticipation (outsideOption : ℝ → ℝ) : Prop :=
+  ∀ v ∈ P.typeInterval, outsideOption v ≤ P.U v
+```
+
+The usual individual-rationality condition uses outside-option utility zero:
+
+```lean
+def IsIndividuallyRational : Prop :=
+  P.SatisfiesParticipation (fun _ => 0)
+```
+
+The separate predicate
+
+```lean
+def HasZeroLowestTypeUtility : Prop :=
+  P.U P.lowestType = 0
+```
+
+says that the lowest type's participation constraint binds at zero. This is
+stronger than merely requiring the lowest type to receive nonnegative utility.
 
 ## 5. Relationship to `BidderProblem`
 

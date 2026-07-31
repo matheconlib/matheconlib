@@ -33,6 +33,17 @@ bridge is planned as part of the single-parameter development.
 
 ## Formalized Results
 
+### Single-Parameter Problems (`SingleParameter/`)
+
+[`SingleParameterProblem Action`](Auctionlib/SingleParameter/Basic.lean)
+describes a deterministic quasilinear choice problem with a real-valued type
+and an arbitrary action type.
+
+| File | Contents |
+|------|----------|
+| [`SingleParameter/Basic.lean`](Auctionlib/SingleParameter/Basic.lean) | Type interval, allocation, payment, strategy, payoff, induced allocation `q`, and utility `U` |
+| [`SingleParameter/IC.lean`](Auctionlib/SingleParameter/IC.lean) | Envelope, type-deviation, and universal IC; their implication chain; participation and individual rationality |
+
 ### Mechanism (`Mechanism/`)
 
 [`Mechanism n`](Auctionlib/Mechanism/Basic.lean) defines allocation and payment rules as functions of the full report vector. Reports specialize to bids in the auction applications below.
