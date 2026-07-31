@@ -25,6 +25,8 @@ in
 [`Auctionlib/SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean).
 The compatibility bridge from `BidderProblem` is implemented in the existing
 [`Auctionlib/BidderProblem`](../Auctionlib/BidderProblem) modules.
+The deterministic posted-price example is implemented in
+[`Auctionlib/SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean).
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -426,6 +428,40 @@ The converse theorem, `typeDeviationIC_of_monotone_q`, constructs a
 `HasTypeDeviationIC P` instance from monotonicity of `q` and the displayed
 payment formula. Together, the necessity and sufficiency directions provide a
 general one-dimensional version of Myerson's payment characterization.
+
+### 4.9 Fixed posted-price problem
+
+The first concrete use of the general action type is a buyer facing a fixed
+posted price. The buyer's type still ranges over a real interval, so the type
+model is continuous. The action type is the finite inductive type
+
+```lean
+inductive PurchaseDecision where
+  | buy
+  | doNotBuy
+```
+
+For a price `p`, buying has allocation `1`, payment `p`, and payoff `v - p`.
+Not buying has allocation, payment, and payoff all equal to `0`. The strategy
+is therefore
+
+```lean
+if p ≤ v then PurchaseDecision.buy
+else PurchaseDecision.doNotBuy
+```
+
+The definition `postedPriceProblem lowestType highestType p` packages these
+objects as a `SingleParameterProblem PurchaseDecision`. The library proves:
+
+- the displayed payoff, allocation, and utility formulas;
+- universal IC over the two purchase decisions;
+- monotonicity of the induced allocation using the general IC chain;
+- individual rationality because not buying is available;
+- zero utility for the lowest type whenever `lowestType ≤ p`.
+
+This example remains deterministic. A distribution of buyer values, expected
+seller revenue, virtual values, and optimization over `p` belong to later pull
+requests.
 
 ## 5. Relationship to `BidderProblem`
 

@@ -46,6 +46,7 @@ and an arbitrary action type.
 | [`SingleParameter/IC.lean`](Auctionlib/SingleParameter/IC.lean) | Envelope, type-deviation, and universal IC; their implication chain; participation and individual rationality |
 | [`SingleParameter/EnvelopeIC.lean`](Auctionlib/SingleParameter/EnvelopeIC.lean) | Monotone allocation, Lipschitz and a.e. differentiable utility, the envelope integral representation, and an individual-rationality consequence |
 | [`SingleParameter/Payment.lean`](Auctionlib/SingleParameter/Payment.lean) | Payment identity, payment uniqueness across action types, and the sufficiency of monotonicity plus the payment identity for type-deviation IC |
+| [`SingleParameter/PostedPrice.lean`](Auctionlib/SingleParameter/PostedPrice.lean) | A fixed posted price with real-valued types, the two actions `buy` and `doNotBuy`, universal IC, monotone demand, and individual rationality |
 
 ### Mechanism (`Mechanism/`)
 
@@ -151,6 +152,7 @@ lake build                                # build the project
 
 The mathematical overview is intentionally broader than the current library. Current coverage includes:
 
+- [x] Action-parametric single-parameter foundations and a deterministic fixed-price buyer problem
 - [x] General `Mechanism` + `Auction` + `BidderProblem` framework
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
 - [x] All-purchase equilibrium characterization, explicit solutions, revenue analysis, optimal pricing, and welfare decomposition

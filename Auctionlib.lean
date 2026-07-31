@@ -41,4 +41,5 @@ import Auctionlib.SingleParameter.Basic
 import Auctionlib.SingleParameter.EnvelopeIC
 import Auctionlib.SingleParameter.IC
 import Auctionlib.SingleParameter.Payment
+import Auctionlib.SingleParameter.PostedPrice
 import Auctionlib.Statistics.OrderStatistics
