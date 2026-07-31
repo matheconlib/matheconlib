@@ -23,7 +23,8 @@ The analytic envelope results are implemented in
 and the payment identity, uniqueness, and sufficiency results are implemented
 in
 [`Auctionlib/SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean).
-The bridge from `BidderProblem` described below is planned for a later commit.
+The compatibility bridge from `BidderProblem` is implemented in the existing
+[`Auctionlib/BidderProblem`](../Auctionlib/BidderProblem) modules.
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -428,10 +429,11 @@ general one-dimensional version of Myerson's payment characterization.
 
 ## 5. Relationship to `BidderProblem`
 
-The current `BidderProblem` will not be renamed or replaced.
+The current `BidderProblem` has not been renamed or replaced.
 
-A later commit will define a conversion whose fields have the following
-correspondence:
+The conversion `BidderProblem.toSingleParameterProblem` is implemented in
+[`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean). Its fields
+have the following correspondence:
 
 | General field | Existing `BidderProblem` field |
 |---|---|
@@ -442,7 +444,7 @@ correspondence:
 | `payment` | `cost` |
 | `strategy` | `strategy` |
 
-The intended conversion has the shape
+The conversion has the shape
 
 ```lean
 def BidderProblem.toSingleParameterProblem
@@ -450,16 +452,35 @@ def BidderProblem.toSingleParameterProblem
     SingleParameterProblem ℝ
 ```
 
-Compatibility lemmas will state that, after conversion:
+Simplification lemmas state that, after conversion:
 
 - the general payoff equals `BidderProblem.payoff`;
 - the general induced allocation equals `BidderProblem.q`;
 - the general utility equals `BidderProblem.U`;
-- existing IC assumptions imply their general counterparts.
+- the type interval and each underlying field are unchanged.
+
+Each existing bidder IC assumption automatically supplies its general
+counterpart:
+
+```text
+BidderProblem.HasEnvelopeIC
+  → SingleParameterProblem.HasEnvelopeIC
+
+BidderProblem.HasTypeDeviationIC
+  → SingleParameterProblem.HasTypeDeviationIC
+
+BidderProblem.HasUniversalIC
+  → SingleParameterProblem.HasUniversalIC
+```
+
+Explicit theorems provide the converse directions without registering them as
+instances. Keeping only one direction automatic avoids cycles in typeclass
+search.
 
 Existing auction code will continue to construct and use `BidderProblem`.
 There is no requirement that existing applications immediately migrate to the
-new structure.
+new structure. Its public envelope and payment theorem statements are
+unchanged, but their proofs now apply the general single-parameter theorems.
 
 ## 6. Separation from distributions and seller objectives
 

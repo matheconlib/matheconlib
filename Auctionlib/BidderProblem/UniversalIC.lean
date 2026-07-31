@@ -38,6 +38,29 @@ class HasUniversalIC (B : BidderProblem) (S : outParam (Set ℝ)) : Prop where
   universalIC : ∀ v ∈ B.typeInterval, ∀ bid ∈ S,
     B.payoff v bid ≤ B.payoff v (B.strategy v)
 
+/-! ### Compatibility with general universal IC -/
+
+/-- Bidder universal IC supplies universal IC for the corresponding general
+single-parameter problem, with the same feasible set of real-valued actions. -/
+instance instSingleParameterHasUniversalIC
+    {B : BidderProblem} {S : Set ℝ} [hIC : HasUniversalIC B S] :
+    SingleParameterProblem.HasUniversalIC B.toSingleParameterProblem S where
+  strategyInS v hv := by
+    simpa using hIC.strategyInS v hv
+  universalIC v hv bid hbid := by
+    simpa using hIC.universalIC v hv bid hbid
+
+/-- Conversely, general universal IC for the converted problem supplies the
+original bidder universal IC condition over the same feasible set. -/
+theorem hasUniversalIC_of_toSingleParameterProblem
+    {B : BidderProblem} {S : Set ℝ}
+    (hIC : SingleParameterProblem.HasUniversalIC B.toSingleParameterProblem S) :
+    HasUniversalIC B S where
+  strategyInS v hv := by
+    simpa using hIC.strategyInS v hv
+  universalIC v hv bid hbid := by
+    simpa using hIC.universalIC v hv bid hbid
+
 /-! ### Instance: Level 2 → Level 1 -/
 
 instance {B : BidderProblem} {S : Set ℝ} [h : HasUniversalIC B S] :

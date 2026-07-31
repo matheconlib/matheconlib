@@ -24,8 +24,9 @@ The reusable deterministic core
 [`SingleParameterProblem Action`](Auctionlib/SingleParameter/Basic.lean)
 allows the agent's action to be a bid, report, contract choice, or another
 application-specific type. It contains no probability distribution or seller
-objective. The existing `BidderProblem` API remains unchanged; a compatibility
-bridge is planned as part of the single-parameter development.
+objective. The existing `BidderProblem` API remains unchanged.
+`BidderProblem.toSingleParameterProblem` supplies a lossless compatibility
+bridge, so existing auction results can reuse the general theorems.
 
 **`Auction → BidderProblem`**: `Auction.toBidderProblem` constructs the interim problem faced by bidder `i` when opponents use a strategy `σ`. For the direct mechanism (`σ = id`), BIC on the auction supplies `HasTypeDeviationIC` on the bidder problem, which in turn unlocks the envelope theorem, Myerson's lemma, and payment equivalence.
 
@@ -65,10 +66,10 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 
 | File | Contents |
 |------|----------|
-| [`BidderProblem/Basic.lean`](Auctionlib/BidderProblem/Basic.lean) | `BidderProblem`, `payoff`, `q`, `U`, and `IsRegular` |
-| [`BidderProblem/EnvelopeIC.lean`](Auctionlib/BidderProblem/EnvelopeIC.lean) | `HasEnvelopeIC`, Lipschitz utility, monotone allocation, a.e. differentiability, the integral representation, and monotonicity of the strategy |
-| [`BidderProblem/TypeDeviationIC.lean`](Auctionlib/BidderProblem/TypeDeviationIC.lean) | `HasTypeDeviationIC`, payment identity and uniqueness, `allPayBid`, `netPaymentIdentity`, and Myerson sufficiency |
-| [`BidderProblem/UniversalIC.lean`](Auctionlib/BidderProblem/UniversalIC.lean) | `HasUniversalIC` over a feasible bid set and its bridge to `HasTypeDeviationIC` |
+| [`BidderProblem/Basic.lean`](Auctionlib/BidderProblem/Basic.lean) | `BidderProblem`, `payoff`, `q`, `U`, `IsRegular`, and the lossless conversion to `SingleParameterProblem ℝ` |
+| [`BidderProblem/EnvelopeIC.lean`](Auctionlib/BidderProblem/EnvelopeIC.lean) | `HasEnvelopeIC`, its general compatibility bridge, and the original bidder envelope API backed by the general theorems |
+| [`BidderProblem/TypeDeviationIC.lean`](Auctionlib/BidderProblem/TypeDeviationIC.lean) | `HasTypeDeviationIC`, its general compatibility bridge, payment identity and uniqueness, `allPayBid`, `netPaymentIdentity`, and Myerson sufficiency |
+| [`BidderProblem/UniversalIC.lean`](Auctionlib/BidderProblem/UniversalIC.lean) | `HasUniversalIC` over a feasible bid set and bridges to both the bidder and general IC hierarchies |
 
 ### Auction (`Auction/`)
 
