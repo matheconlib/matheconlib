@@ -20,6 +20,13 @@ Auction Ω n      — mechanism + type environment (θ, distributions) on (Ω, �
 BidderProblem    — one bidder's interim view (winProb, cost, strategy)
 ```
 
+The reusable deterministic core
+[`SingleParameterProblem Action`](Auctionlib/SingleParameter/Basic.lean)
+allows the agent's action to be a bid, report, contract choice, or another
+application-specific type. It contains no probability distribution or seller
+objective. The existing `BidderProblem` API remains unchanged; a compatibility
+bridge is planned as part of the single-parameter development.
+
 **`Auction → BidderProblem`**: `Auction.toBidderProblem` constructs the interim problem faced by bidder `i` when opponents use a strategy `σ`. For the direct mechanism (`σ = id`), BIC on the auction supplies `HasTypeDeviationIC` on the bidder problem, which in turn unlocks the envelope theorem, Myerson's lemma, and payment equivalence.
 
 `BidderProblem` is the current name for the layer called `ReducedForm` in earlier versions of the library.

@@ -36,4 +36,6 @@ import Auctionlib.GameTheory.NashExistence
 import Auctionlib.Mechanism
 import Auctionlib.Mechanism.AllPurchase
 import Auctionlib.Mechanism.Basic
+import Auctionlib.SingleParameter
+import Auctionlib.SingleParameter.Basic
 import Auctionlib.Statistics.OrderStatistics

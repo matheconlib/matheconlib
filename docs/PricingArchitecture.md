@@ -13,8 +13,11 @@ and postponed decisions should be updated as later commits settle them. Once
 a declaration has been implemented, this document should describe and link to
 the actual public interface rather than preserve stale pseudocode.
 
-At the time of this commit, the document describes definitions planned for
-later commits but does not itself add or change any Lean definitions.
+The core `SingleParameterProblem` structure and its elementary derived
+quantities are implemented in
+[`Auctionlib/SingleParameter/Basic.lean`](../Auctionlib/SingleParameter/Basic.lean).
+The incentive-compatibility classes and the bridge from `BidderProblem`
+described below are planned for later commits.
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -196,11 +199,11 @@ These are deterministic results. They do not require:
 Keeping these assumptions out of the single-parameter structure will make the
 results usable in settings other than auctions.
 
-## 4. Planned Lean interface
+## 4. Lean interface
 
-The snippets in this section are proposed syntax. They are included to make
-the mathematical design precise, but they are not yet part of the Lean
-library.
+The core structure and derived definitions in Sections 4.1 and 4.2 are part of
+the Lean library. The incentive-compatibility classes in Sections 4.3 and 4.4
+are proposed syntax for later commits.
 
 Some notation used below:
 
@@ -281,6 +284,8 @@ end SingleParameterProblem
 The names `q` and `U` match the existing `BidderProblem` API.
 
 ### 4.3 Type-deviation incentive compatibility
+
+The following class is planned but not yet implemented:
 
 ```lean
 class HasTypeDeviationIC
