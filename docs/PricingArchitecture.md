@@ -2,8 +2,19 @@
 
 ## Status of this document
 
-This is a design document. It describes definitions that are planned for later
-commits, but it does not add or change any Lean definitions.
+This is a permanent, versioned architecture document. It records the
+mathematical model, terminology, compatibility promises, and reasons behind
+the design. These parts should remain useful after the planned Lean
+definitions have been implemented.
+
+Some sections are necessarily provisional while implementation is in
+progress. In particular, proposed Lean snippets, future-tense descriptions,
+and postponed decisions should be updated as later commits settle them. Once
+a declaration has been implemented, this document should describe and link to
+the actual public interface rather than preserve stale pseudocode.
+
+At the time of this commit, the document describes definitions planned for
+later commits but does not itself add or change any Lean definitions.
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
