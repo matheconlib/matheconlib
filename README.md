@@ -6,6 +6,10 @@ A Lean 4 formalization of fundamental theorems in auction theory, built on [Math
 
 The auction-theory development is guided by an evolving overview provided by Scott Kominers, [*Auction Theory -- introduction and sketch of potential formalization objectives*](https://www.overleaf.com/project/698329a7c6b8506c1361f68b). The overview includes both completed and prospective objectives; this README describes the material currently implemented in Lean.
 
+The planned extension from auctions to posted pricing and other
+single-parameter problems is described in
+[*Pricing Foundations: Mathematical Model and Compatibility Plan*](docs/PricingArchitecture.md).
+
 ## Architecture
 
 The library has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
