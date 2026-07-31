@@ -18,8 +18,12 @@ quantities are implemented in
 [`Auctionlib/SingleParameter/Basic.lean`](../Auctionlib/SingleParameter/Basic.lean).
 The incentive-compatibility and participation predicates are implemented in
 [`Auctionlib/SingleParameter/IC.lean`](../Auctionlib/SingleParameter/IC.lean).
-The analytic envelope results and the bridge from `BidderProblem` described
-below are planned for later commits.
+The analytic envelope results are implemented in
+[`Auctionlib/SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean),
+and the payment identity, uniqueness, and sufficiency results are implemented
+in
+[`Auctionlib/SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean).
+The bridge from `BidderProblem` described below is planned for a later commit.
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -167,8 +171,9 @@ The intended implication chain is
 
 ## 3. Envelope and payment results
 
-The induced allocation `q` is nondecreasing under incentive compatibility.
-The envelope theorem gives
+Under envelope incentive compatibility, the induced allocation `q` is
+nondecreasing and equilibrium utility is Lipschitz on the type interval. Its
+derivative equals `q` almost everywhere, and the envelope theorem gives
 
 \[
 U(v)
@@ -201,10 +206,25 @@ These are deterministic results. They do not require:
 Keeping these assumptions out of the single-parameter structure will make the
 results usable in settings other than auctions.
 
+The formal results are divided by their mathematical role:
+
+- [`SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean)
+  proves `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`,
+  `U_nonneg`, and the resulting individual-rationality condition.
+- [`SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean)
+  proves `payment_identity`, `payment_unique`, and
+  `typeDeviationIC_of_monotone_q`.
+
+The payment-uniqueness theorem may compare problems with different action
+types. This allows, for example, a direct-report mechanism and a posted-price
+choice problem to share a payment conclusion when they induce the same
+allocation and lowest-type utility.
+
 ## 4. Lean interface
 
-The structure, derived definitions, incentive-compatibility classes, and
-participation predicates in this section are part of the Lean library.
+The structure, derived definitions, incentive-compatibility classes,
+participation predicates, and analytic results in this section are part of the
+Lean library.
 
 Some notation used below:
 
@@ -295,7 +315,7 @@ class HasEnvelopeIC
 ```
 
 This is the weakest IC condition in the hierarchy. It is the assumption used
-by the analytic envelope results planned for the next commit.
+by the analytic envelope and payment-necessity results.
 
 ### 4.4 Type-deviation incentive compatibility
 
@@ -380,6 +400,31 @@ def HasZeroLowestTypeUtility : Prop :=
 
 says that the lowest type's participation constraint binds at zero. This is
 stronger than merely requiring the lowest type to receive nonnegative utility.
+
+### 4.8 Envelope and payment theorem API
+
+The main analytic declarations are:
+
+```lean
+theorem q_monotoneOn [HasEnvelopeIC P] :
+    MonotoneOn P.q P.typeInterval
+
+theorem integral_rep [HasEnvelopeIC P]
+    (v : ℝ) (hv : v ∈ P.typeInterval) :
+    P.U v =
+      P.U P.lowestType + ∫ w in P.lowestType..v, P.q w
+
+theorem payment_identity [HasEnvelopeIC P]
+    (v : ℝ) (hv : v ∈ P.typeInterval) :
+    P.payment (P.strategy v) =
+      v * P.q v - P.U P.lowestType -
+        ∫ w in P.lowestType..v, P.q w
+```
+
+The converse theorem, `typeDeviationIC_of_monotone_q`, constructs a
+`HasTypeDeviationIC P` instance from monotonicity of `q` and the displayed
+payment formula. Together, the necessity and sufficiency directions provide a
+general one-dimensional version of Myerson's payment characterization.
 
 ## 5. Relationship to `BidderProblem`
 

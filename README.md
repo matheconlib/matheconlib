@@ -43,6 +43,8 @@ and an arbitrary action type.
 |------|----------|
 | [`SingleParameter/Basic.lean`](Auctionlib/SingleParameter/Basic.lean) | Type interval, allocation, payment, strategy, payoff, induced allocation `q`, and utility `U` |
 | [`SingleParameter/IC.lean`](Auctionlib/SingleParameter/IC.lean) | Envelope, type-deviation, and universal IC; their implication chain; participation and individual rationality |
+| [`SingleParameter/EnvelopeIC.lean`](Auctionlib/SingleParameter/EnvelopeIC.lean) | Monotone allocation, Lipschitz and a.e. differentiable utility, the envelope integral representation, and an individual-rationality consequence |
+| [`SingleParameter/Payment.lean`](Auctionlib/SingleParameter/Payment.lean) | Payment identity, payment uniqueness across action types, and the sufficiency of monotonicity plus the payment identity for type-deviation IC |
 
 ### Mechanism (`Mechanism/`)
 
