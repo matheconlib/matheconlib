@@ -27,6 +27,8 @@ The compatibility bridge from `BidderProblem` is implemented in the existing
 [`Auctionlib/BidderProblem`](../Auctionlib/BidderProblem) modules.
 The deterministic posted-price example is implemented in
 [`Auctionlib/SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean).
+End-to-end compile-time checks for both the new and legacy APIs are in
+[`Auctionlib/SingleParameter/Regression.lean`](../Auctionlib/SingleParameter/Regression.lean).
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -570,3 +572,29 @@ Before a later commit changes Lean code, it should answer:
 The goal is not abstraction for its own sake. Each generalization should make
 at least one existing result and one planned pricing result fit the same
 mathematical interface.
+
+## 9. First foundation milestone
+
+The first pricing-foundations milestone establishes the deterministic layer
+needed by later distributional and seller-optimization results. Its completion
+criteria are:
+
+- [x] types are real-valued while actions may have an arbitrary Lean type;
+- [x] quasilinear payoff, induced allocation, utility, and participation are
+  defined without probabilistic assumptions;
+- [x] universal IC, type-deviation IC, and envelope IC form a reusable
+  implication chain;
+- [x] monotonicity, the envelope representation, payment necessity,
+  uniqueness, and sufficiency are action-parametric;
+- [x] `BidderProblem` converts losslessly to the general structure;
+- [x] existing bidder theorem statements remain available and reuse the
+  general proofs;
+- [x] a fixed posted price demonstrates the API with a finite, non-real action
+  type and a continuous real type interval;
+- [x] regression examples compile through both the new pricing path and the
+  legacy auction path;
+- [x] the complete existing library builds successfully.
+
+The next milestone may therefore add type distributions, expected seller
+revenue, and virtual values without putting those assumptions into
+`SingleParameterProblem`.

@@ -47,6 +47,7 @@ and an arbitrary action type.
 | [`SingleParameter/EnvelopeIC.lean`](Auctionlib/SingleParameter/EnvelopeIC.lean) | Monotone allocation, Lipschitz and a.e. differentiable utility, the envelope integral representation, and an individual-rationality consequence |
 | [`SingleParameter/Payment.lean`](Auctionlib/SingleParameter/Payment.lean) | Payment identity, payment uniqueness across action types, and the sufficiency of monotonicity plus the payment identity for type-deviation IC |
 | [`SingleParameter/PostedPrice.lean`](Auctionlib/SingleParameter/PostedPrice.lean) | A fixed posted price with real-valued types, the two actions `buy` and `doNotBuy`, universal IC, monotone demand, and individual rationality |
+| [`SingleParameter/Regression.lean`](Auctionlib/SingleParameter/Regression.lean) | Compile-time checks that the generic posted-price path and the existing `BidderProblem` path both expose the intended IC, envelope, payment, and compatibility APIs |
 
 ### Mechanism (`Mechanism/`)
 
