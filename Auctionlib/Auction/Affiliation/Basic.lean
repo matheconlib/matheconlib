@@ -135,12 +135,18 @@ the own signal is `X i` definitionally). -/
 def SignalValueEnv.value {n : ℕ} (E : SignalValueEnv n) (i : Fin n) (X : Fin n → ℝ) : ℝ :=
   E.v i X
 
-/- **Symmetric model** (future work). The notes' symmetric variant posits a single
-value map `u` with `v i (Xᵢ, X₋ᵢ) = u (Xᵢ, X₋ᵢ)` and `u` symmetric in the rival
-coordinates. A faithful Lean rendering carries a permutation-invariance hypothesis
-restricted to permutations fixing `i` (or models the rivals as a `Multiset ℝ`);
-this is left to the analytic layer and not required by the Def 7.1 / Def 7.2 /
-Remark 6 scope formalized here. -/
+/- **Symmetric model.** The notes' symmetric variant posits a single value map `u` with
+`v i (Xᵢ, X₋ᵢ) = u (Xᵢ, X₋ᵢ)` and `u` symmetric in the rival coordinates. It is formalized in
+`Auctionlib/Auction/Affiliation/Symmetry.lean`, not here, since it is not required by the
+Def 7.1 / Def 7.2 / Remark 6 scope of this file:
+
+* `Auction.Affiliation.IsSymmetricValues` is the value half, `E.v (σ i) X = E.v i (X ∘ σ)`
+  for every permutation `σ` of the bidders. `IsSymmetricValues.rival_symm` specializes it to
+  the permutations fixing `i` — the notes' symmetry in the rival coordinates — and
+  `IsSymmetricValues.eq_u` exhibits the single map `u = E.v ⟨0, _⟩` that determines the whole
+  family.
+* `Auction.Affiliation.HasExchangeableSignals` is the signal half, `E.f (X ∘ σ) = E.f X`.
+* `Auction.Affiliation.IsSymmetricModel` bundles the two. -/
 
 /-! ### Welding Def 7.1 to Def 7.2 / Remark 6 -/
 

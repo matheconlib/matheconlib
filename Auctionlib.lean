@@ -2,10 +2,13 @@ import Auctionlib.Auction
 import Auctionlib.Auction.Affiliation.Basic
 import Auctionlib.Auction.Affiliation.CondExpGeneral
 import Auctionlib.Auction.Affiliation.CondMLR
+import Auctionlib.Auction.Affiliation.CondValue
 import Auctionlib.Auction.Affiliation.FiniteCondExp
 import Auctionlib.Auction.Affiliation.LogSupermodular
 import Auctionlib.Auction.Affiliation.Marginal
 import Auctionlib.Auction.Affiliation.MonotoneCondExp
+import Auctionlib.Auction.Affiliation.Sublattice
+import Auctionlib.Auction.Affiliation.Symmetry
 import Auctionlib.Auction.Affiliation.WinnersCurse
 import Auctionlib.Auction.AllPurchase
 import Auctionlib.Auction.AllPurchase.Basic

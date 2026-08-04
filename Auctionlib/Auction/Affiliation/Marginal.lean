@@ -43,6 +43,13 @@ public import Mathlib
 * `Auction.Affiliation.FibreIntegrable.const_mul`,
   `Auction.Affiliation.marginalList_const_mul` : `marginalList μ (fun y => c * F y) l x
   = c * marginalList μ F l x`.
+* `Auction.Affiliation.marginal_pos_of_pos` : for `0 ≤ G`, `0 ≤ H` and `G` strictly positive
+  wherever `H` is, `0 < marginal μ H j x` implies `0 < marginal μ G j x`.
+* `Auction.Affiliation.marginalList_pos_of_pos` : the same implication for the iterated
+  marginal along `l`, under `FibreIntegrable` along `l` for both functions.
+* `Auction.Affiliation.marginalList_lt_of_lt` : for a nonnegative weight `ρ` whose iterated
+  marginal along `l` is positive and `g₁ < g₂` pointwise,
+  `marginalList μ (fun z => g₁ z * ρ z) l x < marginalList μ (fun z => g₂ z * ρ z) l x`.
 -/
 
 @[expose] public section
@@ -371,6 +378,83 @@ theorem marginalList_const_mul {n : ℕ} {μ : Measure ℝ} {F : (Fin n → ℝ)
     {l : List (Fin n)} (hF : FibreIntegrable μ F l) (c : ℝ) (x : Fin n → ℝ) :
     marginalList μ (fun y => c * F y) l x = c * marginalList μ F l x :=
   (fibreIntegrable_const_mul_and_marginalList_const_mul l c hF).2 x
+
+/-! ### Positivity of `marginalList`
+
+A single integral `∫ s, G (x[j↦s]) ∂μ` of a nonnegative `G` is positive exactly when the
+`j`-fibre of `G` has support of positive `μ`-measure
+(`MeasureTheory.integral_pos_iff_support_of_nonneg`). Comparing two nonnegative functions
+therefore reduces to comparing supports, and `marginal_pos_of_pos` transfers positivity from
+`H` to any `G` that is strictly positive wherever `H` is.
+
+Iterating along a list needs the hypothesis in exactly this *implication* form. The
+positivity of a stage weight is not available from the positivity of the final iterated
+integral, and the product structure `G = g * ρ` is destroyed by the first marginalization; the
+implication `0 < H z → 0 < G z`, by contrast, is reproduced at every stage by
+`marginal_pos_of_pos`, which is what makes the induction in `marginalList_pos_of_pos` go
+through with no stage-wise positivity hypothesis. -/
+
+/-- If `0 ≤ G`, `0 ≤ H`, `G` is strictly positive wherever `H` is, and both `j`-fibres at `x`
+are `μ`-integrable, then `0 < marginal μ H j x` implies `0 < marginal μ G j x`. -/
+theorem marginal_pos_of_pos {n : ℕ} {μ : Measure ℝ} {G H : (Fin n → ℝ) → ℝ}
+    (hG0 : 0 ≤ G) (hH0 : 0 ≤ H) (hGH : ∀ z, 0 < H z → 0 < G z) (j : Fin n) (x : Fin n → ℝ)
+    (hH : Integrable (fun s => H (Function.update x j s)) μ)
+    (hG : Integrable (fun s => G (Function.update x j s)) μ)
+    (hpos : 0 < marginal μ H j x) : 0 < marginal μ G j x := by
+  rw [marginal, integral_pos_iff_support_of_nonneg
+    (f := fun s => G (Function.update x j s)) (fun _ => hG0 _) hG]
+  rw [marginal, integral_pos_iff_support_of_nonneg
+    (f := fun s => H (Function.update x j s)) (fun _ => hH0 _) hH] at hpos
+  refine hpos.trans_le (measure_mono fun s hs => ?_)
+  have hHs : 0 < H (Function.update x j s) :=
+    lt_of_le_of_ne (hH0 _) (Ne.symm (Function.mem_support.1 hs))
+  exact Function.mem_support.2 (hGH _ hHs).ne'
+
+/-- If `0 ≤ G`, `0 ≤ H`, `G` is strictly positive wherever `H` is, and both are
+`FibreIntegrable` along `l`, then `0 < marginalList μ H l x` implies
+`0 < marginalList μ G l x`. -/
+theorem marginalList_pos_of_pos {n : ℕ} {μ : Measure ℝ} :
+    ∀ (l : List (Fin n)) {G H : (Fin n → ℝ) → ℝ} (x : Fin n → ℝ),
+      0 ≤ G → 0 ≤ H → (∀ z, 0 < H z → 0 < G z) →
+      FibreIntegrable μ G l → FibreIntegrable μ H l →
+      0 < marginalList μ H l x → 0 < marginalList μ G l x := by
+  intro l
+  induction l with
+  | nil => intro G H x _ _ hGH _ _ hpos; exact hGH x hpos
+  | cons j l ih =>
+    intro G H x hG0 hH0 hGH hG hH hpos
+    exact ih x (marginal_nonneg hG0 j) (marginal_nonneg hH0 j)
+      (fun z hz => marginal_pos_of_pos hG0 hH0 hGH j z (hH.1 z) (hG.1 z) hz) hG.2 hH.2 hpos
+
+/-- Strict comparison of two iterated marginals against a common nonnegative weight `ρ`:
+if `g₁ z < g₂ z` for every `z`, the iterated marginal of `ρ` along `l` at `x` is positive,
+and `ρ`, `g₁ * ρ` and `g₂ * ρ` are all `FibreIntegrable` along `l`, then
+`marginalList μ (fun z => g₁ z * ρ z) l x < marginalList μ (fun z => g₂ z * ρ z) l x`.
+
+The three integrability hypotheses are what the proof consumes: `ρ` carries the positivity
+through the induction, and the two products are needed to split
+`g₂ * ρ = g₁ * ρ + (g₂ - g₁) * ρ` by `marginalList_add`. -/
+theorem marginalList_lt_of_lt {n : ℕ} {μ : Measure ℝ} :
+    ∀ (l : List (Fin n)) {ρ g₁ g₂ : (Fin n → ℝ) → ℝ} (x : Fin n → ℝ),
+      0 ≤ ρ → (∀ z, g₁ z < g₂ z) → 0 < marginalList μ ρ l x →
+      FibreIntegrable μ ρ l → FibreIntegrable μ (fun z => g₁ z * ρ z) l →
+      FibreIntegrable μ (fun z => g₂ z * ρ z) l →
+      marginalList μ (fun z => g₁ z * ρ z) l x
+        < marginalList μ (fun z => g₂ z * ρ z) l x := by
+  intro l ρ g₁ g₂ x hρ hg hpos hIρ h₁ h₂
+  have hdiffeq : (fun z => (g₂ z - g₁ z) * ρ z)
+      = fun z => g₂ z * ρ z + (-1) * (g₁ z * ρ z) := by
+    funext z; ring
+  have hdiff : FibreIntegrable μ (fun z => (g₂ z - g₁ z) * ρ z) l := by
+    rw [hdiffeq]; exact h₂.add (h₁.const_mul (-1))
+  have hlt : 0 < marginalList μ (fun z => (g₂ z - g₁ z) * ρ z) l x :=
+    marginalList_pos_of_pos l x (fun z => mul_nonneg (sub_nonneg.2 (hg z).le) (hρ z)) hρ
+      (fun z hz => mul_pos (sub_pos.2 (hg z)) hz) hdiff hIρ hpos
+  have hadd := marginalList_add h₁ hdiff x
+  have hsum : (fun y => g₁ y * ρ y + (g₂ y - g₁ y) * ρ y) = fun y => g₂ y * ρ y := by
+    funext y; ring
+  rw [hsum] at hadd
+  linarith
 
 end Auction.Affiliation
 
