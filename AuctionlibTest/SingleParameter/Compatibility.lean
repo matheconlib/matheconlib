@@ -89,16 +89,6 @@ example :
     P.withStrategy P.strategy = P :=
   P.withStrategy_self
 
-/-- Truthful behavior in the reduced problem is the identity strategy. -/
-example (v : ℝ) :
-    P.reduce.strategy v = v :=
-  P.reduce_strategy v
-
-/-- A reduced report produces the corresponding original payment. -/
-example (w : ℝ) :
-    P.reduce.payment w = P.payment (P.strategy w) :=
-  P.reduce_payment w
-
 /-- Reduction preserves the induced allocation. -/
 example :
     P.reduce.q = P.q :=

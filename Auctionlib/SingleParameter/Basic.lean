@@ -134,17 +134,6 @@ def reduce : SingleParameterProblem ℝ where
   payment := fun w => P.payment (P.strategy w)
   strategy := id
 
-/-- Truthful behavior in the reduced problem reports the agent's type. -/
-theorem reduce_strategy (v : ℝ) :
-    P.reduce.strategy v = v :=
-  rfl
-
-/-- A reduced report generates the payment from the corresponding original
-strategy action. -/
-theorem reduce_payment (w : ℝ) :
-    P.reduce.payment w = P.payment (P.strategy w) :=
-  rfl
-
 /-- The reduced problem has the same induced allocation as the original
 problem. -/
 theorem reduce_q :
