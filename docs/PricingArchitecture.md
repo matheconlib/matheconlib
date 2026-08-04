@@ -28,6 +28,9 @@ optional bounded-support predicate are implemented in
 [`Auctionlib/ValueDistribution/Basic.lean`](../Auctionlib/ValueDistribution/Basic.lean),
 while posted-price demand and its relationship to the CDF are implemented in
 [`Auctionlib/ValueDistribution/Demand.lean`](../Auctionlib/ValueDistribution/Demand.lean).
+Generic expected allocation, expected payment, seller profit, and their
+reduced-form contracts are implemented in
+[`Auctionlib/ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean).
 End-to-end compile-time checks for both the new and legacy APIs are in
 [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean).
 
@@ -290,6 +293,7 @@ of their definitions.
 | [`SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean) | `PurchaseDecision`, `postedPriceProblem`, its payoff, demand, IC, and participation results | Finite-action example with a continuous real type interval |
 | [`ValueDistribution/Basic.lean`](../Auctionlib/ValueDistribution/Basic.lean) | `ValueDistribution`, `ofRandomVariable`, `IsSupportedOnInterval` | Measure-first representation, pushforwards of random variables, and optional bounded support |
 | [`ValueDistribution/Demand.lean`](../Auctionlib/ValueDistribution/Demand.lean) | `probAtLeast` and its monotonicity, lower-tail, CDF, and atom identities | Posted-price demand with tie-breaking that remains correct for atomic and mixed distributions |
+| [`ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean) | `expectedAllocation`, `expectedPayment`, `sellerProfit`, and their `_reduce` contracts | Ordinary-integral expectations and seller accounting for a separately supplied single-parameter problem |
 | [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
 
@@ -303,8 +307,11 @@ because the original off-strategy action space is not recoverable from the
 reduced problem.
 
 The fixed posted-price example remains deterministic. `ValueDistribution` is
-a separate layer over mathlib probability measures. Expected seller revenue,
-virtual values, and optimization over the price belong to subsequent layers.
+a separate layer over mathlib probability measures, and
+`ValueDistribution/SingleParameter.lean` is the one-way bridge that takes a
+distribution and a deterministic problem as separate arguments. Distributional
+posted-price formulas, virtual values, and optimization over the price belong
+to subsequent layers.
 
 ## 5. Relationship to `BidderProblem`
 
@@ -393,14 +400,40 @@ D(p)=1-F(p)+\Pr[V=p].
 The familiar formula `D(p) = 1 - F(p)` is therefore used only when there is no
 atom at `p`.
 
-The following economic data still belong to seller-objective or optimization
-layers, not in the single-parameter problem or the primitive distribution:
+Expected allocation and expected payment integrate the on-strategy functions
+`P.q` and `P.payment ∘ P.strategy` against a separately supplied distribution.
+The generic seller objective then combines those expectations with the
+seller's continuation value and the cost of approaching the buyer. These are
+functions of the distribution and problem, not fields added to either object.
+In this first objective the continuation value is constant across buyer types,
+and the acquisition cost is an unconditional additive cost. A later sequential
+or learning model may add a type-dependent continuation function while keeping
+the scalar objective as a reusable specialization.
+
+The dependency direction is deliberately one-way:
+
+```text
+SingleParameter.Basic ──┐
+                       ├── ValueDistribution.SingleParameter
+ValueDistribution.Basic ┘
+```
+
+Thus the deterministic single-parameter theory does not import probability
+theory. Measurability, integrability, support, and incentive-compatibility
+assumptions are requested only by theorems that use them. In particular,
+mathlib's integral is total, so results interpreting an integral as an economic
+expectation must establish the required measurability and integrability.
+
+The following economic data still belong to later optimization layers, not in
+the single-parameter problem or the primitive distribution:
 
 - a density used for virtual-value calculations;
 - seller marginal cost;
-- the seller's value for retaining the object;
-- the cost of finding another buyer;
-- continuation value from future buyers.
+- regularity conditions supporting local or global optimization.
+
+Auction-facing density results must reuse the existing `Auction.HasDensity`
+class rather than introduce a parallel density abstraction in the
+`ValueDistribution` namespace.
 
 This separation matters mathematically:
 
