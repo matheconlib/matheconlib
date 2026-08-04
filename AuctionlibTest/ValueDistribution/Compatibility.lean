@@ -1,5 +1,6 @@
 module
 
+import Auctionlib.Auction.ValueDistribution
 import Auctionlib.ValueDistribution.PostedPrice
 import Mathlib.MeasureTheory.Measure.DiracProba
 
@@ -156,6 +157,40 @@ example :
   simp [ProbabilityMeasure.coeFn_def]
 
 end PostedPrice
+
+/-! ## Auction bridge -/
+
+section Auction
+
+variable {Ω : Type} [MeasureSpace Ω]
+  [IsProbabilityMeasure (ℙ : Measure Ω)]
+variable {n : ℕ} (A : Auction Ω n)
+
+/-- A bidder's value distribution has the expected pushforward measure. -/
+example (i : Fin n) :
+    ((A.valueDistribution i : ValueDistribution) : Measure ℝ) =
+      Measure.map (A.θ i) ℙ :=
+  A.toMeasure_valueDistribution i
+
+/-- Bounded auction types supply optional interval support. -/
+example [Auction.HasBoundedTypes A] (i : Fin n) :
+    (A.valueDistribution i).IsSupportedOnInterval
+      (A.θmin i) (A.θmax i) :=
+  A.valueDistribution_isSupportedOnInterval i
+
+/-- Identically distributed auction types give equal bidder distributions. -/
+example [NeZero n] [Auction.HasIdenticalTypes A] (i j : Fin n) :
+    A.valueDistribution i = A.valueDistribution j :=
+  A.valueDistribution_eq_of_identicalTypes i j
+
+/-- Each bidder distribution's CDF agrees with the existing common CDF. -/
+example [NeZero n] [Auction.HasIdenticalTypes A]
+    (i : Fin n) (value : ℝ) :
+    cdf ((A.valueDistribution i : ValueDistribution) : Measure ℝ) value =
+      A.commonCDF value :=
+  A.cdf_valueDistribution_eq_commonCDF i value
+
+end Auction
 
 end ValueDistributionCompatibility
 
