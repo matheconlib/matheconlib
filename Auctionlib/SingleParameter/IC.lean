@@ -22,9 +22,9 @@ The corresponding implication chain is
 
 `HasUniversalIC → HasTypeDeviationIC → HasEnvelopeIC`.
 
-This file also defines participation predicates. Participation is kept
-separate from incentive compatibility: IC compares available actions, while
-participation compares the resulting utility with an outside option.
+This file also defines individual rationality. Participation is kept separate
+from incentive compatibility: IC compares available actions, while individual
+rationality requires the resulting utility to be nonnegative.
 -/
 
 @[expose] public section
@@ -136,18 +136,11 @@ theorem hasTypeDeviationIC_of_reduce
 
 /-! ## Participation -/
 
-/-- The problem satisfies the participation constraint described by
-`outsideOption` if every type in the type interval receives at least its
-outside-option utility.
-
-The outside option may depend on the agent's type. -/
-def SatisfiesParticipation (outsideOption : ℝ → ℝ) : Prop :=
-  ∀ v ∈ P.typeInterval, outsideOption v ≤ P.U v
-
 /-- **Individual rationality** with the standard normalization that every
-type has outside-option utility zero. -/
+type has outside-option utility zero. Every type in the type interval must
+receive nonnegative utility. -/
 def IsIndividuallyRational : Prop :=
-  P.SatisfiesParticipation (fun _ => 0)
+  ∀ v ∈ P.typeInterval, 0 ≤ P.U v
 
 /-- The lowest type receives utility zero.
 

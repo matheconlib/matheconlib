@@ -381,20 +381,17 @@ when the available assumption is one of the two stronger IC conditions.
 
 ### 4.7 Participation
 
-Participation compares the utility from the strategy with an outside option.
-The outside option is allowed to depend on the type:
-
-```lean
-def SatisfiesParticipation (outsideOption : ℝ → ℝ) : Prop :=
-  ∀ v ∈ P.typeInterval, outsideOption v ≤ P.U v
-```
-
-The usual individual-rationality condition uses outside-option utility zero:
+The library currently uses the standard normalization in which the outside
+option is zero. Individual rationality therefore requires every type in the
+type interval to receive nonnegative utility:
 
 ```lean
 def IsIndividuallyRational : Prop :=
-  P.SatisfiesParticipation (fun _ => 0)
+  ∀ v ∈ P.typeInterval, 0 ≤ P.U v
 ```
+
+A more general, possibly type-dependent outside option can be introduced when
+an application requires it.
 
 The separate predicate
 

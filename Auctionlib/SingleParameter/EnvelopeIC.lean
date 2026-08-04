@@ -152,7 +152,7 @@ theorem integral_rep [HasEnvelopeIC P]
   -- `hintegral` writes the same equality with the integral on the left.
   grind
 
-/-! ## Participation consequence -/
+/-! ## Utility nonnegativity -/
 
 /-- If the lowest type has nonnegative utility, then every type in the type
 interval has nonnegative utility. -/
@@ -162,14 +162,6 @@ theorem U_nonneg [HasEnvelopeIC P]
   rw [P.integral_rep v hv]
   exact add_nonneg hU0 <| intervalIntegral.integral_nonneg hv.1
     fun w _ => (P.q_range w).1
-
-/-- A nonnegative utility for the lowest type is sufficient for individual
-rationality throughout the type interval. -/
-theorem isIndividuallyRational_of_nonneg_lowestTypeUtility [HasEnvelopeIC P]
-    (hU0 : 0 ≤ P.U P.lowestType) :
-    P.IsIndividuallyRational := by
-  intro v hv
-  exact P.U_nonneg hU0 v hv
 
 end SingleParameterProblem
 

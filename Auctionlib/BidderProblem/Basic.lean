@@ -98,17 +98,14 @@ lemma toSingleParameterProblem_typeInterval :
     B.toSingleParameterProblem.typeInterval = B.typeInterval :=
   rfl
 
-@[simp]
 lemma toSingleParameterProblem_payoff (v bid : ℝ) :
     B.toSingleParameterProblem.payoff v bid = B.payoff v bid :=
   rfl
 
-@[simp]
 lemma toSingleParameterProblem_q (v : ℝ) :
     B.toSingleParameterProblem.q v = B.q v :=
   rfl
 
-@[simp]
 lemma toSingleParameterProblem_U (v : ℝ) :
     B.toSingleParameterProblem.U v = B.U v :=
   rfl

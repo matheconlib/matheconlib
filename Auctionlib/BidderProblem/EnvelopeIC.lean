@@ -38,8 +38,8 @@ variable (B : BidderProblem)
 compatibility. This is the weakest bidder IC condition and is sufficient for
 the envelope theorem. -/
 class HasEnvelopeIC (B : BidderProblem) : Prop where
-  envelopeIC : ∀ v ∈ B.typeInterval, ∀ v' ∈ B.typeInterval,
-    (v - v') * B.q v' ≤ B.U v - B.U v'
+  envelopeIC : ∀ s ∈ B.typeInterval, ∀ s' ∈ B.typeInterval,
+    (s - s') * B.q s' ≤ B.U s - B.U s'
 
 /-- Bidder envelope IC supplies envelope IC for the corresponding general
 single-parameter problem. -/
@@ -75,15 +75,15 @@ theorem q_monotoneOn [HasEnvelopeIC B] :
 
 /-- `U` has derivative `q` almost everywhere on the type interval. -/
 theorem aeDifferentiable [HasEnvelopeIC B] :
-    ∀ᵐ v ∂volume.restrict B.typeInterval, HasDerivAt B.U (B.q v) v := by
+    ∀ᵐ s ∂volume.restrict B.typeInterval, HasDerivAt B.U (B.q s) s := by
   simpa using B.toSingleParameterProblem.aeDifferentiable
 
 /-- Integral representation:
-`U(v) = U(lowestType) + ∫ lowestType..v, q(w) dw`. -/
+`U(s) = U(lowestType) + ∫ lowestType..s, q(ψ) dψ`. -/
 theorem integral_rep [HasEnvelopeIC B]
-    (v : ℝ) (hv : v ∈ B.typeInterval) :
-    B.U v = B.U B.lowestType + ∫ w in B.lowestType..v, B.q w := by
-  simpa using B.toSingleParameterProblem.integral_rep v hv
+    (s : ℝ) (hs : s ∈ B.typeInterval) :
+    B.U s = B.U B.lowestType + ∫ ψ in B.lowestType..s, B.q ψ := by
+  simpa using B.toSingleParameterProblem.integral_rep s hs
 
 /-! ## Additional bidder consequences -/
 
