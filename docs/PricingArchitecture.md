@@ -31,8 +31,12 @@ while posted-price demand and its relationship to the CDF are implemented in
 Generic expected allocation, expected payment, seller profit, and their
 reduced-form contracts are implemented in
 [`Auctionlib/ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean).
+Their specialization to distributional posted pricing is implemented in
+[`Auctionlib/ValueDistribution/PostedPrice.lean`](../Auctionlib/ValueDistribution/PostedPrice.lean).
 End-to-end compile-time checks for both the new and legacy APIs are in
-[`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean).
+[`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean)
+and
+[`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean).
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -294,8 +298,10 @@ of their definitions.
 | [`ValueDistribution/Basic.lean`](../Auctionlib/ValueDistribution/Basic.lean) | `ValueDistribution`, `ofRandomVariable`, `IsSupportedOnInterval` | Measure-first representation, pushforwards of random variables, and optional bounded support |
 | [`ValueDistribution/Demand.lean`](../Auctionlib/ValueDistribution/Demand.lean) | `probAtLeast` and its monotonicity, lower-tail, CDF, and atom identities | Posted-price demand with tie-breaking that remains correct for atomic and mixed distributions |
 | [`ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean) | `expectedAllocation`, `expectedPayment`, `sellerProfit`, and their `_reduce` contracts | Ordinary-integral expectations and seller accounting for a separately supplied single-parameter problem |
+| [`ValueDistribution/PostedPrice.lean`](../Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price expected allocation, expected payment, seller profit, revenue, and comparison formulas | Distributional specialization of the deterministic posted-price problem and generic seller objective |
 | [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
+| [`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean) | Compile-time API pins and examples | Young-layer contract checks, including atomic posted-price tie-breaking |
 
 The implication instances follow
 `HasUniversalIC → HasTypeDeviationIC → HasEnvelopeIC`. A problem's IC instances
@@ -306,12 +312,14 @@ typeclass-search cycles. No general universal-IC equivalence is registered,
 because the original off-strategy action space is not recoverable from the
 reduced problem.
 
-The fixed posted-price example remains deterministic. `ValueDistribution` is
+The fixed posted-price problem remains deterministic. `ValueDistribution` is
 a separate layer over mathlib probability measures, and
 `ValueDistribution/SingleParameter.lean` is the one-way bridge that takes a
-distribution and a deterministic problem as separate arguments. Distributional
-posted-price formulas, virtual values, and optimization over the price belong
-to subsequent layers.
+distribution and a deterministic problem as separate arguments.
+`ValueDistribution/PostedPrice.lean` specializes that bridge to derive demand,
+payment, seller-profit, and price-comparison formulas without adding support or
+density assumptions. Virtual values and optimization over the price belong to
+subsequent layers.
 
 ## 5. Relationship to `BidderProblem`
 
@@ -501,6 +509,8 @@ criteria are:
   legacy auction path;
 - [x] the complete existing library builds successfully.
 
-The next milestone therefore adds a separate measure-first distributional
-layer, followed by expected seller revenue and virtual values, without putting
-probabilistic assumptions into `SingleParameterProblem`.
+The current milestone adds a separate measure-first distributional layer,
+expected seller objectives, and their posted-price specialization without
+putting probabilistic assumptions into `SingleParameterProblem`. Later layers
+will add the auction bridge and the density, regularity, and optimization
+assumptions needed for virtual-value pricing results.
