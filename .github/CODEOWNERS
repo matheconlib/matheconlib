@@ -1,0 +1,14 @@
+# Review routing: these entries auto-request reviewers for PRs touching each
+# area. They do not block merges (code-owner reviews are not required).
+
+* @Ruizsolveall
+
+# Core layers
+/Auctionlib/Mechanism/     @Ruizsolveall @jjaassoonn
+/Auctionlib/BidderProblem/ @Ruizsolveall @jjaassoonn
+/Auctionlib/GameTheory/    @Ruizsolveall @jjaassoonn
+/Auctionlib/Auction/       @Ruizsolveall @jjaassoonn
+
+# Single-parameter layer
+/Auctionlib/SingleParameter/     @bocowgill @Ruizsolveall
+/AuctionlibTest/SingleParameter/ @bocowgill @Ruizsolveall

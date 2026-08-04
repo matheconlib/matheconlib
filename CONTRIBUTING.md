@@ -39,6 +39,12 @@ hypothesis, a changed conclusion, a renamed or deleted declaration). That is a
 signal to **discuss first**: open a design issue and get agreement before changing
 the statement. Do not edit the pin to make it pass.
 
+New layers pin their own public API next to themselves in `AuctionlibTest/` (see
+`AuctionlibTest/SingleParameter/Compatibility.lean`), so early iteration stays cheap
+while a layer is young. Once a layer has downstream users inside the library, its
+pins are promoted into `ApiStability.lean`; from then on its statements follow the
+design-first rule.
+
 ## Review
 
 - PRs touching the core layers get a maintainer review before merge.
