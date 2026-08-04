@@ -20,6 +20,9 @@ The agent's payoff is quasilinear:
 
 The action type is arbitrary. For example, an action can be a bid, a report, a
 contract choice, or a complete response plan in a bargaining procedure.
+This flexibility concerns how actions are represented; utility must still be
+affine in the type. A genuinely nonseparable primitive such as `V(v, a)` is
+outside this structure.
 
 This structure contains no probability distribution and no seller objective.
 Those belong to later layers of the pricing development.

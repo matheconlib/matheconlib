@@ -6,9 +6,9 @@ A Lean 4 formalization of fundamental theorems in auction theory, built on [Math
 
 The auction-theory development is guided by an evolving overview provided by Scott Kominers, [*Auction Theory -- introduction and sketch of potential formalization objectives*](https://www.overleaf.com/project/698329a7c6b8506c1361f68b). The overview includes both completed and prospective objectives; this README describes the material currently implemented in Lean.
 
-The planned extension from auctions to posted pricing and other
-single-parameter problems is described in
-[*Pricing Foundations: Mathematical Model and Compatibility Plan*](docs/PricingArchitecture.md).
+The extension from auctions to posted pricing and other single-parameter
+problems is described in
+[*Pricing Foundations: Mathematical Model and Architecture*](docs/PricingArchitecture.md).
 
 ## Architecture
 
@@ -22,9 +22,27 @@ BidderProblem    — one bidder's interim view (winProb, cost, strategy)
 
 The reusable deterministic core
 [`SingleParameterProblem Action`](Auctionlib/SingleParameter/Basic.lean)
-allows the agent's action to be a bid, report, contract choice, or another
-application-specific type. It contains no probability distribution or seller
-objective. The existing `BidderProblem` API remains unchanged.
+models affine-in-type, quasilinear utility
+
+$$u(v,a)=v\,x(a)-t(a).$$
+
+The action may be a bid, report, contract choice, or bargaining plan, but the
+type must enter utility through the scalar allocation coefficient `x(a)` in
+`[0, 1]`. Thus richer actions generalize the modeling interface, not this
+affine theory: a genuinely nonseparable primitive such as `V(v,a) - t(a)` is
+outside the current abstraction. Physical quantity choices fit only after
+their value contribution has been normalized into the scalar allocation.
+
+The structure deliberately bundles a strategy with the allocation and payment
+rules, so its IC predicates concern a mechanism-and-strategy pair.
+`withStrategy` changes that strategy explicitly. The canonical `reduce`
+operation turns any such problem into a direct real-report problem with the
+same induced allocation `q` and utility `U`. The envelope and payment results
+depend on these reduced quantities; reduction may forget original actions
+outside the strategy's image. The layer contains no probability distribution
+or seller objective.
+
+The existing `BidderProblem` API remains unchanged.
 `BidderProblem.toSingleParameterProblem` supplies a lossless compatibility
 bridge, so existing auction results can reuse the general theorems.
 
@@ -38,12 +56,13 @@ bridge, so existing auction results can reuse the general theorems.
 
 [`SingleParameterProblem Action`](Auctionlib/SingleParameter/Basic.lean)
 describes a deterministic quasilinear choice problem with a real-valued type
-and an arbitrary action type.
+and an arbitrary action type, subject to the affine-in-type payoff restriction
+described above.
 
 | File | Contents |
 |------|----------|
-| [`SingleParameter/Basic.lean`](Auctionlib/SingleParameter/Basic.lean) | Type interval, allocation, payment, strategy, payoff, induced allocation `q`, and utility `U` |
-| [`SingleParameter/IC.lean`](Auctionlib/SingleParameter/IC.lean) | Envelope, type-deviation, and universal IC; their implication chain; individual rationality and lowest-type normalization |
+| [`SingleParameter/Basic.lean`](Auctionlib/SingleParameter/Basic.lean) | Type interval, allocation, payment, strategy, payoff, induced allocation `q`, utility `U`, strategy replacement, and canonical reduction |
+| [`SingleParameter/IC.lean`](Auctionlib/SingleParameter/IC.lean) | Envelope, type-deviation, and universal IC; their implication chain; reduced-form bridges; individual rationality and lowest-type normalization |
 | [`SingleParameter/EnvelopeIC.lean`](Auctionlib/SingleParameter/EnvelopeIC.lean) | Monotone allocation, Lipschitz and a.e. differentiable utility, the envelope integral representation, and utility nonnegativity |
 | [`SingleParameter/Payment.lean`](Auctionlib/SingleParameter/Payment.lean) | Payment identity, payment uniqueness across action types, and the sufficiency of monotonicity plus the payment identity for type-deviation IC |
 | [`SingleParameter/PostedPrice.lean`](Auctionlib/SingleParameter/PostedPrice.lean) | A fixed posted price with real-valued types, the two actions `buy` and `doNotBuy`, universal IC, monotone demand, and individual rationality |
@@ -149,8 +168,9 @@ The continuous conditional-expectation result and later applications such as the
 ## Building
 
 ```bash
-lake exe mk_all --lib Auctionlib --git   # regenerate import file
-lake build                                # build the project
+lake exe mk_all --lib Auctionlib --git       # regenerate library imports
+lake exe mk_all --lib AuctionlibTest --git   # regenerate test imports
+lake build                                    # build library and tests
 ```
 
 ## Coverage and Roadmap

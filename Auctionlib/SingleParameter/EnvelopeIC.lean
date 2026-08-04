@@ -18,9 +18,10 @@ The central conclusions are:
 * `SingleParameterProblem.integral_rep`: utility is its value at the lowest
   type plus the integral of the induced allocation.
 
-The action type remains arbitrary throughout. Thus these results apply equally
-to bids, reports, contract choices, and other one-dimensional screening
-problems.
+The action type remains arbitrary throughout. Thus these results apply to
+bids, reports, contract choices, and other screening problems whose utility is
+affine in the one-dimensional type. They do not cover genuinely nonseparable
+type-action utility.
 -/
 
 @[expose] public section

@@ -1,22 +1,18 @@
-# Pricing Foundations: Mathematical Model and Compatibility Plan
+# Pricing Foundations: Mathematical Model and Architecture
 
 ## Status of this document
 
 This is a permanent, versioned architecture document. It records the
-mathematical model, terminology, compatibility promises, and reasons behind
-the design. These parts should remain useful after the planned Lean
-definitions have been implemented.
-
-Some sections are necessarily provisional while implementation is in
-progress. In particular, proposed Lean snippets, future-tense descriptions,
-and postponed decisions should be updated as later commits settle them. Once
-a declaration has been implemented, this document should describe and link to
-the actual public interface rather than preserve stale pseudocode.
+mathematical scope, terminology, compatibility promises, and design boundaries
+of the pricing foundations. The Lean source is authoritative for exact
+declaration syntax; this document explains how the pieces fit together and
+links to the public interface rather than duplicating it.
 
 The core `SingleParameterProblem` structure and its elementary derived
 quantities are implemented in
 [`Auctionlib/SingleParameter/Basic.lean`](../Auctionlib/SingleParameter/Basic.lean).
-The incentive-compatibility and participation predicates are implemented in
+The incentive-compatibility and individual-rationality predicates are
+implemented in
 [`Auctionlib/SingleParameter/IC.lean`](../Auctionlib/SingleParameter/IC.lean).
 The analytic envelope results are implemented in
 [`Auctionlib/SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean),
@@ -32,7 +28,9 @@ End-to-end compile-time checks for both the new and legacy APIs are in
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
-and bargaining problems with a one-dimensional private type.
+and bargaining problems with a one-dimensional private type whenever utility
+has the affine form described below. They do not represent arbitrary
+nonseparable type-action utility.
 
 ## Compatibility promise
 
@@ -56,6 +54,16 @@ users remains unchanged.
 
 ## 1. The mathematical model
 
+The foundational restriction is that utility is affine in the private type:
+
+\[
+u(v,a)=v\,x(a)-t(a).
+\]
+
+The action type may be rich, but all dependence on `v` passes through the one
+scalar coefficient `x(a)`. This affine structure—not the choice of action
+type—is what supports the envelope and payment results in this development.
+
 ### 1.1 Types and actions
 
 An agent has a private type
@@ -73,11 +81,12 @@ be real numbers. Depending on the application, an action might be:
 - a bid;
 - a report;
 - a contract choice;
-- a quantity choice;
+- a normalized quantity choice;
 - a complete response plan in a bargaining procedure.
 
-Using an arbitrary action type is the main generalization beyond the current
-`BidderProblem`, where every action is a real-valued bid.
+Using an arbitrary action type generalizes the interface beyond the current
+`BidderProblem`, where every action is a real-valued bid. It does not enlarge
+the affine-in-type class of preferences.
 
 ### 1.2 Allocation and payment
 
@@ -87,11 +96,12 @@ Each action `a` determines:
 - a payment `t(a)` in `ℝ`.
 
 The allocation can be interpreted as a probability of receiving one
-indivisible object. A payment is positive when the agent pays the mechanism.
-A negative payment is a transfer to the agent.
-
-The initial development is therefore a single-unit model. More general
-quantity spaces or multiple goods may require a later abstraction.
+indivisible object. It can also encode a physical quantity after normalization
+when the type's value contribution is exactly `v * x(a)` and the resulting
+coefficient lies in `[0, 1]`. Unnormalized quantities, multiple value
+coefficients, and multiple goods require a different or extended abstraction.
+A payment is positive when the agent pays the mechanism; a negative payment is
+a transfer to the agent.
 
 ### 1.3 Strategy, payoff, allocation, and utility
 
@@ -100,6 +110,13 @@ A strategy maps each type to an action:
 \[
 \sigma : \mathbb R \to \mathit{Action}.
 \]
+
+The strategy is deliberately a field of `SingleParameterProblem`. Therefore,
+the IC predicates below apply to the bundled allocation rule, payment rule,
+and strategy—not to the allocation and payment rules in isolation. The
+operation `P.withStrategy newStrategy` is the explicit way to hold the other
+fields fixed while changing the strategy; IC for the resulting problem must be
+proved separately.
 
 The agent has quasilinear payoff
 
@@ -123,10 +140,20 @@ U(v)=\pi(v,\sigma(v))
 The words `allocation` and `payment` will be used in new general definitions.
 They correspond to `winProb` and `cost` in the existing `BidderProblem`.
 
+A primitive such as
+
+\[
+V(v,a)-t(a)
+\]
+
+with genuinely nonseparable `V` is outside the current model. It fits only if
+its action-dependent part can be represented in the displayed affine form
+(with any type-independent term absorbed into the payment).
+
 ## 2. Incentive compatibility
 
 The existing library has three levels of incentive compatibility. The general
-single-parameter model will retain the same hierarchy.
+single-parameter model retains the same hierarchy.
 
 ### 2.1 Envelope incentive compatibility
 
@@ -211,11 +238,29 @@ These are deterministic results. They do not require:
 Keeping these assumptions out of the single-parameter structure will make the
 results usable in settings other than auctions.
 
+### 3.1 Canonical reduced form
+
+For a problem `P`, the operation `P.reduce` constructs a direct problem whose
+actions are real-valued type reports. Reporting `w` produces the allocation
+`P.q w` and the payment generated by the original action `P.strategy w`; the
+reduced strategy is the identity.
+
+Consequently, `P.reduce` has the same induced allocation `q`, on-strategy
+utility `U`, and type-report deviation payoffs as `P`. Envelope IC and
+type-deviation IC therefore pass in both directions. This makes explicit that
+the envelope representation and payment identity depend on the reduced
+functions `q` and `U`, not on how richly the original action was described.
+
+Reduction need not retain an original action outside the image of
+`P.strategy`. Universal IC, which compares the chosen action with arbitrary
+feasible actions, therefore has no unqualified equivalence with universal IC
+after reduction.
+
 The formal results are divided by their mathematical role:
 
 - [`SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean)
   proves `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`,
-  `U_nonneg`, and the resulting individual-rationality condition.
+  and `U_nonneg`.
 - [`SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean)
   proves `payment_identity`, `payment_unique`, and
   `typeDeviationIC_of_monotone_q`.
@@ -225,242 +270,34 @@ types. This allows, for example, a direct-report mechanism and a posted-price
 choice problem to share a payment conclusion when they induce the same
 allocation and lowest-type utility.
 
-## 4. Lean interface
+## 4. Public Lean API map
 
-The structure, derived definitions, incentive-compatibility classes,
-participation predicates, and analytic results in this section are part of the
-Lean library.
+The Lean source files are authoritative for declaration syntax. This section
+is a map of the stable interface and the role of each module, not a second copy
+of their definitions.
 
-Some notation used below:
+| Source | Principal public API | Architectural role |
+|---|---|---|
+| [`SingleParameter/Basic.lean`](../Auctionlib/SingleParameter/Basic.lean) | `SingleParameterProblem`, `typeInterval`, `payoff`, `q`, `U`, `withStrategy`, `reduce` | Deterministic affine-in-type model, explicit strategy replacement, and canonical direct reduction |
+| [`SingleParameter/IC.lean`](../Auctionlib/SingleParameter/IC.lean) | `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversalIC`, `IsIndividuallyRational`, `HasZeroLowestTypeUtility` | IC hierarchy, participation normalization, and envelope/type-deviation bridges to `P.reduce` |
+| [`SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean) | `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`, `U_nonneg` | Analytic consequences of envelope IC |
+| [`SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean) | `payment_identity`, `payment_unique`, `typeDeviationIC_of_monotone_q` | Payment necessity, uniqueness, and sufficiency |
+| [`SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean) | `PurchaseDecision`, `postedPriceProblem`, its payoff, demand, IC, and participation results | Finite-action example with a continuous real type interval |
+| [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
+| [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
 
-- `ℝ` is the type of real numbers.
-- `A → B` is the type of functions from `A` to `B`.
-- `∀ a, ...` means "for every `a`."
-- `a ∈ S` means that `a` belongs to the set `S`.
-- `:=` introduces the definition of a name.
-- `/-- ... -/` is a documentation comment attached to the declaration that
-  follows it.
+The implication instances follow
+`HasUniversalIC → HasTypeDeviationIC → HasEnvelopeIC`. A problem's IC instances
+are keyed to the problem together with its bundled strategy. Forward instances
+make envelope and type-deviation results available on `P.reduce`; named reverse
+theorems recover the corresponding assumptions on `P` without creating
+typeclass-search cycles. No general universal-IC equivalence is registered,
+because the original off-strategy action space is not recoverable from the
+reduced problem.
 
-### 4.1 Core structure
-
-```lean
-universe u
-
-structure SingleParameterProblem (Action : Type u) where
-  /-- Lower endpoint of the type interval. -/
-  lowestType : ℝ
-
-  /-- Upper endpoint of the type interval. -/
-  highestType : ℝ
-
-  /-- Allocation produced by an action. -/
-  allocation : Action → ℝ
-
-  /-- Every allocation lies in the interval `[0, 1]`. -/
-  allocation_range : ∀ a, allocation a ∈ Set.Icc 0 1
-
-  /-- Payment made by the agent after choosing an action. -/
-  payment : Action → ℝ
-
-  /-- Action selected by each type. -/
-  strategy : ℝ → Action
-```
-
-The parameter
-
-```lean
-Action : Type u
-```
-
-means that `Action` can be any Lean type in a universe named `u`. No topology,
-measurable space, order, or algebraic structure is imposed on actions.
-
-As in the current `BidderProblem`, the structure records the two endpoints but
-does not bundle a proof that `lowestType ≤ highestType`. A theorem that needs a
-nonempty type interval will assume that fact or obtain it from a type known to
-belong to the interval. This choice makes the later conversion from
-`BidderProblem` unconditional.
-
-### 4.2 Derived definitions
-
-```lean
-namespace SingleParameterProblem
-
-variable {Action : Type u} (P : SingleParameterProblem Action)
-
-/-- The closed interval of types considered by the problem. -/
-abbrev typeInterval : Set ℝ :=
-  Set.Icc P.lowestType P.highestType
-
-/-- Payoff of type `v` from action `a`. -/
-def payoff (v : ℝ) (a : Action) : ℝ :=
-  v * P.allocation a - P.payment a
-
-/-- Allocation received when type `v` follows the strategy. -/
-def q (v : ℝ) : ℝ :=
-  P.allocation (P.strategy v)
-
-/-- Utility received when type `v` follows the strategy. -/
-def U (v : ℝ) : ℝ :=
-  P.payoff v (P.strategy v)
-
-end SingleParameterProblem
-```
-
-The names `q` and `U` match the existing `BidderProblem` API.
-
-### 4.3 Envelope incentive compatibility
-
-```lean
-class HasEnvelopeIC
-    {Action : Type u} (P : SingleParameterProblem Action) : Prop where
-  envelopeIC :
-    ∀ v ∈ P.typeInterval, ∀ v' ∈ P.typeInterval,
-      (v - v') * P.q v' ≤ P.U v - P.U v'
-```
-
-This is the weakest IC condition in the hierarchy. It is the assumption used
-by the analytic envelope and payment-necessity results.
-
-### 4.4 Type-deviation incentive compatibility
-
-```lean
-class HasTypeDeviationIC
-    {Action : Type u} (P : SingleParameterProblem Action) : Prop where
-  typeDeviationIC :
-    ∀ v ∈ P.typeInterval, ∀ v' ∈ P.typeInterval,
-      P.payoff v (P.strategy v') ≤
-        P.payoff v (P.strategy v)
-```
-
-Reading the quantified variables from left to right:
-
-1. `v` is the agent's true type;
-2. the first membership proof says that `v` is in the type interval;
-3. `v'` is another type whose strategy action might be copied;
-4. the second membership proof says that `v'` is in the type interval;
-5. the inequality says that copying `v'` is no better than following the
-   strategy for `v`.
-
-### 4.5 Universal incentive compatibility
-
-Universal incentive compatibility uses a feasible set
-
-```lean
-S : Set Action
-```
-
-instead of the `Set ℝ` used by the existing `BidderProblem` API:
-
-```lean
-class HasUniversalIC
-    {Action : Type u}
-    (P : SingleParameterProblem Action)
-    (S : outParam (Set Action)) : Prop where
-  strategyInS :
-    ∀ v ∈ P.typeInterval, P.strategy v ∈ S
-
-  universalIC :
-    ∀ v ∈ P.typeInterval, ∀ a ∈ S,
-      P.payoff v a ≤ P.payoff v (P.strategy v)
-```
-
-The `outParam` annotation follows the existing `BidderProblem` design. It
-allows Lean's typeclass search to infer the intended feasible action set.
-
-### 4.6 The implication chain
-
-The library provides typeclass instances for
-
-```text
-HasUniversalIC → HasTypeDeviationIC → HasEnvelopeIC
-```
-
-Consequently, a theorem that asks Lean for `HasEnvelopeIC P` can also be used
-when the available assumption is one of the two stronger IC conditions.
-
-### 4.7 Participation
-
-The library currently uses the standard normalization in which the outside
-option is zero. Individual rationality therefore requires every type in the
-type interval to receive nonnegative utility:
-
-```lean
-def IsIndividuallyRational : Prop :=
-  ∀ v ∈ P.typeInterval, 0 ≤ P.U v
-```
-
-A more general, possibly type-dependent outside option can be introduced when
-an application requires it.
-
-The separate predicate
-
-```lean
-def HasZeroLowestTypeUtility : Prop :=
-  P.U P.lowestType = 0
-```
-
-says that the lowest type's participation constraint binds at zero. This is
-stronger than merely requiring the lowest type to receive nonnegative utility.
-
-### 4.8 Envelope and payment theorem API
-
-The main analytic declarations are:
-
-```lean
-theorem q_monotoneOn [HasEnvelopeIC P] :
-    MonotoneOn P.q P.typeInterval
-
-theorem integral_rep [HasEnvelopeIC P]
-    (v : ℝ) (hv : v ∈ P.typeInterval) :
-    P.U v =
-      P.U P.lowestType + ∫ w in P.lowestType..v, P.q w
-
-theorem payment_identity [HasEnvelopeIC P]
-    (v : ℝ) (hv : v ∈ P.typeInterval) :
-    P.payment (P.strategy v) =
-      v * P.q v - P.U P.lowestType -
-        ∫ w in P.lowestType..v, P.q w
-```
-
-The converse theorem, `typeDeviationIC_of_monotone_q`, constructs a
-`HasTypeDeviationIC P` instance from monotonicity of `q` and the displayed
-payment formula. Together, the necessity and sufficiency directions provide a
-general one-dimensional version of Myerson's payment characterization.
-
-### 4.9 Fixed posted-price problem
-
-The first concrete use of the general action type is a buyer facing a fixed
-posted price. The buyer's type still ranges over a real interval, so the type
-model is continuous. The action type is the finite inductive type
-
-```lean
-inductive PurchaseDecision where
-  | buy
-  | doNotBuy
-```
-
-For a price `p`, buying has allocation `1`, payment `p`, and payoff `v - p`.
-Not buying has allocation, payment, and payoff all equal to `0`. The strategy
-is therefore
-
-```lean
-if p ≤ v then PurchaseDecision.buy
-else PurchaseDecision.doNotBuy
-```
-
-The definition `postedPriceProblem lowestType highestType p` packages these
-objects as a `SingleParameterProblem PurchaseDecision`. The library proves:
-
-- the displayed payoff, allocation, and utility formulas;
-- universal IC over the two purchase decisions;
-- monotonicity of the induced allocation using the general IC chain;
-- individual rationality because not buying is available;
-- zero utility for the lowest type whenever `lowestType ≤ p`.
-
-This example remains deterministic. A distribution of buyer values, expected
-seller revenue, virtual values, and optimization over `p` belong to later pull
-requests.
+The fixed posted-price example remains deterministic. Type distributions,
+expected seller revenue, virtual values, and optimization over the price
+belong to later layers.
 
 ## 5. Relationship to `BidderProblem`
 
@@ -487,7 +324,7 @@ def BidderProblem.toSingleParameterProblem
     SingleParameterProblem ℝ
 ```
 
-Simplification lemmas state that, after conversion:
+Named compatibility lemmas state that, after conversion:
 
 - the general payoff equals `BidderProblem.payoff`;
 - the general induced allocation equals `BidderProblem.q`;
@@ -546,7 +383,7 @@ This design does not yet settle:
 - general quantities outside `[0, 1]`;
 - multidimensional types;
 - multiple goods;
-- non-quasilinear utility;
+- non-affine or genuinely nonseparable type-action utility;
 - risk-averse buyers;
 - extensive-form syntax for bargaining histories;
 - probability distributions and densities;
@@ -561,10 +398,13 @@ Before a later commit changes Lean code, it should answer:
 
 1. Does the new declaration belong to the deterministic single-parameter
    layer, the distribution layer, or an economic application?
-2. Can the result be stated without auction-specific terminology?
-3. Does an existing declaration already express the same idea?
-4. If existing proofs are refactored, are their public statements unchanged?
-5. Does the full existing library still build?
+2. Does the result assume that utility is affine in type? If not, does it need
+   a genuinely new abstraction?
+3. Does the result depend only on `q` and `U`, or on the full action space?
+4. Can the result be stated without auction-specific terminology?
+5. Does an existing declaration already express the same idea?
+6. If existing proofs are refactored, are their public statements unchanged?
+7. Does the full existing library still build?
 
 The goal is not abstraction for its own sake. Each generalization should make
 at least one existing result and one planned pricing result fit the same
@@ -588,7 +428,7 @@ criteria are:
   general proofs;
 - [x] a fixed posted price demonstrates the API with a finite, non-real action
   type and a continuous real type interval;
-- [x] regression examples compile through both the new pricing path and the
+- [x] compatibility examples compile through both the new pricing path and the
   legacy auction path;
 - [x] the complete existing library builds successfully.
 
