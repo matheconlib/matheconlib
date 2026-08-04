@@ -43,3 +43,6 @@ import Auctionlib.SingleParameter.IC
 import Auctionlib.SingleParameter.Payment
 import Auctionlib.SingleParameter.PostedPrice
 import Auctionlib.Statistics.OrderStatistics
+import Auctionlib.ValueDistribution
+import Auctionlib.ValueDistribution.Basic
+import Auctionlib.ValueDistribution.Demand
