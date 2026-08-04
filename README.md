@@ -170,7 +170,7 @@ The continuous conditional-expectation result and later applications such as the
 ```bash
 lake exe mk_all --lib Auctionlib --git       # regenerate library imports
 lake exe mk_all --lib AuctionlibTest --git   # regenerate test imports
-lake build                                    # build library and tests
+lake build                                    # build library, API pins, and compatibility tests
 ```
 
 ## Coverage and Roadmap
