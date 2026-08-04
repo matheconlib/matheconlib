@@ -78,6 +78,70 @@ example :
 
 end PostedPrice
 
+/-! ## Strategy replacement and reduced forms -/
+
+section ReducedForm
+
+variable {Action : Type*} (P : SingleParameterProblem Action)
+
+/-- Replacing the strategy with itself changes no data. -/
+example :
+    P.withStrategy P.strategy = P :=
+  P.withStrategy_self
+
+/-- Truthful behavior in the reduced problem is the identity strategy. -/
+example (v : ℝ) :
+    P.reduce.strategy v = v :=
+  P.reduce_strategy v
+
+/-- A reduced report produces the corresponding original payment. -/
+example (w : ℝ) :
+    P.reduce.payment w = P.payment (P.strategy w) :=
+  P.reduce_payment w
+
+/-- Reduction preserves the induced allocation. -/
+example :
+    P.reduce.q = P.q :=
+  P.reduce_q
+
+/-- Reduction preserves on-strategy utility. -/
+example :
+    P.reduce.U = P.U :=
+  P.reduce_U
+
+/-- A reduced report has the payoff of its corresponding original action. -/
+example (v w : ℝ) :
+    P.reduce.payoff v w = P.payoff v (P.strategy w) :=
+  P.reduce_payoff v w
+
+/-- Envelope IC is available automatically on the reduced form. -/
+example [SingleParameterProblem.HasEnvelopeIC P] :
+    SingleParameterProblem.HasEnvelopeIC P.reduce :=
+  inferInstance
+
+/-- Envelope IC can be transferred back without a reverse instance. -/
+example (hIC : SingleParameterProblem.HasEnvelopeIC P.reduce) :
+    SingleParameterProblem.HasEnvelopeIC P :=
+  SingleParameterProblem.hasEnvelopeIC_of_reduce hIC
+
+/-- Type-deviation IC is available automatically on the reduced form. -/
+example [SingleParameterProblem.HasTypeDeviationIC P] :
+    SingleParameterProblem.HasTypeDeviationIC P.reduce :=
+  inferInstance
+
+/-- Type-deviation IC can also be transferred back explicitly. -/
+example (hIC : SingleParameterProblem.HasTypeDeviationIC P.reduce) :
+    SingleParameterProblem.HasTypeDeviationIC P :=
+  SingleParameterProblem.hasTypeDeviationIC_of_reduce hIC
+
+/-- The reduced form can invoke the generic envelope theorem directly. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (v : ℝ) (hv : v ∈ P.typeInterval) :
+    P.U v = P.U P.lowestType + ∫ w in P.lowestType..v, P.q w :=
+  P.reduce.integral_rep v hv
+
+end ReducedForm
+
 /-! ## Preservation of the existing bidder API -/
 
 section BidderProblem
