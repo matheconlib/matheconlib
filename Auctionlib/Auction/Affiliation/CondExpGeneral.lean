@@ -32,6 +32,12 @@ public import Mathlib
   `0 ≤ g` weakened to `∃ m, ∀ y, m ≤ g y`.
 * `Auction.Affiliation.Affiliated.monotone_condExp` : `Monotone fun t => condNumer μ f g i t
   / condDenom μ f i t` when `0 < condDenom μ f i t` for every `t`.
+* `Auction.Affiliation.Affiliated.monotoneOn_condExp` : `MonotoneOn (fun t => condNumer μ f g i t
+  / condDenom μ f i t) {t | 0 < condDenom μ f i t}`, with no positivity hypothesis on
+  `condDenom μ f i` off that set.
+* `Auction.Affiliation.marginalList_rivals_congr` : `marginalList μ F (rivals i)` is
+  constant for `F` independent of coordinate `i`, so `condNumer` and `condDenom` do not
+  depend on the base profile `0` at which they are evaluated.
 
 The conditional expectation is realised as the iterated marginal `marginalList μ · (rivals i)`,
 not as an integral against `MeasureTheory.Measure.pi` over the rival coordinates, and nothing
@@ -87,8 +93,11 @@ arbitrary list `l` of marginalized coordinates. For `Affiliated f` with `0 ≤ f
 writing `N s = marginalList μ (fun z => g (z[i↦s]) * f (z[i↦s])) l x` and
 `D s = marginalList μ (fun z => f (z[i↦s])) l x`, one has `N t * D t' ≤ D t * N t'`.
 
-`i` is not required to be absent from `l`: a repetition of `i` in `l` rescales all four
-iterated marginals by the same nonnegative mass. -/
+`0 ≤ g` is required on all of `Fin n → ℝ`, including off the support of `f`, where the
+notes assume only that `g` is nondecreasing and integrable.
+
+`i` is not required to be absent from `l`. For finite `μ`, a repetition of `i` in `l`
+rescales all four iterated marginals by the same nonnegative mass. -/
 theorem Affiliated.marginalList_mul_le {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {f g : (Fin n → ℝ) → ℝ} (hf : Affiliated f) (hf0 : 0 ≤ f) (hg : Monotone g)
     (hg0 : 0 ≤ g) (i : Fin n) (l : List (Fin n)) {t t' : ℝ} (ht : t ≤ t')
@@ -198,7 +207,10 @@ noncomputable def condDenom {n : ℕ} (μ : Measure ℝ) (f : (Fin n → ℝ) �
 /-- **Lemma 7.3** (monotone conditional expectations), general `n`, continuous case, in
 cross-multiplied form: for `Affiliated f` with `0 ≤ f`, `Monotone g`, `0 ≤ g`, `t ≤ t'`
 and the four slices `FibreIntegrable` along `rivals i`,
-`condNumer μ f g i t * condDenom μ f i t' ≤ condDenom μ f i t * condNumer μ f g i t'`. -/
+`condNumer μ f g i t * condDenom μ f i t' ≤ condDenom μ f i t * condNumer μ f g i t'`.
+
+`0 ≤ g` is required on all of `Fin n → ℝ`, including off the support of `f`, where the
+notes assume only that `g` is nondecreasing and integrable. -/
 theorem Affiliated.condNumer_mul_condDenom_le {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {f g : (Fin n → ℝ) → ℝ} (hf : Affiliated f) (hf0 : 0 ≤ f) (hg : Monotone g)
     (hg0 : 0 ≤ g) (i : Fin n) {t t' : ℝ} (ht : t ≤ t')
@@ -226,9 +238,35 @@ theorem Affiliated.condNumer_mul_condDenom_le_of_bddBelow {n : ℕ} {μ : Measur
       ≤ condDenom μ f i t * condNumer μ f g i t' :=
   hf.marginalList_mul_le_of_bddBelow hf0 hg hm i (rivals i) ht h₁ h₂ h₃ h₄ 0
 
+/-- **Lemma 7.3**, division form on the set where the denominator is positive: for
+`Affiliated f` with `0 ≤ f`, `Monotone g`, `0 ≤ g` and the four slices `FibreIntegrable`
+along `rivals i` at every height, `t ↦ condNumer μ f g i t / condDenom μ f i t` is
+nondecreasing on `{t | 0 < condDenom μ f i t}`.
+
+`0 ≤ g` is required on all of `Fin n → ℝ`, including off the support of `f`, where the
+notes assume only that `g` is nondecreasing and integrable. -/
+theorem Affiliated.monotoneOn_condExp {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
+    {f g : (Fin n → ℝ) → ℝ} (hf : Affiliated f) (hf0 : 0 ≤ f) (hg : Monotone g)
+    (hg0 : 0 ≤ g) (i : Fin n)
+    (hnum : ∀ t : ℝ, FibreIntegrable μ
+      (fun z => g (Function.update z i t) * f (Function.update z i t)) (rivals i))
+    (hden : ∀ t : ℝ, FibreIntegrable μ
+      (fun z => f (Function.update z i t)) (rivals i)) :
+    MonotoneOn (fun t => condNumer μ f g i t / condDenom μ f i t)
+      {t : ℝ | 0 < condDenom μ f i t} := by
+  intro t ht t' ht' hle
+  simp only [Set.mem_setOf_eq] at ht ht'
+  rw [div_le_div_iff₀ ht ht']
+  have h := hf.condNumer_mul_condDenom_le hf0 hg hg0 i hle (hnum t) (hden t') (hden t)
+    (hnum t')
+  linarith
+
 /-- **Lemma 7.3**, division form: for `Affiliated f` with `0 ≤ f`, `Monotone g`, `0 ≤ g`,
 positive `condDenom μ f i`, and the four slices `FibreIntegrable` along `rivals i` at
-every pair of heights, `t ↦ condNumer μ f g i t / condDenom μ f i t` is nondecreasing. -/
+every height, `t ↦ condNumer μ f g i t / condDenom μ f i t` is nondecreasing.
+
+`0 ≤ g` is required on all of `Fin n → ℝ`, including off the support of `f`, where the
+notes assume only that `g` is nondecreasing and integrable. -/
 theorem Affiliated.monotone_condExp {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {f g : (Fin n → ℝ) → ℝ} (hf : Affiliated f) (hf0 : 0 ≤ f) (hg : Monotone g)
     (hg0 : 0 ≤ g) (i : Fin n) (hD : ∀ t : ℝ, 0 < condDenom μ f i t)
@@ -236,12 +274,24 @@ theorem Affiliated.monotone_condExp {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ
       (fun z => g (Function.update z i t) * f (Function.update z i t)) (rivals i))
     (hden : ∀ t : ℝ, FibreIntegrable μ
       (fun z => f (Function.update z i t)) (rivals i)) :
-    Monotone fun t => condNumer μ f g i t / condDenom μ f i t := by
-  intro t t' ht
-  rw [div_le_div_iff₀ (hD t) (hD t')]
-  have h := hf.condNumer_mul_condDenom_le hf0 hg hg0 i ht (hnum t) (hden t') (hden t)
-    (hnum t')
-  linarith
+    Monotone fun t => condNumer μ f g i t / condDenom μ f i t := fun t t' hle =>
+  hf.monotoneOn_condExp hf0 hg hg0 i hnum hden (hD t) (hD t') hle
+
+/-- For `F` independent of coordinate `i`, `marginalList μ F (rivals i) x` does not depend
+on `x`: `marginalList μ F (rivals i) x = marginalList μ F (rivals i) y`. In particular
+`condNumer` and `condDenom` are unchanged if the base profile `0` is replaced by any
+other profile. -/
+theorem marginalList_rivals_congr {n : ℕ} {μ : Measure ℝ} {F : (Fin n → ℝ) → ℝ}
+    (i : Fin n) (hF : ∀ (z : Fin n → ℝ) (s : ℝ), F (Function.update z i s) = F z)
+    (x y : Fin n → ℝ) :
+    marginalList μ F (rivals i) x = marginalList μ F (rivals i) y := by
+  refine marginalList_congr_of_dependsOn (rivals i) (fun u v huv => ?_) x y
+  have : Function.update u i (v i) = v := by
+    funext k
+    obtain rfl | hk := eq_or_ne k i
+    · simp
+    · simpa [Function.update_of_ne hk] using huv k ((mem_rivals_iff i k).2 hk)
+  rw [← hF u (v i), this]
 
 end Auction.Affiliation
 

@@ -33,6 +33,8 @@ public import Mathlib
 * `Auction.Affiliation.FibreIntegrable` : `μ`-integrability of the `j`-fibres of every
   iterated marginal produced along a list of coordinates.
 * `Auction.Affiliation.marginalList_nonneg` : `0 ≤ F` implies `0 ≤ marginalList μ F l`.
+* `Auction.Affiliation.marginalList_congr_of_dependsOn` : if `F x = F y` whenever `x` and
+  `y` agree on every `j ∈ l`, then `marginalList μ F l` is constant.
 * `FourFunctionsLE.marginalList` : `FourFunctionsLE f₁ f₂ f₃ f₄` with all four functions
   nonnegative and `FibreIntegrable` along `l` implies `FourFunctionsLE` of the four
   iterated marginals along `l`.
@@ -121,8 +123,7 @@ theorem Affiliated.permanent_le {n : ℕ} {f : (Fin n → ℝ) → ℝ}
     linarith
 
 /-- `marginal μ f j x = ∫ s, f (Function.update x j s) ∂μ`. It is constant in coordinate
-`j`, so `marginal_affiliated` is affiliation of a function of the remaining coordinates;
-`marginal μ f j` is not itself a probability density. -/
+`j`. -/
 noncomputable def marginal {n : ℕ} (μ : Measure ℝ) (f : (Fin n → ℝ) → ℝ)
     (j : Fin n) (x : Fin n → ℝ) : ℝ :=
   ∫ s, f (Function.update x j s) ∂μ
@@ -253,6 +254,29 @@ theorem marginalList_nonneg {n : ℕ} {μ : Measure ℝ} :
   induction l with
   | nil => intro F hF; exact hF
   | cons j l ih => intro F hF; exact ih (marginal_nonneg hF j)
+
+/-- If `F x = F y` whenever `x` and `y` agree on every `j ∈ l`, then `marginalList μ F l`
+is constant: `marginalList μ F l x = marginalList μ F l y` for all `x`, `y`. -/
+theorem marginalList_congr_of_dependsOn {n : ℕ} {μ : Measure ℝ} :
+    ∀ (l : List (Fin n)) {F : (Fin n → ℝ) → ℝ},
+      (∀ x y : Fin n → ℝ, (∀ j ∈ l, x j = y j) → F x = F y) →
+      ∀ x y : Fin n → ℝ, marginalList μ F l x = marginalList μ F l y := by
+  intro l
+  induction l with
+  | nil => intro F hF x y; exact hF x y (by simp)
+  | cons j l ih =>
+    intro F hF x y
+    show marginalList μ (marginal μ F j) l x = marginalList μ (marginal μ F j) l y
+    refine ih (fun u v huv => ?_) x y
+    have hfun : (fun s => F (Function.update u j s))
+        = fun s => F (Function.update v j s) := by
+      funext s
+      refine hF _ _ fun k hk => ?_
+      obtain rfl | hkj := eq_or_ne k j
+      · simp
+      · simp only [Function.update_of_ne hkj]
+        exact huv k ((List.mem_cons.1 hk).resolve_left hkj)
+    simp only [marginal, hfun]
 
 /-- If `FourFunctionsLE f₁ f₂ f₃ f₄`, all four functions are nonnegative and all four are
 `FibreIntegrable` along `l`, then the four iterated marginals along `l` again satisfy the
