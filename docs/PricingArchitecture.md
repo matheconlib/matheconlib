@@ -39,7 +39,11 @@ distributions is implemented in
 End-to-end compile-time checks for both the new and legacy APIs are in
 [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean)
 and
-[`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean).
+[`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean),
+with representative continuous, finite-support, and unbounded distributions in
+[`AuctionlibTest/ValueDistribution/Examples.lean`](../AuctionlibTest/ValueDistribution/Examples.lean)
+and end-to-end seller-objective checks in
+[`AuctionlibTest/Pricing/Compatibility.lean`](../AuctionlibTest/Pricing/Compatibility.lean).
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -305,7 +309,9 @@ of their definitions.
 | [`Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
 | [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
-| [`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean) | Compile-time API pins and examples | Young-layer contract checks, including atomic posted-price tie-breaking and the auction pushforward bridge |
+| [`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean) | Compile-time API pins | Young-layer contract checks, including atomic posted-price tie-breaking and the auction pushforward bridge |
+| [`AuctionlibTest/ValueDistribution/Examples.lean`](../AuctionlibTest/ValueDistribution/Examples.lean) | Representative distribution examples | Bounded continuous, finite-support, and unbounded laws using mathlib probability measures |
+| [`AuctionlibTest/Pricing/Compatibility.lean`](../AuctionlibTest/Pricing/Compatibility.lean) | End-to-end pricing examples | Certain sale and non-sale, acquisition-cost ranking invariance, and reduced-form seller profit |
 
 The implication instances follow
 `HasUniversalIC → HasTypeDeviationIC → HasEnvelopeIC`. A problem's IC instances
@@ -449,9 +455,9 @@ the single-parameter problem or the primitive distribution:
 - seller marginal cost;
 - regularity conditions supporting local or global optimization.
 
-Auction-facing density results must reuse the existing `Auction.HasDensity`
-class rather than introduce a parallel density abstraction in the
-`ValueDistribution` namespace.
+Auction-facing density results must obtain their density assumption from the
+existing `Auction.HasDensity.θ_hasPDF` field rather than introduce a parallel
+density abstraction in the `ValueDistribution` namespace.
 
 This separation matters mathematically:
 
