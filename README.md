@@ -190,3 +190,8 @@ Further work includes:
 - [ ] Remaining game-theoretic concepts and their integration with the auction layer
 - [ ] Extensive-form and obviously strategy-proof mechanisms
 - [ ] Exploratory multi-unit and simultaneous ascending auction models
+
+## Maintenance
+
+The Lean development is maintained by Ruize Chen ([@Ruizsolveall](https://github.com/Ruizsolveall)).
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how changes land. Design questions are welcome as GitHub issues.
