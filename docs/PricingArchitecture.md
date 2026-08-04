@@ -28,7 +28,7 @@ The compatibility bridge from `BidderProblem` is implemented in the existing
 The deterministic posted-price example is implemented in
 [`Auctionlib/SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean).
 End-to-end compile-time checks for both the new and legacy APIs are in
-[`Auctionlib/SingleParameter/Regression.lean`](../Auctionlib/SingleParameter/Regression.lean).
+[`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean).
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,

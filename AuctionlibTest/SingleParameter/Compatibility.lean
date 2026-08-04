@@ -4,7 +4,7 @@ import Auctionlib.BidderProblem
 import Auctionlib.SingleParameter.PostedPrice
 
 /-!
-# Regression Checks for the Single-Parameter Foundation
+# Compatibility Checks for the Single-Parameter Foundation
 
 This file contains compile-time examples rather than new library definitions.
 It checks the two paths that the first pricing-foundations pull request is
@@ -16,12 +16,14 @@ intended to support:
    changing its original public assumptions or conclusions.
 
 If a later refactor accidentally breaks one of these paths, this module will
-fail to compile as part of the ordinary `lake build`.
+fail to compile as part of the ordinary `lake build`. It belongs to the
+separate `AuctionlibTest` library so compile-time checks are not part of the
+production `Auctionlib` import graph.
 -/
 
 open Set MeasureTheory
 
-namespace SingleParameterRegression
+namespace SingleParameterCompatibility
 
 /-! ## A new problem with a finite action type -/
 
@@ -134,4 +136,4 @@ example
 
 end BidderProblem
 
-end SingleParameterRegression
+end SingleParameterCompatibility
