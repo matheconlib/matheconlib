@@ -1,6 +1,6 @@
 module
 
-import Auctionlib.ValueDistribution.Basic
+import Auctionlib.ValueDistribution.Demand
 import Mathlib.MeasureTheory.Constructions.UnitInterval
 import Mathlib.Probability.Distributions.Cauchy
 import Mathlib.Probability.UniformOn
@@ -10,7 +10,8 @@ import Mathlib.Probability.UniformOn
 
 This file checks that the measure-first `ValueDistribution` interface can be
 instantiated by standard distribution classes without adding parallel
-probability constructions to the production library.
+probability constructions to the production library. It also exercises the
+demand API on finite-support atomic and unbounded atomless distributions.
 -/
 
 noncomputable section
@@ -85,6 +86,31 @@ example :
     ((measurableSet_singleton (1 : ℝ)).insert 0)).2
   exact ae_of_all _ fun selected => by cases selected <;> simp
 
+/-- Demand at the upper support point is one half. This is a nontrivial atomic
+witness: the CDF at `1` includes both support points, while `probAtLeast 1`
+includes the probability mass exactly at the posted price. Thus `1 - F(1)`
+would give zero without the atom term. -/
+example :
+    twoPointDistribution.probAtLeast 1 = (1 : ℝ) / 2 := by
+  rw [ValueDistribution.probAtLeast,
+    ← twoPointDistribution.measureReal_eq_coe_coeFn]
+  rw [twoPointDistribution,
+    ValueDistribution.toMeasure_ofRandomVariable]
+  rw [Measure.real, Measure.map_apply_of_aemeasurable
+    (measurable_of_finite fun selected : Bool =>
+      if selected then (1 : ℝ) else 0).aemeasurable
+    measurableSet_Ici]
+  change (ProbabilityTheory.uniformOn (Set.univ : Set Bool)
+      ((fun selected : Bool => if selected then (1 : ℝ) else 0) ⁻¹'
+        Ici 1)).toReal = (1 : ℝ) / 2
+  have hpreimage :
+      ((fun selected : Bool => if selected then (1 : ℝ) else 0) ⁻¹'
+        Ici 1) = {true} := by
+    ext selected
+    cases selected <;> simp
+  rw [hpreimage, ProbabilityTheory.uniformOn_univ]
+  norm_num
+
 /-! ## Unbounded distribution -/
 
 /-- The standard Cauchy distribution, a standard unbounded real-valued
@@ -92,12 +118,35 @@ probability distribution supplied by mathlib. -/
 def standardCauchyDistribution : ValueDistribution :=
   ⟨Probability.cauchyMeasure 0 1, inferInstance⟩
 
+/-- The standard Cauchy distribution is atomless because its nonzero-scale
+measure has a density with respect to atomless Lebesgue measure. -/
+local instance :
+    NoAtoms (standardCauchyDistribution : Measure ℝ) := by
+  change NoAtoms (Probability.cauchyMeasure 0 1)
+  rw [Probability.cauchyMeasure_of_scale_ne_zero 0 (by norm_num)]
+  infer_instance
+
 /-- The transparent `ValueDistribution` abbreviation leaves the underlying
 mathlib measure unchanged. -/
 example :
     (standardCauchyDistribution : Measure ℝ) =
       Probability.cauchyMeasure 0 1 :=
   rfl
+
+/-- The reusable atomless identity applies even without bounded support. -/
+example (price : ℝ) :
+    standardCauchyDistribution.probAtLeast price =
+      1 - ProbabilityTheory.cdf
+        (standardCauchyDistribution : Measure ℝ) price :=
+  standardCauchyDistribution.probAtLeast_eq_one_sub_cdf price
+
+/-- Demand remains between zero and one without bounded support: unbounded
+values do not make the probability of an event exceed one. -/
+example (price : ℝ) :
+    0 ≤ standardCauchyDistribution.probAtLeast price ∧
+      standardCauchyDistribution.probAtLeast price ≤ 1 :=
+  ⟨standardCauchyDistribution.probAtLeast_nonneg price,
+    standardCauchyDistribution.probAtLeast_le_one price⟩
 
 end ValueDistributionExamples
 
