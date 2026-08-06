@@ -32,6 +32,16 @@ used in expected-profit formulas. -/
 def probAtLeast (D : ValueDistribution) (price : ℝ) : ℝ :=
   D (Ici price)
 
+/-- Demand is nonnegative. -/
+theorem probAtLeast_nonneg (D : ValueDistribution) (price : ℝ) :
+    0 ≤ D.probAtLeast price := by
+  exact (D (Ici price)).property
+
+/-- Demand is at most one. -/
+theorem probAtLeast_le_one (D : ValueDistribution) (price : ℝ) :
+    D.probAtLeast price ≤ 1 := by
+  exact_mod_cast D.apply_le_one (Ici price)
+
 /-- Raising the price weakly lowers the probability of purchase. -/
 theorem antitone_probAtLeast (D : ValueDistribution) :
     Antitone D.probAtLeast := by
@@ -82,6 +92,13 @@ theorem probAtLeast_eq_one_sub_cdf_of_singleton_eq_zero
     D.probAtLeast price = 1 - cdf (D : Measure ℝ) price := by
   rw [D.probAtLeast_eq_one_sub_cdf_add_mass price, hprice]
   simp
+
+/-- For an atomless distribution, demand is one minus the CDF. -/
+theorem probAtLeast_eq_one_sub_cdf
+    (D : ValueDistribution) [NoAtoms (D : Measure ℝ)] (price : ℝ) :
+    D.probAtLeast price = 1 - cdf (D : Measure ℝ) price := by
+  apply D.probAtLeast_eq_one_sub_cdf_of_singleton_eq_zero price
+  simp [ProbabilityMeasure.coeFn_def]
 
 end ValueDistribution
 

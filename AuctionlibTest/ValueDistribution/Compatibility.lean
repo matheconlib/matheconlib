@@ -1,7 +1,7 @@
 module
 
 import Auctionlib.Auction.ValueDistribution
-import Auctionlib.ValueDistribution.PostedPrice
+import Auctionlib.ValueDistribution
 import Mathlib.MeasureTheory.Measure.DiracProba
 
 /-!
@@ -41,6 +41,16 @@ example (D : ValueDistribution) (price : ℝ) :
     D.probAtLeast price = D (Ici price) :=
   rfl
 
+/-- Demand remains nonnegative. -/
+example (D : ValueDistribution) (price : ℝ) :
+    0 ≤ D.probAtLeast price :=
+  D.probAtLeast_nonneg price
+
+/-- Demand remains at most one. -/
+example (D : ValueDistribution) (price : ℝ) :
+    D.probAtLeast price ≤ 1 :=
+  D.probAtLeast_le_one price
+
 /-- Demand is antitone in the posted price. -/
 example (D : ValueDistribution) :
     Antitone D.probAtLeast :=
@@ -51,6 +61,11 @@ example (D : ValueDistribution) (price : ℝ) :
     D.probAtLeast price =
       1 - cdf (D : Measure ℝ) price + D {price} :=
   D.probAtLeast_eq_one_sub_cdf_add_mass price
+
+/-- Atomless demand remains one minus the CDF. -/
+example (D : ValueDistribution) [NoAtoms (D : Measure ℝ)] (price : ℝ) :
+    D.probAtLeast price = 1 - cdf (D : Measure ℝ) price :=
+  D.probAtLeast_eq_one_sub_cdf price
 
 /-! ## Expected quantities and seller objective -/
 
