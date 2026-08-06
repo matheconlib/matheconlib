@@ -72,6 +72,28 @@ Compile-time checks that the generic posted-price path and the existing
 [`AuctionlibTest/SingleParameter/Compatibility.lean`](AuctionlibTest/SingleParameter/Compatibility.lean)
 test library.
 
+### Value Distributions and Pricing (`ValueDistribution/`)
+
+`ValueDistribution` is a transparent abbreviation for mathlib's
+`ProbabilityMeasure ℝ`. The layer adds economic vocabulary and connects a
+separately supplied value distribution to the deterministic
+`SingleParameterProblem` API; it does not introduce a second probability or
+integration theory.
+
+| File | Contents |
+|------|----------|
+| [`ValueDistribution/Basic.lean`](Auctionlib/ValueDistribution/Basic.lean) | Real-valued probability distributions, random-variable pushforwards, and optional bounded support |
+| [`ValueDistribution/Demand.lean`](Auctionlib/ValueDistribution/Demand.lean) | Closed-upper-tail posted-price demand, monotonicity, and atom-sensitive CDF identities |
+| [`ValueDistribution/SingleParameter.lean`](Auctionlib/ValueDistribution/SingleParameter.lean) | Expected allocation, expected payment, seller profit, and reduced-form preservation |
+| [`ValueDistribution/PostedPrice.lean`](Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price demand, expected payment, seller-profit, revenue, and price-comparison formulas |
+
+Compile-time pins, representative distributions, and end-to-end pricing checks
+live respectively in
+[`AuctionlibTest/ValueDistribution/Compatibility.lean`](AuctionlibTest/ValueDistribution/Compatibility.lean),
+[`AuctionlibTest/ValueDistribution/Examples.lean`](AuctionlibTest/ValueDistribution/Examples.lean),
+and
+[`AuctionlibTest/Pricing/Compatibility.lean`](AuctionlibTest/Pricing/Compatibility.lean).
+
 ### Mechanism (`Mechanism/`)
 
 [`Mechanism n`](Auctionlib/Mechanism/Basic.lean) defines allocation and payment rules as functions of the full report vector. Reports specialize to bids in the auction applications below.
@@ -104,6 +126,7 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 |------|----------|
 | [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) | `Auction`, interim quantities `q`/`p`/`U` and `q_strat`/`p_strat`, IR notions, `BIC`, `toBidderProblem`, `payment_formula`, and `payment_equivalence` |
 | [`Auction/Typeclasses.lean`](Auctionlib/Auction/Typeclasses.lean) | Composable assumptions on independent, identical, bounded, dense, and atomless types; `IsSymmetricIPV`; common type bounds and CDF |
+| [`Auction/ValueDistribution.lean`](Auctionlib/Auction/ValueDistribution.lean) | Additive pushforward bridge from each bidder's type random variable to a real-valued value distribution |
 | [`Auction/IdenticalTypes.lean`](Auctionlib/Auction/IdenticalTypes.lean) | Expectation identities requiring identical type distributions |
 | [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) | `bidThreshold`, `q_eq_pow`, `q_strat_eq_cdf_pow`, and the bridge to order statistics |
 | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) | `payment_formula_efficient`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |

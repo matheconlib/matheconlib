@@ -23,8 +23,27 @@ The compatibility bridge from `BidderProblem` is implemented in the existing
 [`Auctionlib/BidderProblem`](../Auctionlib/BidderProblem) modules.
 The deterministic posted-price example is implemented in
 [`Auctionlib/SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean).
+The measure-first representation of real-valued type distributions and its
+optional bounded-support predicate are implemented in
+[`Auctionlib/ValueDistribution/Basic.lean`](../Auctionlib/ValueDistribution/Basic.lean),
+while posted-price demand and its relationship to the CDF are implemented in
+[`Auctionlib/ValueDistribution/Demand.lean`](../Auctionlib/ValueDistribution/Demand.lean).
+Generic expected allocation, expected payment, seller profit, and their
+reduced-form contracts are implemented in
+[`Auctionlib/ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean).
+Their specialization to distributional posted pricing is implemented in
+[`Auctionlib/ValueDistribution/PostedPrice.lean`](../Auctionlib/ValueDistribution/PostedPrice.lean).
+The additive bridge from auction type random variables to bidder value
+distributions is implemented in
+[`Auctionlib/Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean).
 End-to-end compile-time checks for both the new and legacy APIs are in
-[`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean).
+[`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean)
+and
+[`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean),
+with representative continuous, finite-support, and unbounded distributions in
+[`AuctionlibTest/ValueDistribution/Examples.lean`](../AuctionlibTest/ValueDistribution/Examples.lean)
+and end-to-end seller-objective checks in
+[`AuctionlibTest/Pricing/Compatibility.lean`](../AuctionlibTest/Pricing/Compatibility.lean).
 
 The first application will be optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -283,8 +302,16 @@ of their definitions.
 | [`SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean) | `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`, `U_nonneg` | Analytic consequences of envelope IC |
 | [`SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean) | `payment_identity`, `payment_unique`, `typeDeviationIC_of_monotone_q` | Payment necessity, uniqueness, and sufficiency |
 | [`SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean) | `PurchaseDecision`, `postedPriceProblem`, its payoff, demand, IC, and participation results | Finite-action example with a continuous real type interval |
+| [`ValueDistribution/Basic.lean`](../Auctionlib/ValueDistribution/Basic.lean) | `ValueDistribution`, `ofRandomVariable`, `IsSupportedOnInterval` | Measure-first representation, pushforwards of random variables, and optional bounded support |
+| [`ValueDistribution/Demand.lean`](../Auctionlib/ValueDistribution/Demand.lean) | `probAtLeast` and its monotonicity, lower-tail, CDF, and atom identities | Posted-price demand with tie-breaking that remains correct for atomic and mixed distributions |
+| [`ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean) | `expectedAllocation`, `expectedPayment`, `sellerProfit`, and their `_reduce` contracts | Ordinary-integral expectations and seller accounting for a separately supplied single-parameter problem |
+| [`ValueDistribution/PostedPrice.lean`](../Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price expected allocation, expected payment, seller profit, revenue, and comparison formulas | Distributional specialization of the deterministic posted-price problem and generic seller objective |
+| [`Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
 | [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
+| [`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean) | Compile-time API pins | Young-layer contract checks, including atomic posted-price tie-breaking and the auction pushforward bridge |
+| [`AuctionlibTest/ValueDistribution/Examples.lean`](../AuctionlibTest/ValueDistribution/Examples.lean) | Representative distribution examples | Bounded continuous, finite-support, and unbounded laws using mathlib probability measures |
+| [`AuctionlibTest/Pricing/Compatibility.lean`](../AuctionlibTest/Pricing/Compatibility.lean) | End-to-end pricing examples | Certain sale and non-sale, acquisition-cost ranking invariance, and reduced-form seller profit |
 
 The implication instances follow
 `HasUniversalIC → HasTypeDeviationIC → HasEnvelopeIC`. A problem's IC instances
@@ -295,9 +322,14 @@ typeclass-search cycles. No general universal-IC equivalence is registered,
 because the original off-strategy action space is not recoverable from the
 reduced problem.
 
-The fixed posted-price example remains deterministic. Type distributions,
-expected seller revenue, virtual values, and optimization over the price
-belong to later layers.
+The fixed posted-price problem remains deterministic. `ValueDistribution` is
+a separate layer over mathlib probability measures, and
+`ValueDistribution/SingleParameter.lean` is the one-way bridge that takes a
+distribution and a deterministic problem as separate arguments.
+`ValueDistribution/PostedPrice.lean` specializes that bridge to derive demand,
+payment, seller-profit, and price-comparison formulas without adding support or
+density assumptions. Virtual values and optimization over the price belong to
+subsequent layers.
 
 ## 5. Relationship to `BidderProblem`
 
@@ -356,15 +388,76 @@ unchanged, but their proofs now apply the general single-parameter theorems.
 
 ## 6. Separation from distributions and seller objectives
 
-The following data will be introduced in later pull requests, not in the
-single-parameter problem:
+A type distribution is represented separately from
+`SingleParameterProblem`. The foundational `ValueDistribution` object is a
+transparent abbreviation for mathlib's `ProbabilityMeasure ℝ`; it does not
+duplicate measures, integration, CDFs, or atomlessness. Distributions obtained
+from random variables use the ordinary pushforward construction.
 
-- the probability distribution of the type;
-- a density or cumulative distribution function;
+Bounded support is an optional predicate rather than part of the distribution
+itself. This lets the same interface describe bounded, unbounded, continuous,
+finite-support, and mixed distributions. A theorem using a bounded
+single-parameter type interval can request support on that interval, while
+results that do not need bounds remain available for arbitrary real-valued
+probability distributions.
+
+At a posted price `p`, the deterministic strategy buys when `p ≤ v`.
+Distributional demand is consequently the probability of the closed upper
+tail:
+
+\[
+D(p)=\Pr[V\ge p].
+\]
+
+For a potentially atomic distribution this satisfies
+
+\[
+D(p)=1-F(p)+\Pr[V=p].
+\]
+
+The familiar formula `D(p) = 1 - F(p)` is therefore used only when there is no
+atom at `p`.
+
+Expected allocation and expected payment integrate the on-strategy functions
+`P.q` and `P.payment ∘ P.strategy` against a separately supplied distribution.
+The generic seller objective then combines those expectations with the
+seller's continuation value and the cost of approaching the buyer. These are
+functions of the distribution and problem, not fields added to either object.
+In this first objective the continuation value is constant across buyer types,
+and the acquisition cost is an unconditional additive cost. A later sequential
+or learning model may add a type-dependent continuation function while keeping
+the scalar objective as a reusable specialization.
+
+The dependency direction is deliberately one-way:
+
+```text
+SingleParameter.Basic ──┐
+                       ├── ValueDistribution.SingleParameter
+ValueDistribution.Basic ┘
+```
+
+Thus the deterministic single-parameter theory does not import probability
+theory. Measurability, integrability, support, and incentive-compatibility
+assumptions are requested only by theorems that use them. In particular,
+mathlib's integral is total, so results interpreting an integral as an economic
+expectation must establish the required measurability and integrability.
+
+The auction bridge follows the same one-way discipline. It turns each type
+random variable into its pushforward `ValueDistribution` without adding a field
+to `Auction`. `HasBoundedTypes` supplies optional interval support, while
+`HasIdenticalTypes` identifies bidder distributions and recovers the existing
+`commonCDF`. The old CDF and auction typeclasses remain available unchanged.
+
+The following economic data still belong to later optimization layers, not in
+the single-parameter problem or the primitive distribution:
+
+- a density used for virtual-value calculations;
 - seller marginal cost;
-- the seller's value for retaining the object;
-- the cost of finding another buyer;
-- continuation value from future buyers.
+- regularity conditions supporting local or global optimization.
+
+Auction-facing density results must obtain their density assumption from the
+existing `Auction.HasDensity.θ_hasPDF` field rather than introduce a parallel
+density abstraction in the `ValueDistribution` namespace.
 
 This separation matters mathematically:
 
@@ -386,7 +479,7 @@ This design does not yet settle:
 - non-affine or genuinely nonseparable type-action utility;
 - risk-averse buyers;
 - extensive-form syntax for bargaining histories;
-- probability distributions and densities;
+- density and regularity assumptions for virtual values;
 - seller optimization.
 
 These topics should not complicate the first reusable layer unless a concrete
@@ -432,6 +525,9 @@ criteria are:
   legacy auction path;
 - [x] the complete existing library builds successfully.
 
-The next milestone may therefore add type distributions, expected seller
-revenue, and virtual values without putting those assumptions into
-`SingleParameterProblem`.
+The current milestone adds a separate measure-first distributional layer,
+expected seller objectives, their posted-price specialization, and an additive
+bridge from auction type laws, without putting probabilistic assumptions into
+`SingleParameterProblem` or changing `Auction`. Later layers will add the
+density, regularity, and optimization assumptions needed for virtual-value
+pricing results.

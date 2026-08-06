@@ -18,6 +18,7 @@ import Auctionlib.Auction.RevenueEquivalence
 import Auctionlib.Auction.StrictMonotonicity
 import Auctionlib.Auction.SymmetricIPV
 import Auctionlib.Auction.Typeclasses
+import Auctionlib.Auction.ValueDistribution
 import Auctionlib.BidderProblem
 import Auctionlib.BidderProblem.Basic
 import Auctionlib.BidderProblem.EnvelopeIC
@@ -43,3 +44,8 @@ import Auctionlib.SingleParameter.IC
 import Auctionlib.SingleParameter.Payment
 import Auctionlib.SingleParameter.PostedPrice
 import Auctionlib.Statistics.OrderStatistics
+import Auctionlib.ValueDistribution
+import Auctionlib.ValueDistribution.Basic
+import Auctionlib.ValueDistribution.Demand
+import Auctionlib.ValueDistribution.PostedPrice
+import Auctionlib.ValueDistribution.SingleParameter
