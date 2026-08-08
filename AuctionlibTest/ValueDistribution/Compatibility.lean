@@ -362,6 +362,25 @@ example (continuationValue acquisitionCost : ℝ) :
   D.sellerProfit_postedPriceProblem lowestType highestType price
     continuationValue acquisitionCost
 
+/-- Under absolute continuity, posted-price seller profit is the tail
+integral of division-free net virtual surplus. -/
+example (density : ℝ → ℝ) (continuationValue acquisitionCost : ℝ)
+    (hprice : price ∈ Icc lowestType highestType)
+    (hsupport : D.IsSupportedOnInterval lowestType highestType)
+    (hD : (D : Measure ℝ) ≪ volume)
+    (hdensity :
+      density =ᵐ[volume.restrict (Icc lowestType highestType)] D.realDensity) :
+    D.sellerProfit
+        (postedPriceProblem lowestType highestType price)
+        continuationValue acquisitionCost =
+      continuationValue - acquisitionCost +
+        ∫ value in price..highestType,
+          (D.virtualSurplusWeight density value -
+            continuationValue * density value) :=
+  D.sellerProfit_postedPriceProblem_eq_intervalIntegral_netVirtualSurplus
+    lowestType highestType price density continuationValue acquisitionCost
+    hprice hsupport hD hdensity
+
 /-- Zero continuation value and acquisition cost recover price-times-demand
 revenue. -/
 example :
