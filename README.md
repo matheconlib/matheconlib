@@ -84,7 +84,12 @@ integration theory.
 |------|----------|
 | [`ValueDistribution/Basic.lean`](Auctionlib/ValueDistribution/Basic.lean) | Real-valued probability distributions, random-variable pushforwards, and optional bounded support |
 | [`ValueDistribution/Demand.lean`](Auctionlib/ValueDistribution/Demand.lean) | Closed-upper-tail posted-price demand, monotonicity, and atom-sensitive CDF identities |
+| [`ValueDistribution/Density.lean`](Auctionlib/ValueDistribution/Density.lean) | Canonical real density and change of measure under absolute continuity |
+| [`ValueDistribution/VirtualValue.lean`](Auctionlib/ValueDistribution/VirtualValue.lean) | Division-free virtual-surplus weight and secondary virtual value |
+| [`ValueDistribution/TailIntegral.lean`](Auctionlib/ValueDistribution/TailIntegral.lean) | Density-free tail-integral identity, including atomic distributions |
 | [`ValueDistribution/SingleParameter.lean`](Auctionlib/ValueDistribution/SingleParameter.lean) | Expected allocation, expected payment, seller profit, and reduced-form preservation |
+| [`ValueDistribution/ExpectedPayment.lean`](Auctionlib/ValueDistribution/ExpectedPayment.lean) | Density-free expected-payment representation and density and CDF corollaries |
+| [`ValueDistribution/SellerProfit.lean`](Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density formula and seller-profit virtual-surplus representations |
 | [`ValueDistribution/PostedPrice.lean`](Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price demand, expected payment, seller-profit, revenue, and price-comparison formulas |
 
 Compile-time pins, representative distributions, and end-to-end pricing checks

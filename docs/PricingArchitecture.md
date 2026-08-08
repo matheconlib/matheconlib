@@ -33,6 +33,16 @@ reduced-form contracts are implemented in
 [`Auctionlib/ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean).
 Their specialization to distributional posted pricing is implemented in
 [`Auctionlib/ValueDistribution/PostedPrice.lean`](../Auctionlib/ValueDistribution/PostedPrice.lean).
+Optional density and virtual-surplus vocabulary are implemented in
+[`Auctionlib/ValueDistribution/Density.lean`](../Auctionlib/ValueDistribution/Density.lean)
+and
+[`Auctionlib/ValueDistribution/VirtualValue.lean`](../Auctionlib/ValueDistribution/VirtualValue.lean).
+The density-free tail identity and its applications to expected payment and
+seller profit are implemented in
+[`Auctionlib/ValueDistribution/TailIntegral.lean`](../Auctionlib/ValueDistribution/TailIntegral.lean),
+[`Auctionlib/ValueDistribution/ExpectedPayment.lean`](../Auctionlib/ValueDistribution/ExpectedPayment.lean),
+and
+[`Auctionlib/ValueDistribution/SellerProfit.lean`](../Auctionlib/ValueDistribution/SellerProfit.lean).
 The additive bridge from auction type random variables to bidder value
 distributions is implemented in
 [`Auctionlib/Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean).
@@ -554,9 +564,8 @@ criteria are:
   legacy auction path;
 - [x] the complete existing library builds successfully.
 
-The current milestone adds a separate measure-first distributional layer,
-expected seller objectives, their posted-price specialization, and an additive
-bridge from auction type laws, without putting probabilistic assumptions into
-`SingleParameterProblem` or changing `Auction`. Later layers will add the
-density, regularity, and optimization assumptions needed for virtual-value
-pricing results.
+The current analytic milestone adds optional density representations,
+density-free expected-payment identities, and virtual-surplus seller-profit
+formulas without putting probabilistic assumptions into
+`SingleParameterProblem` or changing `Auction`. Later layers will add
+regularity, differentiation, pricing optimality, and comparative statics.

@@ -67,6 +67,74 @@ example (D : ValueDistribution) [NoAtoms (D : Measure ℝ)] (price : ℝ) :
     D.probAtLeast price = 1 - cdf (D : Measure ℝ) price :=
   D.probAtLeast_eq_one_sub_cdf price
 
+/-! ## Density, virtual surplus, and tail integration -/
+
+/-- The canonical real density remains the real-valued Radon--Nikodym
+representative with respect to Lebesgue measure. -/
+example (D : ValueDistribution) (value : ℝ) :
+    D.realDensity value =
+      ((D : Measure ℝ).rnDeriv (volume : Measure ℝ) value).toReal :=
+  rfl
+
+/-- Under absolute continuity, integration against a value distribution can
+be rewritten using its canonical real density. -/
+example (D : ValueDistribution) (g : ℝ → ℝ)
+    (hD : (D : Measure ℝ) ≪ volume) :
+    (∫ value, g value ∂(D : Measure ℝ)) =
+      ∫ value, D.realDensity value * g value ∂volume :=
+  D.integral_eq_integral_realDensity_mul g hD
+
+/-- Virtual-surplus weight is value times density minus closed-tail demand. -/
+example (D : ValueDistribution) (density : ℝ → ℝ) (value : ℝ) :
+    D.virtualSurplusWeight density value =
+      value * density value - D.probAtLeast value :=
+  rfl
+
+/-- Virtual value is defined secondarily by dividing virtual-surplus weight
+by the chosen density. -/
+example (D : ValueDistribution) (density : ℝ → ℝ) (value : ℝ) :
+    D.virtualValue density value =
+      D.virtualSurplusWeight density value / density value :=
+  rfl
+
+/-- The economically useful factorization explicitly requires nonzero
+density, even though division itself is total in Lean. -/
+example (D : ValueDistribution) (density : ℝ → ℝ) (value : ℝ)
+    (hDensity : density value ≠ 0) :
+    D.virtualSurplusWeight density value =
+      density value * D.virtualValue density value :=
+  D.virtualSurplusWeight_eq_density_mul_virtualValue
+    density value hDensity
+
+/-- The density-free tail identity preserves the closed-tail convention and
+therefore does not assume atomlessness. -/
+example (D : ValueDistribution) {lower upper : ℝ}
+    (horder : lower ≤ upper)
+    (hsupport : D.IsSupportedOnInterval lower upper)
+    {q : ℝ → ℝ}
+    (hq_measurable : Measurable q)
+    (hq_integrable : IntervalIntegrable q volume lower upper)
+    (hq_nonneg : ∀ cutoff ∈ Icc lower upper, 0 ≤ q cutoff) :
+    (∫ value, (∫ cutoff in lower..value, q cutoff) ∂D) =
+      ∫ cutoff in lower..upper,
+        q cutoff * D.probAtLeast cutoff :=
+  D.integral_intervalIntegral_eq_integral_mul_probAtLeast
+    horder hsupport hq_measurable hq_integrable hq_nonneg
+
+/-- Changing a density representative at one point does not change the
+resulting Lebesgue integral. -/
+example (D : ValueDistribution) (g : ℝ → ℝ)
+    (point replacement : ℝ) (hD : (D : Measure ℝ) ≪ volume) :
+    (∫ value, g value ∂(D : Measure ℝ)) =
+      ∫ value,
+        Function.update D.realDensity point replacement value * g value
+          ∂volume := by
+  apply D.integral_eq_integral_density_mul
+    (Function.update D.realDensity point replacement) g hD
+  filter_upwards [show ∀ᵐ value ∂volume, value ≠ point by
+    simp [ae_iff]] with value hvalue
+  simp [hvalue]
+
 /-! ## Expected quantities and seller objective -/
 
 section SingleParameter
@@ -108,6 +176,102 @@ example (continuationValue acquisitionCost : ℝ) :
     D.sellerProfit P.reduce continuationValue acquisitionCost =
       D.sellerProfit P continuationValue acquisitionCost :=
   D.sellerProfit_reduce P continuationValue acquisitionCost
+
+/-! ### Expected-payment and seller-profit representations -/
+
+/-- The primary expected-payment representation is density-free. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType) :
+    D.expectedPayment P =
+      (∫ value, value * P.q value ∂(D : Measure ℝ)) -
+        P.U P.lowestType -
+        ∫ cutoff in P.lowestType..P.highestType,
+          P.q cutoff * D.probAtLeast cutoff :=
+  D.expectedPayment_eq_integral_value_mul_q_sub_integral_tail
+    P horder hsupport
+
+/-- Under absolute continuity, expected payment is allocation-weighted
+canonical virtual surplus minus lowest-type utility. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume) :
+    D.expectedPayment P =
+      (∫ value in P.lowestType..P.highestType,
+        P.q value *
+          D.virtualSurplusWeight D.realDensity value) -
+        P.U P.lowestType :=
+  D.expectedPayment_eq_integral_q_mul_virtualSurplusWeight_realDensity
+    P horder hsupport hD
+
+/-- The canonical seller-profit representation keeps continuation value,
+acquisition cost, and lowest-type information rent distinct. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (continuationValue acquisitionCost : ℝ)
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume) :
+    D.sellerProfit P continuationValue acquisitionCost =
+      continuationValue - acquisitionCost - P.U P.lowestType +
+        ∫ value in P.lowestType..P.highestType,
+          P.q value *
+            (D.virtualSurplusWeight D.realDensity value -
+              continuationValue * D.realDensity value) :=
+  D.sellerProfit_eq_virtualSurplus_realDensity P
+    continuationValue acquisitionCost horder hsupport hD
+
+/-! ### Semantic examples -/
+
+/-- The primary expected-payment theorem applies to an atomic value law. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (value : ℝ) (horder : P.lowestType ≤ P.highestType)
+    (hvalue : value ∈ P.typeInterval) :
+    ValueDistribution.expectedPayment (diracProba value) P =
+      (∫ reportedValue,
+          reportedValue * P.q reportedValue ∂(diracProba value)) -
+        P.U P.lowestType -
+        ∫ cutoff in P.lowestType..P.highestType,
+          P.q cutoff *
+            ValueDistribution.probAtLeast (diracProba value) cutoff := by
+  apply ValueDistribution.expectedPayment_eq_integral_value_mul_q_sub_integral_tail
+    (diracProba value) P horder
+  rw [ValueDistribution.IsSupportedOnInterval]
+  change ∀ᵐ reportedValue ∂Measure.dirac value,
+    reportedValue ∈ P.typeInterval
+  simpa [ae_dirac_eq] using hvalue
+
+/-- Under absolute continuity, the chosen-density expected-payment theorem
+uses the familiar one-minus-CDF tail. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (density : ℝ → ℝ)
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume)
+    (hdensity :
+      density =ᵐ[volume.restrict P.typeInterval] D.realDensity) :
+    D.expectedPayment P =
+      (∫ value in P.lowestType..P.highestType,
+        P.q value *
+          (value * density value -
+            (1 - cdf (D : Measure ℝ) value))) -
+        P.U P.lowestType :=
+  D.expectedPayment_eq_integral_q_mul_sub_one_sub_cdf
+    P density horder hsupport hD hdensity
+
+/-- Applying the density-free theorem to the reduced problem recovers the
+original induced allocation and utility. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType) :
+    D.expectedPayment P.reduce =
+      (∫ value, value * P.q value ∂(D : Measure ℝ)) -
+        P.U P.lowestType -
+        ∫ cutoff in P.lowestType..P.highestType,
+          P.q cutoff * D.probAtLeast cutoff := by
+  simpa [P.reduce_q, P.reduce_U] using
+    D.expectedPayment_eq_integral_value_mul_q_sub_integral_tail
+      P.reduce horder hsupport
 
 end SingleParameter
 
@@ -186,6 +350,12 @@ example (i : Fin n) :
     ((A.valueDistribution i : ValueDistribution) : Measure ℝ) =
       Measure.map (A.θ i) ℙ :=
   A.toMeasure_valueDistribution i
+
+/-- The existing auction density assumption makes each bidder's value
+distribution absolutely continuous; no second density class is introduced. -/
+example [Auction.HasDensity A] (i : Fin n) :
+    ((A.valueDistribution i : ValueDistribution) : Measure ℝ) ≪ volume :=
+  A.valueDistribution_absolutelyContinuous i
 
 /-- Bounded auction types supply optional interval support. -/
 example [Auction.HasBoundedTypes A] (i : Fin n) :
