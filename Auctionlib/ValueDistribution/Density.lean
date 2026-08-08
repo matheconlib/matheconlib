@@ -1,6 +1,7 @@
 module
 
 public import Auctionlib.ValueDistribution.Basic
+public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 public import Mathlib.Probability.Density
 
 /-!
@@ -73,6 +74,43 @@ theorem integral_eq_integral_density_mul
   apply integral_congr_ae
   filter_upwards [hf] with value hvalue
   rw [hvalue]
+
+/-- Under absolute continuity and bounded support, integration against a
+value distribution is an interval integral against its canonical real-valued
+density. -/
+theorem integral_eq_intervalIntegral_realDensity_mul
+    (D : ValueDistribution) (g : ℝ → ℝ)
+    {lower upper : ℝ} (horder : lower ≤ upper)
+    (hsupport : D.IsSupportedOnInterval lower upper)
+    (hD : (D : Measure ℝ) ≪ volume) :
+    (∫ value, g value ∂(D : Measure ℝ)) =
+      ∫ value in lower..upper,
+        D.realDensity value * g value := by
+  have hindicator :
+      (∫ value, g value ∂(D : Measure ℝ)) =
+        ∫ value,
+          (Set.Icc lower upper).indicator g value
+            ∂(D : Measure ℝ) := by
+    apply integral_congr_ae
+    filter_upwards [hsupport] with value hvalue
+    rw [Set.indicator_of_mem hvalue]
+  rw [hindicator,
+    D.integral_eq_integral_realDensity_mul
+      ((Set.Icc lower upper).indicator g) hD]
+  have hvolume :
+      (∫ value,
+          D.realDensity value *
+            (Set.Icc lower upper).indicator g value ∂volume) =
+        ∫ value in Set.Icc lower upper,
+          D.realDensity value * g value ∂volume := by
+    rw [← integral_indicator measurableSet_Icc]
+    apply integral_congr_ae
+    filter_upwards with value
+    by_cases hvalue : value ∈ Set.Icc lower upper
+    · simp [hvalue]
+    · simp [hvalue]
+  rw [hvolume, integral_Icc_eq_integral_Ioc,
+    ← intervalIntegral.integral_of_le horder]
 
 end ValueDistribution
 

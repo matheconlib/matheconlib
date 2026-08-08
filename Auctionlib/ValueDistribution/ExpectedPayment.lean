@@ -72,6 +72,20 @@ private theorem measurable_clampedAllocation
     Measurable (clampedAllocation P horder) :=
   (monotone_clampedAllocation P horder).measurable
 
+/-- The clamped allocation is integrable under any value distribution. -/
+private theorem integrable_clampedAllocation
+    {Action : Type u} (D : ValueDistribution)
+    (P : SingleParameterProblem Action)
+    [SingleParameterProblem.HasEnvelopeIC P]
+    (horder : P.lowestType ≤ P.highestType) :
+    Integrable (clampedAllocation P horder) (D : Measure ℝ) := by
+  apply Integrable.of_bound
+    (measurable_clampedAllocation P horder).aestronglyMeasurable 1
+  filter_upwards with value
+  rw [Real.norm_eq_abs,
+    abs_of_nonneg (clampedAllocation_range P horder value).1]
+  exact (clampedAllocation_range P horder value).2
+
 /-- Envelope IC supplies interval integrability of the induced allocation. -/
 private theorem intervalIntegrable_q
     {Action : Type u} (P : SingleParameterProblem Action)
@@ -402,6 +416,56 @@ private theorem intervalIntegrable_q_mul_probAtLeast
     P.q value * D.probAtLeast value
   rw [clampedAllocation_eq_of_mem P horder
     ⟨hvalue.1.le, hvalue.2⟩]
+
+/-- Under envelope IC and absolute continuity, allocation times the canonical
+real density is interval integrable. -/
+theorem intervalIntegrable_q_mul_realDensity
+    {Action : Type u} (D : ValueDistribution)
+    (P : SingleParameterProblem Action)
+    [SingleParameterProblem.HasEnvelopeIC P]
+    (horder : P.lowestType ≤ P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume) :
+    IntervalIntegrable
+      (fun value => P.q value * D.realDensity value)
+      volume P.lowestType P.highestType := by
+  have hglobal :
+      Integrable
+        (fun value =>
+          D.realDensity value * clampedAllocation P horder value)
+        volume := by
+    simpa only [realDensity, smul_eq_mul] using
+      (integrable_rnDeriv_smul_iff hD).mpr
+        (integrable_clampedAllocation D P horder)
+  apply IntervalIntegrable.congr _ hglobal.intervalIntegrable
+  intro value hvalue
+  rw [uIoc_of_le horder] at hvalue
+  change D.realDensity value * clampedAllocation P horder value =
+    P.q value * D.realDensity value
+  rw [clampedAllocation_eq_of_mem P horder
+    ⟨hvalue.1.le, hvalue.2⟩]
+  ring
+
+/-- Under envelope IC, absolute continuity, and bounded support, allocation
+times the canonical virtual-surplus weight is interval integrable. -/
+theorem intervalIntegrable_q_mul_virtualSurplusWeight_realDensity
+    {Action : Type u} (D : ValueDistribution)
+    (P : SingleParameterProblem Action)
+    [SingleParameterProblem.HasEnvelopeIC P]
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume) :
+    IntervalIntegrable
+      (fun value =>
+        P.q value * D.virtualSurplusWeight D.realDensity value)
+      volume P.lowestType P.highestType := by
+  have hdensity :=
+    intervalIntegrable_q_mul_value_mul_realDensity
+      D P horder hsupport hD
+  have htail := intervalIntegrable_q_mul_probAtLeast D P horder
+  apply IntervalIntegrable.congr _ (hdensity.sub htail)
+  intro value _
+  simp only [virtualSurplusWeight]
+  ring
 
 /-- **Canonical virtual-surplus expected-payment identity.** For an
 absolutely continuous value distribution, expected payment is induced

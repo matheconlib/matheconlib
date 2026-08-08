@@ -306,6 +306,11 @@ of their definitions.
 | [`ValueDistribution/Demand.lean`](../Auctionlib/ValueDistribution/Demand.lean) | `probAtLeast` and its monotonicity, lower-tail, CDF, and atom identities | Posted-price demand with tie-breaking that remains correct for atomic and mixed distributions |
 | [`ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean) | `expectedAllocation`, `expectedPayment`, `sellerProfit`, and their `_reduce` contracts | Ordinary-integral expectations and seller accounting for a separately supplied single-parameter problem |
 | [`ValueDistribution/PostedPrice.lean`](../Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price expected allocation, expected payment, seller profit, revenue, and comparison formulas | Distributional specialization of the deterministic posted-price problem and generic seller objective |
+| [`ValueDistribution/Density.lean`](../Auctionlib/ValueDistribution/Density.lean) | `realDensity` and integration against canonical or chosen density representatives | Optional absolutely continuous representation built from mathlib's Radon--Nikodym derivative, not a second density typeclass |
+| [`ValueDistribution/VirtualValue.lean`](../Auctionlib/ValueDistribution/VirtualValue.lean) | `virtualSurplusWeight`, `virtualValue`, and their density and CDF forms | Density-weighted virtual surplus as the primary object, with virtual value available when division is justified |
+| [`ValueDistribution/TailIntegral.lean`](../Auctionlib/ValueDistribution/TailIntegral.lean) | Tail-probability integral identity | Measure-theoretic bridge from envelope utility to expected payment, valid before choosing a density |
+| [`ValueDistribution/ExpectedPayment.lean`](../Auctionlib/ValueDistribution/ExpectedPayment.lean) | Expected-payment identities in tail-probability, canonical-density, chosen-density, and CDF forms | Revenue-equivalence consequences expressed first without a density and then specialized under absolute continuity |
+| [`ValueDistribution/SellerProfit.lean`](../Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density representation and seller-profit virtual-surplus decompositions | Rewrites the existing scalar seller objective without adding costs, continuation values, or densities to foundational structures |
 | [`Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
 | [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
@@ -328,8 +333,11 @@ a separate layer over mathlib probability measures, and
 distribution and a deterministic problem as separate arguments.
 `ValueDistribution/PostedPrice.lean` specializes that bridge to derive demand,
 payment, seller-profit, and price-comparison formulas without adding support or
-density assumptions. Virtual values and optimization over the price belong to
-subsequent layers.
+density assumptions. The expected-payment layer first uses tail probabilities,
+so its primary identity also applies to atomic and mixed distributions. Under
+absolute continuity, later modules express the same payment and profit in
+density-weighted virtual-surplus form. Regularity and optimization over the
+price remain subsequent layers.
 
 ## 5. Relationship to `BidderProblem`
 
@@ -424,9 +432,27 @@ The generic seller objective then combines those expectations with the
 seller's continuation value and the cost of approaching the buyer. These are
 functions of the distribution and problem, not fields added to either object.
 In this first objective the continuation value is constant across buyer types,
-and the acquisition cost is an unconditional additive cost. A later sequential
-or learning model may add a type-dependent continuation function while keeping
-the scalar objective as a reusable specialization.
+and the acquisition cost is an unconditional additive cost.
+
+When the distribution is absolutely continuous and supported on the problem's
+type interval, the seller objective has the decomposition
+
+\[
+\Pi
+= r-c-U(\underline v)
++\int_{\underline v}^{\overline v}
+q(v)\bigl(w_{D,f}(v)-r f(v)\bigr)\,dv.
+\]
+
+Here `r` is the seller's continuation value, `c` is the unconditional cost of
+approaching the buyer, and `U(underline v)` is the lowest type's utility. The
+remaining integral is allocation-weighted virtual surplus net of the
+continuation value forgone upon allocation. The acquisition cost is outside
+the integral because it is paid independently of the allocation decision. The
+weight `w_{D,f}(v) = v f(v) - Pr[V >= v]` is primary: it avoids dividing by a
+density that may vanish. A chosen density is a representative that agrees
+almost everywhere on the type interval with the distribution's canonical
+`realDensity`.
 
 The dependency direction is deliberately one-way:
 
@@ -448,16 +474,19 @@ to `Auction`. `HasBoundedTypes` supplies optional interval support, while
 `HasIdenticalTypes` identifies bidder distributions and recovers the existing
 `commonCDF`. The old CDF and auction typeclasses remain available unchanged.
 
-The following economic data still belong to later optimization layers, not in
-the single-parameter problem or the primitive distribution:
+The following economic data and assumptions still belong to later application
+or optimization layers, not in the single-parameter problem or the primitive
+distribution:
 
-- a density used for virtual-value calculations;
-- seller marginal cost;
+- any additional seller cost beyond the scalar objective's continuation value
+  and unconditional acquisition cost;
 - regularity conditions supporting local or global optimization.
 
-Auction-facing density results must obtain their density assumption from the
-existing `Auction.HasDensity.θ_hasPDF` field rather than introduce a parallel
-density abstraction in the `ValueDistribution` namespace.
+Absolute continuity and a chosen density are theorem assumptions rather than
+fields of `ValueDistribution`. Auction-facing density results must obtain their
+density assumption from the existing `Auction.HasDensity.θ_hasPDF` field rather
+than introduce a parallel density abstraction in the `ValueDistribution`
+namespace.
 
 This separation matters mathematically:
 
@@ -479,7 +508,7 @@ This design does not yet settle:
 - non-affine or genuinely nonseparable type-action utility;
 - risk-averse buyers;
 - extensive-form syntax for bargaining histories;
-- density and regularity assumptions for virtual values;
+- regularity assumptions and ironing for virtual values;
 - seller optimization.
 
 These topics should not complicate the first reusable layer unless a concrete
