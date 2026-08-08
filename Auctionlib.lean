@@ -50,4 +50,5 @@ import Auctionlib.ValueDistribution.Demand
 import Auctionlib.ValueDistribution.Density
 import Auctionlib.ValueDistribution.PostedPrice
 import Auctionlib.ValueDistribution.SingleParameter
+import Auctionlib.ValueDistribution.TailIntegral
 import Auctionlib.ValueDistribution.VirtualValue
