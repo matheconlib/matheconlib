@@ -44,6 +44,20 @@ theorem toMeasure_valueDistribution (i : Fin n) :
       Measure.map (A.θ i) ℙ := by
   simp [valueDistribution]
 
+/-- Under the auction's existing density assumption, bidder `i`'s value
+distribution is absolutely continuous with respect to Lebesgue measure.
+
+This is a named bridge rather than a global instance: auction-facing density
+results reuse `Auction.HasDensity`, while standalone value-distribution
+theorems continue to request absolute continuity explicitly. -/
+theorem valueDistribution_absolutelyContinuous
+    [HasDensity A] (i : Fin n) :
+    ((A.valueDistribution i : ValueDistribution) : Measure ℝ) ≪ volume := by
+  rw [A.toMeasure_valueDistribution]
+  letI : HasPDF (A.θ i) ℙ (volume : Measure ℝ) :=
+    HasDensity.θ_hasPDF (A := A) i
+  exact HasPDF.absolutelyContinuous
+
 /-- Under the auction's bounded-types assumption, bidder `i`'s value
 distribution is supported on that bidder's declared type interval. -/
 theorem valueDistribution_isSupportedOnInterval

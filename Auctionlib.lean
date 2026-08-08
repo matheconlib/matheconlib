@@ -47,5 +47,7 @@ import Auctionlib.Statistics.OrderStatistics
 import Auctionlib.ValueDistribution
 import Auctionlib.ValueDistribution.Basic
 import Auctionlib.ValueDistribution.Demand
+import Auctionlib.ValueDistribution.Density
 import Auctionlib.ValueDistribution.PostedPrice
 import Auctionlib.ValueDistribution.SingleParameter
+import Auctionlib.ValueDistribution.VirtualValue
