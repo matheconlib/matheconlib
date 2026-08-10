@@ -34,7 +34,12 @@ Lebesgue measure.
 Mathlib's Radon--Nikodym derivative takes values in `ℝ≥0∞`. The conversion
 `toReal` gives the real-valued representative used in economic integrals. This
 definition is meaningful for every distribution, but it represents all of `D`
-only when `(D : Measure ℝ) ≪ volume`. -/
+only when `(D : Measure ℝ) ≪ volume`.
+
+At points where the derivative is `∞`, `ENNReal.toReal` returns `0`. Thus this
+total function should not be read as an assumption-free pointwise density;
+density-representation results must be used with their stated
+absolute-continuity or almost-everywhere agreement hypotheses. -/
 noncomputable def realDensity (D : ValueDistribution) (value : ℝ) : ℝ :=
   ((D : Measure ℝ).rnDeriv (volume : Measure ℝ) value).toReal
 

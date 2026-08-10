@@ -1,7 +1,6 @@
 module
 
 public import Auctionlib.ValueDistribution.Demand
-public import Auctionlib.ValueDistribution.Density
 
 /-!
 # Virtual Surplus for Real-Valued Distributions
