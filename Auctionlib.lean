@@ -5,9 +5,11 @@ import Auctionlib.Auction.Affiliation.CondMLR
 import Auctionlib.Auction.Affiliation.CondValue
 import Auctionlib.Auction.Affiliation.CornerCollapse
 import Auctionlib.Auction.Affiliation.FiniteCondExp
+import Auctionlib.Auction.Affiliation.Linkage
 import Auctionlib.Auction.Affiliation.LogSupermodular
 import Auctionlib.Auction.Affiliation.Marginal
 import Auctionlib.Auction.Affiliation.MonotoneCondExp
+import Auctionlib.Auction.Affiliation.SecondPrice
 import Auctionlib.Auction.Affiliation.Sublattice
 import Auctionlib.Auction.Affiliation.Symmetry
 import Auctionlib.Auction.Affiliation.WinnersCurse
