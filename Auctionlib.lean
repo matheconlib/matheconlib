@@ -3,6 +3,7 @@ import Auctionlib.Auction.Affiliation.Basic
 import Auctionlib.Auction.Affiliation.CondExpGeneral
 import Auctionlib.Auction.Affiliation.CondMLR
 import Auctionlib.Auction.Affiliation.CondValue
+import Auctionlib.Auction.Affiliation.CornerCollapse
 import Auctionlib.Auction.Affiliation.FiniteCondExp
 import Auctionlib.Auction.Affiliation.LogSupermodular
 import Auctionlib.Auction.Affiliation.Marginal

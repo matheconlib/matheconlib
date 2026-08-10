@@ -50,6 +50,22 @@ public import Mathlib
 * `Auction.Affiliation.marginalList_lt_of_lt` : for a nonnegative weight `ρ` whose iterated
   marginal along `l` is positive and `g₁ < g₂` pointwise,
   `marginalList μ (fun z => g₁ z * ρ z) l x < marginalList μ (fun z => g₂ z * ρ z) l x`.
+* `Auction.Affiliation.marginal_marginal_comm` : if every two-variable `(j, k)`-fibre
+  `fun p => F (x[j↦p.1][k↦p.2])` is `μ.prod μ`-integrable, then
+  `marginal μ (marginal μ F k) j = marginal μ (marginal μ F j) k`.
+* `Auction.Affiliation.SwapFibreIntegrable` : at every stage of `marginalList μ F l`, the
+  head fibres are `μ`-integrable and the two-variable fibres pairing each later coordinate
+  with the head are `μ.prod μ`-integrable.
+* `Auction.Affiliation.PermFibreIntegrable` : `SwapFibreIntegrable μ F l'` along every
+  permutation `l'` of `l`; stable under `List.Perm` by construction.
+* `Auction.Affiliation.PermFibreIntegrable.of_perm`,
+  `Auction.Affiliation.PermFibreIntegrable.marginal_tail`,
+  `Auction.Affiliation.SwapFibreIntegrable.fibreIntegrable`,
+  `Auction.Affiliation.PermFibreIntegrable.fibreIntegrable` : transport of
+  `PermFibreIntegrable` along a permutation, its descent through a cons, and the recovery of
+  `FibreIntegrable` from either predicate.
+* `Auction.Affiliation.marginalList_perm` : for `PermFibreIntegrable μ F l` and `l.Perm l'`,
+  `marginalList μ F l x = marginalList μ F l' x`.
 -/
 
 @[expose] public section
@@ -455,6 +471,91 @@ theorem marginalList_lt_of_lt {n : ℕ} {μ : Measure ℝ} :
     funext y; ring
   rw [hsum] at hadd
   linarith
+
+/-! ### Commuting marginals and permutation invariance -/
+
+/-- If every two-variable `(j, k)`-fibre `fun p => F (x[j↦p.1][k↦p.2])` is
+`μ.prod μ`-integrable, the two single-coordinate marginals commute:
+`marginal μ (marginal μ F k) j = marginal μ (marginal μ F j) k`. -/
+theorem marginal_marginal_comm {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
+    {F : (Fin n → ℝ) → ℝ} (j k : Fin n)
+    (h : ∀ x : Fin n → ℝ, Integrable
+      (fun p : ℝ × ℝ => F (Function.update (Function.update x j p.1) k p.2)) (μ.prod μ)) :
+    marginal μ (marginal μ F k) j = marginal μ (marginal μ F j) k := by
+  funext x
+  rcases eq_or_ne j k with rfl | hjk
+  · rfl
+  · simp only [marginal]
+    rw [integral_integral_swap (f := fun s t : ℝ =>
+      F (Function.update (Function.update x j s) k t)) (h x)]
+    simp only [Function.update_comm hjk]
+
+/-- `SwapFibreIntegrable μ F l` : at every stage of the iteration `marginalList μ F l`, the
+head fibres of the current function are `μ`-integrable and the two-variable fibres pairing
+each later coordinate with the head are `μ.prod μ`-integrable. -/
+def SwapFibreIntegrable {n : ℕ} (μ : Measure ℝ) :
+    ((Fin n → ℝ) → ℝ) → List (Fin n) → Prop
+  | _, [] => True
+  | F, j :: l =>
+      (∀ x : Fin n → ℝ, Integrable (fun s => F (Function.update x j s)) μ)
+      ∧ (∀ k ∈ l, ∀ x : Fin n → ℝ, Integrable
+          (fun p : ℝ × ℝ => F (Function.update (Function.update x k p.1) j p.2))
+          (μ.prod μ))
+      ∧ SwapFibreIntegrable μ (marginal μ F j) l
+
+/-- `PermFibreIntegrable μ F l` : `SwapFibreIntegrable μ F l'` along every permutation `l'`
+of `l`; stable under `List.Perm` by construction. -/
+def PermFibreIntegrable {n : ℕ} (μ : Measure ℝ) (F : (Fin n → ℝ) → ℝ)
+    (l : List (Fin n)) : Prop :=
+  ∀ l' : List (Fin n), l.Perm l' → SwapFibreIntegrable μ F l'
+
+/-- `PermFibreIntegrable` transports along a permutation of the coordinate list. -/
+theorem PermFibreIntegrable.of_perm {n : ℕ} {μ : Measure ℝ} {F : (Fin n → ℝ) → ℝ}
+    {l l' : List (Fin n)} (hl : l.Perm l') (H : PermFibreIntegrable μ F l) :
+    PermFibreIntegrable μ F l' :=
+  fun l'' h'' => H l'' (hl.trans h'')
+
+/-- The tail of a `PermFibreIntegrable` list, after marginalizing the head. -/
+theorem PermFibreIntegrable.marginal_tail {n : ℕ} {μ : Measure ℝ} {F : (Fin n → ℝ) → ℝ}
+    {j : Fin n} {l : List (Fin n)} (H : PermFibreIntegrable μ F (j :: l)) :
+    PermFibreIntegrable μ (marginal μ F j) l :=
+  fun l' hl' => (H (j :: l') (hl'.cons j)).2.2
+
+/-- `SwapFibreIntegrable` implies `FibreIntegrable`. -/
+theorem SwapFibreIntegrable.fibreIntegrable {n : ℕ} {μ : Measure ℝ} :
+    ∀ {l : List (Fin n)} {F : (Fin n → ℝ) → ℝ},
+      SwapFibreIntegrable μ F l → FibreIntegrable μ F l := by
+  intro l
+  induction l with
+  | nil => intro F _; exact trivial
+  | cons j l ih => intro F h; exact ⟨h.1, ih h.2.2⟩
+
+/-- `PermFibreIntegrable` implies `FibreIntegrable`. -/
+theorem PermFibreIntegrable.fibreIntegrable {n : ℕ} {μ : Measure ℝ} {F : (Fin n → ℝ) → ℝ}
+    {l : List (Fin n)} (H : PermFibreIntegrable μ F l) : FibreIntegrable μ F l :=
+  (H l (List.Perm.refl l)).fibreIntegrable
+
+/-- Permutation invariance of the iterated marginal: for `PermFibreIntegrable μ F l` and
+`l.Perm l'`, `marginalList μ F l x = marginalList μ F l' x`. -/
+theorem marginalList_perm {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ] :
+    ∀ {l l' : List (Fin n)}, l.Perm l' → ∀ {F : (Fin n → ℝ) → ℝ},
+      PermFibreIntegrable μ F l →
+      ∀ x : Fin n → ℝ, marginalList μ F l x = marginalList μ F l' x := by
+  intro l l' hperm
+  induction hperm with
+  | nil => intro F _ x; rfl
+  | cons a _ ih =>
+      intro F hF x
+      exact ih hF.marginal_tail x
+  | swap a b t =>
+      intro F hF x
+      show marginalList μ (marginal μ (marginal μ F b) a) t x
+          = marginalList μ (marginal μ (marginal μ F a) b) t x
+      rw [marginal_marginal_comm a b
+        ((hF (b :: a :: t) (List.Perm.refl _)).2.1 a (by simp))]
+  | trans h₁ _ ih₁ ih₂ =>
+      intro F hF x
+      exact (ih₁ hF x).trans (ih₂ (hF.of_perm h₁) x)
 
 end Auction.Affiliation
 
