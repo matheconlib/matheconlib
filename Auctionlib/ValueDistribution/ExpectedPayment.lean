@@ -266,7 +266,7 @@ theorem expectedPayment_eq_integral_value_mul_q_sub_integral_tail
           ∫ value,
             (∫ cutoff in P.lowestType..value,
               clampedAllocation P horder cutoff) ∂(D : Measure ℝ) := by
-    simpa only [Pi.sub_apply] using
+    simpa using
       integral_sub
         (hvalueAllocation_integrable.sub hconstant_integrable)
         hcumulative_integrable
@@ -277,7 +277,7 @@ theorem expectedPayment_eq_integral_value_mul_q_sub_integral_tail
         (∫ value,
           value * clampedAllocation P horder value ∂(D : Measure ℝ)) -
           ∫ _ : ℝ, P.U P.lowestType ∂(D : Measure ℝ) := by
-    simpa only [Pi.sub_apply] using
+    simpa using
       integral_sub hvalueAllocation_integrable hconstant_integrable
   have hconstant :
       (∫ _ : ℝ, P.U P.lowestType ∂(D : Measure ℝ)) =
@@ -301,7 +301,7 @@ private theorem ae_mem_Ioc_of_supported_of_absolutelyContinuous
     measure_eq_zero_iff_ae_notMem.mp hlower
   filter_upwards [hsupport, hnotLower] with value hvalue hne
   have hne' : value ≠ lower := by
-    simpa only [mem_singleton_iff, not_false_eq_true] using hne
+    simpa using hne
   exact ⟨lt_of_le_of_ne hvalue.1 hne'.symm, hvalue.2⟩
 
 /-- Under absolute continuity and bounded support, expected value-weighted
@@ -363,7 +363,7 @@ private theorem intervalIntegrable_q_mul_value_mul_realDensity
         (fun value =>
           D.realDensity value *
             (value * clampedAllocation P horder value)) volume := by
-    simpa only [realDensity, smul_eq_mul] using
+    simpa [realDensity] using
       (integrable_rnDeriv_smul_iff hD).mpr
         (integrable_value_mul_clampedAllocation D P horder hsupport)
   apply IntervalIntegrable.congr _ hglobal.intervalIntegrable
@@ -434,7 +434,7 @@ theorem intervalIntegrable_q_mul_realDensity
         (fun value =>
           D.realDensity value * clampedAllocation P horder value)
         volume := by
-    simpa only [realDensity, smul_eq_mul] using
+    simpa [realDensity] using
       (integrable_rnDeriv_smul_iff hD).mpr
         (integrable_clampedAllocation D P horder)
   apply IntervalIntegrable.congr _ hglobal.intervalIntegrable
@@ -544,11 +544,11 @@ theorem expectedPayment_eq_integral_q_mul_virtualSurplusWeight
       density =ᵐ[volume.restrict
         (uIoc P.lowestType P.highestType)] D.realDensity := by
     apply ae_restrict_of_ae_restrict_of_subset uIoc_subset_uIcc
-    simpa only [uIcc_of_le horder] using hdensity
+    simpa [uIcc_of_le horder] using hdensity
   congr 1
   apply intervalIntegral.integral_congr_ae_restrict
   filter_upwards [hdensityOnIntegral] with value hdensityValue
-  simp only [virtualSurplusWeight, hdensityValue]
+  simp [virtualSurplusWeight, hdensityValue]
 
 /-- **Atomless CDF expected-payment identity.** For an absolutely continuous
 value distribution, closed-tail demand equals one minus the CDF, so the

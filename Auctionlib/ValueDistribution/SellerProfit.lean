@@ -112,11 +112,11 @@ theorem sellerProfit_eq_virtualSurplus
       density =ᵐ[volume.restrict
         (uIoc P.lowestType P.highestType)] D.realDensity := by
     apply ae_restrict_of_ae_restrict_of_subset uIoc_subset_uIcc
-    simpa only [uIcc_of_le horder] using hdensity
+    simpa [uIcc_of_le horder] using hdensity
   congr 1
   apply intervalIntegral.integral_congr_ae_restrict
   filter_upwards [hdensityOnIntegral] with value hdensityValue
-  simp only [virtualSurplusWeight, hdensityValue]
+  simp [virtualSurplusWeight, hdensityValue]
 
 /-- For an absolutely continuous value distribution, the chosen-density
 seller-profit formula can be written using one minus the CDF. -/

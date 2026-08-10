@@ -48,11 +48,11 @@ noncomputable def virtualValue
 density times virtual value. -/
 theorem virtualSurplusWeight_eq_density_mul_virtualValue
     (D : ValueDistribution) (density : ℝ → ℝ) (value : ℝ)
-    (hDensity : density value ≠ 0) :
+    (hdensity : density value ≠ 0) :
     D.virtualSurplusWeight density value =
       density value * D.virtualValue density value := by
-  simpa only [virtualValue] using
-    (mul_div_cancel₀ (D.virtualSurplusWeight density value) hDensity).symm
+  simpa [virtualValue] using
+    (mul_div_cancel₀ (D.virtualSurplusWeight density value) hdensity).symm
 
 /-- For an atomless distribution, virtual-surplus weight has the familiar CDF
 form `value * density value - (1 - F(value))`. -/

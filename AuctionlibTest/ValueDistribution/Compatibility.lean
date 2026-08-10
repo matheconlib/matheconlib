@@ -100,11 +100,11 @@ example (D : ValueDistribution) (density : ℝ → ℝ) (value : ℝ) :
 /-- The economically useful factorization explicitly requires nonzero
 density, even though division itself is total in Lean. -/
 example (D : ValueDistribution) (density : ℝ → ℝ) (value : ℝ)
-    (hDensity : density value ≠ 0) :
+    (hdensity : density value ≠ 0) :
     D.virtualSurplusWeight density value =
       density value * D.virtualValue density value :=
   D.virtualSurplusWeight_eq_density_mul_virtualValue
-    density value hDensity
+    density value hdensity
 
 /-- The density-free tail identity preserves the closed-tail convention and
 therefore does not assume atomlessness. -/
@@ -179,6 +179,29 @@ example (continuationValue acquisitionCost : ℝ) :
 
 /-! ### Expected-payment and seller-profit representations -/
 
+/-- Under envelope IC and absolute continuity, allocation weighted by the
+canonical real density remains interval integrable. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (horder : P.lowestType ≤ P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume) :
+    IntervalIntegrable
+      (fun value => P.q value * D.realDensity value)
+      volume P.lowestType P.highestType :=
+  D.intervalIntegrable_q_mul_realDensity P horder hD
+
+/-- With bounded support as well, allocation weighted by canonical virtual
+surplus remains interval integrable. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume) :
+    IntervalIntegrable
+      (fun value =>
+        P.q value * D.virtualSurplusWeight D.realDensity value)
+      volume P.lowestType P.highestType :=
+  D.intervalIntegrable_q_mul_virtualSurplusWeight_realDensity
+    P horder hsupport hD
+
 /-- The primary expected-payment representation is density-free. -/
 example [SingleParameterProblem.HasEnvelopeIC P]
     (horder : P.lowestType ≤ P.highestType)
@@ -205,6 +228,22 @@ example [SingleParameterProblem.HasEnvelopeIC P]
   D.expectedPayment_eq_integral_q_mul_virtualSurplusWeight_realDensity
     P horder hsupport hD
 
+/-- Any density agreeing almost everywhere with the canonical representative
+on the type interval gives the same expected-payment identity. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (density : ℝ → ℝ)
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume)
+    (hdensity :
+      density =ᵐ[volume.restrict P.typeInterval] D.realDensity) :
+    D.expectedPayment P =
+      (∫ value in P.lowestType..P.highestType,
+        P.q value * D.virtualSurplusWeight density value) -
+        P.U P.lowestType :=
+  D.expectedPayment_eq_integral_q_mul_virtualSurplusWeight
+    P density horder hsupport hD hdensity
+
 /-- The canonical seller-profit representation keeps continuation value,
 acquisition cost, and lowest-type information rent distinct. -/
 example [SingleParameterProblem.HasEnvelopeIC P]
@@ -220,6 +259,24 @@ example [SingleParameterProblem.HasEnvelopeIC P]
               continuationValue * D.realDensity value) :=
   D.sellerProfit_eq_virtualSurplus_realDensity P
     continuationValue acquisitionCost horder hsupport hD
+
+/-- Any almost-everywhere equivalent density representative gives the same
+seller-profit decomposition. -/
+example [SingleParameterProblem.HasEnvelopeIC P]
+    (density : ℝ → ℝ) (continuationValue acquisitionCost : ℝ)
+    (horder : P.lowestType ≤ P.highestType)
+    (hsupport : D.IsSupportedOnInterval P.lowestType P.highestType)
+    (hD : (D : Measure ℝ) ≪ volume)
+    (hdensity :
+      density =ᵐ[volume.restrict P.typeInterval] D.realDensity) :
+    D.sellerProfit P continuationValue acquisitionCost =
+      continuationValue - acquisitionCost - P.U P.lowestType +
+        ∫ value in P.lowestType..P.highestType,
+          P.q value *
+            (D.virtualSurplusWeight density value -
+              continuationValue * density value) :=
+  D.sellerProfit_eq_virtualSurplus P density
+    continuationValue acquisitionCost horder hsupport hD hdensity
 
 /-! ### Semantic examples -/
 

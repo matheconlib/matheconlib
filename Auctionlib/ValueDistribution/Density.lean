@@ -63,7 +63,7 @@ theorem integral_eq_integral_realDensity_mul
     (hD : (D : Measure ℝ) ≪ volume) :
     ∫ value, g value ∂(D : Measure ℝ) =
       ∫ value, D.realDensity value * g value ∂volume := by
-  simpa only [realDensity, smul_eq_mul] using
+  simpa [realDensity] using
     (integral_rnDeriv_smul
       (μ := (D : Measure ℝ)) (ν := volume) (f := g) hD).symm
 

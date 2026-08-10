@@ -180,7 +180,7 @@ private theorem lintegral_tailKernel_value
     rw [hslice, lintegral_indicator_const measurableSet_Ici]
     simp [hcutoff]
   · have houtside : ¬(lower < cutoff ∧ cutoff ≤ upper) := by
-      simpa only [mem_Ioc] using hcutoff
+      simpa [mem_Ioc] using hcutoff
     have hkernel :
         ∀ value, ¬(lower < cutoff ∧ cutoff ≤ upper ∧ cutoff ≤ value) :=
       fun _ h => houtside ⟨h.1, h.2.1⟩
