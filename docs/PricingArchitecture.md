@@ -43,6 +43,9 @@ seller profit are implemented in
 [`Auctionlib/ValueDistribution/ExpectedPayment.lean`](../Auctionlib/ValueDistribution/ExpectedPayment.lean),
 and
 [`Auctionlib/ValueDistribution/SellerProfit.lean`](../Auctionlib/ValueDistribution/SellerProfit.lean).
+The posted-price cutoff representation and sufficient sign conditions for
+global and boundary optimality among posted prices are implemented in
+[`Auctionlib/ValueDistribution/PostedPriceOptimality.lean`](../Auctionlib/ValueDistribution/PostedPriceOptimality.lean).
 The additive bridge from auction type random variables to bidder value
 distributions is implemented in
 [`Auctionlib/Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean).
@@ -321,6 +324,7 @@ of their definitions.
 | [`ValueDistribution/TailIntegral.lean`](../Auctionlib/ValueDistribution/TailIntegral.lean) | Tail-probability integral identity | Measure-theoretic bridge from envelope utility to expected payment, valid before choosing a density |
 | [`ValueDistribution/ExpectedPayment.lean`](../Auctionlib/ValueDistribution/ExpectedPayment.lean) | Expected-payment identities in tail-probability, canonical-density, chosen-density, and CDF forms | Revenue-equivalence consequences expressed first without a density and then specialized under absolute continuity |
 | [`ValueDistribution/SellerProfit.lean`](../Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density representation and seller-profit virtual-surplus decompositions | Rewrites the existing scalar seller objective without adding costs, continuation values, or densities to foundational structures |
+| [`ValueDistribution/PostedPriceOptimality.lean`](../Auctionlib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and `IsMaxOn` sign and boundary theorems | Gives sufficient global optimality conditions among posted prices without claiming the full Riley--Zeckhauser result over arbitrary selling rules |
 | [`Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
 | [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
@@ -347,7 +351,10 @@ density assumptions. The expected-payment layer first uses tail probabilities,
 so its primary identity also applies to atomic and mixed distributions. Under
 envelope IC, support on the type interval, and absolute continuity, later
 modules express the resulting payment and profit in density-weighted
-virtual-surplus form. Regularity and optimization over the price remain
+virtual-surplus form. The posted-price optimality module then uses a
+single-crossing sign condition on the division-free net weight to prove global
+and boundary optimality among feasible posted prices. Differentiation,
+first-order conditions, and optimization over general selling rules remain
 subsequent layers.
 
 ## 5. Relationship to `BidderProblem`
@@ -566,8 +573,10 @@ criteria are:
   legacy auction path;
 - [x] the complete existing library builds successfully.
 
-The current analytic milestone adds optional density representations,
-density-free expected-payment identities, and virtual-surplus seller-profit
-formulas without putting probabilistic assumptions into
+The current analytic and optimization milestones add optional density
+representations, density-free expected-payment identities, virtual-surplus
+seller-profit formulas, and sufficient sign conditions for optimality among
+posted prices without putting probabilistic assumptions into
 `SingleParameterProblem` or changing `Auction`. Later layers will add
-regularity, differentiation, pricing optimality, and comparative statics.
+differentiation, virtual-value first-order conditions, the full
+Riley--Zeckhauser selling-rule result, and comparative statics.

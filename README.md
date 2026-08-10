@@ -91,6 +91,7 @@ integration theory.
 | [`ValueDistribution/ExpectedPayment.lean`](Auctionlib/ValueDistribution/ExpectedPayment.lean) | Density-free expected-payment representation and density and CDF corollaries |
 | [`ValueDistribution/SellerProfit.lean`](Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density formula and seller-profit virtual-surplus representations |
 | [`ValueDistribution/PostedPrice.lean`](Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price demand, expected payment, seller-profit, revenue, and price-comparison formulas |
+| [`ValueDistribution/PostedPriceOptimality.lean`](Auctionlib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and sufficient global and boundary optimality conditions among posted prices |
 
 Compile-time pins, representative distributions, and end-to-end pricing checks
 live respectively in

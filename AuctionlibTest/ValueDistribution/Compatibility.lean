@@ -381,6 +381,77 @@ example (density : ℝ → ℝ) (continuationValue acquisitionCost : ℝ)
     lowestType highestType price density continuationValue acquisitionCost
     hprice hsupport hD hdensity
 
+/-- A single-crossing sign condition pins the global posted-price optimality
+contract. -/
+example (cutoff : ℝ) (density : ℝ → ℝ)
+    (continuationValue acquisitionCost : ℝ)
+    (hcutoff : cutoff ∈ Icc lowestType highestType)
+    (hsupport : D.IsSupportedOnInterval lowestType highestType)
+    (hD : (D : Measure ℝ) ≪ volume)
+    (hdensity :
+      density =ᵐ[volume.restrict (Icc lowestType highestType)] D.realDensity)
+    (hbelow :
+      ∀ᵐ value ∂volume.restrict (Icc lowestType cutoff),
+        D.virtualSurplusWeight density value -
+          continuationValue * density value ≤ 0)
+    (habove :
+      ∀ᵐ value ∂volume.restrict (Icc cutoff highestType),
+        0 ≤ D.virtualSurplusWeight density value -
+          continuationValue * density value) :
+    IsMaxOn
+      (fun candidatePrice =>
+        D.sellerProfit
+          (postedPriceProblem lowestType highestType candidatePrice)
+          continuationValue acquisitionCost)
+      (Icc lowestType highestType) cutoff :=
+  D.isMaxOn_sellerProfit_postedPriceProblem_of_netVirtualSurplus_sign
+    lowestType highestType cutoff density continuationValue acquisitionCost
+    hcutoff hsupport hD hdensity hbelow habove
+
+/-- Nonnegative net virtual surplus makes the lowest feasible price
+optimal. -/
+example (density : ℝ → ℝ) (continuationValue acquisitionCost : ℝ)
+    (horder : lowestType ≤ highestType)
+    (hsupport : D.IsSupportedOnInterval lowestType highestType)
+    (hD : (D : Measure ℝ) ≪ volume)
+    (hdensity :
+      density =ᵐ[volume.restrict (Icc lowestType highestType)] D.realDensity)
+    (hnonneg :
+      ∀ᵐ value ∂volume.restrict (Icc lowestType highestType),
+        0 ≤ D.virtualSurplusWeight density value -
+          continuationValue * density value) :
+    IsMaxOn
+      (fun candidatePrice =>
+        D.sellerProfit
+          (postedPriceProblem lowestType highestType candidatePrice)
+          continuationValue acquisitionCost)
+      (Icc lowestType highestType) lowestType :=
+  D.isMaxOn_sellerProfit_postedPriceProblem_lowestType_of_netVirtualSurplus_nonneg
+    lowestType highestType density continuationValue acquisitionCost horder
+    hsupport hD hdensity hnonneg
+
+/-- Nonpositive net virtual surplus makes the highest feasible price
+optimal. -/
+example (density : ℝ → ℝ) (continuationValue acquisitionCost : ℝ)
+    (horder : lowestType ≤ highestType)
+    (hsupport : D.IsSupportedOnInterval lowestType highestType)
+    (hD : (D : Measure ℝ) ≪ volume)
+    (hdensity :
+      density =ᵐ[volume.restrict (Icc lowestType highestType)] D.realDensity)
+    (hnonpos :
+      ∀ᵐ value ∂volume.restrict (Icc lowestType highestType),
+        D.virtualSurplusWeight density value -
+          continuationValue * density value ≤ 0) :
+    IsMaxOn
+      (fun candidatePrice =>
+        D.sellerProfit
+          (postedPriceProblem lowestType highestType candidatePrice)
+          continuationValue acquisitionCost)
+      (Icc lowestType highestType) highestType :=
+  D.isMaxOn_sellerProfit_postedPriceProblem_highestType_of_netVirtualSurplus_nonpos
+    lowestType highestType density continuationValue acquisitionCost horder
+    hsupport hD hdensity hnonpos
+
 /-- Zero continuation value and acquisition cost recover price-times-demand
 revenue. -/
 example :
