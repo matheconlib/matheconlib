@@ -1,7 +1,9 @@
 /-
 Matching with contracts, Layer 1: two-sided markets and stability.
+
+DRAFT — mostly design signatures only.
 -/
-import Matching.Choice.Basic
+import MatchingTheory.Choice.Basic
 
 /-!
 # Two-sided markets with contracts
@@ -16,7 +18,7 @@ Irrelevance of rejected contracts (IRC) and substitutability are theorem
 hypotheses via the market-level predicates below, never structure fields —
 the maximal-domain theorems (survey Thm 2.7/3.6) need non-substitutable instances.
 
-Everything here is implemented at Hatfield--Kominers **many-to-many generality**.
+Everything here is implemented at Hatfield–Kominers **many-to-many generality**.
 No unit-demand or unitarity hypothesis appears in this file or in `FixedPoint.lean`.
 
 ## Main definitions

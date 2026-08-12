@@ -4,7 +4,7 @@ Matching with contracts: counterexamples for the choice layer.
 DRAFT — design signatures; not compiled. See SPEC.md. In a mathlib
 upstreaming these results would move to the `Counterexamples/` library.
 -/
-import Matching.Choice.Basic
+import MatchingTheory.Choice.Basic
 
 /-!
 # Choice-layer counterexamples

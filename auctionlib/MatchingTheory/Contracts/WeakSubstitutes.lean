@@ -5,7 +5,7 @@ DRAFT — design signatures; not compiled. See SPEC.md. The implication proofs
 here are the only real (non-`sorry`) proofs in the draft — deliberately, as
 they demonstrate the payoff of defining `Substitutable` in choice language.
 -/
-import Matching.Contracts.Basic
+import MatchingTheory.Contracts.Basic
 
 /-!
 # Weakened substitutability

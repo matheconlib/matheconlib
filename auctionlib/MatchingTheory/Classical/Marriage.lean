@@ -1,7 +1,9 @@
 /-
 Matching with contracts, classical layer: the marriage market.
+
+DRAFT — mostly design signatures only.
 -/
-import Matching.Contracts.FixedPoint
+import MatchingTheory.Contracts.FixedPoint
 import Mathlib.Data.PEquiv
 
 /-!
