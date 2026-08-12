@@ -2,32 +2,110 @@
 
 A Lean 4 formalization of fundamental theorems in auction theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4).
 
+## Mathematical Reference
+
+The auction-theory development is guided by an evolving overview provided by Scott Kominers, [*Auction Theory -- introduction and sketch of potential formalization objectives*](https://www.overleaf.com/project/698329a7c6b8506c1361f68b). The overview includes both completed and prospective objectives; this README describes the material currently implemented in Lean.
+
+The extension from auctions to posted pricing and other single-parameter
+problems is described in
+[*Pricing Foundations: Mathematical Model and Architecture*](docs/PricingArchitecture.md).
+
 ## Architecture
 
-Three-layer design following the standard auction theory reference:
+The library has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
 
 ```
-Mechanism n              — rules: allocation x + payment t over bid vectors
-Auction Ω n              — rules + environment (θ, distributions) on (Ω, ℙ)
-ReducedForm              — per-bidder interim view (winProb, cost, strategy)
+Mechanism n      — allocation x + payment t over agent report vectors
+Auction Ω n      — mechanism + type environment (θ, distributions) on (Ω, ℙ)
+BidderProblem    — one bidder's interim view (winProb, cost, strategy)
 ```
 
-**`Auction → ReducedForm`**: BIC on the auction implies `HasTypeDeviationIC` on the reduced form, unlocking the full analytic toolkit (envelope theorem, Myerson, payment equivalence).
+The reusable deterministic core
+[`SingleParameterProblem Action`](Auctionlib/SingleParameter/Basic.lean)
+models affine-in-type, quasilinear utility
+
+$$u(v,a)=v\,x(a)-t(a).$$
+
+The action may be a bid, report, contract choice, or bargaining plan, but the
+type must enter utility through the scalar allocation coefficient `x(a)` in
+`[0, 1]`. Thus richer actions generalize the modeling interface, not this
+affine theory: a genuinely nonseparable primitive such as `V(v,a) - t(a)` is
+outside the current abstraction. Physical quantity choices fit only after
+their value contribution has been normalized into the scalar allocation.
+
+The structure deliberately bundles a strategy with the allocation and payment
+rules, so its IC predicates concern a mechanism-and-strategy pair.
+`withStrategy` changes that strategy explicitly. The canonical `reduce`
+operation turns any such problem into a direct real-report problem with the
+same induced allocation `q` and utility `U`. The envelope and payment results
+depend on these reduced quantities; reduction may forget original actions
+outside the strategy's image. The layer contains no probability distribution
+or seller objective.
+
+The existing `BidderProblem` API remains unchanged.
+`BidderProblem.toSingleParameterProblem` supplies a lossless compatibility
+bridge, so existing auction results can reuse the general theorems.
+
+**`Auction → BidderProblem`**: `Auction.toBidderProblem` constructs the interim problem faced by bidder `i` when opponents use a strategy `σ`. For the direct mechanism (`σ = id`), BIC on the auction supplies `HasTypeDeviationIC` on the bidder problem, which in turn unlocks the envelope theorem, Myerson's lemma, and payment equivalence.
+
+`BidderProblem` is the current name for the layer called `ReducedForm` in earlier versions of the library.
 
 ## Formalized Results
 
-### Mechanism (`Mechanism/`)
+### Single-Parameter Problems (`SingleParameter/`)
 
-[`Mechanism n`](Auctionlib/Mechanism/Basic.lean) defines the rules of an auction: allocation rule $x_i(b)$ and payment rule $t_i(b)$ as functions of the full bid vector $b = (b_1, \ldots, b_n)$.
+[`SingleParameterProblem Action`](Auctionlib/SingleParameter/Basic.lean)
+describes a deterministic quasilinear choice problem with a real-valued type
+and an arbitrary action type, subject to the affine-in-type payoff restriction
+described above.
 
 | File | Contents |
 |------|----------|
-| [`Mechanism/Basic.lean`](Auctionlib/Mechanism/Basic.lean) | `Mechanism` structure, `HasValidAllocation`, `IsFeasible`, `IsEfficient` |
-| [`Mechanism/AllPurchase.lean`](Auctionlib/Mechanism/AllPurchase.lean) | `Mechanism.IsAllPurchase` (posted price + scarcity function + `x_eq`/`t_eq`), `hasValidAllocation` |
+| [`SingleParameter/Basic.lean`](Auctionlib/SingleParameter/Basic.lean) | Type interval, allocation, payment, strategy, payoff, induced allocation `q`, utility `U`, strategy replacement, and canonical reduction |
+| [`SingleParameter/IC.lean`](Auctionlib/SingleParameter/IC.lean) | Envelope, type-deviation, and universal IC; their implication chain; reduced-form bridges; individual rationality and lowest-type normalization |
+| [`SingleParameter/EnvelopeIC.lean`](Auctionlib/SingleParameter/EnvelopeIC.lean) | Monotone allocation, Lipschitz and a.e. differentiable utility, the envelope integral representation, and utility nonnegativity |
+| [`SingleParameter/Payment.lean`](Auctionlib/SingleParameter/Payment.lean) | Payment identity, payment uniqueness across action types, and the sufficiency of monotonicity plus the payment identity for type-deviation IC |
+| [`SingleParameter/PostedPrice.lean`](Auctionlib/SingleParameter/PostedPrice.lean) | A fixed posted price with real-valued types, the two actions `buy` and `doNotBuy`, universal IC, monotone demand, and individual rationality |
 
-### Reduced Form (`ReducedForm/`)
+Compile-time checks that the generic posted-price path and the existing
+`BidderProblem` path expose the intended APIs live in the separate
+[`AuctionlibTest/SingleParameter/Compatibility.lean`](AuctionlibTest/SingleParameter/Compatibility.lean)
+test library.
 
-[`ReducedForm`](Auctionlib/ReducedForm/Basic.lean) captures the per-bidder interim view with quasi-linear payoff $\pi(v, b) = v \cdot \text{winProb}(b) - \text{cost}(b)$.
+### Value Distributions and Pricing (`ValueDistribution/`)
+
+`ValueDistribution` is a transparent abbreviation for mathlib's
+`ProbabilityMeasure ℝ`. The layer adds economic vocabulary and connects a
+separately supplied value distribution to the deterministic
+`SingleParameterProblem` API; it does not introduce a second probability or
+integration theory.
+
+| File | Contents |
+|------|----------|
+| [`ValueDistribution/Basic.lean`](Auctionlib/ValueDistribution/Basic.lean) | Real-valued probability distributions, random-variable pushforwards, and optional bounded support |
+| [`ValueDistribution/Demand.lean`](Auctionlib/ValueDistribution/Demand.lean) | Closed-upper-tail posted-price demand, monotonicity, and atom-sensitive CDF identities |
+| [`ValueDistribution/SingleParameter.lean`](Auctionlib/ValueDistribution/SingleParameter.lean) | Expected allocation, expected payment, seller profit, and reduced-form preservation |
+| [`ValueDistribution/PostedPrice.lean`](Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price demand, expected payment, seller-profit, revenue, and price-comparison formulas |
+
+Compile-time pins, representative distributions, and end-to-end pricing checks
+live respectively in
+[`AuctionlibTest/ValueDistribution/Compatibility.lean`](AuctionlibTest/ValueDistribution/Compatibility.lean),
+[`AuctionlibTest/ValueDistribution/Examples.lean`](AuctionlibTest/ValueDistribution/Examples.lean),
+and
+[`AuctionlibTest/Pricing/Compatibility.lean`](AuctionlibTest/Pricing/Compatibility.lean).
+
+### Mechanism (`Mechanism/`)
+
+[`Mechanism n`](Auctionlib/Mechanism/Basic.lean) defines allocation and payment rules as functions of the full report vector. Reports specialize to bids in the auction applications below.
+
+| File | Contents |
+|------|----------|
+| [`Mechanism/Basic.lean`](Auctionlib/Mechanism/Basic.lean) | `Mechanism`, `HasValidAllocation`, and `IsEfficient` |
+| [`Mechanism/AllPurchase.lean`](Auctionlib/Mechanism/AllPurchase.lean) | `Mechanism.IsAllPurchase`: efficient allocation together with a posted price, scarcity function, and payment identity `t_eq` |
+
+### Bidder Problem (`BidderProblem/`)
+
+[`BidderProblem`](Auctionlib/BidderProblem/Basic.lean) captures a bidder's interim view with quasi-linear payoff $\pi(v, b) = v \cdot \text{winProb}(b) - \text{cost}(b)$.
 
 Three IC levels form a typeclass chain:
 
@@ -35,10 +113,10 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 
 | File | Contents |
 |------|----------|
-| [`ReducedForm/Basic.lean`](Auctionlib/ReducedForm/Basic.lean) | `ReducedForm` structure, `payoff`, `q`, `U`, `IsRegular` |
-| [`ReducedForm/EnvelopeIC.lean`](Auctionlib/ReducedForm/EnvelopeIC.lean) | `HasEnvelopeIC` + `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`, `strategy_monotoneOn`, `U_nonneg` |
-| [`ReducedForm/TypeDeviationIC.lean`](Auctionlib/ReducedForm/TypeDeviationIC.lean) | `HasTypeDeviationIC` + `payment_identity`, `payment_unique`, `allPayBid`, `netPaymentIdentity`, Myerson sufficiency |
-| [`ReducedForm/UniversalIC.lean`](Auctionlib/ReducedForm/UniversalIC.lean) | `HasUniversalIC` |
+| [`BidderProblem/Basic.lean`](Auctionlib/BidderProblem/Basic.lean) | `BidderProblem`, `payoff`, `q`, `U`, `IsRegular`, and the lossless conversion to `SingleParameterProblem ℝ` |
+| [`BidderProblem/EnvelopeIC.lean`](Auctionlib/BidderProblem/EnvelopeIC.lean) | `HasEnvelopeIC`, its general compatibility bridge, and the original bidder envelope API backed by the general theorems |
+| [`BidderProblem/TypeDeviationIC.lean`](Auctionlib/BidderProblem/TypeDeviationIC.lean) | `HasTypeDeviationIC`, its general compatibility bridge, payment identity and uniqueness, `allPayBid`, `netPaymentIdentity`, and Myerson sufficiency |
+| [`BidderProblem/UniversalIC.lean`](Auctionlib/BidderProblem/UniversalIC.lean) | `HasUniversalIC` over a feasible bid set and bridges to both the bidder and general IC hierarchies |
 
 ### Auction (`Auction/`)
 
@@ -46,25 +124,62 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 
 | File | Contents |
 |------|----------|
-| [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) | `Auction` structure, `q`, `p`, `U`, `q_strat`, `p_strat`, `BIC`, `ExPostIR`/`InterimIR`/`ExAnteIR`, `toReducedForm`, `hasTypeDeviationIC_of_bic`, `payment_formula`, `payment_equivalence` |
-| [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) | Composable typeclasses: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV`. CDF via Mathlib's `ProbabilityTheory.cdf`. `bidThreshold`, `q_eq_pow`, `q_strat_eq_cdf_pow`, `commonCDF`, `toOrderStatisticsSetup` |
+| [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) | `Auction`, interim quantities `q`/`p`/`U` and `q_strat`/`p_strat`, IR notions, `BIC`, `toBidderProblem`, `payment_formula`, and `payment_equivalence` |
+| [`Auction/Typeclasses.lean`](Auctionlib/Auction/Typeclasses.lean) | Composable assumptions on independent, identical, bounded, dense, and atomless types; `IsSymmetricIPV`; common type bounds and CDF |
+| [`Auction/ValueDistribution.lean`](Auctionlib/Auction/ValueDistribution.lean) | Additive pushforward bridge from each bidder's type random variable to a real-valued value distribution |
+| [`Auction/IdenticalTypes.lean`](Auctionlib/Auction/IdenticalTypes.lean) | Expectation identities requiring identical type distributions |
+| [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) | `bidThreshold`, `q_eq_pow`, `q_strat_eq_cdf_pow`, and the bridge to order statistics |
 | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) | `payment_formula_efficient`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
-| [`Auction/AllPurchase.lean`](Auctionlib/Auction/AllPurchase.lean) | `allPayBid` (re-exports `Mechanism.IsAllPurchase` via import) |
-| [`Auction/AllPurchase/LinearScarcity.lean`](Auctionlib/Auction/AllPurchase/LinearScarcity.lean) | `HasQuadraticCost`, `HasLinearCost`, `IsBoundaryRegime`, `IsInteriorRegime` (extends `HasQuadraticCost`), `HasLinearScarcity`, `meanPurchase`, `K_linear`, `allPurchaseNetCost`, `toAllPurchaseReducedForm` (winProb = `q_strat`, cost derived from `t_eq`) |
-| [`Auction/AllPurchase/ExplicitSolutions.lean`](Auctionlib/Auction/AllPurchase/ExplicitSolutions.lean) | Propositions 6.5--6.7: `constant_scarcity_strategy`, `boundary_regime_strategy`, `interior_regime_strategy` (ReducedForm + Auction level) |
-| [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, `strictMonotonicity` (Lemma 6.2), `no_ties` |
+| [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, strict monotonicity of an equilibrium strategy, and `no_ties` |
+
+### All-Purchase Auctions (`Auction/AllPurchase/`)
+
+The all-purchase development specializes the general framework to auctions in which every bidder purchases editions while the highest bid receives the allocation.
+
+| File | Contents |
+|------|----------|
+| [`Auction/AllPurchase/Basic.lean`](Auctionlib/Auction/AllPurchase/Basic.lean) | The distribution-based all-pay benchmark bid `Auction.allPayBid` |
+| [`Auction/AllPurchase/LinearScarcity.lean`](Auctionlib/Auction/AllPurchase/LinearScarcity.lean) | `QuadraticCostProblem`, `LinearCostProblem`, `InteriorRegimeProblem`, `IsBoundaryRegime`, `LinearScarcityAuction`, and `toQuadraticCostProblem` |
+| [`Auction/AllPurchase/ExplicitSolutions.lean`](Auctionlib/Auction/AllPurchase/ExplicitSolutions.lean) | Constant-scarcity, boundary-regime, and interior-regime equilibrium strategy formulas at bidder-problem and auction levels |
+| [`Auction/AllPurchase/RevenueDecomposition.lean`](Auctionlib/Auction/AllPurchase/RevenueDecomposition.lean) | Seller-revenue decomposition and the bundled-versus-standalone revenue comparison |
+| [`Auction/AllPurchase/OptimalPricing.lean`](Auctionlib/Auction/AllPurchase/OptimalPricing.lean) | Interior-regime profit maximization, uniqueness, and feasibility of the optimal price |
+| [`Auction/AllPurchase/UniformDistribution.lean`](Auctionlib/Auction/AllPurchase/UniformDistribution.lean) | Closed form for the all-pay benchmark bid under a uniform type distribution |
+| [`Auction/AllPurchase/WelfareDecomposition.lean`](Auctionlib/Auction/AllPurchase/WelfareDecomposition.lean) | First-best edition surplus, Cournot and contest losses, the welfare decomposition, and the variance penalty |
+
+### Affiliation (`Auction/Affiliation/`)
+
+| File | Contents |
+|------|----------|
+| [`Auction/Affiliation/Basic.lean`](Auctionlib/Auction/Affiliation/Basic.lean) | Affiliated densities, product factorization, signal/value environments, private values, and independent and affiliated signals |
+| [`Auction/Affiliation/LogSupermodular.lean`](Auctionlib/Auction/Affiliation/LogSupermodular.lean) | Equivalence between affiliation and log-supermodularity for strictly positive densities |
+| [`Auction/Affiliation/FiniteCondExp.lean`](Auctionlib/Auction/Affiliation/FiniteCondExp.lean) | Finite weighted conditional averages and a reusable affiliation comparison for lattice-ordered conditioning events |
+| [`Auction/Affiliation/MonotoneCondExp.lean`](Auctionlib/Auction/Affiliation/MonotoneCondExp.lean) | Monotonicity of conditional expectations for affiliated distributions on finite sublattices |
+| [`Auction/Affiliation/WinnersCurse.lean`](Auctionlib/Auction/Affiliation/WinnersCurse.lean) | The winner's-curse inequality for affiliated distributions on finite sublattices |
+
+The continuous conditional-expectation and winner's-curse results, together with later applications such as the Linkage Principle, are not yet formalized.
+
+### Game Theory (`GameTheory/`)
+
+| File | Contents |
+|------|----------|
+| [`GameTheory/Basic.lean`](Auctionlib/GameTheory/Basic.lean) | Normal-form games, payoff structures, dominant strategies, pure/strict/strong Nash equilibria, mixed games, and expected payoff |
+| [`GameTheory/NashExistence.lean`](Auctionlib/GameTheory/NashExistence.lean) | Pure Nash existence for compact convex action spaces with quasiconcave payoffs, mixed Nash existence for compact metrizable action spaces, and finite-game mixed Nash existence |
 
 ### Key Theorems
 
 | Result | Location |
 |--------|----------|
-| Envelope theorem ($U$ Lipschitz, $U' = q$ a.e., integral representation) | `ReducedForm.EnvelopeIC` |
-| Myerson's lemma (necessity: $q$ monotone + payment identity; sufficiency) | `ReducedForm.TypeDeviationIC` |
-| Payment equivalence (general: same $q$ + BIC $\Rightarrow$ same $p$) | `Auction.Basic` |
-| $q(i, s) = F(s)^{n-1}$ under efficient allocation | `Auction.SymmetricIPV` |
-| Revenue equivalence (same $q$ + BIC + IR $\Rightarrow$ same revenue) | `Auction.RevenueEquivalence` |
-| Total revenue $= \mathbb{E}[S_2]$ | `Auction.RevenueEquivalence` |
-| Strict monotonicity of equilibrium strategy (Lemma 6.2) | `Auction.StrictMonotonicity` |
+| Envelope theorem ($U$ Lipschitz, $U' = q$ a.e., integral representation) | [`BidderProblem/EnvelopeIC.lean`](Auctionlib/BidderProblem/EnvelopeIC.lean) |
+| Myerson's lemma (monotone allocation and payment identity, with a sufficiency direction) | [`BidderProblem/TypeDeviationIC.lean`](Auctionlib/BidderProblem/TypeDeviationIC.lean) |
+| General payment equivalence for BIC auctions with the same type interval, interim allocation, and base utility | [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) |
+| $q(i,s)=F(s)^{n-1}$ under efficient allocation in the symmetric IPV setting | [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) |
+| Revenue equivalence and total revenue $=\mathbb{E}[S_2]$ under the stated BIC, IR, efficiency, and symmetry assumptions | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) |
+| Strict monotonicity of equilibrium strategies under positive-density and IC assumptions | [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) |
+| All-purchase revenue decomposition and bundled-versus-standalone revenue comparison | [`Auction/AllPurchase/RevenueDecomposition.lean`](Auctionlib/Auction/AllPurchase/RevenueDecomposition.lean) |
+| Interior-regime optimal pricing | [`Auction/AllPurchase/OptimalPricing.lean`](Auctionlib/Auction/AllPurchase/OptimalPricing.lean) |
+| All-purchase welfare decomposition | [`Auction/AllPurchase/WelfareDecomposition.lean`](Auctionlib/Auction/AllPurchase/WelfareDecomposition.lean) |
+| Winner's-curse inequality for affiliated finite-support environments | [`Auction/Affiliation/WinnersCurse.lean`](Auctionlib/Auction/Affiliation/WinnersCurse.lean) |
+| Pure and mixed Nash existence theorems | [`GameTheory/NashExistence.lean`](Auctionlib/GameTheory/NashExistence.lean) |
 
 ### Auxiliary
 
@@ -72,22 +187,31 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 |------|----------|
 | [`Statistics/OrderStatistics.lean`](Auctionlib/Statistics/OrderStatistics.lean) | CDF/PDF of order statistics, `expected_second_highest` |
 | [`ForMathlib/AbsolutelyContinuous.lean`](Auctionlib/ForMathlib/AbsolutelyContinuous.lean) | AC function raised to a power, CDF of AC measure |
+| [`ForMathlib/Kakutani.lean`](Auctionlib/ForMathlib/Kakutani.lean) | Kakutani--Glicksberg--Fan fixed-point theorem used by the Nash-existence development |
+| [`ForMathlib/Schauder.lean`](Auctionlib/ForMathlib/Schauder.lean) | Schauder fixed-point theorem |
 
 ## Building
 
 ```bash
-lake exe mk_all --lib Auctionlib --git   # regenerate import file
-lake build                                # build the project
+lake exe mk_all --lib Auctionlib --git       # regenerate library imports
+lake exe mk_all --lib AuctionlibTest --git   # regenerate test imports
+lake build                                    # build library, API pins, and compatibility tests
 ```
 
-## Roadmap
+## Coverage and Roadmap
 
-- [x] General Mechanism + ReducedForm + Auction framework
-- [x] Envelope Theorem (Section 5.1)
-- [x] Myerson's Lemma (Section 5.2)
-- [x] Revenue Equivalence Theorem (Section 5.3)
-- [x] All-Purchase Auction — equilibrium characterization (Chapter 6)
-- [x] All-Purchase Auction — baseline demand & explicit solutions (Chapter 6)
-- [x] All-Purchase Auction — economic analysis (Chapter 6)
-- [ ] Game-theoretic concepts (Section 3)
-- [x] Delete legacy files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/`)
+The mathematical overview is intentionally broader than the current library. Current coverage includes:
+
+- [x] Action-parametric single-parameter foundations and a deterministic fixed-price buyer problem
+- [x] General `Mechanism` + `Auction` + `BidderProblem` framework
+- [x] Envelope theorem, Myerson's lemma, and revenue equivalence
+- [x] All-purchase equilibrium characterization, explicit solutions, revenue analysis, optimal pricing, and welfare decomposition
+- [x] Normal-form game foundations and pure/mixed Nash existence
+- [x] Affiliation definitions, log-supermodularity, finite monotone conditional expectations, and the finite winner's-curse inequality
+
+Further work includes:
+
+- [ ] Continuous affiliation results, including the continuous winner's-curse inequality, and later applications such as the Linkage Principle
+- [ ] Remaining game-theoretic concepts and their integration with the auction layer
+- [ ] Extensive-form and obviously strategy-proof mechanisms
+- [ ] Exploratory multi-unit and simultaneous ascending auction models

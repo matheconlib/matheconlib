@@ -10,3 +10,4 @@ public import Auctionlib.Auction.RevenueEquivalence
 public import Auctionlib.Auction.Typeclasses
 public import Auctionlib.Auction.StrictMonotonicity
 public import Auctionlib.Auction.SymmetricIPV
+public import Auctionlib.Auction.ValueDistribution
