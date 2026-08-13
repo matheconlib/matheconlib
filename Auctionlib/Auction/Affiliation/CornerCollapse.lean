@@ -63,6 +63,7 @@ expectation.
 @[expose] public section
 
 open MeasureTheory
+open scoped Function
 
 namespace Auction.Affiliation
 
@@ -133,9 +134,8 @@ index: `cornerNumer μ E i j' x y = cornerNumer μ E i j x y` for any two rivals
 theorem IsSymmetricModel.cornerNumer_eq {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hE : IsSymmetricModel E) {i j j' : Fin n}
     (hj : j ≠ i) (hj' : j' ≠ i) (x y : ℝ)
-    (hnum : PermFibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hnum : PermFibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j)) :
     cornerNumer μ E i j' x y = cornerNumer μ E i j x y := by
   set σ : Equiv.Perm (Fin n) := Equiv.swap j j' with hσdef
@@ -144,31 +144,24 @@ theorem IsSymmetricModel.cornerNumer_eq {n : ℕ} {μ : Measure ℝ} [SigmaFinit
   have hσj : σ j = j' := by rw [hσdef]; exact Equiv.swap_apply_left j j'
   have hσj' : σ j' = j := by rw [hσdef]; exact Equiv.swap_apply_right j j'
   have hσsymm : σ.symm = σ := by rw [hσdef]; exact Equiv.symm_swap j j'
-  have hstep : ∀ z : Fin n → ℝ,
-      Function.update (Function.update (z ∘ σ) i x) j y
-        = Function.update (Function.update z i x) j' y ∘ σ := by
+  have hstep : ∀ z : Fin n → ℝ, (z ∘ σ)[i ↦ x][j ↦ y] = z[i ↦ x][j' ↦ y] ∘ σ := by
     intro z
-    rw [update_comp_perm σ (Function.update z i x) j' y, update_comp_perm σ z i x, hσsymm,
+    rw [update_comp_perm σ (z[i ↦ x]) j' y, update_comp_perm σ z i x, hσsymm,
       hσi, hσj']
-  have hpt : ∀ z : Fin n → ℝ,
-      (fun z' => E.v i (Function.update (Function.update z' i x) j y)
-          * topDensity E.f i j (Function.update (Function.update z' i x) j y)) (z ∘ σ)
-        = E.v i (Function.update (Function.update z i x) j' y)
-          * topDensity E.f i j' (Function.update (Function.update z i x) j' y) := by
+  have hpt : ∀ z : Fin n → ℝ, (fun z' => E.v i (z'[i ↦ x][j ↦ y])
+          * topDensity E.f i j (z'[i ↦ x][j ↦ y])) (z ∘ σ) = E.v i (z[i ↦ x][j' ↦ y])
+          * topDensity E.f i j' (z[i ↦ x][j' ↦ y]) := by
     intro z
-    show E.v i (Function.update (Function.update (z ∘ σ) i x) j y)
-        * topDensity E.f i j (Function.update (Function.update (z ∘ σ) i x) j y) = _
-    rw [hstep z, hE.1.rival_symm i hσi (Function.update (Function.update z i x) j' y),
+    show E.v i ((z ∘ σ)[i ↦ x][j ↦ y]) * topDensity E.f i j ((z ∘ σ)[i ↦ x][j ↦ y]) = _
+    rw [hstep z, hE.1.rival_symm i hσi (z[i ↦ x][j' ↦ y]),
       topDensity_comp_perm σ (hE.2 σ) i j, hσi, hσj]
-  have hfun : (fun z => E.v i (Function.update (Function.update z i x) j' y)
-        * topDensity E.f i j' (Function.update (Function.update z i x) j' y))
-      = fun z => (fun z' => E.v i (Function.update (Function.update z' i x) j y)
-          * topDensity E.f i j (Function.update (Function.update z' i x) j y)) (z ∘ σ) :=
+  have hfun : (fun z => E.v i (z[i ↦ x][j' ↦ y]) * topDensity E.f i j' (z[i ↦ x][j' ↦ y]))
+      = fun z => (fun z' => E.v i (z'[i ↦ x][j ↦ y])
+          * topDensity E.f i j (z'[i ↦ x][j ↦ y])) (z ∘ σ) :=
     funext fun z => (hpt z).symm
   simp only [cornerNumer]
-  rw [hfun, marginalList_comp_perm μ σ (otherRivals i j')
-      (fun z' => E.v i (Function.update (Function.update z' i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z' i x) j y)) 0,
+  rw [hfun, marginalList_comp_perm μ σ (otherRivals i j') (fun z' => E.v i (z'[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z'[i ↦ x][j ↦ y])) 0,
     hσsymm]
   have h0 : (0 : Fin n → ℝ) ∘ σ = 0 := by funext m; rfl
   rw [h0, hσdef]
@@ -181,8 +174,7 @@ single reference rival `j` is required. -/
 theorem IsSymmetricModel.cornerDenom_eq {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hE : IsSymmetricModel E) {i j j' : Fin n}
     (hj : j ≠ i) (hj' : j' ≠ i) (x y : ℝ)
-    (hden : PermFibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hden : PermFibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j)) :
     cornerDenom μ E i j' x y = cornerDenom μ E i j x y := by
   set σ : Equiv.Perm (Fin n) := Equiv.swap j j' with hσdef
@@ -191,25 +183,21 @@ theorem IsSymmetricModel.cornerDenom_eq {n : ℕ} {μ : Measure ℝ} [SigmaFinit
   have hσj : σ j = j' := by rw [hσdef]; exact Equiv.swap_apply_left j j'
   have hσj' : σ j' = j := by rw [hσdef]; exact Equiv.swap_apply_right j j'
   have hσsymm : σ.symm = σ := by rw [hσdef]; exact Equiv.symm_swap j j'
-  have hstep : ∀ z : Fin n → ℝ,
-      Function.update (Function.update (z ∘ σ) i x) j y
-        = Function.update (Function.update z i x) j' y ∘ σ := by
+  have hstep : ∀ z : Fin n → ℝ, (z ∘ σ)[i ↦ x][j ↦ y] = z[i ↦ x][j' ↦ y] ∘ σ := by
     intro z
-    rw [update_comp_perm σ (Function.update z i x) j' y, update_comp_perm σ z i x, hσsymm,
+    rw [update_comp_perm σ (z[i ↦ x]) j' y, update_comp_perm σ z i x, hσsymm,
       hσi, hσj']
-  have hpt : ∀ z : Fin n → ℝ,
-      (fun z' => topDensity E.f i j (Function.update (Function.update z' i x) j y)) (z ∘ σ)
-        = topDensity E.f i j' (Function.update (Function.update z i x) j' y) := by
+  have hpt : ∀ z : Fin n → ℝ, (fun z' => topDensity E.f i j (z'[i ↦ x][j ↦ y])) (z ∘ σ)
+        = topDensity E.f i j' (z[i ↦ x][j' ↦ y]) := by
     intro z
-    show topDensity E.f i j (Function.update (Function.update (z ∘ σ) i x) j y) = _
+    show topDensity E.f i j ((z ∘ σ)[i ↦ x][j ↦ y]) = _
     rw [hstep z, topDensity_comp_perm σ (hE.2 σ) i j, hσi, hσj]
-  have hfun : (fun z => topDensity E.f i j' (Function.update (Function.update z i x) j' y))
-      = fun z => (fun z' => topDensity E.f i j
-          (Function.update (Function.update z' i x) j y)) (z ∘ σ) :=
+  have hfun : (fun z => topDensity E.f i j' (z[i ↦ x][j' ↦ y]))
+      = fun z => (fun z' => topDensity E.f i j (z'[i ↦ x][j ↦ y])) (z ∘ σ) :=
     funext fun z => (hpt z).symm
   simp only [cornerDenom]
   rw [hfun, marginalList_comp_perm μ σ (otherRivals i j')
-      (fun z' => topDensity E.f i j (Function.update (Function.update z' i x) j y)) 0,
+      (fun z' => topDensity E.f i j (z'[i ↦ x][j ↦ y])) 0,
     hσsymm]
   have h0 : (0 : Fin n → ℝ) ∘ σ = 0 := by funext m; rfl
   rw [h0, hσdef]
@@ -221,12 +209,10 @@ designated rival index: `w μ E i j' x y = w μ E i j x y`. -/
 theorem IsSymmetricModel.w_eq {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hE : IsSymmetricModel E) {i j j' : Fin n}
     (hj : j ≠ i) (hj' : j' ≠ i) (x y : ℝ)
-    (hnum : PermFibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hnum : PermFibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j))
-    (hden : PermFibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hden : PermFibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j)) :
     w μ E i j' x y = w μ E i j x y := by
   simp only [w, hE.cornerNumer_eq hj hj' x y hnum, hE.cornerDenom_eq hj hj' x y hden]
@@ -236,12 +222,10 @@ of the designated rival index: `bidII μ E i j' x = bidII μ E i j x`. -/
 theorem IsSymmetricModel.bidII_eq {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hE : IsSymmetricModel E) {i j j' : Fin n}
     (hj : j ≠ i) (hj' : j' ≠ i) (x : ℝ)
-    (hnum : PermFibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j x)
-        * topDensity E.f i j (Function.update (Function.update z i x) j x))
+    (hnum : PermFibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ x])
+        * topDensity E.f i j (z[i ↦ x][j ↦ x]))
       (otherRivals i j))
-    (hden : PermFibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j x))
+    (hden : PermFibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ x]))
       (otherRivals i j)) :
     bidII μ E i j' x = bidII μ E i j x := by
   simp only [bidII, hE.w_eq hj hj' x x hnum hden]
@@ -271,9 +255,8 @@ any single designated rival `j ≠ i`. -/
 theorem IsSymmetricModel.sumNumer_eq {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hE : IsSymmetricModel E) {i j : Fin n} (hj : j ≠ i)
     (x y : ℝ)
-    (hnum : PermFibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hnum : PermFibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j)) :
     sumNumer μ E i x y = ((n - 1 : ℕ) : ℝ) * cornerNumer μ E i j x y := by
   rw [sumNumer, Finset.sum_congr rfl (fun j' hj' =>
@@ -286,8 +269,7 @@ any single designated rival `j ≠ i`. -/
 theorem IsSymmetricModel.sumDenom_eq {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hE : IsSymmetricModel E) {i j : Fin n} (hj : j ≠ i)
     (x y : ℝ)
-    (hden : PermFibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hden : PermFibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j)) :
     sumDenom μ E i x y = ((n - 1 : ℕ) : ℝ) * cornerDenom μ E i j x y := by
   rw [sumDenom, Finset.sum_congr rfl (fun j' hj' =>
@@ -311,12 +293,10 @@ here. -/
 theorem IsSymmetricModel.sumNumer_div_sumDenom {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hE : IsSymmetricModel E) {i j : Fin n} (hj : j ≠ i)
     (x y : ℝ)
-    (hnum : PermFibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hnum : PermFibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j))
-    (hden : PermFibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hden : PermFibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j)) :
     sumNumer μ E i x y / sumDenom μ E i x y = w μ E i j x y := by
   have hnt : Nontrivial (Fin n) := ⟨⟨j, i, hj⟩⟩

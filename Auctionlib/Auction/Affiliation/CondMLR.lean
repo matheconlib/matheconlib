@@ -29,6 +29,7 @@ Lemma 7.3 when `n = 2`; for `n > 2` it is the frozen-coordinate statement, not L
 @[expose] public section
 
 open MeasureTheory
+open scoped Function
 
 namespace Auction.Affiliation
 
@@ -39,10 +40,9 @@ namespace Auction.Affiliation
 f (Function.update (z ⊔ w) i t') * f (Function.update (z ⊓ w) i t)`. -/
 theorem Affiliated.latticeLikelihoodRatioLE_slice {n : ℕ} {f : (Fin n → ℝ) → ℝ}
     (hf : Affiliated f) (i : Fin n) {t t' : ℝ} (ht : t ≤ t') :
-    LatticeLikelihoodRatioLE (fun z => f (Function.update z i t))
-      (fun z => f (Function.update z i t')) := by
+    LatticeLikelihoodRatioLE (fun z => f (z[i ↦ t])) (fun z => f (z[i ↦ t'])) := by
   intro z w
-  have h := hf (Function.update z i t') (Function.update w i t)
+  have h := hf (z[i ↦ t']) (w[i ↦ t])
   rw [Function.update_sup_update, Function.update_inf_update, sup_of_le_left ht,
     inf_of_le_right ht] at h
   exact h

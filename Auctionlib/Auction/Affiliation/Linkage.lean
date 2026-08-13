@@ -51,6 +51,7 @@ but refutable, since `bidII μ E i j` returns to `0` past `E.x_hi`.
 @[expose] public section
 
 open MeasureTheory
+open scoped Function
 
 namespace Auction.Affiliation
 
@@ -69,30 +70,26 @@ corner slices of `topDensity E.f i j` satisfy the four-functions relation pointw
 theorem Affiliated.cornerDenom_mul_cornerDenom_le {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) {x x' y y' : ℝ}
     (hx : x ≤ x') (hy : y ≤ y')
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j)) :
     cornerDenom μ E i j x y' * cornerDenom μ E i j x' y
       ≤ cornerDenom μ E i j x y * cornerDenom μ E i j x' y' := by
   have hf0 : (0 : (Fin n → ℝ) → ℝ) ≤ E.f := fun X => E.f_nonneg X
   have haff : Affiliated (topDensity E.f i j) := affiliated_topDensity hf hf0 i j
   have hρ0 : (0 : (Fin n → ℝ) → ℝ) ≤ topDensity E.f i j := topDensity_nonneg hf0 i j
-  have hFF : FourFunctionsLE
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y'))
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x') j y))
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x') j y')) := by
+  have hFF : FourFunctionsLE (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y']))
+      (fun z => topDensity E.f i j (z[i ↦ x'][j ↦ y]))
+      (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y]))
+      (fun z => topDensity E.f i j (z[i ↦ x'][j ↦ y'])) := by
     intro z w
-    have h := haff (Function.update (Function.update z i x) j y')
-      (Function.update (Function.update w i x') j y)
+    have h := haff (z[i ↦ x][j ↦ y']) (w[i ↦ x'][j ↦ y])
     simp only [Function.update_sup_update, Function.update_inf_update,
       sup_of_le_right hx, sup_of_le_left hy, inf_of_le_left hx, inf_of_le_right hy] at h
     exact h.trans_eq (mul_comm _ _)
-  have key := FourFunctionsLE.marginalList (otherRivals i j) hFF
-    (fun z => hρ0 (Function.update (Function.update z i x) j y'))
-    (fun z => hρ0 (Function.update (Function.update z i x') j y))
-    (fun z => hρ0 (Function.update (Function.update z i x) j y))
-    (fun z => hρ0 (Function.update (Function.update z i x') j y'))
+  have key := FourFunctionsLE.marginalList (otherRivals i j) hFF (fun z => hρ0 (z[i ↦ x][j ↦ y']))
+    (fun z => hρ0 (z[i ↦ x'][j ↦ y]))
+    (fun z => hρ0 (z[i ↦ x][j ↦ y]))
+    (fun z => hρ0 (z[i ↦ x'][j ↦ y']))
     (hden x y') (hden x' y) (hden x y) (hden x' y')
   have hkey := key 0 0
   simpa only [cornerDenom, inf_idem, sup_idem] using hkey
@@ -112,12 +109,10 @@ to a set that meets the region where `bidII ≡ 0` needs support bookkeeping not
 this lemma is the honest discharge of the caller obligation `hbid` on such a set only. -/
 theorem Affiliated.monotoneOn_bidII {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (hij : i ≠ j) {S : Set ℝ}
-    (hnum : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j t)
-        * topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hnum : ∀ s t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ t])
+        * topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
     (hS : ∀ ⦃s : ℝ⦄, s ∈ S → ∀ ⦃t : ℝ⦄, t ∈ S → 0 < cornerDenom μ E i j s t) :
     MonotoneOn (bidII μ E i j) S := by
@@ -187,8 +182,7 @@ on `Set.Iic x` — is the monotone test function; the inequality is
 theorem Affiliated.linkage_signal_step {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) {x x' : ℝ} (hx : x ≤ x')
     (hbid : MonotoneOn (bidII μ E i j) (Set.Iic x'))
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
     (hp : IntegrableOn (fun y => cornerDenom μ E i j x y) (Set.Iic x) μ)
     (hq : IntegrableOn (fun y => cornerDenom μ E i j x' y) (Set.Iic x) μ)
@@ -223,8 +217,7 @@ theorem Affiliated.linkage_signal_step {n : ℕ} {μ : Measure ℝ} [SigmaFinite
       (μ.restrict (Set.Iic x)) :=
     hgq.congr_fun (fun y hy => by
       rw [min_eq_left (le_trans (Set.mem_Iic.1 hy) hx)]) measurableSet_Iic
-  have key := integral_mul_integral_le_of_likelihoodRatioLE
-    (μ := μ.restrict (Set.Iic x))
+  have key := integral_mul_integral_le_of_likelihoodRatioLE (μ := μ.restrict (Set.Iic x))
     (p := fun y => cornerDenom μ E i j x y) (q := fun y => cornerDenom μ E i j x' y)
     (g := fun y => bidII μ E i j (min y x')) hp0 hq0 hlr hg hp hq hgp' hgq'
   have e1 : ∫ y in Set.Iic x, bidII μ E i j (min y x') * cornerDenom μ E i j x y ∂μ
@@ -337,14 +330,12 @@ reach for this statement. -/
 theorem Affiliated.expectedPayII_mono {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) {x x' : ℝ} (hx : x ≤ x')
     (hbid : MonotoneOn (bidII μ E i j) (Set.Iic x'))
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
     (hp : IntegrableOn (fun y => cornerDenom μ E i j x y) (Set.Iic x) μ)
     (hgp : IntegrableOn (fun y => bidII μ E i j y * cornerDenom μ E i j x y) (Set.Iic x) μ)
     (hq' : IntegrableOn (fun y => cornerDenom μ E i j x' y) (Set.Iic x') μ)
-    (hgq' : IntegrableOn (fun y => bidII μ E i j y * cornerDenom μ E i j x' y)
-      (Set.Iic x') μ)
+    (hgq' : IntegrableOn (fun y => bidII μ E i j y * cornerDenom μ E i j x' y) (Set.Iic x') μ)
     (hD : 0 < linkDenom μ E i j x)
     (hB : 0 < ∫ y in Set.Iic x, cornerDenom μ E i j x' y ∂μ)
     (hD' : 0 < linkDenom μ E i j x') :
@@ -358,8 +349,7 @@ theorem Affiliated.expectedPayII_mono {n : ℕ} {μ : Measure ℝ} [SigmaFinite 
     rw [expectedPayII, div_le_div_iff₀ hD hB, linkNumer, linkDenom]
     exact hsig
   have h2 : (∫ y in Set.Iic x, bidII μ E i j y * cornerDenom μ E i j x' y ∂μ)
-        / (∫ y in Set.Iic x, cornerDenom μ E i j x' y ∂μ)
-      ≤ expectedPayII μ E i j x' := by
+        / (∫ y in Set.Iic x, cornerDenom μ E i j x' y ∂μ) ≤ expectedPayII μ E i j x' := by
     rw [expectedPayII, div_le_div_iff₀ hB hD', linkNumer, linkDenom]
     exact htrunc
   exact h1.trans h2

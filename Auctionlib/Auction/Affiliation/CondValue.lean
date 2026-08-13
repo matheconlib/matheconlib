@@ -114,6 +114,7 @@ instantiations there for the cases that exercise the marginalization.
 @[expose] public section
 
 open MeasureTheory
+open scoped Function
 
 namespace Auction.Affiliation
 
@@ -135,21 +136,18 @@ theorem mem_otherRivals_iff {n : ℕ} (i j k : Fin n) :
 /-! ### `Function.update` bookkeeping -/
 
 private theorem monotone_update_profile {n : ℕ} (k : Fin n) (c : ℝ) :
-    Monotone fun z : Fin n → ℝ => Function.update z k c := by
+    Monotone fun z : Fin n → ℝ => z[k ↦ c] := by
   intro a b hab m
   obtain rfl | hm := eq_or_ne m k
   · simp
   · simpa only [Function.update_of_ne hm] using hab m
 
 private theorem upd_i_idem {n : ℕ} (z : Fin n → ℝ) (i j : Fin n) (s x y : ℝ) :
-    Function.update (Function.update (Function.update z i s) i x) j y
-      = Function.update (Function.update z i x) j y := by
+    z[i ↦ s][i ↦ x][j ↦ y] = z[i ↦ x][j ↦ y] := by
   rw [Function.update_idem]
 
-private theorem upd_j_absorb {n : ℕ} {i j : Fin n} (hij : i ≠ j) (z : Fin n → ℝ)
-    (s x y : ℝ) :
-    Function.update (Function.update (Function.update z j s) i x) j y
-      = Function.update (Function.update z i x) j y := by
+private theorem upd_j_absorb {n : ℕ} {i j : Fin n} (hij : i ≠ j) (z : Fin n → ℝ) (s x y : ℝ) :
+    z[j ↦ s][i ↦ x][j ↦ y] = z[i ↦ x][j ↦ y] := by
   rw [Function.update_comm (Ne.symm hij) s x z, Function.update_idem]
 
 /-- `Function.update (Function.update z i x) j y ∈ maxAt i j` if and only if
@@ -161,8 +159,7 @@ No proof below consumes this; it is exported as the interpretation lemma for `co
 `(Xᵢ, maxₖ≠ᵢ Xₖ)`, and it is the step any explicit evaluation of those marginals (rewriting the
 indicator as a product of one-dimensional cutoffs at `y`) has to start from. -/
 theorem mem_maxAt_update_update_iff {n : ℕ} (i j : Fin n) (z : Fin n → ℝ) (x y : ℝ) :
-    Function.update (Function.update z i x) j y ∈ maxAt i j
-      ↔ ∀ k, k ≠ i → k ≠ j → z k ≤ y := by
+    z[i ↦ x][j ↦ y] ∈ maxAt i j ↔ ∀ k, k ≠ i → k ≠ j → z k ≤ y := by
   simp only [mem_maxAt_iff, Function.update_self]
   constructor
   · intro h k hki hkj
@@ -178,18 +175,14 @@ theorem mem_maxAt_update_update_iff {n : ℕ} (i j : Fin n) (z : Fin n → ℝ) 
 = marginalList μ (fun z => topDensity E.f i j (z[i↦x][j↦y])) (otherRivals i j) 0`. -/
 noncomputable def cornerDenom {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n) (i j : Fin n)
     (x y : ℝ) : ℝ :=
-  marginalList μ
-    (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
-    (otherRivals i j) 0
+  marginalList μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y])) (otherRivals i j) 0
 
 /-- `cornerNumer μ E i j x y
 = marginalList μ (fun z => E.v i (z[i↦x][j↦y]) * topDensity E.f i j (z[i↦x][j↦y]))
 (otherRivals i j) 0`. -/
 noncomputable def cornerNumer {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n) (i j : Fin n)
     (x y : ℝ) : ℝ :=
-  marginalList μ
-    (fun z => E.v i (Function.update (Function.update z i x) j y)
-      * topDensity E.f i j (Function.update (Function.update z i x) j y))
+  marginalList μ (fun z => E.v i (z[i ↦ x][j ↦ y]) * topDensity E.f i j (z[i ↦ x][j ↦ y]))
     (otherRivals i j) 0
 
 /-- `w μ E i j x y = cornerNumer μ E i j x y / cornerDenom μ E i j x y`: the conditional
@@ -222,14 +215,13 @@ noncomputable def bidII {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n) (i j
 
 /-- For `F` independent of coordinates `i` and `j`, `marginalList μ F (otherRivals i j) x`
 does not depend on `x`. -/
-theorem marginalList_corner_congr {n : ℕ} {μ : Measure ℝ} {F : (Fin n → ℝ) → ℝ}
-    (i j : Fin n)
-    (hFi : ∀ (z : Fin n → ℝ) (s : ℝ), F (Function.update z i s) = F z)
-    (hFj : ∀ (z : Fin n → ℝ) (s : ℝ), F (Function.update z j s) = F z)
+theorem marginalList_corner_congr {n : ℕ} {μ : Measure ℝ} {F : (Fin n → ℝ) → ℝ} (i j : Fin n)
+    (hFi : ∀ (z : Fin n → ℝ) (s : ℝ), F (z[i ↦ s]) = F z)
+    (hFj : ∀ (z : Fin n → ℝ) (s : ℝ), F (z[j ↦ s]) = F z)
     (x y : Fin n → ℝ) :
     marginalList μ F (otherRivals i j) x = marginalList μ F (otherRivals i j) y := by
   refine marginalList_congr_of_dependsOn (otherRivals i j) (fun u v huv => ?_) x y
-  have key : Function.update (Function.update u i (v i)) j (v j) = v := by
+  have key : u[i ↦ v i][j ↦ v j] = v := by
     funext k
     obtain rfl | hkj := eq_or_ne k j
     · simp
@@ -238,14 +230,12 @@ theorem marginalList_corner_congr {n : ℕ} {μ : Measure ℝ} {F : (Fin n → �
       · simp
       · rw [Function.update_of_ne hki]
         exact huv k ((mem_otherRivals_iff i j k).2 ⟨hki, hkj⟩)
-  rw [← hFi u (v i), ← hFj (Function.update u i (v i)) (v j), key]
+  rw [← hFi u (v i), ← hFj (u[i ↦ v i]) (v j), key]
 
 /-- `cornerDenom` is unchanged if the base profile `0` is replaced by any other profile. -/
 theorem cornerDenom_base_indep {n : ℕ} {μ : Measure ℝ} {E : SignalValueEnv n} {i j : Fin n}
     (hij : i ≠ j) (x y : ℝ) (b : Fin n → ℝ) :
-    marginalList μ
-        (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
-        (otherRivals i j) b
+    marginalList μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y])) (otherRivals i j) b
       = cornerDenom μ E i j x y :=
   marginalList_corner_congr i j (fun _ _ => by simp only [upd_i_idem])
     (fun _ _ => by simp only [upd_j_absorb hij]) b 0
@@ -253,11 +243,8 @@ theorem cornerDenom_base_indep {n : ℕ} {μ : Measure ℝ} {E : SignalValueEnv 
 /-- `cornerNumer` is unchanged if the base profile `0` is replaced by any other profile. -/
 theorem cornerNumer_base_indep {n : ℕ} {μ : Measure ℝ} {E : SignalValueEnv n} {i j : Fin n}
     (hij : i ≠ j) (x y : ℝ) (b : Fin n → ℝ) :
-    marginalList μ
-        (fun z => E.v i (Function.update (Function.update z i x) j y)
-          * topDensity E.f i j (Function.update (Function.update z i x) j y))
-        (otherRivals i j) b
-      = cornerNumer μ E i j x y :=
+    marginalList μ (fun z => E.v i (z[i ↦ x][j ↦ y]) * topDensity E.f i j (z[i ↦ x][j ↦ y]))
+        (otherRivals i j) b = cornerNumer μ E i j x y :=
   marginalList_corner_congr i j (fun _ _ => by simp only [upd_i_idem])
     (fun _ _ => by simp only [upd_j_absorb hij]) b 0
 
@@ -267,21 +254,17 @@ theorem cornerNumer_base_indep {n : ℕ} {μ : Measure ℝ} {E : SignalValueEnv 
 theorem cornerDenom_nonneg {n : ℕ} {μ : Measure ℝ} {E : SignalValueEnv n} (i j : Fin n)
     (x y : ℝ) : 0 ≤ cornerDenom μ E i j x y := by
   simp only [cornerDenom]
-  exact marginalList_nonneg (otherRivals i j)
-    (F := fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
-    (fun z => topDensity_nonneg (fun X => E.f_nonneg X) i j
-      (Function.update (Function.update z i x) j y)) 0
+  exact marginalList_nonneg (otherRivals i j) (F := fun z => topDensity E.f i j (z[i ↦ x][j ↦ y]))
+    (fun z => topDensity_nonneg (fun X => E.f_nonneg X) i j (z[i ↦ x][j ↦ y])) 0
 
 /-- `0 ≤ cornerNumer μ E i j x y`. -/
 theorem cornerNumer_nonneg {n : ℕ} {μ : Measure ℝ} {E : SignalValueEnv n} (i j : Fin n)
     (x y : ℝ) : 0 ≤ cornerNumer μ E i j x y := by
   simp only [cornerNumer]
-  exact marginalList_nonneg (otherRivals i j)
-    (F := fun z => E.v i (Function.update (Function.update z i x) j y)
-      * topDensity E.f i j (Function.update (Function.update z i x) j y))
-    (fun z => mul_nonneg (E.v_nonneg i _)
-      (topDensity_nonneg (fun X => E.f_nonneg X) i j
-        (Function.update (Function.update z i x) j y))) 0
+  exact marginalList_nonneg (otherRivals i j) (F := fun z => E.v i (z[i ↦ x][j ↦ y])
+      * topDensity E.f i j (z[i ↦ x][j ↦ y]))
+    (fun z => mul_nonneg (E.v_nonneg i _) (topDensity_nonneg (fun X => E.f_nonneg X) i j
+        (z[i ↦ x][j ↦ y]))) 0
 
 /-! ### Monotonicity in the own signal -/
 
@@ -291,26 +274,22 @@ theorem cornerNumer_nonneg {n : ℕ} {μ : Measure ℝ} {E : SignalValueEnv n} (
 theorem Affiliated.cornerNumer_mul_cornerDenom_le_fst {n : ℕ} {μ : Measure ℝ}
     [SigmaFinite μ] {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (y : ℝ)
     {x x' : ℝ} (hx : x ≤ x')
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i t) j y)
-        * topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ t][j ↦ y])
+        * topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j)) :
     cornerNumer μ E i j x y * cornerDenom μ E i j x' y
       ≤ cornerDenom μ E i j x y * cornerNumer μ E i j x' y := by
   have hf0 : (0 : (Fin n → ℝ) → ℝ) ≤ E.f := fun X => E.f_nonneg X
   have haff : Affiliated fun z : Fin n → ℝ =>
-      topDensity E.f i j (Function.update z j y) :=
+      topDensity E.f i j (z[j ↦ y]) :=
     (affiliated_topDensity hf hf0 i j).update_slice j y
-  have hd0 : (0 : (Fin n → ℝ) → ℝ)
-      ≤ fun z : Fin n → ℝ => topDensity E.f i j (Function.update z j y) :=
-    fun z => topDensity_nonneg hf0 i j (Function.update z j y)
-  have hgm : Monotone fun z : Fin n → ℝ => E.v i (Function.update z j y) :=
+  have hd0 : (0 : (Fin n → ℝ) → ℝ) ≤ fun z : Fin n → ℝ => topDensity E.f i j (z[j ↦ y]) :=
+    fun z => topDensity_nonneg hf0 i j (z[j ↦ y])
+  have hgm : Monotone fun z : Fin n → ℝ => E.v i (z[j ↦ y]) :=
     (E.v_mono i).comp (monotone_update_profile j y)
-  have hg0 : (0 : (Fin n → ℝ) → ℝ)
-      ≤ fun z : Fin n → ℝ => E.v i (Function.update z j y) :=
+  have hg0 : (0 : (Fin n → ℝ) → ℝ) ≤ fun z : Fin n → ℝ => E.v i (z[j ↦ y]) :=
     fun _ => E.v_nonneg i _
   have key := haff.marginalList_mul_le hd0 hgm hg0 i (otherRivals i j) hx
     (hnum x) (hden x') (hden x) (hnum x') 0
@@ -320,12 +299,10 @@ theorem Affiliated.cornerNumer_mul_cornerDenom_le_fst {n : ℕ} {μ : Measure �
 `{x | 0 < cornerDenom μ E i j x y}`. -/
 theorem Affiliated.monotoneOn_w_fst {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (y : ℝ)
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i t) j y)
-        * topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ t][j ↦ y])
+        * topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j)) :
     MonotoneOn (fun x => w μ E i j x y) {x : ℝ | 0 < cornerDenom μ E i j x y} := by
   intro x hx x' hx' hxx
@@ -343,47 +320,38 @@ theorem Affiliated.monotoneOn_w_fst {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ
 theorem Affiliated.cornerNumer_mul_cornerDenom_le_snd {n : ℕ} {μ : Measure ℝ}
     [SigmaFinite μ] {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n)
     (hij : i ≠ j) (x : ℝ) {y y' : ℝ} (hy : y ≤ y')
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j t)
-        * topDensity E.f i j (Function.update (Function.update z i x) j t))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ t])
+        * topDensity E.f i j (z[i ↦ x][j ↦ t]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j t))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ t]))
       (otherRivals i j)) :
     cornerNumer μ E i j x y * cornerDenom μ E i j x y'
       ≤ cornerDenom μ E i j x y * cornerNumer μ E i j x y' := by
   have hcomm : ∀ (z : Fin n → ℝ) (s t : ℝ),
-      Function.update (Function.update z j s) i t
-        = Function.update (Function.update z i t) j s :=
+      z[j ↦ s][i ↦ t] = z[i ↦ t][j ↦ s] :=
     fun z s t => Function.update_comm (Ne.symm hij) s t z
   have hf0 : (0 : (Fin n → ℝ) → ℝ) ≤ E.f := fun X => E.f_nonneg X
   have haff : Affiliated fun z : Fin n → ℝ =>
-      topDensity E.f i j (Function.update z i x) :=
+      topDensity E.f i j (z[i ↦ x]) :=
     (affiliated_topDensity hf hf0 i j).update_slice i x
-  have hd0 : (0 : (Fin n → ℝ) → ℝ)
-      ≤ fun z : Fin n → ℝ => topDensity E.f i j (Function.update z i x) :=
-    fun z => topDensity_nonneg hf0 i j (Function.update z i x)
-  have hgm : Monotone fun z : Fin n → ℝ => E.v i (Function.update z i x) :=
+  have hd0 : (0 : (Fin n → ℝ) → ℝ) ≤ fun z : Fin n → ℝ => topDensity E.f i j (z[i ↦ x]) :=
+    fun z => topDensity_nonneg hf0 i j (z[i ↦ x])
+  have hgm : Monotone fun z : Fin n → ℝ => E.v i (z[i ↦ x]) :=
     (E.v_mono i).comp (monotone_update_profile i x)
-  have hg0 : (0 : (Fin n → ℝ) → ℝ)
-      ≤ fun z : Fin n → ℝ => E.v i (Function.update z i x) :=
+  have hg0 : (0 : (Fin n → ℝ) → ℝ) ≤ fun z : Fin n → ℝ => E.v i (z[i ↦ x]) :=
     fun _ => E.v_nonneg i _
-  have h₁ : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z j y) i x)
-        * topDensity E.f i j (Function.update (Function.update z j y) i x))
+  have h₁ : FibreIntegrable μ (fun z => E.v i (z[j ↦ y][i ↦ x])
+        * topDensity E.f i j (z[j ↦ y][i ↦ x]))
       (otherRivals i j) := by
     simpa only [hcomm] using hnum y
-  have h₄ : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z j y') i x)
-        * topDensity E.f i j (Function.update (Function.update z j y') i x))
+  have h₄ : FibreIntegrable μ (fun z => E.v i (z[j ↦ y'][i ↦ x])
+        * topDensity E.f i j (z[j ↦ y'][i ↦ x]))
       (otherRivals i j) := by
     simpa only [hcomm] using hnum y'
-  have h₂ : FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z j y') i x))
+  have h₂ : FibreIntegrable μ (fun z => topDensity E.f i j (z[j ↦ y'][i ↦ x]))
       (otherRivals i j) := by
     simpa only [hcomm] using hden y'
-  have h₃ : FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z j y) i x))
+  have h₃ : FibreIntegrable μ (fun z => topDensity E.f i j (z[j ↦ y][i ↦ x]))
       (otherRivals i j) := by
     simpa only [hcomm] using hden y
   have key := haff.marginalList_mul_le hd0 hgm hg0 j (otherRivals i j) hy h₁ h₂ h₃ h₄ 0
@@ -393,12 +361,10 @@ theorem Affiliated.cornerNumer_mul_cornerDenom_le_snd {n : ℕ} {μ : Measure �
 `{y | 0 < cornerDenom μ E i j x y}`. -/
 theorem Affiliated.monotoneOn_w_snd {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (hij : i ≠ j) (x : ℝ)
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j t)
-        * topDensity E.f i j (Function.update (Function.update z i x) j t))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ t])
+        * topDensity E.f i j (z[i ↦ x][j ↦ t]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j t))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ t]))
       (otherRivals i j)) :
     MonotoneOn (fun y => w μ E i j x y) {y : ℝ | 0 < cornerDenom μ E i j x y} := by
   intro y hy y' hy' hyy
@@ -415,9 +381,7 @@ theorem Affiliated.monotoneOn_w_snd {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ
 (otherRivals i j) 0`: the value taken at own signal `x`, the density at own signal `x'`. -/
 noncomputable def crossNumer {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n) (i j : Fin n)
     (x x' y : ℝ) : ℝ :=
-  marginalList μ
-    (fun z => E.v i (Function.update (Function.update z i x) j y)
-      * topDensity E.f i j (Function.update (Function.update z i x') j y))
+  marginalList μ (fun z => E.v i (z[i ↦ x][j ↦ y]) * topDensity E.f i j (z[i ↦ x'][j ↦ y]))
     (otherRivals i j) 0
 
 /-- `ownEffect μ E i j x x' y
@@ -425,10 +389,8 @@ noncomputable def crossNumer {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n)
 * topDensity E.f i j (z[i↦x'][j↦y])) (otherRivals i j) 0`. -/
 noncomputable def ownEffect {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n) (i j : Fin n)
     (x x' y : ℝ) : ℝ :=
-  marginalList μ
-    (fun z => (E.v i (Function.update (Function.update z i x') j y)
-        - E.v i (Function.update (Function.update z i x) j y))
-      * topDensity E.f i j (Function.update (Function.update z i x') j y))
+  marginalList μ (fun z => (E.v i (z[i ↦ x'][j ↦ y])
+        - E.v i (z[i ↦ x][j ↦ y])) * topDensity E.f i j (z[i ↦ x'][j ↦ y]))
     (otherRivals i j) 0
 
 /-- `HasStrictOwnEffect μ E i j y S` : `0 < ownEffect μ E i j x x' y` whenever `x < x'` with
@@ -450,39 +412,27 @@ def HasStrictOwnEffect {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n) (i j 
 /-- `cornerNumer μ E i j x' y = crossNumer μ E i j x x' y + ownEffect μ E i j x x' y`. -/
 theorem cornerNumer_eq_crossNumer_add_ownEffect {n : ℕ} {μ : Measure ℝ}
     {E : SignalValueEnv n} (i j : Fin n) (x x' y : ℝ)
-    (hcross : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x') j y))
+    (hcross : FibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x'][j ↦ y]))
       (otherRivals i j))
-    (hnum : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x') j y)
-        * topDensity E.f i j (Function.update (Function.update z i x') j y))
+    (hnum : FibreIntegrable μ (fun z => E.v i (z[i ↦ x'][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x'][j ↦ y]))
       (otherRivals i j)) :
     cornerNumer μ E i j x' y = crossNumer μ E i j x x' y + ownEffect μ E i j x x' y := by
   have hfe : (fun z : Fin n → ℝ =>
-        E.v i (Function.update (Function.update z i x') j y)
-          * topDensity E.f i j (Function.update (Function.update z i x') j y))
-      = fun z : Fin n → ℝ =>
-        E.v i (Function.update (Function.update z i x) j y)
-            * topDensity E.f i j (Function.update (Function.update z i x') j y)
-          + (E.v i (Function.update (Function.update z i x') j y)
-              - E.v i (Function.update (Function.update z i x) j y))
-            * topDensity E.f i j (Function.update (Function.update z i x') j y) := by
+        E.v i (z[i ↦ x'][j ↦ y]) * topDensity E.f i j (z[i ↦ x'][j ↦ y])) = fun z : Fin n → ℝ =>
+        E.v i (z[i ↦ x][j ↦ y]) * topDensity E.f i j (z[i ↦ x'][j ↦ y])
+          + (E.v i (z[i ↦ x'][j ↦ y])
+              - E.v i (z[i ↦ x][j ↦ y])) * topDensity E.f i j (z[i ↦ x'][j ↦ y]) := by
     funext z; ring
-  have hown : FibreIntegrable μ
-      (fun z => (E.v i (Function.update (Function.update z i x') j y)
-          - E.v i (Function.update (Function.update z i x) j y))
-        * topDensity E.f i j (Function.update (Function.update z i x') j y))
+  have hown : FibreIntegrable μ (fun z => (E.v i (z[i ↦ x'][j ↦ y])
+          - E.v i (z[i ↦ x][j ↦ y])) * topDensity E.f i j (z[i ↦ x'][j ↦ y]))
       (otherRivals i j) := by
-    have hfe' : (fun z : Fin n → ℝ =>
-          (E.v i (Function.update (Function.update z i x') j y)
-            - E.v i (Function.update (Function.update z i x) j y))
-          * topDensity E.f i j (Function.update (Function.update z i x') j y))
+    have hfe' : (fun z : Fin n → ℝ => (E.v i (z[i ↦ x'][j ↦ y])
+            - E.v i (z[i ↦ x][j ↦ y])) * topDensity E.f i j (z[i ↦ x'][j ↦ y]))
         = fun z : Fin n → ℝ =>
-          E.v i (Function.update (Function.update z i x') j y)
-              * topDensity E.f i j (Function.update (Function.update z i x') j y)
-            + (-1) * (E.v i (Function.update (Function.update z i x) j y)
-              * topDensity E.f i j (Function.update (Function.update z i x') j y)) := by
+          E.v i (z[i ↦ x'][j ↦ y]) * topDensity E.f i j (z[i ↦ x'][j ↦ y])
+            + (-1) * (E.v i (z[i ↦ x][j ↦ y]) * topDensity E.f i j (z[i ↦ x'][j ↦ y])) := by
       funext z; ring
     rw [hfe']
     exact hnum.add (hcross.const_mul (-1))
@@ -495,40 +445,33 @@ theorem cornerNumer_eq_crossNumer_add_ownEffect {n : ℕ} {μ : Measure ℝ}
 theorem Affiliated.cornerNumer_mul_cornerDenom_le_cross {n : ℕ} {μ : Measure ℝ}
     [SigmaFinite μ] {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (y : ℝ)
     {x x' : ℝ} (hx : x ≤ x')
-    (hnum : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hnum : FibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j))
-    (hcross : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x') j y))
+    (hcross : FibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x'][j ↦ y]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j)) :
     cornerNumer μ E i j x y * cornerDenom μ E i j x' y
       ≤ cornerDenom μ E i j x y * crossNumer μ E i j x x' y := by
   have hf0 : (0 : (Fin n → ℝ) → ℝ) ≤ E.f := fun X => E.f_nonneg X
   have haff : Affiliated fun z : Fin n → ℝ =>
-      topDensity E.f i j (Function.update z j y) :=
+      topDensity E.f i j (z[j ↦ y]) :=
     (affiliated_topDensity hf hf0 i j).update_slice j y
-  have hd0 : (0 : (Fin n → ℝ) → ℝ)
-      ≤ fun z : Fin n → ℝ => topDensity E.f i j (Function.update z j y) :=
-    fun z => topDensity_nonneg hf0 i j (Function.update z j y)
+  have hd0 : (0 : (Fin n → ℝ) → ℝ) ≤ fun z : Fin n → ℝ => topDensity E.f i j (z[j ↦ y]) :=
+    fun z => topDensity_nonneg hf0 i j (z[j ↦ y])
   have hgm : Monotone fun z : Fin n → ℝ =>
-      E.v i (Function.update (Function.update z i x) j y) :=
+      E.v i (z[i ↦ x][j ↦ y]) :=
     (E.v_mono i).comp ((monotone_update_profile j y).comp (monotone_update_profile i x))
-  have hg0 : (0 : (Fin n → ℝ) → ℝ)
-      ≤ fun z : Fin n → ℝ => E.v i (Function.update (Function.update z i x) j y) :=
+  have hg0 : (0 : (Fin n → ℝ) → ℝ) ≤ fun z : Fin n → ℝ => E.v i (z[i ↦ x][j ↦ y]) :=
     fun _ => E.v_nonneg i _
-  have h₁ : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update (Function.update z i x) i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x) j y))
+  have h₁ : FibreIntegrable μ (fun z => E.v i (z[i ↦ x][i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j) := by
     simpa only [upd_i_idem] using hnum
-  have h₄ : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update (Function.update z i x') i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x') j y))
+  have h₄ : FibreIntegrable μ (fun z => E.v i (z[i ↦ x'][i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x'][j ↦ y]))
       (otherRivals i j) := by
     simpa only [upd_i_idem] using hcross
   have key := haff.marginalList_mul_le hd0 hgm hg0 i (otherRivals i j) hx
@@ -541,16 +484,13 @@ theorem Affiliated.strictMonoOn_w_fst {n : ℕ} {μ : Measure ℝ} [SigmaFinite 
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (y : ℝ) {T : Set ℝ}
     (hT : ∀ ⦃t : ℝ⦄, t ∈ T → 0 < cornerDenom μ E i j t y)
     (hstrict : HasStrictOwnEffect μ E i j y T)
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i t) j y)
-        * topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ t][j ↦ y])
+        * topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hcross : ∀ s s' : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j y)
-        * topDensity E.f i j (Function.update (Function.update z i s') j y))
+    (hcross : ∀ s s' : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ y])
+        * topDensity E.f i j (z[i ↦ s'][j ↦ y]))
       (otherRivals i j)) :
     StrictMonoOn (fun x => w μ E i j x y) T := by
   intro x hx x' hx' hxx
@@ -560,8 +500,7 @@ theorem Affiliated.strictMonoOn_w_fst {n : ℕ} {μ : Measure ℝ} [SigmaFinite 
     (hcross x x') (hnum x')
   have hpos : 0 < ownEffect μ E i j x x' y := hstrict hx hx' hxx
   have hlt : crossNumer μ E i j x x' y < cornerNumer μ E i j x' y := by linarith
-  have haff := hf.cornerNumer_mul_cornerDenom_le_cross i j y hxx.le (hnum x)
-    (hcross x x') hden
+  have haff := hf.cornerNumer_mul_cornerDenom_le_cross i j y hxx.le (hnum x) (hcross x x') hden
   simp only [w]
   rw [div_lt_div_iff₀ hDx hDx']
   have hmul := mul_lt_mul_of_pos_left hlt hDx
@@ -571,16 +510,13 @@ theorem Affiliated.strictMonoOn_w_fst {n : ℕ} {μ : Measure ℝ} [SigmaFinite 
 theorem Affiliated.strictMonoOn_w_fst_cornerDenom_pos {n : ℕ} {μ : Measure ℝ}
     [SigmaFinite μ] {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (y : ℝ)
     (hstrict : HasStrictOwnEffect μ E i j y {x : ℝ | 0 < cornerDenom μ E i j x y})
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i t) j y)
-        * topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ t][j ↦ y])
+        * topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hcross : ∀ s s' : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j y)
-        * topDensity E.f i j (Function.update (Function.update z i s') j y))
+    (hcross : ∀ s s' : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ y])
+        * topDensity E.f i j (z[i ↦ s'][j ↦ y]))
       (otherRivals i j)) :
     StrictMonoOn (fun x => w μ E i j x y) {x : ℝ | 0 < cornerDenom μ E i j x y} :=
   hf.strictMonoOn_w_fst i j y (fun _ ht => ht) hstrict hnum hden hcross
@@ -603,16 +539,13 @@ from positivity on the diagonal. -/
 theorem Affiliated.strictMonoOn_bidII {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (hij : i ≠ j)
     {S : Set ℝ} (hstrict : ∀ ⦃y : ℝ⦄, y ∈ S → HasStrictOwnEffect μ E i j y S)
-    (hnum : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j t)
-        * topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hnum : ∀ s t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ t])
+        * topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
-    (hcross : ∀ s s' t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j t)
-        * topDensity E.f i j (Function.update (Function.update z i s') j t))
+    (hcross : ∀ s s' t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ t])
+        * topDensity E.f i j (z[i ↦ s'][j ↦ t]))
       (otherRivals i j))
     (hS : ∀ ⦃s : ℝ⦄, s ∈ S → ∀ ⦃t : ℝ⦄, t ∈ S → 0 < cornerDenom μ E i j s t) :
     StrictMonoOn (bidII μ E i j) S := by
@@ -641,41 +574,34 @@ positivity of `cornerDenom μ E i j · y` on `S`, and the integrability hypothes
 theorem hasStrictOwnEffect_of_v_strictMono {n : ℕ} {μ : Measure ℝ}
     (E : SignalValueEnv n) (i j : Fin n) (hij : i ≠ j) (y : ℝ) (S : Set ℝ)
     (hS : ∀ ⦃t : ℝ⦄, t ∈ S → 0 < cornerDenom μ E i j t y)
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i t) j y)
-        * topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ t][j ↦ y])
+        * topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hcross : ∀ s s' : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j y)
-        * topDensity E.f i j (Function.update (Function.update z i s') j y))
+    (hcross : ∀ s s' : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ y])
+        * topDensity E.f i j (z[i ↦ s'][j ↦ y]))
       (otherRivals i j)) :
     HasStrictOwnEffect μ E i j y S := by
   intro x hx x' hx' hxx
   have hcomm : ∀ (t : ℝ) (z : Fin n → ℝ),
-      Function.update (Function.update z i t) j y
-        = Function.update (Function.update z j y) i t :=
+      z[i ↦ t][j ↦ y] = z[j ↦ y][i ↦ t] :=
     fun t z => (Function.update_comm (Ne.symm hij) y t z).symm
   have hv : ∀ z : Fin n → ℝ,
-      E.v i (Function.update (Function.update z i x) j y)
-        < E.v i (Function.update (Function.update z i x') j y) := by
+      E.v i (z[i ↦ x][j ↦ y])
+        < E.v i (z[i ↦ x'][j ↦ y]) := by
     intro z
     rw [hcomm x z, hcomm x' z]
-    exact E.v_strictMono_own i (Function.update z j y) hxx
-  have hρ0 : (0 : (Fin n → ℝ) → ℝ)
-      ≤ fun z : Fin n → ℝ =>
-        topDensity E.f i j (Function.update (Function.update z i x') j y) :=
-    fun z => topDensity_nonneg (fun X => E.f_nonneg X) i j
-      (Function.update (Function.update z i x') j y)
-  have hden' : 0 < marginalList μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x') j y))
+    exact E.v_strictMono_own i (z[j ↦ y]) hxx
+  have hρ0 : (0 : (Fin n → ℝ) → ℝ) ≤ fun z : Fin n → ℝ =>
+        topDensity E.f i j (z[i ↦ x'][j ↦ y]) :=
+    fun z => topDensity_nonneg (fun X => E.f_nonneg X) i j (z[i ↦ x'][j ↦ y])
+  have hden' : 0 < marginalList μ (fun z => topDensity E.f i j (z[i ↦ x'][j ↦ y]))
       (otherRivals i j) 0 := hS hx'
   have hlt := marginalList_lt_of_lt (μ := μ) (otherRivals i j)
-    (ρ := fun z => topDensity E.f i j (Function.update (Function.update z i x') j y))
-    (g₁ := fun z => E.v i (Function.update (Function.update z i x) j y))
-    (g₂ := fun z => E.v i (Function.update (Function.update z i x') j y))
+    (ρ := fun z => topDensity E.f i j (z[i ↦ x'][j ↦ y]))
+    (g₁ := fun z => E.v i (z[i ↦ x][j ↦ y]))
+    (g₂ := fun z => E.v i (z[i ↦ x'][j ↦ y]))
     0 hρ0 hv hden' (hden x') (hcross x x') (hnum x')
   have hcn : crossNumer μ E i j x x' y < cornerNumer μ E i j x' y := hlt
   have hdec := cornerNumer_eq_crossNumer_add_ownEffect (μ := μ) (E := E) i j x x' y
@@ -689,16 +615,13 @@ theorem Affiliated.strictMonoOn_w_fst_of_v_strictMono {n : ℕ} {μ : Measure �
     [SigmaFinite μ] {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (hij : i ≠ j)
     (y : ℝ) {T : Set ℝ}
     (hT : ∀ ⦃t : ℝ⦄, t ∈ T → 0 < cornerDenom μ E i j t y)
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i t) j y)
-        * topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ t][j ↦ y])
+        * topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hcross : ∀ s s' : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j y)
-        * topDensity E.f i j (Function.update (Function.update z i s') j y))
+    (hcross : ∀ s s' : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ y])
+        * topDensity E.f i j (z[i ↦ s'][j ↦ y]))
       (otherRivals i j)) :
     StrictMonoOn (fun x => w μ E i j x y) T :=
   hf.strictMonoOn_w_fst i j y hT
@@ -709,16 +632,13 @@ positivity hypothesis at all beyond the one built into the set. -/
 theorem Affiliated.strictMonoOn_w_fst_cornerDenom_pos_of_v_strictMono {n : ℕ} {μ : Measure ℝ}
     [SigmaFinite μ] {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (hij : i ≠ j)
     (y : ℝ)
-    (hnum : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i t) j y)
-        * topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hnum : ∀ t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ t][j ↦ y])
+        * topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hden : ∀ t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i t) j y))
+    (hden : ∀ t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ t][j ↦ y]))
       (otherRivals i j))
-    (hcross : ∀ s s' : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j y)
-        * topDensity E.f i j (Function.update (Function.update z i s') j y))
+    (hcross : ∀ s s' : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ y])
+        * topDensity E.f i j (z[i ↦ s'][j ↦ y]))
       (otherRivals i j)) :
     StrictMonoOn (fun x => w μ E i j x y) {x : ℝ | 0 < cornerDenom μ E i j x y} :=
   hf.strictMonoOn_w_fst_of_v_strictMono i j hij y (fun _ ht => ht) hnum hden hcross
@@ -728,16 +648,13 @@ theorem Affiliated.strictMonoOn_w_fst_cornerDenom_pos_of_v_strictMono {n : ℕ} 
 `cornerDenom μ E i j` at every pair of points of `S`, and the integrability hypotheses. -/
 theorem Affiliated.strictMonoOn_bidII_of_v_strictMono {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) (hij : i ≠ j) {S : Set ℝ}
-    (hnum : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j t)
-        * topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hnum : ∀ s t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ t])
+        * topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
-    (hcross : ∀ s s' t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j t)
-        * topDensity E.f i j (Function.update (Function.update z i s') j t))
+    (hcross : ∀ s s' t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ t])
+        * topDensity E.f i j (z[i ↦ s'][j ↦ t]))
       (otherRivals i j))
     (hS : ∀ ⦃s : ℝ⦄, s ∈ S → ∀ ⦃t : ℝ⦄, t ∈ S → 0 < cornerDenom μ E i j s t) :
     StrictMonoOn (bidII μ E i j) S :=

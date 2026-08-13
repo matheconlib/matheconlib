@@ -35,6 +35,8 @@ public import Mathlib
 
 @[expose] public section
 
+open scoped Function
+
 namespace Auction.Affiliation
 
 /-- `Affiliated f`, `Affiliated g`, `0 ≤ f` and `0 ≤ g` imply
@@ -72,9 +74,9 @@ theorem affiliated_indicator_of_isSublattice {n : ℕ} {S : Set (Fin n → ℝ)}
 
 /-- `Affiliated f` implies `Affiliated fun z => f (Function.update z k c)`. -/
 theorem Affiliated.update_slice {n : ℕ} {f : (Fin n → ℝ) → ℝ} (hf : Affiliated f)
-    (k : Fin n) (c : ℝ) : Affiliated fun z => f (Function.update z k c) := by
+    (k : Fin n) (c : ℝ) : Affiliated fun z => f (z[k ↦ c]) := by
   intro x y
-  have h := hf (Function.update x k c) (Function.update y k c)
+  have h := hf (x[k ↦ c]) (y[k ↦ c])
   rwa [Function.update_sup_update, Function.update_inf_update, sup_idem, inf_idem] at h
 
 /-- `maxAt i j = {z | ∀ k, k ≠ i → k ≠ j → z k ≤ z j}`: the profiles in which coordinate

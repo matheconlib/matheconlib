@@ -49,6 +49,7 @@ hypotheses. The downward theorem needs no such hypothesis: there the degenerate 
 @[expose] public section
 
 open MeasureTheory
+open scoped Function
 
 namespace Auction.Affiliation
 
@@ -63,24 +64,20 @@ by contradiction — a positive numerator forces, via `marginalList_pos_of_pos` 
 pointwise implication `0 < v · ρ → 0 < ρ`, a positive denominator. -/
 theorem cornerNumer_eq_zero_of_cornerDenom_eq_zero {n : ℕ} {μ : Measure ℝ}
     {E : SignalValueEnv n} (i j : Fin n) (x y : ℝ)
-    (hnum : FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i x) j y)
-        * topDensity E.f i j (Function.update (Function.update z i x) j y))
+    (hnum : FibreIntegrable μ (fun z => E.v i (z[i ↦ x][j ↦ y])
+        * topDensity E.f i j (z[i ↦ x][j ↦ y]))
       (otherRivals i j))
-    (hden : FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i x) j y))
-      (otherRivals i j))
+    (hden : FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ x][j ↦ y])) (otherRivals i j))
     (h : cornerDenom μ E i j x y = 0) : cornerNumer μ E i j x y = 0 := by
   by_contra hne
   have hpos : 0 < cornerNumer μ E i j x y :=
     lt_of_le_of_ne (cornerNumer_nonneg i j x y) (Ne.symm hne)
   have hf0 : (0 : (Fin n → ℝ) → ℝ) ≤ E.f := fun X => E.f_nonneg X
   have hGH : ∀ z : Fin n → ℝ,
-      0 < E.v i (Function.update (Function.update z i x) j y)
-          * topDensity E.f i j (Function.update (Function.update z i x) j y) →
-      0 < topDensity E.f i j (Function.update (Function.update z i x) j y) := by
+      0 < E.v i (z[i ↦ x][j ↦ y]) * topDensity E.f i j (z[i ↦ x][j ↦ y]) →
+      0 < topDensity E.f i j (z[i ↦ x][j ↦ y]) := by
     intro z hz
-    have hr0 := topDensity_nonneg hf0 i j (Function.update (Function.update z i x) j y)
+    have hr0 := topDensity_nonneg hf0 i j (z[i ↦ x][j ↦ y])
     simp only [Pi.zero_apply] at hr0
     rcases hr0.eq_or_lt with heq | hlt
     · rw [← heq, mul_zero] at hz
@@ -88,9 +85,8 @@ theorem cornerNumer_eq_zero_of_cornerDenom_eq_zero {n : ℕ} {μ : Measure ℝ}
     · exact hlt
   have hden0 : 0 < cornerDenom μ E i j x y :=
     marginalList_pos_of_pos (otherRivals i j) (0 : Fin n → ℝ)
-      (fun z => topDensity_nonneg hf0 i j (Function.update (Function.update z i x) j y))
-      (fun z => mul_nonneg (E.v_nonneg i _)
-        (topDensity_nonneg hf0 i j (Function.update (Function.update z i x) j y)))
+      (fun z => topDensity_nonneg hf0 i j (z[i ↦ x][j ↦ y]))
+      (fun z => mul_nonneg (E.v_nonneg i _) (topDensity_nonneg hf0 i j (z[i ↦ x][j ↦ y])))
       hGH hden hnum hpos
   rw [h] at hden0
   exact lt_irrefl _ hden0
@@ -128,12 +124,10 @@ It is the caller's obligation, refutable if globalized, kept explicit in the hou
 theorem Affiliated.pivotalGain_nonpos {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) {x a b : ℝ} (hxa : x ≤ a)
     (hreg : ∀ y ∈ Set.Ioc a b, 0 < cornerDenom μ E i j x y → 0 < cornerDenom μ E i j y y)
-    (hnum : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j t)
-        * topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hnum : ∀ s t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ t])
+        * topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j)) :
     pivotalGain μ E i j x a b ≤ 0 := by
   refine setIntegral_nonpos measurableSet_Ioc (fun y hy => ?_)
@@ -161,12 +155,10 @@ gain. No support-regularity hypothesis is needed downward — the degenerate zon
 `cornerNumer μ E i j x y ≥ 0`, the right sign. -/
 theorem Affiliated.pivotalGain_nonneg {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) {x a b : ℝ} (hbx : b ≤ x)
-    (hnum : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j t)
-        * topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hnum : ∀ s t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ t])
+        * topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j)) :
     0 ≤ pivotalGain μ E i j x a b := by
   refine setIntegral_nonneg measurableSet_Ioc (fun y hy => ?_)
@@ -206,17 +198,14 @@ refutable if globalized (see `Affiliated.pivotalGain_nonpos`). -/
 theorem Affiliated.bidII_pivotalOptimal {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) {x : ℝ}
     (hreg : ∀ y : ℝ, x < y → 0 < cornerDenom μ E i j x y → 0 < cornerDenom μ E i j y y)
-    (hnum : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => E.v i (Function.update (Function.update z i s) j t)
-        * topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hnum : ∀ s t : ℝ, FibreIntegrable μ (fun z => E.v i (z[i ↦ s][j ↦ t])
+        * topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j))
-    (hden : ∀ s t : ℝ, FibreIntegrable μ
-      (fun z => topDensity E.f i j (Function.update (Function.update z i s) j t))
+    (hden : ∀ s t : ℝ, FibreIntegrable μ (fun z => topDensity E.f i j (z[i ↦ s][j ↦ t]))
       (otherRivals i j)) :
     ∀ x₂ : ℝ, (x ≤ x₂ → pivotalGain μ E i j x x x₂ ≤ 0)
       ∧ (x₂ ≤ x → 0 ≤ pivotalGain μ E i j x x₂ x) := by
   intro x₂
   refine ⟨fun _ => ?_, fun _ => ?_⟩
-  · exact hf.pivotalGain_nonpos i j le_rfl
-      (fun y hy hpos => hreg y hy.1 hpos) hnum hden
+  · exact hf.pivotalGain_nonpos i j le_rfl (fun y hy hpos => hreg y hy.1 hpos) hnum hden
   · exact hf.pivotalGain_nonneg i j le_rfl hnum hden

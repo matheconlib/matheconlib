@@ -71,6 +71,7 @@ public import Mathlib
 @[expose] public section
 
 open MeasureTheory
+open scoped Function
 
 namespace Auction.Affiliation
 
@@ -78,10 +79,8 @@ namespace Auction.Affiliation
 `f (u[j↦p]) * f (v[j↦q]) ≤ f ((u ⊔ v)[j↦p ⊔ q]) * f ((u ⊓ v)[j↦p ⊓ q])`. -/
 theorem Affiliated.update_le {n : ℕ} {f : (Fin n → ℝ) → ℝ} (hf : Affiliated f)
     (j : Fin n) (u v : Fin n → ℝ) (p q : ℝ) :
-    f (Function.update u j p) * f (Function.update v j q)
-      ≤ f (Function.update (u ⊔ v) j (p ⊔ q))
-        * f (Function.update (u ⊓ v) j (p ⊓ q)) := by
-  have h := hf (Function.update u j p) (Function.update v j q)
+    f (u[j ↦ p]) * f (v[j ↦ q]) ≤ f ((u ⊔ v)[j ↦ p ⊔ q]) * f ((u ⊓ v)[j ↦ p ⊓ q]) := by
+  have h := hf (u[j ↦ p]) (v[j ↦ q])
   rw [Function.update_sup_update, Function.update_inf_update] at h
   exact h
 
@@ -92,10 +91,9 @@ theorem Affiliated.update_le {n : ℕ} {f : (Fin n → ℝ) → ℝ} (hf : Affil
 theorem Affiliated.permanent_le_of_le {n : ℕ} {f : (Fin n → ℝ) → ℝ}
     (hf : Affiliated f) (hf0 : 0 ≤ f) (j : Fin n) (u v : Fin n → ℝ) {s s' : ℝ}
     (hss : s ≤ s') :
-    f (Function.update u j s) * f (Function.update v j s')
-        + f (Function.update u j s') * f (Function.update v j s)
-      ≤ f (Function.update (u ⊔ v) j s) * f (Function.update (u ⊓ v) j s')
-        + f (Function.update (u ⊔ v) j s') * f (Function.update (u ⊓ v) j s) := by
+    f (u[j ↦ s]) * f (v[j ↦ s'])
+        + f (u[j ↦ s']) * f (v[j ↦ s]) ≤ f ((u ⊔ v)[j ↦ s]) * f ((u ⊓ v)[j ↦ s'])
+        + f ((u ⊔ v)[j ↦ s']) * f ((u ⊓ v)[j ↦ s]) := by
   have h1 := hf.update_le j u v s s'
   have h2 := hf.update_le j u v s' s
   have h3 := hf.update_le j u v s s
@@ -104,28 +102,21 @@ theorem Affiliated.permanent_le_of_le {n : ℕ} {f : (Fin n → ℝ) → ℝ}
   rw [sup_of_le_left hss, inf_of_le_right hss] at h2
   rw [sup_idem, inf_idem] at h3
   rw [sup_idem, inf_idem] at h4
-  have hprod :
-      (f (Function.update u j s) * f (Function.update v j s))
-          * (f (Function.update u j s') * f (Function.update v j s'))
-        ≤ (f (Function.update (u ⊔ v) j s) * f (Function.update (u ⊓ v) j s))
-          * (f (Function.update (u ⊔ v) j s') * f (Function.update (u ⊓ v) j s')) :=
+  have hprod : (f (u[j ↦ s]) * f (v[j ↦ s])) * (f (u[j ↦ s']) * f (v[j ↦ s']))
+        ≤ (f ((u ⊔ v)[j ↦ s]) * f ((u ⊓ v)[j ↦ s])) * (f ((u ⊔ v)[j ↦ s']) * f ((u ⊓ v)[j ↦ s'])) :=
     mul_le_mul h3 h4 (mul_nonneg (hf0 _) (hf0 _)) (mul_nonneg (hf0 _) (hf0 _))
-  have hPQ :
-      (f (Function.update u j s) * f (Function.update v j s'))
-          * (f (Function.update u j s') * f (Function.update v j s))
-        ≤ (f (Function.update (u ⊔ v) j s') * f (Function.update (u ⊓ v) j s))
-          * (f (Function.update (u ⊔ v) j s) * f (Function.update (u ⊓ v) j s')) := by
-    calc (f (Function.update u j s) * f (Function.update v j s'))
-            * (f (Function.update u j s') * f (Function.update v j s))
-        = (f (Function.update u j s) * f (Function.update v j s))
-            * (f (Function.update u j s') * f (Function.update v j s')) := by ring
-      _ ≤ (f (Function.update (u ⊔ v) j s) * f (Function.update (u ⊓ v) j s))
-            * (f (Function.update (u ⊔ v) j s') * f (Function.update (u ⊓ v) j s')) := hprod
-      _ = (f (Function.update (u ⊔ v) j s') * f (Function.update (u ⊓ v) j s))
-            * (f (Function.update (u ⊔ v) j s) * f (Function.update (u ⊓ v) j s')) := by ring
+  have hPQ : (f (u[j ↦ s]) * f (v[j ↦ s'])) * (f (u[j ↦ s']) * f (v[j ↦ s]))
+        ≤ (f ((u ⊔ v)[j ↦ s']) * f ((u ⊓ v)[j ↦ s]))
+          * (f ((u ⊔ v)[j ↦ s]) * f ((u ⊓ v)[j ↦ s'])) := by
+    calc (f (u[j ↦ s]) * f (v[j ↦ s'])) * (f (u[j ↦ s']) * f (v[j ↦ s]))
+        = (f (u[j ↦ s]) * f (v[j ↦ s])) * (f (u[j ↦ s']) * f (v[j ↦ s'])) := by ring
+      _ ≤ (f ((u ⊔ v)[j ↦ s]) * f ((u ⊓ v)[j ↦ s]))
+            * (f ((u ⊔ v)[j ↦ s']) * f ((u ⊓ v)[j ↦ s'])) := hprod
+      _ = (f ((u ⊔ v)[j ↦ s']) * f ((u ⊓ v)[j ↦ s]))
+            * (f ((u ⊔ v)[j ↦ s]) * f ((u ⊓ v)[j ↦ s'])) := by ring
   have hmain := add_le_add_of_le_of_mul_le
-    (mul_nonneg (hf0 (Function.update (u ⊔ v) j s')) (hf0 (Function.update (u ⊓ v) j s)))
-    (mul_nonneg (hf0 (Function.update (u ⊔ v) j s)) (hf0 (Function.update (u ⊓ v) j s')))
+    (mul_nonneg (hf0 ((u ⊔ v)[j ↦ s'])) (hf0 ((u ⊓ v)[j ↦ s])))
+    (mul_nonneg (hf0 ((u ⊔ v)[j ↦ s])) (hf0 ((u ⊓ v)[j ↦ s'])))
     h1 h2 hPQ
   linarith
 
@@ -136,10 +127,9 @@ and `s'` required (unlike `Affiliated.permanent_le_of_le`, whose hypothesis is
   ≤ f (a[j↦s]) * f (b[j↦s']) + f (a[j↦s']) * f (b[j↦s])`. -/
 theorem Affiliated.permanent_le {n : ℕ} {f : (Fin n → ℝ) → ℝ}
     (hf : Affiliated f) (hf0 : 0 ≤ f) (j : Fin n) (u v : Fin n → ℝ) (s s' : ℝ) :
-    f (Function.update u j s) * f (Function.update v j s')
-        + f (Function.update u j s') * f (Function.update v j s)
-      ≤ f (Function.update (u ⊔ v) j s) * f (Function.update (u ⊓ v) j s')
-        + f (Function.update (u ⊔ v) j s') * f (Function.update (u ⊓ v) j s) := by
+    f (u[j ↦ s]) * f (v[j ↦ s'])
+        + f (u[j ↦ s']) * f (v[j ↦ s]) ≤ f ((u ⊔ v)[j ↦ s]) * f ((u ⊓ v)[j ↦ s'])
+        + f ((u ⊔ v)[j ↦ s']) * f ((u ⊓ v)[j ↦ s]) := by
   rcases le_total s s' with hss | hss
   · exact hf.permanent_le_of_le hf0 j u v hss
   · have h := hf.permanent_le_of_le hf0 j u v hss
@@ -149,7 +139,7 @@ theorem Affiliated.permanent_le {n : ℕ} {f : (Fin n → ℝ) → ℝ}
 `j`. -/
 noncomputable def marginal {n : ℕ} (μ : Measure ℝ) (f : (Fin n → ℝ) → ℝ)
     (j : Fin n) (x : Fin n → ℝ) : ℝ :=
-  ∫ s, f (Function.update x j s) ∂μ
+  ∫ s, f (x[j ↦ s]) ∂μ
 
 /-- `0 ≤ f` implies `0 ≤ marginal μ f j`. -/
 theorem marginal_nonneg {n : ℕ} {μ : Measure ℝ} {f : (Fin n → ℝ) → ℝ}
@@ -160,55 +150,44 @@ theorem marginal_nonneg {n : ℕ} {μ : Measure ℝ} {f : (Fin n → ℝ) → �
 is `μ`-integrable, then `Affiliated (marginal μ f j)`. -/
 theorem marginal_affiliated {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {f : (Fin n → ℝ) → ℝ} (hf : Affiliated f) (hf0 : 0 ≤ f) (j : Fin n)
-    (hint : ∀ x : Fin n → ℝ, Integrable (fun s => f (Function.update x j s)) μ) :
+    (hint : ∀ x : Fin n → ℝ, Integrable (fun s => f (x[j ↦ s])) μ) :
     Affiliated (marginal μ f j) := by
   intro u v
   have hU := hint u
   have hV := hint v
   have hA := hint (u ⊔ v)
   have hB := hint (u ⊓ v)
-  have h1 : Integrable (fun z : ℝ × ℝ => f (Function.update (u ⊔ v) j z.1)
-      * f (Function.update (u ⊓ v) j z.2)) (μ.prod μ) := hA.mul_prod hB
-  have h2 : Integrable (fun z : ℝ × ℝ => f (Function.update (u ⊓ v) j z.1)
-      * f (Function.update (u ⊔ v) j z.2)) (μ.prod μ) := hB.mul_prod hA
-  have h3 : Integrable (fun z : ℝ × ℝ => f (Function.update u j z.1)
-      * f (Function.update v j z.2)) (μ.prod μ) := hU.mul_prod hV
-  have h4 : Integrable (fun z : ℝ × ℝ => f (Function.update v j z.1)
-      * f (Function.update u j z.2)) (μ.prod μ) := hV.mul_prod hU
-  have e1 : ∫ z : ℝ × ℝ, f (Function.update (u ⊔ v) j z.1)
-        * f (Function.update (u ⊓ v) j z.2) ∂(μ.prod μ)
-      = (∫ s, f (Function.update (u ⊔ v) j s) ∂μ)
-        * ∫ s, f (Function.update (u ⊓ v) j s) ∂μ :=
-    integral_prod_mul (fun s => f (Function.update (u ⊔ v) j s))
-      (fun s => f (Function.update (u ⊓ v) j s))
-  have e2 : ∫ z : ℝ × ℝ, f (Function.update (u ⊓ v) j z.1)
-        * f (Function.update (u ⊔ v) j z.2) ∂(μ.prod μ)
-      = (∫ s, f (Function.update (u ⊓ v) j s) ∂μ)
-        * ∫ s, f (Function.update (u ⊔ v) j s) ∂μ :=
-    integral_prod_mul (fun s => f (Function.update (u ⊓ v) j s))
-      (fun s => f (Function.update (u ⊔ v) j s))
-  have e3 : ∫ z : ℝ × ℝ, f (Function.update u j z.1)
-        * f (Function.update v j z.2) ∂(μ.prod μ)
-      = (∫ s, f (Function.update u j s) ∂μ) * ∫ s, f (Function.update v j s) ∂μ :=
-    integral_prod_mul (fun s => f (Function.update u j s))
-      (fun s => f (Function.update v j s))
-  have e4 : ∫ z : ℝ × ℝ, f (Function.update v j z.1)
-        * f (Function.update u j z.2) ∂(μ.prod μ)
-      = (∫ s, f (Function.update v j s) ∂μ) * ∫ s, f (Function.update u j s) ∂μ :=
-    integral_prod_mul (fun s => f (Function.update v j s))
-      (fun s => f (Function.update u j s))
+  have h1 : Integrable (fun z : ℝ × ℝ => f ((u ⊔ v)[j ↦ z.1])
+      * f ((u ⊓ v)[j ↦ z.2])) (μ.prod μ) := hA.mul_prod hB
+  have h2 : Integrable (fun z : ℝ × ℝ => f ((u ⊓ v)[j ↦ z.1])
+      * f ((u ⊔ v)[j ↦ z.2])) (μ.prod μ) := hB.mul_prod hA
+  have h3 : Integrable (fun z : ℝ × ℝ => f (u[j ↦ z.1])
+      * f (v[j ↦ z.2])) (μ.prod μ) := hU.mul_prod hV
+  have h4 : Integrable (fun z : ℝ × ℝ => f (v[j ↦ z.1])
+      * f (u[j ↦ z.2])) (μ.prod μ) := hV.mul_prod hU
+  have e1 : ∫ z : ℝ × ℝ, f ((u ⊔ v)[j ↦ z.1]) * f ((u ⊓ v)[j ↦ z.2]) ∂(μ.prod μ)
+      = (∫ s, f ((u ⊔ v)[j ↦ s]) ∂μ) * ∫ s, f ((u ⊓ v)[j ↦ s]) ∂μ :=
+    integral_prod_mul (fun s => f ((u ⊔ v)[j ↦ s])) (fun s => f ((u ⊓ v)[j ↦ s]))
+  have e2 : ∫ z : ℝ × ℝ, f ((u ⊓ v)[j ↦ z.1]) * f ((u ⊔ v)[j ↦ z.2]) ∂(μ.prod μ)
+      = (∫ s, f ((u ⊓ v)[j ↦ s]) ∂μ) * ∫ s, f ((u ⊔ v)[j ↦ s]) ∂μ :=
+    integral_prod_mul (fun s => f ((u ⊓ v)[j ↦ s])) (fun s => f ((u ⊔ v)[j ↦ s]))
+  have e3 : ∫ z : ℝ × ℝ, f (u[j ↦ z.1]) * f (v[j ↦ z.2]) ∂(μ.prod μ)
+      = (∫ s, f (u[j ↦ s]) ∂μ) * ∫ s, f (v[j ↦ s]) ∂μ :=
+    integral_prod_mul (fun s => f (u[j ↦ s])) (fun s => f (v[j ↦ s]))
+  have e4 : ∫ z : ℝ × ℝ, f (v[j ↦ z.1]) * f (u[j ↦ z.2]) ∂(μ.prod μ)
+      = (∫ s, f (v[j ↦ s]) ∂μ) * ∫ s, f (u[j ↦ s]) ∂μ :=
+    integral_prod_mul (fun s => f (v[j ↦ s])) (fun s => f (u[j ↦ s]))
   have hpt : ∀ z : ℝ × ℝ,
-      f (Function.update u j z.1) * f (Function.update v j z.2)
-          + f (Function.update v j z.1) * f (Function.update u j z.2)
-        ≤ f (Function.update (u ⊔ v) j z.1) * f (Function.update (u ⊓ v) j z.2)
-          + f (Function.update (u ⊓ v) j z.1) * f (Function.update (u ⊔ v) j z.2) := by
+      f (u[j ↦ z.1]) * f (v[j ↦ z.2])
+          + f (v[j ↦ z.1]) * f (u[j ↦ z.2]) ≤ f ((u ⊔ v)[j ↦ z.1]) * f ((u ⊓ v)[j ↦ z.2])
+          + f ((u ⊓ v)[j ↦ z.1]) * f ((u ⊔ v)[j ↦ z.2]) := by
     intro z
     have h := hf.permanent_le hf0 j u v z.1 z.2
     linarith
-  have hmono : ∫ z : ℝ × ℝ, (f (Function.update u j z.1) * f (Function.update v j z.2)
-          + f (Function.update v j z.1) * f (Function.update u j z.2)) ∂(μ.prod μ)
-      ≤ ∫ z : ℝ × ℝ, (f (Function.update (u ⊔ v) j z.1) * f (Function.update (u ⊓ v) j z.2)
-          + f (Function.update (u ⊓ v) j z.1) * f (Function.update (u ⊔ v) j z.2))
+  have hmono : ∫ z : ℝ × ℝ, (f (u[j ↦ z.1]) * f (v[j ↦ z.2])
+          + f (v[j ↦ z.1]) * f (u[j ↦ z.2])) ∂(μ.prod μ)
+      ≤ ∫ z : ℝ × ℝ, (f ((u ⊔ v)[j ↦ z.1]) * f ((u ⊓ v)[j ↦ z.2])
+          + f ((u ⊓ v)[j ↦ z.1]) * f ((u ⊔ v)[j ↦ z.2]))
           ∂(μ.prod μ) :=
     integral_mono (h3.add h4) (h1.add h2) hpt
   rw [integral_add h3 h4, integral_add h1 h2, e1, e2, e3, e4] at hmono
@@ -233,19 +212,17 @@ theorem affiliated_iff_fourFunctionsLE_self {n : ℕ} (f : (Fin n → ℝ) → �
 theorem _root_.FourFunctionsLE.marginal {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {f₁ f₂ f₃ f₄ : (Fin n → ℝ) → ℝ} (h : FourFunctionsLE f₁ f₂ f₃ f₄)
     (h₁ : 0 ≤ f₁) (h₂ : 0 ≤ f₂) (h₃ : 0 ≤ f₃) (h₄ : 0 ≤ f₄) (j : Fin n)
-    (k₁ : ∀ x : Fin n → ℝ, Integrable (fun s => f₁ (Function.update x j s)) μ)
-    (k₂ : ∀ x : Fin n → ℝ, Integrable (fun s => f₂ (Function.update x j s)) μ)
-    (k₃ : ∀ x : Fin n → ℝ, Integrable (fun s => f₃ (Function.update x j s)) μ)
-    (k₄ : ∀ x : Fin n → ℝ, Integrable (fun s => f₄ (Function.update x j s)) μ) :
-    FourFunctionsLE (marginal μ f₁ j) (marginal μ f₂ j) (marginal μ f₃ j)
-      (marginal μ f₄ j) := by
+    (k₁ : ∀ x : Fin n → ℝ, Integrable (fun s => f₁ (x[j ↦ s])) μ)
+    (k₂ : ∀ x : Fin n → ℝ, Integrable (fun s => f₂ (x[j ↦ s])) μ)
+    (k₃ : ∀ x : Fin n → ℝ, Integrable (fun s => f₃ (x[j ↦ s])) μ)
+    (k₄ : ∀ x : Fin n → ℝ, Integrable (fun s => f₄ (x[j ↦ s])) μ) :
+    FourFunctionsLE (marginal μ f₁ j) (marginal μ f₂ j) (marginal μ f₃ j) (marginal μ f₄ j) := by
   intro u v
-  have hff : FourFunctionsLE (fun s => f₁ (Function.update u j s))
-      (fun s => f₂ (Function.update v j s))
-      (fun s => f₃ (Function.update (u ⊓ v) j s))
-      (fun s => f₄ (Function.update (u ⊔ v) j s)) := by
+  have hff : FourFunctionsLE (fun s => f₁ (u[j ↦ s])) (fun s => f₂ (v[j ↦ s]))
+      (fun s => f₃ ((u ⊓ v)[j ↦ s]))
+      (fun s => f₄ ((u ⊔ v)[j ↦ s])) := by
     intro s s'
-    have hs := h (Function.update u j s) (Function.update v j s')
+    have hs := h (u[j ↦ s]) (v[j ↦ s'])
     rwa [Function.update_inf_update, Function.update_sup_update] at hs
   simpa only [marginal] using integral_mul_integral_le_of_fourFunctionsLE hff
     (fun _ => h₁ _) (fun _ => h₂ _) (fun _ => h₃ _) (fun _ => h₄ _)
@@ -264,10 +241,9 @@ noncomputable def marginalList {n : ℕ} (μ : Measure ℝ) :
 `FibreIntegrable μ F [] = True` and `FibreIntegrable μ F (j :: l)` is
 `(∀ x, Integrable (fun s => F (Function.update x j s)) μ) ∧
 FibreIntegrable μ (marginal μ F j) l`. -/
-def FibreIntegrable {n : ℕ} (μ : Measure ℝ) :
-    ((Fin n → ℝ) → ℝ) → List (Fin n) → Prop
+def FibreIntegrable {n : ℕ} (μ : Measure ℝ) : ((Fin n → ℝ) → ℝ) → List (Fin n) → Prop
   | _, [] => True
-  | F, j :: l => (∀ x : Fin n → ℝ, Integrable (fun s => F (Function.update x j s)) μ)
+  | F, j :: l => (∀ x : Fin n → ℝ, Integrable (fun s => F (x[j ↦ s])) μ)
       ∧ FibreIntegrable μ (marginal μ F j) l
 
 /-- `0 ≤ F` implies `0 ≤ marginalList μ F l`. -/
@@ -291,8 +267,7 @@ theorem marginalList_congr_of_dependsOn {n : ℕ} {μ : Measure ℝ} :
     intro F hF x y
     show marginalList μ (marginal μ F j) l x = marginalList μ (marginal μ F j) l y
     refine ih (fun u v huv => ?_) x y
-    have hfun : (fun s => F (Function.update u j s))
-        = fun s => F (Function.update v j s) := by
+    have hfun : (fun s => F (u[j ↦ s])) = fun s => F (v[j ↦ s]) := by
       funext s
       refine hF _ _ fun k hk => ?_
       obtain rfl | hkj := eq_or_ne k j
@@ -358,7 +333,7 @@ private theorem fibreIntegrable_const_mul_and_marginalList_const_mul {n : ℕ}
     intro F c hF
     have hmarg : marginal μ (fun y => c * F y) j = fun x => c * marginal μ F j x := by
       funext x
-      simpa only [marginal] using integral_const_mul c fun s => F (Function.update x j s)
+      simpa only [marginal] using integral_const_mul c fun s => F (x[j ↦ s])
     refine ⟨⟨fun x => (hF.1 x).const_mul c, ?_⟩, fun x => ?_⟩
     · rw [show (marginal μ (fun x => c * F x) j) = fun x => c * marginal μ F j x from hmarg]
       exact (ih c hF.2).1
@@ -414,15 +389,14 @@ through with no stage-wise positivity hypothesis. -/
 are `μ`-integrable, then `0 < marginal μ H j x` implies `0 < marginal μ G j x`. -/
 theorem marginal_pos_of_pos {n : ℕ} {μ : Measure ℝ} {G H : (Fin n → ℝ) → ℝ}
     (hG0 : 0 ≤ G) (hH0 : 0 ≤ H) (hGH : ∀ z, 0 < H z → 0 < G z) (j : Fin n) (x : Fin n → ℝ)
-    (hH : Integrable (fun s => H (Function.update x j s)) μ)
-    (hG : Integrable (fun s => G (Function.update x j s)) μ)
+    (hH : Integrable (fun s => H (x[j ↦ s])) μ)
+    (hG : Integrable (fun s => G (x[j ↦ s])) μ)
     (hpos : 0 < marginal μ H j x) : 0 < marginal μ G j x := by
+  rw [marginal, integral_pos_iff_support_of_nonneg (f := fun s => G (x[j ↦ s])) (fun _ => hG0 _) hG]
   rw [marginal, integral_pos_iff_support_of_nonneg
-    (f := fun s => G (Function.update x j s)) (fun _ => hG0 _) hG]
-  rw [marginal, integral_pos_iff_support_of_nonneg
-    (f := fun s => H (Function.update x j s)) (fun _ => hH0 _) hH] at hpos
+    (f := fun s => H (x[j ↦ s])) (fun _ => hH0 _) hH] at hpos
   refine hpos.trans_le (measure_mono fun s hs => ?_)
-  have hHs : 0 < H (Function.update x j s) :=
+  have hHs : 0 < H (x[j ↦ s]) :=
     lt_of_le_of_ne (hH0 _) (Ne.symm (Function.mem_support.1 hs))
   exact Function.mem_support.2 (hGH _ hHs).ne'
 
@@ -479,28 +453,23 @@ theorem marginalList_lt_of_lt {n : ℕ} {μ : Measure ℝ} :
 `marginal μ (marginal μ F k) j = marginal μ (marginal μ F j) k`. -/
 theorem marginal_marginal_comm {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {F : (Fin n → ℝ) → ℝ} (j k : Fin n)
-    (h : ∀ x : Fin n → ℝ, Integrable
-      (fun p : ℝ × ℝ => F (Function.update (Function.update x j p.1) k p.2)) (μ.prod μ)) :
+    (h : ∀ x : Fin n → ℝ, Integrable (fun p : ℝ × ℝ => F (x[j ↦ p.1][k ↦ p.2])) (μ.prod μ)) :
     marginal μ (marginal μ F k) j = marginal μ (marginal μ F j) k := by
   funext x
   rcases eq_or_ne j k with rfl | hjk
   · rfl
   · simp only [marginal]
     rw [integral_integral_swap (f := fun s t : ℝ =>
-      F (Function.update (Function.update x j s) k t)) (h x)]
+      F (x[j ↦ s][k ↦ t])) (h x)]
     simp only [Function.update_comm hjk]
 
 /-- `SwapFibreIntegrable μ F l` : at every stage of the iteration `marginalList μ F l`, the
 head fibres of the current function are `μ`-integrable and the two-variable fibres pairing
 each later coordinate with the head are `μ.prod μ`-integrable. -/
-def SwapFibreIntegrable {n : ℕ} (μ : Measure ℝ) :
-    ((Fin n → ℝ) → ℝ) → List (Fin n) → Prop
+def SwapFibreIntegrable {n : ℕ} (μ : Measure ℝ) : ((Fin n → ℝ) → ℝ) → List (Fin n) → Prop
   | _, [] => True
-  | F, j :: l =>
-      (∀ x : Fin n → ℝ, Integrable (fun s => F (Function.update x j s)) μ)
-      ∧ (∀ k ∈ l, ∀ x : Fin n → ℝ, Integrable
-          (fun p : ℝ × ℝ => F (Function.update (Function.update x k p.1) j p.2))
-          (μ.prod μ))
+  | F, j :: l => (∀ x : Fin n → ℝ, Integrable (fun s => F (x[j ↦ s])) μ)
+      ∧ (∀ k ∈ l, ∀ x : Fin n → ℝ, Integrable (fun p : ℝ × ℝ => F (x[k ↦ p.1][j ↦ p.2])) (μ.prod μ))
       ∧ SwapFibreIntegrable μ (marginal μ F j) l
 
 /-- `PermFibreIntegrable μ F l` : `SwapFibreIntegrable μ F l'` along every permutation `l'`

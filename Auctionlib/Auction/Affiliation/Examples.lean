@@ -122,6 +122,7 @@ are instances of the existing statements.
 @[expose] public section
 
 open MeasureTheory
+open scoped Function
 
 namespace Auction.Affiliation.Examples
 
@@ -328,14 +329,13 @@ theorem bidII_tri_two (x : ℝ) :
 
 /-- The `hden` hypothesis of `Affiliated.bidII_pivotalOptimal` at `n = 2`: vacuous. -/
 theorem hden_tri_two : ∀ s t : ℝ, FibreIntegrable μ
-    (fun z => topDensity (Etri 2).f 0 1 (Function.update (Function.update z 0 s) 1 t))
+    (fun z => topDensity (Etri 2).f 0 1 (z[0 ↦ s][1 ↦ t]))
     (otherRivals (0 : Fin 2) 1) := by
   intro s t; rw [otherRivals_two]; trivial
 
 /-- The `hnum` hypothesis of `Affiliated.bidII_pivotalOptimal` at `n = 2`: vacuous. -/
-theorem hnum_tri_two : ∀ s t : ℝ, FibreIntegrable μ
-    (fun z => (Etri 2).v 0 (Function.update (Function.update z 0 s) 1 t)
-      * topDensity (Etri 2).f 0 1 (Function.update (Function.update z 0 s) 1 t))
+theorem hnum_tri_two : ∀ s t : ℝ, FibreIntegrable μ (fun z => (Etri 2).v 0 (z[0 ↦ s][1 ↦ t])
+      * topDensity (Etri 2).f 0 1 (z[0 ↦ s][1 ↦ t]))
     (otherRivals (0 : Fin 2) 1) := by
   intro s t; rw [otherRivals_two]; trivial
 
@@ -580,10 +580,8 @@ theorem otherRivals_three : otherRivals (0 : Fin 3) 1 = [2] := by
 /-- The single genuine fibre of the `n = 3` corner density:
 `topDensity (Ebox 3).f 0 1 (z[2↦u][0↦s][1↦t]) = (boxInd s * boxInd t) * cap t u`. -/
 theorem fibre_three (z : Fin 3 → ℝ) (s t u : ℝ) :
-    topDensity (Ebox 3).f 0 1
-        (Function.update (Function.update (Function.update z 2 u) 0 s) 1 t)
-      = (boxInd s * boxInd t) * cap t u := by
-  set W := Function.update (Function.update (Function.update z 2 u) 0 s) 1 t with hW
+    topDensity (Ebox 3).f 0 1 (z[2 ↦ u][0 ↦ s][1 ↦ t]) = (boxInd s * boxInd t) * cap t u := by
+  set W := z[2 ↦ u][0 ↦ s][1 ↦ t] with hW
   have hw0 : W 0 = s := by
     rw [hW, Function.update_of_ne (by decide), Function.update_self]
   have hw1 : W 1 = t := by rw [hW, Function.update_self]
@@ -625,9 +623,7 @@ theorem cornerNumer_three (x y : ℝ) :
     cornerNumer volume (Ebox 3) 0 1 x y = Real.exp x * (boxInd x * boxInd y * y) := by
   rw [cornerNumer, otherRivals_three]
   simp only [marginalList, marginal]
-  have hv : ∀ u : ℝ, (Ebox 3).v 0
-      (Function.update (Function.update (Function.update (0 : Fin 3 → ℝ) 2 u) 0 x) 1 y)
-      = Real.exp x := by
+  have hv : ∀ u : ℝ, (Ebox 3).v 0 ((0 : Fin 3 → ℝ)[2 ↦ u][0 ↦ x][1 ↦ y]) = Real.exp x := by
     intro u
     show Real.exp _ = _
     rw [Function.update_of_ne (by decide), Function.update_self]
@@ -661,7 +657,7 @@ theorem bidII_three_at_zero : bidII volume (Ebox 3) 0 1 0 = 0 := by
 
 /-- The `hden` hypothesis at `n = 3`: a genuine integrability statement. -/
 theorem hden_three : ∀ s t : ℝ, FibreIntegrable volume
-    (fun z => topDensity (Ebox 3).f 0 1 (Function.update (Function.update z 0 s) 1 t))
+    (fun z => topDensity (Ebox 3).f 0 1 (z[0 ↦ s][1 ↦ t]))
     (otherRivals (0 : Fin 3) 1) := by
   intro s t
   rw [otherRivals_three]
@@ -670,15 +666,13 @@ theorem hden_three : ∀ s t : ℝ, FibreIntegrable volume
   exact (cap_integrable t).const_mul _
 
 /-- The `hnum` hypothesis at `n = 3`: a genuine integrability statement. -/
-theorem hnum_three : ∀ s t : ℝ, FibreIntegrable volume
-    (fun z => (Ebox 3).v 0 (Function.update (Function.update z 0 s) 1 t)
-      * topDensity (Ebox 3).f 0 1 (Function.update (Function.update z 0 s) 1 t))
+theorem hnum_three : ∀ s t : ℝ, FibreIntegrable volume (fun z => (Ebox 3).v 0 (z[0 ↦ s][1 ↦ t])
+      * topDensity (Ebox 3).f 0 1 (z[0 ↦ s][1 ↦ t]))
     (otherRivals (0 : Fin 3) 1) := by
   intro s t
   rw [otherRivals_three]
   refine ⟨fun z => ?_, trivial⟩
-  have hv : ∀ u : ℝ, (Ebox 3).v 0
-      (Function.update (Function.update (Function.update z 2 u) 0 s) 1 t) = Real.exp s := by
+  have hv : ∀ u : ℝ, (Ebox 3).v 0 (z[2 ↦ u][0 ↦ s][1 ↦ t]) = Real.exp s := by
     intro u
     show Real.exp _ = _
     rw [Function.update_of_ne (by decide), Function.update_self]
@@ -750,10 +744,9 @@ theorem otherRivals_four : otherRivals (0 : Fin 4) 1 = [2, 3] := by
 
 /-- The fully pinned profile at `n = 4`: coordinates `0 ↦ s`, `1 ↦ t`, `2 ↦ p`, `3 ↦ u`. -/
 theorem fibre_four (z : Fin 4 → ℝ) (s t p u : ℝ) :
-    topDensity (Ebox 4).f 0 1
-        (Function.update (Function.update (Function.update (Function.update z 3 u) 2 p) 0 s) 1 t)
+    topDensity (Ebox 4).f 0 1 (z[3 ↦ u][2 ↦ p][0 ↦ s][1 ↦ t])
       = (boxInd s * boxInd t) * (cap t p * cap t u) := by
-  set W := Function.update (Function.update (Function.update (Function.update z 3 u) 2 p) 0 s) 1 t
+  set W := z[3 ↦ u][2 ↦ p][0 ↦ s][1 ↦ t]
     with hW
   have hw0 : W 0 = s := by rw [hW, Function.update_of_ne (by decide), Function.update_self]
   have hw1 : W 1 = t := by rw [hW, Function.update_self]
@@ -788,16 +781,15 @@ theorem fibre_four (z : Fin 4 → ℝ) (s t p u : ℝ) :
 
 /-- The first-stage fibre at `n = 4`, with coordinate `3` left at its base value. -/
 theorem fibre_four_stage1 (x : Fin 4 → ℝ) (s t u : ℝ) :
-    topDensity (Ebox 4).f 0 1
-        (Function.update (Function.update (Function.update x 2 u) 0 s) 1 t)
+    topDensity (Ebox 4).f 0 1 (x[2 ↦ u][0 ↦ s][1 ↦ t])
       = (boxInd s * boxInd t) * (cap t u * cap t (x 3)) := by
-  have h : Function.update x 2 u = Function.update (Function.update x 3 (x 3)) 2 u := by
+  have h : x[2 ↦ u] = x[3 ↦ x 3][2 ↦ u] := by
     rw [Function.update_eq_self]
   rw [h, fibre_four]
 
 /-- The `hden` hypothesis at `n = 4`: two integrability stages. -/
 theorem hden_four : ∀ s t : ℝ, FibreIntegrable volume
-    (fun z => topDensity (Ebox 4).f 0 1 (Function.update (Function.update z 0 s) 1 t))
+    (fun z => topDensity (Ebox 4).f 0 1 (z[0 ↦ s][1 ↦ t]))
     (otherRivals (0 : Fin 4) 1) := by
   intro s t
   rw [otherRivals_four]
@@ -806,7 +798,7 @@ theorem hden_four : ∀ s t : ℝ, FibreIntegrable volume
     rw [show (fun u : ℝ => boxInd s * boxInd t * (cap t u * cap t (x 3)))
         = (fun u : ℝ => (boxInd s * boxInd t * cap t (x 3)) * cap t u) from by funext u; ring]
     exact (cap_integrable t).const_mul _
-  · show Integrable (fun u => marginal volume _ 2 (Function.update x 3 u)) volume
+  · show Integrable (fun u => marginal volume _ 2 (x[3 ↦ u])) volume
     simp only [marginal]
     simp_rw [fibre_four]
     have h : ∀ u : ℝ, (∫ p, boxInd s * boxInd t * (cap t p * cap t u))
@@ -820,14 +812,12 @@ theorem hden_four : ∀ s t : ℝ, FibreIntegrable volume
     exact (cap_integrable t).const_mul _
 
 /-- The `hnum` hypothesis at `n = 4`: two integrability stages. -/
-theorem hnum_four : ∀ s t : ℝ, FibreIntegrable volume
-    (fun z => (Ebox 4).v 0 (Function.update (Function.update z 0 s) 1 t)
-      * topDensity (Ebox 4).f 0 1 (Function.update (Function.update z 0 s) 1 t))
+theorem hnum_four : ∀ s t : ℝ, FibreIntegrable volume (fun z => (Ebox 4).v 0 (z[0 ↦ s][1 ↦ t])
+      * topDensity (Ebox 4).f 0 1 (z[0 ↦ s][1 ↦ t]))
     (otherRivals (0 : Fin 4) 1) := by
   intro s t
   rw [otherRivals_four]
-  have hv : ∀ (z : Fin 4 → ℝ), (Ebox 4).v 0
-      (Function.update (Function.update z 0 s) 1 t) = Real.exp s := by
+  have hv : ∀ (z : Fin 4 → ℝ), (Ebox 4).v 0 (z[0 ↦ s][1 ↦ t]) = Real.exp s := by
     intro z
     show Real.exp _ = _
     rw [Function.update_of_ne (by decide), Function.update_self]
@@ -837,7 +827,7 @@ theorem hnum_four : ∀ s t : ℝ, FibreIntegrable volume
         = (fun u : ℝ => (Real.exp s * (boxInd s * boxInd t) * cap t (x 3)) * cap t u)
         from by funext u; ring]
     exact (cap_integrable t).const_mul _
-  · show Integrable (fun u => marginal volume _ 2 (Function.update x 3 u)) volume
+  · show Integrable (fun u => marginal volume _ 2 (x[3 ↦ u])) volume
     simp only [marginal]
     simp_rw [hv, fibre_four]
     have h : ∀ u : ℝ, (∫ p, Real.exp s * (boxInd s * boxInd t * (cap t p * cap t u)))
@@ -986,10 +976,8 @@ theorem cap_integral_mu0 {t : ℝ} (ht : t ∈ Set.Icc (0:ℝ) 1) : ∫ u, cap t
 /-- The genuine fibre of `Elow`: the non-corner coordinate is capped by **both** the top
 rival's signal and the bidder's own signal. -/
 theorem fibre_low (z : Fin 3 → ℝ) (s t u : ℝ) :
-    topDensity Elow.f 0 1
-        (Function.update (Function.update (Function.update z 2 u) 0 s) 1 t)
-      = (boxInd s * boxInd t) * cap (min s t) u := by
-  set W := Function.update (Function.update (Function.update z 2 u) 0 s) 1 t with hW
+    topDensity Elow.f 0 1 (z[2 ↦ u][0 ↦ s][1 ↦ t]) = (boxInd s * boxInd t) * cap (min s t) u := by
+  set W := z[2 ↦ u][0 ↦ s][1 ↦ t] with hW
   have hw0 : W 0 = s := by
     rw [hW, Function.update_of_ne (by decide), Function.update_self]
   have hw1 : W 1 = t := by rw [hW, Function.update_self]
@@ -1054,9 +1042,7 @@ theorem cornerNumer_low (x y : ℝ) :
     cornerNumer mu0 Elow 0 1 x y = Real.exp x * cornerDenom mu0 Elow 0 1 x y := by
   rw [cornerNumer, cornerDenom, otherRivals_three]
   simp only [marginalList, marginal]
-  have hv : ∀ u : ℝ, Elow.v 0
-      (Function.update (Function.update (Function.update (0 : Fin 3 → ℝ) 2 u) 0 x) 1 y)
-      = Real.exp x := by
+  have hv : ∀ u : ℝ, Elow.v 0 ((0 : Fin 3 → ℝ)[2 ↦ u][0 ↦ x][1 ↦ y]) = Real.exp x := by
     intro u
     show Real.exp _ = _
     rw [Function.update_of_ne (by decide), Function.update_self]
@@ -1078,8 +1064,7 @@ theorem bidII_low (x : ℝ) :
     · rw [if_neg hm]; simp
 
 /-- The `hden` hypothesis at `Elow`. -/
-theorem hden_low : ∀ s t : ℝ, FibreIntegrable mu0
-    (fun z => topDensity Elow.f 0 1 (Function.update (Function.update z 0 s) 1 t))
+theorem hden_low : ∀ s t : ℝ, FibreIntegrable mu0 (fun z => topDensity Elow.f 0 1 (z[0 ↦ s][1 ↦ t]))
     (otherRivals (0 : Fin 3) 1) := by
   intro s t
   rw [otherRivals_three]
@@ -1088,15 +1073,13 @@ theorem hden_low : ∀ s t : ℝ, FibreIntegrable mu0
   exact (cap_integrable_mu0 (min s t)).const_mul _
 
 /-- The `hnum` hypothesis at `Elow`. -/
-theorem hnum_low : ∀ s t : ℝ, FibreIntegrable mu0
-    (fun z => Elow.v 0 (Function.update (Function.update z 0 s) 1 t)
-      * topDensity Elow.f 0 1 (Function.update (Function.update z 0 s) 1 t))
+theorem hnum_low : ∀ s t : ℝ, FibreIntegrable mu0 (fun z => Elow.v 0 (z[0 ↦ s][1 ↦ t])
+      * topDensity Elow.f 0 1 (z[0 ↦ s][1 ↦ t]))
     (otherRivals (0 : Fin 3) 1) := by
   intro s t
   rw [otherRivals_three]
   refine ⟨fun z => ?_, trivial⟩
-  have hv : ∀ u : ℝ, Elow.v 0
-      (Function.update (Function.update (Function.update z 2 u) 0 s) 1 t) = Real.exp s := by
+  have hv : ∀ u : ℝ, Elow.v 0 (z[2 ↦ u][0 ↦ s][1 ↦ t]) = Real.exp s := by
     intro u
     show Real.exp _ = _
     rw [Function.update_of_ne (by decide), Function.update_self]

@@ -35,6 +35,7 @@ public import Mathlib
 @[expose] public section
 
 open MeasureTheory
+open scoped Function
 
 namespace Auction.Affiliation
 
@@ -127,7 +128,7 @@ theorem HasExchangeableSignals.of_swap {n : ℕ} {E : SignalValueEnv n}
 
 /-- `Function.update x k s ∘ σ = Function.update (x ∘ σ) (σ.symm k) s`. -/
 theorem update_comp_perm {n : ℕ} (σ : Equiv.Perm (Fin n)) (x : Fin n → ℝ) (k : Fin n)
-    (s : ℝ) : Function.update x k s ∘ σ = Function.update (x ∘ σ) (σ.symm k) s := by
+    (s : ℝ) : x[k ↦ s] ∘ σ = (x ∘ σ)[σ.symm k ↦ s] := by
   funext m
   by_cases hm : m = σ.symm k
   · subst hm
@@ -174,10 +175,9 @@ theorem fibreIntegrable_comp_perm {n : ℕ} (μ : Measure ℝ) (σ : Equiv.Perm 
   | nil => intro F; exact Iff.rfl
   | cons j l ih =>
     intro F
-    show ((∀ x : Fin n → ℝ, Integrable (fun s => F (Function.update x j s ∘ σ)) μ)
-        ∧ FibreIntegrable μ (marginal μ (fun z => F (z ∘ σ)) j) l)
-      ↔ ((∀ x : Fin n → ℝ, Integrable
-            (fun s => F (Function.update x (σ.symm j) s)) μ)
+    show ((∀ x : Fin n → ℝ, Integrable (fun s => F (x[j ↦ s] ∘ σ)) μ)
+        ∧ FibreIntegrable μ (marginal μ (fun z => F (z ∘ σ)) j) l) ↔ ((∀ x : Fin n → ℝ, Integrable
+            (fun s => F (x[σ.symm j ↦ s])) μ)
         ∧ FibreIntegrable μ (marginal μ F (σ.symm j)) (l.map (σ.symm : Fin n → Fin n)))
     rw [marginal_comp_perm_eq μ σ F j, ih (marginal μ F (σ.symm j))]
     refine and_congr (Iff.intro (fun hF x => ?_) (fun hF x => ?_)) Iff.rfl
