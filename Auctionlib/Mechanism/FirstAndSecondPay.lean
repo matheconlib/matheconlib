@@ -8,6 +8,7 @@ public import Auctionlib.Mechanism.Basic
 A mechanism is a **first-and-second-pay auction** when:
 - The highest bidder wins (efficient allocation).
 - The two highest bidders each pay their own bid; all other bidders pay zero.
+- Tied profiles currently out-of-scope.
 
 ## Main definitions
 
@@ -29,8 +30,6 @@ equilibrium strategy is strictly monotone, so `NoTies` holds almost surely.
 
 @[expose] public section
 
-open Finset Classical
-
 namespace Mechanism
 
 variable {n : ℕ}
@@ -45,7 +44,7 @@ def NoTies (b : Fin n → ℝ) : Prop := Function.Injective b
 
 /-- Bidder `i` is the **winner**: every bidder bids at most `b i`. -/
 def isWinner (b : Fin n → ℝ) (i : Fin n) : Prop :=
-  ∀ j, b j ≤ b i
+  ∀ j, b j < b i
 
 /-- Bidder `i` is the **runner-up**: some bidder bids strictly higher than
 `i`, but any two bidders who do must coincide—equivalently, exactly one
