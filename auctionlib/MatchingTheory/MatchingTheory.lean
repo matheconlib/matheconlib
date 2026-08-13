@@ -1,7 +1,0 @@
--- Root module: import the whole library.
-import MatchingTheory.Choice.Basic
-import MatchingTheory.Choice.Counterexamples
-import MatchingTheory.Contracts.Basic
-import MatchingTheory.Contracts.FixedPoint
-import MatchingTheory.Contracts.WeakSubstitutes
-import MatchingTheory.Classical.Marriage

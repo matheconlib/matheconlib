@@ -3,7 +3,7 @@ Matching with contracts, Layer 2: the fixed-point development.
 
 DRAFT — mostly design signatures only.
 -/
-import Matching.Contracts.Basic
+import MatchingTheory.Contracts.Basic
 import Mathlib.Order.FixedPoints
 
 /-!
