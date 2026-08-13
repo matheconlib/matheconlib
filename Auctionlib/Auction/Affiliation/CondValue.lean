@@ -99,6 +99,16 @@ fails outright, since `w μ E i j · y` is constantly `0` on `(E.x_hi, ∞)`; an
 `Monotone (fun x => w μ E i j x y)` fails for every environment whose `w μ E i j · y` is
 positive somewhere, since the value must drop back to `0` past `E.x_hi`. This is why the
 statements are restricted rather than merely stated globally.
+
+**`n = 2` degenerates.** At `n = 2` this whole layer carries no integral. `otherRivals i j`
+is empty, so `marginalList μ · (otherRivals i j)` is the identity (`marginalList μ F [] = F`)
+and the `FibreIntegrable` hypotheses of the statements here are literally `True`
+(`FibreIntegrable μ F [] = True`); and `maxAt i j` is the whole space, so
+`topDensity E.f i j = E.f`. `cornerDenom` and `cornerNumer` are then plain evaluations of
+the density and of `v * density` at the pinned profile, with no marginalization at all.
+`n ≥ 3` is the first informative case. See `Auction.Affiliation.Examples.otherRivals_two`
+and `Auction.Affiliation.Examples.maxAt_two` for the collapse, and the `n = 3` / `n = 4`
+instantiations there for the cases that exercise the marginalization.
 -/
 
 @[expose] public section
@@ -190,7 +200,20 @@ noncomputable def w {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n) (i j : F
     (x y : ℝ) : ℝ :=
   cornerNumer μ E i j x y / cornerDenom μ E i j x y
 
-/-- `bidII μ E i j x = w μ E i j x x`, the diagonal of the corner conditional value. -/
+/-- `bidII μ E i j x = w μ E i j x x`, the diagonal of the corner conditional value.
+
+**`bidII` is discontinuous at the signal floor as soon as `n ≥ 3`.** The corner denominator
+`cornerDenom μ E i j x x` marginalizes the `n − 2` coordinates in `otherRivals i j` against
+the `maxAt i j` indicator, which confines each of them to `(-∞, x]`; at `x = E.x_lo` the
+density's support meets that region in a set the marginalizing measure gives no mass, so
+the denominator is `0` and `w = 0 / 0 = 0` — division by zero returns `0` in Lean. At every
+interior point the same ratio is the bidder's own value. The worked instance is
+`Auction.Affiliation.Examples.bidII_three_at_zero`, `bidII volume (Ebox 3) 0 1 0 = 0`,
+against `Auction.Affiliation.Examples.bidII_three`, `bidII volume (Ebox 3) 0 1 x = exp x`
+for `0 < x ≤ 1`: a jump of size `exp E.x_lo = 1` at the left endpoint, not a removable
+artefact. At `n = 2` there is nothing to marginalize and the phenomenon is absent
+(`Auction.Affiliation.Examples.bidII_tri_two` is `exp x` on the whole closed box). This is
+why the results below are stated on sets where `cornerDenom` is positive. -/
 noncomputable def bidII {n : ℕ} (μ : Measure ℝ) (E : SignalValueEnv n) (i j : Fin n)
     (x : ℝ) : ℝ :=
   w μ E i j x x

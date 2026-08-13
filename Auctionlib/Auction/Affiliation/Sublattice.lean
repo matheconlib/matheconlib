@@ -25,6 +25,12 @@ public import Mathlib
   `topDensity f i j z = f z` for `z ∈ maxAt i j` and `topDensity f i j z = 0` otherwise.
 * `Auction.Affiliation.affiliated_topDensity` : `Affiliated f` and `0 ≤ f` imply
   `Affiliated (topDensity f i j)`.
+* `Auction.Affiliation.isSublattice_boxSet` : `{x | ∀ k, x k ∈ Set.Icc lo hi}` is a
+  sublattice of `Fin n → ℝ`.
+* `Auction.Affiliation.SignalValueEnv.signalBox` :
+  `{x | ∀ k, x k ∈ Set.Icc E.x_lo E.x_hi}`, the box off which `E.f_support` forces the
+  density to vanish, with `Auction.Affiliation.SignalValueEnv.mem_signalBox_iff` and
+  `Auction.Affiliation.SignalValueEnv.isSublattice_signalBox`.
 -/
 
 @[expose] public section
@@ -114,6 +120,40 @@ theorem affiliated_topDensity {n : ℕ} {f : (Fin n → ℝ) → ℝ} (hf : Affi
     (hf0 : 0 ≤ f) (i j : Fin n) : Affiliated (topDensity f i j) :=
   hf.mul (affiliated_indicator_of_isSublattice (isSublattice_maxAt i j)) hf0
     (indicator_one_nonneg _)
+
+/-! ### The signal box -/
+
+/-- The box `{x | ∀ k, x k ∈ Set.Icc lo hi}` is a sublattice of `Fin n → ℝ`: the pointwise
+join and meet of two profiles keep every coordinate between the same two bounds. -/
+theorem isSublattice_boxSet {n : ℕ} (lo hi : ℝ) :
+    IsSublattice {x : Fin n → ℝ | ∀ k, x k ∈ Set.Icc lo hi} where
+  supClosed x hx y hy := fun k => by
+    have h1 := Set.mem_Icc.1 (hx k)
+    have h2 := Set.mem_Icc.1 (hy k)
+    rw [Pi.sup_apply, Set.mem_Icc]
+    exact ⟨le_trans h1.1 le_sup_left, sup_le h1.2 h2.2⟩
+  infClosed x hx y hy := fun k => by
+    have h1 := Set.mem_Icc.1 (hx k)
+    have h2 := Set.mem_Icc.1 (hy k)
+    rw [Pi.inf_apply, Set.mem_Icc]
+    exact ⟨le_inf h1.1 h2.1, le_trans inf_le_left h1.2⟩
+
+/-- `E.signalBox = {x | ∀ k, x k ∈ Set.Icc E.x_lo E.x_hi}`, the box off which
+`SignalValueEnv.f_support` forces the density to vanish. It is the natural domain on which
+a `SignalValueEnv` density can be positive, and it is a sublattice
+(`SignalValueEnv.isSublattice_signalBox`), so the localized affiliation statements apply
+to it. -/
+def SignalValueEnv.signalBox {n : ℕ} (E : SignalValueEnv n) : Set (Fin n → ℝ) :=
+  {x | ∀ k, x k ∈ Set.Icc E.x_lo E.x_hi}
+
+/-- `x ∈ E.signalBox ↔ ∀ k, x k ∈ Set.Icc E.x_lo E.x_hi`. -/
+theorem SignalValueEnv.mem_signalBox_iff {n : ℕ} (E : SignalValueEnv n) (x : Fin n → ℝ) :
+    x ∈ E.signalBox ↔ ∀ k, x k ∈ Set.Icc E.x_lo E.x_hi := Iff.rfl
+
+/-- `IsSublattice E.signalBox`. -/
+theorem SignalValueEnv.isSublattice_signalBox {n : ℕ} (E : SignalValueEnv n) :
+    IsSublattice E.signalBox :=
+  isSublattice_boxSet E.x_lo E.x_hi
 
 end Auction.Affiliation
 

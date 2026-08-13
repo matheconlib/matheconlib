@@ -322,7 +322,18 @@ The chain is `expectedPayII μ E i j x ≤ A / B ≤ expectedPayII μ E i j x'`,
 are the numerator and denominator of the mixed ratio against the `x'`-slice over
 `Set.Iic x`: the first inequality is `linkage_signal_step`, the second is
 `linkage_truncation_step`. The middle positivity `hB` is a genuine extra hypothesis — TP2
-does not transfer pointwise positivity from the `x`-slice to the `x'`-slice. -/
+does not transfer pointwise positivity from the `x`-slice to the `x'`-slice.
+
+**The positivity hypotheses force the lower end OPEN, so this never instantiates on the
+closed box.** `hD`, `hB` and `hD'` each assert that an integral of `cornerDenom` over
+`Set.Iic x` or `Set.Iic x'` is positive. At the floor `x = E.x_lo` the density's support
+meets `Set.Iic x` in a set the measure gives no mass, so those integrals vanish: at the
+worked environments `Auction.Affiliation.Examples.linkDenom_tri_two` evaluates to `a` and
+`Auction.Affiliation.Examples.linkDenom_low` to `a ^ 2 / 2`, both `0` at `a = 0`. Every
+instantiation therefore carries `E.x_lo < x` — see the `0 < x` hypothesis of
+`Auction.Affiliation.Examples.expectedPayII_mono_tri_two` and of
+`Auction.Affiliation.Examples.expectedPayII_mono_low` — and the closed signal box is out of
+reach for this statement. -/
 theorem Affiliated.expectedPayII_mono {n : ℕ} {μ : Measure ℝ} [SigmaFinite μ]
     {E : SignalValueEnv n} (hf : Affiliated E.f) (i j : Fin n) {x x' : ℝ} (hx : x ≤ x')
     (hbid : MonotoneOn (bidII μ E i j) (Set.Iic x'))
