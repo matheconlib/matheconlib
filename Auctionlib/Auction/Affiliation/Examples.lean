@@ -9,77 +9,37 @@ public import Mathlib
 
 ## Main results
 
-* `Auction.Affiliation.Examples.boxInd`, `Auction.Affiliation.Examples.cap` : the unit
-  interval indicator and the fibre `cap t u = boxInd u * 1[u ≤ t]` of the top-rival density
-  in one non-corner coordinate, with `Auction.Affiliation.Examples.cap_integral` :
-  `∫ u, cap t u = t`.
-* `Auction.Affiliation.Examples.Ebox` : the uniform product density on `[0,1]ⁿ` with
-  exponential private values `v i X = exp (X i)`, and
-  `Auction.Affiliation.Examples.Ebox_affiliated`.
-* `Auction.Affiliation.Examples.Etri` : the uniform density on `[0,1]ⁿ` times the indicator
-  of the sublattice `{z | z 1 ≤ z 0}`, and `Auction.Affiliation.Examples.Etri_affiliated`
-  via `Affiliated.mul` and `affiliated_indicator_of_isSublattice`.
-* `Auction.Affiliation.Examples.Etri_strictly_affiliated` : at `x = (0.6, 0.2)`,
-  `y = (0.2, 0.6)`, `f x * f y = 0 < 1 = f (x ⊔ y) * f (x ⊓ y)`.
-* `Auction.Affiliation.Examples.Elow` : the uniform density on `[0,1]³` times the indicator
-  of the sublattice `{z | z 2 ≤ z 0}`, with
-  `Auction.Affiliation.Examples.Elow_affiliated` and
-  `Auction.Affiliation.Examples.Elow_strictly_affiliated`.
-* `Auction.Affiliation.Examples.pivotalOptimal_tri_two`,
-  `Auction.Affiliation.Examples.pivotalOptimal_three`,
-  `Auction.Affiliation.Examples.pivotalOptimal_four`,
-  `Auction.Affiliation.Examples.pivotalOptimal_low` :
-  `Affiliated.bidII_pivotalOptimal` instantiated at `Etri 2`, `Ebox 3`, `Ebox 4` and `Elow`.
-* `Auction.Affiliation.Examples.expectedPayII_mono_tri_two`,
-  `Auction.Affiliation.Examples.expectedPayII_mono_low` :
-  `Affiliated.expectedPayII_mono` instantiated at `Etri 2` and `Elow`, with
-  `Auction.Affiliation.Examples.hB_tri_two` and `Auction.Affiliation.Examples.hB_low`
-  discharging its positivity hypothesis at the larger signal over the lower region.
-* `Auction.Affiliation.Examples.expectedPayII_le_bidII_tri_two`,
-  `Auction.Affiliation.Examples.expectedPayII_le_bidII_low` :
-  `Affiliated.expectedPayII_le_bidII` instantiated at the same two environments.
-* `Auction.Affiliation.Examples.bidII_tri_two`, `Auction.Affiliation.Examples.bidII_three`,
-  `Auction.Affiliation.Examples.bidII_low` : the diagonal corner value equals the bidder's
-  own value `exp x` on the signal box — the bid-your-value benchmark, recovered rather than
-  assumed.
-* `Auction.Affiliation.Examples.cornerDenom_three`,
-  `Auction.Affiliation.Examples.cornerDenom_four` :
-  `cornerDenom volume (Ebox n) 0 1 x y = boxInd x * boxInd y * y ^ (n - 2)` for `n = 3, 4`.
-* `Auction.Affiliation.Examples.cornerDenom_low` :
-  `cornerDenom mu0 Elow 0 1 x y = min x y` on the box — not a product of a function of `x`
-  and a function of `y`.
-* `Auction.Affiliation.Examples.pivotalGain_integrand_three`,
-  `Auction.Affiliation.Examples.pivotalGain_three_closed` : the `n = 3` pivotal integrand is
-  `y * (exp x - exp y)`.
-* `Auction.Affiliation.Examples.expectedPayII_tri_two`,
-  `Auction.Affiliation.Examples.expectedPayII_low` : the winner's conditional expected
-  payment in closed form, `(exp a - 1) / a` and `((a - 1) * exp a + 1) / (a ^ 2 / 2)`, with
-  the monotonicity corollaries `expectedPayII_mono_tri_two_closed` and
-  `expectedPayII_mono_low_closed`.
-* `Auction.Affiliation.Examples.bidII_three_at_zero` : `bidII volume (Ebox 3) 0 1 0 = 0`,
-  while `exp 0 = 1`.
-* `Auction.Affiliation.Examples.monotoneOn_bidII_low_lib`,
-  `Auction.Affiliation.Examples.bidII_low_not_monotoneOn_above` : what the library's own
-  route `Affiliated.monotoneOn_bidII` actually yields at `Elow`, namely
-  `MonotoneOn (bidII mu0 Elow 0 1) (Set.Ioc 0 1)`. This does **not** discharge the caller
-  obligation `hbid` of `Affiliated.expectedPayII_mono`, which demands monotonicity on a
-  `Set.Iic x'`; `Set.Ioc 0 1` is not of that form, and on `Set.Iic x'` with `x' > 1` the
-  conclusion is false outright (`bidII_low_not_monotoneOn_above`). The `hbid` actually fed
-  to `expectedPayII_mono_low` is the hand-proved `monotoneOn_bidII_low`.
-* `Auction.Affiliation.Examples.logSupermodularOn_signalBox_Ebox`,
-  `Auction.Affiliation.Examples.logSupermodularOn_Etri`,
-  `Auction.Affiliation.Examples.logSupermodularOn_Elow` : the localized characterization
-  `affiliatedOn_iff_logSupermodularOn` applied to the three densities above, on the
-  sublattice where each is positive (the signal box, and the box met with the triangle).
-* `Auction.Affiliation.Examples.Ecoup`, `Auction.Affiliation.Examples.Ecoup_affiliated`,
-  `Auction.Affiliation.Examples.logSupermodularOn_signalBox_Ecoup`,
-  `Auction.Affiliation.Examples.logSupermodularOn_Ecoup_two_strict` : an environment whose
-  density is `exp (X₀ X₁)` on the box, so that its log is **non-constant** there and the
-  localized log-supermodularity is strict at an exhibited pair.
-* `Auction.Affiliation.Examples.mu0`, `Auction.Affiliation.Examples.restrict_Iic_mu0`,
-  `Auction.Affiliation.Examples.integrableOn_Iic_mu0`,
-  `Auction.Affiliation.Examples.integral_Iic_mu0` : the uniform measure on the signal box
-  and the two reusable recipes for the winning-event side conditions.
+* `boxInd`, `cap`: the box indicator and its one-coordinate fibre, with `cap_integral`.
+* `Ebox`: uniform density on `[0,1]ⁿ` with `v i X = exp (X i)`, with `Ebox_affiliated`.
+* `Etri`: the `[0,1]ⁿ` density times the indicator of `{z | z 1 ≤ z 0}`, with `Etri_affiliated`.
+* `Etri_strictly_affiliated`: a point pair where the affiliation inequality is strict.
+* `Elow`: the `[0,1]³` variant coupling `z 2 ≤ z 0`, with `Elow_affiliated`.
+* `Elow_strictly_affiliated`: strictness at an exhibited pair.
+* `pivotalOptimal_tri_two`, `pivotalOptimal_three`: `bidII_pivotalOptimal` at `Etri 2`, `Ebox 3`.
+* `pivotalOptimal_four`, `pivotalOptimal_low`: `bidII_pivotalOptimal` at `Ebox 4`, `Elow`.
+* `expectedPayII_mono_tri_two`, `expectedPayII_mono_low`: linkage monotonicity at `Etri 2`, `Elow`.
+* `hB_tri_two`, `hB_low`: the positivity hypothesis `hB` discharged at the larger signal.
+* `expectedPayII_le_bidII_tri_two`, `expectedPayII_le_bidII_low`: winner's-margin instances.
+* `bidII_tri_two`, `bidII_three`, `bidII_low`: the diagonal value `exp x` recovered on the box.
+* `cornerDenom_three`, `cornerDenom_four`: `cornerDenom` for `Ebox` in closed form.
+* `cornerDenom_low`: `cornerDenom mu0 Elow 0 1 x y = min x y` on the box — not a product.
+* `pivotalGain_integrand_three`, `pivotalGain_three_closed`: the `n = 3` pivotal integrand.
+* `expectedPayII_tri_two`, `expectedPayII_low`: the winner's expected payment in closed form.
+* `expectedPayII_mono_tri_two_closed`, `expectedPayII_mono_low_closed`: monotonicity, closed form.
+* `bidII_three_at_zero`: `bidII volume (Ebox 3) 0 1 0 = 0` while `exp 0 = 1`.
+* `monotoneOn_bidII_low_lib`, `bidII_low_not_monotoneOn_above`: the library route at `Elow`.
+* `logSupermodularOn_signalBox_Ebox`: `affiliatedOn_iff_logSupermodularOn` at `Ebox`.
+* `logSupermodularOn_Etri`, `logSupermodularOn_Elow`: the same on the positivity sublattices.
+* `Ecoup`, `Ecoup_affiliated`: the density `exp (X₀ X₁)` on the box, non-constant log.
+* `logSupermodularOn_signalBox_Ecoup`, `logSupermodularOn_Ecoup_two_strict`: strictness exhibited.
+* `mu0`, `restrict_Iic_mu0`: the uniform measure on the signal box and its `Iic` restriction.
+* `integrableOn_Iic_mu0`, `integral_Iic_mu0`: reusable winning-event side conditions.
+
+What `monotoneOn_bidII_low_lib` yields is `MonotoneOn (bidII mu0 Elow 0 1) (Set.Ioc 0 1)`. This
+does **not** discharge the caller obligation `hbid` of `Affiliated.expectedPayII_mono`, which
+demands monotonicity on a `Set.Iic x'`; `Set.Ioc 0 1` is not of that form, and on `Set.Iic x'`
+with `x' > 1` the conclusion is false outright (`bidII_low_not_monotoneOn_above`). The `hbid`
+actually fed to `expectedPayII_mono_low` is the hand-proved `monotoneOn_bidII_low`.
 
 Concrete environments in which the headline hypotheses of
 `Auction.Affiliation.SecondPrice` and `Auction.Affiliation.Linkage` are discharged

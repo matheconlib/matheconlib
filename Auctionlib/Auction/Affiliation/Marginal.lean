@@ -9,63 +9,32 @@ public import Mathlib
 
 ## Main results
 
-* `Auction.Affiliation.Affiliated.update_le` : for `Affiliated f`,
-  `f (u[j↦p]) * f (v[j↦q]) ≤ f ((u ⊔ v)[j↦p ⊔ q]) * f ((u ⊓ v)[j↦p ⊓ q])`.
-* `Auction.Affiliation.Affiliated.permanent_le_of_le` : the permanent inequality for
-  `Affiliated f` with `0 ≤ f`, under `s ≤ s'`.
-* `Auction.Affiliation.Affiliated.permanent_le` : the permanent inequality for
-  `Affiliated f` with `0 ≤ f`, for arbitrary `s`, `s'`: writing `a = u ⊔ v` and
-  `b = u ⊓ v`,
-  `f (u[j↦s]) * f (v[j↦s']) + f (u[j↦s']) * f (v[j↦s])
-    ≤ f (a[j↦s]) * f (b[j↦s']) + f (a[j↦s']) * f (b[j↦s])`.
-* `Auction.Affiliation.marginal` : `marginal μ f j x = ∫ s, f (Function.update x j s) ∂μ`.
-* `Auction.Affiliation.marginal_nonneg` : `0 ≤ f` implies `0 ≤ marginal μ f j`.
-* `Auction.Affiliation.marginal_affiliated` : if `Affiliated f`, `0 ≤ f` and every
-  `j`-fibre `fun s => f (Function.update x j s)` is `μ`-integrable, then
-  `Affiliated (marginal μ f j)`.
-* `Auction.Affiliation.affiliated_iff_fourFunctionsLE_self` :
-  `Affiliated f ↔ FourFunctionsLE f f f f`.
-* `FourFunctionsLE.marginal` : `FourFunctionsLE f₁ f₂ f₃ f₄` with all four functions
-  nonnegative and all `j`-fibres `μ`-integrable implies
-  `FourFunctionsLE (marginal μ f₁ j) (marginal μ f₂ j) (marginal μ f₃ j) (marginal μ f₄ j)`.
-* `Auction.Affiliation.marginalList` : `marginalList μ F (j :: l) = marginalList μ
-  (marginal μ F j) l` and `marginalList μ F [] = F`.
-* `Auction.Affiliation.FibreIntegrable` : `μ`-integrability of the `j`-fibres of every
-  iterated marginal produced along a list of coordinates.
-* `Auction.Affiliation.marginalList_nonneg` : `0 ≤ F` implies `0 ≤ marginalList μ F l`.
-* `Auction.Affiliation.marginalList_congr_of_dependsOn` : if `F x = F y` whenever `x` and
-  `y` agree on every `j ∈ l`, then `marginalList μ F l` is constant.
-* `FourFunctionsLE.marginalList` : `FourFunctionsLE f₁ f₂ f₃ f₄` with all four functions
-  nonnegative and `FibreIntegrable` along `l` implies `FourFunctionsLE` of the four
-  iterated marginals along `l`.
-* `Auction.Affiliation.FibreIntegrable.add`,
-  `Auction.Affiliation.marginalList_add` : additivity of `marginalList`.
-* `Auction.Affiliation.FibreIntegrable.const_mul`,
-  `Auction.Affiliation.marginalList_const_mul` : `marginalList μ (fun y => c * F y) l x
-  = c * marginalList μ F l x`.
-* `Auction.Affiliation.marginal_pos_of_pos` : for `0 ≤ G`, `0 ≤ H` and `G` strictly positive
-  wherever `H` is, `0 < marginal μ H j x` implies `0 < marginal μ G j x`.
-* `Auction.Affiliation.marginalList_pos_of_pos` : the same implication for the iterated
-  marginal along `l`, under `FibreIntegrable` along `l` for both functions.
-* `Auction.Affiliation.marginalList_lt_of_lt` : for a nonnegative weight `ρ` whose iterated
-  marginal along `l` is positive and `g₁ < g₂` pointwise,
-  `marginalList μ (fun z => g₁ z * ρ z) l x < marginalList μ (fun z => g₂ z * ρ z) l x`.
-* `Auction.Affiliation.marginal_marginal_comm` : if every two-variable `(j, k)`-fibre
-  `fun p => F (x[j↦p.1][k↦p.2])` is `μ.prod μ`-integrable, then
-  `marginal μ (marginal μ F k) j = marginal μ (marginal μ F j) k`.
-* `Auction.Affiliation.SwapFibreIntegrable` : at every stage of `marginalList μ F l`, the
-  head fibres are `μ`-integrable and the two-variable fibres pairing each later coordinate
-  with the head are `μ.prod μ`-integrable.
-* `Auction.Affiliation.PermFibreIntegrable` : `SwapFibreIntegrable μ F l'` along every
-  permutation `l'` of `l`; stable under `List.Perm` by construction.
-* `Auction.Affiliation.PermFibreIntegrable.of_perm`,
-  `Auction.Affiliation.PermFibreIntegrable.marginal_tail`,
-  `Auction.Affiliation.SwapFibreIntegrable.fibreIntegrable`,
-  `Auction.Affiliation.PermFibreIntegrable.fibreIntegrable` : transport of
-  `PermFibreIntegrable` along a permutation, its descent through a cons, and the recovery of
-  `FibreIntegrable` from either predicate.
-* `Auction.Affiliation.marginalList_perm` : for `PermFibreIntegrable μ F l` and `l.Perm l'`,
-  `marginalList μ F l x = marginalList μ F l' x`.
+* `Affiliated.update_le`: the affiliation inequality for a pair of one-coordinate updates.
+* `Affiliated.permanent_le_of_le`: the permanent inequality under `s ≤ s'`.
+* `Affiliated.permanent_le`: the permanent inequality for arbitrary `s`, `s'`.
+* `marginal`: `marginal μ f j x = ∫ s, f (x[j↦s]) ∂μ`.
+* `marginal_nonneg`: `0 ≤ f` implies `0 ≤ marginal μ f j`.
+* `marginal_affiliated`: marginalization in one coordinate preserves affiliation.
+* `affiliated_iff_fourFunctionsLE_self`: `Affiliated f ↔ FourFunctionsLE f f f f`.
+* `FourFunctionsLE.marginal`: `FourFunctionsLE` passes through `marginal μ · j`.
+* `marginalList`: the iterated marginal along a list of coordinates.
+* `FibreIntegrable`: integrability of every fibre at every stage of `marginalList`.
+* `marginalList_nonneg`: `0 ≤ F` implies `0 ≤ marginalList μ F l`.
+* `marginalList_congr_of_dependsOn`: constant in the base for `F` depending only on `l`.
+* `FourFunctionsLE.marginalList`: `FourFunctionsLE` passes through the iterated marginal.
+* `FibreIntegrable.add`, `marginalList_add`: additivity of `marginalList`.
+* `FibreIntegrable.const_mul`, `marginalList_const_mul`: `marginalList` commutes with scaling.
+* `marginal_pos_of_pos`: positivity of the marginal transfers to a dominating integrand.
+* `marginalList_pos_of_pos`: the same transfer for the iterated marginal.
+* `marginalList_lt_of_lt`: strict inequality of `ρ`-weighted iterated marginals for `g₁ < g₂`.
+* `marginal_marginal_comm`: commutation of two one-coordinate marginals (Fubini).
+* `SwapFibreIntegrable`: stagewise head and head-pairing integrability along `l`.
+* `PermFibreIntegrable`: `SwapFibreIntegrable` along every permutation of `l`.
+* `PermFibreIntegrable.of_perm`: transport along `List.Perm`.
+* `PermFibreIntegrable.marginal_tail`: descent through a cons.
+* `SwapFibreIntegrable.fibreIntegrable`: recovery of `FibreIntegrable`.
+* `PermFibreIntegrable.fibreIntegrable`: recovery of `FibreIntegrable`.
+* `marginalList_perm`: invariance of `marginalList` under permutation of `l`.
 -/
 
 @[expose] public section

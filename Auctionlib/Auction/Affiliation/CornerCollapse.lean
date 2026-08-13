@@ -8,26 +8,14 @@ public import Mathlib
 
 ## Main results
 
-* `Auction.Affiliation.comp_perm_mem_maxAt_iff` :
-  `z ∘ σ ∈ maxAt i j ↔ z ∈ maxAt (σ i) (σ j)`.
-* `Auction.Affiliation.topDensity_comp_perm` : for `f` invariant under precomposition with
-  `σ`, `topDensity f i j (z ∘ σ) = topDensity f (σ i) (σ j) z`.
-* `Auction.Affiliation.otherRivals_map_swap_perm` :
-  `((otherRivals i j').map (Equiv.swap j j')).Perm (otherRivals i j)` for `j ≠ i`, `j' ≠ i`.
-* `Auction.Affiliation.IsSymmetricModel.cornerNumer_eq`,
-  `Auction.Affiliation.IsSymmetricModel.cornerDenom_eq` : under `IsSymmetricModel E`, the
-  corner numerator and denominator are independent of the designated rival index,
-  `cornerNumer μ E i j' x y = cornerNumer μ E i j x y` and likewise for `cornerDenom`.
-* `Auction.Affiliation.IsSymmetricModel.w_eq`,
-  `Auction.Affiliation.IsSymmetricModel.bidII_eq` : the corner conditional value `w` and its
-  diagonal `bidII` are independent of the designated rival index.
-* `Auction.Affiliation.sumNumer`, `Auction.Affiliation.sumDenom` : the corners summed over
-  all rivals of `i`.
-* `Auction.Affiliation.IsSymmetricModel.sumNumer_eq`,
-  `Auction.Affiliation.IsSymmetricModel.sumDenom_eq` : under `IsSymmetricModel E`, each sum
-  is `n − 1` times the corner at any designated rival.
-* `Auction.Affiliation.IsSymmetricModel.sumNumer_div_sumDenom` : under `IsSymmetricModel E`,
-  `sumNumer μ E i x y / sumDenom μ E i x y = w μ E i j x y` at any rival `j ≠ i`.
+* `comp_perm_mem_maxAt_iff`: `z ∘ σ ∈ maxAt i j ↔ z ∈ maxAt (σ i) (σ j)`.
+* `topDensity_comp_perm`: equivariance of `topDensity` for `σ`-invariant `f`.
+* `otherRivals_map_swap_perm`: `otherRivals` transported along `Equiv.swap j j'`.
+* `IsSymmetricModel.cornerNumer_eq`, `IsSymmetricModel.cornerDenom_eq`: rival-index independence.
+* `IsSymmetricModel.w_eq`, `IsSymmetricModel.bidII_eq`: rival-index independence of `w`, `bidII`.
+* `sumNumer`, `sumDenom`: the corners summed over all rivals of `i`.
+* `IsSymmetricModel.sumNumer_eq`, `IsSymmetricModel.sumDenom_eq`: `n − 1` times one corner.
+* `IsSymmetricModel.sumNumer_div_sumDenom`: `sumNumer / sumDenom = w` at any rival.
 
 The collapse: under `IsSymmetricModel E` the value family is equivariant and the signal
 density is exchangeable, so relabelling the bidders by the transposition `Equiv.swap j j'`

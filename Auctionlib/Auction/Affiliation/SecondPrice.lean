@@ -7,21 +7,11 @@ public import Mathlib
 
 ## Main results
 
-* `Auction.Affiliation.cornerNumer_eq_zero_of_cornerDenom_eq_zero` : where the corner
-  denominator vanishes so does the corner numerator, `cornerDenom μ E i j x y = 0 →
-  cornerNumer μ E i j x y = 0`, under the pinned-slice integrability of both.
-* `Auction.Affiliation.pivotalGain` : `pivotalGain μ E i j x a b
-  = ∫ y in Set.Ioc a b, (cornerNumer μ E i j x y − bidII μ E i j y * cornerDenom μ E i j x y) ∂μ`,
-  the corner-`j` deviation-gain integral on the pivot shell `(a, b]` with the integrand
-  pinned at the true signal `x`.
-* `Auction.Affiliation.Affiliated.pivotalGain_nonpos` : for `Affiliated E.f` and
-  `x ≤ a`, together with the support-regularity hypothesis `hreg`,
-  `pivotalGain μ E i j x a b ≤ 0`.
-* `Auction.Affiliation.Affiliated.pivotalGain_nonneg` : for `Affiliated E.f` and `b ≤ x`,
-  `0 ≤ pivotalGain μ E i j x a b`, with no support-regularity hypothesis needed.
-* `Auction.Affiliation.Affiliated.bidII_pivotalOptimal` : the packaged statement that against
-  the diagonal `bidII`, shells above the bidder's signal contribute nonpositive gain and
-  shells below it contribute nonnegative gain.
+* `cornerNumer_eq_zero_of_cornerDenom_eq_zero`: the numerator vanishes with the denominator.
+* `pivotalGain`: the deviation-gain integral on the pivot shell `(a, b]`.
+* `Affiliated.pivotalGain_nonpos`: nonpositive gain above the signal, under `hreg`.
+* `Affiliated.pivotalGain_nonneg`: nonnegative gain below the signal.
+* `Affiliated.bidII_pivotalOptimal`: the packaged pivotal-optimality statement.
 
 `pivotalGain μ E i j x a b` is the corner-`j` deviation-gain integral from the notes' proof of
 Theorem 7.5 (Milgrom–Weber 1982): the value-minus-price mass a bidder of signal `x` picks up on

@@ -8,29 +8,14 @@ public import Mathlib
 
 ## Main results
 
-* `Auction.Affiliation.Affiliated.cornerDenom_mul_cornerDenom_le` : for `Affiliated E.f`,
-  `x ≤ x'` and `y ≤ y'`,
-  `cornerDenom μ E i j x y' * cornerDenom μ E i j x' y
-  ≤ cornerDenom μ E i j x y * cornerDenom μ E i j x' y'` — the TP2 (total positivity of
-  order 2) cross-product inequality of the marginalized top-rival density, obtained from the
-  four-functions relation of the four pinned corner slices.
-* `Auction.Affiliation.Affiliated.monotoneOn_bidII` : the non-strict companion of
-  `Affiliated.strictMonoOn_bidII`; `MonotoneOn (bidII μ E i j) S` on a set `S` on which
-  `cornerDenom μ E i j` is positive at every pair of points.
-* `Auction.Affiliation.marginalList_affiliated` : marginalization preserves affiliation —
-  `Affiliated f`, `0 ≤ f` and `FibreIntegrable μ f l` imply `Affiliated (marginalList μ f l)`.
-* `Auction.Affiliation.linkNumer`, `Auction.Affiliation.linkDenom`,
-  `Auction.Affiliation.expectedPayII` : `linkNumer μ E i j x = ∫ y in Iic x, bidII y ·
-  cornerDenom x y`, `linkDenom μ E i j x = ∫ y in Iic x, cornerDenom x y`, and their ratio
-  `expectedPayII μ E i j x = linkNumer μ E i j x / linkDenom μ E i j x`.
-* `Auction.Affiliation.Affiliated.linkage_signal_step` : the likelihood-ratio (MLR ⇒ FOSD)
-  step over the winning event `{top rival ≤ x}`, cross-multiplied.
-* `Auction.Affiliation.linkage_truncation_step` : the elementary widening step from
-  `Iic x` to `Iic x'` against the single `x'`-slice, cross-multiplied.
-* `Auction.Affiliation.Affiliated.expectedPayII_mono` : the linkage effect — for
-  `Affiliated E.f` and `x ≤ x'`, `expectedPayII μ E i j x ≤ expectedPayII μ E i j x'`.
-* `Auction.Affiliation.Affiliated.expectedPayII_le_bidII` : the winner's-margin corollary —
-  `expectedPayII μ E i j x ≤ bidII μ E i j x`.
+* `Affiliated.cornerDenom_mul_cornerDenom_le`: the TP2 cross-product inequality of `cornerDenom`.
+* `Affiliated.monotoneOn_bidII`: the non-strict companion of `Affiliated.strictMonoOn_bidII`.
+* `marginalList_affiliated`: marginalization along `l` preserves affiliation.
+* `linkNumer`, `linkDenom`, `expectedPayII`: the winning-event integrals and their ratio.
+* `Affiliated.linkage_signal_step`: the MLR ⇒ FOSD step over the winning event, cross-multiplied.
+* `linkage_truncation_step`: the widening step from `Iic x` to `Iic x'`, cross-multiplied.
+* `Affiliated.expectedPayII_mono`: the linkage effect — `expectedPayII` monotone in the signal.
+* `Affiliated.expectedPayII_le_bidII`: the winner's-margin corollary.
 
 The pivotal-optimality integrals of the notes' proof of Theorem 7.5 and the linkage
 monotonicity of the second-price winner's conditional expected payment from the proof of

@@ -9,35 +9,17 @@ public import Mathlib
 
 ## Main results
 
-* `Auction.Affiliation.Affiliated.fourFunctionsLE_slice_mul` : for `Affiliated f` with
-  `0 ≤ f`, `Monotone g`, `0 ≤ g` and `t ≤ t'`,
-  `FourFunctionsLE (fun z => g (z[i↦t]) * f (z[i↦t])) (fun z => f (z[i↦t']))
-  (fun z => f (z[i↦t])) (fun z => g (z[i↦t']) * f (z[i↦t']))`.
-* `Auction.Affiliation.Affiliated.marginalList_mul_le` : with the hypotheses above and
-  `FibreIntegrable` along `l`, writing `N s = marginalList μ (fun z => g (z[i↦s]) *
-  f (z[i↦s])) l x` and `D s = marginalList μ (fun z => f (z[i↦s])) l x`,
-  `N t * D t' ≤ D t * N t'`.
-* `Auction.Affiliation.Affiliated.marginalList_mul_le_of_bddBelow` : the same conclusion
-  with `0 ≤ g` weakened to `∃ m, ∀ y, m ≤ g y`.
-* `Auction.Affiliation.rivals` : `rivals i = (Finset.univ.erase i).sort (· ≤ ·)`, with
-  `Auction.Affiliation.length_rivals : (rivals i).length = n - 1` and
-  `Auction.Affiliation.mem_rivals_iff : j ∈ rivals i ↔ j ≠ i`.
-* `Auction.Affiliation.condNumer`, `Auction.Affiliation.condDenom` : the iterated
-  marginals `marginalList μ (fun z => g (z[i↦t]) * f (z[i↦t])) (rivals i) 0` and
-  `marginalList μ (fun z => f (z[i↦t])) (rivals i) 0`.
-* `Auction.Affiliation.Affiliated.condNumer_mul_condDenom_le` : **Lemma 7.3**,
-  cross-multiplied: `condNumer μ f g i t * condDenom μ f i t' ≤ condDenom μ f i t *
-  condNumer μ f g i t'` for `t ≤ t'`.
-* `Auction.Affiliation.Affiliated.condNumer_mul_condDenom_le_of_bddBelow` : the same with
-  `0 ≤ g` weakened to `∃ m, ∀ y, m ≤ g y`.
-* `Auction.Affiliation.Affiliated.monotone_condExp` : `Monotone fun t => condNumer μ f g i t
-  / condDenom μ f i t` when `0 < condDenom μ f i t` for every `t`.
-* `Auction.Affiliation.Affiliated.monotoneOn_condExp` : `MonotoneOn (fun t => condNumer μ f g i t
-  / condDenom μ f i t) {t | 0 < condDenom μ f i t}`, with no positivity hypothesis on
-  `condDenom μ f i` off that set.
-* `Auction.Affiliation.marginalList_rivals_congr` : `marginalList μ F (rivals i)` is
-  constant for `F` independent of coordinate `i`, so `condNumer` and `condDenom` do not
-  depend on the base profile `0` at which they are evaluated.
+* `Affiliated.fourFunctionsLE_slice_mul`: `FourFunctionsLE` for the four pinned slice products.
+* `Affiliated.marginalList_mul_le`: `N t * D t' ≤ D t * N t'` for the iterated slice marginals.
+* `Affiliated.marginalList_mul_le_of_bddBelow`: the same with `0 ≤ g` weakened to bounded below.
+* `rivals`: `rivals i = (Finset.univ.erase i).sort (· ≤ ·)`.
+* `length_rivals`, `mem_rivals_iff`: `(rivals i).length = n - 1` and `j ∈ rivals i ↔ j ≠ i`.
+* `condNumer`, `condDenom`: the iterated marginals of the pinned slice products along `rivals i`.
+* `Affiliated.condNumer_mul_condDenom_le`: Lemma 7.3, cross-multiplied.
+* `Affiliated.condNumer_mul_condDenom_le_of_bddBelow`: `0 ≤ g` weakened to bounded below.
+* `Affiliated.monotone_condExp`: `Monotone` of the ratio under globally positive `condDenom`.
+* `Affiliated.monotoneOn_condExp`: `MonotoneOn` over the positivity set of `condDenom`.
+* `marginalList_rivals_congr`: constancy in the base profile for `F` independent of `i`.
 
 The conditional expectation is realised as the iterated marginal `marginalList μ · (rivals i)`,
 not as an integral against `MeasureTheory.Measure.pi` over the rival coordinates, and nothing

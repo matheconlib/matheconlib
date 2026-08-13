@@ -9,16 +9,9 @@ public import Mathlib
 
 ## Main results
 
-* `Affiliated.latticeLikelihoodRatioLE_slice`: for `Affiliated f`, `i : Fin n` and `t ≤ t'`,
-  the pair of slices `p z = f (Function.update z i t)`, `q z = f (Function.update z i t')`
-  satisfies `LatticeLikelihoodRatioLE p q`.
-* `Affiliated.likelihoodRatioLE_slice₂`: for `t ≤ t'`, the one-dimensional slices
-  `p y = f (Function.update (Function.update c i t) j y)` and
-  `q y = f (Function.update (Function.update c i t') j y)` satisfy `LikelihoodRatioLE p q`.
-* `Affiliated.integral_mul_integral_le`:
-  `(∫ g(t,·)·f(t,·)) * (∫ f(t',·)) ≤ (∫ g(t',·)·f(t',·)) * (∫ f(t,·))` for `Affiliated f`,
-  `0 ≤ f`, `Monotone g` and `t ≤ t'`, where `(s, ·)` abbreviates
-  `fun y => Function.update (Function.update c i s) j y`.
+* `Affiliated.latticeLikelihoodRatioLE_slice`: `LatticeLikelihoodRatioLE` of the `t ≤ t'` slices.
+* `Affiliated.likelihoodRatioLE_slice₂`: `LikelihoodRatioLE` of the doubly pinned slices.
+* `Affiliated.integral_mul_integral_le`: conditional-expectation monotonicity, cross-multiplied.
 
 Every coordinate other than `i` and `j` is frozen at the constant profile `c` throughout, so
 the conditional expectation controlled by `Affiliated.integral_mul_integral_le` is

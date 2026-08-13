@@ -8,61 +8,30 @@ public import Mathlib
 
 ## Main results
 
-* `Auction.Affiliation.otherRivals` : `otherRivals i j = (rivals i).erase j`, with
-  `Auction.Affiliation.nodup_rivals` and
-  `Auction.Affiliation.mem_otherRivals_iff : k ∈ otherRivals i j ↔ k ≠ i ∧ k ≠ j`.
-* `Auction.Affiliation.mem_maxAt_update_update_iff` :
-  `Function.update (Function.update z i x) j y ∈ maxAt i j ↔ ∀ k, k ≠ i → k ≠ j → z k ≤ y`.
-* `Auction.Affiliation.cornerDenom`, `Auction.Affiliation.cornerNumer` : the iterated
-  marginals of `fun z => topDensity E.f i j (z[i↦x][j↦y])` and of
-  `fun z => E.v i (z[i↦x][j↦y]) * topDensity E.f i j (z[i↦x][j↦y])` along
-  `otherRivals i j`, evaluated at the base profile `0`.
-* `Auction.Affiliation.w` : `w μ E i j x y = cornerNumer μ E i j x y / cornerDenom μ E i j x y`.
-* `Auction.Affiliation.bidII` : `bidII μ E i j x = w μ E i j x x`.
-* `Auction.Affiliation.marginalList_corner_congr` : `marginalList μ F (otherRivals i j)` is
-  constant for `F` independent of coordinates `i` and `j`.
-* `Auction.Affiliation.cornerDenom_base_indep`, `Auction.Affiliation.cornerNumer_base_indep` :
-  `cornerDenom` and `cornerNumer` are unchanged if the base profile `0` is replaced by any
-  other profile.
-* `Auction.Affiliation.cornerDenom_nonneg`, `Auction.Affiliation.cornerNumer_nonneg` :
-  `0 ≤ cornerDenom μ E i j x y` and `0 ≤ cornerNumer μ E i j x y`.
-* `Auction.Affiliation.Affiliated.cornerNumer_mul_cornerDenom_le_fst` : for `Affiliated E.f`
-  and `x ≤ x'`, `cornerNumer μ E i j x y * cornerDenom μ E i j x' y
-  ≤ cornerDenom μ E i j x y * cornerNumer μ E i j x' y`.
-* `Auction.Affiliation.Affiliated.monotoneOn_w_fst` :
-  `MonotoneOn (fun x => w μ E i j x y) {x | 0 < cornerDenom μ E i j x y}`.
-* `Auction.Affiliation.Affiliated.cornerNumer_mul_cornerDenom_le_snd` : for `Affiliated E.f`,
-  `i ≠ j` and `y ≤ y'`, `cornerNumer μ E i j x y * cornerDenom μ E i j x y'
-  ≤ cornerDenom μ E i j x y * cornerNumer μ E i j x y'`.
-* `Auction.Affiliation.Affiliated.monotoneOn_w_snd` :
-  `MonotoneOn (fun y => w μ E i j x y) {y | 0 < cornerDenom μ E i j x y}`.
-* `Auction.Affiliation.crossNumer` : the iterated marginal of
-  `fun z => E.v i (z[i↦x][j↦y]) * topDensity E.f i j (z[i↦x'][j↦y])`.
-* `Auction.Affiliation.ownEffect` : the iterated marginal of
-  `fun z => (E.v i (z[i↦x'][j↦y]) - E.v i (z[i↦x][j↦y])) * topDensity E.f i j (z[i↦x'][j↦y])`.
-* `Auction.Affiliation.HasStrictOwnEffect` :
-  `∀ x x' ∈ S, x < x' → 0 < ownEffect μ E i j x x' y`.
-* `Auction.Affiliation.cornerNumer_eq_crossNumer_add_ownEffect` :
-  `cornerNumer μ E i j x' y = crossNumer μ E i j x x' y + ownEffect μ E i j x x' y`.
-* `Auction.Affiliation.Affiliated.cornerNumer_mul_cornerDenom_le_cross` : for
-  `Affiliated E.f` and `x ≤ x'`, `cornerNumer μ E i j x y * cornerDenom μ E i j x' y
-  ≤ cornerDenom μ E i j x y * crossNumer μ E i j x x' y`.
-* `Auction.Affiliation.Affiliated.strictMonoOn_w_fst` : under
-  `HasStrictOwnEffect μ E i j y T` and `0 < cornerDenom μ E i j t y` for `t ∈ T`,
-  `StrictMonoOn (fun x => w μ E i j x y) T`, with
-  `Auction.Affiliation.Affiliated.strictMonoOn_w_fst_cornerDenom_pos` the case
-  `T = {x | 0 < cornerDenom μ E i j x y}`.
-* `Auction.Affiliation.Affiliated.strictMonoOn_bidII` : under
-  `HasStrictOwnEffect μ E i j y S` for every `y ∈ S` and `0 < cornerDenom μ E i j s t` for
-  all `s, t ∈ S`, `StrictMonoOn (bidII μ E i j) S`.
-* `Auction.Affiliation.hasStrictOwnEffect_of_v_strictMono` : `HasStrictOwnEffect μ E i j y S`
-  from `0 < cornerDenom μ E i j t y` for `t ∈ S` and integrability alone — the strictness
-  itself comes from `SignalValueEnv.v_strictMono_own`.
-* `Auction.Affiliation.Affiliated.strictMonoOn_w_fst_of_v_strictMono`,
-  `Auction.Affiliation.Affiliated.strictMonoOn_w_fst_cornerDenom_pos_of_v_strictMono`,
-  `Auction.Affiliation.Affiliated.strictMonoOn_bidII_of_v_strictMono` : the strict
-  monotonicity results with `HasStrictOwnEffect` discharged, so that the caller supplies
-  only `i ≠ j`, positivity of `cornerDenom`, and integrability.
+* `otherRivals`: the rivals of `i` other than `j`, with `nodup_rivals` and `mem_otherRivals_iff`.
+* `mem_maxAt_update_update_iff`: `z[i↦x][j↦y] ∈ maxAt i j` as a lower-box condition.
+* `cornerDenom`, `cornerNumer`: iterated corner marginals of `topDensity` and `v * topDensity`.
+* `w`: `w μ E i j x y = cornerNumer μ E i j x y / cornerDenom μ E i j x y`.
+* `bidII`: `bidII μ E i j x = w μ E i j x x`.
+* `marginalList_corner_congr`: base-independence for `F` ignoring coordinates `i`, `j`.
+* `cornerDenom_base_indep`, `cornerNumer_base_indep`: independence of the base profile.
+* `cornerDenom_nonneg`, `cornerNumer_nonneg`: nonnegativity.
+* `Affiliated.cornerNumer_mul_cornerDenom_le_fst`: cross-multiplied inequality in `x`.
+* `Affiliated.monotoneOn_w_fst`: `w` monotone in `x` where `cornerDenom` is positive.
+* `Affiliated.cornerNumer_mul_cornerDenom_le_snd`: cross-multiplied inequality in `y` (`i ≠ j`).
+* `Affiliated.monotoneOn_w_snd`: `w` monotone in `y` where `cornerDenom` is positive.
+* `crossNumer`: iterated marginal of the value at `x` against the density at `x'`.
+* `ownEffect`: iterated marginal of the value increment against the density at `x'`.
+* `HasStrictOwnEffect`: `∀ x x' ∈ S, x < x' → 0 < ownEffect μ E i j x x' y`.
+* `cornerNumer_eq_crossNumer_add_ownEffect`: `cornerNumer = crossNumer + ownEffect` at `x'`.
+* `Affiliated.cornerNumer_mul_cornerDenom_le_cross`: the `x`-inequality against `crossNumer`.
+* `Affiliated.strictMonoOn_w_fst`: strict `x`-monotonicity of `w` under `HasStrictOwnEffect`.
+* `Affiliated.strictMonoOn_w_fst_cornerDenom_pos`: the positivity-set case.
+* `Affiliated.strictMonoOn_bidII`: strict monotonicity of `bidII` on `S`.
+* `hasStrictOwnEffect_of_v_strictMono`: `HasStrictOwnEffect` from strict own-value monotonicity.
+* `Affiliated.strictMonoOn_w_fst_of_v_strictMono`: the same with `HasStrictOwnEffect` discharged.
+* `Affiliated.strictMonoOn_w_fst_cornerDenom_pos_of_v_strictMono`: ditto on the positivity set.
+* `Affiliated.strictMonoOn_bidII_of_v_strictMono`: the `bidII` analogue.
 
 `w μ E i j x y` is the ratio of the two iterated marginals of the density
 `topDensity E.f i j`, in which coordinate `i` is pinned at `x`, coordinate `j` is pinned at
@@ -150,7 +119,7 @@ private theorem upd_j_absorb {n : ℕ} {i j : Fin n} (hij : i ≠ j) (z : Fin n 
     z[j ↦ s][i ↦ x][j ↦ y] = z[i ↦ x][j ↦ y] := by
   rw [Function.update_comm (Ne.symm hij) s x z, Function.update_idem]
 
-/-- `Function.update (Function.update z i x) j y ∈ maxAt i j` if and only if
+/-- `z[i ↦ x][j ↦ y] ∈ maxAt i j` if and only if
 `z k ≤ y` for every `k ≠ i`, `k ≠ j`: pinning coordinate `j` at `y` turns the sublattice
 indicator of `maxAt i j` into the indicator of the lower box `{z | ∀ k ≠ i, k ≠ j, z k ≤ y}`.
 
