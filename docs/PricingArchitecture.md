@@ -345,9 +345,10 @@ distribution and a deterministic problem as separate arguments.
 payment, seller-profit, and price-comparison formulas without adding support or
 density assumptions. The expected-payment layer first uses tail probabilities,
 so its primary identity also applies to atomic and mixed distributions. Under
-absolute continuity, later modules express the same payment and profit in
-density-weighted virtual-surplus form. Regularity and optimization over the
-price remain subsequent layers.
+envelope IC, support on the type interval, and absolute continuity, later
+modules express the resulting payment and profit in density-weighted
+virtual-surplus form. Regularity and optimization over the price remain
+subsequent layers.
 
 ## 5. Relationship to `BidderProblem`
 
@@ -444,8 +445,9 @@ functions of the distribution and problem, not fields added to either object.
 In this first objective the continuation value is constant across buyer types,
 and the acquisition cost is an unconditional additive cost.
 
-When the distribution is absolutely continuous and supported on the problem's
-type interval, the seller objective has the decomposition
+Under envelope IC, when the distribution is absolutely continuous and
+supported on the problem's type interval, the seller objective has the
+decomposition
 
 \[
 \Pi
