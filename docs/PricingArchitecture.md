@@ -58,7 +58,7 @@ with representative continuous, finite-support, and unbounded distributions in
 and end-to-end seller-objective checks in
 [`AuctionlibTest/Pricing/Compatibility.lean`](../AuctionlibTest/Pricing/Compatibility.lean).
 
-The first application will be optimal posted pricing for one buyer. The
+The first application is optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
 and bargaining problems with a one-dimensional private type whenever utility
 has the affine form described below. They do not represent arbitrary
@@ -528,7 +528,8 @@ This design does not yet settle:
 - risk-averse buyers;
 - extensive-form syntax for bargaining histories;
 - regularity assumptions and ironing for virtual values;
-- seller optimization.
+- optimization over general selling rules, including the Riley--Zeckhauser
+  comparison between posted prices and haggling.
 
 These topics should not complicate the first reusable layer unless a concrete
 application shows that they are necessary.

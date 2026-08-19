@@ -28,8 +28,10 @@ feasible price.
 
 The net virtual-surplus weight `w(v) - r * f(v)` is division-free, so it is
 meaningful even where the density vanishes. With constant continuation value
-`r`, it corresponds to Riley and Zeckhauser's
-`k(v) = (j(v) - π(v))f(v)`.
+`r` and at values where `f(v) ≠ 0`, it corresponds to Riley and Zeckhauser's
+`k(v) = (j(v) - π(v))f(v)`. Where `f(v) = 0`, no such correspondence is
+asserted: the division-free weight remains meaningful, but the factorization
+through virtual value need not hold.
 
 The results here compare only posted prices and impose an explicit
 single-crossing sign condition. They do not prove Riley and Zeckhauser's
