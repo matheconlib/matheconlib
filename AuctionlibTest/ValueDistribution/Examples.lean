@@ -1,6 +1,6 @@
 module
 
-import Auctionlib.ValueDistribution.Demand
+import Auctionlib.ValueDistribution.PostedPriceOptimality
 import Mathlib.MeasureTheory.Constructions.UnitInterval
 import Mathlib.Probability.Distributions.Cauchy
 import Mathlib.Probability.UniformOn
@@ -19,6 +19,7 @@ noncomputable section
 open scoped unitInterval
 
 open MeasureTheory Set
+open SingleParameterProblem
 
 namespace ValueDistributionExamples
 
@@ -32,33 +33,131 @@ def uniformUnitIntervalDistribution : ValueDistribution :=
     ((↑) : unitInterval → ℝ)
     measurable_subtype_coe.aemeasurable
 
-/-- The construction uses the ordinary pushforward measure. -/
-example :
+/-- The pushforward construction is Lebesgue measure restricted to `[0, 1]`. -/
+private lemma uniformUnitIntervalDistribution_toMeasure :
     ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) =
-      Measure.map ((↑) : unitInterval → ℝ) volume := by
-  simp [uniformUnitIntervalDistribution]
+      volume.restrict (Icc 0 1) := by
+  rw [uniformUnitIntervalDistribution,
+    ValueDistribution.toMeasure_ofRandomVariable]
+  exact unitInterval.measurePreserving_coe.map_eq
 
 /-- Its values lie in `[0, 1]` almost surely. -/
-example :
+private lemma uniformUnitIntervalDistribution_supported :
     uniformUnitIntervalDistribution.IsSupportedOnInterval 0 1 := by
   rw [ValueDistribution.IsSupportedOnInterval,
-    uniformUnitIntervalDistribution,
-    ValueDistribution.toMeasure_ofRandomVariable]
-  apply (ae_map_iff
-    (p := fun value : ℝ => value ∈ Icc 0 1)
-    measurable_subtype_coe.aemeasurable measurableSet_Icc).2
-  exact ae_of_all volume fun value => value.property
+    uniformUnitIntervalDistribution_toMeasure]
+  exact ae_restrict_mem measurableSet_Icc
+
+/-- The uniform law is absolutely continuous with respect to Lebesgue measure. -/
+private lemma uniformUnitIntervalDistribution_absolutelyContinuous :
+    ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) ≪
+      volume := by
+  rw [uniformUnitIntervalDistribution_toMeasure]
+  exact Measure.absolutelyContinuous_restrict
+
+/-- The constant function one is a density representative on `[0, 1]`. -/
+private lemma uniformUnitIntervalDistribution_density_one :
+    (fun _ : ℝ => (1 : ℝ)) =ᵐ[volume.restrict (Icc 0 1)]
+      uniformUnitIntervalDistribution.realDensity := by
+  have hrn :
+      ((volume : Measure ℝ).restrict (Icc 0 1)).rnDeriv volume =ᵐ[volume]
+        (Icc 0 1).indicator 1 :=
+    Measure.rnDeriv_restrict_self volume measurableSet_Icc
+  filter_upwards [ae_restrict_mem measurableSet_Icc,
+    ae_restrict_of_ae hrn] with value hvalue hrnvalue
+  rw [ValueDistribution.realDensity,
+    uniformUnitIntervalDistribution_toMeasure, hrnvalue]
+  simp [hvalue]
+
+/-- Demand under the uniform law is the length of the remaining upper tail. -/
+private lemma uniformUnitIntervalDistribution_probAtLeast
+    (value : ℝ) (hvalue : value ∈ Icc 0 1) :
+    uniformUnitIntervalDistribution.probAtLeast value = 1 - value := by
+  rw [ValueDistribution.probAtLeast,
+    ← uniformUnitIntervalDistribution.measureReal_eq_coe_coeFn,
+    uniformUnitIntervalDistribution_toMeasure, Measure.real,
+    Measure.restrict_apply measurableSet_Ici]
+  have hset : Ici value ∩ Icc 0 1 = Icc value 1 := by
+    ext point
+    simp only [mem_inter_iff, mem_Ici, mem_Icc]
+    constructor
+    · rintro ⟨hvaluePoint, _, hpointOne⟩
+      exact ⟨hvaluePoint, hpointOne⟩
+    · rintro ⟨hvaluePoint, hpointOne⟩
+      exact ⟨hvaluePoint, hvalue.1.trans hvaluePoint, hpointOne⟩
+  rw [hset, Real.volume_Icc]
+  exact ENNReal.toReal_ofReal (sub_nonneg.mpr hvalue.2)
+
+/-- Uniform virtual-surplus weight is the affine function `2 * value - 1`. -/
+private lemma uniformUnitIntervalDistribution_virtualSurplusWeight
+    (value : ℝ) (hvalue : value ∈ Icc 0 1) :
+    uniformUnitIntervalDistribution.virtualSurplusWeight
+        (fun _ : ℝ => (1 : ℝ)) value =
+      2 * value - 1 := by
+  rw [ValueDistribution.virtualSurplusWeight,
+    uniformUnitIntervalDistribution_probAtLeast value hvalue]
+  ring
+
+/-- Uniform virtual-surplus weight is nonpositive below one half. -/
+private lemma uniformUnitIntervalDistribution_virtualSurplusWeight_nonpos :
+    ∀ᵐ value ∂volume.restrict (Icc 0 ((1 : ℝ) / 2)),
+      uniformUnitIntervalDistribution.virtualSurplusWeight
+        (fun _ : ℝ => (1 : ℝ)) value ≤ 0 := by
+  filter_upwards [ae_restrict_mem measurableSet_Icc] with value hvalue
+  have hvalueUnit : value ∈ Icc 0 1 := by
+    constructor
+    · exact hvalue.1
+    · exact hvalue.2.trans (by norm_num)
+  rw [uniformUnitIntervalDistribution_virtualSurplusWeight value hvalueUnit]
+  linarith [hvalue.2]
+
+/-- Uniform virtual-surplus weight is nonnegative above one half. -/
+private lemma uniformUnitIntervalDistribution_virtualSurplusWeight_nonneg :
+    ∀ᵐ value ∂volume.restrict (Icc ((1 : ℝ) / 2) 1),
+      0 ≤ uniformUnitIntervalDistribution.virtualSurplusWeight
+        (fun _ : ℝ => (1 : ℝ)) value := by
+  filter_upwards [ae_restrict_mem measurableSet_Icc] with value hvalue
+  have hvalueUnit : value ∈ Icc 0 1 := by
+    constructor
+    · exact (show (0 : ℝ) ≤ 1 / 2 by norm_num).trans hvalue.1
+    · exact hvalue.2
+  rw [uniformUnitIntervalDistribution_virtualSurplusWeight value hvalueUnit]
+  linarith [hvalue.1]
+
+/-- One half globally maximizes seller profit among prices in `[0, 1]` for a
+uniform buyer value, zero continuation value, and zero acquisition cost. -/
+example :
+    IsMaxOn
+      (fun price =>
+        uniformUnitIntervalDistribution.sellerProfit
+          (postedPriceProblem 0 1 price) 0 0)
+      (Icc 0 1) ((1 : ℝ) / 2) := by
+  apply
+    ValueDistribution.isMaxOn_sellerProfit_postedPriceProblem_of_netVirtualSurplus_sign
+      uniformUnitIntervalDistribution 0 1 ((1 : ℝ) / 2)
+      (fun _ : ℝ => (1 : ℝ)) 0 0
+  case hbelow =>
+    simpa using
+      uniformUnitIntervalDistribution_virtualSurplusWeight_nonpos
+  case habove =>
+    simpa using
+      uniformUnitIntervalDistribution_virtualSurplusWeight_nonneg
+  case hdensity =>
+    exact uniformUnitIntervalDistribution_density_one
+  case hD =>
+    exact uniformUnitIntervalDistribution_absolutelyContinuous
+  case hsupport =>
+    exact uniformUnitIntervalDistribution_supported
+  case hcutoff =>
+    norm_num
 
 /-- It is continuous in the atomless sense: no individual value has positive
 probability. -/
 example (price : ℝ) :
     ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ)
         {price} = 0 := by
-  rw [uniformUnitIntervalDistribution,
-    ValueDistribution.toMeasure_ofRandomVariable]
-  rw [Measure.map_apply_of_aemeasurable
-    measurable_subtype_coe.aemeasurable (measurableSet_singleton price)]
-  simp
+  rw [uniformUnitIntervalDistribution_toMeasure,
+    Measure.restrict_apply (measurableSet_singleton price)]
   exact measure_mono_null inter_subset_left (measure_singleton price)
 
 /-! ## Finite-support distribution -/
