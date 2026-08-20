@@ -105,7 +105,6 @@ theorem sum_mul_sum_le_of_affiliated {n : ℕ}
   -- four-functions theorem, whose hypotheses are stated on the whole lattice.
   set F : (Fin n → ℝ) → ℝ := fun x => if x ∈ S then f x else 0 with hF
   set GF : (Fin n → ℝ) → ℝ := fun x => if x ∈ S then g x * f x else 0 with hGF
-
   -- Both extended functions are nonnegative everywhere.
   have hF_nonneg : ∀ x, 0 ≤ F x := by
     intro x
@@ -119,7 +118,6 @@ theorem sum_mul_sum_le_of_affiliated {n : ℕ}
     split_ifs with hx
     · exact mul_nonneg (hg0 x hx) (hpos x hx).le
     · exact le_rfl
-
   -- Affiliation of `f` and monotonicity of `g` give the pointwise hypothesis
   -- of the four-functions theorem.
   have hfour : ∀ a b : Fin n → ℝ, GF a * F b ≤ F (a ⊓ b) * GF (a ⊔ b) := by
@@ -149,14 +147,12 @@ theorem sum_mul_sum_le_of_affiliated {n : ℕ}
         exact if_neg ha
       rw [hGFa, zero_mul]
       exact mul_nonneg (hF_nonneg _) (hGF_nonneg _)
-
   -- Apply Ahlswede–Daykin to the two finite sets, using the global
   -- nonnegativity of both extended functions.
   have hfourFunctions := four_functions_theorem GF F F GF
     (Pi.le_def.mpr hGF_nonneg) (Pi.le_def.mpr hF_nonneg)
     (Pi.le_def.mpr hF_nonneg) (Pi.le_def.mpr hGF_nonneg)
     hfour A B
-
   -- The lattice assumptions put the pointwise infima back in `A` and the
   -- pointwise suprema back in `B`.
   have hinfs_subset : A ⊼ B ⊆ A := by
@@ -171,7 +167,6 @@ theorem sum_mul_sum_le_of_affiliated {n : ℕ}
     sum_le_sum_of_subset_of_nonneg hinfs_subset fun x _ _ => hF_nonneg x
   have hsups_sum_le : ∑ x ∈ A ⊻ B, GF x ≤ ∑ x ∈ B, GF x :=
     sum_le_sum_of_subset_of_nonneg hsups_subset fun x _ _ => hGF_nonneg x
-
   -- On `A` and `B`, which are subsets of `S`, the extended functions agree
   -- with the original functions.
   have hsumA_GF : ∑ x ∈ A, GF x = ∑ x ∈ A, g x * f x :=
@@ -190,7 +185,6 @@ theorem sum_mul_sum_le_of_affiliated {n : ℕ}
     sum_congr rfl fun x hx => by
       simp only [hGF]
       exact if_pos (hBS hx)
-
   calc
     (∑ x ∈ A, g x * f x) * ∑ x ∈ B, f x =
         (∑ x ∈ A, GF x) * ∑ x ∈ B, F x := by
@@ -269,10 +263,8 @@ theorem condExpOn_le_condExpOn_of_affiliated {n : ℕ}
   -- The nonempty subset `A` supplies a point of `S`, so `S` is nonempty.
   have hS : S.Nonempty :=
     hA.mono hAS
-
   -- Choose a point `m` where `g` has its minimum value on the finite set `S`.
   obtain ⟨m, _hmS, hm⟩ := S.exists_min_image g hS
-
   -- Translate `g` so that its minimum value becomes zero.
   set c : ℝ := -g m with hc
   have hshift_nonneg : ∀ x ∈ S, 0 ≤ g x + c := by
@@ -282,13 +274,11 @@ theorem condExpOn_le_condExpOn_of_affiliated {n : ℕ}
     exact sub_nonneg.mpr hmin
   have hshift_mono : Monotone (fun x => g x + c) :=
     hg.add_const c
-
   -- Apply the normalized nonnegative comparison to the shifted function.
   have hshifted :=
     condExpOn_le_condExpOn_of_affiliated_of_nonneg
       hf hpos hsub hshift_mono hshift_nonneg
       hAS hBS hA hB hsupAB hinfAB
-
   -- Both sets have positive total weight, so adding `c` shifts both
   -- conditional expectations by exactly `c`.
   have hA_mass : 0 < ∑ x ∈ A, f x :=
@@ -297,7 +287,6 @@ theorem condExpOn_le_condExpOn_of_affiliated {n : ℕ}
     sum_pos_on_of_pos hpos hBS hB
   rw [condExpOn_add_const f g A c hA_mass.ne',
       condExpOn_add_const f g B c hB_mass.ne'] at hshifted
-
   -- Cancel the same constant from the right of both sides.
   exact (add_le_add_iff_right c).mp hshifted
 

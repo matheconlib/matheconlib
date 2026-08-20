@@ -9,6 +9,19 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
 import Mathlib.Data.Int.Star
 import Mathlib.Data.Nat.Nth
 
+-- This file is the original auto-formalisation output (see the module doc below) and has not
+-- been through the library's review discipline. The Mathlib style linters are scoped off here
+-- so that they give a usable signal on the hand-written parts of the library; re-enable them
+-- when this file is cleaned up or replaced by an upstreamed version.
+-- TODO: 116 linter findings, dominated by unused `Fintype`/`DecidableEq` instance arguments in
+-- statements (42 + 29) and `show` used where `change` is meant (29). The 14 `linter.flexible`
+-- findings are deliberately left visible: Mathlib forbids scoping that linter off downstream.
+set_option linter.unusedFintypeInType false
+set_option linter.unusedDecidableInType false
+set_option linter.style.show false
+set_option linter.style.refine false
+set_option linter.style.openClassical false
+
 /-!
 # Schauder's fixed point theorem
 This file contains an auto-formalisation of Schauder's fixed point theorem, a generalisation of
