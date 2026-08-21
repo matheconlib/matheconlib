@@ -16,19 +16,28 @@ jobs:
     steps:
       - uses: actions/checkout@v5
         with:
-          ref: ${{ github.event_name == 'pull_request' && github.head_ref || github.ref }}
-          # Use WORKFLOW_PAT so bot pushes trigger a new CI run (GITHUB_TOKEN pushes do not).
-          token: ${{ secrets.WORKFLOW_PAT || secrets.GITHUB_TOKEN }}
+          # Same-repo PRs: check out the head branch so the convenience push below
+          # can commit back to it. Fork PRs and pushes: default checkout, which for
+          # a PR is the merge ref - i.e. the contributor's code merged onto main.
+          ref: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) && github.event.pull_request.head.ref || '' }}
       - uses: leanprover/lean-action@v1
         with:
           mk_all-check: false
-      - name: Run mk_all and push if changed
-        if: github.event_name == 'pull_request'
+      - name: Regenerate import lists and push (same-repo PRs only)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
-          lake exe mk_all --lib Auctionlib || true
+          lake exe mk_all --lib Auctionlib --git
+          lake exe mk_all --lib AuctionlibTest --git
+          git add Auctionlib.lean AuctionlibTest.lean
+          if git diff --staged --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add -A
-          if git diff --staged --quiet; then exit 0; fi
           git commit -m "Run mk_all: update imports"
           git push
+      - name: Check import lists (fork PRs and pushes)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          if ! (lake exe mk_all --lib Auctionlib --git --check && lake exe mk_all --lib AuctionlibTest --git --check); then
+            echo "::error::Generated import lists are out of date. Run locally: lake exe mk_all --lib Auctionlib --git && lake exe mk_all --lib AuctionlibTest --git, then commit the two root .lean files."
+            exit 1
+          fi
