@@ -197,7 +197,6 @@ theorem condExpWinningSlice_le_condExpSlice_of_affiliated {n : ℕ}
     winningSlice_subset_ownSignalSlice
   have hown_nonempty : (ownSignalSlice S i t).Nonempty :=
     hwin.mono hwin_subset_own
-
   -- Both slices lie in `S`, and their pairwise supremum and infimum return
   -- to the upper and lower slices, respectively.
   have hwin_subset : winningSlice S i t ⊆ S :=
@@ -212,7 +211,6 @@ theorem condExpWinningSlice_le_condExpSlice_of_affiliated {n : ℕ}
       a ⊓ b ∈ winningSlice S i t := by
     intro a ha b hb
     exact inf_mem_winningSlice hsub ha hb
-
   -- Positivity of `f` and nonemptiness of the two slices give them positive
   -- total mass inside the generic theorem.
   change

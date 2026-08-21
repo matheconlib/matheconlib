@@ -7,7 +7,7 @@ defaultTargets = ["Auctionlib", "ApiStability", "AuctionlibTest"]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
 autoImplicit = false
-weak.mathlibStandardSet = true
+weak.linter.mathlibStandardSet = true
 maxSynthPendingDepth = 3
 linter.style.longLine = true
 

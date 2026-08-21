@@ -61,25 +61,21 @@ theorem monotoneOn_condExpSlice_of_affiliated {n : ℕ}
     (hg : Monotone g) (i : Fin n) :
     MonotoneOn (condExpSlice f g S i) ↑(S.image fun x => x i) := by
   intro t ht t' ht' htt'
-
   -- Since `t` and `t'` are realized heights, choose one profile from each
   -- corresponding slice.
   rw [mem_coe, mem_image] at ht
   rw [mem_coe, mem_image] at ht'
   obtain ⟨x, hxS, hxi⟩ := ht
   obtain ⟨y, hyS, hyi⟩ := ht'
-
   have hA_nonempty : (S.filter fun z => z i = t).Nonempty :=
     ⟨x, mem_filter.2 ⟨hxS, hxi⟩⟩
   have hB_nonempty : (S.filter fun z => z i = t').Nonempty :=
     ⟨y, mem_filter.2 ⟨hyS, hyi⟩⟩
-
   -- Each slice is a subset of the original finite support `S`.
   have hA_subset : S.filter (fun z => z i = t) ⊆ S :=
     filter_subset _ _
   have hB_subset : S.filter (fun z => z i = t') ⊆ S :=
     filter_subset _ _
-
   -- The supremum of a profile at height `t` and a profile at height `t'`
   -- has height `t'`, because `t ≤ t'`.
   have hsupAB : ∀ a ∈ S.filter (fun z => z i = t),
@@ -93,7 +89,6 @@ theorem monotoneOn_condExpSlice_of_affiliated {n : ℕ}
     refine mem_filter.2 ⟨hsupS, ?_⟩
     rw [Pi.sup_apply, hai, hbi]
     exact sup_eq_right.2 htt'
-
   -- Dually, the infimum of the same two profiles has height `t`.
   have hinfAB : ∀ a ∈ S.filter (fun z => z i = t),
       ∀ b ∈ S.filter (fun z => z i = t'),
@@ -106,7 +101,6 @@ theorem monotoneOn_condExpSlice_of_affiliated {n : ℕ}
     refine mem_filter.2 ⟨hinfS, ?_⟩
     rw [Pi.inf_apply, hai, hbi]
     exact inf_eq_left.2 htt'
-
   -- The generic finite comparison now applies to the two slices.
   change
     condExpOn f g (S.filter fun z => z i = t) ≤

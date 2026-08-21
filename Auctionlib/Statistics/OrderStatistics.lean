@@ -261,7 +261,6 @@ theorem expected_val_eq_sub_integral_cdf (k : Fin n) {a b : ℝ} (hab : a ≤ b)
   have eq3 := intervalIntegral.integral_comp_sub_left (a := 0) (b := b - a)
     (fun x => Measure.real ℙ (S.val k ⁻¹' Set.Iic x)) b
   simp_rw [show b - (b - a) = a by ring, show b - 0 = b by ring, Measure.real_def] at eq3
-
   simp_rw [eq2, Measure.real_def] at eq1
   rw [← intervalIntegral.integral_of_le (show 0 ≤ b - a by linarith), eq3] at eq1
   have eq4 : ∫ ω, (b - S.val k ω) = b - ∫ ω, S.val k ω := by
