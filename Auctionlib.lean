@@ -26,11 +26,13 @@ import Auctionlib.BidderProblem.TypeDeviationIC
 import Auctionlib.BidderProblem.UniversalIC
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.ForMathlib.ApproximateSelection
+import Auctionlib.ForMathlib.CDF
 import Auctionlib.ForMathlib.FinsetUpdate
 import Auctionlib.ForMathlib.IndepFun
 import Auctionlib.ForMathlib.Kakutani
 import Auctionlib.ForMathlib.MeasureTheory
 import Auctionlib.ForMathlib.ProbabilityMeasure
+import Auctionlib.ForMathlib.Quantile
 import Auctionlib.ForMathlib.Schauder
 import Auctionlib.ForMathlib.StochasticOrder
 import Auctionlib.GameTheory.Basic

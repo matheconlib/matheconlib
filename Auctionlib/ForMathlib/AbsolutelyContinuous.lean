@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Daniel Lyng
+-/
 module
 
 public import Mathlib.MeasureTheory.Function.AbsolutelyContinuous
@@ -14,16 +19,37 @@ Lemmas that should eventually be upstreamed to Mathlib.
 
 ## Main results
 
-* `AbsolutelyContinuousOnInterval.pow`: if `f` is AC on `[a, s]`, then `f ^ n` is too.
-* `ae_restrict_rnDeriv_eq_zero`: if `μ ≪ ν` and `μ(S) = 0`, the Radon-Nikodym derivative
-  vanishes a.e. on `S`.
-* `absolutelyContinuousOnInterval_cdf`: the CDF of a probability measure `μ ≪ volume`
-  is AC on any interval where `cdf μ a = 0`.
+* `AbsolutelyContinuousOnInterval.pow`: If `f` is AC on `[a, s]`, then `f ^ n` is too.
+* `ae_restrict_rnDeriv_eq_zero`: If `μ ≪ ν` and `μ(S) = 0`, the Radon-Nikodym derivative vanishes
+  a.e. on `S`.
+* `absolutelyContinuousOnInterval_cdf`: The CDF of a probability measure `μ ≪ volume` is AC on any
+  interval where `cdf μ a = 0`.
+* `Measure.restrict_absolutelyContinuous_of_ae_rnDeriv_pos`: A positive Radon–Nikodym derivative
+  gives the reverse absolute-continuity relation on a restriction.
+* `noAtoms_of_absolutelyContinuous_volume`: An absolutely continuous real measure is atomless.
 -/
 
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory MeasureTheory.Measure
+
+/-- If `μ ≪ volume` and its Radon–Nikodym derivative is positive almost everywhere on `s`, then
+Lebesgue measure restricted to `s` is absolutely continuous with respect to `μ`. -/
+theorem MeasureTheory.Measure.restrict_absolutelyContinuous_of_ae_rnDeriv_pos
+    {μ : Measure ℝ} [SigmaFinite μ] (hμ : μ ≪ volume) {s : Set ℝ} (hs : MeasurableSet s)
+    (hpos : ∀ᵐ x ∂(volume.restrict s), 0 < μ.rnDeriv volume x) :
+    volume.restrict s ≪ μ := by
+  have hne : ∀ᵐ x ∂(volume.restrict s), μ.rnDeriv volume x ≠ 0 :=
+    hpos.mono fun _ hx => ne_of_gt hx
+  refine (withDensity_absolutelyContinuous'
+    (measurable_rnDeriv μ volume).aemeasurable.restrict hne).trans ?_
+  rw [← restrict_withDensity hs, Measure.withDensity_rnDeriv_eq μ volume hμ]
+  exact Measure.absolutelyContinuous_of_le (Measure.restrict_le_self)
+
+/-- A real measure absolutely continuous with respect to Lebesgue measure has no atoms. -/
+theorem noAtoms_of_absolutelyContinuous_volume {μ : Measure ℝ} (hμ : μ ≪ volume) :
+    NoAtoms μ :=
+  ⟨fun x => hμ (measure_singleton x)⟩
 
 /-- If `f` is absolutely continuous on `[a, s]`, then so is `f ^ n`. -/
 theorem AbsolutelyContinuousOnInterval.pow {f : ℝ → ℝ} {a s : ℝ}
@@ -48,8 +74,8 @@ theorem ae_restrict_rnDeriv_eq_zero {α : Type*} {m : MeasurableSpace α}
   filter_upwards [h] with x hx h_mem
   have h0 := hx h_mem; simp only [Pi.zero_apply] at h0; simp [h0]
 
-/-- The CDF of a measure absolutely continuous w.r.t. Lebesgue measure is absolutely continuous
-on any interval `[a, s]` where `cdf μ a = 0`. -/
+/-- The CDF of a measure absolutely continuous w.r.t. Lebesgue measure is absolutely continuous on
+any interval `[a, s]` where `cdf μ a = 0`. -/
 theorem absolutelyContinuousOnInterval_cdf {μ : Measure ℝ} [IsProbabilityMeasure μ]
     (habs : μ ≪ volume) {a s : ℝ} (ha : cdf μ a = 0) :
     AbsolutelyContinuousOnInterval (cdf μ) a s := by
