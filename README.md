@@ -65,6 +65,7 @@ described above.
 | [`SingleParameter/IC.lean`](Auctionlib/SingleParameter/IC.lean) | Envelope, type-deviation, and universal IC; their implication chain; reduced-form bridges; individual rationality and lowest-type normalization |
 | [`SingleParameter/EnvelopeIC.lean`](Auctionlib/SingleParameter/EnvelopeIC.lean) | Monotone allocation, Lipschitz and a.e. differentiable utility, the envelope integral representation, and utility nonnegativity |
 | [`SingleParameter/Payment.lean`](Auctionlib/SingleParameter/Payment.lean) | Payment identity, payment uniqueness across action types, and the sufficiency of monotonicity plus the payment identity for type-deviation IC |
+| [`SingleParameter/Myerson.lean`](Auctionlib/SingleParameter/Myerson.lean) | Direct mechanisms, canonical Myerson payments, implementability iff allocation monotonicity, and zero-lowest-type normalization |
 | [`SingleParameter/PostedPrice.lean`](Auctionlib/SingleParameter/PostedPrice.lean) | A fixed posted price with real-valued types, the two actions `buy` and `doNotBuy`, universal IC, monotone demand, and individual rationality |
 
 Compile-time checks that the generic posted-price path and the existing
@@ -86,6 +87,9 @@ integration theory.
 | [`ValueDistribution/Demand.lean`](Auctionlib/ValueDistribution/Demand.lean) | Closed-upper-tail posted-price demand, monotonicity, and atom-sensitive CDF identities |
 | [`ValueDistribution/Density.lean`](Auctionlib/ValueDistribution/Density.lean) | Canonical real density and change of measure under absolute continuity |
 | [`ValueDistribution/VirtualValue.lean`](Auctionlib/ValueDistribution/VirtualValue.lean) | Division-free virtual-surplus weight and secondary virtual value |
+| [`ValueDistribution/Quantile.lean`](Auctionlib/ValueDistribution/Quantile.lean) | Value-distribution quantile inversion, continuity, measurability, and integration adapters |
+| [`ValueDistribution/Regular.lean`](Auctionlib/ValueDistribution/Regular.lean) | Regularity and expected-payment identities in chosen-density virtual-value form |
+| [`ValueDistribution/Ironing.lean`](Auctionlib/ValueDistribution/Ironing.lean) | Generic score ironing, the monotone-allocation inequality, equality under flatness, and the regular no-op result |
 | [`ValueDistribution/TailIntegral.lean`](Auctionlib/ValueDistribution/TailIntegral.lean) | Density-free tail-integral identity, including atomic distributions |
 | [`ValueDistribution/SingleParameter.lean`](Auctionlib/ValueDistribution/SingleParameter.lean) | Expected allocation, expected payment, seller profit, and reduced-form preservation |
 | [`ValueDistribution/ExpectedPayment.lean`](Auctionlib/ValueDistribution/ExpectedPayment.lean) | Density-free expected-payment representation and density and CDF corollaries |
@@ -106,6 +110,8 @@ and
 | File | Contents |
 |------|----------|
 | [`Mechanism/Basic.lean`](Auctionlib/Mechanism/Basic.lean) | `Mechanism`, `HasValidAllocation`, and `IsEfficient` |
+| [`Mechanism/Feasible.lean`](Auctionlib/Mechanism/Feasible.lean) | Single-unit feasibility and its bridge to valid allocation |
+| [`Mechanism/HighestScore.lean`](Auctionlib/Mechanism/HighestScore.lean) | Measurable highest-score allocation with deterministic tie-breaking and pointwise surplus optimality |
 | [`Mechanism/AllPurchase.lean`](Auctionlib/Mechanism/AllPurchase.lean) | `Mechanism.IsAllPurchase`: efficient allocation together with a posted price, scarcity function, and payment identity `t_eq` |
 
 ### Bidder Problem (`BidderProblem/`)
@@ -132,6 +138,10 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 | [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) | `Auction`, interim quantities `q`/`p`/`U` and `q_strat`/`p_strat`, IR notions, `BIC`, `toBidderProblem`, `payment_formula`, and `payment_equivalence` |
 | [`Auction/Typeclasses.lean`](Auctionlib/Auction/Typeclasses.lean) | Composable assumptions on independent, identical, bounded, dense, and atomless types; `IsSymmetricIPV`; common type bounds and CDF |
 | [`Auction/ValueDistribution.lean`](Auctionlib/Auction/ValueDistribution.lean) | Additive pushforward bridge from each bidder's type random variable to a real-valued value distribution |
+| [`Auction/Interim.lean`](Auctionlib/Auction/Interim.lean) | Measurable interim allocation/payment, independence-based ex-post/interim integration, and BIC construction helpers |
+| [`Auction/VirtualValue.lean`](Auctionlib/Auction/VirtualValue.lean) | Per-bidder density representatives, asymmetric raw and ironed virtual values, and pointwise optimal virtual surplus |
+| [`Auction/RevenueIdentity.lean`](Auctionlib/Auction/RevenueIdentity.lean) | Auction revenue identities and universal raw and ironed Myerson bounds |
+| [`Auction/OptimalAuction.lean`](Auctionlib/Auction/OptimalAuction.lean) | Revenue-achieving Myerson mechanisms and optimality for regular and general independent private values |
 | [`Auction/IdenticalTypes.lean`](Auctionlib/Auction/IdenticalTypes.lean) | Expectation identities requiring identical type distributions |
 | [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) | `bidThreshold`, `q_eq_pow`, `q_strat_eq_cdf_pow`, and the bridge to order statistics |
 | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) | `payment_formula_efficient`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
@@ -176,6 +186,9 @@ The continuous conditional-expectation and winner's-curse results, together with
 |--------|----------|
 | Envelope theorem ($U$ Lipschitz, $U' = q$ a.e., integral representation) | [`BidderProblem/EnvelopeIC.lean`](Auctionlib/BidderProblem/EnvelopeIC.lean) |
 | Myerson's lemma (monotone allocation and payment identity, with a sufficiency direction) | [`BidderProblem/TypeDeviationIC.lean`](Auctionlib/BidderProblem/TypeDeviationIC.lean) |
+| Direct-mechanism implementability iff allocation monotonicity | [`SingleParameter/Myerson.lean`](Auctionlib/SingleParameter/Myerson.lean) |
+| Myerson's revenue bounds and revenue identities for asymmetric independent private values | [`Auction/RevenueIdentity.lean`](Auctionlib/Auction/RevenueIdentity.lean) |
+| Existence and optimality of regular and ironed Myerson auctions | [`Auction/OptimalAuction.lean`](Auctionlib/Auction/OptimalAuction.lean) |
 | General payment equivalence for BIC auctions with the same type interval, interim allocation, and base utility | [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) |
 | $q(i,s)=F(s)^{n-1}$ under efficient allocation in the symmetric IPV setting | [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) |
 | Revenue equivalence and total revenue $=\mathbb{E}[S_2]$ under the stated BIC, IR, efficiency, and symmetry assumptions | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) |
@@ -192,6 +205,9 @@ The continuous conditional-expectation and winner's-curse results, together with
 |------|----------|
 | [`Statistics/OrderStatistics.lean`](Auctionlib/Statistics/OrderStatistics.lean) | CDF/PDF of order statistics, `expected_second_highest` |
 | [`ForMathlib/AbsolutelyContinuous.lean`](Auctionlib/ForMathlib/AbsolutelyContinuous.lean) | AC function raised to a power, CDF of AC measure |
+| [`ForMathlib/CDF.lean`](Auctionlib/ForMathlib/CDF.lean) and [`ForMathlib/Quantile.lean`](Auctionlib/ForMathlib/Quantile.lean) | Atomless CDF continuity, strict increase, quantile pushforward, and quantile integration |
+| [`ForMathlib/ConcaveEnvelope.lean`](Auctionlib/ForMathlib/ConcaveEnvelope.lean), [`ForMathlib/ConcaveEnvelopeDuality.lean`](Auctionlib/ForMathlib/ConcaveEnvelopeDuality.lean), and [`ForMathlib/ConvexEnvelope.lean`](Auctionlib/ForMathlib/ConvexEnvelope.lean) | One-dimensional envelope constructions, duality, and regularity |
+| [`ForMathlib/ConvexRightDeriv.lean`](Auctionlib/ForMathlib/ConvexRightDeriv.lean), [`ForMathlib/StieltjesRegularization.lean`](Auctionlib/ForMathlib/StieltjesRegularization.lean), and [`ForMathlib/TriangleFubini.lean`](Auctionlib/ForMathlib/TriangleFubini.lean) | Extended convex right derivatives and Stieltjes/triangular integration tools used by ironing |
 | [`ForMathlib/Kakutani.lean`](Auctionlib/ForMathlib/Kakutani.lean) | Kakutani--Glicksberg--Fan fixed-point theorem used by the Nash-existence development |
 | [`ForMathlib/Schauder.lean`](Auctionlib/ForMathlib/Schauder.lean) | Schauder fixed-point theorem |
 
@@ -210,6 +226,7 @@ The mathematical overview is intentionally broader than the current library. Cur
 - [x] Action-parametric single-parameter foundations and a deterministic fixed-price buyer problem
 - [x] General `Mechanism` + `Auction` + `BidderProblem` framework
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
+- [x] Myerson revenue bounds and optimal regular/ironed auctions for asymmetric independent private values
 - [x] All-purchase equilibrium characterization, explicit solutions, revenue analysis, optimal pricing, and welfare decomposition
 - [x] Normal-form game foundations and pure/mixed Nash existence
 - [x] Affiliation definitions, log-supermodularity, finite monotone conditional expectations, and the finite winner's-curse inequality

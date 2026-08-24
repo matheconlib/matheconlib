@@ -11,7 +11,7 @@ public import Auctionlib.Mechanism.HighestScore
 public import Auctionlib.ValueDistribution.SingleParameter
 
 /-!
-# Interim Allocation and Ex-Post-to-Interim Identities
+# Interim allocation and ex-post-to-interim identities
 
 This file supplies measurable interim allocation rules and the independence bridge that rewrites
 ex-post expectations as interim expectations.
@@ -74,11 +74,15 @@ lemma q_eq_interimAlloc (i : Fin n) (s : ℝ) :
     A.q i s = A.interimAlloc A.rules.x i s :=
   rfl
 
+/-- A generic interim allocation is nonnegative when the underlying allocation rule takes values in
+`[0, 1]`. -/
 lemma interimAlloc_nonneg (x : Fin n → (Fin n → ℝ) → ℝ)
     (hx : ∀ i b, x i b ∈ Icc 0 1) (i : Fin n) (s : ℝ) :
     0 ≤ A.interimAlloc x i s :=
   integral_nonneg fun _ => (hx i _).1
 
+/-- A generic interim allocation is at most one when the underlying allocation rule takes values in
+`[0, 1]`. -/
 lemma interimAlloc_le_one (x : Fin n → (Fin n → ℝ) → ℝ)
     (hx : ∀ i b, x i b ∈ Icc 0 1) (i : Fin n) (s : ℝ) :
     A.interimAlloc x i s ≤ 1 := by
@@ -87,8 +91,12 @@ lemma interimAlloc_le_one (x : Fin n → (Fin n → ℝ) → ℝ)
       integral_mono_of_nonneg
         (ae_of_all _ fun ω => (hx i _).1) (integrable_const 1)
         (ae_of_all _ fun ω => (hx i _).2)
-    _ = 1 := by rw [integral_const]; simp [Measure.real, measure_univ]
+    _ = 1 := by
+      rw [integral_const]
+      simp [Measure.real, measure_univ]
 
+/-- A generic interim allocation takes values in `[0, 1]` when the underlying allocation rule
+does. -/
 lemma interimAlloc_mem_Icc (x : Fin n → (Fin n → ℝ) → ℝ)
     (hx : ∀ i b, x i b ∈ Icc 0 1) (i : Fin n) (s : ℝ) :
     A.interimAlloc x i s ∈ Icc 0 1 :=
@@ -119,10 +127,12 @@ lemma intervalIntegrable_interimAlloc
     rw [Real.norm_eq_abs, abs_of_nonneg (A.interimAlloc_nonneg x hx i s)]
     exact A.interimAlloc_le_one x hx i s
 
+/-- The auction's interim allocation is measurable in the bidder's reported type. -/
 lemma measurable_q (i : Fin n) : Measurable (A.q i) := by
   change Measurable (A.interimAlloc A.rules.x i)
   exact A.measurable_interimAlloc A.rules.x A.rules.x_measurable i
 
+/-- The auction's interim payment is measurable when its ex-post payment rule is measurable. -/
 lemma measurable_p (i : Fin n) (ht : Measurable (A.rules.t i)) :
     Measurable (A.p i) := by
   have hg : Measurable
@@ -134,13 +144,12 @@ private theorem integral_update_aux [HasIndependentTypes A] (i : Fin n)
     {g : (Fin n → ℝ) → ℝ} (hg : Measurable g)
     (hint : Integrable (fun ω => g (A.θ · ω)) ℙ) :
     (𝔼[fun ω => g (A.θ · ω)] =
-        𝔼[fun ω => 𝔼[fun ω' => g (update (A.θ · ω') i (A.θ i ω))]]) ∧
+      𝔼[fun ω => 𝔼[fun ω' => g (update (A.θ · ω') i (A.θ i ω))]]) ∧
       Integrable
         (fun ω => 𝔼[fun ω' => g (update (A.θ · ω') i (A.θ i ω))]) ℙ := by
   let X : Ω → (({i} : Finset (Fin n)) → ℝ) := fun ω k => A.θ k ω
   let T : Finset (Fin n) := Finset.univ.erase i
-  let Y : Ω → (T → ℝ) :=
-    fun ω k => A.θ k ω
+  let Y : Ω → (T → ℝ) := fun ω k => A.θ k ω
   let combine : (({i} : Finset (Fin n)) → ℝ) →
       (T → ℝ) → (Fin n → ℝ) :=
     fun u y j => if hji : j = i then u ⟨i, Finset.mem_singleton_self i⟩
@@ -181,8 +190,8 @@ private theorem integral_update_aux [HasIndependentTypes A] (i : Fin n)
         (measurable_snd : Measurable
           (fun p : (({i} : Finset (Fin n)) → ℝ) × (T → ℝ) => p.2))
   have hh : Measurable h.uncurry := hg.comp hcombine
-  have hcross : ∀ ω ω', h (X ω) (Y ω') =
-      g (update (A.θ · ω') i (A.θ i ω)) := by
+  have hcross : ∀ ω ω',
+      h (X ω) (Y ω') = g (update (A.θ · ω') i (A.θ i ω)) := by
     intro ω ω'
     apply congrArg g
     funext j
@@ -199,9 +208,10 @@ private theorem integral_update_aux [HasIndependentTypes A] (i : Fin n)
     MeasureTheory.integrable_integral_indep_swap hXY hX hY h hh hint'
   constructor
   · simpa only [hcross, Function.update_eq_self] using heq
-  · exact hint_swap.congr (ae_of_all ℙ fun ω => by
-      apply integral_congr_ae
-      exact ae_of_all ℙ fun ω' => hcross ω ω')
+  · exact hint_swap.congr
+      (ae_of_all ℙ fun ω => by
+        apply integral_congr_ae
+        exact ae_of_all ℙ fun ω' => hcross ω ω')
 
 /-- Independence lets one replace a bidder's opponents by an independent copy before conditioning
 on that bidder's type. -/

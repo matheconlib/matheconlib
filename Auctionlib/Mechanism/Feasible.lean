@@ -52,23 +52,24 @@ instance IsEfficient.instIsFeasible [M.IsEfficient] : M.IsFeasible where
       congrFun (IsEfficient.x_efficient (M := M) i) b
     by_cases hex : ∃ i, ∀ j ≠ i, b j < b i
     · obtain ⟨w, hw⟩ := hex
-      have hsum := Finset.sum_eq_single_of_mem (a := w) (Finset.mem_univ w)
-        (f := fun i ↦ M.x i b) (fun i _ hiw ↦ by
-          change M.x i b = 0
-          rw [hx i, Set.indicator_of_notMem]
-          intro hi
-          exact (lt_asymm (hi w (Ne.symm hiw)) (hw i hiw)).elim)
-      rw [hsum]
+      have h_sum :=
+        Finset.sum_eq_single_of_mem (a := w) (Finset.mem_univ w)
+          (f := fun i ↦ M.x i b) (fun i _ hiw ↦ by
+            change M.x i b = 0
+            rw [hx i, Set.indicator_of_notMem]
+            intro hi
+            exact (lt_asymm (hi w (Ne.symm hiw)) (hw i hiw)).elim)
+      rw [h_sum]
       change M.x w b ≤ 1
       rw [hx w, Set.indicator_of_mem
         (show b ∈ {f : Fin n → ℝ | ∀ j ≠ w, f j < f w} from hw)]
     · push_neg at hex
-      have hzero : ∀ i, M.x i b = 0 := fun i ↦ by
+      have h_zero : ∀ i, M.x i b = 0 := fun i ↦ by
         rw [hx i, Set.indicator_of_notMem]
         intro hi
         obtain ⟨j, hji, hij⟩ := hex i
         exact (not_lt_of_ge hij) (hi j hji)
-      simp [hzero]
+      simp [h_zero]
 
 end Mechanism
 

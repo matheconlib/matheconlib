@@ -47,7 +47,7 @@ lemma stieltjesFunction_measure_Ioo_eq_zero {f : ℝ → ℝ} (hf : Monotone f) 
 /-- A monotone function agrees Lebesgue-a.e. with its right-continuous regularization. -/
 lemma stieltjesFunction_ae_eq {f : ℝ → ℝ} (hf : Monotone f) :
     ⇑hf.stieltjesFunction =ᵐ[volume] f := by
-  have hD : volume {x | ¬ContinuousAt f x} = 0 :=
+  have hD : volume {x | ¬ ContinuousAt f x} = 0 :=
     hf.countable_not_continuousAt.measure_zero volume
   filter_upwards [compl_mem_ae_iff.mpr hD] with x hx
   have hcont : ContinuousAt f x := not_not.mp hx

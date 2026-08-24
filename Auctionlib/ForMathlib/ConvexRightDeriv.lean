@@ -21,8 +21,8 @@ the fundamental theorem of calculus for `φ` against its right derivative.
 
 ## Main statements
 
-* `monotone_rightDerivExtend` — the extension is globally monotone, given boundedness of
-  the right-derivative image on `(a, b)`.
+* `monotone_rightDerivExtend` — the extension is globally monotone, given boundedness of the
+  right-derivative image on `(a, b)`.
 * `ConvexOn.intervalIntegrable_rightDeriv` — the right derivative is interval-integrable on
   `[a, t]`.
 * `ConvexOn.integral_rightDeriv_eq_sub` — `φ(t) - φ(a) = ∫ₐᵗ φ'₊(s) ds`.
@@ -44,8 +44,6 @@ variable {φ : ℝ → ℝ} {a b : ℝ}
 
 /-- Extend the right derivative of a convex function on `[a, b]` to all of `ℝ`. Uses `sInf`/`sSup`
 of the image on the interior as constant extensions. -/
--- `hφ` and `hab` are unused in the body but drive the `hφ.rightDerivExtend hab` dot-notation API
--- shared by the lemmas below.
 noncomputable def rightDerivExtend (φ : ℝ → ℝ) (a b x : ℝ) : ℝ :=
   let g := fun y => derivWithin φ (Ioi y) y
   if x ≤ a then sInf (g '' Ioo a b)
@@ -63,13 +61,16 @@ lemma rightDerivExtend_of_mem_Ioo (φ : ℝ → ℝ) {a b x : ℝ} (hx : x ∈ I
 lemma rightDerivExtend_of_le_left (φ : ℝ → ℝ) {a b x : ℝ} (hx : x ≤ a) :
     rightDerivExtend φ a b x =
       sInf ((fun y => derivWithin φ (Ioi y) y) '' Ioo a b) := by
-  unfold rightDerivExtend; simp only; rw [if_pos hx]
+  unfold rightDerivExtend
+  simp only
+  rw [if_pos hx]
 
 /-- For `b ≤ x`, the extension is the supremum. -/
 lemma rightDerivExtend_of_right_le (φ : ℝ → ℝ) {a b x : ℝ} (hab : a < b) (hx : b ≤ x) :
     rightDerivExtend φ a b x =
       sSup ((fun y => derivWithin φ (Ioi y) y) '' Ioo a b) := by
-  unfold rightDerivExtend; simp only
+  unfold rightDerivExtend
+  simp only
   rw [if_neg (not_le.mpr (lt_of_lt_of_le hab hx)), if_pos hx]
 
 namespace ConvexOn
@@ -77,15 +78,16 @@ namespace ConvexOn
 /-- The extended right derivative is globally monotone.
 
 Requires explicit boundedness of the right-derivative image on `(a, b)` because convex functions
-can have unbounded one-sided derivatives at boundary points (e.g. `φ(x) = -√x` has `φ'₊(x) → -∞` as
-`x → 0⁺`). -/
+can have unbounded one-sided derivatives at boundary points (for example, `φ(x) = -√x` has
+`φ'₊(x) → -∞` as `x → 0⁺`). -/
 theorem monotone_rightDerivExtend (hφ : ConvexOn ℝ (Icc a b) φ) (hab : a < b)
     (hbb : BddBelow ((fun x => derivWithin φ (Ioi x) x) '' Ioo a b))
     (hba : BddAbove ((fun x => derivWithin φ (Ioi x) x) '' Ioo a b)) :
     Monotone (rightDerivExtend φ a b) := by
   set g := fun x => derivWithin φ (Ioi x) x
   have hg_mono : MonotoneOn g (Ioo a b) := by
-    rw [← interior_Icc]; exact hφ.monotoneOn_rightDeriv
+    rw [← interior_Icc]
+    exact hφ.monotoneOn_rightDeriv
   have hne : (g '' Ioo a b).Nonempty := Set.Nonempty.image g (nonempty_Ioo.mpr hab)
   intro x y hxy
   change rightDerivExtend φ a b x ≤ rightDerivExtend φ a b y
@@ -103,7 +105,7 @@ theorem monotone_rightDerivExtend (hφ : ConvexOn ℝ (Icc a b) φ) (hab : a < b
   · push Not at hxa
     by_cases hxb : b ≤ x
     · rw [rightDerivExtend_of_right_le (φ := φ) hab hxb,
-          rightDerivExtend_of_right_le (φ := φ) hab (le_trans hxb hxy)]
+        rightDerivExtend_of_right_le (φ := φ) hab (le_trans hxb hxy)]
     · push Not at hxb
       rw [rightDerivExtend_of_mem_Ioo (φ := φ) ⟨hxa, hxb⟩]
       by_cases hyb : b ≤ y
@@ -113,7 +115,7 @@ theorem monotone_rightDerivExtend (hφ : ConvexOn ℝ (Icc a b) φ) (hab : a < b
         rw [rightDerivExtend_of_mem_Ioo (φ := φ) ⟨lt_of_lt_of_le hxa hxy, hyb⟩]
         exact hg_mono ⟨hxa, hxb⟩ ⟨lt_of_lt_of_le hxa hxy, hyb⟩ hxy
 
-/-! ### Integrability and FTC -/
+/-! ### Integrability and the fundamental theorem of calculus -/
 
 /-- The right derivative of a convex function is interval-integrable on `[a, t]`, given boundedness
 of its image on `(a, b)`. -/
@@ -125,25 +127,25 @@ theorem intervalIntegrable_rightDeriv (hφ : ConvexOn ℝ (Icc a b) φ) (hab : a
   rcases eq_or_lt_of_le hat with rfl | hat_lt
   · exact IntervalIntegrable.refl
   rw [intervalIntegrable_iff_integrableOn_Ioc_of_le hat_lt.le]
-  -- The global monotone extension is locally integrable
-  set g := fun x => derivWithin φ (Ioi x) x with hg_def
+  -- The global monotone extension is locally integrable.
+  set g := fun x => derivWithin φ (Ioi x) x
   set G := rightDerivExtend φ a b
   have hG_mono : Monotone G := hφ.monotone_rightDerivExtend hab hbb hba
   have hG_li : LocallyIntegrable G volume := hG_mono.locallyIntegrable
-  -- G is integrable on the compact set Icc a t
+  -- `G` is integrable on the compact interval `[a, t]`.
   have hG_int : IntegrableOn G (Icc a t) volume :=
     hG_li.integrableOn_isCompact isCompact_Icc
-  -- G agrees with g on Ioo a t ⊆ Ioo a b
+  -- `G` agrees with `g` on `(a, t) ⊆ (a, b)`.
   have hGg : EqOn G g (Ioo a t) := by
     intro x hx
     exact rightDerivExtend_of_mem_Ioo (φ := φ) ⟨hx.1, lt_of_lt_of_le hx.2 htb⟩
-  -- G is integrable on Ioo a t (subset of Icc a t)
+  -- `G` is integrable on `(a, t)`, a subset of `[a, t]`.
   have hG_int_oo : IntegrableOn G (Ioo a t) volume :=
     hG_int.mono_set Ioo_subset_Icc_self
-  -- g is integrable on Ioo a t (by EqOn transfer)
+  -- Transfer integrability to `g` on `(a, t)` using pointwise equality.
   have hg_int_oo : IntegrableOn g (Ioo a t) volume :=
     hG_int_oo.congr_fun hGg measurableSet_Ioo
-  -- Ioo a t =ᵐ Ioc a t under volume, so g is integrable on Ioc a t
+  -- The intervals `(a, t)` and `(a, t]` agree almost everywhere under volume.
   exact hg_int_oo.congr_set_ae Ioo_ae_eq_Ioc.symm
 
 /-- **Fundamental theorem of calculus for convex functions**: For `φ` convex and continuous on
@@ -159,7 +161,9 @@ theorem integral_rightDeriv_eq_sub (hφ : ConvexOn ℝ (Icc a b) φ) (hab : a < 
   exact integral_eq_sub_of_hasDeriv_right_of_le hat.le
     (hcont.mono (Icc_subset_Icc_right htb))
     (fun x hx => hφ.hasDerivWithinAt_rightDeriv_of_mem_interior
-      (by rw [interior_Icc]; exact ⟨hx.1, lt_of_lt_of_le hx.2 htb⟩))
+      (by
+        rw [interior_Icc]
+        exact ⟨hx.1, lt_of_lt_of_le hx.2 htb⟩))
     (hφ.intervalIntegrable_rightDeriv hab hbb hba hat.le htb)
 
 end ConvexOn

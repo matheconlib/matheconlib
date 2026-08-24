@@ -186,8 +186,8 @@ theorem expectedRevenue_le_virtualSurplus
           ∂(A.valueDistribution i : Measure ℝ) :=
       A.expectedRevenue_le_sum_integral_q_mul_virtualValue ρ ht hIR
     _ = ∑ i, 𝔼[fun ω =>
-          A.virtualValue ρ i (A.θ i ω) * A.rules.x i (A.θ · ω)] := by
-      exact Finset.sum_congr rfl fun i _ => by
+          A.virtualValue ρ i (A.θ i ω) * A.rules.x i (A.θ · ω)] :=
+      Finset.sum_congr rfl fun i _ => by
         calc
           (∫ v, A.q i v * A.virtualValue ρ i v
               ∂(A.valueDistribution i : Measure ℝ)) =
@@ -265,8 +265,8 @@ theorem expectedRevenue_le_ironedOptimalVirtualSurplus
           ∂(A.valueDistribution i : Measure ℝ) :=
       Finset.sum_le_sum fun i _ => A.integral_q_mul_virtualValue_le_ironed ρ i
     _ = ∑ i, 𝔼[fun ω =>
-          A.ironedVirtualValue ρ i (A.θ i ω) * A.rules.x i (A.θ · ω)] := by
-      exact Finset.sum_congr rfl fun i _ => by
+          A.ironedVirtualValue ρ i (A.θ i ω) * A.rules.x i (A.θ · ω)] :=
+      Finset.sum_congr rfl fun i _ => by
         calc
           (∫ v, A.q i v * A.ironedVirtualValue ρ i v
               ∂(A.valueDistribution i : Measure ℝ)) =

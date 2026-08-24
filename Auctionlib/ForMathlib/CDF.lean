@@ -56,7 +56,7 @@ lemma continuous_cdf [NoAtoms μ] : Continuous (cdf μ) := by
 /-- A CDF vanishes strictly below a closed interval supporting the measure. -/
 lemma cdf_eq_zero_of_lt {a b x : ℝ} (hsupp : ∀ᵐ y ∂μ, y ∈ Icc a b) (hx : x < a) :
     cdf μ x = 0 := by
-  have hsupp_zero : μ {y | ¬y ∈ Icc a b} = 0 := ae_iff.mp hsupp
+  have hsupp_zero : μ {y | y ∉ Icc a b} = 0 := ae_iff.mp hsupp
   have hIic : μ (Iic x) = 0 := by
     refine measure_mono_null ?_ hsupp_zero
     intro y hy hy_mem

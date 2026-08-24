@@ -57,7 +57,7 @@ lemma exists_affineMajorant_of_continuousOn
     ∃ m c, IsAffineMajorant a b φ m c := by
   have hcpt : IsCompact (Icc a b) := isCompact_Icc
   have hne : (Icc a b).Nonempty := nonempty_Icc.mpr hab
-  obtain ⟨M, hM_mem, hM_max⟩ := hcpt.exists_isMaxOn hne hφ
+  obtain ⟨M, _, hM_max⟩ := hcpt.exists_isMaxOn hne hφ
   refine ⟨0, φ M, ?_⟩
   intro t ht
   simpa using hM_max ht
@@ -71,7 +71,8 @@ lemma bddBelow_affineMajorantValueSet
   exact hm x hx
 
 /-- The affine-majorant predicate depends only on the values of `φ` on `[a, b]`. -/
-lemma isAffineMajorant_congr {a b : ℝ} {φ ψ : ℝ → ℝ} (h : Set.EqOn φ ψ (Icc a b)) {m c : ℝ} :
+lemma isAffineMajorant_congr {a b : ℝ} {φ ψ : ℝ → ℝ}
+    (h : Set.EqOn φ ψ (Icc a b)) {m c : ℝ} :
     IsAffineMajorant a b φ m c ↔ IsAffineMajorant a b ψ m c :=
   forall₂_congr fun t ht => by rw [h ht]
 
@@ -106,7 +107,7 @@ lemma concaveEnvelope_le_affineMajorant
 /-- Feasible set of two-point splittings of a mean `x` with atoms in `[a, b]`. -/
 def twoPointFeasibleSet (a b x : ℝ) : Set (ℝ × ℝ × ℝ) :=
   {p | p.1 ∈ Icc a b ∧ p.2.1 ∈ Icc a b ∧ p.2.2 ∈ Icc (0 : ℝ) 1 ∧
-       (1 - p.2.2) * p.1 + p.2.2 * p.2.1 = x}
+    (1 - p.2.2) * p.1 + p.2.2 * p.2.1 = x}
 
 /-- The continuous objective `(xL, xR, q) ↦ (1 - q) φ xL + q φ xR`. -/
 noncomputable def twoPointObjective (φ : ℝ → ℝ) (p : ℝ × ℝ × ℝ) : ℝ :=
@@ -119,8 +120,8 @@ noncomputable def twoPointValue (a b : ℝ) (φ : ℝ → ℝ) (x : ℝ) : ℝ :
 
 /-- For `x ∈ [a, b]`, the two-point feasible set is nonempty (the point mass at `x`). -/
 lemma twoPointFeasibleSet_nonempty {a b x : ℝ} (hx : x ∈ Icc a b) :
-    (twoPointFeasibleSet a b x).Nonempty := by
-  exact ⟨(x, x, 0), hx, hx, ⟨le_refl 0, zero_le_one⟩, by simp⟩
+    (twoPointFeasibleSet a b x).Nonempty :=
+  ⟨(x, x, 0), hx, hx, ⟨le_refl 0, zero_le_one⟩, by simp⟩
 
 /-- The two-point feasible set is compact, being a closed subset of a product of compact boxes. -/
 lemma isCompact_twoPointFeasibleSet (a b x : ℝ) :
@@ -158,7 +159,6 @@ lemma exists_twoPointOptimum
     (twoPointFeasibleSet_nonempty hx)
     (continuous_twoPointObjective hφ).continuousOn
 
-
 /-- The concave envelope is concave on `Icc a b`. -/
 lemma concaveOn_concaveEnvelope
     {a b : ℝ} (hab : a ≤ b) {φ : ℝ → ℝ}
@@ -166,7 +166,6 @@ lemma concaveOn_concaveEnvelope
     ConcaveOn ℝ (Icc a b) (concaveEnvelope a b φ) := by
   refine ⟨convex_Icc a b, ?_⟩
   intro x hx y hy α β hα hβ hαβ
-  have hz : α • x + β • y ∈ Icc a b := convex_Icc a b hx hy hα hβ hαβ
   refine le_csInf ?_ ?_
   · obtain ⟨m₀, c₀, hm₀⟩ := exists_affineMajorant_of_continuousOn hab hφ
     exact ⟨m₀ * (α • x + β • y) + c₀, ⟨m₀, c₀, hm₀, rfl⟩⟩
@@ -183,8 +182,9 @@ lemma concaveOn_concaveEnvelope
   have hconv : α * (m * x + c) + β * (m * y + c) = m * (α • x + β • y) + c := by
     simp only [smul_eq_mul]
     linear_combination c * hαβ
-  calc α • concaveEnvelope a b φ x + β • concaveEnvelope a b φ y
-      = α * concaveEnvelope a b φ x + β * concaveEnvelope a b φ y := by
-          simp [smul_eq_mul]
+  calc
+    α • concaveEnvelope a b φ x + β • concaveEnvelope a b φ y =
+        α * concaveEnvelope a b φ x + β * concaveEnvelope a b φ y := by
+      simp [smul_eq_mul]
     _ ≤ α * (m * x + c) + β * (m * y + c) := hsum
     _ = m * (α • x + β • y) + c := hconv

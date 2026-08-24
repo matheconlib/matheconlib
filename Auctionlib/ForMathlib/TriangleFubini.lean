@@ -5,16 +5,16 @@ Authors: Daniel Lyng
 -/
 module
 
-public import Mathlib.MeasureTheory.Measure.Stieltjes
 public import Mathlib.MeasureTheory.Integral.IntervalIntegral.Basic
 public import Mathlib.MeasureTheory.Integral.Prod
+public import Mathlib.MeasureTheory.Measure.Stieltjes
 
 /-!
 # Triangle Fubini swaps
 
 This file proves Fubini-type swaps over the triangle `T = {(s, θ) : a ≤ s ≤ θ ≤ b}`, first for two
 real functions `g, f : ℝ → ℝ` integrated against Lebesgue measure, then for a Lebesgue weight
-against a Stieltjes measure. Writing each side as a two-dimensional integral over `[a,b] × [a,b]`
+against a Stieltjes measure. Writing each side as a two-dimensional integral over `[a, b] × [a, b]`
 of the integrand restricted to the triangle and applying `MeasureTheory.integral_integral_swap`,
 the Lebesgue × Lebesgue form is
 
@@ -76,15 +76,19 @@ theorem integral_triangle_swap {a b : ℝ} (hab : a ≤ b) {g f : ℝ → ℝ}
   have hg_int : Integrable g μ := hg.1
   have hf_int : Integrable f μ := hf.1
   -- The integrand `H s θ = 𝟙[T](s, θ) · g s · f θ`.
-  set H : ℝ → ℝ → ℝ := fun s θ => T.indicator (fun p : ℝ × ℝ => g p.1 * f p.2) (s, θ) with hH_def
+  set H : ℝ → ℝ → ℝ := fun s θ =>
+    T.indicator (fun p : ℝ × ℝ => g p.1 * f p.2) (s, θ) with hH_def
   have h_uncurry_H : Function.uncurry H = T.indicator (fun p : ℝ × ℝ => g p.1 * f p.2) := by
-    funext p; cases p with | mk s θ => simp [hH_def, Function.uncurry]
+    funext p
+    cases p with
+    | mk s θ => simp [hH_def, Function.uncurry]
   -- `H` is integrable over `μ ×ₘ μ`: the product `g s · f θ` is integrable and the indicator
   -- restriction only shrinks the support.
   have h_prod_int : Integrable (fun p : ℝ × ℝ => g p.1 * f p.2) (μ.prod μ) :=
     hg_int.mul_prod hf_int
   have h_H_int : Integrable (Function.uncurry H) (μ.prod μ) := by
-    rw [h_uncurry_H]; exact h_prod_int.indicator hT_meas
+    rw [h_uncurry_H]
+    exact h_prod_int.indicator hT_meas
   -- Fubini swap.
   have h_swap := MeasureTheory.integral_integral_swap (f := H) h_H_int
   -- Inner integral with `s` outer, `θ` inner: gives `g s * ∫ θ in s..b, f θ` over `Ioc a b`.
@@ -101,7 +105,8 @@ theorem integral_triangle_swap {a b : ℝ} (hab : a ≤ b) {g f : ℝ → ℝ}
         simp [this]
     rw [h_sect, hμ_def, setIntegral_indicator measurableSet_Icc]
     rw [show Ioc a b ∩ Icc s b = Icc s b by
-      ext θ; simp only [mem_inter_iff, mem_Ioc, mem_Icc]
+      ext θ
+      simp only [mem_inter_iff, mem_Ioc, mem_Icc]
       exact ⟨fun h => h.2, fun h => ⟨⟨lt_of_lt_of_le hs.1 h.1, le_trans h.2 le_rfl⟩, h⟩⟩]
     rw [integral_const_mul, setIntegral_congr_set Ioc_ae_eq_Icc.symm,
       intervalIntegral.integral_of_le hsb]
@@ -119,7 +124,8 @@ theorem integral_triangle_swap {a b : ℝ} (hab : a ≤ b) {g f : ℝ → ℝ}
         simp [h_in, h1]
     rw [h_sect, hμ_def, setIntegral_indicator measurableSet_Icc]
     rw [show Ioc a b ∩ Icc a θ = Ioc a θ by
-      ext s; simp only [mem_inter_iff, mem_Ioc, mem_Icc]
+      ext s
+      simp only [mem_inter_iff, mem_Ioc, mem_Icc]
       exact ⟨fun h => ⟨h.1.1, h.2.2⟩, fun h => ⟨⟨h.1, le_trans h.2 hθ.2⟩, ⟨h.1.le, h.2⟩⟩⟩]
     rw [integral_mul_const, intervalIntegral.integral_of_le haθ]
   -- Assemble: rewrite both iterated integrals via the section computations.
@@ -143,18 +149,23 @@ theorem integral_triangle_swap_stieltjes {a b : ℝ} {u g : ℝ → ℝ}
     (hu : Monotone u) (hab : a < b) (hg : IntervalIntegrable g volume a b) :
     ∫ t in a..b, g t * (hu.stieltjesFunction t - hu.stieltjesFunction a)
       = ∫ s in Ioc a b, (∫ t in s..b, g t) ∂(hu.stieltjesFunction.measure) := by
-  set u_sf := hu.stieltjesFunction with hu_sf
-  set μ := hu.stieltjesFunction.measure with hμ
+  set u_sf := hu.stieltjesFunction
+  set μ := hu.stieltjesFunction.measure
   have hμ_fin : μ (Ioc a b) ≠ ⊤ := by
     change u_sf.measure (Ioc a b) ≠ ⊤
     simp [StieltjesFunction.measure_Ioc, ENNReal.ofReal_ne_top]
   haveI : IsFiniteMeasure (μ.restrict (Ioc a b)) :=
-    ⟨by rw [Measure.restrict_apply_univ]; exact lt_top_iff_ne_top.mpr hμ_fin⟩
-  set f : ℝ → ℝ → ℝ := fun t s => (Ioc a t).indicator (fun _ => g t) s with hf_def
-  have h_inner_t : ∀ t ∈ Ioc a b, ∫ s in Ioc a b, f t s ∂μ = g t * (u_sf t - u_sf a) := by
+    ⟨by
+      rw [Measure.restrict_apply_univ]
+      exact lt_top_iff_ne_top.mpr hμ_fin⟩
+  set f : ℝ → ℝ → ℝ := fun t s =>
+    (Ioc a t).indicator (fun _ => g t) s with hf_def
+  have h_inner_t : ∀ t ∈ Ioc a b,
+      ∫ s in Ioc a b, f t s ∂μ = g t * (u_sf t - u_sf a) := by
     intro t ht
     have hsubset : Ioc a t ∩ Ioc a b = Ioc a t := by
-      rw [inter_eq_left]; exact Ioc_subset_Ioc_right ht.2
+      rw [inter_eq_left]
+      exact Ioc_subset_Ioc_right ht.2
     rw [hf_def]
     simp only [integral_indicator measurableSet_Ioc, Measure.restrict_restrict measurableSet_Ioc,
       hsubset, setIntegral_const, smul_eq_mul]
@@ -179,27 +190,28 @@ theorem integral_triangle_swap_stieltjes {a b : ℝ} {u g : ℝ → ℝ}
     rw [← integral_indicator measurableSet_Ioc, heq, integral_indicator measurableSet_Ioc]
     rw [integral_indicator measurableSet_Ici, Measure.restrict_restrict measurableSet_Ici]
     have hinter : Ici s ∩ Ioc a b = Icc s b := by
-      ext t; simp only [mem_inter_iff, mem_Ioc, mem_Ici, mem_Icc]
+      ext t
+      simp only [mem_inter_iff, mem_Ioc, mem_Ici, mem_Icc]
       exact ⟨fun ⟨hsx, _, hb⟩ => ⟨hsx, hb⟩,
         fun ⟨hsx, hb⟩ => ⟨hsx, lt_of_lt_of_le hs.1 hsx, hb⟩⟩
     rw [hinter, integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hs.2]
   have hg_oc : IntegrableOn g (Ioc a b) volume :=
     (intervalIntegrable_iff_integrableOn_Ioc_of_le hab.le).mp hg
-  have hgfst : Integrable (fun p : ℝ × ℝ => g p.1)
+  have hg_fst : Integrable (fun p : ℝ × ℝ => g p.1)
       ((volume.restrict (Ioc a b)).prod (μ.restrict (Ioc a b))) :=
     hg_oc.comp_fst (μ.restrict (Ioc a b))
-  have hTmeas : MeasurableSet {p : ℝ × ℝ | a < p.2 ∧ p.2 ≤ p.1} :=
+  have hT_meas : MeasurableSet {p : ℝ × ℝ | a < p.2 ∧ p.2 ≤ p.1} :=
     (measurableSet_lt measurable_const measurable_snd).inter
       (measurableSet_le measurable_snd measurable_fst)
   have h_int : Integrable (Function.uncurry f)
       ((volume.restrict (Ioc a b)).prod (μ.restrict (Ioc a b))) := by
-    refine (hgfst.indicator hTmeas).congr (Filter.Eventually.of_forall fun p => ?_)
+    refine (hg_fst.indicator hT_meas).congr (Filter.Eventually.of_forall fun p => ?_)
     simp only [Function.uncurry, hf_def, Set.indicator_apply, mem_setOf_eq, mem_Ioc]
-  have hswap := MeasureTheory.integral_integral_swap (μ := volume.restrict (Ioc a b))
+  have h_swap := MeasureTheory.integral_integral_swap (μ := volume.restrict (Ioc a b))
     (ν := μ.restrict (Ioc a b)) h_int
   rw [intervalIntegral.integral_of_le hab.le]
   refine (setIntegral_congr_fun measurableSet_Ioc h_inner_t).symm.trans ?_
-  refine hswap.trans (setIntegral_congr_fun measurableSet_Ioc h_inner_s)
+  exact h_swap.trans (setIntegral_congr_fun measurableSet_Ioc h_inner_s)
 
 end MeasureTheory
 

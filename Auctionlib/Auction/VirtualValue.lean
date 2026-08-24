@@ -53,7 +53,8 @@ lemma realDensity_valueDistribution (i : Fin n) :
 lemma DensityFamily.exists_upperBound (ρ : A.DensityFamily) (i : Fin n) :
     ∃ C : ℝ, ∀ v ∈ A.interval i, ρ.f i v ≤ C := by
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn (ρ.continuousOn i)
-  exact ⟨C, fun v hv => (le_abs_self _).trans (by simpa [Real.norm_eq_abs] using hC v hv)⟩
+  exact ⟨C, fun v hv =>
+    (le_abs_self _).trans (by simpa [Real.norm_eq_abs] using hC v hv)⟩
 
 /-- A continuous strictly positive chosen density is bounded away from zero on its nonempty support
 interval. -/
@@ -85,7 +86,8 @@ lemma exists_bound_virtualValue [HasDensity A] (ρ : A.DensityFamily) (i : Fin n
     ∃ C : ℝ, ∀ v ∈ A.interval i, |A.virtualValue ρ i v| ≤ C := by
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn
     (A.continuousOn_virtualValue ρ i)
-  exact ⟨C, fun v hv => by simpa [Real.norm_eq_abs] using hC v hv⟩
+  exact ⟨C, fun v hv => by
+    simpa [Real.norm_eq_abs] using hC v hv⟩
 
 /-- A bidder's realized virtual value is integrable. -/
 lemma integrable_virtualValue_comp_θ [HasBoundedTypes A] [HasDensity A]
@@ -99,10 +101,10 @@ lemma integrable_virtualValue_mul_x [HasBoundedTypes A] [HasDensity A]
     [A.rules.HasValidAllocation] (ρ : A.DensityFamily) (i : Fin n) :
     Integrable
       (fun ω => A.virtualValue ρ i (A.θ i ω) * A.rules.x i (A.θ · ω)) ℙ := by
-  have hxmeas : Measurable (fun ω => A.rules.x i (fun j => A.θ j ω)) :=
+  have hx_meas : Measurable (fun ω => A.rules.x i (fun j => A.θ j ω)) :=
     (A.rules.x_measurable i).comp A.measurable_profile
   exact (A.integrable_virtualValue_comp_θ ρ i).mul_bdd
-    hxmeas.aestronglyMeasurable (ae_of_all ℙ fun ω => by
+    hx_meas.aestronglyMeasurable (ae_of_all ℙ fun ω => by
       rw [Real.norm_eq_abs, abs_of_nonneg
         (Mechanism.HasValidAllocation.x_range (M := A.rules) i _).1]
       exact (Mechanism.HasValidAllocation.x_range (M := A.rules) i _).2)
@@ -160,10 +162,10 @@ lemma integrable_ironedVirtualValue_mul_x [HasBoundedTypes A] [HasDensity A]
     [A.rules.HasValidAllocation] (ρ : A.DensityFamily) (i : Fin n) :
     Integrable
       (fun ω => A.ironedVirtualValue ρ i (A.θ i ω) * A.rules.x i (A.θ · ω)) ℙ := by
-  have hxmeas : Measurable (fun ω => A.rules.x i (fun j => A.θ j ω)) :=
+  have hx_meas : Measurable (fun ω => A.rules.x i (fun j => A.θ j ω)) :=
     (A.rules.x_measurable i).comp A.measurable_profile
   exact (A.integrable_ironedVirtualValue_comp_θ ρ i).mul_bdd
-    hxmeas.aestronglyMeasurable (ae_of_all ℙ fun ω => by
+    hx_meas.aestronglyMeasurable (ae_of_all ℙ fun ω => by
       rw [Real.norm_eq_abs, abs_of_nonneg
         (Mechanism.HasValidAllocation.x_range (M := A.rules) i _).1]
       exact (Mechanism.HasValidAllocation.x_range (M := A.rules) i _).2)
@@ -182,7 +184,7 @@ lemma ironedVirtualValue_eq_virtualValue_of_regular
 
 section NeZero
 
-variable [hn : NeZero n]
+variable [NeZero n]
 
 /-- The pointwise optimal raw virtual surplus over feasible single-unit allocations. -/
 noncomputable def optimalVirtualSurplus (ρ : A.DensityFamily) (θ : Fin n → ℝ) : ℝ :=
@@ -217,28 +219,28 @@ lemma sum_ironedVirtualValue_mul_x_le [A.rules.IsFeasible]
 
 lemma measurable_optimalVirtualSurplus (ρ : A.DensityFamily) :
     Measurable (A.optimalVirtualSurplus ρ) := by
-  have hsup : Measurable
+  have h_sup : Measurable
       (Finset.univ.sup' Finset.univ_nonempty
         (fun i (θ : Fin n → ℝ) => A.virtualValue ρ i (θ i))) :=
     Finset.measurable_sup' Finset.univ_nonempty fun i _ =>
       (A.measurable_virtualValue ρ i).comp (measurable_pi_apply i)
-  simpa only [optimalVirtualSurplus, Finset.sup'_apply] using measurable_const.max hsup
+  simpa only [optimalVirtualSurplus, Finset.sup'_apply] using measurable_const.max h_sup
 
 lemma measurable_ironedOptimalVirtualSurplus [HasBoundedTypes A] [HasDensity A]
     (ρ : A.DensityFamily) :
     Measurable (A.ironedOptimalVirtualSurplus ρ) := by
-  have hsup : Measurable
+  have h_sup : Measurable
       (Finset.univ.sup' Finset.univ_nonempty
         (fun i (θ : Fin n → ℝ) => A.ironedVirtualValue ρ i (θ i))) :=
     Finset.measurable_sup' Finset.univ_nonempty fun i _ =>
       (A.measurable_ironedVirtualValue ρ i).comp (measurable_pi_apply i)
-  simpa only [ironedOptimalVirtualSurplus, Finset.sup'_apply] using measurable_const.max hsup
+  simpa only [ironedOptimalVirtualSurplus, Finset.sup'_apply] using measurable_const.max h_sup
 
 /-- The pointwise optimal raw virtual surplus is integrable at the realized type profile. -/
 lemma integrable_optimalVirtualSurplus_comp_profile
     [HasBoundedTypes A] [HasDensity A] (ρ : A.DensityFamily) :
     Integrable (fun ω => A.optimalVirtualSurplus ρ (A.θ · ω)) ℙ := by
-  have hsup : Integrable
+  have h_sup : Integrable
       (Finset.univ.sup' Finset.univ_nonempty
         (fun i (ω : Ω) => A.virtualValue ρ i (A.θ i ω))) ℙ :=
     Finset.sup'_induction (p := fun g : Ω → ℝ => Integrable g ℙ)
@@ -246,13 +248,13 @@ lemma integrable_optimalVirtualSurplus_comp_profile
       (fun _ hf _ hg => hf.sup hg)
       (fun i _ => A.integrable_virtualValue_comp_θ ρ i)
   simpa only [optimalVirtualSurplus, Finset.sup'_apply, Pi.sup_def] using
-    (integrable_const (0 : ℝ)).sup hsup
+    (integrable_const (0 : ℝ)).sup h_sup
 
 /-- The pointwise optimal ironed virtual surplus is integrable at the realized type profile. -/
 lemma integrable_ironedOptimalVirtualSurplus_comp_profile
     [HasBoundedTypes A] [HasDensity A] (ρ : A.DensityFamily) :
     Integrable (fun ω => A.ironedOptimalVirtualSurplus ρ (A.θ · ω)) ℙ := by
-  have hsup : Integrable
+  have h_sup : Integrable
       (Finset.univ.sup' Finset.univ_nonempty
         (fun i (ω : Ω) => A.ironedVirtualValue ρ i (A.θ i ω))) ℙ :=
     Finset.sup'_induction (p := fun g : Ω → ℝ => Integrable g ℙ)
@@ -260,7 +262,7 @@ lemma integrable_ironedOptimalVirtualSurplus_comp_profile
       (fun _ hf _ hg => hf.sup hg)
       (fun i _ => A.integrable_ironedVirtualValue_comp_θ ρ i)
   simpa only [ironedOptimalVirtualSurplus, Finset.sup'_apply, Pi.sup_def] using
-    (integrable_const (0 : ℝ)).sup hsup
+    (integrable_const (0 : ℝ)).sup h_sup
 
 /-- In a regular environment, the pointwise raw and ironed optima coincide at interior type
 profiles. -/

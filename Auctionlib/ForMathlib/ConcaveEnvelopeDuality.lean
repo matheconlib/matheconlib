@@ -23,7 +23,7 @@ envelope is concave.
 * `isAffineMajorant_secant_of_twoPointOptimum` — the secant of a non-degenerate two-point optimum
   is an affine majorant.
 * `concaveEnvelope_eq_twoPointValue` — the strong-duality identity.
-* `concaveEnvelope_concaveOn` — the concave envelope is concave.
+* `concaveOn_concaveEnvelope` — the concave envelope is concave.
 
 ## Tags
 
@@ -61,7 +61,8 @@ lemma twoPointValue_le_concaveEnvelope
       (mul_le_mul_of_nonneg_left hφxR hq0)
   -- The dominating value collapses to `m * x + c` by the barycentric identity.
   have hcollapse : (1 - q) * (m * xL + c) + q * (m * xR + c) = m * x + c := by
-    rw [← hmean]; ring
+    rw [← hmean]
+    ring
   rw [hcollapse] at hbound
   exact hbound
 
@@ -76,7 +77,7 @@ lemma isAffineMajorant_secant_of_twoPointOptimum
     (hq_pos : 0 < q) (hq_lt1 : q < 1)
     (hmean : (1 - q) * xL + q * xR ∈ Icc a b)
     (hopt : IsMaxOn (twoPointObjective φ) (twoPointFeasibleSet a b ((1 - q) * xL + q * xR))
-              (xL, xR, q)) :
+      (xL, xR, q)) :
     IsAffineMajorant a b φ
       ((φ xR - φ xL) / (xR - xL)) (φ xL - (φ xR - φ xL) / (xR - xL) * xL) := by
   set x := (1 - q) * xL + q * xR with hx_def
@@ -90,14 +91,19 @@ lemma isAffineMajorant_secant_of_twoPointOptimum
     have : m * xR + (φ xL - m * xL) = m * (xR - xL) + φ xL := by ring
     rw [this, hm_def, div_mul_cancel₀ _ hxR_sub_xL_ne]
     ring
-  -- Barycentric identity: `L(x) = (1-q) φ xL + q φ xR`.
+  -- Barycentric identity: `L(x) = (1 - q) φ xL + q φ xR`.
   have hline_x : m * x + c = (1 - q) * φ xL + q * φ xR := by
     have hrw : m * ((1 - q) * xL + q * xR) + c
-             = (1 - q) * (m * xL + c) + q * (m * xR + c) := by ring
+        = (1 - q) * (m * xL + c) + q * (m * xR + c) := by
+      ring
     rw [hx_def, hrw, hline_xL, hline_xR]
   -- Mean decomposition identities.
-  have hxR_sub_x : xR - x = (1 - q) * (xR - xL) := by rw [hx_def]; ring
-  have hx_sub_xL : x - xL = q * (xR - xL) := by rw [hx_def]; ring
+  have hxR_sub_x : xR - x = (1 - q) * (xR - xL) := by
+    rw [hx_def]
+    ring
+  have hx_sub_xL : x - xL = q * (xR - xL) := by
+    rw [hx_def]
+    ring
   -- Optimality bound on any pair at x.
   have hv_def : twoPointObjective φ (xL, xR, q) = (1 - q) * φ xL + q * φ xR := by
     simp [twoPointObjective]
@@ -106,9 +112,11 @@ lemma isAffineMajorant_secant_of_twoPointOptimum
   push Not at hfail
   -- `hfail : m * t + c < φ t`. Derive a contradiction with `hopt`.
   rcases eq_or_ne t xL with ht_eq_xL | ht_ne_xL
-  · rw [ht_eq_xL, hline_xL] at hfail; exact absurd hfail (lt_irrefl _)
+  · rw [ht_eq_xL, hline_xL] at hfail
+    exact absurd hfail (lt_irrefl _)
   rcases eq_or_ne t xR with ht_eq_xR | ht_ne_xR
-  · rw [ht_eq_xR, hline_xR] at hfail; exact absurd hfail (lt_irrefl _)
+  · rw [ht_eq_xR, hline_xR] at hfail
+    exact absurd hfail (lt_irrefl _)
   -- Split by position of t relative to x.
   rcases lt_trichotomy t x with ht_lt_x | ht_eq_x | ht_gt_x
   · -- `t < x < xR`: replace `xL` in the pair with `t`.
@@ -121,7 +129,8 @@ lemma isAffineMajorant_secant_of_twoPointOptimum
     have hq_new_nn : 0 ≤ q_new :=
       div_nonneg (by linarith) (le_of_lt hxR_sub_t_pos)
     have hq_new_le1 : q_new ≤ 1 := by
-      rw [hq_new_def, div_le_one hxR_sub_t_pos]; linarith
+      rw [hq_new_def, div_le_one hxR_sub_t_pos]
+      linarith
     have hmean_new : (1 - q_new) * t + q_new * xR = x := by
       rw [hq_new_def]
       field_simp
@@ -145,7 +154,7 @@ lemma isAffineMajorant_secant_of_twoPointOptimum
           = ((xR - x) / (xR - t)) * (φ t - (m * t + c)) := by
       rw [hq_new_def]
       have h1 : m * t + c = ((xR - t) / (xR - xL)) * φ xL
-                            + ((t - xL) / (xR - xL)) * φ xR := by
+          + ((t - xL) / (xR - xL)) * φ xR := by
         rw [hc_def, hm_def]
         field_simp
         ring
@@ -186,7 +195,8 @@ lemma isAffineMajorant_secant_of_twoPointOptimum
     have hq_new_nn : 0 ≤ q_new :=
       div_nonneg (by linarith) (le_of_lt ht_sub_xL_pos)
     have hq_new_le1 : q_new ≤ 1 := by
-      rw [hq_new_def, div_le_one ht_sub_xL_pos]; linarith
+      rw [hq_new_def, div_le_one ht_sub_xL_pos]
+      linarith
     have hmean_new : (1 - q_new) * xL + q_new * t = x := by
       rw [hq_new_def]
       field_simp
@@ -206,7 +216,7 @@ lemma isAffineMajorant_secant_of_twoPointOptimum
           = ((x - xL) / (t - xL)) * (φ t - (m * t + c)) := by
       rw [hq_new_def]
       have h1 : m * t + c = ((xR - t) / (xR - xL)) * φ xL
-                            + ((t - xL) / (xR - xL)) * φ xR := by
+          + ((t - xL) / (xR - xL)) * φ xR := by
         rw [hc_def, hm_def]
         field_simp
         ring
@@ -246,9 +256,11 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
     have hq'_nn : 0 ≤ q' :=
       div_nonneg (by linarith [ht₁.2]) (le_of_lt ht₂_sub_t₁_pos)
     have hq'_le1 : q' ≤ 1 := by
-      rw [hq'_def, div_le_one ht₂_sub_t₁_pos]; linarith [ht₂.1]
+      rw [hq'_def, div_le_one ht₂_sub_t₁_pos]
+      linarith [ht₂.1]
     have hmean' : (1 - q') * t₁ + q' * t₂ = x := by
-      rw [hq'_def]; field_simp; ring
+      rw [hq'_def]
+      field_simp; ring
     have hpair_mem : (t₁, t₂, q') ∈ twoPointFeasibleSet a b x :=
       ⟨ht₁', ht₂', ⟨hq'_nn, hq'_le1⟩, hmean'⟩
     have hobj_le := hchord (t₁, t₂, q') hpair_mem
@@ -257,7 +269,7 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
     have hstep : ((1 - q') * φ t₁ + q' * φ t₂) * (t₂ - t₁) ≤ φ x * (t₂ - t₁) :=
       mul_le_mul_of_nonneg_right hobj_le (le_of_lt ht₂_sub_t₁_pos)
     have hexpand : ((1 - q') * φ t₁ + q' * φ t₂) * (t₂ - t₁)
-                  = (t₂ - x) * φ t₁ + (x - t₁) * φ t₂ := by
+        = (t₂ - x) * φ t₁ + (x - t₁) * φ t₂ := by
       rw [hq'_def]
       field_simp
       ring
@@ -265,11 +277,16 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
   -- **Case split** on the position of `x`.
   rcases eq_or_lt_of_le hab with hab_eq | hab_lt
   · -- `a = b`, so `x = a = b` and `[a, b] = {a}`. Any majorant with `c = φ a` works.
-    have hx_eq : x = a := by rw [← hab_eq] at hx; exact le_antisymm hx.2 hx.1
+    have hx_eq : x = a := by
+      rw [← hab_eq] at hx
+      exact le_antisymm hx.2 hx.1
     have hmaj0 : IsAffineMajorant a b φ 0 (φ a) := by
       intro t ht
-      have ht_eq_a : t = a := by rw [← hab_eq] at ht; exact le_antisymm ht.2 ht.1
-      rw [ht_eq_a]; simp
+      have ht_eq_a : t = a := by
+        rw [← hab_eq] at ht
+        exact le_antisymm ht.2 ht.1
+      rw [ht_eq_a]
+      simp
     have := concaveEnvelope_le_affineMajorant hmaj0 hx
     simp [hx_eq] at this ⊢
     linarith
@@ -290,11 +307,14 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
       isCompact_Icc.exists_isMaxOn (nonempty_Icc.mpr hab_lt.le) hφ.continuousOn
     set M := φ Mp - φ a + 1 with hM_def
     have hφ_a_le_Mp : φ a ≤ φ Mp := hMp_max (Set.left_mem_Icc.mpr hab_lt.le)
-    have hM_pos : 0 < M := by rw [hM_def]; linarith
+    have hM_pos : 0 < M := by
+      rw [hM_def]
+      linarith
     have hφ_bound : ∀ t ∈ Icc a b, φ t - φ a ≤ M := by
       intro t ht
       have : φ t ≤ φ Mp := hMp_max ht
-      rw [hM_def]; linarith
+      rw [hM_def]
+      linarith
     -- Choose `δ' := min (δ/2) ((b - a) / 2)` so `a + δ' ≤ b` and `δ' < δ` strictly.
     set δ' := min (δ / 2) ((b - a) / 2) with hδ'_def
     have hδ'_pos : 0 < δ' := lt_min (by linarith) (by linarith)
@@ -341,7 +361,9 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
           nlinarith [this, hδ'_pos]
         have hM_ge_excess : φ t - φ a ≤ M := hφ_bound t ht
         linarith
-    have hLx : m * a + c = φ a + ε := by rw [hc_def]; ring
+    have hLx : m * a + c = φ a + ε := by
+      rw [hc_def]
+      ring
     have := concaveEnvelope_le_affineMajorant hmaj hx
     linarith [hLx]
   rcases eq_or_lt_of_le hx_b with hx_eq_b | hx_lt_b
@@ -356,11 +378,14 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
       isCompact_Icc.exists_isMaxOn (nonempty_Icc.mpr hab_lt.le) hφ.continuousOn
     set M := φ Mp - φ x + 1 with hM_def
     have hφ_x_le_Mp : φ x ≤ φ Mp := hMp_max (Set.right_mem_Icc.mpr hab_lt.le)
-    have hM_pos : 0 < M := by rw [hM_def]; linarith
+    have hM_pos : 0 < M := by
+      rw [hM_def]
+      linarith
     have hφ_bound : ∀ t ∈ Icc a x, φ t - φ x ≤ M := by
       intro t ht
       have : φ t ≤ φ Mp := hMp_max ht
-      rw [hM_def]; linarith
+      rw [hM_def]
+      linarith
     set δ' := min (δ / 2) ((x - a) / 2) with hδ'_def
     have hδ'_pos : 0 < δ' := lt_min (by linarith) (by linarith)
     have hδ'_lt_δ : δ' < δ := lt_of_le_of_lt (min_le_left _ _) (by linarith)
@@ -370,7 +395,8 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
     set m := -(M / δ' + 1) with hm_def
     have hm_neg : m < 0 := by
       have : 0 < M / δ' := div_pos hM_pos hδ'_pos
-      rw [hm_def]; linarith
+      rw [hm_def]
+      linarith
     set c := φ x + ε - m * x with hc_def
     have hmaj : IsAffineMajorant a x φ m c := by
       intro t ht
@@ -383,7 +409,8 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
           rw [Real.dist_eq]
           have ht_le_x : t ≤ x := ht.2
           have h_abs : |t - x| = x - t := by
-            rw [abs_of_nonpos (sub_nonpos.mpr ht_le_x)]; ring
+            rw [abs_of_nonpos (sub_nonpos.mpr ht_le_x)]
+            ring
           rw [h_abs]
           linarith [hδ'_lt_δ]
         have := hδ ht_dist
@@ -407,10 +434,12 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
           nlinarith [this, hδ'_pos]
         have hM_ge_excess : φ t - φ x ≤ M := hφ_bound t ht
         linarith [hm_ta, hnm_ta_ge, hnm_δ'_ge_M]
-    have hLx : m * x + c = φ x + ε := by rw [hc_def]; ring
+    have hLx : m * x + c = φ x + ε := by
+      rw [hc_def]
+      ring
     have := concaveEnvelope_le_affineMajorant hmaj hx
     linarith [hLx]
-  -- **Interior case** `a < x < b`. Use `m := sSup {(φ t - φ x)/(t - x) | t ∈ (x, b]}`;
+  -- **Interior case** `a < x < b`. Use `m := sSup {(φ t - φ x) / (t - x) | t ∈ (x, b]}`;
   -- chord bounds this by any left difference quotient, giving a majorant line through
   -- `(x, φ x)` with slope `m`.
   have hx_sub_a_pos : 0 < x - a := sub_pos.mpr ha_lt_x
@@ -449,7 +478,9 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
     rw [div_le_div_iff₀ ht₂_sub_x_pos hx_sub_t₁_pos]
     nlinarith [hcineq]
   set c := φ x - m * x with hc_def
-  have hline_x : m * x + c = φ x := by rw [hc_def]; ring
+  have hline_x : m * x + c = φ x := by
+    rw [hc_def]
+    ring
   have hmaj : IsAffineMajorant a b φ m c := by
     intro t ht
     rcases lt_trichotomy t x with ht_lt | ht_eq | ht_gt
@@ -461,7 +492,9 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
       have hineq : m * (x - t) ≤ φ x - φ t := by
         rw [le_div_iff₀ hx_sub_t_pos] at hslope
         linarith
-      have hL_eq : m * t + c = φ x - m * (x - t) := by rw [hc_def]; ring
+      have hL_eq : m * t + c = φ x - m * (x - t) := by
+        rw [hc_def]
+        ring
       rw [hL_eq]
       linarith
     · rw [ht_eq, hline_x]
@@ -473,7 +506,9 @@ private lemma concaveEnvelope_le_phi_of_degenerate_twoPointOptimum
       have hineq : φ t - φ x ≤ m * (t - x) := by
         rw [div_le_iff₀ ht_sub_x_pos] at hslope
         linarith
-      have hL_eq : m * t + c = m * (t - x) + φ x := by rw [hc_def]; ring
+      have hL_eq : m * t + c = m * (t - x) + φ x := by
+        rw [hc_def]
+        ring
       rw [hL_eq]
       linarith
   have := concaveEnvelope_le_affineMajorant hmaj hx
@@ -502,7 +537,9 @@ theorem concaveEnvelope_eq_twoPointValue
       linarith [hmean]
   have hsym_obj : ∀ (xL xR q : ℝ),
       twoPointObjective φ (xR, xL, 1 - q) = twoPointObjective φ (xL, xR, q) := by
-    intros; simp [twoPointObjective]; ring
+    intros
+    simp [twoPointObjective]
+    ring
   rcases le_total xL₀ xR₀ with hxLR_le | hxLR_ge
   · -- Case `xL₀ ≤ xR₀`.
     set xL := xL₀
@@ -530,14 +567,17 @@ theorem concaveEnvelope_eq_twoPointValue
       obtain ⟨hxLR_lt, hq_pos, hq_lt1⟩ := hnondeg
       have hmean' : (1 - q) * xL + q * xR ∈ Icc a b := hmean ▸ hx
       have hopt' : IsMaxOn (twoPointObjective φ)
-            (twoPointFeasibleSet a b ((1 - q) * xL + q * xR)) (xL, xR, q) := by
-        rw [hmean]; exact hmax₀
+          (twoPointFeasibleSet a b ((1 - q) * xL + q * xR)) (xL, xR, q) := by
+        rw [hmean]
+        exact hmax₀
       have hmaj := isAffineMajorant_secant_of_twoPointOptimum
         hxL hxR hxLR_lt hq_pos hq_lt1 hmean' hopt'
       set m := (φ xR - φ xL) / (xR - xL) with hm_def
       set c := φ xL - m * xL with hc_def
       have hxR_sub_xL_ne : xR - xL ≠ 0 := sub_ne_zero.mpr hxLR_lt.ne'
-      have h1 : m * xL + c = φ xL := by rw [hc_def]; ring
+      have h1 : m * xL + c = φ xL := by
+        rw [hc_def]
+        ring
       have h2 : m * xR + c = φ xR := by
         rw [hc_def, hm_def]
         field_simp
@@ -545,7 +585,8 @@ theorem concaveEnvelope_eq_twoPointValue
       have hline_x : m * x + c = (1 - q) * φ xL + q * φ xR := by
         rw [← hmean]
         have hrw : m * ((1 - q) * xL + q * xR) + c
-             = (1 - q) * (m * xL + c) + q * (m * xR + c) := by ring
+            = (1 - q) * (m * xL + c) + q * (m * xR + c) := by
+          ring
         rw [hrw, h1, h2]
       have hbound := concaveEnvelope_le_affineMajorant hmaj hx
       -- `hbound : concaveEnvelope a b φ x ≤ m * x + c`
@@ -559,18 +600,23 @@ theorem concaveEnvelope_eq_twoPointValue
             have h := hmean
             rw [← hxLR_eq] at h
             linarith
-          rw [← hxLR_eq, hx_eq]; ring
+          rw [← hxLR_eq, hx_eq]
+          ring
         · rcases not_and_or.mp hq_not_in_Ioo with hq_not_pos | hq_not_lt1
           · have hq_zero : q = 0 := le_antisymm (not_lt.mp hq_not_pos) hq_mem.1
             have hx_eq : x = xL := by
               have := hmean
-              rw [hq_zero] at this; linarith
-            rw [hq_zero, hx_eq]; ring
+              rw [hq_zero] at this
+              linarith
+            rw [hq_zero, hx_eq]
+            ring
           · have hq_one : q = 1 := le_antisymm hq_mem.2 (not_lt.mp hq_not_lt1)
             have hx_eq : x = xR := by
               have := hmean
-              rw [hq_one] at this; linarith
-            rw [hq_one, hx_eq]; ring
+              rw [hq_one] at this
+              linarith
+            rw [hq_one, hx_eq]
+            ring
       rw [hval_eq_phi]
       -- The chord condition: every two-point value at `x` is ≤ `φ x`.
       have hchord : ∀ p ∈ twoPointFeasibleSet a b x, twoPointObjective φ p ≤ φ x := by
@@ -585,7 +631,8 @@ theorem concaveEnvelope_eq_twoPointValue
       intro p hp
       have h1 := hsym_feasible hp
       have h2 := hmax₀ h1
-      -- `twoPointObjective φ (p.2.1, p.1, 1 - p.2.2) ≤ twoPointObjective φ (xL₀, xR₀, q₀)`
+      -- `twoPointObjective φ (p.2.1, p.1, 1 - p.2.2)` is at most
+      -- `twoPointObjective φ (xL₀, xR₀, q₀)`.
       -- Simplify both sides via `hsym_obj`.
       have hobj_swap := hsym_obj p.1 p.2.1 p.2.2
       have h3 := hsym_obj xL₀ xR₀ q₀
@@ -593,7 +640,8 @@ theorem concaveEnvelope_eq_twoPointValue
           = twoPointObjective φ (p.2.1, p.1, 1 - p.2.2) := hobj_swap.symm
         _ ≤ twoPointObjective φ (xL₀, xR₀, q₀) := h2
         _ = twoPointObjective φ (xR₀, xL₀, 1 - q₀) := h3.symm
-    -- Now we have an optimizer with `xR₀ ≤ xL₀`, i.e., the "swapped" pair has `xL_sw ≤ xR_sw`.
+    -- Now we have an optimizer with `xR₀ ≤ xL₀`, i.e., the "swapped" pair has
+    -- `xL_sw ≤ xR_sw`.
     -- Recurse using the same body. We replicate the proof with `xL := xR₀`, `xR := xL₀`,
     -- `q := 1 - q₀`, so `xL ≤ xR`.
     set xL := xR₀
@@ -621,14 +669,17 @@ theorem concaveEnvelope_eq_twoPointValue
       obtain ⟨hxLR_lt, hq_pos, hq_lt1⟩ := hnondeg
       have hmean' : (1 - q) * xL + q * xR ∈ Icc a b := hmean ▸ hx
       have hopt' : IsMaxOn (twoPointObjective φ)
-            (twoPointFeasibleSet a b ((1 - q) * xL + q * xR)) (xL, xR, q) := by
-        rw [hmean]; exact hmax_sw
+          (twoPointFeasibleSet a b ((1 - q) * xL + q * xR)) (xL, xR, q) := by
+        rw [hmean]
+        exact hmax_sw
       have hmaj := isAffineMajorant_secant_of_twoPointOptimum
         hxL hxR hxLR_lt hq_pos hq_lt1 hmean' hopt'
       set m := (φ xR - φ xL) / (xR - xL) with hm_def
       set c := φ xL - m * xL with hc_def
       have hxR_sub_xL_ne : xR - xL ≠ 0 := sub_ne_zero.mpr hxLR_lt.ne'
-      have h1 : m * xL + c = φ xL := by rw [hc_def]; ring
+      have h1 : m * xL + c = φ xL := by
+        rw [hc_def]
+        ring
       have h2 : m * xR + c = φ xR := by
         rw [hc_def, hm_def]
         field_simp
@@ -636,7 +687,8 @@ theorem concaveEnvelope_eq_twoPointValue
       have hline_x : m * x + c = (1 - q) * φ xL + q * φ xR := by
         rw [← hmean]
         have hrw : m * ((1 - q) * xL + q * xR) + c
-             = (1 - q) * (m * xL + c) + q * (m * xR + c) := by ring
+            = (1 - q) * (m * xL + c) + q * (m * xR + c) := by
+          ring
         rw [hrw, h1, h2]
       have hbound := concaveEnvelope_le_affineMajorant hmaj hx
       linarith [hline_x]
@@ -648,18 +700,23 @@ theorem concaveEnvelope_eq_twoPointValue
             have h := hmean
             rw [← hxLR_eq] at h
             linarith
-          rw [← hxLR_eq, hx_eq]; ring
+          rw [← hxLR_eq, hx_eq]
+          ring
         · rcases not_and_or.mp hq_not_in_Ioo with hq_not_pos | hq_not_lt1
           · have hq_zero : q = 0 := le_antisymm (not_lt.mp hq_not_pos) hq_mem.1
             have hx_eq : x = xL := by
               have := hmean
-              rw [hq_zero] at this; linarith
-            rw [hq_zero, hx_eq]; ring
+              rw [hq_zero] at this
+              linarith
+            rw [hq_zero, hx_eq]
+            ring
           · have hq_one : q = 1 := le_antisymm hq_mem.2 (not_lt.mp hq_not_lt1)
             have hx_eq : x = xR := by
               have := hmean
-              rw [hq_one] at this; linarith
-            rw [hq_one, hx_eq]; ring
+              rw [hq_one] at this
+              linarith
+            rw [hq_one, hx_eq]
+            ring
       rw [hval_eq_phi]
       have hchord : ∀ p ∈ twoPointFeasibleSet a b x, twoPointObjective φ p ≤ φ x := by
         intro p hp

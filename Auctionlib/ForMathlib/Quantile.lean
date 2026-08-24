@@ -61,7 +61,7 @@ lemma set_bddBelow {t : ℝ} (ht : 0 < t) : BddBelow {x : ℝ | t ≤ cdf μ x} 
   have h := tendsto_cdf_atBot μ
   rw [Metric.tendsto_nhds] at h
   have hevent := h t ht
-  rw [Filter.eventually_atBot] at hevent
+  rw [eventually_atBot] at hevent
   obtain ⟨N, hN⟩ := hevent
   refine ⟨N, ?_⟩
   intro x hx
@@ -79,7 +79,7 @@ lemma quantile_le_iff {t : ℝ} (ht : t ∈ Ioo (0 : ℝ) 1) {x : ℝ} :
     quantile μ t ≤ x ↔ t ≤ cdf μ x := by
   obtain ⟨ht_pos, ht_lt⟩ := ht
   refine ⟨fun h => ?_, fun h => csInf_le (Quantile.set_bddBelow ht_pos) h⟩
-  set q := quantile μ t with hq
+  set q := quantile μ t
   have hset_nonempty := Quantile.set_nonempty (μ := μ) ht_lt
   have hset_bddBelow := Quantile.set_bddBelow (μ := μ) ht_pos
   have hq_mem : t ≤ cdf μ q := by
@@ -191,7 +191,7 @@ theorem integral_eq_integral_quantile [IsProbabilityMeasure μ]
     (hφ : AEStronglyMeasurable φ μ) :
     ∫ x, φ x ∂μ = ∫ t in Ioo (0 : ℝ) 1, φ (quantile μ t) := by
   conv_lhs => rw [← map_quantile_volume_Ioo (μ := μ)]
-  rw [MeasureTheory.integral_map aemeasurable_quantile_restrict_Ioo]
+  rw [integral_map aemeasurable_quantile_restrict_Ioo]
   rw [map_quantile_volume_Ioo (μ := μ)]
   exact hφ
 

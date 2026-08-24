@@ -96,15 +96,16 @@ lemma monotoneOn_comp_quantile {f : ℝ → ℝ}
 lemma aestronglyMeasurable_of_continuousOn {E : Type*} [NormedAddCommGroup E]
     {f : ℝ → E} (hsupport : D.IsSupportedOnInterval lower upper)
     (hf : ContinuousOn f (Icc lower upper)) : AEStronglyMeasurable f (D : Measure ℝ) := by
-  have h := hf.aestronglyMeasurable (μ := (D : Measure ℝ)) measurableSet_Icc
-  rwa [Measure.restrict_eq_self_of_ae_mem hsupport] at h
+  have h_meas := hf.aestronglyMeasurable (μ := (D : Measure ℝ)) measurableSet_Icc
+  rwa [Measure.restrict_eq_self_of_ae_mem hsupport] at h_meas
 
 /-- Monotonicity on a support interval gives a.e. measurability under the distribution. -/
 lemma aemeasurable_of_monotoneOn {f : ℝ → ℝ}
     (hsupport : D.IsSupportedOnInterval lower upper)
     (hf : MonotoneOn f (Icc lower upper)) : AEMeasurable f (D : Measure ℝ) := by
-  have h := aemeasurable_restrict_of_monotoneOn (μ := (D : Measure ℝ)) measurableSet_Icc hf
-  rwa [Measure.restrict_eq_self_of_ae_mem hsupport] at h
+  have h_meas :=
+    aemeasurable_restrict_of_monotoneOn (μ := (D : Measure ℝ)) measurableSet_Icc hf
+  rwa [Measure.restrict_eq_self_of_ae_mem hsupport] at h_meas
 
 /-- Integrals under a value distribution can be expressed on the quantile domain. -/
 theorem integral_eq_integral_comp_quantile {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -118,10 +119,10 @@ lemma integrableOn_comp_quantile {E : Type*} [NormedAddCommGroup E]
     {f : ℝ → E} (hf : Integrable f (D : Measure ℝ)) :
     IntegrableOn (f ∘ Measure.quantile (D : Measure ℝ)) (Ioo (0 : ℝ) 1) volume := by
   let μ : Measure ℝ := volume.restrict (Ioo (0 : ℝ) 1)
-  have hmap : Measure.map (Measure.quantile (D : Measure ℝ)) μ = (D : Measure ℝ) :=
+  have h_map : Measure.map (Measure.quantile (D : Measure ℝ)) μ = (D : Measure ℝ) :=
     Measure.map_quantile_volume_Ioo
   have hf' : Integrable f (Measure.map (Measure.quantile (D : Measure ℝ)) μ) := by
-    rwa [hmap]
+    rwa [h_map]
   exact (integrable_map_measure hf'.aestronglyMeasurable
     (Measure.aemeasurable_quantile_restrict_Ioo (μ := (D : Measure ℝ)))).mp hf'
 

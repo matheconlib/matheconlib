@@ -9,7 +9,7 @@ public import Auctionlib.Mechanism.Feasible
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Order
 
 /-!
-# Highest-Score Allocations
+# Highest-score allocations
 
 The highest-score allocation awards the unit to a bidder with a nonnegative maximal score. Ties are
 broken in favor of the least bidder index.
@@ -82,10 +82,12 @@ noncomputable def highestScoreAlloc (v : Fin n → ℝ → ℝ) :
     highestScoreAlloc v i θ = 0 := by
   exact Set.indicator_of_notMem h (fun _ ↦ (1 : ℝ))
 
+/-- The highest-score allocation is nonnegative. -/
 lemma highestScoreAlloc_nonneg (v : Fin n → ℝ → ℝ) (i : Fin n) (θ : Fin n → ℝ) :
     0 ≤ highestScoreAlloc v i θ :=
   Set.indicator_nonneg (fun _ _ ↦ zero_le_one) θ
 
+/-- The highest-score allocation is at most one. -/
 lemma highestScoreAlloc_le_one (v : Fin n → ℝ → ℝ) (i : Fin n) (θ : Fin n → ℝ) :
     highestScoreAlloc v i θ ≤ 1 := by
   by_cases h : IsTopScorer v θ i
@@ -93,6 +95,7 @@ lemma highestScoreAlloc_le_one (v : Fin n → ℝ → ℝ) (i : Fin n) (θ : Fin
   · rw [highestScoreAlloc_of_not_isTopScorer h]
     exact zero_le_one
 
+/-- The highest-score allocation takes values in `[0, 1]`. -/
 lemma highestScoreAlloc_mem_Icc (v : Fin n → ℝ → ℝ) (i : Fin n) (θ : Fin n → ℝ) :
     highestScoreAlloc v i θ ∈ Icc 0 1 :=
   ⟨highestScoreAlloc_nonneg v i θ, highestScoreAlloc_le_one v i θ⟩
@@ -114,6 +117,7 @@ lemma sum_highestScoreAlloc_le_one (v : Fin n → ℝ → ℝ) (θ : Fin n → �
     simp only [highestScoreAlloc_of_not_isTopScorer (hex _), Finset.sum_const_zero]
     exact zero_le_one
 
+/-- The highest-score allocation is measurable when every bidder's score is measurable. -/
 lemma measurable_highestScoreAlloc (v : Fin n → ℝ → ℝ)
     (hv : ∀ i, Measurable (v i)) (i : Fin n) :
     Measurable (highestScoreAlloc v i) :=
@@ -203,7 +207,9 @@ lemma isTopScorer_update_of_le (v : Fin n → ℝ → ℝ)
   have hvle : v i t ≤ v i t' := hmono ht ht' htt'
   obtain ⟨h0, hmax, hlt⟩ := h
   rw [update_self] at h0 hmax hlt
-  refine ⟨by rw [update_self]; exact le_trans h0 hvle, fun j ↦ ?_, fun j hji ↦ ?_⟩
+  refine ⟨?_, fun j ↦ ?_, fun j hji ↦ ?_⟩
+  · rw [update_self]
+    exact le_trans h0 hvle
   · rw [update_self]
     by_cases hj : j = i
     · subst hj
@@ -222,7 +228,9 @@ lemma isTopScorer_update_congr (v : Fin n → ℝ → ℝ)
     IsTopScorer v (update θ i t') i := by
   obtain ⟨h0, hmax, hlt⟩ := htop
   rw [update_self] at h0 hmax hlt
-  refine ⟨by rw [update_self, ← h]; exact h0, fun j ↦ ?_, fun j hji ↦ ?_⟩
+  refine ⟨?_, fun j ↦ ?_, fun j hji ↦ ?_⟩
+  · rw [update_self, ← h]
+    exact h0
   · rw [update_self, ← h]
     by_cases hj : j = i
     · subst hj
@@ -266,14 +274,17 @@ noncomputable def ofHighestScore (v : Fin n → ℝ → ℝ) (hv : ∀ i, Measur
   x_measurable := measurable_highestScoreAlloc v hv
   t := t
 
+/-- The allocation rule of the highest-score mechanism. -/
 @[simp] lemma ofHighestScore_x (v : Fin n → ℝ → ℝ) (hv : ∀ i, Measurable (v i))
     (t : Fin n → (Fin n → ℝ) → ℝ) :
     (ofHighestScore v hv t).x = highestScoreAlloc v := rfl
 
+/-- The payment rule of the highest-score mechanism. -/
 @[simp] lemma ofHighestScore_t (v : Fin n → ℝ → ℝ) (hv : ∀ i, Measurable (v i))
     (t : Fin n → (Fin n → ℝ) → ℝ) :
     (ofHighestScore v hv t).t = t := rfl
 
+/-- A mechanism using the highest-score allocation is feasible. -/
 instance instIsFeasibleOfHighestScore (v : Fin n → ℝ → ℝ)
     (hv : ∀ i, Measurable (v i)) (t : Fin n → (Fin n → ℝ) → ℝ) :
     (ofHighestScore v hv t).IsFeasible where

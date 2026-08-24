@@ -77,7 +77,9 @@ example {Action : Type*} (P : SingleParameterProblem Action) [HasEnvelopeIC P]
     P.payment (P.strategy v) = myersonPayment P.lowestType P.q v :=
   P.payment_eq_myersonPayment hU0 v hv
 
-/-! The generic payment-uniqueness theorem reproduces revenue equivalence for two direct mechanisms
+/-! ## Revenue equivalence -/
+
+/- The generic payment-uniqueness theorem reproduces revenue equivalence for two direct mechanisms
 with the same allocation and lowest-type utility. -/
 
 example (payment₁ payment₂ : ℝ → ℝ)

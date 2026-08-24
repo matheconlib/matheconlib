@@ -15,8 +15,9 @@ import Auctionlib.Auction.AllPurchase.WelfareDecomposition
 import Auctionlib.Auction.Basic
 import Auctionlib.Auction.IdenticalTypes
 import Auctionlib.Auction.Interim
-import Auctionlib.Auction.RevenueIdentity
+import Auctionlib.Auction.OptimalAuction
 import Auctionlib.Auction.RevenueEquivalence
+import Auctionlib.Auction.RevenueIdentity
 import Auctionlib.Auction.StrictMonotonicity
 import Auctionlib.Auction.SymmetricIPV
 import Auctionlib.Auction.Typeclasses

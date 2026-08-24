@@ -85,7 +85,9 @@ lemma continuousOn_scorePrimitive (hsupport : D.IsSupportedOnInterval lower uppe
     ContinuousOn (D.scorePrimitive ψ) (Icc (0 : ℝ) 1) := by
   have h := intervalIntegral.continuousOn_primitive_interval'
     (D.intervalIntegrable_quantileScore ψ hsupport hψ) (a := 0)
-    (by rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)]; simp)
+    (by
+      rw [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)]
+      simp)
   rwa [uIcc_of_le (by norm_num : (0 : ℝ) ≤ 1)] at h
 
 /-- A bound on the quantile score gives a Lipschitz bound for its primitive. -/
@@ -197,8 +199,8 @@ lemma measurable_ironed (hsupport : D.IsSupportedOnInterval lower upper)
 /-- Every ironed score is bounded by its endpoint quantile scores. -/
 lemma ironed_mem_Icc (hsupport : D.IsSupportedOnInterval lower upper)
     (hψ : ContinuousOn ψ (Icc lower upper)) (v : ℝ) :
-    D.ironed ψ v ∈ Icc (D.ironedQuantileScore ψ 0) (D.ironedQuantileScore ψ 1) := by
-  exact ⟨D.monotone_ironedQuantileScore ψ hsupport hψ (cdf_nonneg (D : Measure ℝ) v),
+    D.ironed ψ v ∈ Icc (D.ironedQuantileScore ψ 0) (D.ironedQuantileScore ψ 1) :=
+  ⟨D.monotone_ironedQuantileScore ψ hsupport hψ (cdf_nonneg (D : Measure ℝ) v),
     D.monotone_ironedQuantileScore ψ hsupport hψ (cdf_le_one (D : Measure ℝ) v)⟩
 
 /-- The cumulative quantile-score gap equals the primitive gap. -/
@@ -247,7 +249,6 @@ lemma integrable_mul (hsupport : D.IsSupportedOnInterval lower upper)
     (hmono : MonotoneOn x (Icc lower upper)) :
     Integrable (fun v => x v * ψ v) (D : Measure ℝ) := by
   obtain ⟨C, hC⟩ := isCompact_Icc.exists_bound_of_continuousOn hψ
-  have hC_nonneg : 0 ≤ max C 0 := le_max_right _ _
   have hxmeas : AEStronglyMeasurable x (D : Measure ℝ) :=
     (D.aemeasurable_of_monotoneOn hsupport hmono).aestronglyMeasurable
   have hψmeas : AEStronglyMeasurable ψ (D : Measure ℝ) :=
@@ -300,7 +301,7 @@ private lemma ironedQuantileScore_eq_of_affineOn {p r m c : ℝ} (hpr : 0 ≤ p)
   have haff : HasDerivWithinAt (fun x => m * x + c) m (Ioi t) t := by
     simpa using ((hasDerivWithinAt_id t (Ioi t)).const_mul m).add_const c
   have heq : D.ironedPrimitive ψ =ᶠ[𝓝 t] fun x => m * x + c :=
-    Filter.eventuallyEq_of_mem (Ioo_mem_nhds ht.1 ht.2) haffine
+    eventuallyEq_of_mem (Ioo_mem_nhds ht.1 ht.2) haffine
   exact (haff.congr_of_eventuallyEq (heq.filter_mono nhdsWithin_le_nhds)
     heq.eq_of_nhds).derivWithin (uniqueDiffWithinAt_Ioi t)
 
@@ -406,9 +407,8 @@ private theorem integral_gap_mul_eq_integral_stieltjes [NoAtoms (D : Measure ℝ
     exact ⟨(neg_le_neg (le_max_left _ _)).trans ((neg_abs_le _).trans hlo),
       hhi.trans ((le_abs_self _).trans (le_max_right _ _))⟩
   have hg_Xsf_oc : IntegrableOn (fun t => g t * Xsf t) (Ioc (0 : ℝ) 1) volume := by
-    rw [show (fun t => g t * Xsf t) = fun t => Xsf t * g t from
-      funext fun t => mul_comm _ _]
-    exact hg_oc.bdd_mul Xsf.mono.measurable.aestronglyMeasurable.restrict hXsf_bdd
+    simpa only [mul_comm] using
+      hg_oc.bdd_mul Xsf.mono.measurable.aestronglyMeasurable.restrict hXsf_bdd
   have hstep1 : ∫ t in Ioo (0 : ℝ) 1, g t * X t =
       ∫ t in Ioc (0 : ℝ) 1, g t * Xsf t := by
     rw [setIntegral_congr_set Ioo_ae_eq_Ioc]
@@ -531,8 +531,8 @@ theorem integral_mul_eq_integral_mul_ironed [NoAtoms (D : Measure ℝ)]
     exact setIntegral_congr_fun measurableSet_Ioo (fun t _ => by ring)
   have hcore : ∫ t in Ioo (0 : ℝ) 1,
       (D.ironedQuantileScore ψ t - D.quantileScore ψ t) * X t =
-      ∫ s in Ioc (0 : ℝ) 1, (D.scorePrimitive ψ s - D.ironedPrimitive ψ s) ∂μX := by
-    exact D.integral_gap_mul_eq_integral_stieltjes ψ hsupport hψ hx hmono
+      ∫ s in Ioc (0 : ℝ) 1, (D.scorePrimitive ψ s - D.ironedPrimitive ψ s) ∂μX :=
+    D.integral_gap_mul_eq_integral_stieltjes ψ hsupport hψ hx hmono
   have hnull : μX {s | s ∈ Ioc (0 : ℝ) 1 ∧
       D.ironedPrimitive ψ s < D.scorePrimitive ψ s} = 0 := by
     refine measure_null_of_locally_null _ (fun s hs => ?_)
@@ -667,7 +667,7 @@ theorem ironedQuantileScore_eq_quantileScore_of_monotoneOn
     exact convexEnvelope_eq_of_affineMinorant_contact (by norm_num)
       (D.continuousOn_scorePrimitive ψ hsupport hψ) ⟨ht.1.le, ht.2.le⟩ hminor (by ring)
   have hev : D.ironedPrimitive ψ =ᶠ[𝓝[Ioi q] q] D.scorePrimitive ψ :=
-    Filter.eventuallyEq_of_mem
+    eventuallyEq_of_mem
       (mem_nhdsWithin_of_mem_nhds (Ioo_mem_nhds hq.1 hq.2)) hEqOn
   have htransfer : D.ironedQuantileScore ψ q =
       derivWithin (D.scorePrimitive ψ) (Ioi q) q := by

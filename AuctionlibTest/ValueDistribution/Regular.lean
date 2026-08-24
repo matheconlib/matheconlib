@@ -23,6 +23,8 @@ universe u
 
 variable (D : ValueDistribution) (density : ℝ → ℝ) (lower upper : ℝ)
 
+/-! ## Virtual values and regularity -/
+
 example :
     D.IsRegular density lower upper ↔
       MonotoneOn (D.virtualValue density) (Icc lower upper) :=
@@ -54,6 +56,8 @@ example (g : ℝ → ℝ) (horder : lower ≤ upper)
       ∫ v in lower..upper, g v * D.virtualSurplusWeight density v :=
   D.integral_mul_virtualValue_eq_intervalIntegral_mul_virtualSurplusWeight
     g density horder hsupport hD hdensity hpos
+
+/-! ## Expected payments -/
 
 section Payment
 

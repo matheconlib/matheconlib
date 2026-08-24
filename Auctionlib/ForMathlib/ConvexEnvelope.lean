@@ -48,10 +48,16 @@ noncomputable def convexEnvelope (a b : ℝ) (φ : ℝ → ℝ) (x : ℝ) : ℝ 
 /-- `(m, c)` is an affine minorant of `φ` iff `(-m, -c)` is an affine majorant of `-φ`. -/
 lemma isAffineMinorant_iff_neg {a b : ℝ} {φ : ℝ → ℝ} {m c : ℝ} :
     IsAffineMinorant a b φ m c ↔ IsAffineMajorant a b (fun y => -φ y) (-m) (-c) := by
-  -- Both directions are the same termwise inequality `m*t+c ≤ φ t ↔ -φ t ≤ -m*t + -c`.
+  -- Both directions are the same termwise inequality
+  -- `m * t + c ≤ φ t ↔ -φ t ≤ -m * t + -c`.
   constructor
-  · intro h t ht; simp only; linarith [h t ht]
-  · intro h t ht; have := h t ht; simp only at this; linarith
+  · intro h t ht
+    simp only
+    linarith [h t ht]
+  · intro h t ht
+    have := h t ht
+    simp only at this
+    linarith
 
 /-- The convex envelope lies below `φ` on `[a, b]`. -/
 lemma convexEnvelope_le_self {a b : ℝ} (hab : a ≤ b) {φ : ℝ → ℝ}
@@ -108,26 +114,39 @@ lemma concaveEnvelope_affineOn_of_lt {a b : ℝ} (hab : a ≤ b) {ψ : ℝ → �
   set w := if xL₀ ≤ xR₀ then w₀ else 1 - w₀ with hw_set
   have hmem : (xL, xR, w) ∈ twoPointFeasibleSet a b q := by
     by_cases hle : xL₀ ≤ xR₀
-    · simp only [hxL_set, hxR_set, hw_set, if_pos hle]; exact hmem₀
+    · simp only [hxL_set, hxR_set, hw_set, if_pos hle]
+      exact hmem₀
     · obtain ⟨hxL₀, hxR₀, hw₀mem, hmean₀⟩ := hmem₀
       refine ⟨?_, ?_, ?_, ?_⟩
-      · simp only [hxL_set, if_neg hle]; exact hxR₀
-      · simp only [hxR_set, if_neg hle]; exact hxL₀
-      · simp only [hw_set, if_neg hle]; exact ⟨by linarith [hw₀mem.2], by linarith [hw₀mem.1]⟩
-      · simp only [hxL_set, hxR_set, hw_set, if_neg hle]; linarith [hmean₀]
+      · simp only [hxL_set, if_neg hle]
+        exact hxR₀
+      · simp only [hxR_set, if_neg hle]
+        exact hxL₀
+      · simp only [hw_set, if_neg hle]
+        exact ⟨by linarith [hw₀mem.2], by linarith [hw₀mem.1]⟩
+      · simp only [hxL_set, hxR_set, hw_set, if_neg hle]
+        linarith [hmean₀]
   have hmax : IsMaxOn (twoPointObjective ψ) (twoPointFeasibleSet a b q) (xL, xR, w) := by
     by_cases hle : xL₀ ≤ xR₀
-    · simp only [hxL_set, hxR_set, hw_set, if_pos hle]; exact hmax₀
+    · simp only [hxL_set, hxR_set, hw_set, if_pos hle]
+      exact hmax₀
     · intro p hp
       have hsym_obj : twoPointObjective ψ (xR₀, xL₀, 1 - w₀)
-          = twoPointObjective ψ (xL₀, xR₀, w₀) := by simp [twoPointObjective]; ring
-      have hval₀ : twoPointObjective ψ (xL, xR, w) = twoPointObjective ψ (xL₀, xR₀, w₀) := by
-        simp only [hxL_set, hxR_set, hw_set, if_neg hle]; exact hsym_obj
-      rw [hval₀]; exact hmax₀ hp
+          = twoPointObjective ψ (xL₀, xR₀, w₀) := by
+        simp [twoPointObjective]
+        ring
+      have hval₀ :
+          twoPointObjective ψ (xL, xR, w) = twoPointObjective ψ (xL₀, xR₀, w₀) := by
+        simp only [hxL_set, hxR_set, hw_set, if_neg hle]
+        exact hsym_obj
+      rw [hval₀]
+      exact hmax₀ hp
   have hxLR_le : xL ≤ xR := by
     by_cases hle : xL₀ ≤ xR₀
-    · simp only [hxL_set, hxR_set, if_pos hle]; exact hle
-    · simp only [hxL_set, hxR_set, if_neg hle]; linarith [le_of_not_ge hle]
+    · simp only [hxL_set, hxR_set, if_pos hle]
+      exact hle
+    · simp only [hxL_set, hxR_set, if_neg hle]
+      linarith [le_of_not_ge hle]
   have hxL : xL ∈ Icc a b := hmem.1
   have hxR : xR ∈ Icc a b := hmem.2.1
   have hw_mem : w ∈ Icc (0 : ℝ) 1 := hmem.2.2.1
@@ -145,54 +164,76 @@ lemma concaveEnvelope_affineOn_of_lt {a b : ℝ} (hab : a ≤ b) {ψ : ℝ → �
       have := hmax hp
       simpa [twoPointObjective] using this
   -- Strict gap rules out the degenerate optima: `xL < xR`, `0 < w < 1`.
-  have hgap : (1 - w) * ψ xL + w * ψ xR > ψ q := by rw [hval]; exact hlt
+  have hgap : (1 - w) * ψ xL + w * ψ xR > ψ q := by
+    rw [hval]
+    exact hlt
   -- Strict gap rules out `xL = xR`, `w = 0`, `w = 1` (each collapses the value to `ψ q`).
   have hxL_ne_xR : xL ≠ xR := by
     intro heq
-    have hval' : (1 - w) * ψ xL + w * ψ xR = ψ xL := by rw [heq]; ring
-    have hq' : q = xL := by rw [← hmean, heq]; ring
-    rw [hval', hq'] at hgap; exact lt_irrefl _ hgap
+    have hval' : (1 - w) * ψ xL + w * ψ xR = ψ xL := by
+      rw [heq]
+      ring
+    have hq' : q = xL := by
+      rw [← hmean, heq]
+      ring
+    rw [hval', hq'] at hgap
+    exact lt_irrefl _ hgap
   have hw_pos : 0 < w := by
     rcases lt_or_eq_of_le hw_mem.1 with h | h
     · exact h
     · exfalso
-      have hq' : q = xL := by rw [← hmean, ← h]; ring
-      rw [← h, hq'] at hgap; simp only [sub_zero, one_mul, zero_mul, add_zero] at hgap
+      have hq' : q = xL := by
+        rw [← hmean, ← h]
+        ring
+      rw [← h, hq'] at hgap
+      simp only [sub_zero, one_mul, zero_mul, add_zero] at hgap
       exact lt_irrefl _ hgap
   have hw_lt1 : w < 1 := by
     rcases lt_or_eq_of_le hw_mem.2 with h | h
     · exact h
     · exfalso
-      have hq' : q = xR := by rw [← hmean, h]; ring
-      rw [h, hq'] at hgap; simp only [sub_self, zero_mul, one_mul, zero_add] at hgap
+      have hq' : q = xR := by
+        rw [← hmean, h]
+        ring
+      rw [h, hq'] at hgap
+      simp only [sub_self, zero_mul, one_mul, zero_add] at hgap
       exact lt_irrefl _ hgap
   -- With `xL ≤ xR` and `xL ≠ xR`, we get `xL < xR`.
   have hxLR : xL < xR := lt_of_le_of_ne hxLR_le hxL_ne_xR
   -- `xL < q < xR`: `q` is a strict interior barycenter.
   have hxL_lt_q : xL < q := by
-    rw [← hmean]; nlinarith [hw_pos, sub_pos.mpr hxLR]
+    rw [← hmean]
+    nlinarith [hw_pos, sub_pos.mpr hxLR]
   have hq_lt_xR : q < xR := by
-    rw [← hmean]; nlinarith [hw_lt1, sub_pos.mpr hxLR]
+    rw [← hmean]
+    nlinarith [hw_lt1, sub_pos.mpr hxLR]
   -- The secant of `ψ` through `xL, xR` is an affine majorant of `ψ`.
   set m := (ψ xR - ψ xL) / (xR - xL) with hm_def
   set c := ψ xL - m * xL with hc_def
   have hmaj : IsAffineMajorant a b ψ m c := by
-    have hmean_mem : (1 - w) * xL + w * xR ∈ Icc a b := by rw [hmean]; exact hqIcc
+    have hmean_mem : (1 - w) * xL + w * xR ∈ Icc a b := by
+      rw [hmean]
+      exact hqIcc
     have hopt' : IsMaxOn (twoPointObjective ψ)
         (twoPointFeasibleSet a b ((1 - w) * xL + w * xR)) (xL, xR, w) := by
-      rw [hmean]; exact hmax
+      rw [hmean]
+      exact hmax
     exact isAffineMajorant_secant_of_twoPointOptimum hxL hxR hxLR hw_pos hw_lt1 hmean_mem hopt'
   refine ⟨xL, xR, hxL, hxR, hxL_lt_q, hq_lt_xR, fun x hx => ?_⟩
   have hxIcc : x ∈ Icc a b := ⟨le_trans hxL.1 hx.1, le_trans hx.2 hxR.2⟩
   -- Endpoint contact values: at `xL, xR` the envelope equals the secant.
   have hxR_sub_ne : xR - xL ≠ 0 := sub_ne_zero.mpr hxLR.ne'
-  have hsec_xL : m * xL + c = ψ xL := by rw [hc_def]; ring
+  have hsec_xL : m * xL + c = ψ xL := by
+    rw [hc_def]
+    ring
   have hsec_xR : m * xR + c = ψ xR := by
     rw [hc_def]
     have : m * xR + (ψ xL - m * xL) = m * (xR - xL) + ψ xL := by ring
-    rw [this, hm_def, div_mul_cancel₀ _ hxR_sub_ne]; ring
+    rw [this, hm_def, div_mul_cancel₀ _ hxR_sub_ne]
+    ring
   -- At any contact point of the secant majorant, the envelope is squeezed to the secant value.
-  have henv_contact : ∀ z ∈ Icc a b, m * z + c = ψ z → concaveEnvelope a b ψ z = m * z + c :=
+  have henv_contact :
+      ∀ z ∈ Icc a b, m * z + c = ψ z → concaveEnvelope a b ψ z = m * z + c :=
     fun z hz hsec => le_antisymm (concaveEnvelope_le_affineMajorant hmaj hz)
       (hsec ▸ le_concaveEnvelope hab hψ.continuousOn hz)
   have henv_xL : concaveEnvelope a b ψ xL = m * xL + c := henv_contact xL hxL hsec_xL
@@ -209,19 +250,26 @@ lemma concaveEnvelope_affineOn_of_lt {a b : ℝ} (hab : a ≤ b) {ψ : ℝ → �
   · set t := (x - xL) / (xR - xL) with ht_def
     have hxR_sub_pos : 0 < xR - xL := sub_pos.mpr hxLR
     have ht0 : 0 ≤ t := div_nonneg (by linarith) hxR_sub_pos.le
-    have ht1 : t ≤ 1 := by rw [ht_def, div_le_one hxR_sub_pos]; linarith
+    have ht1 : t ≤ 1 := by
+      rw [ht_def, div_le_one hxR_sub_pos]
+      linarith
     have hbary : (1 - t) • xL + t • xR = x := by
-      rw [ht_def]; simp only [smul_eq_mul]; field_simp; ring
-    have hconc_ineq := hconc.2 hxL hxR (by linarith : (0:ℝ) ≤ 1 - t) ht0 (by ring)
+      rw [ht_def]
+      simp only [smul_eq_mul]
+      (field_simp; ring)
+    have hconc_ineq := hconc.2 hxL hxR (by linarith : (0 : ℝ) ≤ 1 - t) ht0 (by ring)
     rw [hbary] at hconc_ineq
     rw [henv_xL, henv_xR] at hconc_ineq
     have hsec_x : m * x + c = (1 - t) • (m * xL + c) + t • (m * xR + c) := by
       simp only [smul_eq_mul]
-      rw [ht_def]; field_simp; ring
-    rw [hsec_x]; exact hconc_ineq
+      rw [ht_def]
+      (field_simp; ring)
+    rw [hsec_x]
+    exact hconc_ineq
 
 /-- The convex envelope depends only on the values of `φ` on `[a, b]`. -/
-lemma convexEnvelope_congr {a b : ℝ} {φ ψ : ℝ → ℝ} (h : Set.EqOn φ ψ (Icc a b)) (x : ℝ) :
+lemma convexEnvelope_congr {a b : ℝ} {φ ψ : ℝ → ℝ}
+    (h : Set.EqOn φ ψ (Icc a b)) (x : ℝ) :
     convexEnvelope a b φ x = convexEnvelope a b ψ x := by
   unfold convexEnvelope
   rw [concaveEnvelope_congr (φ := fun y => -φ y) (ψ := fun y => -ψ y)
@@ -249,10 +297,14 @@ lemma convexEnvelope_affineOn_of_lt {a b : ℝ} (hab : a ≤ b) {φ : ℝ → �
   -- The negation `-φe` is globally continuous; apply the concave gap lemma.
   have hψ : Continuous (fun y => -φe y) := hcont.neg
   have henv_eq : ∀ x, concaveEnvelope a b (fun y => -φe y) x = -convexEnvelope a b φe x := by
-    intro x; unfold convexEnvelope; rw [neg_neg]
+    intro x
+    unfold convexEnvelope
+    rw [neg_neg]
   have hqIcc : q ∈ Icc a b := ⟨hq.1.le, hq.2.le⟩
   have hlt' : (fun y => -φe y) q < concaveEnvelope a b (fun y => -φe y) q := by
-    rw [henv_eq q]; simp only [hcongr q, heqOn hqIcc]; linarith
+    rw [henv_eq q]
+    simp only [hcongr q, heqOn hqIcc]
+    linarith
   obtain ⟨xL, xR, hxL, hxR, hxLq, hqxR, haffine⟩ :=
     concaveEnvelope_affineOn_of_lt hab hψ hq hlt'
   set m := ((-φe xR) - (-φe xL)) / (xR - xL) with hm_def
@@ -262,7 +314,8 @@ lemma convexEnvelope_affineOn_of_lt {a b : ℝ} (hab : a ≤ b) {φ : ℝ → �
   rw [henv_eq x] at h
   -- `-Ĥ x = m * x + c`, so `Ĥ x = -(m * x + c)`; transfer from `φe` to `φ`.
   have hφe_env : convexEnvelope a b φe x = -(m * x + c) := by linarith [h]
-  rw [← hcongr x, hφe_env]; ring
+  rw [← hcongr x, hφe_env]
+  ring
 
 /-! ### Lipschitz functions -/
 
@@ -316,7 +369,9 @@ lemma abs_rightDeriv_convexEnvelope_le {a b C : ℝ} (hab : a < b) {φ : ℝ →
     |derivWithin (convexEnvelope a b φ) (Ioi x) x| ≤ C := by
   have hconv : ConvexOn ℝ (Icc a b) (convexEnvelope a b φ) :=
     convexOn_convexEnvelope hab.le hφ
-  have hxint : x ∈ interior (Icc a b) := by rw [interior_Icc]; exact hx
+  have hxint : x ∈ interior (Icc a b) := by
+    rw [interior_Icc]
+    exact hx
   have ha : a ∈ Icc a b := left_mem_Icc.mpr hab.le
   have hb : b ∈ Icc a b := right_mem_Icc.mpr hab.le
   have hle : ∀ q ∈ Icc a b, convexEnvelope a b φ q ≤ φ q :=

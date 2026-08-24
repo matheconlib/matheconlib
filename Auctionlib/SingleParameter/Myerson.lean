@@ -32,16 +32,19 @@ def directProblem (lowestType highestType : ℝ) (x : ℝ → ℝ)
   payment := payment
   strategy := id
 
+/-- The reduced allocation of a direct problem is its allocation rule. -/
 @[simp] lemma directProblem_q (lowestType highestType : ℝ) (x : ℝ → ℝ)
     (hx : ∀ v, x v ∈ Icc 0 1) (payment : ℝ → ℝ) (v : ℝ) :
     (directProblem lowestType highestType x hx payment).q v = x v :=
   rfl
 
+/-- Utility in a direct problem is value times allocation minus payment. -/
 @[simp] lemma directProblem_U (lowestType highestType : ℝ) (x : ℝ → ℝ)
     (hx : ∀ v, x v ∈ Icc 0 1) (payment : ℝ → ℝ) (v : ℝ) :
     (directProblem lowestType highestType x hx payment).U v = v * x v - payment v :=
   rfl
 
+/-- The type interval of a direct problem is its declared closed interval. -/
 @[simp] lemma directProblem_typeInterval (lowestType highestType : ℝ) (x : ℝ → ℝ)
     (hx : ∀ v, x v ∈ Icc 0 1) (payment : ℝ → ℝ) :
     (directProblem lowestType highestType x hx payment).typeInterval =
@@ -63,11 +66,13 @@ def myersonProblem (lowestType highestType : ℝ) (x : ℝ → ℝ)
     (hx : ∀ v, x v ∈ Icc 0 1) : SingleParameterProblem ℝ :=
   directProblem lowestType highestType x hx (myersonPayment lowestType x)
 
+/-- The reduced allocation of a Myerson problem is its allocation rule. -/
 @[simp] lemma myersonProblem_q (lowestType highestType : ℝ) (x : ℝ → ℝ)
     (hx : ∀ v, x v ∈ Icc 0 1) (v : ℝ) :
     (myersonProblem lowestType highestType x hx).q v = x v :=
   rfl
 
+/-- The payment rule of a Myerson problem is the canonical Myerson payment. -/
 @[simp] lemma myersonProblem_payment (lowestType highestType : ℝ) (x : ℝ → ℝ)
     (hx : ∀ v, x v ∈ Icc 0 1) (v : ℝ) :
     (myersonProblem lowestType highestType x hx).payment v = myersonPayment lowestType x v :=

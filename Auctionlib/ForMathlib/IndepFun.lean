@@ -75,17 +75,19 @@ lemma MeasureTheory.integral_indep_swap
     rw [← hmap]
     exact (integrable_map_measure hh.aestronglyMeasurable
       (hX.prodMk hY).aemeasurable).2 hint
-  calc ∫ ω, h (X ω) (Y ω) ∂ℙ
-      = ∫ z, h.uncurry z ∂(Measure.map (fun ω => (X ω, Y ω)) ℙ) := by
-        rw [integral_map (hX.prodMk hY).aemeasurable hh.aestronglyMeasurable]; rfl
+  calc
+    ∫ ω, h (X ω) (Y ω) ∂ℙ =
+        ∫ z, h.uncurry z ∂(Measure.map (fun ω => (X ω, Y ω)) ℙ) := by
+      rw [integral_map (hX.prodMk hY).aemeasurable hh.aestronglyMeasurable]
+      rfl
     _ = ∫ z, h.uncurry z ∂((Measure.map X ℙ).prod (Measure.map Y ℙ)) := by rw [hmap]
     _ = ∫ x, ∫ y, h x y ∂(Measure.map Y ℙ) ∂(Measure.map X ℙ) :=
-        MeasureTheory.integral_prod _ hint_prod
+      integral_prod _ hint_prod
     _ = ∫ ω, ∫ y, h (X ω) y ∂(Measure.map Y ℙ) ∂ℙ := by
-        rw [integral_map hX.aemeasurable]
-        exact (MeasureTheory.Integrable.integral_prod_left hint_prod).aestronglyMeasurable
+      rw [integral_map hX.aemeasurable]
+      exact hint_prod.integral_prod_left.aestronglyMeasurable
     _ = ∫ ω, ∫ ω', h (X ω) (Y ω') ∂ℙ ∂ℙ := by
-        congr 1 with ω
-        rw [integral_map hY.aemeasurable (hh.of_uncurry_left).aestronglyMeasurable]
+      congr 1 with ω
+      rw [integral_map hY.aemeasurable hh.of_uncurry_left.aestronglyMeasurable]
 
 end
