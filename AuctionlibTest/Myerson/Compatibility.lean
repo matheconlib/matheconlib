@@ -5,13 +5,13 @@ Authors: Daniel Lyng
 -/
 module
 
-import Auctionlib.Auction.Interim
+import Auctionlib.Auction.RevenueIdentity
 
 /-!
 # Myerson-Layer Compatibility Checks
 
-These examples pin the public C5 contracts for feasible mechanisms, highest-score allocation, and
-the ex-post-to-interim bridge.
+These examples pin the public C5 and C6 contracts for feasible mechanisms, highest-score
+allocation, the ex-post-to-interim bridge, virtual values, and Myerson revenue bounds.
 -/
 
 noncomputable section
@@ -126,6 +126,170 @@ example (v : Fin n → ℝ → ℝ) (i : Fin n) {t t' : ℝ}
   A.interimAlloc_highestScoreAlloc_congr v i h
 
 end Auction
+
+/-! ## Virtual values and revenue identities -/
+
+section VirtualValue
+
+variable {Ω : Type} [MeasureSpace Ω]
+  [IsProbabilityMeasure (ℙ : Measure Ω)]
+variable {n : ℕ} [NeZero n] (A : Auction Ω n)
+  [Auction.HasIndependentTypes A] [Auction.HasBoundedTypes A]
+  [Auction.HasDensity A]
+variable (ρ : A.DensityFamily)
+
+example (i : Fin n) :
+    A.virtualValue ρ i = (A.valueDistribution i).virtualValue (ρ.f i) :=
+  rfl
+
+example (i : Fin n) : Measurable (A.virtualValue ρ i) :=
+  A.measurable_virtualValue ρ i
+
+example (i : Fin n) : ContinuousOn (A.virtualValue ρ i) (A.interval i) :=
+  A.continuousOn_virtualValue ρ i
+
+example (i : Fin n) :
+    Integrable (fun ω => A.virtualValue ρ i (A.θ i ω)) ℙ :=
+  A.integrable_virtualValue_comp_θ ρ i
+
+example :
+    ρ.IsRegular ↔
+      ∀ i, (A.valueDistribution i).IsRegular
+        (ρ.f i) (A.θmin i) (A.θmax i) :=
+  Iff.rfl
+
+example (i : Fin n) :
+    A.ironedVirtualValue ρ i =
+      (A.valueDistribution i).ironed (A.virtualValue ρ i) :=
+  rfl
+
+example (i : Fin n) : Monotone (A.ironedVirtualValue ρ i) :=
+  A.monotone_ironedVirtualValue ρ i
+
+example (i : Fin n) : Measurable (A.ironedVirtualValue ρ i) :=
+  A.measurable_ironedVirtualValue ρ i
+
+example (i : Fin n) :
+    Integrable (fun ω => A.ironedVirtualValue ρ i (A.θ i ω)) ℙ :=
+  A.integrable_ironedVirtualValue_comp_θ ρ i
+
+example (hreg : ρ.IsRegular) (i : Fin n) {v : ℝ}
+    (hv : v ∈ Ioo (A.θmin i) (A.θmax i)) :
+    A.ironedVirtualValue ρ i v = A.virtualValue ρ i v :=
+  A.ironedVirtualValue_eq_virtualValue_of_regular hreg i hv
+
+example (θ : Fin n → ℝ) :
+    A.optimalVirtualSurplus ρ θ =
+      max 0 (Finset.univ.sup' Finset.univ_nonempty fun i =>
+        A.virtualValue ρ i (θ i)) :=
+  rfl
+
+example (θ : Fin n → ℝ) :
+    A.ironedOptimalVirtualSurplus ρ θ =
+      max 0 (Finset.univ.sup' Finset.univ_nonempty fun i =>
+        A.ironedVirtualValue ρ i (θ i)) :=
+  rfl
+
+example : Measurable (A.optimalVirtualSurplus ρ) :=
+  A.measurable_optimalVirtualSurplus ρ
+
+example : Measurable (A.ironedOptimalVirtualSurplus ρ) :=
+  A.measurable_ironedOptimalVirtualSurplus ρ
+
+example : Integrable (fun ω => A.optimalVirtualSurplus ρ (A.θ · ω)) ℙ :=
+  A.integrable_optimalVirtualSurplus_comp_profile ρ
+
+example : Integrable (fun ω => A.ironedOptimalVirtualSurplus ρ (A.θ · ω)) ℙ :=
+  A.integrable_ironedOptimalVirtualSurplus_comp_profile ρ
+
+example (hreg : ρ.IsRegular) :
+    𝔼[fun ω => A.ironedOptimalVirtualSurplus ρ (A.θ · ω)] =
+      𝔼[fun ω => A.optimalVirtualSurplus ρ (A.θ · ω)] :=
+  A.integral_ironedOptimalVirtualSurplus_eq_of_regular hreg
+
+section ValidAllocation
+
+variable [A.rules.HasValidAllocation] [A.BIC]
+
+example (i : Fin n) (hp : Measurable (A.p i)) :
+    Integrable (fun ω => A.p i (A.θ i ω)) ℙ :=
+  A.integrable_p_comp_θ i hp
+
+example (i : Fin n) :
+    (A.valueDistribution i).expectedPayment
+        (A.toBidderProblem id i).toSingleParameterProblem =
+      (∫ v, A.q i v * A.virtualValue ρ i v
+        ∂(A.valueDistribution i : Measure ℝ)) - A.U i (A.θmin i) :=
+  A.expectedPayment_eq_integral_q_mul_virtualValue ρ i
+
+example (ht : ∀ i, Measurable (A.rules.t i)) :
+    A.expectedRevenue =
+      ∑ i, ((∫ v, A.q i v * A.virtualValue ρ i v
+        ∂(A.valueDistribution i : Measure ℝ)) - A.U i (A.θmin i)) :=
+  A.expectedRevenue_eq_sum_integral_q_mul_virtualValue_sub ρ ht
+
+example (ht : ∀ i, Measurable (A.rules.t i))
+    (hU0 : ∀ i, A.U i (A.θmin i) = 0) :
+    A.expectedRevenue =
+      ∑ i, ∫ v, A.q i v * A.virtualValue ρ i v
+        ∂(A.valueDistribution i : Measure ℝ) :=
+  A.expectedRevenue_eq_sum_integral_q_mul_virtualValue ρ ht hU0
+
+example (ht : ∀ i, Measurable (A.rules.t i))
+    (hU0 : ∀ i, A.U i (A.θmin i) = 0) :
+    A.expectedRevenue =
+      ∑ i, 𝔼[fun ω =>
+        A.virtualValue ρ i (A.θ i ω) * A.rules.x i (A.θ · ω)] :=
+  A.expectedRevenue_eq_virtualSurplus ρ ht hU0
+
+example (ht : ∀ i, Measurable (A.rules.t i)) (hIR : A.InterimIR) :
+    A.expectedRevenue ≤
+      ∑ i, ∫ v, A.q i v * A.virtualValue ρ i v
+        ∂(A.valueDistribution i : Measure ℝ) :=
+  A.expectedRevenue_le_sum_integral_q_mul_virtualValue ρ ht hIR
+
+example (ht : ∀ i, Measurable (A.rules.t i)) (hIR : A.InterimIR) :
+    A.expectedRevenue ≤
+      ∑ i, 𝔼[fun ω =>
+        A.virtualValue ρ i (A.θ i ω) * A.rules.x i (A.θ · ω)] :=
+  A.expectedRevenue_le_virtualSurplus ρ ht hIR
+
+example (i : Fin n) :
+    (∫ v, A.q i v * A.virtualValue ρ i v
+      ∂(A.valueDistribution i : Measure ℝ)) ≤
+      ∫ v, A.q i v * A.ironedVirtualValue ρ i v
+        ∂(A.valueDistribution i : Measure ℝ) :=
+  A.integral_q_mul_virtualValue_le_ironed ρ i
+
+end ValidAllocation
+
+section Feasible
+
+variable [A.rules.IsFeasible] [A.BIC]
+
+example (θ : Fin n → ℝ) :
+    ∑ i, A.virtualValue ρ i (θ i) * A.rules.x i θ ≤
+      A.optimalVirtualSurplus ρ θ :=
+  A.sum_virtualValue_mul_x_le ρ θ
+
+example (θ : Fin n → ℝ) :
+    ∑ i, A.ironedVirtualValue ρ i (θ i) * A.rules.x i θ ≤
+      A.ironedOptimalVirtualSurplus ρ θ :=
+  A.sum_ironedVirtualValue_mul_x_le ρ θ
+
+example (ht : ∀ i, Measurable (A.rules.t i)) (hIR : A.InterimIR) :
+    A.expectedRevenue ≤
+      𝔼[fun ω => A.optimalVirtualSurplus ρ (A.θ · ω)] :=
+  A.expectedRevenue_le_optimalVirtualSurplus ρ ht hIR
+
+example (ht : ∀ i, Measurable (A.rules.t i)) (hIR : A.InterimIR) :
+    A.expectedRevenue ≤
+      𝔼[fun ω => A.ironedOptimalVirtualSurplus ρ (A.θ · ω)] :=
+  A.expectedRevenue_le_ironedOptimalVirtualSurplus ρ ht hIR
+
+end Feasible
+
+end VirtualValue
 
 end MyersonCompatibility
 

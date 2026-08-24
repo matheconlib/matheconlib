@@ -7,8 +7,10 @@ public import Auctionlib.Auction.AllPurchase.LinearScarcity
 public import Auctionlib.Auction.Basic
 public import Auctionlib.Auction.IdenticalTypes
 public import Auctionlib.Auction.Interim
+public import Auctionlib.Auction.RevenueIdentity
 public import Auctionlib.Auction.RevenueEquivalence
 public import Auctionlib.Auction.Typeclasses
 public import Auctionlib.Auction.StrictMonotonicity
 public import Auctionlib.Auction.SymmetricIPV
 public import Auctionlib.Auction.ValueDistribution
+public import Auctionlib.Auction.VirtualValue
