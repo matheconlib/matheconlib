@@ -50,6 +50,7 @@ import Auctionlib.SingleParameter
 import Auctionlib.SingleParameter.Basic
 import Auctionlib.SingleParameter.EnvelopeIC
 import Auctionlib.SingleParameter.IC
+import Auctionlib.SingleParameter.Myerson
 import Auctionlib.SingleParameter.Payment
 import Auctionlib.SingleParameter.PostedPrice
 import Auctionlib.Statistics.OrderStatistics
@@ -59,6 +60,7 @@ import Auctionlib.ValueDistribution.Demand
 import Auctionlib.ValueDistribution.Density
 import Auctionlib.ValueDistribution.ExpectedPayment
 import Auctionlib.ValueDistribution.PostedPrice
+import Auctionlib.ValueDistribution.Regular
 import Auctionlib.ValueDistribution.SellerProfit
 import Auctionlib.ValueDistribution.SingleParameter
 import Auctionlib.ValueDistribution.TailIntegral
