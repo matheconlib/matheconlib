@@ -62,7 +62,9 @@ import Auctionlib.ValueDistribution.Basic
 import Auctionlib.ValueDistribution.Demand
 import Auctionlib.ValueDistribution.Density
 import Auctionlib.ValueDistribution.ExpectedPayment
+import Auctionlib.ValueDistribution.Ironing
 import Auctionlib.ValueDistribution.PostedPrice
+import Auctionlib.ValueDistribution.Quantile
 import Auctionlib.ValueDistribution.Regular
 import Auctionlib.ValueDistribution.SellerProfit
 import Auctionlib.ValueDistribution.SingleParameter

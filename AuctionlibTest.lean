@@ -4,4 +4,5 @@ import AuctionlibTest.SingleParameter.Compatibility
 import AuctionlibTest.SingleParameter.Myerson
 import AuctionlibTest.ValueDistribution.Compatibility
 import AuctionlibTest.ValueDistribution.Examples
+import AuctionlibTest.ValueDistribution.Ironing
 import AuctionlibTest.ValueDistribution.Regular
