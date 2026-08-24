@@ -1,3 +1,4 @@
+import AuctionlibTest.Myerson.Compatibility
 import AuctionlibTest.Pricing.Compatibility
 import AuctionlibTest.SingleParameter.Compatibility
 import AuctionlibTest.SingleParameter.Myerson
