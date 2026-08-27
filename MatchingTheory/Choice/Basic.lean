@@ -56,21 +56,21 @@ structure ChoiceFunction (α : Type u) where
   /-- The underlying selection map. -/
   toFun : Set α → Set α
   /-- Only available alternatives are chosen. -/
-  choose_subset' : ∀ Y, toFun Y ⊆ Y
+  choose_subset : ∀ Y, toFun Y ⊆ Y
 
 namespace ChoiceFunction
 
 instance : FunLike (ChoiceFunction α) (Set α) (Set α) where
   coe := toFun
-  coe_injective' := by rintro ⟨f, _⟩ ⟨g, _⟩ h; simpa using h
+  coe_injective' := by
+    rintro ⟨f, _⟩ ⟨g, _⟩ h
+    simpa using h
 
 @[ext]
 lemma ext {C D : ChoiceFunction α} (h : ∀ Y, C Y = D Y) : C = D :=
   DFunLike.ext _ _ h
 
 variable (C : ChoiceFunction α)
-
-lemma choose_subset (Y : Set α) : C Y ⊆ Y := C.choose_subset' Y
 
 /-- The rejection function: available but not chosen. -/
 def rejected : Set α → Set α := fun Y => Y \ C Y
@@ -91,7 +91,8 @@ def Consistent : Prop :=
 
 /-- Substitutability (survey Definition 2.1, superset form). -/
 def Substitutable : Prop :=
-  ∀ ⦃x : α⦄ ⦃Y Z : Set α⦄, Y ⊆ Z → x ∉ C (insert x Y) → x ∉ C (insert x Z)
+  ∀ ⦃x : α⦄ ⦃Y Z : Set α⦄,
+    Y ⊆ Z → x ∉ C (insert x Y) → x ∉ C (insert x Z)
 
 /-- The law of aggregate demand (size monotonicity). -/
 def SizeMonotone : Prop :=
@@ -119,71 +120,70 @@ theorem substitutable_iff_monotone_rejected :
     C.Substitutable ↔ Monotone C.rejected := by
   constructor
   · -- (⇒) `x ∈ Y` collapses `insert x Y` to `Y`.
-    intro h Y Z hYZ x hx
+    intro hsub Y Z hYZ x hx
     obtain ⟨hxY, hxC⟩ := hx
     refine ⟨hYZ hxY, ?_⟩
-    have h1 : x ∉ C (insert x Y) := by rwa [Set.insert_eq_of_mem hxY]
-    have h2 := h hYZ h1
+    have h1 : x ∉ C (insert x Y) := by
+      rwa [Set.insert_eq_of_mem hxY]
+    have h2 := hsub hYZ h1
     rwa [Set.insert_eq_of_mem (hYZ hxY)] at h2
   · -- (⇐) apply monotonicity at `insert x Y ⊆ insert x Z`.
-    intro h x Y Z hYZ hx
-    have h1 : x ∈ C.rejected (insert x Y) := ⟨Set.mem_insert _ _, hx⟩
-    have h2 : x ∈ C.rejected (insert x Z) := h (Set.insert_subset_insert hYZ) h1
+    intro hmono x Y Z hYZ hx
+    have h1 : x ∈ C.rejected (insert x Y) :=
+      ⟨Set.mem_insert _ _, hx⟩
+    have h2 : x ∈ C.rejected (insert x Z) :=
+      hmono (Set.insert_subset_insert hYZ) h1
     exact h2.2
 
 /-- Substitutability is exactly the Chernoff condition. Finiteness-free. -/
-theorem substitutable_iff_chernoff : C.Substitutable ↔ C.Chernoff := by
+theorem substitutable_iff_chernoff :
+    C.Substitutable ↔ C.Chernoff := by
   constructor
-  · intro h W V hWV x hx
+  · intro hsub W V hWV x hx
     obtain ⟨hxV, hxW⟩ := hx
     by_contra hxCW
-    have h1 : x ∉ C (insert x W) := by rwa [Set.insert_eq_of_mem hxW]
-    have h2 := h hWV h1
+    have h1 : x ∉ C (insert x W) := by
+      rwa [Set.insert_eq_of_mem hxW]
+    have h2 := hsub hWV h1
     rw [Set.insert_eq_of_mem (hWV hxW)] at h2
     exact h2 hxV
-  · intro h x Y Z hYZ hx hxZ
-    exact hx (h (Set.insert_subset_insert hYZ) ⟨hxZ, Set.mem_insert _ _⟩)
+  · intro hch x Y Z hYZ hx hxZ
+    exact hx
+      (hch (Set.insert_subset_insert hYZ)
+        ⟨hxZ, Set.mem_insert _ _⟩)
 
 /-- Chosen-from-more implies chosen-from-less. -/
-theorem Substitutable.mem_insert_of_subset (hC : C.Substitutable) {x : α}
-    {Y Z : Set α} (hYZ : Y ⊆ Z) (hx : x ∈ C (insert x Z)) :
+theorem Substitutable.mem_insert_of_subset
+    (hsub : C.Substitutable) {x : α} {Y Z : Set α}
+    (hYZ : Y ⊆ Z) (hx : x ∈ C (insert x Z)) :
     x ∈ C (insert x Y) := by
   by_contra h
-  exact hC hYZ h hx
+  exact hsub hYZ h hx
 
 /-- The single-new-alternative form (survey Definition 2.1 as printed). -/
-theorem Substitutable.not_mem_insert_insert (hC : C.Substitutable) {x z : α}
-    {Y : Set α} (hx : x ∉ C (insert x Y)) :
+theorem Substitutable.not_mem_insert_insert
+    (hsub : C.Substitutable) {x z : α} {Y : Set α}
+    (hx : x ∉ C (insert x Y)) :
     x ∉ C (insert x (insert z Y)) :=
-  hC (Set.subset_insert z Y) hx
+  hsub (Set.subset_insert z Y) hx
 
 /-- Conversely, the single-new-alternative form yields the superset
 conclusion whenever the difference `Z \ Y` is finite. -/
 theorem not_mem_of_forall_insert_insert
     (h : ∀ ⦃x z : α⦄ ⦃Y : Set α⦄,
       x ∉ C (insert x Y) → x ∉ C (insert x (insert z Y)))
-    {x : α} {Y Z : Set α} (hYZ : Y ⊆ Z) (hfin : (Z \ Y).Finite)
-    (hx : x ∉ C (insert x Y)) :
+    {x : α} {Y Z : Set α} (hYZ : Y ⊆ Z)
+    (hfin : (Z \ Y).Finite) (hx : x ∉ C (insert x Y)) :
     x ∉ C (insert x Z) := by
-  classical
-  -- One application of `h` per element of an enumeration of `Z \ Y`.
-  have key : ∀ l : List α, x ∉ C (insert x (Y ∪ {y | y ∈ l})) := by
-    intro l
-    induction l with
-    | nil =>
-        have e : {y | y ∈ ([] : List α)} = (∅ : Set α) := by ext y; simp
-        rw [e, Set.union_empty]
-        exact hx
-    | cons a l ih =>
-        have e : {y | y ∈ a :: l} = insert a {y | y ∈ l} := by ext y; simp
-        rw [e, Set.union_insert]
-        exact h ih
-  have hlist : {y | y ∈ hfin.toFinset.toList} = Z \ Y := by
-    ext y; simp
-  have hZ : Z = Y ∪ {y | y ∈ hfin.toFinset.toList} := by
-    rw [hlist, Set.union_diff_cancel hYZ]
-  rw [hZ]
-  exact key hfin.toFinset.toList
+  have key (S : Set α) (hS : S.Finite) :
+      x ∉ C (insert x (Y ∪ S)) := by
+    induction S, hS using Set.Finite.induction_on with
+    | empty =>
+        simpa using hx
+    | insert _ _ ih =>
+        simpa [Set.union_insert] using h ih
+  rw [← Set.union_diff_cancel hYZ]
+  exact key (Z \ Y) hfin
 
 /-- On a finite type the single-new-alternative form and `Substitutable`
 coincide. -/
@@ -191,29 +191,30 @@ theorem substitutable_iff_forall_insert_insert [Finite α] :
     C.Substitutable ↔
       ∀ ⦃x z : α⦄ ⦃Y : Set α⦄,
         x ∉ C (insert x Y) → x ∉ C (insert x (insert z Y)) :=
-  ⟨fun hC _x _z _Y hx => hC.not_mem_insert_insert hx,
+  ⟨fun hsub _x _z _Y hx => hsub.not_mem_insert_insert hx,
    fun h _x _Y _Z hYZ hx =>
      not_mem_of_forall_insert_insert h hYZ (Set.toFinite _) hx⟩
 
 /-! ### Unit demand -/
 
 /-- Consistent unit-demand choice functions are substitutable. -/
-theorem UnitDemand.substitutable (h₁ : C.UnitDemand) (h₂ : C.Consistent) :
+theorem UnitDemand.substitutable
+    (hunit : C.UnitDemand) (hcons : C.Consistent) :
     C.Substitutable := by
   intro x Y Z hYZ hx hxZ
-  -- Unit demand pins `C (insert x Z) = {x} ⊆ insert x Y`; then IRC.
-  have hsub : C (insert x Z) ⊆ insert x Y := by
+  have hsubset : C (insert x Z) ⊆ insert x Y := by
     intro y hy
-    have hyx : y = x := h₁ (insert x Z) hy hxZ
-    exact hyx ▸ Set.mem_insert _ _
-  have hIns : insert x Y ⊆ insert x Z := Set.insert_subset_insert hYZ
-  have hEq := h₂ hsub hIns
+    have hyx : y = x := hunit _ hy hxZ
+    simp [hyx]
+  have hEq : C (insert x Y) = C (insert x Z) :=
+    hcons hsubset (Set.insert_subset_insert hYZ)
   rw [hEq] at hx
   exact hx hxZ
 
 /-- Consistent unit-demand choice functions satisfy the law of aggregate
 demand. -/
-theorem UnitDemand.sizeMonotone (h₁ : C.UnitDemand) (h₂ : C.Consistent) :
+theorem UnitDemand.sizeMonotone
+    (hunit : C.UnitDemand) (hcons : C.Consistent) :
     C.SizeMonotone := by
   intro Y Z hYZ
   rcases Set.eq_empty_or_nonempty (C Y) with hY | ⟨x, hx⟩
@@ -221,66 +222,70 @@ theorem UnitDemand.sizeMonotone (h₁ : C.UnitDemand) (h₂ : C.Consistent) :
   · have hZ : (C Z).Nonempty := by
       rcases Set.eq_empty_or_nonempty (C Z) with hZ | hZ
       · exfalso
-        have h0 : C Z ⊆ Y := by rw [hZ]; exact Set.empty_subset _
-        have hEq := h₂ h0 hYZ
+        have h0 : C Z ⊆ Y := by
+          rw [hZ]
+          exact Set.empty_subset _
+        have hEq := hcons h0 hYZ
         rw [hEq, hZ] at hx
         exact hx
       · exact hZ
     obtain ⟨z, hz⟩ := hZ
-    rw [(h₁ Y).eq_singleton_of_mem hx, (h₁ Z).eq_singleton_of_mem hz]
+    rw [(hunit Y).eq_singleton_of_mem hx,
+      (hunit Z).eq_singleton_of_mem hz]
     simp
 
 /-! ### Path independence -/
 
 /-- Substitutability + consistency imply path independence. Finiteness-free. -/
 theorem Substitutable.pathIndependent
-    (h₁ : C.Substitutable) (h₂ : C.Consistent) : C.PathIndependent := by
+    (hsub : C.Substitutable) (hcons : C.Consistent) :
+    C.PathIndependent := by
   intro Y Z
-  have hch : C.Chernoff := substitutable_iff_chernoff.mp h₁
-  have h3 : C (Y ∪ Z) ⊆ C Y ∪ Z := by
-    intro x hx
-    by_cases hz : x ∈ Z
-    · exact Set.mem_union_right _ hz
-    · have hxY : x ∈ Y := by
-        rcases C.choose_subset _ hx with hxY | hxZ
-        · exact hxY
-        · exact absurd hxZ hz
-      exact Set.mem_union_left _
-        (hch (fun y hy => Set.mem_union_left Z hy) ⟨hx, hxY⟩)
-  have h4 : C Y ∪ Z ⊆ Y ∪ Z :=
-    Set.union_subset_union_left _ (C.choose_subset Y)
-  exact (h₂ h3 h4).symm
+  have hch : C.Chernoff :=
+    substitutable_iff_chernoff.mp hsub
+  apply
+    (hcons ?_
+      (Set.union_subset_union_left _ (C.choose_subset Y))).symm
+  intro x hx
+  rcases C.choose_subset _ hx with hxY | hxZ
+  · exact Set.mem_union_left _
+      (hch Set.subset_union_left ⟨hx, hxY⟩)
+  · exact Set.mem_union_right _ hxZ
 
 /-- Path independence implies consistency — with no finiteness. -/
-theorem PathIndependent.consistent (h : C.PathIndependent) : C.Consistent := by
+theorem PathIndependent.consistent
+    (hpi : C.PathIndependent) :
+    C.Consistent := by
   intro Y Z hCY hZY
-  have e1 : C Y ∪ Z = Z := Set.union_eq_self_of_subset_left hCY
-  have e2 : Y ∪ Z = Y := Set.union_eq_self_of_subset_right hZY
-  calc C Z = C (C Y ∪ Z) := by rw [e1]
-    _ = C (Y ∪ Z) := (h Y Z).symm
+  have e1 : C Y ∪ Z = Z :=
+    Set.union_eq_self_of_subset_left hCY
+  have e2 : Y ∪ Z = Y :=
+    Set.union_eq_self_of_subset_right hZY
+  calc
+    C Z = C (C Y ∪ Z) := by rw [e1]
+    _ = C (Y ∪ Z) := (hpi Y Z).symm
     _ = C Y := by rw [e2]
 
 /-- Path independence implies substitutability — with no finiteness — via the
 Chernoff condition. -/
-theorem PathIndependent.substitutable (h : C.PathIndependent) :
+theorem PathIndependent.substitutable
+    (hpi : C.PathIndependent) :
     C.Substitutable := by
   rw [substitutable_iff_chernoff]
   intro W V hWV x hx
   obtain ⟨hxV, hxW⟩ := hx
-  have e : W ∪ (V \ W) = V := Set.union_diff_cancel hWV
-  have h1 : C V ⊆ C W ∪ (V \ W) := by
-    have hpi := h W (V \ W)
-    rw [e] at hpi
-    rw [hpi]
-    exact C.choose_subset _
-  rcases h1 hxV with hc | hd
-  · exact hc
-  · exact absurd hxW hd.2
+  have hx :
+      x ∈ C (C W ∪ (V \ W)) := by
+    rw [← hpi W (V \ W), Set.union_diff_cancel hWV]
+    exact hxV
+  rcases C.choose_subset _ hx with hxCW | hxDiff
+  · exact hxCW
+  · exact (hxDiff.2 hxW).elim
 
 /-- Aizerman–Malishevski / Chambers–Yenmez, finiteness-free in set form. -/
 theorem pathIndependent_iff_substitutable_and_consistent :
     C.PathIndependent ↔ C.Substitutable ∧ C.Consistent :=
-  ⟨fun h => ⟨h.substitutable, h.consistent⟩,
+  ⟨fun hpi => ⟨hpi.substitutable, hpi.consistent⟩,
    fun h => h.1.pathIndependent h.2⟩
 
 end ChoiceFunction
