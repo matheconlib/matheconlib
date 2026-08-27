@@ -9,8 +9,8 @@ import MatchingTheory.Choice.Basic
 `infiniteOrEmpty` — take the whole menu when it is infinite, nothing
 otherwise — separates the single-new-alternative form of substitutability
 (survey Definition 2.1 as printed) from the superset-form definition on
-infinite types, **even in the presence of consistency**. This justifies these
-design choices:
+infinite types, **even in the presence of consistency/IRC**. This justifies
+these design choices:
 
 * the superset quantification in `ChoiceFunction.Substitutable` (the printed
   single-contract form is too weak to drive the finiteness-free fixed-point
