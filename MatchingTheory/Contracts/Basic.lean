@@ -1,9 +1,10 @@
 /-
 Matching with contracts, Layer 1: two-sided markets and stability.
-
-DRAFT — mostly design signatures only.
 -/
 import MatchingTheory.Choice.Basic
+
+import Mathlib.Data.Set.Basic
+import Mathlib.Data.Set.Insert
 
 /-!
 # Two-sided markets with contracts
@@ -33,10 +34,20 @@ No unit-demand or unitarity hypothesis appears in this file or in `FixedPoint.le
 
 ## Main statements
 
-* `Market.choiceB_buyerSide` — locality from set-form IRC (one line; the
-  reason IRC is taken in set form).
+* `Market.choiceB_buyerSide`, `Market.choiceS_sellerSide` — locality from
+  set-form IRC (one line; the reason IRC is taken in set form).
+* `Market.blocks_singleton_iff` — the single-contract blocking test in the
+  `insert z A` form used by every downstream proof.
 * `Market.Stable.pairwiseStable`, `Market.pairwiseStable_iff_stable` —
   survey Theorem 2.1(i)–(ii)/3.1.
+
+## Implementation notes
+
+`Market` is a structure but the predicates below are plain `def`s unfolding to
+`∧`/`∀`.  Anonymous constructors, `.1`/`.2` and `rcases`/`obtain` see through
+them (default transparency), but `rw`/`simp` do **not**; hence the explicit
+`mem_buyerSide`/`mem_sellerSide` simp lemmas and `blocks_singleton_iff`, which
+downstream files should use instead of unfolding by hand.
 -/
 
 universe u v w
@@ -76,6 +87,21 @@ def sellerSide (s : S) (Y : Set X) : Set X := {x ∈ Y | M.seller x = s}
 @[simp] lemma mem_sellerSide {s : S} {Y : Set X} {x : X} :
     x ∈ M.sellerSide s Y ↔ x ∈ Y ∧ M.seller x = s := Iff.rfl
 
+lemma buyerSide_subset (b : B) (Y : Set X) : M.buyerSide b Y ⊆ Y :=
+  fun _ hx => (M.mem_buyerSide.mp hx).1
+
+lemma sellerSide_subset (s : S) (Y : Set X) : M.sellerSide s Y ⊆ Y :=
+  fun _ hx => (M.mem_sellerSide.mp hx).1
+
+/-- The choice set sits inside the agent's own side, by support. -/
+lemma choiceB_subset_buyerSide (b : B) (Y : Set X) :
+    M.choiceB b Y ⊆ M.buyerSide b Y := fun _ hx =>
+  M.mem_buyerSide.mpr ⟨(M.choiceB b).choose_subset Y hx, M.buyer_eq_of_mem hx⟩
+
+lemma choiceS_subset_sellerSide (s : S) (Y : Set X) :
+    M.choiceS s Y ⊆ M.sellerSide s Y := fun _ hx =>
+  M.mem_sellerSide.mpr ⟨(M.choiceS s).choose_subset Y hx, M.seller_eq_of_mem hx⟩
+
 /-! ### Hypothesis bundles -/
 
 /-- Every agent's choice function satisfies the IRC condition. -/
@@ -99,12 +125,12 @@ Paper proof (finiteness-free): with `Z := buyerSide b Y` we have
 `choiceB b Y ⊆ Z` by support and `Z ⊆ Y` by definition; apply `Consistent`. -/
 
 theorem choiceB_buyerSide {b : B} (h : (M.choiceB b).Consistent) (Y : Set X) :
-    M.choiceB b (M.buyerSide b Y) = M.choiceB b Y := by
-  sorry
+    M.choiceB b (M.buyerSide b Y) = M.choiceB b Y :=
+  h (M.choiceB_subset_buyerSide b Y) (M.buyerSide_subset b Y)
 
 theorem choiceS_sellerSide {s : S} (h : (M.choiceS s).Consistent) (Y : Set X) :
-    M.choiceS s (M.sellerSide s Y) = M.choiceS s Y := by
-  sorry
+    M.choiceS s (M.sellerSide s Y) = M.choiceS s Y :=
+  h (M.choiceS_subset_sellerSide s Y) (M.sellerSide_subset s Y)
 
 /-! ### Stability (survey Definitions 2.3 and 2.4) -/
 
@@ -113,6 +139,18 @@ their part of `A` from `A`. -/
 def IndRational (A : Set X) : Prop :=
   (∀ b, M.choiceB b A = M.buyerSide b A) ∧
     ∀ s, M.choiceS s A = M.sellerSide s A
+
+/-- Accessors for `IndRational`, so downstream files need not redo this
+`rw`-and-`⟨hx, rfl⟩` dance (cf. `FixedPoint.subset_toSellers_of_indRational`). -/
+theorem mem_choiceB_of_indRational {A : Set X} (h : M.IndRational A) {x : X}
+    (hx : x ∈ A) : x ∈ M.choiceB (M.buyer x) A := by
+  rw [h.1 (M.buyer x)]
+  exact M.mem_buyerSide.mpr ⟨hx, rfl⟩
+
+theorem mem_choiceS_of_indRational {A : Set X} (h : M.IndRational A) {x : X}
+    (hx : x ∈ A) : x ∈ M.choiceS (M.seller x) A := by
+  rw [h.2 (M.seller x)]
+  exact M.mem_sellerSide.mpr ⟨hx, rfl⟩
 
 /-- `Z` **blocks** `A`: `Z` is a nonempty set of new contracts, all of which
 every involved agent takes when offered `A ∪ Z`. (For an agent with no
@@ -131,20 +169,77 @@ contract. -/
 def PairwiseStable (A : Set X) : Prop :=
   M.IndRational A ∧ ∀ z, ¬ M.Blocks A {z}
 
+/-- FIX (new): the singleton blocking test, in the `insert z A` normal form.
+
+Blocking by `{z}` says exactly: `z` is new, and both of *its* agents take it on
+top of `A`.  Proving this once here removes the `Set.union_singleton`/
+`rw ... at *` boilerplate from every call site — in particular
+`FixedPoint.not_blocking_singleton` becomes
+`fun hA hyB hyS => by_contra fun hy => hA.2 {y} (M.blocks_singleton_iff.mpr ⟨hy, hyB, hyS⟩)`. -/
+theorem blocks_singleton_iff {A : Set X} {z : X} :
+    M.Blocks A {z} ↔
+      z ∉ A ∧ z ∈ M.choiceB (M.buyer z) (insert z A) ∧
+        z ∈ M.choiceS (M.seller z) (insert z A) := by
+  -- The one set identity the whole proof turns on.
+  have hAz : A ∪ ({z} : Set X) = insert z A := Set.union_singleton
+  constructor
+  · rintro ⟨-, hdisj, hB, hS⟩
+    refine ⟨Set.disjoint_singleton_left.mp hdisj, ?_, ?_⟩
+    · have hmem := hB (M.buyer z)
+        (M.mem_buyerSide.mpr ⟨Set.mem_singleton_iff.mpr rfl, rfl⟩)
+      rwa [hAz] at hmem
+    · have hmem := hS (M.seller z)
+        (M.mem_sellerSide.mpr ⟨Set.mem_singleton_iff.mpr rfl, rfl⟩)
+      rwa [hAz] at hmem
+  · rintro ⟨hzA, hB, hS⟩
+    refine ⟨Set.singleton_nonempty z, Set.disjoint_singleton_left.mpr hzA,
+      ?_, ?_⟩
+    · intro b x hx
+      obtain ⟨hxz, hxb⟩ := M.mem_buyerSide.mp hx
+      have hxz' : x = z := Set.mem_singleton_iff.mp hxz
+      have hbz : M.buyer z = b := by rw [← hxz']; exact hxb
+      rw [hAz, hxz', ← hbz]
+      exact hB
+    · intro s x hx
+      obtain ⟨hxz, hxs⟩ := M.mem_sellerSide.mp hx
+      have hxz' : x = z := Set.mem_singleton_iff.mp hxz
+      have hsz : M.seller z = s := by rw [← hxz']; exact hxs
+      rw [hAz, hxz', ← hsz]
+      exact hS
+
 /-- Theorem 2.1(i): stable outcomes are pairwise stable. -/
 theorem Stable.pairwiseStable {A : Set X} (h : M.Stable A) :
     M.PairwiseStable A :=
   ⟨h.1, fun z => h.2 {z}⟩
 
-/-- Theorem 2.1(ii)/3.1: under substitutability (and IRC), a blocking set
-yields a blocking contract, so pairwise stability implies stability.
+/-- Theorem 2.1(ii)/3.1: under substitutability a blocking set yields a
+blocking contract, so pairwise stability implies stability.
 
-Proof plan (survey, after Thm 2.1): take `z ∈ Z` for a blocking set `Z`;
-substitutability in the `mem_insert_of_subset` form applied to
-`A ∪ {z} ⊆ A ∪ Z` shows `{z}` blocks. -/
-theorem PairwiseStable.stable (hsub : M.Substitutable) (hcons : M.Consistent)
+NOTE: `hcons` is genuinely unused — the argument below is IRC-free (drop a
+blocking contract `z ∈ Z` and use substitutability to shrink the menu from
+`A ∪ Z` to `A ∪ {z}`).  It is kept as `_hcons` so that the arity and argument
+positions are unchanged for callers such as `FixedPoint.stable_outcomeOf`
+(`(...).stable M hsub hcons`), while the `unusedVariables` linter stays quiet. -/
+theorem PairwiseStable.stable (hsub : M.Substitutable) (_hcons : M.Consistent)
     {A : Set X} (h : M.PairwiseStable A) : M.Stable A := by
-  sorry
+  refine ⟨h.1, fun Z hZ => ?_⟩
+  obtain ⟨⟨z, hz⟩, hdisj, hB, hS⟩ := hZ
+  have hAZ : A ⊆ A ∪ Z := fun y hy => Or.inl hy
+  have hzAZ : z ∈ A ∪ Z := Set.mem_union_right A hz
+  refine h.2 z (M.blocks_singleton_iff.mpr
+    ⟨Set.disjoint_left.mp hdisj hz, ?_, ?_⟩)
+  · -- buyers: shrink the menu `A ∪ Z ↝ A` by substitutability
+    have hmem : z ∈ M.choiceB (M.buyer z) (A ∪ Z) :=
+      hB (M.buyer z) (M.mem_buyerSide.mpr ⟨hz, rfl⟩)
+    have h1 : z ∈ M.choiceB (M.buyer z) (insert z (A ∪ Z)) := by
+      rwa [Set.insert_eq_of_mem hzAZ]
+    exact (hsub.1 (M.buyer z)).mem_insert_of_subset hAZ h1
+  · -- sellers: the mirror argument
+    have hmem : z ∈ M.choiceS (M.seller z) (A ∪ Z) :=
+      hS (M.seller z) (M.mem_sellerSide.mpr ⟨hz, rfl⟩)
+    have h1 : z ∈ M.choiceS (M.seller z) (insert z (A ∪ Z)) := by
+      rwa [Set.insert_eq_of_mem hzAZ]
+    exact (hsub.2 (M.seller z)).mem_insert_of_subset hAZ h1
 
 theorem pairwiseStable_iff_stable (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} :
@@ -155,8 +250,8 @@ theorem pairwiseStable_iff_stable (hsub : M.Substitutable)
 
 /-- `Y` is **seller-chosen** over `Z`: every seller chooses their part of `Y`
 from `Y ∪ Z`. On stable outcomes this is the order `⊒S`; its order structure
-is developed in `Matching.Contracts.Order` by transport from the fixed-point
-lattice, not proved directly. -/
+is developed in `MatchingTheory.Contracts.Order` by transport from the
+fixed-point lattice, not proved directly. -/
 def SellerChosen (Y Z : Set X) : Prop :=
   ∀ s, M.choiceS s (Y ∪ Z) = M.sellerSide s Y
 
@@ -164,11 +259,15 @@ def SellerChosen (Y Z : Set X) : Prop :=
 def BuyerChosen (Y Z : Set X) : Prop :=
   ∀ b, M.choiceB b (Y ∪ Z) = M.buyerSide b Y
 
-/-! ### Decidability
+/-- Both relations are reflexive on individually rational outcomes. -/
+theorem sellerChosen_self {A : Set X} (h : M.IndRational A) :
+    M.SellerChosen A A := by
+  intro s
+  rw [Set.union_self, h.2 s]
 
-`Decidable` instances for `IndRational`, `Blocks`, `Stable` under
-`[Fintype X]` + decidable choice functions live in a dedicated file once the
-encoding question (SPEC §8 Q5: `Fintype (Set X)` vs a `Finset` mirror) is
-settled on Example 2.1. -/
+theorem buyerChosen_self {A : Set X} (h : M.IndRational A) :
+    M.BuyerChosen A A := by
+  intro b
+  rw [Set.union_self, h.1 b]
 
 end Market
