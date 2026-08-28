@@ -24,13 +24,15 @@ With that encoding, mathlib's Knaster–Tarski development
 (`Mathlib.Order.FixedPoints`: `OrderHom.lfp`/`OrderHom.gfp`, and the
 `CompleteLattice` instance on `Function.fixedPoints f`) supplies existence and
 the lattice theorem; the mathematical content of this file is **Lemma 2.1**,
-the bijection between fixed points and stable outcomes, which is where IRC and
-substitutability actually work.
+the bijection between fixed points and stable outcomes, and the **order
+dictionary** of §"The order dictionary", which identifies the lattice order
+with unanimous seller choice and its reverse with unanimous buyer choice.
 
 Everything is stated at many-to-many generality and, apart from the counting
 and iteration sections at the bottom, is finiteness-free.
 
 ## Vocabulary
+
 This file says *seller*/*buyer* where Hatfield–Milgrom say *doctor*/*hospital*:
 sellers are the proposing side, `gfp` is the seller-optimal state, and
 `StableOutcomes.sellerOptimalOutcome = ⊤`.
@@ -38,6 +40,8 @@ sellers are the proposing side, `gfp` is the seller-optimal state, and
 ## Orientation convention
 
 `⊤` is **seller-optimal** and **buyer-pessimal**; `⊥` is the reverse.  This is
+forced by which coordinate carries the `ᵒᵈ` (the *buyer*-available set does),
+and getting it backwards produces a pile of proofs that almost work.  Every
 downstream result should be phrased through `sellerOptimalOutcome` /
 `buyerOptimalOutcome`, never through bare `⊤`/`⊥`.
 
