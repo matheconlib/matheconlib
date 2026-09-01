@@ -92,7 +92,7 @@ integration theory.
 | [`ValueDistribution/SellerProfit.lean`](Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density formula and seller-profit virtual-surplus representations |
 | [`ValueDistribution/PostedPrice.lean`](Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price demand, expected payment, seller-profit, revenue, and price-comparison formulas |
 | [`ValueDistribution/PostedPriceOptimality.lean`](Auctionlib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and sufficient global and boundary optimality conditions among posted prices |
-| [`ValueDistribution/PostedPriceFirstOrder.lean`](Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise seller-profit differentiation and necessary virtual-value conditions at interior locally optimal posted prices |
+| [`ValueDistribution/PostedPriceFirstOrder.lean`](Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise seller-profit differentiation, the division-free necessary condition at an interior local optimum, and nonzero-density virtual-value corollaries |
 
 Compile-time pins, representative distributions, and end-to-end pricing checks
 live respectively in

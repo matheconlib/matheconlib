@@ -1,6 +1,7 @@
 module
 
-public import Auctionlib.ValueDistribution.PostedPriceOptimality
+public import Auctionlib.ValueDistribution.PostedPrice
+public import Auctionlib.ValueDistribution.VirtualValue
 
 import Mathlib.Analysis.Calculus.Deriv.Mul
 import Mathlib.Analysis.Calculus.LocalExtr.Basic
@@ -8,13 +9,18 @@ import Mathlib.Analysis.Calculus.LocalExtr.Basic
 /-!
 # First-Order Conditions for Posted Prices
 
-This file differentiates posted-price seller profit and prepares the
+This file differentiates posted-price seller profit and derives the necessary
 first-order condition for an interior locally optimal price.
 
-The CDF derivative is assumed only at the candidate price. The resulting
-derivative is expressed using division-free net virtual surplus, so it remains
-meaningful when the derivative vanishes. No global density representative,
-bounded-support assumption, or absolute-continuity assumption is required.
+Under atomlessness, the CDF derivative is assumed only at the candidate price.
+The primary conclusion is that division-free net virtual surplus is zero at an
+interior local optimum. When the pointwise density is nonzero, this yields the
+familiar equation `D.virtualValue density price = continuationValue`; for the
+last buyer, whose continuation value is zero, it yields
+`D.virtualValue density price = 0`.
+
+No global density representative, bounded-support assumption, or
+absolute-continuity assumption is required.
 -/
 
 @[expose] public section

@@ -1,6 +1,7 @@
 module
 
 import Auctionlib.ValueDistribution.PostedPriceFirstOrder
+import Auctionlib.ValueDistribution.PostedPriceOptimality
 import Mathlib.MeasureTheory.Constructions.UnitInterval
 import Mathlib.Probability.Distributions.Cauchy
 import Mathlib.Probability.UniformOn

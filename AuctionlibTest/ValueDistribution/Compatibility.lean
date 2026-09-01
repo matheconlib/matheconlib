@@ -2,6 +2,7 @@ module
 
 import Auctionlib.Auction.ValueDistribution
 import Auctionlib.ValueDistribution.PostedPriceFirstOrder
+import Auctionlib.ValueDistribution.PostedPriceOptimality
 import Mathlib.MeasureTheory.Measure.DiracProba
 
 /-!
