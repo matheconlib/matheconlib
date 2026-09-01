@@ -1,6 +1,6 @@
 module
 
-import Auctionlib.ValueDistribution.PostedPriceOptimality
+import Auctionlib.ValueDistribution.PostedPriceFirstOrder
 import Mathlib.MeasureTheory.Constructions.UnitInterval
 import Mathlib.Probability.Distributions.Cauchy
 import Mathlib.Probability.UniformOn
@@ -40,6 +40,11 @@ private lemma uniformUnitIntervalDistribution_toMeasure :
   rw [uniformUnitIntervalDistribution,
     ValueDistribution.toMeasure_ofRandomVariable]
   exact unitInterval.measurePreserving_coe.map_eq
+
+local instance :
+    NoAtoms ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) := by
+  rw [uniformUnitIntervalDistribution_toMeasure]
+  infer_instance
 
 /-- Its values lie in `[0, 1]` almost surely. -/
 private lemma uniformUnitIntervalDistribution_supported :
@@ -88,6 +93,28 @@ private lemma uniformUnitIntervalDistribution_probAtLeast
   rw [hset, Real.volume_Icc]
   exact ENNReal.toReal_ofReal (sub_nonneg.mpr hvalue.2)
 
+/-- On the support interval, the uniform CDF is the identity function. -/
+private lemma uniformUnitIntervalDistribution_cdf
+    (value : ℝ) (hvalue : value ∈ Icc 0 1) :
+    ProbabilityTheory.cdf
+        (uniformUnitIntervalDistribution : Measure ℝ) value = value := by
+  have hdemand :=
+    uniformUnitIntervalDistribution_probAtLeast value hvalue
+  rw [uniformUnitIntervalDistribution.probAtLeast_eq_one_sub_cdf] at hdemand
+  linarith
+
+/-- At the interior price `1 / 2`, the uniform CDF has derivative one. -/
+private lemma uniformUnitIntervalDistribution_hasDerivAt_cdf_half :
+    HasDerivAt
+      (ProbabilityTheory.cdf
+        (uniformUnitIntervalDistribution : Measure ℝ))
+      1 ((1 : ℝ) / 2) := by
+  apply (hasDerivAt_id ((1 : ℝ) / 2)).congr_of_eventuallyEq
+  filter_upwards [Icc_mem_nhds (a := (0 : ℝ)) (b := 1)
+    (by norm_num) (by norm_num)] with value hvalue
+  simpa only [id_eq] using
+    uniformUnitIntervalDistribution_cdf value hvalue
+
 /-- Uniform virtual-surplus weight is the affine function `2 * value - 1`. -/
 private lemma uniformUnitIntervalDistribution_virtualSurplusWeight
     (value : ℝ) (hvalue : value ∈ Icc 0 1) :
@@ -126,7 +153,7 @@ private lemma uniformUnitIntervalDistribution_virtualSurplusWeight_nonneg :
 
 /-- One half globally maximizes seller profit among prices in `[0, 1]` for a
 uniform buyer value, zero continuation value, and zero acquisition cost. -/
-example :
+private lemma uniformUnitIntervalDistribution_isMaxOn_sellerProfit_half :
     IsMaxOn
       (fun price =>
         uniformUnitIntervalDistribution.sellerProfit
@@ -149,6 +176,24 @@ example :
   case hsupport =>
     exact uniformUnitIntervalDistribution_supported
   case hcutoff =>
+    norm_num
+
+/-- The interior first-order condition recovers zero virtual value at the
+uniform monopoly price. -/
+example :
+    uniformUnitIntervalDistribution.virtualValue
+        (fun _ : ℝ ↦ (1 : ℝ)) ((1 : ℝ) / 2) = 0 := by
+  apply
+    ValueDistribution.virtualValue_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem
+      uniformUnitIntervalDistribution
+      0 1 (fun _ : ℝ ↦ (1 : ℝ)) 0 ((1 : ℝ) / 2)
+  case hprice =>
+    norm_num
+  case hcdf =>
+    exact uniformUnitIntervalDistribution_hasDerivAt_cdf_half
+  case hmax =>
+    exact uniformUnitIntervalDistribution_isMaxOn_sellerProfit_half.localize
+  case hdensity =>
     norm_num
 
 /-- It is continuous in the atomless sense: no individual value has positive
