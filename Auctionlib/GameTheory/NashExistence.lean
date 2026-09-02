@@ -133,7 +133,7 @@ lemma decode_encode_component {ι : Type*} {A : ι → Type*} {E : ι → Type*}
   (congrArg (e i).symm (Subtype.ext rfl)).trans ((e i).symm_apply_apply (maximizers i))
 
 lemma bestResponseCorr_nonempty {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
@@ -160,7 +160,7 @@ lemma extend_eq_payoff {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → T
     ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0 ⟨z, hz⟩
 
 lemma bestResponseCorr_convex {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
@@ -229,7 +229,7 @@ lemma bestResponseCorr_eq_pi {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι
       exact hsi_br i s⟩
 
 lemma bestResponseCorr_compact {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
@@ -250,7 +250,7 @@ lemma continuous_decode {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     (Continuous.subtype_mk ((continuous_apply i).comp continuous_subtype_val) _)
 
 lemma isClosed_payoff_le {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)]
@@ -271,7 +271,7 @@ lemma isClosed_payoff_le {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι →
         ((continuous_apply i).comp (hcd.comp continuous_snd)))))
 
 lemma graph_eq_iInter {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)] [TopologicalSpace O]
     (G : Game A O) (P : PayoffStructure O ι)
@@ -285,7 +285,7 @@ lemma graph_eq_iInter {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Ty
   exact ⟨fun ⟨_, h⟩ => h, fun hp => ⟨fun i => p.2.property i (Set.mem_univ i), hp⟩⟩
 
 lemma bestResponseCorr_isClosed_graph {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)]
@@ -343,7 +343,7 @@ lemma uhc_of_closedGraph_compact {ι : Type*} {E : ι → Type*}
     (fun p hp => ⟨Set.mem_univ _, hF_sub p.1 hp.1⟩)).image continuous_fst).isClosed
 
 lemma bestResponseCorr_uhc {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)]
@@ -361,7 +361,7 @@ lemma bestResponseCorr_uhc {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι �
 
 /-- A fixed point of the best response correspondence yields a Nash equilibrium. -/
 lemma fixed_point_is_nash {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)] [TopologicalSpace O]
     (G : Game A O) (P : PayoffStructure O ι)
@@ -386,7 +386,7 @@ public theorem Game.exists_isNashEquilibrium_of_quasiconcaveOn
     (G : Game A O) (P : PayoffStructure O ι)
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [TopologicalSpace O] [G.Continuous] [P.Continuous]
-    [Fintype ι] [DecidableEq ι]
+    [Finite ι] [DecidableEq ι]
     {E : ι → Type*} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)]
     [∀ i, LocallyConvexSpace ℝ (E i)]
@@ -531,7 +531,7 @@ admits a mixed Nash equilibrium. -/
 public theorem Game.exists_isNashEquilibrium_of_finite (G : Game A O) (P : PayoffStructure O ι)
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
     [∀ i, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O] [G.Measurable]
-    [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)] [Fintype O] :
+    [Fintype ι] [DecidableEq ι] [∀ i, Finite (A i)] [∀ i, Nonempty (A i)] [Finite O] :
     ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a := by
   let _ i : TopologicalSpace (A i) := ⊥
   let _ : TopologicalSpace O := ⊥

@@ -109,21 +109,4 @@ theorem monotoneOn_condExpSlice_of_affiliated {n : ℕ}
     hf hpos hsub hg
     hA_subset hB_subset hA_nonempty hB_nonempty hsupAB hinfAB
 
-set_option linter.unusedVariables false in
-/-- **Lemma 7.3, nonnegative case**.  This is the specialization of
-`monotoneOn_condExpSlice_of_affiliated` to a function `g` known to be
-nonnegative on `S`.
-
-The stronger theorem does not require the nonnegativity assumption, so this
-statement is now an immediate corollary.  Its existing public name and
-signature are retained for callers that naturally carry the stronger
-hypotheses. -/
-theorem monotoneOn_condExpSlice_of_affiliated_of_nonneg {n : ℕ}
-    {f g : (Fin n → ℝ) → ℝ} {S : Finset (Fin n → ℝ)}
-    (hf : Affiliated f) (hpos : ∀ x ∈ S, 0 < f x)
-    (hsub : IsSublattice (↑S : Set (Fin n → ℝ)))
-    (hg : Monotone g) (hg0 : ∀ x ∈ S, 0 ≤ g x) (i : Fin n) :
-    MonotoneOn (condExpSlice f g S i) ↑(S.image fun x => x i) := by
-  exact monotoneOn_condExpSlice_of_affiliated hf hpos hsub hg i
-
 end Auction.Affiliation

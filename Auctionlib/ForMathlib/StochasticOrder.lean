@@ -58,13 +58,11 @@ theorem LikelihoodRatioLE.of_monotone_mul {p r : ℝ → ℝ} (hp0 : 0 ≤ p)
         mul_le_mul_of_nonneg_right (hr hxy) (mul_nonneg (hp0 x) (hp0 y))
     _ = r y * p y * p x := by ring
 
-set_option linter.unusedVariables false in
 /-- For `p ≤lr q` and monotone `g`,
 `0 ≤ (g x - g y) * (q x * p y - p x * q y)`: both factors share the sign of
 `x - y`. -/
-@[nolint unusedArguments]
 theorem LikelihoodRatioLE.sub_mul_sub_nonneg {p q g : ℝ → ℝ}
-    (hlr : LikelihoodRatioLE p q) (hp0 : 0 ≤ p) (hq0 : 0 ≤ q)
+    (hlr : LikelihoodRatioLE p q)
     (hg : Monotone g) (x y : ℝ) :
     0 ≤ (g x - g y) * (q x * p y - p x * q y) := by
   rcases le_total x y with hxy | hxy
@@ -82,7 +80,7 @@ theorem LikelihoodRatioLE.sub_mul_sub_nonneg {p q g : ℝ → ℝ}
 /-- MLR ⇒ FOSD, cross-multiplied form: if `p ≤lr q` are nonnegative densities
 and `g` is monotone, then `(∫ g·p) * (∫ q) ≤ (∫ g·q) * (∫ p)`. -/
 theorem integral_mul_integral_le_of_likelihoodRatioLE {μ : Measure ℝ}
-    [SigmaFinite μ] {p q g : ℝ → ℝ} (hp0 : 0 ≤ p) (hq0 : 0 ≤ q)
+    [SigmaFinite μ] {p q g : ℝ → ℝ}
     (hlr : LikelihoodRatioLE p q) (hg : Monotone g)
     (hpi : Integrable p μ) (hqi : Integrable q μ)
     (hgpi : Integrable (fun x => g x * p x) μ)
@@ -129,21 +127,21 @@ theorem integral_mul_integral_le_of_likelihoodRatioLE {μ : Measure ℝ}
     ring
   have hnn : 0 ≤ ∫ z : ℝ × ℝ, (g z.1 - g z.2) * (q z.1 * p z.2 - p z.1 * q z.2)
       ∂(μ.prod μ) :=
-    integral_nonneg fun z => hlr.sub_mul_sub_nonneg hp0 hq0 hg z.1 z.2
+    integral_nonneg fun z => hlr.sub_mul_sub_nonneg hg z.1 z.2
   rw [key] at hnn
   linarith
 
-/-- Monotone expectations: if `p ≤lr q` are nonnegative densities of total
+/-- Monotone expectations: if `p ≤lr q` are densities of total
 mass one, then `∫ g·p ≤ ∫ g·q` for every monotone `g`. -/
 theorem integral_mul_le_of_likelihoodRatioLE {μ : Measure ℝ} [SigmaFinite μ]
-    {p q g : ℝ → ℝ} (hp0 : 0 ≤ p) (hq0 : 0 ≤ q)
+    {p q g : ℝ → ℝ}
     (hlr : LikelihoodRatioLE p q) (hg : Monotone g)
     (hpi : Integrable p μ) (hqi : Integrable q μ)
     (hgpi : Integrable (fun x => g x * p x) μ)
     (hgqi : Integrable (fun x => g x * q x) μ)
     (hp1 : ∫ x, p x ∂μ = 1) (hq1 : ∫ x, q x ∂μ = 1) :
     ∫ x, g x * p x ∂μ ≤ ∫ x, g x * q x ∂μ := by
-  have h := integral_mul_integral_le_of_likelihoodRatioLE hp0 hq0 hlr hg
+  have h := integral_mul_integral_le_of_likelihoodRatioLE hlr hg
     hpi hqi hgpi hgqi
   rwa [hp1, hq1, mul_one, mul_one] at h
 
@@ -158,10 +156,10 @@ theorem monotone_indicator_Ioi_one (t : ℝ) :
     exact Set.indicator_apply_nonneg fun _ => zero_le_one
 
 /-- Upper tails compare under the likelihood-ratio order: if `p ≤lr q` are
-nonnegative integrable densities, then for every `t`,
+integrable densities, then for every `t`,
 `(∫ x in Ioi t, p) * (∫ q) ≤ (∫ x in Ioi t, q) * (∫ p)`. -/
 theorem setIntegral_Ioi_mul_integral_le_of_likelihoodRatioLE {μ : Measure ℝ}
-    [SigmaFinite μ] {p q : ℝ → ℝ} (hp0 : 0 ≤ p) (hq0 : 0 ≤ q)
+    [SigmaFinite μ] {p q : ℝ → ℝ}
     (hlr : LikelihoodRatioLE p q)
     (hpi : Integrable p μ) (hqi : Integrable q μ) (t : ℝ) :
     (∫ x in Set.Ioi t, p x ∂μ) * (∫ x, q x ∂μ) ≤
@@ -178,7 +176,7 @@ theorem setIntegral_Ioi_mul_integral_le_of_likelihoodRatioLE {μ : Measure ℝ}
     rw [hind p]; exact hpi.indicator measurableSet_Ioi
   have hgqi : Integrable (fun x => (Set.Ioi t).indicator (1 : ℝ → ℝ) x * q x) μ := by
     rw [hind q]; exact hqi.indicator measurableSet_Ioi
-  have h := integral_mul_integral_le_of_likelihoodRatioLE hp0 hq0 hlr
+  have h := integral_mul_integral_le_of_likelihoodRatioLE hlr
     (monotone_indicator_Ioi_one t) hpi hqi hgpi hgqi
   rwa [hind p, hind q, integral_indicator measurableSet_Ioi,
     integral_indicator measurableSet_Ioi] at h

@@ -195,7 +195,7 @@ example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w}
     (G : GameTheory.Game A O) (P : GameTheory.PayoffStructure O ι)
     [(i : ι) → MeasurableSpace (A i)] [MeasurableSpace O]
     [∀ i : ι, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O]
-    [G.Measurable] [Fintype ι] [DecidableEq ι] [(i : ι) → Fintype (A i)]
-    [∀ i : ι, Nonempty (A i)] [Fintype O],
+    [G.Measurable] [Fintype ι] [DecidableEq ι] [(i : ι) → Finite (A i)]
+    [∀ i : ι, Nonempty (A i)] [Finite O],
     ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a :=
   @GameTheory.Game.exists_isNashEquilibrium_of_finite
