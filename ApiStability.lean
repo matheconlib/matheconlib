@@ -87,7 +87,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
       A.lowestType = A₂.lowestType →
         A.highestType = A₂.highestType →
           (∀ i : Fin n, IdentDistrib (A.θ i) (A₂.θ i) volume volume) →
-            ∀ [A.BIC] [A₂.BIC] [A.IndividuallyRational] [A₂.IndividuallyRational],
+            ∀ [A.BIC] [A₂.BIC] [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility],
               (∀ i : Fin n, Measurable (A₂.p i)) →
                 (∀ i : Fin n, Integrable (fun ω => A.p i (A.θ i ω)) volume) →
                   (∀ i : Fin n, Integrable (fun ω => A₂.p i (A₂.θ i ω)) volume) →
@@ -97,7 +97,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 -- Expected revenue = expected second-highest value for efficient auctions
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : Auction Ω n) [A.IsSymmetricIPV]
-    [A.rules.HasValidAllocation] [A.rules.IsEfficient] [A.BIC] [A.IndividuallyRational],
+    [A.rules.HasValidAllocation] [A.rules.IsEfficient] [A.BIC] [A.HasZeroLowestTypeUtility],
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @Auction.total_revenue
 

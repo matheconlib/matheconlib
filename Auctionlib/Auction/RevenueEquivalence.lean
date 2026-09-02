@@ -5,10 +5,12 @@ public import Auctionlib.Auction.SymmetricIPV
 /-!
 # Revenue Equivalence Theorem
 
-Under BIC, IR, and efficient allocation in a symmetric IPV auction,
+Under BIC, the zero lowest-type utility normalization, and efficient
+allocation in a symmetric IPV auction,
 the expected total revenue equals `𝔼[S₂]` (expected second-highest type).
 
-More generally, two BIC + IR mechanisms with the same `q` yield the same
+More generally, two BIC mechanisms with zero lowest-type utility and the
+same `q` yield the same
 expected revenue, without any efficiency assumption.
 -/
 
@@ -23,21 +25,23 @@ namespace Auction
 
 variable (A : Auction Ω n) [A.IsSymmetricIPV]
 
-/-- Under BIC, efficient allocation, and IR, the per-type expected payment
+/-- Under BIC, efficient allocation, and zero lowest-type utility, the
+per-type expected payment
 is uniquely determined by the common CDF. -/
 lemma payment_formula_efficient
     [A.rules.HasValidAllocation] [A.rules.IsEfficient]
-    [A.BIC] [A.IndividuallyRational]
+    [A.BIC] [A.HasZeroLowestTypeUtility]
     (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) :
     A.p i s = s * A.commonCDF s ^ (n - 1) -
       ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1) := by
   have hpf := A.payment_formula i hs
-  simp [A.q_eq_pow, IndividuallyRational.ir i] at hpf ⊢
+  simp [A.q_eq_pow, HasZeroLowestTypeUtility.zeroLowestTypeUtility i] at hpf ⊢
   linarith
 
 /-- **Revenue Equivalence Theorem.**
 
-Two BIC, IR symmetric IPV auctions with the same `q`, same type bounds,
+Two BIC symmetric IPV auctions with zero lowest-type utility, the same `q`,
+same type bounds,
 and identically distributed types yield the same expected total revenue. -/
 theorem revenue_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
@@ -48,7 +52,7 @@ theorem revenue_equivalence
     (hmax : A.highestType = A₂.highestType)
     (ident : ∀ i, IdentDistrib (A.θ i) (A₂.θ i) ℙ ℙ)
     [A.BIC] [A₂.BIC]
-    [A.IndividuallyRational] [A₂.IndividuallyRational]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
     (p_meas : ∀ i, Measurable (A₂.p i))
     (hint₁ : ∀ i, Integrable (fun ω => A.p i (A.θ i ω)) ℙ)
     (hint₂ : ∀ i, Integrable (fun ω => A₂.p i (A₂.θ i ω)) ℙ) :
@@ -62,7 +66,7 @@ theorem revenue_equivalence
   have hU : (A.toBidderProblem id i).U (A.θmin i) =
             (A₂.toBidderProblem id i).U (A₂.θmin i) := by
     simp only [toBidderProblem_U, A.θmin_eq_lowestType, A₂.θmin_eq_lowestType,
-      IndividuallyRational.ir i]
+      HasZeroLowestTypeUtility.zeroLowestTypeUtility i]
   have heq (ω) : A.p i (A.θ i ω) = A₂.p i (A.θ i ω) :=
     (A.toBidderProblem id i).payment_unique (A₂.toBidderProblem id i)
       hθmin hθmax (hq i) hU (A.θ i ω) (HasBoundedTypes.θ_in i ω)
@@ -71,11 +75,12 @@ theorem revenue_equivalence
     _ = ∫ ω, A₂.p i (A₂.θ i ω) ∂ℙ :=
         ((ident i).comp (p_meas i)).integral_eq
 
-/-- Under efficient allocation, BIC, and IR, the expected total revenue equals
+/-- Under efficient allocation, BIC, and zero lowest-type utility, the
+expected total revenue equals
 `𝔼[S₂]`, the expected second-highest order statistic. -/
 lemma total_revenue
     [A.rules.HasValidAllocation] [A.rules.IsEfficient]
-    [A.BIC] [A.IndividuallyRational] :
+    [A.BIC] [A.HasZeroLowestTypeUtility] :
     A.expectedRevenue = 𝔼[A.S₂] := by
   simp only [expectedRevenue]
   let φ : ℝ → ℝ :=
