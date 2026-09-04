@@ -362,6 +362,78 @@ example (continuationValue acquisitionCost : ℝ) :
   D.sellerProfit_postedPriceProblem lowestType highestType price
     continuationValue acquisitionCost
 
+/-- The pointwise CDF derivative determines the posted-price profit
+derivative. -/
+example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+    (continuationValue acquisitionCost : ℝ)
+    (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price) :
+    HasDerivAt
+      (fun candidatePrice ↦
+        D.sellerProfit
+          (postedPriceProblem lowestType highestType candidatePrice)
+          continuationValue acquisitionCost)
+      (-(D.virtualSurplusWeight density price -
+          continuationValue * density price))
+      price :=
+  D.hasDerivAt_sellerProfit_postedPriceProblem
+    lowestType highestType density continuationValue acquisitionCost price hcdf
+
+/-- An interior local profit maximum has zero division-free net virtual
+surplus. -/
+example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+    (continuationValue acquisitionCost : ℝ)
+    (hprice : price ∈ Ioo lowestType highestType)
+    (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)
+    (hmax :
+      IsLocalMaxOn
+        (fun candidatePrice ↦
+          D.sellerProfit
+            (postedPriceProblem lowestType highestType candidatePrice)
+            continuationValue acquisitionCost)
+        (Icc lowestType highestType) price) :
+    D.virtualSurplusWeight density price -
+      continuationValue * density price = 0 :=
+  D.netVirtualSurplus_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem
+    lowestType highestType density continuationValue acquisitionCost price
+    hprice hcdf hmax
+
+/-- Nonzero pointwise density turns the division-free condition into the
+virtual-value equation. -/
+example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+    (continuationValue acquisitionCost : ℝ)
+    (hprice : price ∈ Ioo lowestType highestType)
+    (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)
+    (hmax :
+      IsLocalMaxOn
+        (fun candidatePrice ↦
+          D.sellerProfit
+            (postedPriceProblem lowestType highestType candidatePrice)
+            continuationValue acquisitionCost)
+        (Icc lowestType highestType) price)
+    (hdensity : density price ≠ 0) :
+    D.virtualValue density price = continuationValue :=
+  D.virtualValue_eq_continuationValue_of_isLocalMaxOn_sellerProfit_postedPriceProblem
+    lowestType highestType density continuationValue acquisitionCost price
+    hprice hcdf hmax hdensity
+
+/-- With no continuation value, the interior first-order condition says that
+virtual value is zero. -/
+example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+    (acquisitionCost : ℝ)
+    (hprice : price ∈ Ioo lowestType highestType)
+    (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)
+    (hmax :
+      IsLocalMaxOn
+        (fun candidatePrice ↦
+          D.sellerProfit
+            (postedPriceProblem lowestType highestType candidatePrice)
+            0 acquisitionCost)
+        (Icc lowestType highestType) price)
+    (hdensity : density price ≠ 0) :
+    D.virtualValue density price = 0 :=
+  D.virtualValue_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem
+    lowestType highestType density acquisitionCost price hprice hcdf hmax hdensity
+
 /-- Under absolute continuity, posted-price seller profit is the tail
 integral of division-free net virtual surplus. -/
 example (density : ℝ → ℝ) (continuationValue acquisitionCost : ℝ)

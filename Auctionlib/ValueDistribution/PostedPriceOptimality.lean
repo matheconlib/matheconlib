@@ -40,9 +40,10 @@ permits the net weight to change sign multiple times, and thereby establishes
 the fixed-price conclusion against haggling. They also do not prove the
 remaining-buyers comparative static in Proposition 2.
 
-Differentiation, the interior virtual-value first-order condition,
-type-dependent continuation values, ironing, and stochastic-dominance
-comparative statics remain later layers.
+Pointwise differentiation and the interior virtual-value first-order condition
+are handled separately in `PostedPriceFirstOrder`. Type-dependent continuation
+values, ironing, and stochastic-dominance comparative statics remain later
+layers.
 
 ## Assumptions
 

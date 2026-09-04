@@ -46,6 +46,9 @@ and
 The posted-price cutoff representation and sufficient sign conditions for
 global and boundary optimality among posted prices are implemented in
 [`Auctionlib/ValueDistribution/PostedPriceOptimality.lean`](../Auctionlib/ValueDistribution/PostedPriceOptimality.lean).
+Pointwise differentiation of posted-price seller profit and necessary
+first-order conditions at an interior local optimum are implemented in
+[`Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean`](../Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean).
 The additive bridge from auction type random variables to bidder value
 distributions is implemented in
 [`Auctionlib/Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean).
@@ -325,6 +328,7 @@ of their definitions.
 | [`ValueDistribution/ExpectedPayment.lean`](../Auctionlib/ValueDistribution/ExpectedPayment.lean) | Expected-payment identities in tail-probability, canonical-density, chosen-density, and CDF forms | Revenue-equivalence consequences expressed first without a density and then specialized under absolute continuity |
 | [`ValueDistribution/SellerProfit.lean`](../Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density representation and seller-profit virtual-surplus decompositions | Rewrites the existing scalar seller objective without adding costs, continuation values, or densities to foundational structures |
 | [`ValueDistribution/PostedPriceOptimality.lean`](../Auctionlib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and `IsMaxOn` sign and boundary theorems | Gives sufficient global optimality conditions among posted prices without claiming the full Riley--Zeckhauser result over arbitrary selling rules |
+| [`ValueDistribution/PostedPriceFirstOrder.lean`](../Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise profit derivative, division-free interior first-order condition, and nonzero-density virtual-value corollaries | Gives necessary conditions at an interior local optimum without global smoothness or a global density representative |
 | [`Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
 | [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
@@ -353,9 +357,16 @@ envelope IC, support on the type interval, and absolute continuity, later
 modules express the resulting payment and profit in density-weighted
 virtual-surplus form. The posted-price optimality module then uses a
 single-crossing sign condition on the division-free net weight to prove global
-and boundary optimality among feasible posted prices. Differentiation,
-first-order conditions, and optimization over general selling rules remain
-subsequent layers.
+and boundary optimality among feasible posted prices. These are sufficient
+conditions. Separately, under atomlessness, the first-order module requires
+differentiability of the CDF only at the candidate price and proves that an
+interior local optimum has zero division-free net virtual surplus. When the
+pointwise density is nonzero, virtual value therefore equals the continuation
+value, and it equals zero for the last buyer. These are necessary conditions:
+they do not establish optimality from a zero derivative. Nor do they claim a
+zero derivative at a boundary optimum, where the existing one-sided sign
+results are the relevant tool. Optimization over general selling rules remains
+a subsequent layer.
 
 ## 5. Relationship to `BidderProblem`
 
@@ -576,8 +587,8 @@ criteria are:
 
 The current analytic and optimization milestones add optional density
 representations, density-free expected-payment identities, virtual-surplus
-seller-profit formulas, and sufficient sign conditions for optimality among
-posted prices without putting probabilistic assumptions into
-`SingleParameterProblem` or changing `Auction`. Later layers will add
-differentiation, virtual-value first-order conditions, the full
-Riley--Zeckhauser selling-rule result, and comparative statics.
+seller-profit formulas, sufficient sign conditions for optimality among
+posted prices, and necessary virtual-value conditions at an interior local
+optimum. They do so without putting probabilistic assumptions into
+`SingleParameterProblem` or changing `Auction`. Later layers will add the full
+Riley--Zeckhauser selling-rule result and comparative statics.
