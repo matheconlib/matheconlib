@@ -3,8 +3,8 @@ module
 public import Auctionlib.ValueDistribution.PostedPrice
 public import Auctionlib.ValueDistribution.VirtualValue
 
-import Mathlib.Analysis.Calculus.Deriv.Mul
-import Mathlib.Analysis.Calculus.LocalExtr.Basic
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.LocalExtr.Basic
 
 /-!
 # First-Order Conditions for Posted Prices
@@ -36,7 +36,7 @@ virtual surplus at the candidate price.
 Here `density price` is the pointwise derivative of the CDF at `price`. The
 function `density` need not be a global Radon--Nikodym density representative.
 Atomlessness identifies the closed-tail posted-price demand with one minus the
-CDF throughout a neighborhood of the candidate price.
+CDF at every price.
 The unconditional acquisition cost is constant in price and therefore does
 not enter the derivative. -/
 theorem hasDerivAt_sellerProfit_postedPriceProblem
@@ -60,7 +60,7 @@ theorem hasDerivAt_sellerProfit_postedPriceProblem
     rw [D.sellerProfit_postedPriceProblem,
       D.probAtLeast_eq_one_sub_cdf]
     rfl
-  · rw [virtualSurplusWeight, D.probAtLeast_eq_one_sub_cdf]
+  · rw [D.virtualSurplusWeight_eq_sub_one_sub_cdf]
     simp only [Pi.sub_apply, id_eq]
     ring
 
