@@ -89,10 +89,10 @@ namespace Mechanism
 
 variable (M : Mechanism I A O)
 
-/-- Strong budget balance: Agents' signed transfers sum to zero at every action profile. -/
+/-- Strong budget balance: agents' signed transfers sum to zero at every action profile. -/
 def IsBudgetBalanced [Fintype I] : Prop := ∀ a, ∑ i, M.transfer i a = 0
 
-/-- No deficit: The designer never pays out on net at any action profile. -/
+/-- No deficit: the designer never pays out on net at any action profile. -/
 def IsNoDeficit [Fintype I] : Prop := ∀ a, ∑ i, M.transfer i a ≤ 0
 
 /-- Strong budget balance holds exactly when the designer's revenue is zero at every action

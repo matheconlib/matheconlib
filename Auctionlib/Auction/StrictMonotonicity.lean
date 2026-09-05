@@ -6,21 +6,22 @@ public import Auctionlib.BidderProblem.UniversalIC
 /-!
 # Strict Monotonicity of Equilibrium Strategy (Lemma 6.2)
 
-In a symmetric IPV auction with positive density, efficient allocation,
-and universal IC over nonneg bids, the equilibrium strategy is strictly
-monotone on the type interval.
+In a symmetric IPV auction with positive density, strict-highest-bid allocation, and universal IC
+over nonnegative bids, the equilibrium strategy is strictly monotone on the type interval.
 
 ## Hypotheses
 
-- `HasIdenticalTypes`, `HasIndependentTypes`, `HasBoundedTypes`, `HasAtomlessTypes`
-- `HasPosDensity` — CDF has positive continuous density
-- `BidderProblem.IsRegular` on `A.toBidderProblem` — monotone strategy, nonneg bids, continuous cost
-- `BidderProblem.HasUniversalIC` on `A.toBidderProblem` over `Ici 0` — IC over nonneg bids
+* `HasIdenticalTypes`, `HasIndependentTypes`, `HasBoundedTypes`, `HasAtomlessTypes`
+* `HasPosDensity` — CDF has positive continuous density
+* `BidderProblem.IsRegular` on `A.toBidderProblem` — monotone strategy, nonnegative bids,
+  continuous cost
+* `BidderProblem.HasUniversalIC` on `A.toBidderProblem` over `Ici 0` — IC over nonnegative bids
 -/
 
 @[expose] public section
 
 open Set MeasureTheory ProbabilityTheory
+open Auctionlib.Mechanism.Auctions
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} [NeZero n]
@@ -29,17 +30,17 @@ namespace Auction
 
 /-! ### Density typeclass -/
 
-/-- The common CDF has a continuous density that is strictly positive
-on the interior of the type interval. -/
+/-- The common CDF has a continuous density that is strictly positive on the interior of the type
+interval. -/
 class HasPosDensity (A : Auction Ω n) [HasIdenticalTypes A] where
-  /-- density function -/
+  /-- Density function. -/
   f : ℝ → ℝ
-  /-- CDF equals integral of density -/
+  /-- The CDF equals the integral of the density. -/
   F_eq_integral : ∀ v ∈ Icc A.lowestType A.highestType,
     A.commonCDF v = ∫ t in A.lowestType..v, f t
-  /-- density is continuous on the type interval -/
+  /-- The density is continuous on the type interval. -/
   f_continuous : ContinuousOn f (Icc A.lowestType A.highestType)
-  /-- density is strictly positive on the interior -/
+  /-- The density is strictly positive on the interior. -/
   f_pos : ∀ v ∈ Ioo A.lowestType A.highestType, 0 < f v
 
 /-! ### Strict monotonicity proof -/
@@ -55,7 +56,7 @@ local notation "hi" => A.highestType
 
 private lemma winProb_gap
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
-    [A.rules.IsEfficient] {σ : ℝ → ℝ}
+    (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i)) {σ : ℝ → ℝ}
     (hσ_mono : MonotoneOn σ I) (hσ_meas : Measurable σ)
     (i : Fin n)
     (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°)
@@ -69,8 +70,8 @@ private lemma winProb_gap
     have h := HasBoundedTypes.θ_in (A := A) 0 ω
     rw [A.θmin_eq_lowestType, A.θmax_eq_highestType] at h
     exact h.1.trans h.2
-  rw [A.q_strat_eq_cdf_pow hσ_mono hσ_meas i b₀,
-      A.q_strat_eq_cdf_pow hσ_mono hσ_meas i (b₀ + ε)]
+  rw [A.q_strat_eq_cdf_pow hwinner hσ_mono hσ_meas i b₀,
+      A.q_strat_eq_cdf_pow hwinner hσ_mono hσ_meas i (b₀ + ε)]
   have hv₁' := Ioo_subset_Icc_self hv₁
   have hv₂' := Ioo_subset_Icc_self hv₂
   have hv₀_le_v₁ : bidThreshold σ lo hi b₀ ≤ v₁ :=
@@ -152,19 +153,20 @@ private lemma F_pow_strict_mono
 
 /-! ### Main theorem -/
 
-/-- **Lemma 6.2 — Strict monotonicity.** In a symmetric IPV auction with
-positive density and efficient allocation, if the `BidderProblem` constructed
-via `toBidderProblem` is regular and satisfies universal IC over nonneg bids,
-then the equilibrium strategy is strictly monotone on the type interval. -/
+/-- **Lemma 6.2 — Strict monotonicity.** In a symmetric IPV auction with positive density and
+strict-highest-bid allocation, if the `BidderProblem` constructed via `toBidderProblem` is regular
+and satisfies universal IC over nonnegative bids, then the equilibrium strategy is strictly monotone
+on the type interval. -/
 theorem strictMonotonicity
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
-    [A.rules.HasValidAllocation] [A.rules.IsEfficient]
+    (halloc : IsValidAllocation A.rules (fun o i => o i))
+    (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     {σ : ℝ → ℝ} (hσ_meas : Measurable σ) (i : Fin n)
     (hlo_nonneg : 0 ≤ lo)
-    (hreg : (A.toBidderProblem σ i).IsRegular)
-    (hic : (A.toBidderProblem σ i).HasUniversalIC (Ici 0)) :
+    (hreg : (A.toBidderProblem halloc σ i).IsRegular)
+    (hic : (A.toBidderProblem halloc σ i).HasUniversalIC (Ici 0)) :
     StrictMonoOn σ I := by
-  set B := A.toBidderProblem σ i
+  set B := A.toBidderProblem halloc σ i
   have hBI : B.typeInterval = I :=
     show Icc (A.θmin i) (A.θmax i) = _ by simp
   have hσ_mono : MonotoneOn σ I := hBI ▸ hreg.strategy_mono
@@ -196,7 +198,7 @@ theorem strictMonotonicity
     (F v₂ ^ (n - 1) - F v₁ ^ (n - 1))
     (Ioo_subset_Icc_self hv₂) hv₂.1 heq'.symm
     (by linarith [A.F_pow_strict_mono v₁ v₂ hv₁ hv₂ hlt])
-    (fun ε hε => A.winProb_gap hσ_mono hσ_meas i
+    (fun ε hε => A.winProb_gap hwinner hσ_mono hσ_meas i
       v₁ v₂ hv₁ hv₂ hlt b₀ rfl heq'.symm ε hε)
     (hσ_nonneg v₁ (Ioo_subset_Icc_self hv₁))
     hlo_nonneg ic
@@ -204,14 +206,15 @@ theorem strictMonotonicity
 /-- Distinct types in the interior have distinct bids. -/
 theorem no_ties
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
-    [A.rules.HasValidAllocation] [A.rules.IsEfficient]
+    (halloc : IsValidAllocation A.rules (fun o i => o i))
+    (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     {σ : ℝ → ℝ} (hσ_meas : Measurable σ) (i : Fin n)
     (hlo_nonneg : 0 ≤ lo)
-    (hreg : (A.toBidderProblem σ i).IsRegular)
-    (hic : (A.toBidderProblem σ i).HasUniversalIC (Ici 0)) :
+    (hreg : (A.toBidderProblem halloc σ i).IsRegular)
+    (hic : (A.toBidderProblem halloc σ i).HasUniversalIC (Ici 0)) :
     ∀ v₁ ∈ I°, ∀ v₂ ∈ I°, v₁ ≠ v₂ → σ v₁ ≠ σ v₂ := by
   intro v₁ hv₁ v₂ hv₂ hne
-  exact ((A.strictMonotonicity hσ_meas i hlo_nonneg hreg hic).injOn
+  exact ((A.strictMonotonicity halloc hwinner hσ_meas i hlo_nonneg hreg hic).injOn
     (Ioo_subset_Icc_self hv₁) (Ioo_subset_Icc_self hv₂)).mt hne
 
 end Auction

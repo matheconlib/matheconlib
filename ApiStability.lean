@@ -3,26 +3,24 @@ import Auctionlib
 /-!
 # API stability pins
 
-This file pins the **exact statements** of the library's core theorems and
-definitions. Each `example` below restates a public declaration's full type
-and proves it by the declaration itself, so this file compiles if and only if
-every pinned statement is unchanged (binder *names* are free to differ; the
-hypotheses, conclusion, and implicitness are locked).
+This file pins the **exact statements** of the library's core theorems and definitions. Each
+`example` below restates a public declaration's full type and proves it by the declaration itself,
+so this file compiles if and only if every pinned statement is unchanged (binder *names* are free
+to differ; the hypotheses, conclusion, and implicitness are locked).
 
-**The rule**: if your change turns this file red, the change alters a public
-statement — an added hypothesis, a changed conclusion, a renamed or deleted
-declaration. Per `CONTRIBUTING.md` that needs a design discussion first: open
-an issue and get agreement before changing the statement. Do **not** silently
-edit the pin to make it pass.
+**The rule**: If your change turns this file red, the change alters a public statement — an added
+hypothesis, a changed conclusion, a renamed or deleted declaration. Per `CONTRIBUTING.md` that
+needs a design discussion first: Open an issue and get agreement before changing the statement. Do
+**not** silently edit the pin to make it pass.
 
-The file lives at the repository root (outside `Auctionlib/`) so that
-`lake exe mk_all` never touches it, and is built as its own `lean_lib`
-(`ApiStability`), listed in `defaultTargets` so a plain `lake build` checks it.
-(It is deliberately a non-`module` file: it imports the mk_all-generated root
-`Auctionlib`, which is itself a plain import list.)
+The file lives at the repository root (outside `Auctionlib/`) so that `lake exe mk_all` never
+touches it, and is built as its own `lean_lib` (`ApiStability`), listed in `defaultTargets` so a
+plain `lake build` checks it. (It is deliberately a non-`module` file: It imports the
+mk_all-generated root `Auctionlib`, which is itself a plain import list.)
 -/
 
 open MeasureTheory ProbabilityTheory
+open Auctionlib.Mechanism.Auctions
 
 universe u v w
 
@@ -71,7 +69,8 @@ example : ∀ (B : BidderProblem),
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : Auction Ω n) {Ω₂ : Type} [MeasureSpace Ω₂]
     [IsProbabilityMeasure (volume : Measure Ω₂)] (A₂ : Auction Ω₂ n)
-    [A.rules.HasValidAllocation] [A₂.rules.HasValidAllocation] [A.BIC] [A₂.BIC] (i j : Fin n),
+    (_ : IsValidAllocation A.rules (fun o i => o i))
+    (_ : IsValidAllocation A₂.rules (fun o i => o i)) [A.BIC] [A₂.BIC] (i j : Fin n),
     A.θmin i = A₂.θmin j → A.θmax i = A₂.θmax j → A.q i = A₂.q j →
       A.U i (A.θmin i) = A₂.U j (A₂.θmin j) →
         ∀ {s : ℝ}, s ∈ A.interval i → A.p i s = A₂.p j s :=
@@ -82,7 +81,8 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
     {n : ℕ} [n.AtLeastTwo] (A : Auction Ω n) [A.IsSymmetricIPV]
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.IsSymmetricIPV]
-    [A.rules.HasValidAllocation] [A₂.rules.HasValidAllocation],
+    (_ : IsValidAllocation A.rules (fun o i => o i))
+    (_ : IsValidAllocation A₂.rules (fun o i => o i)),
     (∀ i : Fin n, A.q i = A₂.q i) →
       A.lowestType = A₂.lowestType →
         A.highestType = A₂.highestType →
@@ -94,10 +94,12 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
                     A.expectedRevenue = A₂.expectedRevenue :=
   @Auction.revenue_equivalence
 
--- Expected revenue = expected second-highest value for efficient auctions
+-- Expected revenue = expected second-highest value for strict-highest-bid auctions
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : Auction Ω n) [A.IsSymmetricIPV]
-    [A.rules.HasValidAllocation] [A.rules.IsEfficient] [A.BIC] [A.HasZeroLowestTypeUtility],
+    (_ : IsValidAllocation A.rules (fun o i => o i))
+    (_ : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
+    [A.BIC] [A.HasZeroLowestTypeUtility],
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @Auction.total_revenue
 

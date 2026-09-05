@@ -125,8 +125,8 @@ def welfareExcl [Fintype I] [DecidableEq I] (i : I) (θ : Profile Θ) (o : O) : 
 /-- Social value splits into agent `i`'s value and the value accruing to everyone else. -/
 theorem value_add_welfareExcl [Fintype I] [DecidableEq I]
     (i : I) (θ : Profile Θ) (o : O) :
-    E.value i θ o + E.welfareExcl i θ o = E.totalValue θ o := by
-  exact Finset.add_sum_erase Finset.univ (fun j => E.value j θ o) (Finset.mem_univ i)
+    E.value i θ o + E.welfareExcl i θ o = E.totalValue θ o :=
+  Finset.add_sum_erase Finset.univ (fun j => E.value j θ o) (Finset.mem_univ i)
 
 /-- Under private values, changing `i`'s type does not change others' total value at a fixed
 outcome. -/
