@@ -37,7 +37,14 @@ import Auctionlib.GameTheory.Basic
 import Auctionlib.GameTheory.NashExistence
 import Auctionlib.Mechanism
 import Auctionlib.Mechanism.AllPurchase
+import Auctionlib.Mechanism.Auctions.AllPurchase.Spec
+import Auctionlib.Mechanism.Auctions.Allocation
 import Auctionlib.Mechanism.Basic
+import Auctionlib.Mechanism.Core.Comap
+import Auctionlib.Mechanism.Core.Environment
+import Auctionlib.Mechanism.Core.Mechanism
+import Auctionlib.Mechanism.Core.Profile
+import Auctionlib.Mechanism.Core.SolutionConcepts
 import Auctionlib.SingleParameter
 import Auctionlib.SingleParameter.Basic
 import Auctionlib.SingleParameter.EnvelopeIC
