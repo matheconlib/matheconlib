@@ -1887,7 +1887,7 @@ The lesson: `exact?` is excellent at "which library lemma is this," and no help 
 ### Where to go next in the library
 
 1. **`SingleParameter/Basic.lean`**: mostly definitions, and the gentlest entry point. It is also the deterministic core the rest of the library is built on.
-2. **`Mechanism/Basic.lean`**: the rules of an auction, as functions of everyone's bids. Also mostly definitions.
+2. **`Mechanism/Core/Mechanism.lean`**: the rules of a mechanism: which outcome is chosen and how money moves, as functions of everyone's actions. Also mostly definitions.
 3. **`BidderProblem/Basic.lean`**: the file dissected above, and the bridge from that core into the auction setting.
 4. **`BidderProblem/EnvelopeIC.lean`**: the first file with substantial mathematics, and where you will see Mathlib's measure theory doing real work.
 5. **`BidderProblem/TypeDeviationIC.lean`**: payment identities and Myerson's lemma.
