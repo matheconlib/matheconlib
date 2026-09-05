@@ -3,9 +3,11 @@
 ## Status of this document
 
 **Draft.** This manual was written by Moran Koren (@morankor) as a standalone
-document, and is reproduced here unchanged apart from corrections of repository
-facts: two counts that had drifted since it was written, and link paths
-rewritten relative to `docs/`.
+document, and is reproduced here with light editorial corrections only: link
+paths rewritten relative to `docs/`, two counts that had drifted since it was
+written (now given approximately, so they do not drift again), an architecture
+appendix updated for the layers added since, a pointer to `CONTRIBUTING.md` in
+place of a partial restatement of it, and a few typos.
 
 Its account of the library was accurate at Lean `v4.28.0`. Two caveats apply
 until the author's review pass lands: the code examples have not yet been
@@ -108,9 +110,9 @@ lake build           # build the project
 
 Those two commands do very different jobs, and the order matters.
 
-`lake build` compiles Lean source into `.olean` files, which are the compiled form Lean loads when one file imports another. `auctionlib` itself is 58 files. Mathlib, which it imports, is over 7,600. Compiling Mathlib from source on a laptop takes hours.
+`lake build` compiles Lean source into `.olean` files, which are the compiled form Lean loads when one file imports another. `auctionlib` itself is a few dozen files. Mathlib, which it imports, is over 7,600. Compiling Mathlib from source on a laptop takes hours.
 
-To avoid this, The Mathlib project publishes prebuilt `.olean` files for every commit  (about 8,000 files, which unpack to some 5 GB). you can download the set matching your pinned version using:  `lake exe cache get` avoids that entirely.  
+To avoid this, the Mathlib project publishes prebuilt `.olean` files for every commit (about 8,000 files, which unpack to some 5 GB). `lake exe cache get` downloads the set matching your pinned version, so nothing has to be compiled from source.
 
 So the first run takes roughly half an hour, nearly all of it network. After that, builds are fast: `lake` tracks which files changed and rebuilds only those and whatever depends on them. Editing one file in `Auctionlib/` and rebuilding is usually seconds.
 
@@ -298,7 +300,7 @@ Three axioms plus a few thousand lines of kernel is the whole trusted base. Ever
 
 ## Part 2 — A syntax primer
 
-Before the punctuation, we procide a map of the Lean building blocks. Lean has fewer kinds of thing in it than most programming languages, and knowing the whole list early makes the syntax much easier to read.
+Before the punctuation, we provide a map of the Lean building blocks. Lean has fewer kinds of thing in it than most programming languages, and knowing the whole list early makes the syntax much easier to read.
 
 ### 2.0 What a Lean file is made of
 
@@ -687,7 +689,7 @@ Tactics are specialists, not a single button labelled "prove it". Learning which
 
 ## Part 3 — The one big idea: propositions are types
 
-Lean may seems strange at first due to a single design decision we introduce next.  Once you are use to it, all that remains is vocabulary.
+Lean may seem strange at first due to a single design decision we introduce next. Once you are used to it, all that remains is vocabulary.
 
 ### 3.1 The colon means exactly one thing
 
@@ -1164,7 +1166,7 @@ That `{ x // P x }` notation is a **subtype**: the type of things satisfying `P`
 
 ## Part 4 — Reading a real file
 
-Open [`Auctionlib/BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) beside this section. It is about 120 lines.
+Open [`Auctionlib/BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) beside this section. It is about a hundred lines.
 
 ### 4.1 What the file is for
 
@@ -1848,7 +1850,7 @@ The `ForMathlib/` folder holds results intended for eventual inclusion in Mathli
 
 Before opening a pull request, run `lake exe mk_all --lib Auctionlib --git` to regenerate the import list, then `lake build` to confirm everything still compiles.
 
-**Two house rules.** Names follow the Mathlib conventions in [Part 7](#how-mathlib-names-things). And the tactic `native_decide` is not permitted anywhere in the library.
+**House rules.** Names follow the Mathlib conventions in [Part 7](#how-mathlib-names-things), and the tactic `native_decide` is not permitted anywhere in the library. [`CONTRIBUTING.md`](../CONTRIBUTING.md) has the rest — no `sorry` or `admit`, `#print axioms` on new results showing only the three axioms from [Part 1](#part-1--why-formalise-mathematics-at-all), the API stability pins, and the design-first rule for changes to the core layers.
 
 The second rule repays understanding rather than mere obedience. `native_decide` settles a goal by compiling it to machine code and running it, then asking you to believe the answer. It is fast, and for some finite checks it is the only practical option. But it moves the compiler and the runtime inside the trusted base, alongside the kernel. A proof using it is no longer checked by the small, heavily scrutinised program described in [Part 1](#part-1--why-formalise-mathematics-at-all); it is underwritten by the whole Lean compiler. Since the trusted base is the entire argument for formalising in the first place, the project declines to enlarge it.
 
@@ -1912,10 +1914,19 @@ HasUniversalIC  ⟹  HasTypeDeviationIC  ⟹  HasEnvelopeIC
 
 Each `⟹` is registered with Lean as an `instance` (§4.6). The practical effect is that if you prove the strongest condition holds, every theorem stated under the weaker ones becomes available automatically, with no further work. It is the machine-checked counterpart of a paper remarking that "Assumption 1 implies Assumption 2, so the results of Section 5 apply."
 
+The three layers above are the auction spine, but they now sit on a more general
+deterministic core. `SingleParameterProblem` models an affine-in-type
+quasilinear choice problem over an arbitrary action type, and
+`BidderProblem.toSingleParameterProblem` bridges into it losslessly, so the
+envelope and payment results are proved once at that level and reused here. A
+separate layer supplies value distributions.
+
 The rest of the library:
 
 | Folder | Contents |
 | --- | --- |
+| `SingleParameter/` | the deterministic core: affine-in-type quasilinear problems, the IC hierarchy, envelope and payment results |
+| `ValueDistribution/` | real-valued value distributions, posted-price demand, expected payment, seller profit |
 | `Mechanism/` | allocation and payment rules |
 | `Auction/` | auctions with a probabilistic environment; revenue equivalence, symmetric private values, affiliation, all-purchase auctions |
 | `BidderProblem/` | the single-bidder view and the IC hierarchy |
