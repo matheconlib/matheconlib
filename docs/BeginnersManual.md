@@ -2,18 +2,18 @@
 
 ## Status of this document
 
-**Draft.** This manual was written by Moran Koren (@morankor) as a standalone
-document, and is reproduced here with editorial corrections: link paths
-rewritten relative to `docs/`, stale counts refreshed and dated, a new §4.0 on
-the module-system lines a reader meets at the top of the first real file, an
+This manual was written by Moran Koren (@morankor) as a standalone document,
+and is reproduced here with editorial corrections: link paths rewritten
+relative to `docs/`, stale counts refreshed and dated, a new §4.0 on the
+module-system lines a reader meets at the top of the first real file, an
 architecture appendix, reading list and glossary updated for the layers added
 since, a pointer to `CONTRIBUTING.md` in place of a partial restatement of it,
 and a few typos.
 
-Its account of the library was accurate at Lean `v4.28.0`. Two caveats still
-apply: the code examples have not been recompiled against the current library,
-and the collected hands-on files it refers to under `Auctionlib/Playground/` do
-not exist yet, so those two pointers will not resolve.
+Its runnable snippets are collected in
+[`AuctionlibTest/Manual/HandsOn.lean`](../AuctionlibTest/Manual/HandsOn.lean),
+which `lake build` compiles, so a snippet that stops working turns the build
+red rather than quietly rotting in the prose.
 
 ## Preface
 
@@ -55,7 +55,7 @@ Every Lean snippet here was compiled against `auctionlib` at Lean `v4.28.0`. Whe
 
 Every section ends with a block marked ✍️. These are not decoration. Reading about a proof assistant teaches you very little; five minutes of typing teaches you a lot. Several blocks ask you to **break working code deliberately** and read the resulting error, which is where most of the learning happens.
 
-All of them are collected, ready to run, in `Auctionlib/Playground/HandsOn.lean`. That file compiles as it stands. Examples meant to fail sit commented out, each labelled with the error you should see on uncommenting.
+All of them are collected, ready to run, in [`AuctionlibTest/Manual/HandsOn.lean`](../AuctionlibTest/Manual/HandsOn.lean). That file is compiled by the ordinary `lake build`, so it cannot drift away from the manual without turning the build red. Examples meant to fail sit commented out, each labelled with the error you should see on uncommenting. Copy what you want into a scratch file of your own rather than editing it in place.
 
 ---
 
@@ -445,7 +445,7 @@ fun (x : ℝ) => x + 1
 `fun` introduces the variable, `=>` separates it from the body. (You will also see `↦` used for `=>`; they are interchangeable, and this project's settings display the arrow form.) Checking it:
 
 ```lean
-#check fun (x : ℝ) => x + 1     -- fun x => x + 1 : ℝ → ℝ
+#check fun (x : ℝ) => x + 1     -- fun x ↦ x + 1 : ℝ → ℝ
 ```
 
 **An underscore `_` means "I do not care about this argument."** So `fun _ => 1 / 2` is the constant function returning one-half, ignoring its input. You will see this constantly.
@@ -490,7 +490,7 @@ Now the anonymous functions. Take these one line at a time rather than as a bloc
 #check fun (x : ℝ) => x + 1
 ```
 
-Lean answers `fun x => x + 1 : ℝ → ℝ`. Everything before the colon is the term you wrote, echoed back; everything after it is the type. So Lean is telling you this is a function from reals to reals. You have described a function without applying it to anything.
+Lean answers `fun x ↦ x + 1 : ℝ → ℝ`. Note the arrow came back as `↦` even though you typed `=>`; the box below explains why. Everything before the colon is the term you wrote, echoed back; everything after it is the type. So Lean is telling you this is a function from reals to reals. You have described a function without applying it to anything.
 
 **The same function, applied.** Now give it an argument. The extra parentheses are needed because the function is anonymous: without them, Lean would read `n + 1 5` and fail.
 
@@ -506,7 +506,7 @@ Lean answers `6`. This is `#eval` rather than `#check` because we want the value
 #check fun (_ : ℝ) => (1:ℝ) / 2
 ```
 
-Lean answers `fun x => 1 / 2 : ℝ → ℝ`. Two things to notice. The type is still `ℝ → ℝ`, because this is still a function that accepts a real; it simply pays no attention to what it is given. And Lean has printed a name, `x`, where you wrote `_`, since it needs something to display.
+Lean answers `fun x ↦ 1 / 2 : ℝ → ℝ`. Two things to notice. The type is still `ℝ → ℝ`, because this is still a function that accepts a real; it simply pays no attention to what it is given. And Lean has printed a name, `x`, where you wrote `_`, since it needs something to display.
 
 That last pattern is exactly how `winProb := fun _ => 1 / 2` works in Part 3: a bidder whose chance of winning is one half no matter what they bid.
 
@@ -752,7 +752,7 @@ One of the most useful commands in Lean is `#check` . It is used to interrogate 
 
 ```lean
 #check (3 : ℝ)                 -- 3 : ℝ
-#check fun (x : ℝ) => x ^ 2    -- fun x => x ^ 2 : ℝ → ℝ
+#check fun (x : ℝ) => x ^ 2    -- fun x ↦ x ^ 2 : ℝ → ℝ
 #check ℕ                       -- ℕ : Type          ← a type is itself a value
 #check (2 + 2 = 4)             -- 2 + 2 = 4 : Prop  ← a statement is a type
 #check Set.Icc (0:ℝ) 1         -- Icc 0 1 : Set ℝ
@@ -888,7 +888,7 @@ In most languages, types are fixed shapes: "integer," "list of strings," "functi
 
 ```lean
 #check (Fin 3)          -- Fin 3 : Type
-#check fun n => (Fin n) -- fun n => Fin n : ℕ → Type
+#check fun n => (Fin n) -- fun n ↦ Fin n : ℕ → Type
 ```
 
 Read that second line carefully: `fun n => Fin n` is a **function from numbers to types**. Feed it `3` and you get the type `Fin 3` (which has three elements); feed it `5` and you get a different type. Types are values that can be computed.
@@ -899,7 +899,7 @@ This is exactly what is happening in §3.1. The type of `winProb_range`, namely 
 
 ```lean
 #check Fin 3                     -- Fin 3 : Type
-#check fun n => Fin n            -- fun n => Fin n : ℕ → Type
+#check fun n => Fin n            -- fun n ↦ Fin n : ℕ → Type
 #check fun (n : ℕ) => (Fin n → ℝ)
 ```
 
@@ -1830,7 +1830,7 @@ Between `exact?`, name-guessing, and grep, you can find almost anything in Mathl
 
 ## Part 8 — Exercises
 
-Work in the scratch file [`Auctionlib/Playground/PropsAreTypes.lean`](../Auctionlib/Playground/PropsAreTypes.lean), which compiles as it stands and contains runnable versions of the Part 3 material. The `Playground/` folder is excluded from version control, so nothing you do there can disturb the library.
+Work in your own scratch file under `Auctionlib/Playground/`, which is excluded from version control, so nothing you do there can disturb the library. Worked versions of the Part 3 material live in [`AuctionlibTest/Manual/HandsOn.lean`](../AuctionlibTest/Manual/HandsOn.lean) if you want to compare.
 
 Solutions follow the exercises. All of them have been compiled.
 
