@@ -3,16 +3,17 @@
 ## Status of this document
 
 **Draft.** This manual was written by Moran Koren (@morankor) as a standalone
-document, and is reproduced here unchanged apart from corrections of repository
-facts: two counts that had drifted since it was written, and link paths
-rewritten relative to `docs/`.
+document, and is reproduced here with editorial corrections: link paths
+rewritten relative to `docs/`, stale counts refreshed and dated, a new §4.0 on
+the module-system lines a reader meets at the top of the first real file, an
+architecture appendix, reading list and glossary updated for the layers added
+since, a pointer to `CONTRIBUTING.md` in place of a partial restatement of it,
+and a few typos.
 
-Its account of the library was accurate at Lean `v4.28.0`. Two caveats apply
-until the author's review pass lands: the code examples have not yet been
-recompiled against the current library, and the collected hands-on files it
-refers to under `Auctionlib/Playground/` do not exist yet, so those two
-pointers will not resolve. Outstanding corrections are tracked in the issue
-linked from the pull request that added this file.
+Its account of the library was accurate at Lean `v4.28.0`. Two caveats still
+apply: the code examples have not been recompiled against the current library,
+and the collected hands-on files it refers to under `Auctionlib/Playground/` do
+not exist yet, so those two pointers will not resolve.
 
 ## Preface
 
@@ -108,9 +109,9 @@ lake build           # build the project
 
 Those two commands do very different jobs, and the order matters.
 
-`lake build` compiles Lean source into `.olean` files, which are the compiled form Lean loads when one file imports another. `auctionlib` itself is 58 files. Mathlib, which it imports, is over 7,600. Compiling Mathlib from source on a laptop takes hours.
+`lake build` compiles Lean source into `.olean` files, which are the compiled form Lean loads when one file imports another. `auctionlib` itself is 58 files as of this writing. Mathlib, which it imports, is over 7,600. Compiling Mathlib from source on a laptop takes hours.
 
-To avoid this, The Mathlib project publishes prebuilt `.olean` files for every commit  (about 8,000 files, which unpack to some 5 GB). you can download the set matching your pinned version using:  `lake exe cache get` avoids that entirely.  
+To avoid this, the Mathlib project publishes prebuilt `.olean` files for every commit (about 8,000 files, which unpack to some 5 GB). `lake exe cache get` downloads the set matching your pinned version, so nothing has to be compiled from source.
 
 So the first run takes roughly half an hour, nearly all of it network. After that, builds are fast: `lake` tracks which files changed and rebuilds only those and whatever depends on them. Editing one file in `Auctionlib/` and rebuilding is usually seconds.
 
@@ -298,7 +299,7 @@ Three axioms plus a few thousand lines of kernel is the whole trusted base. Ever
 
 ## Part 2 — A syntax primer
 
-Before the punctuation, we procide a map of the Lean building blocks. Lean has fewer kinds of thing in it than most programming languages, and knowing the whole list early makes the syntax much easier to read.
+Before the punctuation, we provide a map of the Lean building blocks. Lean has fewer kinds of thing in it than most programming languages, and knowing the whole list early makes the syntax much easier to read.
 
 ### 2.0 What a Lean file is made of
 
@@ -509,7 +510,7 @@ Lean answers `fun x => 1 / 2 : ℝ → ℝ`. Two things to notice. The type is s
 
 That last pattern is exactly how `winProb := fun _ => 1 / 2` works in Part 3: a bidder whose chance of winning is one half no matter what they bid.
 
-> **`=>` or `↦`?** Both are accepted and mean the same thing. `auctionlib` uses both, roughly evenly: about 290 occurrences of `=>` against 235 of `↦`. The split runs by file rather than by rule, with `GameTheory/Basic.lean` almost entirely `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
+> **`=>` or `↦`?** Both are accepted and mean the same thing. `auctionlib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Basic.lean` almost entirely `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
 
 ### 2.3 Symbols you will meet
 
@@ -687,7 +688,7 @@ Tactics are specialists, not a single button labelled "prove it". Learning which
 
 ## Part 3 — The one big idea: propositions are types
 
-Lean may seems strange at first due to a single design decision we introduce next.  Once you are use to it, all that remains is vocabulary.
+Lean may seem strange at first due to a single design decision we introduce next. Once you are used to it, all that remains is vocabulary.
 
 ### 3.1 The colon means exactly one thing
 
@@ -1164,7 +1165,63 @@ That `{ x // P x }` notation is a **subtype**: the type of things satisfying `P`
 
 ## Part 4 — Reading a real file
 
-Open [`Auctionlib/BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) beside this section. It is about 120 lines.
+Open [`Auctionlib/BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) beside this section. It is about a hundred lines.
+
+### 4.0 The three lines before the mathematics
+
+The file does not open with mathematics. It opens with this:
+
+```lean
+module
+
+public import Mathlib.MeasureTheory.Integral.DivergenceTheorem
+public import Auctionlib.SingleParameter.Basic
+
+@[expose] public section
+```
+
+None of that is about auctions, and none of it has appeared so far in this manual. It is bookkeeping about **visibility**: which parts of this file other files are allowed to see. Taking the lines in turn:
+
+| Line | What it does |
+| --- | --- |
+| `module` | opts this file into Lean's module system. Every file in `auctionlib` starts this way |
+| `public import X` | imports `X` **and passes it on**: files that import this file get `X` too |
+| `import X` (no `public`) | imports `X` for use here only; importers do not inherit it |
+| `@[expose] public section` | what follows is visible to importers — `public` exposes the statements, `@[expose]` also exposes the definitions |
+
+The matching `end` at the bottom of the file closes that section.
+
+The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/NashExistence.lean`](../Auctionlib/GameTheory/NashExistence.lean), which uses both:
+
+```lean
+public import Auctionlib.GameTheory.Basic
+public import Mathlib.Analysis.Convex.Quasiconvex
+
+import Auctionlib.ForMathlib.Kakutani
+import Mathlib.MeasureTheory.Measure.Prokhorov
+```
+
+The first two are public because the file's *statements* mention them: you cannot read its theorems without knowing what a game or a quasiconvex function is. The rest are private because they are needed only inside the *proofs*. A file downstream that wants the Nash existence theorem should not have Prokhorov's theorem forced into scope along with it.
+
+> **`public` is about what your readers inherit, not about what you may use.**
+
+Two practical notes. First, none of this applies to the scratch files you have been writing: a file outside the library needs only `import Auctionlib.BidderProblem.Basic`, and everything in that exposed section is available. You will meet these keywords when you *add* a file to the library, not before. Second, §4.5 explains a separate reason a definition can still be opaque when you are proving things.
+
+### ✍️ Hands-on 4.0 — see the two kinds of import
+
+Open [`GameTheory/NashExistence.lean`](../Auctionlib/GameTheory/NashExistence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
+
+Now scroll to the bottom of [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and find the bare `end`. That is the partner of `@[expose] public section` at the top; everything between them is what the rest of the library can see.
+
+Finally, confirm the reassurance above in your own scratch file:
+
+```lean
+import Auctionlib.BidderProblem.Basic
+
+#check BidderProblem.winProb
+```
+
+No `module`, no `public`, and it works.
 
 ### 4.1 What the file is for
 
@@ -1829,11 +1886,14 @@ The lesson: `exact?` is excellent at "which library lemma is this," and no help 
 
 ### Where to go next in the library
 
-1. **`Mechanism/Basic.lean`**: mostly definitions, and the gentlest entry point.
-2. **`BidderProblem/Basic.lean`**: the file dissected above.
-3. **`BidderProblem/EnvelopeIC.lean`**: the first file with substantial mathematics, and where you will see Mathlib's measure theory doing real work.
-4. **`BidderProblem/TypeDeviationIC.lean`**: payment identities and Myerson's lemma.
-5. **`Auction/RevenueEquivalence.lean`**: a landmark result of auction theory, and a good test of whether you can now read Lean.
+1. **`SingleParameter/Basic.lean`**: mostly definitions, and the gentlest entry point. It is also the deterministic core the rest of the library is built on.
+2. **`Mechanism/Basic.lean`**: the rules of an auction, as functions of everyone's bids. Also mostly definitions.
+3. **`BidderProblem/Basic.lean`**: the file dissected above, and the bridge from that core into the auction setting.
+4. **`BidderProblem/EnvelopeIC.lean`**: the first file with substantial mathematics, and where you will see Mathlib's measure theory doing real work.
+5. **`BidderProblem/TypeDeviationIC.lean`**: payment identities and Myerson's lemma.
+6. **`Auction/RevenueEquivalence.lean`**: a landmark result of auction theory, and a good test of whether you can now read Lean.
+
+Posted pricing is a second branch rather than a further rung on this ladder. If selling at a fixed price interests you more than auctions do, read `SingleParameter/PostedPrice.lean` for the deterministic version and `ValueDistribution/PostedPrice.lean` once a distribution of buyer values is in play.
 
 ### Learning Lean beyond this manual
 
@@ -1848,7 +1908,7 @@ The `ForMathlib/` folder holds results intended for eventual inclusion in Mathli
 
 Before opening a pull request, run `lake exe mk_all --lib Auctionlib --git` to regenerate the import list, then `lake build` to confirm everything still compiles.
 
-**Two house rules.** Names follow the Mathlib conventions in [Part 7](#how-mathlib-names-things). And the tactic `native_decide` is not permitted anywhere in the library.
+**House rules.** Names follow the Mathlib conventions in [Part 7](#how-mathlib-names-things), and the tactic `native_decide` is not permitted anywhere in the library. [`CONTRIBUTING.md`](../CONTRIBUTING.md) has the rest — no `sorry` or `admit`, `#print axioms` on new results showing only the three axioms from [Part 1](#part-1--why-formalise-mathematics-at-all), the API stability pins, and the design-first rule for changes to the core layers.
 
 The second rule repays understanding rather than mere obedience. `native_decide` settles a goal by compiling it to machine code and running it, then asking you to believe the answer. It is fast, and for some finite checks it is the only practical option. But it moves the compiler and the runtime inside the trusted base, alongside the kernel. A proof using it is no longer checked by the small, heavily scrutinised program described in [Part 1](#part-1--why-formalise-mathematics-at-all); it is underwritten by the whole Lean compiler. Since the trusted base is the entire argument for formalising in the first place, the project declines to enlarge it.
 
@@ -1868,6 +1928,10 @@ Enough to read the library. Not a substitute for a course.
 
 **Mechanism.** The rules of the auction: who gets the object and who pays what, as a function of all the bids. Independent of any beliefs about bidders.
 
+**Posted price.** Selling at a single take-it-or-leave-it price rather than by auction. The buyer's only choice is whether to buy, which makes it the simplest mechanism in the library and a good place to see the general machinery working on something small. In `SingleParameter/PostedPrice.lean`.
+
+**Single-parameter problem.** The generalisation the library proves its main results at. One agent has a real-valued type `v`, chooses an action `a`, and gets `v · x(a) - t(a)`: the type enters utility only through the scalar allocation `x(a)`. A bid, a report, or a decision to buy are all such actions, so the envelope and payment theorems are proved once here and reused everywhere. In `SingleParameter/Basic.lean`.
+
 **Incentive compatible (IC).** A mechanism is incentive compatible if no bidder can do better by misreporting their valuation. Truthfulness is optimal. The library has a hierarchy of increasingly strong versions of this condition.
 
 **Envelope theorem.** A result letting you recover a bidder's equilibrium payoff by integrating their winning probability over valuations. A workhorse of the field, and the mathematical core of `BidderProblem/EnvelopeIC.lean`.
@@ -1875,6 +1939,10 @@ Enough to read the library. Not a substitute for a course.
 **Myerson's lemma.** Roughly: once the allocation rule is fixed and the mechanism is incentive compatible, the payments are pinned down up to a constant. Formalised in `BidderProblem/TypeDeviationIC.lean`.
 
 **Revenue equivalence.** The striking consequence that broad classes of auction which look quite different, first-price and second-price among them, nevertheless yield the seller the same expected revenue. In `Auction/RevenueEquivalence.lean`.
+
+**Value distribution.** How buyers' valuations are spread out, as a probability distribution over the reals. The seller does not know any individual's valuation but is assumed to know this distribution. In `ValueDistribution/`.
+
+**Virtual value.** A transformed valuation that accounts for the information rent a buyer earns from private information. Expected seller profit can be rewritten as expected *virtual* surplus, which is what turns choosing a price into an ordinary maximisation. In `ValueDistribution/VirtualValue.lean`.
 
 **Regular.** As used by `IsRegular`, a package of technical smoothness and monotonicity assumptions that rule out pathological cases.
 
@@ -1912,10 +1980,19 @@ HasUniversalIC  ⟹  HasTypeDeviationIC  ⟹  HasEnvelopeIC
 
 Each `⟹` is registered with Lean as an `instance` (§4.6). The practical effect is that if you prove the strongest condition holds, every theorem stated under the weaker ones becomes available automatically, with no further work. It is the machine-checked counterpart of a paper remarking that "Assumption 1 implies Assumption 2, so the results of Section 5 apply."
 
+The three layers above are the auction spine, but they now sit on a more general
+deterministic core. `SingleParameterProblem` models an affine-in-type
+quasilinear choice problem over an arbitrary action type, and
+`BidderProblem.toSingleParameterProblem` bridges into it losslessly, so the
+envelope and payment results are proved once at that level and reused here. A
+separate layer supplies value distributions.
+
 The rest of the library:
 
 | Folder | Contents |
 | --- | --- |
+| `SingleParameter/` | the deterministic core: affine-in-type quasilinear problems, the IC hierarchy, envelope and payment results |
+| `ValueDistribution/` | real-valued value distributions, posted-price demand, expected payment, seller profit |
 | `Mechanism/` | allocation and payment rules |
 | `Auction/` | auctions with a probabilistic environment; revenue equivalence, symmetric private values, affiliation, all-purchase auctions |
 | `BidderProblem/` | the single-bidder view and the IC hierarchy |
