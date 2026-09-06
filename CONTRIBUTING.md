@@ -2,6 +2,11 @@
 
 Thanks for contributing! This is a short guide to how changes land in this repository.
 
+New to Lean 4 or to this library? Start with
+[*Lean 4 and `auctionlib` — A Beginner's Manual*](docs/BeginnersManual.md),
+which covers the toolchain, the editor loop, and how to read the library's
+core files. The `ForMathlib/` folder is a good place for a first contribution.
+
 ## Design first for core layers
 
 Changes to the foundational layers — `Mechanism/`, `BidderProblem/`, `GameTheory/`,

@@ -2,6 +2,14 @@
 
 A Lean 4 formalization of fundamental theorems in auction theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4).
 
+## Getting Started
+
+New to Lean 4, or to this library?
+[*Lean 4 and `auctionlib` — A Beginner's Manual*](docs/BeginnersManual.md) goes
+from installing the toolchain to reading
+[`BidderProblem/Basic.lean`](Auctionlib/BidderProblem/Basic.lean) line by line,
+with runnable exercises throughout. It assumes no Lean and no auction theory.
+
 ## Mathematical Reference
 
 The auction-theory development is guided by an evolving overview provided by Scott Kominers, [*Auction Theory -- introduction and sketch of potential formalization objectives*](https://www.overleaf.com/project/698329a7c6b8506c1361f68b). The overview includes both completed and prospective objectives; this README describes the material currently implemented in Lean.
@@ -200,10 +208,17 @@ The continuous conditional-expectation and winner's-curse results, together with
 ## Building
 
 ```bash
+lake exe cache get                           # fetch prebuilt Mathlib oleans (do this first)
 lake exe mk_all --lib Auctionlib --git       # regenerate library imports
 lake exe mk_all --lib AuctionlibTest --git   # regenerate test imports
 lake build                                    # build library, API pins, and compatibility tests
 ```
+
+Run `lake exe cache get` before the first build, and again after any change that
+bumps the Mathlib revision or after `lake clean`; without it Lean compiles
+Mathlib from source, which takes hours. [Part 0 of the Beginner's
+Manual](docs/BeginnersManual.md#part-0--working-with-lean-on-your-mac) covers
+the editor setup in full.
 
 ## Coverage and Roadmap
 
