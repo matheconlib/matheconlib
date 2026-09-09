@@ -2,6 +2,7 @@ module
 
 import Auctionlib.BidderProblem
 import Auctionlib.SingleParameter.PostedPrice
+import Auctionlib.SingleParameter.Revelation
 
 /-!
 # Compatibility Checks for the Single-Parameter Foundation
@@ -13,7 +14,9 @@ intended to support:
 1. a new problem with a non-real action type can use the complete generic IC,
    envelope, payment, and participation API;
 2. an existing `BidderProblem` can use the same general results without
-   changing its original public assumptions or conclusions.
+   changing its original public assumptions or conclusions;
+3. the single-agent revelation principle: reduction to a direct problem
+   preserves the interim quantities and yields universal IC.
 
 If a later refactor accidentally breaks one of these paths, this module will
 fail to compile as part of the ordinary `lake build`. It belongs to the
@@ -189,5 +192,50 @@ example
   BidderProblem.hasUniversalIC_of_toSingleParameterProblem hIC
 
 end BidderProblem
+
+/-! ## The single-agent revelation principle -/
+
+section Revelation
+
+universe u
+
+variable {Action : Type u} (P : SingleParameterProblem Action)
+
+/-- The reduced form is direct. -/
+example : P.reduce.IsDirect :=
+  P.reduce_isDirect
+
+/-- Reduction is idempotent. -/
+example : P.reduce.reduce = P.reduce :=
+  P.reduce_reduce
+
+/-- Type-deviation IC yields truthfulness of the reduced form: universal IC
+over in-interval reports. -/
+example [SingleParameterProblem.HasTypeDeviationIC P] :
+    SingleParameterProblem.HasUniversalIC P.reduce P.typeInterval :=
+  inferInstance
+
+/-- The headline single-agent revelation principle. -/
+example [SingleParameterProblem.HasTypeDeviationIC P] :
+    ∃ D : SingleParameterProblem ℝ,
+      D.IsDirect ∧
+      SingleParameterProblem.HasUniversalIC D D.typeInterval ∧
+      D.lowestType = P.lowestType ∧
+      D.highestType = P.highestType ∧
+      D.q = P.q ∧
+      D.U = P.U ∧
+      ∀ w : ℝ, D.payment w = P.payment (P.strategy w) :=
+  P.revelation_principle
+
+/-- Participation transfers to the reduced form. -/
+example (h : P.IsIndividuallyRational) : P.reduce.IsIndividuallyRational :=
+  P.reduce_isIndividuallyRational h
+
+/-- The binding participation constraint at the lowest type transfers too. -/
+example (h : P.HasZeroLowestTypeUtility) :
+    P.reduce.HasZeroLowestTypeUtility :=
+  P.reduce_hasZeroLowestTypeUtility h
+
+end Revelation
 
 end SingleParameterCompatibility
