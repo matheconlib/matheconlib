@@ -4,6 +4,8 @@ This directory contains the project's public website. It is built with
 [Eleventy](https://www.11ty.dev/) and is deliberately separate from the Lean
 build.
 
+The deployed site is [matheconlib.bo-cowgill.workers.dev](https://matheconlib.bo-cowgill.workers.dev/).
+
 ## Local development
 
 ```bash
@@ -41,9 +43,9 @@ repository secrets:
 - `CLOUDFLARE_API_TOKEN`: a Cloudflare API token with Workers edit access
 - `CLOUDFLARE_ACCOUNT_ID`: the Cloudflare account ID that owns the Worker
 
-The initial address has the form
-`https://matheconlib.<account-subdomain>.workers.dev`. A custom domain can be
-attached later without changing the website source.
+The default Cloudflare address is
+`https://matheconlib.bo-cowgill.workers.dev`. A custom domain can be attached
+later without changing the website source.
 
 The working project name and shared metadata are kept in
 `src/_data/site.json`, so the site can be renamed without editing every page.
