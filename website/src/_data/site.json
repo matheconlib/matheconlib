@@ -1,0 +1,8 @@
+{
+  "name": "MathEconLib",
+  "workingName": true,
+  "description": "A public Lean 4 library for formalized auction theory and mathematical economics.",
+  "repository": "https://github.com/AxiomMath/auctionlib",
+  "issues": "https://github.com/AxiomMath/auctionlib/issues",
+  "sourceBranch": "main"
+}

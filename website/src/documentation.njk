@@ -1,0 +1,54 @@
+---
+layout: layouts/base.njk
+title: Documentation
+description: Guides, architecture notes, and source documentation for MathEconLib.
+permalink: /documentation/index.html
+---
+
+<header class="page-hero short-page-hero">
+  <div class="shell page-hero-grid">
+    <div><p class="eyebrow"><span></span> Documentation</p><h1>Choose a way into the library.</h1></div>
+    <p>Start from first principles, study the mathematical architecture, or go directly to the checked Lean source.</p>
+  </div>
+</header>
+
+<section class="page-section section-rule">
+  <div class="shell resource-grid">
+    <a class="resource-card featured-resource" href="https://github.com/AxiomMath/auctionlib/blob/main/docs/BeginnersManual.md">
+      <div><span class="resource-type">Beginner’s guide</span><span aria-hidden="true">↗</span></div>
+      <h2>Lean 4 and auctionlib</h2>
+      <p>A hands-on manual covering installation, Lean syntax, propositions as types, proof tactics, and a guided reading of a real bidder problem.</p>
+      <strong>Start here if Lean is new to you</strong>
+    </a>
+    <a class="resource-card" href="https://github.com/AxiomMath/auctionlib/blob/main/docs/PricingArchitecture.md">
+      <div><span class="resource-type">Architecture</span><span aria-hidden="true">↗</span></div>
+      <h2>Pricing foundations</h2>
+      <p>The mathematical model and public API for deterministic single-parameter problems, incentive compatibility, and expected seller objectives.</p>
+      <strong>Read the model</strong>
+    </a>
+    <a class="resource-card" href="https://github.com/AxiomMath/auctionlib/tree/main/Auctionlib">
+      <div><span class="resource-type">Lean source</span><span aria-hidden="true">↗</span></div>
+      <h2>Browse the library</h2>
+      <p>Inspect the definitions and proofs organized under auctions, mechanisms, bidder problems, value distributions, and game theory.</p>
+      <strong>Open the source</strong>
+    </a>
+    <a class="resource-card" href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">
+      <div><span class="resource-type">Reference</span><span aria-hidden="true">↗</span></div>
+      <h2>Results and API map</h2>
+      <p>A current inventory of modules, principal theorems, build commands, coverage, and prospective formalization work.</p>
+      <strong>View the inventory</strong>
+    </a>
+  </div>
+</section>
+
+<section class="page-section section-rule soft-section">
+  <div class="shell quickstart-grid">
+    <div><p class="kicker">Build locally</p><h2>Three commands to check the library.</h2><p>The project pins its Lean toolchain and Mathlib revision. Fetch the compiled Mathlib cache before building.</p></div>
+    <div class="terminal-card">
+      <div class="terminal-top"><span></span><span></span><span></span><b>auctionlib</b></div>
+      <pre><code><span>$</span> lake exe cache get
+<span>$</span> lake exe mk_all --lib Auctionlib --git
+<span>$</span> lake build</code></pre>
+    </div>
+  </div>
+</section>

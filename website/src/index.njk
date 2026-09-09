@@ -1,0 +1,128 @@
+---
+layout: layouts/base.njk
+title: Home
+description: MathEconLib develops reusable, machine-checked foundations for auction theory and mathematical economics in Lean 4.
+---
+
+<section class="hero">
+  <div class="shell hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow"><span></span> Formal economics in Lean 4</p>
+      <h1>Economic arguments,<br><em>made checkable.</em></h1>
+      <p class="hero-lede">{{ site.name }} is an open project building reusable, machine-verified foundations for auction theory and mathematical economics.</p>
+      <div class="button-row">
+        <a class="button button-primary" href="{{ '/documentation/' | url }}">Explore the library <span aria-hidden="true">→</span></a>
+        <a class="button button-secondary" href="https://github.com/AxiomMath/auctionlib/blob/main/docs/BeginnersManual.md">Begin with Lean</a>
+      </div>
+    </div>
+
+    <aside class="proof-card" aria-label="Example verified results">
+      <div class="proof-card-top">
+        <span>Verified in Lean</span>
+        <span class="proof-status"><i></i> passing</span>
+      </div>
+      <pre><code><span class="code-muted">import</span> Auctionlib
+
+<span class="code-muted">#check</span> Auction.payment_equivalence
+<span class="code-muted">#check</span> Auction.revenue_equivalence
+<span class="code-muted">#check</span> AllPurchase.welfare_decomposition</code></pre>
+      <div class="proof-card-bottom">
+        <span>Lean 4 + Mathlib</span>
+        <span aria-hidden="true">✓</span>
+      </div>
+    </aside>
+  </div>
+</section>
+
+<section class="principles section-rule">
+  <div class="shell">
+    <div class="section-heading split-heading">
+      <div>
+        <p class="kicker">Why formalize?</p>
+        <h2>Research you can inspect<br>one inference at a time.</h2>
+      </div>
+      <p>Formalization turns assumptions, definitions, and proofs into durable public objects. Every theorem is checked by Lean’s kernel and built on Mathlib’s mathematical foundations.</p>
+    </div>
+    <div class="feature-grid">
+      <article>
+        <span class="feature-index">01</span>
+        <h3>Explicit assumptions</h3>
+        <p>Formal statements make the exact economic environment and logical dependencies visible.</p>
+      </article>
+      <article>
+        <span class="feature-index">02</span>
+        <h3>Reusable theory</h3>
+        <p>General results can support new mechanisms, models, and research without reproving the foundations.</p>
+      </article>
+      <article>
+        <span class="feature-index">03</span>
+        <h3>Machine checked</h3>
+        <p>Lean verifies every proof term against a small trusted kernel, from definitions to final theorems.</p>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="work section-rule">
+  <div class="shell work-grid">
+    <div class="section-heading">
+      <p class="kicker">Inside the library</p>
+      <h2>From mechanism rules<br>to economic conclusions.</h2>
+      <p>The current development begins with auction theory and expands into reusable single-parameter, pricing, probability, and game-theoretic foundations.</p>
+      <a class="text-link" href="{{ '/about/' | url }}">See how the library is organized <span aria-hidden="true">→</span></a>
+    </div>
+    <ol class="layer-list">
+      <li>
+        <span class="layer-number">1</span>
+        <div><h3>Mechanism</h3><p>Allocation and payment rules over participant reports.</p></div>
+        <code>x, t</code>
+      </li>
+      <li>
+        <span class="layer-number">2</span>
+        <div><h3>Auction</h3><p>A mechanism together with types and a probabilistic environment.</p></div>
+        <code>θ, ℙ</code>
+      </li>
+      <li>
+        <span class="layer-number">3</span>
+        <div><h3>Bidder problem</h3><p>The interim optimization problem faced by one participant.</p></div>
+        <code>q, U</code>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="results section-rule">
+  <div class="shell">
+    <div class="section-heading compact-heading">
+      <p class="kicker">Selected formalized results</p>
+      <h2>What is checked today</h2>
+    </div>
+    <div class="result-grid">
+      <a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/BidderProblem/EnvelopeIC.lean">
+        <span>Incentives</span><h3>Envelope theorem</h3><p>Monotonicity, differentiability, and an integral representation of bidder utility.</p><i>↗</i>
+      </a>
+      <a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/Auction/RevenueEquivalence.lean">
+        <span>Auctions</span><h3>Revenue equivalence</h3><p>Expected-revenue identities under incentive, efficiency, and symmetry assumptions.</p><i>↗</i>
+      </a>
+      <a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/Auction/AllPurchase/WelfareDecomposition.lean">
+        <span>Welfare</span><h3>Welfare decomposition</h3><p>First-best surplus separated into Cournot, contest, and variance losses.</p><i>↗</i>
+      </a>
+      <a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/GameTheory/NashExistence.lean">
+        <span>Game theory</span><h3>Nash existence</h3><p>Pure and mixed equilibrium existence for continuous and finite games.</p><i>↗</i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<section class="join section-rule">
+  <div class="shell join-inner">
+    <div>
+      <p class="kicker">Open collaboration</p>
+      <h2>Help build a common language for formal economics.</h2>
+    </div>
+    <div>
+      <p>Read the beginner’s manual, inspect a theorem, or propose a formalization. Contributions from economists, mathematicians, and Lean users are welcome.</p>
+      <a class="button button-light" href="{{ '/people/' | url }}">How to contribute <span aria-hidden="true">→</span></a>
+    </div>
+  </div>
+</section>
