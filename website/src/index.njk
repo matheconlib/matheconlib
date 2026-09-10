@@ -219,7 +219,8 @@
     <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming. The name MathEconLib is provisional.</p>
     <p class="lede">MathEconLib is the home of <a href="#auctionlib">auctionlib</a>, a formalization of auction theory and mechanism design in the Lean 4 proof assistant, and of the further libraries that will follow it.</p>
     <p>A machine-checked theorem is one whose statement and proof have been verified by a small, trusted kernel. There is no step the reader has to take on faith and no hypothesis that can go unstated: if the proof compiles, the theorem holds exactly as written. For economic theory, where results are reused across many papers with slightly different assumptions, that precision is the point. The library records the exact conditions under which the envelope theorem, Myerson's lemma, or revenue equivalence hold, and any downstream result inherits them automatically.</p>
-    <p>Everything is built on <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>, the community library of formal mathematics, so probability, measure theory, and analysis come from the same source the rest of the formal-mathematics world uses. The project is developed with <a href="https://axiommath.ai">Axiom Math</a>. <span class="placeholder">[One sentence on the role of AI-assisted formalization in the project, to confirm.]</span></p>
+    <p>Everything is built on <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>, the community library of formal mathematics, so probability, measure theory, and analysis come from the same source the rest of the formal-mathematics world uses. The project is developed with <a href="https://axiommath.ai">Axiom Math</a>.</p>
+    <p><strong>MathEconLib is not an end-to-end autoformalization project.</strong> Its definitions and conventions are developed together with economic theorists, with the aim of building a trusted foundation for formal research in economics. AI-assisted tools help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem.</p>
     <p>This site is the stable place to point people at, a home for the documentation, and a record of who works on what. Development happens on GitHub.</p>
 
     <h2 id="auctionlib">auctionlib</h2>
@@ -270,7 +271,7 @@
     <h2 id="contribute">Contributing</h2>
     <p>New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Results destined for Mathlib, kept in the <code>ForMathlib</code> folder, are a good first contribution.</p>
     <p>Changes to the foundational layers start with a design issue: sketch the definitions and main statements and get agreement on the shape before writing proofs. Every pull request must build cleanly, contain no <code>sorry</code>, <code>admit</code>, or <code>native_decide</code>, and add no axioms beyond the standard three.</p>
-    <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. Questions go to the person listed under <a href="#people">People</a>, or <span class="placeholder">[discussion venue, e.g. a Zulip stream or GitHub Discussions]</span>.</p>
+    <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. Questions go to the person listed under <a href="#people">People</a>.</p>
 
     <h2 id="roadmap">Roadmap</h2>
     <p>Open directions, in rough order of priority. Completed work is listed above.</p>
@@ -314,7 +315,7 @@
     </div>
 
     <h3>Acknowledgments</h3>
-    <p>MathEconLib is developed with <a href="https://axiommath.ai">Axiom Math</a>. <span class="placeholder">[Funders, institutions, and individuals to acknowledge.]</span></p>
+    <p>MathEconLib was developed with the support of <a href="https://axiommath.ai">Axiom Math</a>.</p>
 
     <h2 id="cite">Citing</h2>
     <p>If you use the library in academic work, please cite it. <span class="placeholder">[Finalize the author list, and mint a Zenodo DOI once the repository is public.]</span></p>
