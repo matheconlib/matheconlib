@@ -93,14 +93,21 @@
   .page { max-width: 44rem; margin: 0 auto; padding: 0 1.25rem 5rem; }
 
   header.top {
-    display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.6rem 1.6rem;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.6rem;
     padding: 1.6rem 0 1rem;
     border-bottom: 1px solid var(--rule);
   }
   .wordmark {
+    display: inline-flex; align-items: center; gap: 0.65rem;
     font-family: "IBM Plex Serif", Georgia, serif;
     font-weight: 600; font-size: 1.2rem; letter-spacing: -0.01em;
     color: var(--ink); border: 0;
+  }
+  .wordmark-mark {
+    display: grid; place-items: center;
+    width: 2.2rem; height: 2.2rem;
+    background: var(--ink); color: var(--ground);
+    font-size: 0.96rem; line-height: 1; letter-spacing: -0.08em;
   }
   nav.top ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.2rem 1.2rem; }
   nav.top a { font-size: 0.92rem; color: var(--muted); border: 0; }
@@ -188,7 +195,10 @@
 <body>
 <div class="page">
   <header class="top">
-    <a class="wordmark" href="#top">MathEconLib</a>
+    <a class="wordmark" href="#top" aria-label="MathEconLib home">
+      <span class="wordmark-mark" aria-hidden="true">M∃</span>
+      <span>MathEconLib</span>
+    </a>
     <nav class="top" aria-label="Sections">
       <ul>
         <li><a href="#about">About</a></li>
