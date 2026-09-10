@@ -125,11 +125,14 @@ lemma commonCDF_eq [HasIdenticalTypes A] (s : ℝ) :
     exact hθ.2
   simp [huniv]
 
-/-! ### Individual rationality and revenue -/
+/-! ### Lowest-type normalization and revenue -/
 
-/-- Individual rationality: lowest type gets zero utility. -/
-class IndividuallyRational [HasIdenticalTypes A] : Prop where
-  ir : ∀ i, A.U i A.lowestType = 0
+/-- Zero lowest-type utility: the participation constraint binds at the lowest
+type, so the lowest type earns exactly zero. This is the normalization used by
+revenue equivalence; the actual participation predicates are the `InterimIR`
+family. Matches `SingleParameterProblem.HasZeroLowestTypeUtility`. -/
+class HasZeroLowestTypeUtility [HasIdenticalTypes A] : Prop where
+  zeroLowestTypeUtility : ∀ i, A.U i A.lowestType = 0
 
 /-- Expected total revenue. -/
 noncomputable def expectedRevenue : ℝ :=
