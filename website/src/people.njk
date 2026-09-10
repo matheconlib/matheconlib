@@ -1,0 +1,43 @@
+---
+layout: layouts/base.njk
+title: People and contributing
+description: Contributors and ways to take part in MathEconLib.
+permalink: /people/index.html
+---
+
+<header class="page-hero short-page-hero">
+  <div class="shell page-hero-grid">
+    <div><p class="eyebrow"><span></span> People & contributing</p><h1>Economics, mathematics, and formal proof.</h1></div>
+    <p>The project brings together economic theory and Lean expertise. Contributions can begin with a question, a documentation improvement, or a new formalization.</p>
+  </div>
+</header>
+
+<section class="page-section section-rule">
+  <div class="shell editorial-grid">
+    <div class="sticky-label">Contributors</div>
+    <div>
+      <p class="people-intro">The following people appear in the repository’s public contribution history. We plan to add affiliations and areas of contact with each contributor’s review.</p>
+      <div class="people-grid">
+        {% for person in ["Bo Cowgill", "Ben Eltschig", "Ruiz Chen", "Jujian Zhang", "Scott Kominers", "Daniel Lyng"] %}
+        <article><span class="person-mark">{{ person | first }}</span><h2>{{ person }}</h2><p>Project contributor</p></article>
+        {% endfor %}
+      </div>
+      <a class="text-link" href="https://github.com/AxiomMath/auctionlib/graphs/contributors">View the complete contribution history <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</section>
+
+<section class="page-section section-rule soft-section">
+  <div class="shell">
+    <div class="section-heading compact-heading"><p class="kicker">Ways to contribute</p><h2>Begin where you are.</h2></div>
+    <div class="contribute-grid">
+      <article><span>Economists</span><h3>Propose and clarify theory</h3><p>Help identify valuable results, state the right hypotheses, and connect formal statements to the economic literature.</p></article>
+      <article><span>Lean users</span><h3>Formalize and review</h3><p>Develop definitions and proofs, improve APIs, test examples, and review code for mathematical and software quality.</p></article>
+      <article><span>New contributors</span><h3>Read, ask, and document</h3><p>Work through the beginner’s manual, report unclear points, improve explanations, or take on a scoped issue.</p></article>
+    </div>
+    <div class="contact-strip">
+      <div><h2>Start a conversation</h2><p>For questions about the mathematics, Lean code, documentation, or project direction, open an issue in the repository.</p></div>
+      <a class="button button-primary" href="{{ site.issues }}">Open GitHub issues <span aria-hidden="true">↗</span></a>
+    </div>
+  </div>
+</section>

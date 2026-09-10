@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% if title and title != "Home" %}{{ title }} · {% endif %}{{ site.name }}</title>
+    <meta name="description" content="{{ description or site.description }}">
+    <meta name="theme-color" content="#162a4a">
+    <link rel="stylesheet" href="{{ '/assets/css/main.css' | url }}">
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <div class="shell header-inner">
+        <a class="wordmark" href="{{ '/' | url }}" aria-label="{{ site.name }} home">
+          <span class="wordmark-mark" aria-hidden="true">M∃</span>
+          <span>{{ site.name }}</span>
+          {% if site.workingName %}<span class="draft-chip">working name</span>{% endif %}
+        </a>
+        <nav class="site-nav" aria-label="Primary navigation">
+          <a href="{{ '/about/' | url }}">About</a>
+          <a href="{{ '/documentation/' | url }}">Documentation</a>
+          <a href="{{ '/roadmap/' | url }}">Roadmap</a>
+          <a href="{{ '/people/' | url }}">People</a>
+          <a class="nav-github" href="{{ site.repository }}">GitHub <span aria-hidden="true">↗</span></a>
+        </nav>
+      </div>
+    </header>
+
+    <main id="main">
+      {{ content | safe }}
+    </main>
+
+    <footer class="site-footer">
+      <div class="shell footer-grid">
+        <div>
+          <a class="footer-name" href="{{ '/' | url }}">{{ site.name }}</a>
+          <p>Formalized economics, checked by Lean.</p>
+        </div>
+        <div>
+          <p class="footer-label">Project</p>
+          <a href="{{ '/about/' | url }}">About</a>
+          <a href="{{ '/roadmap/' | url }}">Roadmap</a>
+          <a href="{{ '/people/' | url }}">People</a>
+        </div>
+        <div>
+          <p class="footer-label">Build with us</p>
+          <a href="{{ '/documentation/' | url }}">Start reading</a>
+          <a href="{{ site.repository }}">Source code</a>
+          <a href="{{ site.issues }}">Issues</a>
+        </div>
+      </div>
+      <div class="shell footer-bottom">
+        <span>© {{ metadata.year }} {{ site.name }}</span>
+        {% if site.workingName %}<span>Project name under consideration</span>{% endif %}
+      </div>
+    </footer>
+  </body>
+</html>
