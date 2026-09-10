@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MathEconLib</title>
-<meta name="description" content="MathEconLib: machine-checked mathematical economics in Lean 4. Home of auctionlib, a formalization of auction theory and mechanism design built on Mathlib.">
+<meta name="description" content="MathEconLib: machine-checked foundations for microeconomic theory, macroeconomic theory, and econometrics in Lean 4.">
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MathEconLib">
-<meta property="og:description" content="Machine-checked mathematical economics in Lean 4. Home of auctionlib.">
+<meta property="og:description" content="Machine-checked foundations for microeconomic theory, macroeconomic theory, and econometrics in Lean 4.">
 <meta property="og:url" content="https://matheconlib.bo-cowgill.workers.dev/">
 <meta property="og:site_name" content="MathEconLib">
 <meta name="twitter:card" content="summary">
@@ -171,9 +171,9 @@
   th { font-weight: 600; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule-strong); }
   td code { white-space: nowrap; }
 
-  dl.docs { margin: 0 0 1rem; max-width: 40rem; }
-  dl.docs dt { font-weight: 500; margin-top: 0.9rem; }
-  dl.docs dd { margin: 0.1rem 0 0; color: var(--muted); font-size: 0.95rem; }
+  dl.docs, dl.scope { margin: 0 0 1rem; max-width: 40rem; }
+  dl.docs dt, dl.scope dt { font-weight: 500; margin-top: 0.9rem; }
+  dl.docs dd, dl.scope dd { margin: 0.1rem 0 0; color: var(--muted); font-size: 0.95rem; }
 
   .people { list-style: none; padding: 0; margin: 0 0 1rem; columns: 2; column-gap: 2rem; max-width: 40rem; }
   .people li { break-inside: avoid; margin-bottom: 0.7rem; }
@@ -202,28 +202,41 @@
     <nav class="top" aria-label="Sections">
       <ul>
         <li><a href="#about">About</a></li>
+        <li><a href="#vision">Scope</a></li>
         <li><a href="#auctionlib">auctionlib</a></li>
         <li><a href="#docs">Docs</a></li>
         <li><a href="#contribute">Contribute</a></li>
         <li><a href="#roadmap">Roadmap</a></li>
         <li><a href="#people">People</a></li>
         <li><a href="#cite">Cite</a></li>
-        <li><a href="https://github.com/AxiomMath/auctionlib">GitHub</a></li>
+        <li><a href="https://github.com/AxiomMath/auctionlib">auctionlib repository</a></li>
       </ul>
     </nav>
   </header>
 
   <main id="top">
     <h1 id="about">MathEconLib</h1>
-    <p class="tagline">Machine-checked mathematical economics.</p>
+    <p class="tagline">Machine-checked foundations for economics.</p>
     <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming. The name MathEconLib is provisional.</p>
-    <p class="lede">MathEconLib is the home of <a href="#auctionlib">auctionlib</a>, a formalization of auction theory and mechanism design in the Lean 4 proof assistant, and of the further libraries that will follow it.</p>
-    <p>A machine-checked theorem is one whose statement and proof have been verified by a small, trusted kernel. There is no step the reader has to take on faith and no hypothesis that can go unstated: if the proof compiles, the theorem holds exactly as written. For economic theory, where results are reused across many papers with slightly different assumptions, that precision is the point. The library records the exact conditions under which the envelope theorem, Myerson's lemma, or revenue equivalence hold, and any downstream result inherits them automatically.</p>
+    <p class="lede">MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
+    <p>MathEconLib is intended both to formalize established knowledge and to serve as a working environment for developing new research. By representing preferences, incentives, equilibrium, dynamics, identification, estimation, and inference as reusable formal objects, researchers can assemble models, compare assumptions, state conjectures precisely, and develop new results on top of a checked body of earlier work.</p>
+    <p>A machine-checked theorem is one whose statement and proof have been verified by a small, trusted kernel. For economics, where conclusions are repeatedly applied under subtly different assumptions, formalization makes those assumptions explicit and ensures that later results inherit them correctly.</p>
     <p>Everything is built on <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>, the community library of formal mathematics, so probability, measure theory, and analysis come from the same source the rest of the formal-mathematics world uses. The project is developed with <a href="https://axiommath.ai">Axiom Math</a>.</p>
     <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics. AI-assisted tools help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem.</p>
 
-    <h2 id="auctionlib">auctionlib</h2>
-    <p>The first library. It formalizes the single-parameter theory of auctions and pricing, from incentive compatibility through revenue equivalence, together with the game-theoretic foundations those results assume. The repository is public and developed on GitHub.</p>
+    <h2 id="vision">Long-term scope</h2>
+    <p>MathEconLib is intended to grow as a family of interoperable libraries covering the major mathematical areas of economics.</p>
+    <dl class="scope">
+      <dt>Microeconomic theory</dt>
+      <dd>Preferences and choice, games, information, contracts, market and mechanism design, industrial organization, and general equilibrium.</dd>
+      <dt>Macroeconomic theory</dt>
+      <dd>Dynamic optimization, recursive methods, growth, heterogeneous-agent models, and monetary and fiscal theory.</dd>
+      <dt>Econometrics</dt>
+      <dd>Probability and statistical foundations, identification, estimation, inference, and causal and structural methods.</dd>
+    </dl>
+
+    <h2 id="auctionlib">First library: auctionlib</h2>
+    <p>MathEconLib begins with <code>auctionlib</code>, its first substantial library. It formalizes the single-parameter theory of auctions and pricing, from incentive compatibility through revenue equivalence, together with the game-theoretic foundations those results assume. The <a href="https://github.com/AxiomMath/auctionlib">auctionlib repository</a> is hosted on GitHub.</p>
     <p>The library keeps apart three things that textbooks usually blend:</p>
 
     <ol class="stack" aria-label="Architecture layers">
@@ -235,7 +248,7 @@
     </ol>
     <p>A <code>BidderProblem</code> is a special case of a <code>SingleParameterProblem</code>, which covers any quasilinear problem with payoff <em>u</em>(<em>v</em>,<em>a</em>) = <em>v</em>·<em>x</em>(<em>a</em>) − <em>t</em>(<em>a</em>), whether the action is a bid, a report, a contract choice, or a purchase decision. The envelope theorem and the payment identity are proved once at that level and reused by every application.</p>
 
-    <h3>Headline results</h3>
+    <h3>Current results in auctionlib</h3>
     <div class="tbl-wrap">
       <table>
         <thead><tr><th>Result</th><th>Where</th></tr></thead>
@@ -273,7 +286,16 @@
     <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. Questions go to the person listed under <a href="#people">People</a>.</p>
 
     <h2 id="roadmap">Roadmap</h2>
-    <p>Open directions, in rough order of priority. Completed work is listed above.</p>
+    <p>The roadmap has two horizons: extending MathEconLib across economics and deepening the current work in <code>auctionlib</code>.</p>
+
+    <h3>Across economics</h3>
+    <ul>
+      <li>Build shared foundations for microeconomic theory beyond auctions, including decision theory, information, contracts, industrial organization, and general equilibrium</li>
+      <li>Develop macroeconomic libraries for dynamic optimization, recursive equilibrium, growth, heterogeneous-agent models, and monetary and fiscal theory</li>
+      <li>Develop econometric libraries for identification, estimation, inference, and causal and structural methods</li>
+    </ul>
+
+    <h3>Immediate auctionlib work</h3>
     <ul>
       <li>Riley–Zeckhauser comparison of posted prices with general selling rules</li>
       <li>Posted-price comparative statics, starting with uniform-distribution parameters</li>
@@ -281,7 +303,6 @@
       <li>Revelation principle over abstract message spaces</li>
       <li>Extensive-form and obviously strategy-proof mechanisms</li>
       <li>Multi-unit and simultaneous ascending auction models</li>
-      <li><span class="placeholder">[Further libraries beyond auctions, once the scope is agreed]</span></li>
     </ul>
 
     <h2 id="people">People</h2>
@@ -316,7 +337,7 @@
     <h3>Acknowledgments</h3>
     <p>MathEconLib was developed with the support of <a href="https://axiommath.ai">Axiom Math</a>.</p>
 
-    <h2 id="cite">Citing</h2>
+    <h2 id="cite">Citing current libraries</h2>
     <p>If you use the library in academic work, please cite it. <span class="placeholder">[Finalize the author list, and mint a Zenodo DOI once the repository is public.]</span></p>
 <pre><code>@software{auctionlib2026,
   author = {Chen, Ruiz and Cowgill, Bo and Eltschig, Ben and
@@ -330,7 +351,7 @@
 
   <footer>
     <span>MathEconLib</span>
-    <span>Updated 9 September 2026</span>
+    <span>Updated 10 September 2026</span>
     <span>License: <span class="placeholder">[to decide; Mathlib uses Apache 2.0]</span></span>
     <a href="https://github.com/AxiomMath/auctionlib/tree/main/website">Site source</a>
     <a href="https://github.com/morankor/MathEconLib">Original design</a>
