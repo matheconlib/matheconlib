@@ -114,7 +114,7 @@
   nav.top a:hover { color: var(--accent); }
 
   .draft {
-    margin: 1.4rem 0 0;
+    margin: 1rem 0 1.8rem;
     padding: 0.7rem 1rem;
     background: var(--note-bg);
     border: 1px solid var(--note-rule);
@@ -132,7 +132,7 @@
   .tagline {
     font-family: "IBM Plex Serif", Georgia, serif;
     font-size: 1.5rem; line-height: 1.3; font-weight: 400;
-    color: var(--muted); margin: 0 0 1.6rem; text-wrap: balance; max-width: 34rem;
+    color: var(--muted); margin: 0; text-wrap: balance; max-width: 34rem;
   }
   .lede { font-size: 1.25rem; line-height: 1.5; margin: 0 0 1.1rem; max-width: 40rem; }
 
@@ -213,11 +213,10 @@
     </nav>
   </header>
 
-  <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming. The name MathEconLib is provisional.</p>
-
   <main id="top">
     <h1 id="about">MathEconLib</h1>
     <p class="tagline">Machine-checked mathematical economics.</p>
+    <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming. The name MathEconLib is provisional.</p>
     <p class="lede">MathEconLib is the home of <a href="#auctionlib">auctionlib</a>, a formalization of auction theory and mechanism design in the Lean 4 proof assistant, and of the further libraries that will follow it.</p>
     <p>A machine-checked theorem is one whose statement and proof have been verified by a small, trusted kernel. There is no step the reader has to take on faith and no hypothesis that can go unstated: if the proof compiles, the theorem holds exactly as written. For economic theory, where results are reused across many papers with slightly different assumptions, that precision is the point. The library records the exact conditions under which the envelope theorem, Myerson's lemma, or revenue equivalence hold, and any downstream result inherits them automatically.</p>
     <p>Everything is built on <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>, the community library of formal mathematics, so probability, measure theory, and analysis come from the same source the rest of the formal-mathematics world uses. The project is developed with <a href="https://axiommath.ai">Axiom Math</a>. <span class="placeholder">[One sentence on the role of AI-assisted formalization in the project, to confirm.]</span></p>
