@@ -17,22 +17,35 @@ docstring is treated as a pre-merge blocker.
 
 1. Statements first. Read the headline against the cited economics:
    quantifiers, claimed generality, silently strong hypotheses. Junk values
-   and edge behavior get documented, not engineered away.
+   and edge behavior get documented, not engineered away. Assumptions enter
+   where they become necessary: measure-level before density, division-free
+   identities before quotient formulas, and pointwise derivatives before
+   global smoothness.
 2. Hypotheses. An assumption the proof never consumes is a defect. The
    strongest check is constructive: build an instance or a counterexample to
    show a guard is load-bearing and the hypotheses are satisfiable.
-3. API surface. Sweep for duplication against our own layers and mathlib:
+3. Useful abstractions. A named definition is expensive: ask which theorem it
+   supports and wait for a second consumer. Distinguish a richer interface from
+   a more general result; avoid unused generality and unnecessary public helpers.
+4. API surface. Sweep for duplication against our own layers and mathlib:
    nothing forks, and when two abstractions can express the same object,
-   require a bridge lemma, not coexistence. ApiStability pins move in the
-   same PR as the signatures they pin, proved by the named declaration so a
-   rename fails red instead of silently retargeting. Naming follows the
-   ruling in #45 (headed for CONTRIBUTING).
-4. Witnesses. Headline hypotheses are certified non-vacuous by the repo
-   itself: an instance or an end-to-end example.
-5. Machines first, then you. Do not relitigate what CI checks. When CI did
+   require a bridge lemma, not coexistence. At a transformation boundary,
+   record what is preserved, which deviations remain expressible, and what is
+   lost; reverse implications need an explicit bridge, and transport instances
+   must not create search cycles. Check downstream use through the documented
+   umbrella: a young layer's pin file imports only that umbrella, so a missing
+   export or public dependency fails the build; what pins do not exercise stays
+   a prose check. Approved signature changes and their pins move together; a
+   red pin is a question, not a permit. Naming follows the #45 ruling recorded
+   in CONTRIBUTING.md.
+5. Witnesses. Headline hypotheses and advertised features are certified by an
+   instance or end-to-end example that actually exercises them; constructing
+   only the input certifies nothing. Reuse existing examples and cross-check an
+   independent formula when available.
+6. Machines first, then you. Do not relitigate what CI checks. When CI did
    not run (stacked PRs skip it), do the missing run yourself and say so in
    the review.
-6. Docs and attribution. Docstrings and README claims are checked against
+7. Docs and attribution. Docstrings and README claims are checked against
    the actual declarations; ported files carry correct author lines and a
    provenance note.
 
@@ -71,14 +84,19 @@ choices live, not on the machine-checked derivation.
 ## Case index
 
 - Statement audit: #58, #59. Doc-hypothesis blockers: #37, #39.
+- Assumptions at the right layer: #37 (division-free weight first), #55
+  (measure-level formulations), #61 (pointwise derivative).
 - Constructive checks: the Dirac instance in #37, the uniform
   interior-optimum instance in #39, the tried-and-excluded sweep in #30.
 - Unused-hypothesis sweep, restatements recompiled before asserting:
   #49 -> #53.
+- Useful abstractions and transformation boundaries: #30. Downstream use
+  through public imports: #35, #61.
 - Duplication sweeps and bridge-over-coexistence: #55, #54, #57, #59.
 - Pins moving with signatures: #53, #59; pins by named declaration: #56.
 - Naming ruling: #45, implemented in #62.
-- Witness policy: #47; delivered early in #59.
+- Witness policy: #47; meaningful theorem applications: #35, #39; delivered
+  early in #59.
 - Stack reviewed as a unit, systemic-once, local tip build where CI did not
   run: #54 over #55-#59.
 - Verdict-first, decisions batched ("Two decisions so you do not have to
