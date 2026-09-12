@@ -4,6 +4,8 @@ How review works here, written down for the second reviewer and everyone
 after. This is observed practice from the first ~60 PRs, not aspiration.
 Authoring rules live in CONTRIBUTING.md; this file is the other side of the
 table. A case index at the end maps each rule to the PRs where it happened.
+Project-wide design principles live in [`DESIGN.md`](../DESIGN.md); this file
+describes how review applies them.
 
 ## What review is for
 

@@ -20,6 +20,9 @@ problems is described in
 
 ## Architecture
 
+The project-wide principles guiding library design are recorded in
+[`DESIGN.md`](DESIGN.md).
+
 The library has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
 
 ```
