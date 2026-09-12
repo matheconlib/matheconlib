@@ -6,7 +6,7 @@ open source or a public service - no internal infrastructure.
 
 Maintenance rule: every entry carries a "verified working" date. If an entry
 stops working, delete it; do not maintain a museum. (Last full verification:
-2026-09-03.)
+2026-09-10.)
 
 ## Library search and duplication sweeps
 
@@ -19,7 +19,7 @@ stops working, delete it; do not maintain a museum. (Last full verification:
 - **Loogle, locally against this repo** (https://github.com/nomeata/loogle).
   Loogle's CLI runs against any Lake project on the same toolchain, which
   gives type-signature search over THIS library, not just mathlib. This is
-  the duplication sweep (review order, step 3) as a command.
+  the duplication sweep (review order, step 4) as a command.
   Hosted mathlib instance: https://loogle.lean-lang.org/json?q=... (JSON API).
 - **LeanSearch** (https://leansearch.net): natural-language search over
   mathlib, no auth. **LeanExplore** (https://github.com/justincasher/lean-explore,
@@ -49,15 +49,56 @@ debated it.
 
 ## Build and lint when CI did not run
 
-Stacked PRs skip CI (it triggers against main only), so the reviewer runs
-the missing build:
+Stacked PRs skip CI (it triggers against main only), so the reviewer checks
+out the exact commit named by the review surface, records it, and runs the
+missing build there rather than at a moving branch tip:
 
-    git clone <repo> && cd <repo> && git checkout <tip-branch>
-    lake exe cache get && lake build
+    git clone <repo>
+    cd <repo>
+    git checkout --detach <reviewed-commit>
+    git rev-parse HEAD
+    lake exe cache get
+    lake build
+
+Compare the printed SHA with the reviewed commit before relying on any result.
+For a young layer, inspect its compatibility pin before the build:
+
+    rg '^import ' AuctionlibTest/<Layer>/Compatibility.lean
+
+The pin imports only the layer's documented umbrella. Adding a leaf or
+implementation import to make the examples compile defeats the check: a missing
+export or public dependency should fail here. Build the pins explicitly when
+investigating that boundary:
+
+    lake build AuctionlibTest
 
 Then the escape-hatch sweep over the diff: grep for `sorry`,
 `native_decide`, `nolint`, `set_option linter`, `maxHeartbeats`, and
 `public import Mathlib`. Compare the linter warning census against main.
+
+## LLM-assisted review workflow
+
+1. Load `REVIEWING.md` before inspecting the change. It is the sole source of
+   review policy; this file only supplies procedures and commands. Use the PR,
+   issue, and linked discussions to recover scope and decisions. Distinguish an
+   explicitly accepted ruling or clear consensus from a proposal that remains
+   open, and never promote the latter to policy.
+2. Verify checkable claims at the exact reviewed commit recorded above. Cite the
+   file and line, and attach the compilation, search, or diff evidence produced
+   at that commit; do not mix in results from main or a later branch tip.
+3. Sort the report before presenting it according to the classifications below.
+
+Use these classifications:
+
+- **Blocker:** the change violates policy, an accepted decision, or its stated
+  mathematical or API contract and must be fixed in this PR.
+- **Optional improvement:** useful within the present design, but not required
+  for the PR's claims or scope.
+- **Future redesign:** a broader change to architecture, abstractions, or API;
+  move it to a design issue instead of making it a review condition.
+
+The model supplies this grounded analysis. The human reviewer owns the design
+judgment, verdict, and tone described in `REVIEWING.md`.
 
 ## Agent workflow packs
 

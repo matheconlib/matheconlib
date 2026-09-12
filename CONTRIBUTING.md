@@ -24,6 +24,12 @@ are API. Downstream files and external users rely on them, so any change to them
 however small — is called out explicitly in the PR description, with a sentence on
 why the change is needed.
 
+Following the naming ruling in #45, general carrier structures keep short names in
+a sufficiently specific namespace, such as `Auction` or `MatchingWithContracts.Market`.
+Behavioral, optimality, and normalization predicates instead use precise,
+setting-specific names that state the condition they impose. If two carriers with
+the same short name routinely co-occur, distinguish the carrier names too.
+
 ## Verification bar
 
 Every PR must satisfy:
@@ -40,9 +46,11 @@ Every PR must satisfy:
 library's core theorems and definitions; it is built by the default `lake build`.
 
 If your change turns that file red, the change alters a public statement (an added
-hypothesis, a changed conclusion, a renamed or deleted declaration). That is a
-signal to **discuss first**: open a design issue and get agreement before changing
-the statement. Do not edit the pin to make it pass.
+hypothesis, a changed conclusion, a renamed or deleted declaration). A red pin is a
+question, not permission to change the contract: open a design issue and get
+agreement before changing the statement, and do not edit the pin merely to make the
+build pass. Once the API change is approved, update the signature and its pin
+together in the same PR.
 
 New layers pin their own public API next to themselves in `AuctionlibTest/` (see
 `AuctionlibTest/SingleParameter/Compatibility.lean`), so early iteration stays cheap
