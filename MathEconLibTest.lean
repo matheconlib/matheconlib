@@ -1,3 +1,9 @@
+import MathEconLibTest.GameTheory.ConditionalBeliefs
+import MathEconLibTest.GameTheory.FiniteBayesian
+import MathEconLibTest.GameTheory.Integrability
+import MathEconLibTest.GameTheory.MeasurableBayesian
+import MathEconLibTest.GameTheory.Strategic
+import MathEconLibTest.GameTheory.Transport
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Namespace

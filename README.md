@@ -216,8 +216,28 @@ The continuous conditional-expectation and winner's-curse results, together with
 
 | File | Contents |
 |------|----------|
-| [`GameTheory/Basic.lean`](MathEconLib/GameTheory/Basic.lean) | Normal-form games, payoff structures, dominant strategies, pure/strict/strong Nash equilibria, mixed games, and expected payoff |
-| [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) | Pure Nash existence under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed Nash existence for finite games and compact metrizable action spaces under the stated continuity assumptions |
+| [`GameTheory/Equilibrium/Problem.lean`](MathEconLib/GameTheory/Equilibrium/Problem.lean) | Shared admissible-deviation equilibrium and forward/backward transport |
+| [`GameTheory/Strategic/Basic.lean`](MathEconLib/GameTheory/Strategic/Basic.lean) | Payoff-based games, dominance, and pure/strict/strong Nash equilibria |
+| [`GameTheory/Strategic/Outcome.lean`](MathEconLib/GameTheory/Strategic/Outcome.lean) | Outcome games, payoff structures, probability-measure mixing, and expected utility |
+| [`GameTheory/Strategic/Mixed.lean`](MathEconLib/GameTheory/Strategic/Mixed.lean) | Independent probability-measure mixed strategies and mixed Nash equilibrium |
+| [`GameTheory/Strategic/Mixed/Finite.lean`](MathEconLib/GameTheory/Strategic/Mixed/Finite.lean) | Finite probability weights, finite-sum payoffs, and agreement with probability-measure mixing |
+| [`GameTheory/Strategic/Existence.lean`](MathEconLib/GameTheory/Strategic/Existence.lean) | Pure Nash existence for quasiconcave payoffs on compact convex action spaces and mixed Nash existence |
+| [`GameTheory/Strategic/Bayesian/Finite.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Finite.lean) | Finite-type pure BNE, null-type conventions, and expanded-game Nash |
+| [`GameTheory/Strategic/Bayesian/FiniteMeasurable.lean`](MathEconLib/GameTheory/Strategic/Bayesian/FiniteMeasurable.lean) | Finite and measurable equilibrium agreement |
+| [`GameTheory/Strategic/Bayesian/Measurable/PureBNE.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Measurable/PureBNE.lean) | Measurable whole-strategy deviations and integrable ex-ante BNE |
+| [`GameTheory/Strategic/Bayesian/Measurable/InterimConverse.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Measurable/InterimConverse.lean) | Explicit conditional beliefs and the guarded interim/ex-ante equivalence |
+
+Mixed Nash equilibrium uses probability measures. The finite computational representation needs
+no measurable structure on finite actions and evaluates payoffs by finite sums. Finite priors and
+finite mixed strategies share `FinDist`, a thin alias of Mathlib's real standard simplex. The
+measure construction uses the totalized Bochner integral; expected-payoff interpretations require
+integrability.
+
+The Bayesian game carrier takes players, types, and actions as explicit parameters. Priors are
+supplied separately. Finite BNE constrains positive-probability types; measurable BNE includes
+incumbent integrability and has an almost-everywhere interim characterization under the stated
+measurability and conditional-integrability assumptions. Pointwise auction IC and induced mechanism
+games remain separate integration work.
 
 ### Key Theorems
 
@@ -236,7 +256,7 @@ The linked Lean statements specify each result's definitions and hypotheses.
 | Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1` | [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) |
 | Edition-welfare bound for `α > 0`, algebraic welfare-gap identities, and an expected edition-welfare formula when aggregate quantity and its square are integrable | [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) |
 | Winner's-curse inequality on finite sublattices with affiliated positive weights, monotone nonnegative values, and a nonempty winning event | [`Auction/Affiliation/WinnersCurse.lean`](MathEconLib/Auction/Affiliation/WinnersCurse.lean) |
-| Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with the stated expected-payoff continuity | [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) |
+| Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with continuous payoffs | [`GameTheory/Strategic/Existence.lean`](MathEconLib/GameTheory/Strategic/Existence.lean) |
 
 ### Auxiliary
 
