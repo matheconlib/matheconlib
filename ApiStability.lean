@@ -182,20 +182,63 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 
 /-! ## Game theory -/
 
--- Nash equilibrium — definition pin: the exact unfolding of `IsNashEquilibrium`
-example {ι : Type u} {A : ι → Type v} {O : Type w} [DecidableEq ι]
-    (G : GameTheory.Game A O) (P : GameTheory.PayoffStructure O ι) (a : (i : ι) → A i) :
-    G.IsNashEquilibrium P a
-      ↔ ∀ (i : ι) (s : A i),
-          P.payoff i (G.outcome (Function.update a i s)) ≤ P.payoff i (G.outcome a) :=
-  Iff.rfl
+open Auctionlib.GameTheory
 
--- Nash existence: every finite game has a mixed-strategy Nash equilibrium
+/-- Nash equilibrium rules out every profitable unilateral action change. -/
+example {ι : Type u} {A : ι → Type v} [DecidableEq ι]
+    (G : StrategicGame ι A) (a : (i : ι) → A i) :
+    G.IsNash a ↔ ∀ (i : ι) (s : A i), G.payoff i (Function.update a i s) ≤ G.payoff i a :=
+  G.isNash_iff a
+
+/-- Finite games with nonempty action spaces admit mixed Nash equilibria in finite weights. -/
+example : ∀ {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A)
+    [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)],
+    ∃ σ, G.IsFiniteMixedNash σ := @StrategicGame.exists_isFiniteMixedNash
+
+/-- Finite games with nonempty discrete measurable actions admit probability-measure mixed Nash
+equilibria. -/
+example : ∀ {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A)
+    [Fintype ι] [DecidableEq ι] [∀ i, MeasurableSpace (A i)]
+    [∀ i, DiscreteMeasurableSpace (A i)] [∀ i, Finite (A i)] [∀ i, Nonempty (A i)],
+    ∃ σ, G.IsMixedNash σ := @StrategicGame.exists_isMixedNash_of_finite
+
+/-- Finite outcome games with nonempty finite action spaces admit mixed Nash equilibria. -/
 example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w}
-    (G : GameTheory.Game A O) (P : GameTheory.PayoffStructure O ι)
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
     [(i : ι) → MeasurableSpace (A i)] [MeasurableSpace O]
     [∀ i : ι, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O]
     [G.Measurable] [Fintype ι] [DecidableEq ι] [(i : ι) → Finite (A i)]
     [∀ i : ι, Nonempty (A i)] [Finite O],
-    ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a :=
-  @GameTheory.Game.exists_isNashEquilibrium_of_finite
+    ∃ a, (StrategicGame.ofOutcome G.mixed P.expected).IsNash a :=
+  @OutcomeGame.exists_isNash_of_finite
+
+/-- Continuous games on compact convex subsets of locally convex spaces admit pure Nash
+equilibria when each payoff is quasiconcave in the player's own action. -/
+example {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A)
+    [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
+    [G.Continuous] [Finite ι] [DecidableEq ι]
+    {E : ι → Type w} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)]
+    [∀ i, TopologicalSpace (E i)] [∀ i, IsTopologicalAddGroup (E i)]
+    [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)] [∀ i, LocallyConvexSpace ℝ (E i)]
+    {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (hs : ∀ i, Convex ℝ (k i))
+    (h : ∀ a i, QuasiconcaveOn ℝ (k i) <| Subtype.val.extend
+      ((fun s ↦ G.payoff i (Function.update a i s)) ∘ (e i).symm) 0) :
+    ∃ a, G.IsNash a := G.exists_isNash_of_quasiconcaveOn e hs h
+
+/-- Continuous games with nonempty compact metrizable action spaces admit mixed equilibria. -/
+example {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A)
+    [Fintype ι] [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)]
+    [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
+    [∀ i, MeasurableSpace (A i)] [∀ i, BorelSpace (A i)] [G.Continuous] :
+    ∃ σ, G.IsMixedNash σ := G.exists_isMixedNash_of_isCompact
+
+/-- Simplex and outcome-distribution representations give the same mixed Nash equilibria for
+arbitrary measurable outcome spaces. -/
+example {ι : Type u} {A : ι → Type v} {O : Type w}
+    [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, MeasurableSpace (A i)]
+    [∀ i, DiscreteMeasurableSpace (A i)] [MeasurableSpace O]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O) [G.Measurable] [P.Measurable]
+    (σ : StrategicGame.FiniteMixedStrategy A) :
+    (StrategicGame.ofOutcome G P).IsFiniteMixedNash σ ↔
+      (StrategicGame.ofOutcome G.mixed P.expected).IsNash (StrategicGame.toProbability σ) :=
+  StrategicGame.isFiniteMixedNash_iff_ofOutcome_mixed_isNash G P σ

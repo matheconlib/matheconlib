@@ -1,3 +1,9 @@
+import AuctionlibTest.GameTheory.ConditionalBeliefs
+import AuctionlibTest.GameTheory.FiniteBayesian
+import AuctionlibTest.GameTheory.Integrability
+import AuctionlibTest.GameTheory.MeasurableBayesian
+import AuctionlibTest.GameTheory.Strategic
+import AuctionlibTest.GameTheory.Transport
 import AuctionlibTest.Manual.HandsOn
 import AuctionlibTest.Pricing.Compatibility
 import AuctionlibTest.SingleParameter.Compatibility
