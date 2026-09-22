@@ -6,6 +6,8 @@ Authors: Daniel Lyng
 module
 
 public import Auctionlib.GameTheory.Strategic.Mixed
+public import Auctionlib.Probability.FinDist.Expect
+public import Auctionlib.Probability.FinDist.Simplex
 
 /-!
 # Finite independent mixed strategies
@@ -36,7 +38,7 @@ mixed strategies, expected payoffs, nash equilibrium, finite games, probability 
 
 @[expose] public noncomputable section
 
-open MeasureTheory
+open MeasureTheory Auctionlib.Probability
 
 namespace Auctionlib.GameTheory.StrategicGame
 
@@ -47,20 +49,23 @@ section Finite
 variable [Fintype I] [DecidableEq I] [∀ i, Fintype (A i)]
 
 /-- Each player chooses nonnegative weights summing to one on their finite action space. -/
-abbrev FiniteMixedStrategy (A : I → Type*) [∀ i, Fintype (A i)] := ∀ i, stdSimplex ℝ (A i)
+abbrev FiniteMixedStrategy (A : I → Type*) [∀ i, Fintype (A i)] := ∀ i, FinDist (A i)
 
 /-- Expected payoff under independent finite action weights. -/
-def finiteExpectedPayoff (G : StrategicGame I A) (i : I) (σ : FiniteMixedStrategy A) : ℝ :=
-  ∑ a : ∀ j, A j, (∏ j, σ j (a j)) * G.payoff i a
+def finiteExpectedPayoff (G : StrategicGame I A) (i : I) (σ : FiniteMixedStrategy A) : ℝ := by
+  classical
+  exact (FinDist.productD σ).expect (G.payoff i)
 
 /-- Finite independent expected payoff is the sum of payoffs weighted by the product of each
 player's action probabilities. -/
 lemma finiteExpectedPayoff_eq_sum (G : StrategicGame I A) (i : I) (σ : FiniteMixedStrategy A) :
-    G.finiteExpectedPayoff i σ = ∑ a : ∀ j, A j, (∏ j, σ j (a j)) * G.payoff i a := rfl
+    G.finiteExpectedPayoff i σ = ∑ a : ∀ j, A j, (∏ j, σ j (a j)) * G.payoff i a := by
+  classical
+  rfl
 
 /-- A finite game's strategic extension to simplex-valued actions. -/
 def finiteMixedExtension (G : StrategicGame I A) :
-    StrategicGame I (fun i ↦ stdSimplex ℝ (A i)) where
+    StrategicGame I (fun i ↦ FinDist (A i)) where
   payoff := G.finiteExpectedPayoff
 
 /-- A mixed Nash equilibrium admits no profitable change of a player's probability weights. -/
@@ -111,7 +116,7 @@ omit [Fintype I] in
 omit [Fintype I] in
 /-- Converting to probability measures commutes with replacing one player's mixed action. -/
 @[simp] lemma toProbability_update (σ : FiniteMixedStrategy A) (i : I)
-    (τ : stdSimplex ℝ (A i)) :
+    (τ : FinDist (A i)) :
     toProbability (Function.update σ i τ) =
       Function.update (toProbability σ) i (ProbabilityMeasure.equivStdSimplex.symm τ) := by
   ext j
@@ -130,7 +135,7 @@ lemma mixedExtension_payoff_eq_finiteExpectedPayoff (G : StrategicGame I A) (i :
     obtain ⟨C, hC⟩ := (Set.finite_range (G.payoff i)).isBounded.exists_norm_le
     exact Integrable.of_bound (measurable_of_countable _).aestronglyMeasurable C
       (Filter.Eventually.of_forall fun a ↦ hC _ ⟨a, rfl⟩))]
-  unfold finiteExpectedPayoff
+  rw [finiteExpectedPayoff_eq_sum]
   apply Finset.sum_congr rfl
   intro a _
   congr 1
