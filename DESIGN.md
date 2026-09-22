@@ -71,7 +71,7 @@ structure Mechanism (I : Type*) (A : I → Type*) (O : Type*) where
 
 Note that the usual regularity conditions that accompany "well-behaved" instances are not present. For example, there is no measurability condition, since measurability becomes relevant only when an outcome or transfer is integrated in a probabilistic model. Efficiency, dominant-strategy incentive compatibility, and ex-post individual rationality are meaningful without a measurable space or a prior. Requiring measurable rules in this general definition would exclude deterministic mechanisms for a condition unrelated to those questions.
 
-Now consider a single-good auction, which specializes this mechanism with outcomes that award one indivisible good. If the outcome type is an allocation vector `I → Bool` with no further condition, the definition admits mechanisms that award the good to two bidders at once. No economist would call that a single-good auction, so a constitutive condition is missing. Taking `O := Option I` restores sufficiency by making the infeasible outcomes unrepresentable, since an outcome names a recipient or none.
+Now consider a single-good auction, which specializes this mechanism with outcomes that award one indivisible good. If the outcome type is an allocation vector `I → Bool` with no further condition, the definition admits mechanisms that award the good to two bidders at once. No economist would call that a single-good auction, so a constitutive condition is missing. Taking `O := Option I` restores sufficiency by making the infeasible outcomes unrepresentable, since an outcome names a recipient or none. An allocation-vector representation is also legitimate when an explicit feasibility condition restricts it to at most one recipient; this example does not require every auction to use `Option I`.
 
 ### P2. Generalize to the most useful shared level, then specialize
 
@@ -119,6 +119,16 @@ Applying P2 provides a shared structure such that the deviation is a named field
 ### P3. Compose high-level concepts from library primitives
 
 Compose high-level economic concepts through shared library primitives rather than by assembling the same ingredients afresh in each application. When a concept is built from shared parts, it naturally interoperates with everything else built from them and is able to use lemmas proved elsewhere in the library. A theorem about a quasilinear agent's expected payoff, for example, should be stated in terms of the library's mechanism, environment, and probability law, so that it applies to every model expressed in those terms.
+
+Develop one integrated library rather than parallel foundations for microeconomics,
+macroeconomics, and econometrics. As a strong default for future code,
+project-owned declarations should share one top-level Lean namespace, with
+nested namespaces for organization; no particular second-level division by
+field is prescribed. Define shared economic objects once and reuse them across
+applications. Specialized modules may add distinct concepts or explicit
+bridges, but should not duplicate a foundation merely because an application
+belongs to another field. This direction does not itself rename existing
+declarations; any migration requires separate review.
 
 Carrier types—the agents, types, actions, and outcomes—should be explicit parameters of a primitive rather than fields of it. If a mechanism and an environment each carried their own agent type as a field, combining them would require a hypothesis that the two fields are equal and every reference to an agent would be cast across that equality. As parameters, both objects mention the same `I`, and the type checker identifies them with no proof obligation.
 
@@ -194,12 +204,13 @@ A consumer that computes with a particular price takes `s : UnitPriceSpec quanti
 
 Incentive compatibility illustrates the second decision. It is a property of a particular menu or mechanism, so establishing it is normally part of the mathematical argument. Its transport rules depend on the deviation domain, equilibrium notion, and conditions such as surjectivity or domination, so they do not form a small background inference system. In the design illustrated here, one should therefore define `IsIC` as an ordinary predicate and pass IC hypotheses explicitly rather than asking typeclass search to prove them.
 
-> **Current-library note.** `SingleParameterProblem` currently represents its
-> IC hierarchy through property classes with one-way implication instances. P4
-> does not itself change that API. Whether a future shared affine-menu
-> foundation should retain those classes or replace them with explicit
-> predicates is a separate migration decision requiring downstream and
-> compatibility analysis.
+> **Current-library note.** The proposed general affine-menu foundation follows
+> the ordinary-predicate default. `SingleParameterProblem` retains its IC class
+> chain, which supplies automatic implications and forward transport through
+> `reduce`. Replacing classes with predicates and expressing the IC flavors as
+> one optimality condition over deviation sets are separate, undecided
+> migrations. Each requires its own design issue and an analysis of downstream
+> call sites and API pins; P4 does not change the existing API.
 
 ### P5. Make changes of representation explicit
 
