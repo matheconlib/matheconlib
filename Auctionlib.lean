@@ -33,9 +33,26 @@ import Auctionlib.ForMathlib.MeasureTheory
 import Auctionlib.ForMathlib.ProbabilityMeasure
 import Auctionlib.ForMathlib.Schauder
 import Auctionlib.ForMathlib.StochasticOrder
-import Auctionlib.GameTheory.Basic
-import Auctionlib.GameTheory.NashExistence
+import Auctionlib.GameTheory.Equilibrium.Problem
+import Auctionlib.GameTheory.Strategic.Basic
+import Auctionlib.GameTheory.Strategic.Bayesian.Finite
+import Auctionlib.GameTheory.Strategic.Bayesian.FiniteMeasurable
+import Auctionlib.GameTheory.Strategic.Bayesian.Game
+import Auctionlib.GameTheory.Strategic.Bayesian.Measurable.Beliefs
+import Auctionlib.GameTheory.Strategic.Bayesian.Measurable.Comap
+import Auctionlib.GameTheory.Strategic.Bayesian.Measurable.Game
+import Auctionlib.GameTheory.Strategic.Bayesian.Measurable.Interim
+import Auctionlib.GameTheory.Strategic.Bayesian.Measurable.InterimConverse
+import Auctionlib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
+import Auctionlib.GameTheory.Strategic.Existence
+import Auctionlib.GameTheory.Strategic.Mixed
+import Auctionlib.GameTheory.Strategic.Mixed.Finite
+import Auctionlib.GameTheory.Strategic.Outcome
+import Auctionlib.Math.MeasureTheory.AnalyticNullMeasurable
+import Auctionlib.Math.MeasureTheory.AnalyticUniformization
+import Auctionlib.Math.MeasureTheory.VonNeumannSelection
 import Auctionlib.Mechanism
+
 import Auctionlib.Mechanism.Auctions.AllPurchase.Spec
 import Auctionlib.Mechanism.Auctions.Allocation
 import Auctionlib.Mechanism.Core.Comap
@@ -43,6 +60,13 @@ import Auctionlib.Mechanism.Core.Environment
 import Auctionlib.Mechanism.Core.Mechanism
 import Auctionlib.Mechanism.Core.Profile
 import Auctionlib.Mechanism.Core.SolutionConcepts
+
+import Auctionlib.Probability.FinDist.Basic
+import Auctionlib.Probability.FinDist.ConditionalOn
+import Auctionlib.Probability.FinDist.Expect
+import Auctionlib.Probability.FinDist.Measure
+import Auctionlib.Probability.FinDist.Simplex
+
 import Auctionlib.SingleParameter
 import Auctionlib.SingleParameter.Basic
 import Auctionlib.SingleParameter.EnvelopeIC

@@ -510,7 +510,7 @@ Lean answers `fun x ↦ 1 / 2 : ℝ → ℝ`. Two things to notice. The type is 
 
 That last pattern is exactly how `winProb := fun _ => 1 / 2` works in Part 3: a bidder whose chance of winning is one half no matter what they bid.
 
-> **`=>` or `↦`?** Both are accepted and mean the same thing. `auctionlib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Basic.lean` almost entirely `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
+> **`=>` or `↦`?** Both are accepted and mean the same thing. `auctionlib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Strategic/Basic.lean` predominantly `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
 
 ### 2.3 Symbols you will meet
 
@@ -1191,10 +1191,10 @@ None of that is about auctions, and none of it has appeared so far in this manua
 
 The matching `end` at the bottom of the file closes that section.
 
-The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/NashExistence.lean`](../Auctionlib/GameTheory/NashExistence.lean), which uses both:
+The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/Strategic/Existence.lean`](../Auctionlib/GameTheory/Strategic/Existence.lean), which uses both:
 
 ```lean
-public import Auctionlib.GameTheory.Basic
+public import Auctionlib.GameTheory.Strategic.Mixed
 public import Mathlib.Analysis.Convex.Quasiconvex
 
 import Auctionlib.ForMathlib.Kakutani
@@ -1209,7 +1209,7 @@ Two practical notes. First, none of this applies to the scratch files you have b
 
 ### ✍️ Hands-on 4.0 — see the two kinds of import
 
-Open [`GameTheory/NashExistence.lean`](../Auctionlib/GameTheory/NashExistence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
+Open [`GameTheory/Strategic/Existence.lean`](../Auctionlib/GameTheory/Strategic/Existence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
 
 Now scroll to the bottom of [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and find the bare `end`. That is the partner of `@[expose] public section` at the top; everything between them is what the rest of the library can see.
 
@@ -1996,6 +1996,6 @@ The rest of the library:
 | `Mechanism/` | allocation and payment rules |
 | `Auction/` | auctions with a probabilistic environment; revenue equivalence, symmetric private values, affiliation, all-purchase auctions |
 | `BidderProblem/` | the single-bidder view and the IC hierarchy |
-| `GameTheory/` | existence of Nash equilibria for continuous games |
+| `GameTheory/` | strategic games, Nash existence, and finite/measurable Bayesian equilibrium |
 | `ForMathlib/` | general mathematics and potential Mathlib contributions — Kakutani and Schauder fixed points, measure-theoretic lemmas |
 | `Statistics/` | order statistics |
