@@ -27,7 +27,7 @@ For every field or hypothesis, ask whether removing it would admit an object tha
 
 When a term has several established meanings, state the intended scope in the docstring and distinguish the variants explicitly. Minimality is relative to that scope; it does not require one definition to accommodate every use of the term. Scope decisions should also be reflected in module organization and naming. Variants of a term with different scopes are siblings, each in its own namespace, with the scope visible in the name or namespace.
 
-The same discipline applies to theorem statements. A theorem's name, documentation, and advertised scope must match what its formal statement establishes. A useful algebraic identity may be an important helper without being the economic proposition it helps to prove, and the two should be labeled accordingly. Every hypothesis should be load-bearing. Stronger assumptions should enter at the first theorem or layer that needs them. When a general result remains useful, state the stronger application as a specialized corollary rather than burdening the underlying definition or general theorem.
+The same discipline applies to theorem statements. A theorem's name, documentation, and advertised scope must match what its formal statement establishes. Do not give a helper lemma an economic interpretation it has not proved: an algebraic identity can be an important step toward an economic proposition without being that proposition, and the two may belong in different namespaces. Every hypothesis should be necessary for the result; do not add assumptions merely because they hold in well-behaved cases. Stronger assumptions should enter at the first theorem or layer that needs them.
 
 #### Example
 
