@@ -34,6 +34,7 @@ import MathEconLib.ForMathlib.MeasureTheory.AnalyticNullMeasurable
 import MathEconLib.ForMathlib.MeasureTheory.AnalyticUniformization
 import MathEconLib.ForMathlib.MeasureTheory.VonNeumannSelection
 import MathEconLib.ForMathlib.ProbabilityMeasure
+import MathEconLib.ForMathlib.Quasiconvex
 import MathEconLib.ForMathlib.Schauder
 import MathEconLib.ForMathlib.StochasticOrder
 import MathEconLib.GameTheory.Equilibrium.Problem

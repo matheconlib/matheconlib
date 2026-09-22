@@ -42,7 +42,7 @@ namespace MathEconLibTest.GameTheory.ContinuousBayesianExample
 open MathEconLib.GameTheory BayesianPrior
 
 /-- Utility is the negative squared distance between action and type, capped in magnitude at one. -/
-def game : BayesianGame Unit (fun _ => ℝ) (fun _ => ℝ) where
+def game : BayesianGame Unit (fun _ => ℝ) (fun _ => ℝ) ℝ where
   payoff i a θ := -min 1 ((a i - θ i) ^ 2)
 
 /-- A standard Gaussian law on the single player's real type. -/

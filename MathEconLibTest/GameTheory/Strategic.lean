@@ -39,7 +39,7 @@ namespace MathEconLibTest.GameTheory
 
 /-- Player `true` receives one when actions agree and negative one otherwise; player `false`
 receives the opposite payoff. -/
-def matchingPennies : StrategicGame Bool (fun _ ↦ Bool) where
+def matchingPennies : StrategicGame Bool (fun _ ↦ Bool) ℝ where
   payoff i a := if (a false = a true) = (i = true) then 1 else -1
 
 /-- Matching pennies has no pure Nash equilibrium. -/
@@ -53,7 +53,7 @@ theorem matchingPennies_not_isNash (a : Bool → Bool) : ¬ matchingPennies.IsNa
 
 /-- Defection is `true`; mutual defection pays one, mutual cooperation pays two, and unilateral
 defection pays three to the defector and zero to the cooperator. -/
-def prisonersDilemma : StrategicGame Bool (fun _ ↦ Bool) where
+def prisonersDilemma : StrategicGame Bool (fun _ ↦ Bool) ℝ where
   payoff i a := if a i then (if a (!i) then 1 else 3) else (if a (!i) then 0 else 2)
 
 /-- Mutual defection is a strict Nash equilibrium of the prisoners' dilemma. -/
@@ -122,7 +122,7 @@ def outcomeExample : OutcomeGame Bool (fun _ ↦ Bool) ℝ where
 instance : outcomeExample.Measurable := ⟨measurable_of_countable _⟩
 
 /-- The two players assign opposite utility to the scalar outcome. -/
-def utilities : PayoffStructure Bool ℝ where
+def utilities : PayoffStructure Bool ℝ ℝ where
   payoff i x := if i then x else -x
 
 /-- Both players' utilities are measurable in the scalar outcome. -/

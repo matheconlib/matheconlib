@@ -12,25 +12,28 @@ public import MathEconLib.GameTheory.Strategic.Basic
 # Outcomes and expected payoffs
 
 An outcome game assigns an outcome to each action profile, and a payoff structure assigns utility
-to outcomes. Independent randomized actions induce a probability distribution over outcomes;
-expected utility supplies its strategic payoffs. Stochastic outcomes can be flattened by
-integration.
+to outcomes in a value type. Independent randomized actions induce a probability distribution over
+outcomes. For utilities in a complete real normed space, expected utility defines payoffs on
+outcome distributions, and boundedness of utilities implies boundedness of expected utilities. The
+measurability and continuity results here apply to real-valued utilities. Stochastic outcomes can
+be flattened by integration.
 
 ## Main definitions
 
-* `OutcomeGame`: outcomes determined by action profiles.
-* `PayoffStructure`: players' utilities over outcomes.
-* `StrategicGame.ofOutcome`: strategic payoffs obtained by evaluating outcomes.
-* `OutcomeGame.mixed`: outcome distributions induced by independent mixed actions.
-* `OutcomeGame.mixedFlattened`: mixed actions with stochastic outcomes.
-* `PayoffStructure.expected`: expected utilities over outcome distributions.
+* `OutcomeGame`: Outcomes determined by action profiles.
+* `PayoffStructure`: Players' utilities over outcomes.
+* `StrategicGame.ofOutcome`: Strategic payoffs obtained by evaluating outcomes.
+* `OutcomeGame.mixed`: Outcome distributions induced by independent mixed actions.
+* `OutcomeGame.mixedFlattened`: Mixed actions with stochastic outcomes.
+* `PayoffStructure.expected`: Expected utilities over outcome distributions.
 
 ## Main statements
 
 * Independent mixing preserves measurability and, under the stated topological hypotheses,
   continuity of outcomes.
-* Expected utility is measurable for bounded measurable utilities, bounded for bounded utilities,
-  and continuous for continuous utilities on a compact outcome space with measurable open sets.
+* Expected utility is bounded in a complete real normed value space when utilities are bounded.
+* For real-valued utilities, expected utility is measurable for bounded measurable utilities and
+  continuous on a compact outcome space when utilities are continuous and open sets are measurable.
 
 ## Tags
 
@@ -46,20 +49,20 @@ structure OutcomeGame (I : Type*) (A : I → Type*) (O : Type*) where
   /-- The outcome determined by an action profile. -/
   outcome : (∀ i, A i) → O
 
-/-- Each player evaluates outcomes by a real-valued utility function. -/
-structure PayoffStructure (I : Type*) (O : Type*) where
+/-- Each player evaluates outcomes by a utility function taking values in `V`. -/
+structure PayoffStructure (I : Type*) (O : Type*) (V : Type*) where
   /-- Each player's utility for an outcome. -/
-  payoff : I → O → ℝ
+  payoff : I → O → V
 
-variable {ι : Type*} {A : ι → Type*} {O : Type*}
+variable {ι : Type*} {A : ι → Type*} {O : Type*} {V : Type*}
 
 /-- The strategic payoffs of an outcome game evaluated by the players' utilities. -/
-def StrategicGame.ofOutcome (G : OutcomeGame ι A O) (P : PayoffStructure ι O) :
-    StrategicGame ι A where
+def StrategicGame.ofOutcome (G : OutcomeGame ι A O) (P : PayoffStructure ι O V) :
+    StrategicGame ι A V where
   payoff i a := P.payoff i (G.outcome a)
 
 /-- A player's strategic payoff is the utility of the resulting outcome. -/
-@[simp] lemma StrategicGame.ofOutcome_payoff (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+@[simp] lemma StrategicGame.ofOutcome_payoff (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     (i : ι) (a : ∀ i, A i) : (StrategicGame.ofOutcome G P).payoff i a =
       P.payoff i (G.outcome a) := rfl
 
@@ -111,12 +114,12 @@ end OutcomeGame
 namespace PayoffStructure
 
 /-- A payoff structure is measurable when every player's utility is measurable. -/
-protected class Measurable (P : PayoffStructure ι O) where
+protected class Measurable [MeasurableSpace V] (P : PayoffStructure ι O V) where
   /-- Measurability of each player's utility over outcomes. -/
   measurable_payoff i : Measurable (P.payoff i)
 
 /-- A payoff structure is bounded when every player's utility has bounded range. -/
-protected class Bounded (P : PayoffStructure ι O) where
+protected class Bounded [Bornology V] (P : PayoffStructure ι O V) where
   /-- Boundedness of each player's range of utilities. -/
   isBounded_payoff_range i : Bornology.IsBounded (Set.range (P.payoff i))
 
@@ -124,18 +127,22 @@ export PayoffStructure.Measurable (measurable_payoff)
 
 export PayoffStructure.Bounded (isBounded_payoff_range)
 
-/-- Players evaluate outcome distributions by expected utility. -/
-noncomputable def expected (P : PayoffStructure ι O) :
-    PayoffStructure ι (ProbabilityMeasure O) where
+/-- Players evaluate outcome distributions by expected utility in a complete real normed space.
+
+Measurability and continuity instances for expected utility are provided for real-valued
+utilities. -/
+noncomputable def expected [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    (P : PayoffStructure ι O V) : PayoffStructure ι (ProbabilityMeasure O) V where
   payoff i μ := μ[P.payoff i]
 
-/-- Expected utility is measurable for bounded measurable utilities. -/
-instance (P : PayoffStructure ι O) [P.Measurable] [P.Bounded] : P.expected.Measurable where
+/-- Real expected utility is measurable for bounded measurable utilities. -/
+instance (P : PayoffStructure ι O ℝ) [P.Measurable] [P.Bounded] : P.expected.Measurable where
   measurable_payoff i :=
     ProbabilityMeasure.measurable_integral (P.measurable_payoff i) (P.isBounded_payoff_range i)
 
 /-- Expected utility is bounded whenever utility over outcomes is bounded. -/
-instance (P : PayoffStructure ι O) [P.Bounded] : P.expected.Bounded where
+instance [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    (P : PayoffStructure ι O V) [P.Bounded] : P.expected.Bounded where
   isBounded_payoff_range i := by
     have hbounded := P.isBounded_payoff_range i
     simp_rw [isBounded_iff_forall_norm_le, Set.forall_mem_range] at hbounded ⊢
@@ -180,20 +187,22 @@ end OutcomeGame
 namespace PayoffStructure
 
 /-- A payoff structure is continuous when every player's utility is continuous. -/
-protected class Continuous (P : PayoffStructure ι O) where
+protected class Continuous [TopologicalSpace V] (P : PayoffStructure ι O V) where
   /-- Continuity of each player's utility over outcomes. -/
   continuous_payoff i : Continuous (P.payoff i)
 
 export Continuous (continuous_payoff)
 
-/-- Continuous utilities are measurable when open sets in the outcome space are measurable. -/
+/-- Continuous utilities into a Borel value space are measurable when open sets in the outcome
+space are measurable. -/
 instance Continuous.instMeasurable [MeasurableSpace O] [OpensMeasurableSpace O]
-    (P : PayoffStructure ι O) [P.Continuous] : P.Measurable where
+    [TopologicalSpace V] [MeasurableSpace V] [BorelSpace V] (P : PayoffStructure ι O V)
+    [P.Continuous] : P.Measurable where
   measurable_payoff i := (continuous_payoff i).measurable
 
-/-- Expected utility is continuous for continuous utilities on a compact outcome space with
+/-- Real expected utility is continuous for continuous utilities on a compact outcome space with
 measurable open sets. -/
-instance (P : PayoffStructure ι O) [MeasurableSpace O] [OpensMeasurableSpace O] [CompactSpace O]
+instance (P : PayoffStructure ι O ℝ) [MeasurableSpace O] [OpensMeasurableSpace O] [CompactSpace O]
     [P.Continuous] : P.expected.Continuous where
   continuous_payoff i := MeasureTheory.ProbabilityMeasure.continuous_integral_continuousMap <|
     ContinuousMap.mk _ <| P.continuous_payoff i

@@ -13,18 +13,24 @@ public import MathEconLib.Probability.FinDist.Simplex
 # Finite pure Bayesian Nash equilibrium
 
 Players choose actions contingent on their own types. A common finite prior determines interim
-payoffs, and equilibrium excludes profitable action changes at every positive-probability type.
-Null types impose no incentive constraint; their conditional payoff is totalized to zero.
+payoffs, and equilibrium requires every action deviation to weakly lower payoff at every
+positive-probability type. Null types impose no incentive constraint; their conditional payoff is
+totalized to zero.
 
 ## Main definitions
 
+* `BayesianGame.interimPayoffFin`: Interim payoff under a strategy profile.
 * `BayesianGame.interimPayoffActionFin`: Conditional payoff from an action.
 * `BayesianGame.bnePredFin`: Player-type deviation problem.
 * `BayesianGame.IsBNEFin`: Finite pure Bayesian Nash equilibrium.
+* `BayesianGame.expandedGame`: Strategic game with player-type pairs as players.
 
 ## Main statements
 
 * `BayesianGame.isBNEFin_iff`: Best-response characterization at positive-marginal types.
+* `BayesianGame.isBNEFin_iff_isNash_expandedGame`: Equivalence with Nash equilibrium in the
+  expanded game.
+* `BayesianGame.isBNEFin_comapActions`: Preservation under action translation.
 
 ## Tags
 
@@ -37,21 +43,22 @@ open Function BigOperators MathEconLib.Probability
 
 namespace MathEconLib.GameTheory.BayesianGame
 
-variable {I : Type*} {Θ : I → Type*} {A : I → Type*}
+variable {I : Type*} {Θ : I → Type*} {A : I → Type*} {V : Type*}
+    [AddCommMonoid V] [Module ℝ V]
     [Fintype I] [DecidableEq I] [∀ i, Fintype (Θ i)] [∀ i, DecidableEq (Θ i)]
-    (G : BayesianGame I Θ A) (d : FinDist (∀ i, Θ i))
+    (G : BayesianGame I Θ A V) (d : FinDist (∀ i, Θ i))
 
 /-- Interim expected payoff for player `i` of type `θ_i` under strategy profile `s`. -/
-def interimPayoffFin (i : I) (θ_i : Θ i) (s : G.PureStrategy) : ℝ :=
+def interimPayoffFin (i : I) (θ_i : Θ i) (s : G.PureStrategy) : V :=
   ∑ θ ∈ Finset.univ.filter (fun θ : Π j, Θ j => θ i = θ_i),
-    d.condProbD i θ_i θ * G.payoff i (G.actionProfile s θ) θ
+    d.condProbD i θ_i θ • G.payoff i (G.actionProfile s θ) θ
 
 /-- Interim payoff when player `i` of type `θ_i` deviates to action `a_i` while everyone else
 follows `s`. -/
 def interimPayoffActionFin (i : I) (θ_i : Θ i) (a_i : A i)
-    (s : G.PureStrategy) : ℝ :=
+    (s : G.PureStrategy) : V :=
   ∑ θ ∈ Finset.univ.filter (fun θ : Π j, Θ j => θ i = θ_i),
-    d.condProbD i θ_i θ *
+    d.condProbD i θ_i θ •
       G.payoff i (Function.update (G.actionProfile s θ) i a_i) θ
 
 /-- Interim payoff equals `interimPayoffActionFin` at the prescribed action. -/
@@ -75,7 +82,7 @@ lemma interimPayoffActionFin_eq_zero_of_marginal_not_pos (i : I) (θ_i : Θ i)
     G.interimPayoffActionFin d i θ_i a_i s = 0 := by
   unfold interimPayoffActionFin
   refine Finset.sum_eq_zero fun θ _ => ?_
-  rw [d.condProbD_eq_zero_of_not_pos i θ_i θ h, zero_mul]
+  rw [d.condProbD_eq_zero_of_not_pos i θ_i θ h, zero_smul]
 
 /-- The interim payoff action only depends on the strategy at player-type pairs other than
 `(i, θ_i)`, because player `i`'s action is overwritten by `a_i`. -/
@@ -119,13 +126,14 @@ def fromExpandedProfile (profile : Π (p : Σ i, Θ i), A p.1) :
 /-- The equilibrium problem associated with pure-strategy Bayesian Nash equilibrium. The deviator
 index is a player–type pair `⟨i, θ_i⟩`; the deviation relation says the new strategy may differ
 only at that pair; the value is the interim expected payoff. -/
-noncomputable def bnePredFin : EquilibriumProblem G.PureStrategy (Σ i, Θ i) where
+noncomputable def bnePredFin : EquilibriumProblem G.PureStrategy (Σ i, Θ i) V where
   deviation := fun p s s' =>
     ∀ j θ_j, (⟨j, θ_j⟩ : Σ k, Θ k) ≠ p → s' j θ_j = s j θ_j
   value := fun p s => G.interimPayoffActionFin d p.1 p.2 (s p.1 p.2) s
 
-/-- Pure Bayesian Nash equilibrium: no player-type pair has a profitable pure deviation. -/
-def IsBNEFin (s : G.PureStrategy) : Prop :=
+/-- Pure Bayesian Nash equilibrium: Every player-type deviation weakly lowers its expected
+payoff. -/
+def IsBNEFin [LE V] (s : G.PureStrategy) : Prop :=
   (G.bnePredFin d).IsEquilibrium s
 
 /-- An admissible deviation changes the strategy only at the specified player-type pair. -/
@@ -137,10 +145,10 @@ def IsBNEFin (s : G.PureStrategy) : Prop :=
 @[simp] lemma bnePredFin_value_eq (p : Σ i, Θ i) (s : G.PureStrategy) :
     (G.bnePredFin d).value p s = G.interimPayoffActionFin d p.1 p.2 (s p.1 p.2) s := rfl
 
-/-- A profile is a Bayesian Nash equilibrium exactly when no type with positive marginal
-probability has a profitable action deviation. Types with zero marginal probability impose no
-incentive constraints. -/
-theorem isBNEFin_iff (s : G.PureStrategy) :
+/-- A profile is a Bayesian Nash equilibrium exactly when every action deviation weakly lowers
+interim payoff at every type with positive marginal probability. Types with zero marginal
+probability impose no incentive constraints. -/
+theorem isBNEFin_iff [Preorder V] (s : G.PureStrategy) :
     G.IsBNEFin d s ↔
       ∀ (i : I) (θ_i : Θ i), 0 < d.marginalD i θ_i →
         ∀ (a_i : A i),
@@ -183,7 +191,7 @@ theorem isBNEFin_iff (s : G.PureStrategy) :
 
 /-- The strategic game whose players are player-type pairs and whose payoffs are interim expected
 utilities. -/
-def expandedGame : StrategicGame (Σ i, Θ i) (fun p => A p.1) where
+def expandedGame : StrategicGame (Σ i, Θ i) (fun p => A p.1) V where
   payoff p s := G.interimPayoffActionFin d p.1 p.2 (s p) (G.fromExpandedProfile s)
 
 /-- The forward `GameMorphism` from the pure BNE problem on `G` to the pure Nash problem on
@@ -241,7 +249,7 @@ noncomputable def strategicToBayesianMorphism :
 
 /-- Pure BNE on `G` corresponds to pure Nash on `G.expandedGame`, via the Curry/uncurry strategy
 maps `toExpandedProfile` and `fromExpandedProfile`. -/
-theorem isBNEFin_iff_isNash_expandedGame (s : ∀ i, Θ i → A i) :
+theorem isBNEFin_iff_isNash_expandedGame [LE V] (s : ∀ i, Θ i → A i) :
     G.IsBNEFin d s ↔
       (G.expandedGame d).IsNash (G.toExpandedProfile s) :=
   ⟨(G.bayesianToStrategicMorphism d).transport, (G.strategicToBayesianMorphism d).transport⟩
@@ -276,9 +284,9 @@ def comapActionsFinComorphism {B : I → Type*} (κ : ∀ i, B i → A i) :
     intro p s
     exact (G.interimPayoffActionFin_comapActions d κ p.1 p.2 (s p.1 p.2) s).symm
 
-/-- A translated strategy that is a Bayesian equilibrium in the original game gives an
-equilibrium in the game with translated actions. -/
-theorem isBNEFin_comapActions {B : I → Type*} (κ : ∀ i, B i → A i)
+/-- A translated strategy that is a Bayesian equilibrium in the original game gives an equilibrium
+in the game with translated actions. -/
+theorem isBNEFin_comapActions [LE V] {B : I → Type*} (κ : ∀ i, B i → A i)
     (s : (G.comapActions κ).PureStrategy) (h : G.IsBNEFin d (G.mapPureStrategy κ s)) :
     (G.comapActions κ).IsBNEFin d s :=
   (G.comapActionsFinComorphism d κ).pullback h

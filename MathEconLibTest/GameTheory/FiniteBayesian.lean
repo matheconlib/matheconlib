@@ -68,7 +68,7 @@ def thetaZero (i : Bool) : Theta i := ⟨0, by cases i <;> decide⟩
 def zeroAction (i : Bool) : Action i := by cases i <;> dsimp [Action] <;> exact 0
 
 /-- Each player earns one from its zero action and zero otherwise. -/
-def asymmetric : BayesianGame Bool Theta Action where
+def asymmetric : BayesianGame Bool Theta Action ℝ where
   payoff i a _ := if a i = zeroAction i then 1 else 0
 
 /-- The common prior is degenerate at the lowest types. -/
@@ -121,7 +121,7 @@ example (s : (asymmetric.comapActions (fun i (_ : Bool) ↦ zeroAction i)).PureS
   exact asymmetric_isBNEFin
 
 /-- A one-player game strictly prefers zero to every other natural number. -/
-def original : BayesianGame Unit (fun _ ↦ Unit) (fun _ ↦ ℕ) where
+def original : BayesianGame Unit (fun _ ↦ Unit) (fun _ ↦ ℕ) ℝ where
   payoff _ a _ := if a () = 0 then 1 else 0
 
 /-- A restricted action map makes only the suboptimal action available. -/
