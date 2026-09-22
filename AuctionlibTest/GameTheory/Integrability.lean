@@ -62,7 +62,7 @@ instance : IsProbabilityMeasure prior :=
   Measure.isProbabilityMeasure_map measurable_profile.aemeasurable
 
 /-- The player receives reciprocal-type utility independently of their action. -/
-def game : BayesianGame Unit (fun _ => ℝ) (fun _ => ℝ) where
+def game : BayesianGame Unit (fun _ => ℝ) (fun _ => ℝ) ℝ where
   payoff _ _ θ := (θ ())⁻¹
 
 /-- The measurable strategy that chooses zero at every type. -/

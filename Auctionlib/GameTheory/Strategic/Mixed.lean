@@ -11,9 +11,9 @@ public import Auctionlib.GameTheory.Strategic.Outcome
 # Independent mixed strategies
 
 Independent randomization assigns each player a probability measure on their action space. The
-mixed extension integrates strategic payoffs against the product of those measures. These integrals
-represent expected payoffs when the payoff functions are integrable; a nonintegrable function has
-Bochner integral zero.
+mixed extension integrates strategic payoffs against the product of those measures in a complete
+real normed space. These integrals represent expected payoffs when the payoff functions are
+integrable; a nonintegrable function has Bochner integral zero.
 
 ## Main definitions
 
@@ -38,16 +38,16 @@ open MeasureTheory
 
 namespace Auctionlib.GameTheory.StrategicGame
 
-variable {I : Type*} {A : I → Type*}
+variable {I : Type*} {A : I → Type*} {V : Type*}
 
 -- The game parameter identifies the strategic game whose action profiles serve as outcomes.
 set_option linter.unusedVariables false in
 /-- The action profile itself as the outcome of a game. -/
-def outcomeGame (G : StrategicGame I A) : OutcomeGame I A (∀ i, A i) where
+def outcomeGame (G : StrategicGame I A V) : OutcomeGame I A (∀ i, A i) where
   outcome := id
 
 /-- Utilities on action-profile outcomes are the game's strategic payoffs. -/
-def payoffStructure (G : StrategicGame I A) : PayoffStructure I (∀ i, A i) where
+def payoffStructure (G : StrategicGame I A V) : PayoffStructure I (∀ i, A i) V where
   payoff := G.payoff
 
 section Measurable
@@ -59,46 +59,50 @@ abbrev MixedStrategy (A : I → Type*) [∀ i, MeasurableSpace (A i)] :=
   ∀ i, ProbabilityMeasure (A i)
 
 /-- Every player's payoff is measurable on the action-profile space. -/
-protected class Measurable (G : StrategicGame I A) : Prop where
+protected class Measurable [MeasurableSpace V] (G : StrategicGame I A V) : Prop where
   /-- Each payoff function is measurable. -/
   measurable_payoff : ∀ i, Measurable (G.payoff i)
 
 /-- The action-profile outcome map is measurable. -/
-instance (G : StrategicGame I A) : G.outcomeGame.Measurable := ⟨measurable_id⟩
+instance (G : StrategicGame I A V) : G.outcomeGame.Measurable := ⟨measurable_id⟩
 
 /-- Measurable strategic payoffs give measurable utilities on action-profile outcomes. -/
-instance (G : StrategicGame I A) [G.Measurable] : G.payoffStructure.Measurable :=
+instance [MeasurableSpace V] (G : StrategicGame I A V) [G.Measurable] :
+    G.payoffStructure.Measurable :=
   ⟨Measurable.measurable_payoff⟩
 
 /-- Independent mixed actions yield the Bochner integral of each strategic payoff.
 
 The integral is an expected payoff when the payoff function is integrable against the independent
 product law; a nonintegrable function has integral zero. -/
-def mixedExtension [Fintype I] (G : StrategicGame I A) :
-    StrategicGame I (fun i ↦ ProbabilityMeasure (A i)) where
+def mixedExtension [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype I] (G : StrategicGame I A V) :
+    StrategicGame I (fun i ↦ ProbabilityMeasure (A i)) V where
   payoff i σ := ∫ a, G.payoff i a ∂Measure.pi (fun j ↦ (σ j : Measure (A j)))
 
-/-- Direct expected payoffs agree with the outcome-distribution construction. -/
-lemma mixedExtension_eq_ofOutcome [Fintype I] (G : StrategicGame I A) :
+/-- Integrating strategic payoffs agrees with the outcome-distribution construction. -/
+lemma mixedExtension_eq_ofOutcome [NormedAddCommGroup V] [NormedSpace ℝ V]
+    [CompleteSpace V] [Fintype I] (G : StrategicGame I A V) :
     G.mixedExtension = ofOutcome G.outcomeGame.mixed G.payoffStructure.expected := by
   unfold mixedExtension ofOutcome
   congr 1
   funext i σ
-  simp [OutcomeGame.mixed, outcomeGame,
-    payoffStructure, PayoffStructure.expected]
+  simp [OutcomeGame.mixed, outcomeGame, payoffStructure, PayoffStructure.expected]
 
 /-- Every unilateral change of a player's probability law gives at most the incumbent integral
 payoff. These are expected-payoff comparisons when the corresponding payoffs are integrable. -/
-def IsMixedNash [Fintype I] [DecidableEq I] (G : StrategicGame I A)
+def IsMixedNash [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype I] [DecidableEq I] [LE V] (G : StrategicGame I A V)
     (σ : MixedStrategy A) : Prop :=
   G.mixedExtension.IsNash σ
 
 /-- Mixed Nash compares every unilateral change of a player's probability law with the incumbent
 payoff in the mixed extension. -/
-@[simp] lemma isMixedNash_iff [Fintype I] [DecidableEq I] (G : StrategicGame I A)
-    (σ : MixedStrategy A) :
+@[simp] lemma isMixedNash_iff [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype I] [DecidableEq I] [LE V] (G : StrategicGame I A V) (σ : MixedStrategy A) :
     G.IsMixedNash σ ↔ ∀ i τ, G.mixedExtension.payoff i (Function.update σ i τ) ≤
-      G.mixedExtension.payoff i σ := isNash_iff _ _
+      G.mixedExtension.payoff i σ :=
+  isNash_iff _ _
 
 end Measurable
 
@@ -107,15 +111,16 @@ section Continuous
 variable [∀ i, TopologicalSpace (A i)]
 
 /-- Every player's payoff varies continuously with the full action profile. -/
-protected class Continuous (G : StrategicGame I A) : Prop where
+protected class Continuous [TopologicalSpace V] (G : StrategicGame I A V) : Prop where
   /-- Each payoff function is continuous. -/
   continuous_payoff : ∀ i, Continuous (G.payoff i)
 
 /-- The action-profile outcome map is continuous. -/
-instance (G : StrategicGame I A) : G.outcomeGame.Continuous := ⟨continuous_id⟩
+instance (G : StrategicGame I A V) : G.outcomeGame.Continuous := ⟨continuous_id⟩
 
 /-- Continuous strategic payoffs give continuous utilities on action-profile outcomes. -/
-instance (G : StrategicGame I A) [G.Continuous] : G.payoffStructure.Continuous :=
+instance [TopologicalSpace V] (G : StrategicGame I A V) [G.Continuous] :
+    G.payoffStructure.Continuous :=
   ⟨Continuous.continuous_payoff⟩
 
 end Continuous

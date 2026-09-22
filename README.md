@@ -180,25 +180,38 @@ The continuous conditional-expectation and winner's-curse results, together with
 | [`GameTheory/Equilibrium/Problem.lean`](Auctionlib/GameTheory/Equilibrium/Problem.lean) | Shared admissible-deviation equilibrium and forward/backward transport |
 | [`GameTheory/Strategic/Basic.lean`](Auctionlib/GameTheory/Strategic/Basic.lean) | Payoff-based games, dominance, and pure/strict/strong Nash equilibria |
 | [`GameTheory/Strategic/Outcome.lean`](Auctionlib/GameTheory/Strategic/Outcome.lean) | Outcome games, payoff structures, probability-measure mixing, and expected utility |
-| [`GameTheory/Strategic/Mixed.lean`](Auctionlib/GameTheory/Strategic/Mixed.lean) | Independent probability-measure mixed strategies and mixed Nash equilibrium |
-| [`GameTheory/Strategic/Mixed/Finite.lean`](Auctionlib/GameTheory/Strategic/Mixed/Finite.lean) | Finite probability weights, finite-sum payoffs, and agreement with probability-measure mixing |
+| [`GameTheory/Strategic/Mixed.lean`](Auctionlib/GameTheory/Strategic/Mixed.lean) | Finite-simplex mixed strategies and agreement with probability-measure mixing |
 | [`GameTheory/Strategic/Existence.lean`](Auctionlib/GameTheory/Strategic/Existence.lean) | Pure Nash existence for quasiconcave payoffs on compact convex action spaces and mixed Nash existence |
 | [`GameTheory/Strategic/Bayesian/Finite.lean`](Auctionlib/GameTheory/Strategic/Bayesian/Finite.lean) | Finite-type pure BNE, null-type conventions, and expanded-game Nash |
 | [`GameTheory/Strategic/Bayesian/FiniteMeasurable.lean`](Auctionlib/GameTheory/Strategic/Bayesian/FiniteMeasurable.lean) | Finite and measurable equilibrium agreement |
 | [`GameTheory/Strategic/Bayesian/Measurable/PureBNE.lean`](Auctionlib/GameTheory/Strategic/Bayesian/Measurable/PureBNE.lean) | Measurable whole-strategy deviations and integrable ex-ante BNE |
 | [`GameTheory/Strategic/Bayesian/Measurable/InterimConverse.lean`](Auctionlib/GameTheory/Strategic/Bayesian/Measurable/InterimConverse.lean) | Explicit conditional beliefs and the guarded interim/ex-ante equivalence |
 
-Mixed Nash equilibrium uses probability measures. The finite computational representation needs
-no measurable structure on finite actions and evaluates payoffs by finite sums. Finite priors and
-finite mixed strategies share `FinDist`, a thin alias of Mathlib's real standard simplex. The
-measure construction uses the totalized Bochner integral; expected-payoff interpretations require
-integrability.
+`StrategicGame I A V`, `EquilibriumProblem S I V`, and `PayoffStructure I O V` take an explicit
+payoff type. Pure Nash requires every unilateral deviation's payoff to be at most the incumbent
+payoff. With partially ordered payoffs, this is stronger than absence of strict improvement;
+the two agree under a linear order. Finite expected payoffs use real modules, and integral payoffs
+use complete real normed spaces. Pure quasiconcave existence allows linearly ordered payoff spaces
+with a closed order relation. Mixed-equilibrium existence and the measurable interim equilibrium
+implications (`isBNE_of_ae_interim` and the theorems in `InterimConverse`) remain specialized to real
+payoffs.
 
-The Bayesian game carrier takes players, types, and actions as explicit parameters. Priors are
-supplied separately. Finite BNE constrains positive-probability types; measurable BNE includes
-incumbent integrability and has an almost-everywhere interim characterization under the stated
-measurability and conditional-integrability assumptions. Pointwise auction IC and induced mechanism
-games remain separate integration work.
+`MixedStrategy`, `mixedExtension`, and `IsMixedNash` use probability measures. The finite
+computational interface is in `GameTheory/Strategic/Mixed/Finite.lean`, with `FiniteMixedStrategy`,
+`finiteExpectedPayoff`, `finiteMixedExtension`, and `IsFiniteMixedNash`. It needs no measurable
+structure on finite actions and evaluates payoffs by finite sums. Finite priors and finite mixed
+actions share `FinDist`, a probability-oriented alias of Mathlib's real simplex. Both mixed
+representation bridges follow from `StrategicGame.isNash_iff_of_actionEquiv` and payoff agreement.
+The integral construction uses the totalized Bochner integral; an expected-utility interpretation
+requires integrability.
+
+The Bayesian game carrier takes players, types, actions, and payoff values as explicit parameters.
+Priors are supplied separately. Finite BNE constrains positive-probability types, and the finite
+Bayesian equivalences hold for partially ordered real modules whose order respects addition and
+nonnegative scaling. Measurable BNE includes incumbent integrability and, for real payoffs, has an
+almost-everywhere interim characterization under the stated measurability and
+conditional-integrability assumptions. Pointwise auction IC and induced mechanism games remain
+separate integration work.
 
 ### Key Theorems
 
