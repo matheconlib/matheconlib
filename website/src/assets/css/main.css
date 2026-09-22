@@ -26,7 +26,7 @@ a { color: inherit; }
 .site-header { position: relative; z-index: 10; border-bottom: 1px solid var(--line); background: rgba(255,255,255,.96); }
 .header-inner { min-height: 76px; display: flex; align-items: center; justify-content: space-between; gap: 32px; }
 .wordmark { display: inline-flex; align-items: center; gap: 10px; color: var(--ink); font-weight: 760; letter-spacing: -.02em; text-decoration: none; font-size: 1.03rem; }
-.wordmark-mark { display: grid; place-items: center; width: 38px; height: 38px; color: white; background: var(--ink); font-family: var(--serif); font-size: 1.02rem; letter-spacing: -.08em; }
+.wordmark-mark { display: grid; place-items: center; width: 38px; height: 38px; color: white; background: var(--ink); font-family: var(--serif); font-size: 1.28rem; line-height: 1; letter-spacing: -.1em; }
 .draft-chip { padding: 2px 7px; border: 1px solid #bfc9d5; color: #65758a; font-size: .66rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
 .site-nav { display: flex; align-items: center; gap: 28px; }
 .site-nav a { color: #40536a; font-size: .88rem; font-weight: 620; text-decoration: none; }
