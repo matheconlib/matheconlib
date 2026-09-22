@@ -31,6 +31,7 @@ import Auctionlib.ForMathlib.IndepFun
 import Auctionlib.ForMathlib.Kakutani
 import Auctionlib.ForMathlib.MeasureTheory
 import Auctionlib.ForMathlib.ProbabilityMeasure
+import Auctionlib.ForMathlib.Quasiconvex
 import Auctionlib.ForMathlib.Schauder
 import Auctionlib.ForMathlib.StochasticOrder
 import Auctionlib.GameTheory.Equilibrium.Problem

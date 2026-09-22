@@ -18,18 +18,18 @@ not determine the selected beliefs on sets of marginal measure zero.
 
 ## Main definitions
 
-* `BayesianPrior.ConditionalBeliefs`: opponent kernels disintegrating the common prior.
-* `BayesianPrior.canonicalBeliefs`: a conditional-belief version for standard Borel types.
-* `BayesianPrior.independentBeliefs`: constant opponent beliefs under independence.
-* `BayesianPrior.OpponentBeliefsInvariantOn`: agreement with the unconditional opponent law at
+* `BayesianPrior.ConditionalBeliefs`: Opponent kernels disintegrating the common prior.
+* `BayesianPrior.canonicalBeliefs`: A conditional-belief version for standard Borel types.
+* `BayesianPrior.independentBeliefs`: Constant opponent beliefs under independence.
+* `BayesianPrior.OpponentBeliefsInvariantOn`: Agreement with the unconditional opponent law at
   every own type in a specified set.
 
 ## Main statements
 
-* `BayesianPrior.ConditionalBeliefs.ae_eq`: versions agree almost everywhere with respect to each
+* `BayesianPrior.ConditionalBeliefs.ae_eq`: Versions agree almost everywhere with respect to each
   player's own-type marginal.
 * `BayesianPrior.ConditionalBeliefs.integral_insert` and
-  `BayesianPrior.ConditionalBeliefs.lintegral_insert`: iterated conditional integrals recover the
+  `BayesianPrior.ConditionalBeliefs.lintegral_insert`: Iterated conditional integrals recover the
   prior integral.
 
 ## Tags
@@ -84,7 +84,8 @@ variable [∀ i, MeasurableSpace (Θ i)]
   · subst j
     simpa using (measurable_fst : Measurable (Prod.fst : Θ i × OpponentProfile Θ i → Θ i))
   · simpa [insert_of_ne, hj] using (measurable_pi_apply ⟨j, hj⟩).comp
-      (measurable_snd : Measurable (Prod.snd : Θ i × OpponentProfile Θ i → OpponentProfile Θ i))
+      (measurable_snd :
+        Measurable (Prod.snd : Θ i × OpponentProfile Θ i → OpponentProfile Θ i))
 
 /-- A player's marginal distribution of types. -/
 def marginalType (μ : Measure (∀ i, Θ i)) (i : I) : Measure (Θ i) := μ.map (fun θ => θ i)
@@ -171,8 +172,10 @@ theorem ConditionalBeliefs.ae_eq [Countable I] [∀ i, StandardBorelSpace (Θ i)
 
 /-- Measurable integrable functions remain integrable in own-type/opponents coordinates. -/
 lemma ConditionalBeliefs.integrable_insert [DecidableEq I]
+    {V : Type*} [NormedAddCommGroup V] [MeasurableSpace V] [BorelSpace V]
+    [SecondCountableTopology V]
     {μ : Measure (∀ i, Θ i)} [IsProbabilityMeasure μ] (B : ConditionalBeliefs μ) (i : I)
-    {F : (∀ j, Θ j) → ℝ} (hF : Measurable F) (hint : Integrable F μ) :
+    {F : (∀ j, Θ j) → V} (hF : Measurable F) (hint : Integrable F μ) :
     Integrable (fun p : Θ i × OpponentProfile Θ i => F (insert i p.1 p.2))
       ((marginalType μ i).compProd (B.opponents i)) := by
   rw [B.disintegrates]
@@ -183,8 +186,10 @@ lemma ConditionalBeliefs.integrable_insert [DecidableEq I]
 /-- Iterated integration of a measurable integrable function against conditional opponent beliefs
 and the own-type marginal recovers its prior integral. -/
 theorem ConditionalBeliefs.integral_insert [DecidableEq I]
+    {V : Type*} [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [MeasurableSpace V] [BorelSpace V] [SecondCountableTopology V]
     {μ : Measure (∀ i, Θ i)} [IsProbabilityMeasure μ] (B : ConditionalBeliefs μ) (i : I)
-    {F : (∀ j, Θ j) → ℝ} (hF : Measurable F) (hint : Integrable F μ) :
+    {F : (∀ j, Θ j) → V} (hF : Measurable F) (hint : Integrable F μ) :
     (∫ θᵢ, ∫ θo, F (insert i θᵢ θo) ∂(B.opponents i θᵢ) ∂(marginalType μ i)) =
       ∫ θ, F θ ∂μ := by
   rw [← Measure.integral_compProd (B.integrable_insert i hF hint), B.disintegrates]
@@ -197,7 +202,8 @@ the own-type marginal recovers its prior lower integral. -/
 theorem ConditionalBeliefs.lintegral_insert [DecidableEq I]
     {μ : Measure (∀ i, Θ i)} [IsProbabilityMeasure μ] (B : ConditionalBeliefs μ) (i : I)
     {F : (∀ j, Θ j) → ℝ≥0∞} (hF : Measurable F) :
-    (∫⁻ θᵢ, ∫⁻ θo, F (insert i θᵢ θo) ∂(B.opponents i θᵢ) ∂(marginalType μ i)) =
+    (∫⁻ θᵢ, ∫⁻ θo, F (insert i θᵢ θo) ∂(B.opponents i θᵢ)
+      ∂(marginalType μ i)) =
       ∫⁻ θ, F θ ∂μ := by
   have hFi : Measurable (fun p : Θ i × OpponentProfile Θ i => F (insert i p.1 p.2)) :=
     hF.comp (measurable_insert i)

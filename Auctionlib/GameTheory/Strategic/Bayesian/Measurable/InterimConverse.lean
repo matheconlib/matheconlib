@@ -41,7 +41,7 @@ variable {I : Type*} {Θ : I → Type*} {A : I → Type*} [DecidableEq I]
   [∀ i, MeasurableSpace (Θ i)] [∀ i, MeasurableSpace (A i)]
   [∀ i, StandardBorelSpace (Θ i)] [∀ i, Nonempty (Θ i)]
   [∀ i, StandardBorelSpace (A i)]
-  (G : BayesianGame I Θ A) (μ : Measure (∀ i, Θ i)) [IsProbabilityMeasure μ]
+  (G : BayesianGame I Θ A ℝ) (μ : Measure (∀ i, Θ i)) [IsProbabilityMeasure μ]
   (B : ConditionalBeliefs μ)
   (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
 

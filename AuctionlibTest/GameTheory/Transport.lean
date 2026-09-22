@@ -18,12 +18,12 @@ equilibrium whose translated action is not optimal in the original game.
 ## Main definitions
 
 * `game`: a one-player game with real types and real actions.
-* `optimal`: the constant strategy choosing action one.
+* `optimal` and `zeroStrategy`: the constant strategies choosing actions one and zero.
 * `optimalMap` and `restrictedMap`: constant measurable action translations.
 
 ## Main statements
 
-* `optimal_isBNE`: the optimal constant action is an equilibrium.
+* `optimal_isBNE` and `zero_not_isBNE`: action one is an equilibrium, while action zero is not.
 * `translated_isBNE`: equilibrium pulls back through a noninjective measurable action map.
 * `restricted_isBNE` and `translated_restricted_not_isBNE`: an equilibrium created by restricting
   actions need not translate to an equilibrium in the original game.
@@ -40,7 +40,7 @@ open MeasureTheory Auctionlib.GameTheory
 namespace AuctionlibTest.GameTheory.Transport
 
 /-- One player's utility is maximized at the real action one. -/
-def game : BayesianGame Unit (fun _ ↦ ℝ) (fun _ ↦ ℝ) where
+def game : BayesianGame Unit (fun _ ↦ ℝ) (fun _ ↦ ℝ) ℝ where
   payoff _ a _ := -(a () - 1) ^ 2
 
 /-- Every type chooses the optimal action. -/

@@ -18,16 +18,16 @@ payoffs are integrable under a finite type-profile measure.
 
 ## Main definitions
 
-* `BayesianGame.Strategy`: measurable pure strategy profiles.
-* `BayesianGame.measurableActionProfile`: realized actions as a function of the type profile.
-* `BayesianGame.exAntePayoff`: payoff integrated against the type-profile measure.
-* `BayesianGame.IncumbentPayoffsIntegrable`: integrability of every player's realized payoff.
-* `BayesianGame.replace`: unilateral replacement of a measurable strategy.
+* `BayesianGame.Strategy`: Measurable pure strategy profiles.
+* `BayesianGame.measurableActionProfile`: Realized actions as a function of the type profile.
+* `BayesianGame.exAntePayoff`: Payoff integrated against the type-profile measure.
+* `BayesianGame.IncumbentPayoffsIntegrable`: Integrability of every player's realized payoff.
+* `BayesianGame.replace`: Unilateral replacement of a measurable strategy.
 
 ## Main statements
 
-* `BayesianGame.measurable_payoff_comp`: measurability of realized payoffs.
-* `BayesianGame.integrable_payoff_comp_of_bdd`: bounded measurable realized payoffs are integrable
+* `BayesianGame.measurable_payoff_comp`: Measurability of realized payoffs.
+* `BayesianGame.integrable_payoff_comp_of_bdd`: Bounded measurable realized payoffs are integrable
   under finite type-profile measures.
 
 ## Tags
@@ -41,34 +41,34 @@ open MeasureTheory
 
 namespace Auctionlib.GameTheory.BayesianGame
 
-universe uI uT uA
+universe uI uT uA uV
 
-variable {I : Type uI} {Θ : I → Type uT} {A : I → Type uA}
+variable {I : Type uI} {Θ : I → Type uT} {A : I → Type uA} {V : Type uV}
   [∀ i, MeasurableSpace (Θ i)] [∀ i, MeasurableSpace (A i)]
 
 /-- A measurable pure strategy profile depends only on each player's own type. -/
 -- The game argument identifies the type and action carriers of the strategy.
-def Strategy (_G : BayesianGame I Θ A) := ∀ i, {f : Θ i → A i // Measurable f}
+def Strategy (_G : BayesianGame I Θ A V) := ∀ i, {f : Θ i → A i // Measurable f}
 
-/-- Measurable strategy profiles act as profiles of functions on individual types. -/
-instance (G : BayesianGame I Θ A) : CoeFun G.Strategy (fun _ => ∀ i, Θ i → A i) where
+/-- Coerce a measurable strategy profile to its underlying profile of functions. -/
+instance (G : BayesianGame I Θ A V) : CoeFun G.Strategy (fun _ => ∀ i, Θ i → A i) where
   coe s i := (s i).1
 
 /-- The realized action profile under measurable strategies. -/
-def measurableActionProfile (G : BayesianGame I Θ A) (s : G.Strategy) (θ : ∀ i, Θ i) :
+def measurableActionProfile (G : BayesianGame I Θ A V) (s : G.Strategy) (θ : ∀ i, Θ i) :
     ∀ i, A i := fun i => (s i).1 (θ i)
 
 /-- Evaluation of a realized action. -/
-@[simp] lemma measurableActionProfile_apply (G : BayesianGame I Θ A) (s : G.Strategy)
+@[simp] lemma measurableActionProfile_apply (G : BayesianGame I Θ A V) (s : G.Strategy)
     (θ : ∀ i, Θ i) (i : I) : G.measurableActionProfile s θ i = (s i).1 (θ i) := rfl
 
 /-- The realized action profile is measurable in the full type profile. -/
-lemma measurable_actionProfile (G : BayesianGame I Θ A) (s : G.Strategy) :
+lemma measurable_actionProfile (G : BayesianGame I Θ A V) (s : G.Strategy) :
     Measurable (G.measurableActionProfile s) :=
   measurable_pi_lambda _ fun i => (s i).2.comp (measurable_pi_apply i)
 
 /-- Jointly measurable payoffs remain measurable after players use measurable strategies. -/
-lemma measurable_payoff_comp (G : BayesianGame I Θ A)
+lemma measurable_payoff_comp [MeasurableSpace V] (G : BayesianGame I Θ A V)
     (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
     (i : I) (s : G.Strategy) :
     Measurable (fun θ => G.payoff i (G.measurableActionProfile s θ) θ) :=
@@ -76,38 +76,41 @@ lemma measurable_payoff_comp (G : BayesianGame I Θ A)
 
 /-- The integral of player `i`'s realized payoff under the type-profile measure `μ`. For integrable
 realized payoffs and a probability prior, this is the player's ex-ante expected utility. -/
-def exAntePayoff (G : BayesianGame I Θ A) (μ : Measure (∀ i, Θ i)) (i : I)
-    (s : G.Strategy) : ℝ :=
+def exAntePayoff [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) (i : I)
+    (s : G.Strategy) : V :=
   ∫ θ, G.payoff i (G.measurableActionProfile s θ) θ ∂μ
 
 /-- Every player's realized payoff is integrable under the type-profile measure. -/
-def IncumbentPayoffsIntegrable (G : BayesianGame I Θ A) (μ : Measure (∀ i, Θ i))
+def IncumbentPayoffsIntegrable [NormedAddCommGroup V] (G : BayesianGame I Θ A V)
+    (μ : Measure (∀ i, Θ i))
     (s : G.Strategy) : Prop :=
   ∀ i, Integrable (fun θ => G.payoff i (G.measurableActionProfile s θ) θ) μ
 
 /-- Replace one player's entire measurable strategy. -/
-def replace [DecidableEq I] (G : BayesianGame I Θ A) (s : G.Strategy) (i : I)
+def replace [DecidableEq I] (G : BayesianGame I Θ A V) (s : G.Strategy) (i : I)
     (f : {f : Θ i → A i // Measurable f}) : G.Strategy := Function.update s i f
 
 /-- The deviating player uses the replacement strategy. -/
-@[simp] lemma replace_self [DecidableEq I] (G : BayesianGame I Θ A) (s : G.Strategy)
+@[simp] lemma replace_self [DecidableEq I] (G : BayesianGame I Θ A V) (s : G.Strategy)
     (i : I) (f : {f : Θ i → A i // Measurable f}) : G.replace s i f i = f :=
   Function.update_self ..
 
 /-- A unilateral strategy replacement preserves every opponent's strategy. -/
-lemma replace_of_ne [DecidableEq I] (G : BayesianGame I Θ A) (s : G.Strategy)
+lemma replace_of_ne [DecidableEq I] (G : BayesianGame I Θ A V) (s : G.Strategy)
     (i : I) (f : {f : Θ i → A i // Measurable f}) {j : I} (h : j ≠ i) :
     G.replace s i f j = s j := Function.update_of_ne h ..
 
 /-- Bounded measurable realized payoffs are integrable under a finite type-profile measure. -/
-lemma integrable_payoff_comp_of_bdd (G : BayesianGame I Θ A)
+lemma integrable_payoff_comp_of_bdd [NormedAddCommGroup V]
+    [MeasurableSpace V] [BorelSpace V] [SecondCountableTopology V] (G : BayesianGame I Θ A V)
     (μ : Measure (∀ i, Θ i)) [IsFiniteMeasure μ]
     (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
     (i : I) (s : G.Strategy) {C : ℝ}
-    (hC : ∀ θ, |G.payoff i (G.measurableActionProfile s θ) θ| ≤ C) :
+    (hC : ∀ θ, ‖G.payoff i (G.measurableActionProfile s θ) θ‖ ≤ C) :
     Integrable (fun θ => G.payoff i (G.measurableActionProfile s θ) θ) μ :=
   Integrable.of_bound (G.measurable_payoff_comp hmeas i s).aestronglyMeasurable C
-    (Filter.Eventually.of_forall fun θ => by simpa only [Real.norm_eq_abs] using hC θ)
+    (Filter.Eventually.of_forall hC)
 
 end Auctionlib.GameTheory.BayesianGame
 

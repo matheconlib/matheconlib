@@ -12,27 +12,25 @@ public import Auctionlib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
 # Interim payoffs and sufficient conditions for Bayesian Nash equilibrium
 
 Conditional beliefs over opponents' types determine a player's expected payoff at each own type.
-The player's own type is inserted into the full type profile. Interim best response requires
-optimality against every action simultaneously on one conull set of own types for each player.
-Together with integrability of incumbent payoffs, this condition implies ex-ante Bayesian Nash
-equilibrium.
-
-Interim payoffs are measurable, satisfy the law of total expectation, and agree almost everywhere
-across versions of conditional beliefs. Conditional integrability of all actions likewise uses one
-conull set per player, common to every action.
+The player's own type is inserted into the full type profile. Interim payoffs satisfy the law of
+total expectation when the ex-ante payoff is integrable, and conditional-payoff versions agree
+almost everywhere under the marginal type law. Conditional integrability of all actions uses one
+conull set per player, common to every action. For real-valued utility, interim best response on
+such a set for each player implies ex-ante Bayesian Nash equilibrium when incumbent payoffs are
+integrable.
 
 ## Main definitions
 
-* `BayesianGame.interimPayoffAction`: conditional payoff from a chosen action.
-* `BayesianGame.interimPayoff`: conditional payoff from the prescribed strategy.
-* `BayesianGame.IsAEInterimBestResponse`: one conull set of best-responding types per player.
-* `BayesianGame.HasIntegrableInterimDeviations`: simultaneous conditional integrability of actions.
+* `BayesianGame.interimPayoffAction`: Conditional payoff from a chosen action.
+* `BayesianGame.interimPayoff`: Conditional payoff from the prescribed strategy.
+* `BayesianGame.IsAEInterimBestResponse`: One conull set of best-responding types per player.
+* `BayesianGame.HasIntegrableInterimDeviations`: Simultaneous conditional integrability of actions.
 
 ## Main statements
 
-* `BayesianGame.interimPayoffAction_ae_eq`: agreement across conditional-belief versions.
-* `BayesianGame.exAntePayoff_eq_integral_interimPayoff`: the law of total expectation.
-* `BayesianGame.isBNE_of_ae_interim`: interim optimality implies ex-ante equilibrium.
+* `BayesianGame.interimPayoffAction_ae_eq`: Agreement across conditional-belief versions.
+* `BayesianGame.exAntePayoff_eq_integral_interimPayoff`: The law of total expectation.
+* `BayesianGame.isBNE_of_ae_interim`: Interim optimality implies ex-ante equilibrium.
 
 ## Tags
 
@@ -49,35 +47,18 @@ namespace Auctionlib.GameTheory.BayesianGame
 
 open BayesianPrior
 
-variable {I : Type*} {Θ : I → Type*} {A : I → Type*} [DecidableEq I]
+section General
+
+variable {I : Type*} {Θ : I → Type*} {A : I → Type*} {V : Type*} [DecidableEq I]
   [∀ i, MeasurableSpace (Θ i)] [∀ i, MeasurableSpace (A i)]
-  (G : BayesianGame I Θ A) (μ : Measure (∀ i, Θ i))
+  (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i))
   (B : ConditionalBeliefs μ)
 
 /-- Realized utility from an action when own type is fixed and opponents' types vary. -/
 def interimPayoffActionIntegrand (i : I) (θᵢ : Θ i) (aᵢ : A i) (s : G.Strategy)
-    (θo : OpponentProfile Θ i) : ℝ :=
+    (θo : OpponentProfile Θ i) : V :=
   let θ := insert i θᵢ θo
   G.payoff i (Function.update (G.measurableActionProfile s θ) i aᵢ) θ
-
-/-- Expected payoff from a chosen action conditional on own type and selected opponent beliefs. -/
-def interimPayoffAction (i : I) (θᵢ : Θ i) (aᵢ : A i) (s : G.Strategy) : ℝ :=
-  ∫ θo, G.interimPayoffActionIntegrand i θᵢ aᵢ s θo ∂(B.opponents i θᵢ)
-
-/-- Conditional expected payoff when following the prescribed strategy. -/
-def interimPayoff (i : I) (θᵢ : Θ i) (s : G.Strategy) : ℝ :=
-  G.interimPayoffAction μ B i θᵢ ((s i).1 θᵢ) s
-
-/-- For each player, all action payoffs are conditionally integrable on a common conull set of own
-types. -/
-def HasIntegrableInterimDeviations (s : G.Strategy) : Prop :=
-  ∀ i, ∀ᵐ θᵢ ∂(marginalType μ i), ∀ aᵢ : A i,
-    Integrable (G.interimPayoffActionIntegrand i θᵢ aᵢ s) (B.opponents i θᵢ)
-
-/-- Each player best responds against all actions simultaneously at almost every own type. -/
-def IsAEInterimBestResponse (s : G.Strategy) : Prop :=
-  ∀ i, ∀ᵐ θᵢ ∂(marginalType μ i), ∀ aᵢ : A i,
-    G.interimPayoffAction μ B i θᵢ aᵢ s ≤ G.interimPayoff μ B i θᵢ s
 
 /-- A unilateral strategy change coincides pointwise with the corresponding own-type action. -/
 lemma payoff_insert_eq_interimPayoffActionIntegrand (i : I) (θᵢ : Θ i)
@@ -91,6 +72,81 @@ lemma payoff_insert_eq_interimPayoffActionIntegrand (i : I) (θᵢ : Θ i)
   · subst j
     simp
   · simp [Function.update_of_ne hj, measurableActionProfile, hagree j hj]
+
+/-- The conditional deviation integrand is jointly measurable in own type, action, and opponents. -/
+lemma measurable_interimPayoffActionIntegrand [MeasurableSpace V]
+    (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
+    (i : I) (s : G.Strategy) :
+    Measurable (fun q : (Θ i × A i) × OpponentProfile Θ i =>
+      G.interimPayoffActionIntegrand i q.1.1 q.1.2 s q.2) := by
+  have hθ : Measurable (fun q : (Θ i × A i) × OpponentProfile Θ i =>
+      insert i q.1.1 q.2) :=
+    (measurable_insert i).comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd)
+  exact (hmeas i).comp ((measurable_update'.comp
+    ((G.measurable_actionProfile s |>.comp hθ).prodMk
+      (measurable_snd.comp measurable_fst))).prodMk hθ)
+
+variable [NormedAddCommGroup V]
+
+/-- For each player, all action payoffs are conditionally integrable on a common conull set of own
+types. -/
+def HasIntegrableInterimDeviations (s : G.Strategy) : Prop :=
+  ∀ i, ∀ᵐ θᵢ ∂(marginalType μ i), ∀ aᵢ : A i,
+    Integrable (G.interimPayoffActionIntegrand i θᵢ aᵢ s) (B.opponents i θᵢ)
+
+section Integrability
+
+variable [MeasurableSpace V] [BorelSpace V]
+  (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
+
+include hmeas
+
+/-- The conditional integral of the norm of realized utility is jointly measurable in own type and
+action. -/
+theorem measurable_lintegral_enorm_deviation (i : I) (s : G.Strategy) :
+    Measurable (fun p : Θ i × A i =>
+      ∫⁻ θo, ‖G.interimPayoffActionIntegrand i p.1 p.2 s θo‖ₑ ∂(B.opponents i p.1)) := by
+  let κ : Kernel (Θ i × A i) (OpponentProfile Θ i) :=
+    (B.opponents i).comap Prod.fst measurable_fst
+  exact Measurable.lintegral_kernel_prod_right' (κ := κ)
+    (G.measurable_interimPayoffActionIntegrand hmeas i s).enorm
+
+/-- Globally bounded measurable payoffs are conditionally integrable for all actions on a common
+conull set of own types. -/
+lemma hasIntegrableInterimDeviations_of_bdd [SecondCountableTopology V] (s : G.Strategy)
+    (hbdd : ∀ i, ∃ C : ℝ, ∀ a θ, ‖G.payoff i a θ‖ ≤ C) :
+    G.HasIntegrableInterimDeviations μ B s := by
+  intro i
+  obtain ⟨C, hC⟩ := hbdd i
+  apply Filter.Eventually.of_forall
+  intro θᵢ aᵢ
+  have hf : Measurable (G.interimPayoffActionIntegrand i θᵢ aᵢ s) :=
+    (G.measurable_interimPayoffActionIntegrand hmeas i s).comp
+      ((measurable_const (a := (θᵢ, aᵢ))).prodMk measurable_id)
+  apply Integrable.of_bound hf.aestronglyMeasurable C
+  apply Filter.Eventually.of_forall
+  intro θo
+  simpa only [interimPayoffActionIntegrand] using
+    hC (Function.update (G.measurableActionProfile s (insert i θᵢ θo)) i aᵢ) (insert i θᵢ θo)
+
+end Integrability
+
+variable [NormedSpace ℝ V]
+
+/-- Expected payoff from a chosen action conditional on own type and selected opponent beliefs. -/
+def interimPayoffAction [CompleteSpace V] (i : I) (θᵢ : Θ i) (aᵢ : A i) (s : G.Strategy) : V :=
+  ∫ θo, G.interimPayoffActionIntegrand i θᵢ aᵢ s θo ∂(B.opponents i θᵢ)
+
+variable [CompleteSpace V]
+
+/-- Conditional expected payoff when following the prescribed strategy. -/
+def interimPayoff (i : I) (θᵢ : Θ i) (s : G.Strategy) : V :=
+  G.interimPayoffAction μ B i θᵢ ((s i).1 θᵢ) s
+
+/-- Each player best responds against all actions simultaneously at almost every own type. -/
+def IsAEInterimBestResponse [LE V] (s : G.Strategy) : Prop :=
+  ∀ i, ∀ᵐ θᵢ ∂(marginalType μ i), ∀ aᵢ : A i,
+    G.interimPayoffAction μ B i θᵢ aᵢ s ≤ G.interimPayoff μ B i θᵢ s
 
 /-- Following the prescribed action gives the conditional integral of realized utility. -/
 lemma interimPayoff_eq_integral (i : I) (θᵢ : Θ i) (s : G.Strategy) :
@@ -126,7 +182,7 @@ theorem interimPayoffAction_ae_eq (i : I) (s : G.Strategy) :
   simp only [interimPayoffAction, hθ]
 
 /-- Almost-everywhere interim best response does not depend on the selected belief version. -/
-theorem isAEInterimBestResponse_iff_of_conditionalBeliefs (s : G.Strategy) :
+theorem isAEInterimBestResponse_iff_of_conditionalBeliefs [LE V] (s : G.Strategy) :
     G.IsAEInterimBestResponse μ B s ↔ G.IsAEInterimBestResponse μ B' s := by
   constructor
   · intro h i
@@ -136,6 +192,7 @@ theorem isAEInterimBestResponse_iff_of_conditionalBeliefs (s : G.Strategy) :
     filter_upwards [h i, B.ae_eq B' i] with θᵢ hθ heq aᵢ
     simpa only [interimPayoff, interimPayoffAction, ← heq] using hθ aᵢ
 
+omit [NormedSpace ℝ V] [CompleteSpace V] in
 /-- Conditional integrability of all actions on a common conull set is independent of the selected
 conditional-belief version. -/
 theorem hasIntegrableInterimDeviations_iff_of_conditionalBeliefs (s : G.Strategy) :
@@ -150,20 +207,10 @@ theorem hasIntegrableInterimDeviations_iff_of_conditionalBeliefs (s : G.Strategy
 
 end Versions
 
-variable (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
+variable [MeasurableSpace V] [BorelSpace V] [SecondCountableTopology V]
+  (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
 
 include hmeas
-
-/-- The conditional deviation integrand is jointly measurable in own type, action, and opponents. -/
-lemma measurable_interimPayoffActionIntegrand (i : I) (s : G.Strategy) :
-    Measurable (fun q : (Θ i × A i) × OpponentProfile Θ i =>
-      G.interimPayoffActionIntegrand i q.1.1 q.1.2 s q.2) := by
-  have hθ : Measurable (fun q : (Θ i × A i) × OpponentProfile Θ i =>
-      insert i q.1.1 q.2) :=
-    (measurable_insert i).comp ((measurable_fst.comp measurable_fst).prodMk measurable_snd)
-  exact (hmeas i).comp ((measurable_update'.comp
-    ((G.measurable_actionProfile s |>.comp hθ).prodMk
-      (measurable_snd.comp measurable_fst))).prodMk hθ)
 
 /-- Conditional deviation payoffs are jointly measurable in own type and chosen action. -/
 theorem measurable_interimPayoffAction (i : I) (s : G.Strategy) :
@@ -177,34 +224,6 @@ theorem measurable_interimPayoffAction (i : I) (s : G.Strategy) :
 theorem measurable_interimPayoff (i : I) (s : G.Strategy) :
     Measurable (fun θᵢ => G.interimPayoff μ B i θᵢ s) :=
   (G.measurable_interimPayoffAction μ B hmeas i s).comp (measurable_id.prodMk (s i).2)
-
-/-- The conditional integral of absolute realized utility is jointly measurable in own type and
-action. -/
-theorem measurable_lintegral_enorm_deviation (i : I) (s : G.Strategy) :
-    Measurable (fun p : Θ i × A i =>
-      ∫⁻ θo, ‖G.interimPayoffActionIntegrand i p.1 p.2 s θo‖ₑ ∂(B.opponents i p.1)) := by
-  let κ : Kernel (Θ i × A i) (OpponentProfile Θ i) :=
-    (B.opponents i).comap Prod.fst measurable_fst
-  exact Measurable.lintegral_kernel_prod_right' (κ := κ)
-    (G.measurable_interimPayoffActionIntegrand hmeas i s).enorm
-
-/-- Globally bounded measurable payoffs are conditionally integrable for all actions on a common
-conull set of own types. -/
-lemma hasIntegrableInterimDeviations_of_bdd (s : G.Strategy)
-    (hbdd : ∀ i, ∃ C : ℝ, ∀ a θ, |G.payoff i a θ| ≤ C) :
-    G.HasIntegrableInterimDeviations μ B s := by
-  intro i
-  obtain ⟨C, hC⟩ := hbdd i
-  apply Filter.Eventually.of_forall
-  intro θᵢ aᵢ
-  have hf : Measurable (G.interimPayoffActionIntegrand i θᵢ aᵢ s) :=
-    (G.measurable_interimPayoffActionIntegrand hmeas i s).comp
-      ((measurable_const (a := (θᵢ, aᵢ))).prodMk measurable_id)
-  apply Integrable.of_bound hf.aestronglyMeasurable C
-  apply Filter.Eventually.of_forall
-  intro θo
-  simpa only [Real.norm_eq_abs, interimPayoffActionIntegrand] using
-    hC (Function.update (G.measurableActionProfile s (insert i θᵢ θo)) i aᵢ) (insert i θᵢ θo)
 
 variable [IsProbabilityMeasure μ]
 
@@ -226,6 +245,18 @@ theorem integrable_interimPayoff (i : I) (s : G.Strategy)
   filter_upwards [] with θᵢ
   rw [G.interimPayoff_eq_integral]
   exact (norm_integral_le_integral_norm _).trans (le_abs_self _)
+
+end General
+
+section Real
+
+variable {I : Type*} {Θ : I → Type*} {A : I → Type*} [DecidableEq I]
+  [∀ i, MeasurableSpace (Θ i)] [∀ i, MeasurableSpace (A i)]
+  (G : BayesianGame I Θ A ℝ) (μ : Measure (∀ i, Θ i)) [IsProbabilityMeasure μ]
+  (B : ConditionalBeliefs μ)
+  (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
+
+include hmeas
 
 /-- Interim optimality against all actions on a common conull set for each player implies ex-ante
 Bayesian Nash equilibrium when incumbent payoffs are integrable. -/
@@ -254,6 +285,8 @@ theorem isBNE_of_best_response_on_ae_set (s : G.Strategy)
   intro i
   filter_upwards [mem_ae_iff.mpr (hT i)] with θᵢ hθ
   exact hbr i θᵢ hθ
+
+end Real
 
 end Auctionlib.GameTheory.BayesianGame
 

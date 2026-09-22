@@ -5,8 +5,8 @@ Authors: Daniel Lyng
 -/
 module
 
+public import Auctionlib.ForMathlib.Quasiconvex
 public import Auctionlib.GameTheory.Strategic.Mixed.Finite
-public import Mathlib.Analysis.Convex.Quasiconvex
 import Auctionlib.ForMathlib.ApproximateSelection
 import Auctionlib.ForMathlib.Kakutani
 import Mathlib.Analysis.LocallyConvex.WeakDual
@@ -17,16 +17,20 @@ import Mathlib.MeasureTheory.Measure.Prokhorov
 /-!
 # Existence of Nash equilibria
 
-Continuous games with finitely many players on compact convex action sets have pure equilibria when
-each own-action payoff is quasiconcave. The action sets may be represented by homeomorphisms into
-locally convex spaces. Continuous games on compact metrizable spaces and finite games admit mixed
-equilibria.
+Continuous games with linearly ordered payoffs and finitely many players on compact convex action
+sets have pure equilibria when the payoff order is closed and each own-action payoff is
+quasiconcave. The action sets may be represented by homeomorphisms into locally convex spaces.
+Continuous games on compact metrizable spaces and finite games also admit mixed equilibria with
+real-valued payoffs.
 
 ## Main statements
 
-* `OutcomeGame.exists_isNash_of_quasiconcaveOn` gives pure equilibrium existence.
-* `OutcomeGame.exists_isNash_of_isCompact` gives mixed equilibrium existence.
-* `OutcomeGame.exists_isNash_of_finite` specializes to finite outcome games.
+* `OutcomeGame.exists_isNash_of_quasiconcaveOn` and `StrategicGame.exists_isNash_of_quasiconcaveOn`
+  give pure equilibrium existence.
+* `OutcomeGame.exists_isNash_of_isCompact` and `StrategicGame.exists_isMixedNash_of_isCompact` give
+  mixed equilibrium existence for compact metrizable action spaces.
+* `OutcomeGame.exists_isNash_of_finite`, `StrategicGame.exists_isMixedNash_of_finite`, and
+  `StrategicGame.exists_isFiniteMixedNash` give mixed equilibrium existence for finite games.
 
 ## Tags
 
@@ -37,7 +41,7 @@ open MeasureTheory ProbabilityMeasure
 
 namespace Auctionlib.GameTheory
 
-variable {ι : Type*} {A : ι → Type*} {O : Type*}
+variable {ι : Type*} {A : ι → Type*} {O : Type*} {V : Type*}
 
 section Helpers
 
@@ -90,7 +94,8 @@ noncomputable def bestResponseCorr {ι : Type*} {A : ι → Type*} {O : Type*} {
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O) :
+    [LE V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V) :
     ↑(Set.univ.pi k) → Set ((i : ι) → E i) :=
   fun x =>
     let a := decode e x
@@ -103,14 +108,16 @@ lemma bestResponseCorr_subset {ι : Type*} {A : ι → Type*} {O : Type*} {E : �
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [LE V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     (x : ↑(Set.univ.pi k)) :
     bestResponseCorr e G P x ⊆ Set.univ.pi k := fun _ ⟨hyk, _⟩ i _ => hyk i
 
 /-- A player’s payoff is continuous in their own action when opponents’ actions are fixed. -/
 lemma payoff_update_continuous {ι : Type*} {A : ι → Type*} {O : Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [TopologicalSpace V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [G.Continuous] [P.Continuous]
     (a : (i : ι) → A i) (i : ι) :
     Continuous (fun s => P.payoff i (G.outcome (Function.update a i s))) :=
@@ -120,7 +127,8 @@ lemma payoff_update_continuous {ι : Type*} {A : ι → Type*} {O : Type*}
 /-- Each player has a payoff-maximizing action against any fixed profile of opponents’ actions. -/
 lemma exists_payoff_maximizer {ι : Type*} {A : ι → Type*} {O : Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [LinearOrder V] [TopologicalSpace V] [ClosedIciTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [G.Continuous] [P.Continuous]
     [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     (a : (i : ι) → A i) (i : ι) :
@@ -146,7 +154,8 @@ lemma bestResponseCorr_nonempty {ι : Type*} {A : ι → Type*} {O : Type*} {E :
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [LinearOrder V] [TopologicalSpace V] [ClosedIciTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [G.Continuous] [P.Continuous]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (x : ↑(Set.univ.pi k)) :
@@ -162,13 +171,13 @@ lemma extend_eq_payoff {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → T
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
-    (a : (i : ι) → A i) (i : ι) (z : E i) (hz : z ∈ k i) :
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
+    (a : (i : ι) → A i) (i : ι) {d : E i → V} (z : E i) (hz : z ∈ k i) :
     Subtype.val.extend
-      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0 z =
+      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) d z =
     P.payoff i (G.outcome (Function.update a i ((e i).symm ⟨z, hz⟩))) := by
   simpa using Subtype.val_injective.extend_apply
-    ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0 ⟨z, hz⟩
+    ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) d ⟨z, hz⟩
 
 /-- Quasiconcave own-action payoffs give convex values of the best response correspondence. -/
 lemma bestResponseCorr_convex {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
@@ -176,18 +185,19 @@ lemma bestResponseCorr_convex {ι : Type*} {A : ι → Type*} {O : Type*} {E : �
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
-    [G.Continuous] [P.Continuous]
+    [LE V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (hs : ∀ i, Convex ℝ (k i))
     (h_quasiconcave : ∀ a i, QuasiconcaveOn ℝ (k i) <| Subtype.val.extend
-      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0)
+      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm)
+      (fun _ => P.payoff i (G.outcome a)))
     (x : ↑(Set.univ.pi k)) :
     Convex ℝ (bestResponseCorr e G P x) := by
   have hpayoff_le_extend : ∀ y, y ∈ bestResponseCorr e G P x → ∀ i (s : A i),
       P.payoff i (G.outcome (Function.update (decode e x) i s)) ≤ Subtype.val.extend
         ((fun s ↦ P.payoff i (G.outcome (Function.update (decode e x) i s))) ∘ (e i).symm)
-        0 (y i) := fun _ ⟨hyk, hbr⟩ i s => by
+        (fun _ => P.payoff i (G.outcome (decode e x))) (y i) := fun _ ⟨hyk, hbr⟩ i s => by
     rw [extend_eq_payoff e G P (decode e x) i _ (hyk i)]
     exact hbr i s
   intro y₁ hy₁ y₂ hy₂ a b ha hb hab
@@ -202,7 +212,8 @@ lemma bestResponse_isCompact {ι : Type*} {A : ι → Type*} {O : Type*}
     [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)]
     [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [Preorder V] [TopologicalSpace V] [OrderClosedTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [G.Continuous] [P.Continuous]
     (a : (i : ι) → A i) (i : ι) :
     IsCompact { s : A i | ∀ t : A i,
@@ -222,7 +233,8 @@ lemma bestResponseCorr_eq_pi {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [LE V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     (x : ↑(Set.univ.pi k)) :
     bestResponseCorr e G P x = Set.univ.pi (fun i =>
       (fun s : A i => ((e i) s : E i)) '' { s : A i | ∀ t : A i,
@@ -248,7 +260,8 @@ lemma bestResponseCorr_compact {ι : Type*} {A : ι → Type*} {O : Type*} {E : 
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [Preorder V] [TopologicalSpace V] [OrderClosedTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [G.Continuous] [P.Continuous]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (x : ↑(Set.univ.pi k)) :
@@ -274,7 +287,8 @@ lemma isClosed_payoff_le {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι →
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)]
     [∀ i, T2Space (E i)] [∀ i, LocallyConvexSpace ℝ (E i)]
     [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [Preorder V] [TopologicalSpace V] [OrderClosedTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [G.Continuous] [P.Continuous]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (i : ι) (s : A i) :
     IsClosed {p : ↑(Set.univ.pi k) × ↑(Set.univ.pi k) |
@@ -293,7 +307,8 @@ lemma graph_eq_iInter {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Ty
     [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)] [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [LE V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) :
     {p : ↑(Set.univ.pi k) × ↑(Set.univ.pi k) | p.2.val ∈ bestResponseCorr e G P p.1} =
       ⋂ i, ⋂ s, {p : ↑(Set.univ.pi k) × ↑(Set.univ.pi k) |
@@ -311,7 +326,8 @@ lemma bestResponseCorr_isClosed_graph {ι : Type*} {A : ι → Type*} {O : Type*
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)]
     [∀ i, T2Space (E i)] [∀ i, LocallyConvexSpace ℝ (E i)]
     [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [Preorder V] [TopologicalSpace V] [OrderClosedTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [G.Continuous] [P.Continuous]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) :
     IsClosed {p : ↑(Set.univ.pi k) × ((i : ι) → E i) | p.2 ∈ bestResponseCorr e G P p.1} := by
@@ -374,7 +390,8 @@ lemma bestResponseCorr_uhc {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι �
     [∀ i, IsTopologicalAddGroup (E i)] [∀ i, ContinuousSMul ℝ (E i)]
     [∀ i, T2Space (E i)] [∀ i, LocallyConvexSpace ℝ (E i)]
     [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [Preorder V] [TopologicalSpace V] [OrderClosedTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [G.Continuous] [P.Continuous]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) :
     UpperHemicontinuous (bestResponseCorr e G P) :=
@@ -389,7 +406,8 @@ lemma fixed_point_is_nash {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι �
     [Finite ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, TopologicalSpace (E i)] [TopologicalSpace O]
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [LE V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (x : ↑(Set.univ.pi k))
     (hfp : x.val ∈ bestResponseCorr e G P x) :
@@ -404,10 +422,14 @@ lemma fixed_point_is_nash {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι �
 end Helpers
 
 /-- A continuous game with finitely many players and nonempty compact convex action sets admits a
-pure Nash equilibrium when each own-action payoff is quasiconcave. Action spaces may be represented
-by homeomorphisms into locally convex vector spaces. -/
+pure Nash equilibrium when payoffs take values in a linearly ordered space with closed order and
+each own-action payoff is quasiconcave. Action spaces may be represented by homeomorphisms into
+locally convex real vector spaces. The extension uses the incumbent payoff outside each action set;
+`quasiconcaveOn_subtype_val_extend_iff` makes the quasiconcavity hypothesis independent of these
+outside values, so the payoff space need not have a zero. -/
 public theorem OutcomeGame.exists_isNash_of_quasiconcaveOn
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+    [LinearOrder V] [TopologicalSpace V] [OrderClosedTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [TopologicalSpace O] [G.Continuous] [P.Continuous]
     [Finite ι] [DecidableEq ι]
@@ -416,7 +438,8 @@ public theorem OutcomeGame.exists_isNash_of_quasiconcaveOn
     [∀ i, LocallyConvexSpace ℝ (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (hs : ∀ i, Convex ℝ (k i))
     (h_quasiconcave : ∀ a i, QuasiconcaveOn ℝ (k i) <| Subtype.val.extend
-      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0) :
+      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm)
+      (fun _ => P.payoff i (G.outcome a))) :
     ∃ a, (StrategicGame.ofOutcome G P).IsNash a := by
   obtain ⟨x_star, hx_star⟩ := kakutaniGlicksbergFan (E := (i : ι) → E i) (k := Set.univ.pi k)
     (isCompact_univ_pi fun i => isCompact_ki e i)
@@ -440,7 +463,7 @@ noncomputable def toWeakDualContinuousMap_homeomorph {α : Type*} [TopologicalSp
 /-- The expected payoff for player `i` with mixed strategy `μ` equals a weak dual evaluation
 `(toWeakDualContinuousMap μ)(φ)` for an appropriate `φ : C(A i, ℝ)`. -/
 lemma payoff_eq_eval_weakDual {ι : Type*} {A : ι → Type*} {O : Type*}
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O) [Fintype ι] [DecidableEq ι]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O ℝ) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
@@ -476,7 +499,7 @@ lemma payoff_eq_eval_weakDual {ι : Type*} {A : ι → Type*} {O : Type*}
 /-- The `Function.extend` of the payoff via `Subtype.val` agrees with the weak dual evaluation on
 the range of `toWeakDualContinuousMap`. -/
 lemma extend_payoff_eq_eval {ι : Type*} {A : ι → Type*} {O : Type*}
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O) [Fintype ι] [DecidableEq ι]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O ℝ) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
@@ -488,13 +511,15 @@ lemma extend_payoff_eq_eval {ι : Type*} {A : ι → Type*} {O : Type*}
         continuous_const.update _ continuous_diracProba⟩
     ∀ v ∈ Set.range (toWeakDualContinuousMap (α := A i)), (Subtype.val.extend
       ((fun s ↦ P.expected.payoff i (G.mixed.outcome (Function.update a i s))) ∘
-        toWeakDualContinuousMap_homeomorph.symm) 0) v = v φ := by
+        toWeakDualContinuousMap_homeomorph.symm)
+        (fun _ => P.expected.payoff i (G.mixed.outcome a))) v = v φ := by
   intro φ v ⟨μ, hμ⟩
   subst hμ
   simp only [Function.comp_def]
   have hextend_payoff := Subtype.val_injective.extend_apply
     ((fun s ↦ P.expected.payoff i (G.mixed.outcome (Function.update a i s))) ∘
-      toWeakDualContinuousMap_homeomorph.symm) 0 ⟨toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
+      toWeakDualContinuousMap_homeomorph.symm)
+        (fun _ => P.expected.payoff i (G.mixed.outcome a)) ⟨toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩
   simp only [Function.comp_def] at hextend_payoff
   have hsymm : toWeakDualContinuousMap_homeomorph.symm ⟨toWeakDualContinuousMap μ, ⟨μ, rfl⟩⟩ = μ :=
     toWeakDualContinuousMap_injective <| congrArg Subtype.val <| by
@@ -509,7 +534,7 @@ lemma extend_payoff_eq_eval {ι : Type*} {A : ι → Type*} {O : Type*}
 /-- The expected payoff, extended to the weak dual, is quasiconcave on the range of
 `toWeakDualContinuousMap`. -/
 lemma payoff_quasiconcave {ι : Type*} {A : ι → Type*} {O : Type*}
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O) [Fintype ι] [DecidableEq ι]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O ℝ) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
@@ -518,7 +543,8 @@ lemma payoff_quasiconcave {ι : Type*} {A : ι → Type*} {O : Type*}
     QuasiconcaveOn ℝ (Set.range (toWeakDualContinuousMap (α := A i)))
       (Subtype.val.extend
         ((fun s ↦ P.expected.payoff i (G.mixed.outcome (Function.update a i s))) ∘
-          toWeakDualContinuousMap_homeomorph.symm) 0) := by
+          toWeakDualContinuousMap_homeomorph.symm)
+        (fun _ => P.expected.payoff i (G.mixed.outcome a))) := by
   have hrange_convex := convex_range_toWeakDualContinuousMap (α := A i)
   have hextend_eq_eval := extend_payoff_eq_eval G P a i
   let φ : C(A i, ℝ) := ⟨(fun μ ↦ P.expected.payoff i (G.mixed.outcome
@@ -534,7 +560,7 @@ end Helpers
 /-- Any game with nonempty compact metrizable action spaces and continuous payoff functions admits
 a mixed Nash equilibrium. -/
 public theorem OutcomeGame.exists_isNash_of_isCompact {ι : Type*} {A : ι → Type*} {O : Type*}
-    (G : OutcomeGame ι A O) (P : PayoffStructure ι O) [Fintype ι] [DecidableEq ι]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O ℝ) [Fintype ι] [DecidableEq ι]
     [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O] [∀ i, BorelSpace (A i)] [BorelSpace O]
@@ -551,7 +577,8 @@ public theorem OutcomeGame.exists_isNash_of_isCompact {ι : Type*} {A : ι → T
 
 /-- Any finite game (i.e. any game with finitely many players and finite action spaces) admits a
 mixed Nash equilibrium. -/
-public theorem OutcomeGame.exists_isNash_of_finite (G : OutcomeGame ι A O) (P : PayoffStructure ι O)
+public theorem OutcomeGame.exists_isNash_of_finite (G : OutcomeGame ι A O)
+    (P : PayoffStructure ι O ℝ)
     [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
     [∀ i, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O] [G.Measurable]
     [Fintype ι] [DecidableEq ι] [∀ i, Finite (A i)] [∀ i, Nonempty (A i)] [Finite O] :
@@ -568,8 +595,12 @@ public theorem OutcomeGame.exists_isNash_of_finite (G : OutcomeGame ι A O) (P :
 
 namespace StrategicGame
 
-/-- Compact convex action sets and quasiconcave own-action payoffs admit a pure Nash equilibrium. -/
-theorem exists_isNash_of_quasiconcaveOn (G : StrategicGame ι A)
+/-- Compact convex action sets and continuous quasiconcave own-action payoffs in a linearly ordered
+space with closed order admit a pure Nash equilibrium. The extension uses the incumbent payoff
+outside each action set; `quasiconcaveOn_subtype_val_extend_iff` makes the quasiconcavity
+hypothesis independent of these outside values, so the payoff space need not have a zero. -/
+theorem exists_isNash_of_quasiconcaveOn (G : StrategicGame ι A V)
+    [LinearOrder V] [TopologicalSpace V] [OrderClosedTopology V]
     [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
     [G.Continuous] [Finite ι] [DecidableEq ι]
     {E : ι → Type*} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)] [∀ i, TopologicalSpace (E i)]
@@ -577,12 +608,12 @@ theorem exists_isNash_of_quasiconcaveOn (G : StrategicGame ι A)
     [∀ i, LocallyConvexSpace ℝ (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (hs : ∀ i, Convex ℝ (k i))
     (h_quasiconcave : ∀ a i, QuasiconcaveOn ℝ (k i) <| Subtype.val.extend
-      ((fun s ↦ G.payoff i (Function.update a i s)) ∘ (e i).symm) 0) :
+      ((fun s ↦ G.payoff i (Function.update a i s)) ∘ (e i).symm) (fun _ => G.payoff i a)) :
     ∃ a, G.IsNash a := by
   exact G.outcomeGame.exists_isNash_of_quasiconcaveOn G.payoffStructure e hs h_quasiconcave
 
 /-- Continuous payoffs on nonempty compact metrizable action spaces admit a mixed equilibrium. -/
-theorem exists_isMixedNash_of_isCompact (G : StrategicGame ι A)
+theorem exists_isMixedNash_of_isCompact (G : StrategicGame ι A ℝ)
     [Fintype ι] [DecidableEq ι] [∀ i, TopologicalSpace (A i)]
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [∀ i, BorelSpace (A i)] [G.Continuous] :
@@ -592,17 +623,17 @@ theorem exists_isMixedNash_of_isCompact (G : StrategicGame ι A)
   exact G.outcomeGame.exists_isNash_of_isCompact G.payoffStructure
 
 /-- Every finite strategic game with nonempty discrete measurable action spaces has a mixed Nash
-equilibrium in probability measures. -/
-theorem exists_isMixedNash_of_finite (G : StrategicGame ι A) [Fintype ι] [DecidableEq ι]
-    [∀ i, MeasurableSpace (A i)] [∀ i, DiscreteMeasurableSpace (A i)]
-    [∀ i, Finite (A i)] [∀ i, Nonempty (A i)] : ∃ σ, G.IsMixedNash σ := by
+equilibrium. -/
+theorem exists_isMixedNash_of_finite (G : StrategicGame ι A ℝ) [Fintype ι] [DecidableEq ι]
+    [∀ i, Finite (A i)] [∀ i, Nonempty (A i)] [∀ i, MeasurableSpace (A i)]
+    [∀ i, DiscreteMeasurableSpace (A i)] : ∃ σ, G.IsMixedNash σ := by
   change ∃ σ, G.mixedExtension.IsNash σ
   rw [mixedExtension_eq_ofOutcome]
   exact G.outcomeGame.exists_isNash_of_finite G.payoffStructure
 
-/-- Every finite strategic game with nonempty action spaces has a Nash equilibrium in finite
+/-- Every finite strategic game with nonempty action spaces has an equilibrium in finite
 probability weights. -/
-theorem exists_isFiniteMixedNash (G : StrategicGame ι A) [Fintype ι] [DecidableEq ι]
+theorem exists_isFiniteMixedNash (G : StrategicGame ι A ℝ) [Fintype ι] [DecidableEq ι]
     [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)] : ∃ σ, G.IsFiniteMixedNash σ := by
   let _ i : MeasurableSpace (A i) := ⊤
   have hdiscrete_measurable i : DiscreteMeasurableSpace (A i) := ⟨fun _ ↦ trivial⟩

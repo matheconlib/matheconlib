@@ -2,8 +2,10 @@ import AuctionlibTest.GameTheory.ConditionalBeliefs
 import AuctionlibTest.GameTheory.FiniteBayesian
 import AuctionlibTest.GameTheory.Integrability
 import AuctionlibTest.GameTheory.MeasurableBayesian
+import AuctionlibTest.GameTheory.OrderedPayoffs
 import AuctionlibTest.GameTheory.Strategic
 import AuctionlibTest.GameTheory.Transport
+import AuctionlibTest.GameTheory.VectorPayoffs
 import AuctionlibTest.Manual.HandsOn
 import AuctionlibTest.Mechanism.Core
 import AuctionlibTest.Pricing.Compatibility
