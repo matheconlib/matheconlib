@@ -4,27 +4,17 @@
 
 While a formal economic library can guarantee mathematical correctness through the Lean kernel, _economic_ correctness—that is, the faithfulness of the library's theorems and definitions to the concepts they purport to represent—must be enforced through careful and consistent design. A shared design framework gives contributors a common way to evaluate the abstractions in the library and helps users understand how the parts of the library fit together.
 
-The design principles described herein give the library a shared language in both form (the structure and shape of declarations) and in substance (the primitives those declarations share). Consistency in both of these domains helps to guarantee correctness by encouraging the reuse of fundamental concepts and constraining the "degrees of freedom" of contributors when defining new concepts or proving new theorems.
+The design principles described herein give the library a shared language in both form (the structure and shape of declarations) and in substance (the primitives those declarations share). Consistency in both of these domains helps to guarantee correctness by encouraging the reuse of fundamental concepts and constraining the "degrees of freedom" of contributors when defining new concepts or proving new theorems. It also makes results easier for others to combine and build upon.
 
 ## Status and use
 
-This is a living document and will be revised as the library develops and the
-project learns from new applications. The principles are strong defaults for
-new code and separately approved refactors, not rigid rules. A departure may be
-appropriate when its reason is stated clearly. The principles do not by
-themselves deprecate an existing API or authorize a change to a public
-declaration.
+This is a living document and will be revised as the library develops and the project learns from new applications. The principles are strong defaults for new code and separately approved refactors, not rigid rules. A departure may be appropriate, especially when its reason can be stated clearly. The principles do not by themselves deprecate an existing API or authorize a change to a public declaration.
 
-Authoring requirements live in [`CONTRIBUTING.md`](CONTRIBUTING.md), review
-policy lives in [`docs/REVIEWING.md`](docs/REVIEWING.md), and operational review
-procedures live in [`docs/TOOLING.md`](docs/TOOLING.md). The Lean fragments in
-this document express intended design directions, but they are not necessarily
-declarations currently provided by `auctionlib`. Exact API changes still
-require their own design and implementation review.
+Authoring requirements live in [`CONTRIBUTING.md`](CONTRIBUTING.md), review policy lives in [`docs/REVIEWING.md`](docs/REVIEWING.md), and operational review procedures live in [`docs/TOOLING.md`](docs/TOOLING.md). The Lean fragments in this document express intended design directions, but they are not necessarily declarations currently provided by `auctionlib`. Exact API changes still require their own design and implementation review.
 
 ## Design principles
 
-The principles address semantic mismatch, unnecessary specificity, exposed implementation details, and duplicated concepts. They apply both to foundational definitions and to the statements and organization of theorems built on them.
+These principles address semantic mismatch, unnecessary specificity, exposed implementation details, and duplicated concepts. They apply both to foundational definitions and to the statements and organization of theorems built on them.
 
 ### P1. Prefer minimally constitutive definitions
 
@@ -37,25 +27,13 @@ For every field or hypothesis, ask whether removing it would admit an object tha
 
 When a term has several established meanings, state the intended scope in the docstring and distinguish the variants explicitly. Minimality is relative to that scope; it does not require one definition to accommodate every use of the term. Scope decisions should also be reflected in module organization and naming. Variants of a term with different scopes are siblings, each in its own namespace, with the scope visible in the name or namespace.
 
-The same discipline applies to theorem statements. A theorem's name,
-documentation, and advertised scope must match what its formal statement
-establishes. A useful algebraic identity may be an important helper without
-being the economic proposition it helps to prove, and the two should be labeled
-accordingly. Every hypothesis should be load-bearing. Stronger assumptions
-should enter at the first theorem or layer that needs them, often through a
-specialized corollary rather than the underlying definition or general result.
+The same discipline applies to theorem statements. A theorem's name, documentation, and advertised scope must match what its formal statement establishes. A useful algebraic identity may be an important helper without being the economic proposition it helps to prove, and the two should be labeled accordingly. Every hypothesis should be load-bearing. Stronger assumptions should enter at the first theorem or layer that needs them. When a general result remains useful, state the stronger application as a specialized corollary rather than burdening the underlying definition or general theorem.
 
 #### Example
 
 Consider a deterministic mechanism: Agents choose actions and the mechanism selects an outcome and monetary transfers. Its constitutive data can be expressed as follows:
 
-> **Note.** The prior-free generic mechanism used in these examples is the
-> project's active architectural direction. Its detailed design is recorded in
-> [issue #67](https://github.com/AxiomMath/auctionlib/issues/67), with the initial
-> migration implemented in
-> [PR #68](https://github.com/AxiomMath/auctionlib/pull/68). The principles here
-> explain the intended architecture; the exact declarations remain subject to
-> review until that PR lands.
+> **Note.** The prior-free generic mechanism used in these examples is the project's active architectural direction. Its detailed design is recorded in [issue #67](https://github.com/AxiomMath/auctionlib/issues/67), with the initial migration implemented in [PR #68](https://github.com/AxiomMath/auctionlib/pull/68). The principles here explain the intended architecture; the exact declarations remain subject to review until that PR is finalized.
 
 ```lean
 /-- A profile assigning one value of type `X i` to each agent `i`. -/
@@ -69,20 +47,17 @@ structure Mechanism (I : Type*) (A : I → Type*) (O : Type*) where
   transfer : I → Profile A → ℝ
 ```
 
-Note that the usual regularity conditions that accompany "well-behaved" instances are not present. For example, there is no measurability condition, since measurability becomes relevant only when an outcome or transfer is integrated in a probabilistic model. Efficiency, dominant-strategy incentive compatibility, and ex-post individual rationality are meaningful without a measurable space or a prior. Requiring measurable rules in this general definition would exclude deterministic mechanisms for a condition unrelated to those questions.
+Note that the usual regularity conditions that accompany "well-behaved" instances are not present. For example, there is no measurability condition, as measurability becomes relevant only when an outcome or transfer is integrated in a probabilistic model. Efficiency, dominant-strategy incentive compatibility, and ex-post individual rationality are meaningful without a measurable space or a prior; conversely, requiring measurable rules in the general definition would exclude meaningful deterministic mechanisms.
 
 Now consider a single-good auction, which specializes this mechanism with outcomes that award one indivisible good. If the outcome type is an allocation vector `I → Bool` with no further condition, the definition admits mechanisms that award the good to two bidders at once. No economist would call that a single-good auction, so a constitutive condition is missing. Taking `O := Option I` restores sufficiency by making the infeasible outcomes unrepresentable, since an outcome names a recipient or none. An allocation-vector representation is also legitimate when an explicit feasibility condition restricts it to at most one recipient; this example does not require every auction to use `Option I`.
 
 ### P2. Generalize to the most useful shared level, then specialize
 
-When several concepts follow the same rule, define that rule once at the most general useful level, then obtain the familiar concepts by supplying the relevant objects and relations. For theorems, prove the shared result in that general language using only the assumptions needed there, then derive stronger or application-specific statements as corollaries.
+When several concepts follow the same rule, define that rule once at the most general useful level, then obtain the familiar concepts by supplying the relevant objects and relations. For theorems, prove the shared result in the general language using only the assumptions needed there, then derive stronger or application-specific statements as corollaries.
 
-When deciding the level of generality, consider that a generalization should support an identifiable use beyond the case that prompted it or simplify the dependency structure by letting one proof replace several. A more general formulation being possible is not by itself a reason to introduce it.
+When deciding the level of generality, consider whether a generalization supports an identifiable use beyond the case that prompted it, captures a substantive extension, or simplifies the dependency structure by letting one proof replace several. Extending a single-unit result to multiple units, for example, can be valuable in its own right; the mere possibility of stating something more generally is not by itself a reason to introduce another public abstraction.
 
-A named abstraction is expensive: it becomes part of the interface that users
-must discover and maintainers must support. Introduce one when it has a second
-consumer, supports a genuinely shared theorem, or materially simplifies the
-dependency structure. Until then, prefer keeping a one-use expression local.
+A named abstraction is expensive: it becomes part of the interface that users must discover and maintainers must support. Introduce one when it has a second consumer, supports a genuinely shared theorem, or materially simplifies the dependency structure. A substantively broader concept with a clear intended application may also justify one. Otherwise, prefer keeping a one-use expression local.
 
 This gives different parts of the library a common foundation, moving responsibility for ensuring that higher-level abstractions are expressions of the same underlying concept from the designer to the Lean kernel. Lean is then able to guarantee that general results apply directly to every specialization and that maps between specializations are able to transport those results. Equivalence theorems can focus on the relationship between the specializations rather than reconcile independent definitions.
 
@@ -92,7 +67,7 @@ This also suggests a guideline for module organization. A theorem belongs with t
 
 In its general form, a game-theoretic equilibrium problem comprises (1) the possible profiles, (2) who can deviate, (3) which alternative profiles are considered deviations by an actor, and (4) how that actor evaluates a profile.
 
-P2 suggests that one should define this basic structure once: A profile is an equilibrium when no allowed deviation gives the deviator a higher value.
+P2 suggests that one should define this basic structure once: _A profile is an equilibrium when no allowed deviation gives the deviator a higher value_.
 
 ```lean
 /-- Profiles evaluated by deviators with specified admissible deviations. -/
@@ -118,29 +93,17 @@ Applying P2 provides a shared structure such that the deviation is a named field
 
 ### P3. Compose high-level concepts from library primitives
 
-Compose high-level economic concepts through shared library primitives rather than by assembling the same ingredients afresh in each application. When a concept is built from shared parts, it naturally interoperates with everything else built from them and is able to use lemmas proved elsewhere in the library. A theorem about a quasilinear agent's expected payoff, for example, should be stated in terms of the library's mechanism, environment, and probability law, so that it applies to every model expressed in those terms.
+To the greatest extent possible, compose high-level economic concepts through shared library primitives rather than by assembling the same ingredients afresh in each application. When a concept is built from shared parts, it naturally interoperates with everything else built from them and is able to use lemmas proved elsewhere in the library. A theorem about a quasilinear agent's expected payoff, for example, should be stated in terms of the library's mechanism, environment, and probability law, so that it applies to every model expressed in those terms.
 
-Develop one integrated library rather than parallel foundations for microeconomics,
-macroeconomics, and econometrics. As a strong default for future code,
-project-owned declarations should share one top-level Lean namespace, with
-nested namespaces for organization; no particular second-level division by
-field is prescribed. Define shared economic objects once and reuse them across
-applications. Specialized modules may add distinct concepts or explicit
-bridges, but should not duplicate a foundation merely because an application
-belongs to another field. This direction does not itself rename existing
-declarations; any migration requires separate review.
+Develop one integrated library rather than parallel foundations for microeconomics, macroeconomics, and econometrics. As a strong default for future code, project-owned declarations should share one top-level Lean namespace, with nested namespaces for organization; no particular second-level division by field is prescribed. Define shared economic objects once and reuse them across applications. Specialized modules may add distinct concepts or explicit bridges, but should not duplicate a foundation merely because an application belongs to another field. This direction does not itself rename existing declarations; any migration requires separate review.
 
 Carrier types—the agents, types, actions, and outcomes—should be explicit parameters of a primitive rather than fields of it. If a mechanism and an environment each carried their own agent type as a field, combining them would require a hypothesis that the two fields are equal and every reference to an agent would be cast across that equality. As parameters, both objects mention the same `I`, and the type checker identifies them with no proof obligation.
 
 Some carriers necessarily depend on ambient structure: a `ProbabilityMeasure α` depends on a measurable space on `α`. In that case the API should establish one canonical ambient instance and avoid accepting a competing structure on a derived carrier such as a profile space. This prevents instance-sensitive types and artificial restrictions on results that do not use the supporting structure.
 
-The set of primitives will grow with the library. Extract a reusable component
-when it has a second consumer, supports a theorem shared across applications,
-or separates an optional condition from a stable underlying object. That a
-component can be named or interpreted on its own is evidence of possible reuse,
-but is not by itself a reason to add it to the public vocabulary.
+The set of primitives will grow with the library. Extract a reusable component when it has a second consumer, supports a theorem shared across applications, or separates an optional condition from a stable underlying object. That a component can be named or interpreted on its own is evidence of possible reuse, but is not by itself a reason to add it to the public vocabulary.
 
-Reuse Mathlib directly for mathematical concepts it already represents adequately. Introduce an economic primitive when it contributes economic semantics, an interface, or a distinct collection of laws, not merely a new name for an existing construct. When a mathematical concept has a different established name in economics, keep the economic name as a thin alias or notation over the Mathlib definition. An economist-facing name can be useful even when it adds no mathematical structure, but it must not require an independently maintained definition or a duplicate theorem family.
+Reuse Mathlib directly for mathematical concepts it already represents adequately. Introduce an economic primitive when it contributes economic semantics, an interface, or a distinct collection of laws, not merely a new name for an existing construct. When a mathematical concept has a different established name in economics, keep the economic name as a thin alias or notation wrapper over the Mathlib definition. An economics-facing name can be useful even when it adds no mathematical structure, but it should not require an independently maintained definition or a duplicate theorem family.
 
 #### Example
 
@@ -204,13 +167,7 @@ A consumer that computes with a particular price takes `s : UnitPriceSpec quanti
 
 Incentive compatibility illustrates the second decision. It is a property of a particular menu or mechanism, so establishing it is normally part of the mathematical argument. Its transport rules depend on the deviation domain, equilibrium notion, and conditions such as surjectivity or domination, so they do not form a small background inference system. In the design illustrated here, one should therefore define `IsIC` as an ordinary predicate and pass IC hypotheses explicitly rather than asking typeclass search to prove them.
 
-> **Current-library note.** The proposed general affine-menu foundation follows
-> the ordinary-predicate default. `SingleParameterProblem` retains its IC class
-> chain, which supplies automatic implications and forward transport through
-> `reduce`. Replacing classes with predicates and expressing the IC flavors as
-> one optimality condition over deviation sets are separate, undecided
-> migrations. Each requires its own design issue and an analysis of downstream
-> call sites and API pins; P4 does not change the existing API.
+> **Current-library note.** The proposed general affine-menu foundation follows the ordinary-predicate default. `SingleParameterProblem` retains its IC class chain, which supplies automatic implications and forward transport through `reduce`. Replacing classes with predicates and expressing the IC flavors as one optimality condition over deviation sets are separate, undecided migrations. Each requires its own design issue and an analysis of downstream call sites and API pins; P4 does not change the existing API.
 
 ### P5. Make changes of representation explicit
 
@@ -250,30 +207,15 @@ Likewise, ex-ante incentive constraints can compare expected utilities without s
 
 In general, prefer formulations that do not require arbitrary choices on null events when they express the intended economic claim. When a claim requires beliefs or incentives at every type, supply the relevant belief specification explicitly and distinguish it from an almost-everywhere or ex-ante formulation.
 
-### P7 (provisional). Provide a usable interface, not only a general definition
+### P7. Provide a usable interface, not only a general definition
 
-A reusable abstraction should provide the lemmas and constructions needed to use it without repeatedly unfolding its implementation. Generality is valuable when familiar applications can recover their natural statements through a small, predictable interface.
+A reusable abstraction should, whenever possible, provide the lemmas and constructions needed to use it without repeatedly unfolding its implementation. Generality is valuable when familiar applications can recover their natural statements through a small, predictable interface.
 
-Providing an interface does not mean maximizing the number of public
-declarations. Expose the semantic evaluation, identity, composition,
-economics-relevant characterization, extensionality, and bridge lemmas that
-make ordinary downstream use natural. Do not publish projection or
-definitional-equality lemmas merely because they are easy to state. A theorem
-proved by `rfl` may nevertheless be valuable when it records a genuine
-semantic contract of a construction.
+Providing an interface does not mean maximizing the number of public declarations. Expose the semantic evaluation, identity, composition, economics-relevant characterization, extensionality, and bridge lemmas that make ordinary downstream use natural. Do not publish projection or definitional-equality lemmas merely because they are easy to state. A theorem proved by `rfl` may nevertheless be valuable when it records a genuine semantic contract of a construction.
 
-Choose `@[simp]` rules deliberately so that routine economic expressions have
-a stable normal form. A lemma should not be marked `@[simp]` when it does not
-advance simplification toward that form or when it creates competing rewrite
-directions.
+Choose `@[simp]` rules deliberately so that routine economic expressions have a stable normal form. A lemma should not be marked `@[simp]` when it does not advance simplification toward that form or when it creates competing rewrite directions.
 
-Downstream proofs should ordinarily depend on this interface rather than on
-the arrangement of fields or the implementation of supporting definitions.
-Test intended clients through the documented umbrella import: importing a leaf
-or implementation module directly can conceal a missing export or an
-unintended public dependency. Elaborator behavior, typeclass search,
-simplification, and proof-checking cost are part of whether an abstraction is
-usable.
+Downstream proofs should ordinarily depend on this interface rather than on the arrangement of fields or the implementation of supporting definitions. Test intended clients through the documented umbrella import: importing a leaf or implementation module directly can conceal a missing export or an unintended public dependency. Elaborator behavior, typeclass search, simplification, and proof-checking cost are part of whether an abstraction is usable.
 
 This follows Mathlib's guidance to provide API lemmas rather than make consumers depend on unfolding, and to consider performance when changing definitions, instances, or simplification rules.
 
@@ -283,24 +225,11 @@ Defining BIC through truthful equilibrium should be accompanied by a theorem cha
 
 Likewise, `Mechanism.comap` should have evaluation, identity, composition, and appropriate preservation lemmas, so downstream proofs can work with its economic behavior directly.
 
-### P8 (provisional). Validate abstractions with representative instances and boundary cases
+### P8. Validate abstractions with representative instances and boundary cases
 
-A foundational abstraction should be evaluated by constructing representative
-instances and using it to state and prove representative results. An example
-that only constructs the input to a headline theorem establishes that its
-hypotheses are satisfiable, but does not validate the advertised conclusion.
-Apply the theorem and expose its economic content. A definition that appears
-general in isolation may still make ordinary applications difficult or conceal
-unintended restrictions.
+A foundational abstraction should be evaluated by constructing representative instances and using it to state and prove representative results. An example that only constructs the input to a headline theorem establishes that its hypotheses are satisfiable, but does not validate the advertised conclusion. Apply the theorem and expose its economic content. A definition that appears general in isolation may still make ordinary applications difficult or conceal unintended restrictions.
 
-The validation burden should match the generality advertised. A major
-foundation whose value lies in serving different settings should, when
-practical, include both a standard application and a materially different one.
-A small leaf contribution need not add two elaborate examples. Where relevant,
-include boundary cases that distinguish constitutive conditions from theorem
-hypotheses or expose the limits of a transformation. Cross-check an independent
-formula when one is readily available. These examples should be maintained as
-checked clients of the public interface.
+The validation burden should match the generality advertised. A major foundation whose value lies in serving different settings should, whenever practical, include at least one standard application and one materially different use. A small leaf contribution need not add two elaborate examples. Where relevant, include boundary cases that distinguish constitutive conditions from theorem hypotheses or expose the limits of an argument or transformation. Cross-check an independent formula when one is readily available. These examples should be maintained as checked clients of the public interface.
 
 Use small counterexamples to record important limits of implications and representation changes. Examples complement proofs: They help establish that the formal definitions and theorem statements capture the intended concepts.
 
@@ -312,10 +241,7 @@ The affine-menu API should include a case demonstrating why type-dependent devia
 
 ## Illustrative architectural designs
 
-The following examples combine the principles into prospective APIs for
-mechanisms, equilibrium, and single-parameter choice problems. They do not
-duplicate current source documentation; the repository source remains
-authoritative for exact names, fields, and statements.
+The following examples combine the principles into prospective APIs for mechanisms, equilibrium, and single-parameter choice problems. They do not duplicate current source documentation; the repository source remains authoritative for exact names, fields, and statements.
 
 ### Separate mechanisms, environments, and priors
 
@@ -413,10 +339,4 @@ This design applies P1 to keep allocation and distribution assumptions out of th
 
 ## Provenance
 
-Daniel Lyng drafted these principles in the original discussion on
-[issue #60](https://github.com/AxiomMath/auctionlib/issues/60) and developed the
-version imported here in [his design-principles
-gist](https://gist.github.com/danlyng/1fc6bf249436782e1e00b99c3ff6ce5e).
-Comments from Scott Kominers on issue #60 motivated several revisions. Later
-refinements reflect the review practice recorded in
-[issue #72](https://github.com/AxiomMath/auctionlib/issues/72).
+Daniel Lyng (@danlyng) drafted these principles in the original discussion on [issue #60](https://github.com/AxiomMath/auctionlib/issues/60) and developed the version imported here in [his design-principles gist](https://gist.github.com/danlyng/1fc6bf249436782e1e00b99c3ff6ce5e). Comments from Scott Kominers (@scduko) on issue #60 motivated several revisions. Later refinements reflect the review practice recorded in [issue #72](https://github.com/AxiomMath/auctionlib/issues/72).
