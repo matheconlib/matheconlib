@@ -201,9 +201,9 @@ universe u
 
 variable {Action : Type u} (P : SingleParameterProblem Action)
 
-/-- The reduced form is direct. -/
-example : P.reduce.IsDirect :=
-  P.reduce_isDirect
+/-- The reduced form has the identity strategy. -/
+example : P.reduce.HasIdentityStrategy :=
+  P.reduce_hasIdentityStrategy
 
 /-- Reduction is idempotent. -/
 example : P.reduce.reduce = P.reduce :=
@@ -218,7 +218,7 @@ example [SingleParameterProblem.HasTypeDeviationIC P] :
 /-- The headline single-agent revelation principle. -/
 example [SingleParameterProblem.HasTypeDeviationIC P] :
     ∃ D : SingleParameterProblem ℝ,
-      D.IsDirect ∧
+      D.HasIdentityStrategy ∧
       SingleParameterProblem.HasUniversalIC D D.typeInterval ∧
       D.lowestType = P.lowestType ∧
       D.highestType = P.highestType ∧
@@ -227,15 +227,55 @@ example [SingleParameterProblem.HasTypeDeviationIC P] :
       ∀ w : ℝ, D.payment w = P.payment (P.strategy w) :=
   P.revelation_principle
 
-/-- Participation transfers to the reduced form. -/
-example (h : P.IsIndividuallyRational) : P.reduce.IsIndividuallyRational :=
-  P.reduce_isIndividuallyRational h
+/-- Participation holds for the reduced form iff it holds for the original. -/
+example : P.reduce.IsIndividuallyRational ↔ P.IsIndividuallyRational :=
+  P.reduce_isIndividuallyRational
 
-/-- The binding participation constraint at the lowest type transfers too. -/
-example (h : P.HasZeroLowestTypeUtility) :
-    P.reduce.HasZeroLowestTypeUtility :=
-  P.reduce_hasZeroLowestTypeUtility h
+/-- The binding participation constraint at the lowest type: likewise. -/
+example : P.reduce.HasZeroLowestTypeUtility ↔ P.HasZeroLowestTypeUtility :=
+  P.reduce_hasZeroLowestTypeUtility
 
 end Revelation
+
+/-! ## An example: the posted price `1/2` on `[0, 1]` -/
+
+section RevelationPostedPrice
+
+local notation "PP" => SingleParameterProblem.postedPriceProblem 0 1 (1/2)
+
+/-- The revelation principle instantiated at a concrete problem. The direct
+problem it produces has type interval `[0, 1]`, the same allocation and
+utility as the threshold strategy, and collects at report `w` what the
+original rules collect at the action the strategy chooses for `w`. -/
+example :
+    ∃ D : SingleParameterProblem ℝ,
+      D.HasIdentityStrategy ∧
+      SingleParameterProblem.HasUniversalIC D D.typeInterval ∧
+      D.lowestType = 0 ∧
+      D.highestType = 1 ∧
+      D.q = (PP).q ∧
+      D.U = (PP).U ∧
+      ∀ w : ℝ, D.payment w = (PP).payment ((PP).strategy w) :=
+  (PP).revelation_principle
+
+/-- Truthful reporting is incentive compatible in the direct posted-price
+problem, over reports in `[0, 1]`. -/
+example :
+    SingleParameterProblem.HasUniversalIC (PP).reduce (PP).typeInterval :=
+  inferInstance
+
+/-- In the direct problem, a report of `3/4` wins the object. -/
+example : (PP).reduce.q (3/4) = 1 := by
+  simp only [SingleParameterProblem.reduce_q,
+    SingleParameterProblem.postedPriceProblem_q]
+  norm_num
+
+/-- In the direct problem, a report of `1/4` does not. -/
+example : (PP).reduce.q (1/4) = 0 := by
+  simp only [SingleParameterProblem.reduce_q,
+    SingleParameterProblem.postedPriceProblem_q]
+  norm_num
+
+end RevelationPostedPrice
 
 end SingleParameterCompatibility

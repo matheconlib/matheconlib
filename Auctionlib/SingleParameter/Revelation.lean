@@ -18,9 +18,9 @@ strategy on the report, and truthful behavior is the identity strategy.
 
 ## Main definitions and results
 
-* `SingleParameterProblem.IsDirect`: a real-action problem is *direct* when
-  actions are interpreted as reported types and its strategy is truthful
-  reporting, i.e. the identity.
+* `SingleParameterProblem.HasIdentityStrategy`: a real-action problem whose
+  strategy is the identity, i.e. whose actions are reported types and whose
+  bundled strategy is truthful reporting.
 * `SingleParameterProblem.instHasUniversalICReduce`: if the original strategy
   is type-deviation incentive compatible, then in the reduced problem
   truthful reporting is universally incentive compatible over all
@@ -32,12 +32,10 @@ strategy on the report, and truthful behavior is the identity strategy.
   the on-strategy payment, and the utility.
 * `SingleParameterProblem.reduce_isIndividuallyRational`,
   `SingleParameterProblem.reduce_hasZeroLowestTypeUtility`: participation
-  transfers to the reduced form.
+  holds for the reduced form if and only if it holds for the original.
 
 The transfers of envelope and type-deviation IC between a problem and its
-reduced form are provided by `Auctionlib.SingleParameter.IC`. The multi-agent
-Bayesian version of the revelation principle is in
-`Auctionlib.Auction.Revelation`.
+reduced form are provided by `Auctionlib.SingleParameter.IC`.
 -/
 
 @[expose] public section
@@ -50,15 +48,18 @@ namespace SingleParameterProblem
 
 variable {Action : Type u} (P : SingleParameterProblem Action)
 
-/-! ## Direct problems -/
+/-! ## The identity strategy -/
 
-/-- A real-action problem is **direct** when its actions are interpreted as
-reported types and its strategy is truthful reporting, i.e. the identity. -/
-def IsDirect (D : SingleParameterProblem ℝ) : Prop :=
+/-- A real-action problem **has the identity strategy** when its strategy is
+truthful reporting: actions are interpreted as reported types, and the bundled
+strategy reports the type itself. This is a property of the strategy, not of
+the reporting space; the reduced form is direct in the latter sense by
+construction. -/
+def HasIdentityStrategy (D : SingleParameterProblem ℝ) : Prop :=
   D.strategy = id
 
-/-- The reduced form of any problem is direct. -/
-theorem reduce_isDirect : P.reduce.IsDirect :=
+/-- The reduced form of any problem has the identity strategy. -/
+theorem reduce_hasIdentityStrategy : P.reduce.HasIdentityStrategy :=
   rfl
 
 /-- Reduction is idempotent: the reduced form of a reduced problem is
@@ -82,16 +83,16 @@ instance instHasUniversalICReduce
 
 /-! ## Preservation of participation -/
 
-/-- Reduction preserves individual rationality. -/
-theorem reduce_isIndividuallyRational (h : P.IsIndividuallyRational) :
-    P.reduce.IsIndividuallyRational :=
-  h
+/-- Reduction preserves individual rationality, in both directions. -/
+theorem reduce_isIndividuallyRational :
+    P.reduce.IsIndividuallyRational ↔ P.IsIndividuallyRational :=
+  Iff.rfl
 
 /-- Reduction preserves the binding participation constraint at the lowest
-type. -/
-theorem reduce_hasZeroLowestTypeUtility (h : P.HasZeroLowestTypeUtility) :
-    P.reduce.HasZeroLowestTypeUtility :=
-  h
+type, in both directions. -/
+theorem reduce_hasZeroLowestTypeUtility :
+    P.reduce.HasZeroLowestTypeUtility ↔ P.HasZeroLowestTypeUtility :=
+  Iff.rfl
 
 /-! ## The revelation principle -/
 
@@ -110,14 +111,14 @@ reduced form — such that:
    collect at the action `strategy w`. -/
 theorem revelation_principle [HasTypeDeviationIC P] :
     ∃ D : SingleParameterProblem ℝ,
-      D.IsDirect ∧
+      D.HasIdentityStrategy ∧
       HasUniversalIC D D.typeInterval ∧
       D.lowestType = P.lowestType ∧
       D.highestType = P.highestType ∧
       D.q = P.q ∧
       D.U = P.U ∧
       ∀ w : ℝ, D.payment w = P.payment (P.strategy w) :=
-  ⟨P.reduce, P.reduce_isDirect, instHasUniversalICReduce, rfl, rfl,
+  ⟨P.reduce, P.reduce_hasIdentityStrategy, instHasUniversalICReduce, rfl, rfl,
     P.reduce_q, P.reduce_U, fun _ => rfl⟩
 
 end SingleParameterProblem
