@@ -3,6 +3,7 @@ module
 import Auctionlib.ValueDistribution.PostedPriceFirstOrder
 import Auctionlib.ValueDistribution.PostedPriceOptimality
 import Auctionlib.ValueDistribution.Uniform
+import Auctionlib.ValueDistribution.UniformPricing
 import Mathlib.Probability.Distributions.Cauchy
 import Mathlib.Probability.UniformOn
 
@@ -19,6 +20,7 @@ noncomputable section
 
 open MeasureTheory Set
 open SingleParameterProblem
+open ValueDistribution
 
 namespace ValueDistributionExamples
 
@@ -108,6 +110,101 @@ private lemma uniformUnitIntervalDistribution_isMaxOn_sellerProfit_half :
     exact ValueDistribution.uniformInterval_supported 0 1 (by norm_num)
   case hcutoff =>
     norm_num
+
+/-- The uniform-pricing theorem agrees with the earlier virtual-surplus
+argument in the interior `r = 0` case. -/
+example :
+    ValueDistribution.uniformOptimalPrice 0 1 0 = (1 : ℝ) / 2 := by
+  norm_num [ValueDistribution.uniformOptimalPrice]
+
+example :
+    IsMaxOn
+      (fun price ↦
+        uniformUnitIntervalDistribution.sellerProfit
+          (postedPriceProblem 0 1 price) 0 0)
+      (Icc 0 1) ((1 : ℝ) / 2) := by
+  have hmax := ValueDistribution.isMaxOn_sellerProfit_uniformInterval 0 1
+    (by norm_num) 0 0
+  rw [show ValueDistribution.uniformOptimalPrice 0 1 0 = (1 : ℝ) / 2 by
+    norm_num [ValueDistribution.uniformOptimalPrice]] at hmax
+  simpa only [uniformUnitIntervalDistribution] using hmax
+
+/-- Low continuation value makes selling at the lower endpoint optimal;
+high continuation value makes retaining the object optimal. -/
+example : ValueDistribution.uniformOptimalPrice 0 1 (-2) = 0 := by
+  norm_num [ValueDistribution.uniformOptimalPrice]
+
+example : ValueDistribution.uniformOptimalPrice 0 1 2 = 1 := by
+  norm_num [ValueDistribution.uniformOptimalPrice]
+
+example :
+    IsMaxOn
+      (fun price ↦
+        uniformUnitIntervalDistribution.sellerProfit
+          (postedPriceProblem 0 1 price) (-2) 3)
+      (Icc 0 1) 0 := by
+  have hmax := ValueDistribution.isMaxOn_sellerProfit_uniformInterval 0 1
+    (by norm_num) (-2) 3
+  rw [show ValueDistribution.uniformOptimalPrice 0 1 (-2) = 0 by
+    norm_num [ValueDistribution.uniformOptimalPrice]] at hmax
+  simpa only [uniformUnitIntervalDistribution] using hmax
+
+example :
+    IsMaxOn
+      (fun price ↦
+        uniformUnitIntervalDistribution.sellerProfit
+          (postedPriceProblem 0 1 price) 2 3)
+      (Icc 0 1) 1 := by
+  have hmax := ValueDistribution.isMaxOn_sellerProfit_uniformInterval 0 1
+    (by norm_num) 2 3
+  rw [show ValueDistribution.uniformOptimalPrice 0 1 2 = 1 by
+    norm_num [ValueDistribution.uniformOptimalPrice]] at hmax
+  simpa only [uniformUnitIntervalDistribution] using hmax
+
+/-- At the lower boundary every buyer purchases, so continuation value
+does not enter the realized seller payoff. -/
+example :
+    uniformUnitIntervalDistribution.sellerProfit
+        (postedPriceProblem 0 1 0) (-2) 3 = -3 := by
+  rw [uniformUnitIntervalDistribution,
+    ValueDistribution.sellerProfit_uniformInterval 0 1 (by norm_num)
+      0 (-2) 3 (by norm_num)]
+  norm_num
+
+/-- At the upper boundary an atomless buyer almost surely does not purchase. -/
+example :
+    uniformUnitIntervalDistribution.sellerProfit
+        (postedPriceProblem 0 1 1) 2 3 = -1 := by
+  rw [uniformUnitIntervalDistribution,
+    ValueDistribution.sellerProfit_uniformInterval 0 1 (by norm_num)
+      1 2 3 (by norm_num)]
+  norm_num
+
+/-- At an interior optimum for any uniform interval, the generic first-order
+theorem gives virtual value equal to continuation value. -/
+example (a b continuationValue acquisitionCost : ℝ) (hab : a < b)
+    (hpeak : (b + continuationValue) / 2 ∈ Ioo a b) :
+    (ValueDistribution.uniformInterval a b hab).virtualValue
+        (fun _ : ℝ ↦ 1 / (b - a)) ((b + continuationValue) / 2) =
+      continuationValue := by
+  have hmax := ValueDistribution.isMaxOn_sellerProfit_uniformInterval
+    a b hab continuationValue acquisitionCost
+  rw [ValueDistribution.uniformOptimalPrice_eq_peak a b continuationValue
+    ⟨hpeak.1.le, hpeak.2.le⟩] at hmax
+  apply
+    virtualValue_eq_continuationValue_of_isLocalMaxOn_sellerProfit_postedPriceProblem
+      (ValueDistribution.uniformInterval a b hab)
+      a b (fun _ : ℝ ↦ 1 / (b - a)) continuationValue acquisitionCost
+      ((b + continuationValue) / 2)
+  case hprice =>
+    exact hpeak
+  case hcdf =>
+    exact ValueDistribution.uniformInterval_hasDerivAt_cdf
+      a b hab _ hpeak
+  case hmax =>
+    exact hmax.localize
+  case hdensity =>
+    simp [ne_of_gt (sub_pos.mpr hab)]
 
 /-- The interior first-order condition recovers zero virtual value at the
 uniform monopoly price. -/

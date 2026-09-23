@@ -49,6 +49,10 @@ global and boundary optimality among posted prices are implemented in
 Pointwise differentiation of posted-price seller profit and necessary
 first-order conditions at an interior local optimum are implemented in
 [`Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean`](../Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean).
+Reusable interval-uniform distribution facts are in
+[`Auctionlib/ValueDistribution/Uniform.lean`](../Auctionlib/ValueDistribution/Uniform.lean),
+while the uniform posted-price profit formula and constrained optimum are in
+[`Auctionlib/ValueDistribution/UniformPricing.lean`](../Auctionlib/ValueDistribution/UniformPricing.lean).
 The additive bridge from auction type random variables to bidder value
 distributions is implemented in
 [`Auctionlib/Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean).
@@ -329,6 +333,8 @@ of their definitions.
 | [`ValueDistribution/SellerProfit.lean`](../Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density representation and seller-profit virtual-surplus decompositions | Rewrites the existing scalar seller objective without adding costs, continuation values, or densities to foundational structures |
 | [`ValueDistribution/PostedPriceOptimality.lean`](../Auctionlib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and `IsMaxOn` sign and boundary theorems | Gives sufficient global optimality conditions among posted prices without claiming the full Riley--Zeckhauser result over arbitrary selling rules |
 | [`ValueDistribution/PostedPriceFirstOrder.lean`](../Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise profit derivative, division-free interior first-order condition, and nonzero-density virtual-value corollaries | Gives necessary conditions at an interior local optimum without global smoothness or a global density representative |
+| [`ValueDistribution/Uniform.lean`](../Auctionlib/ValueDistribution/Uniform.lean) | `uniformInterval`, support, atomlessness, density, demand, and CDF results | Reuses Mathlib's conditioned Lebesgue measure independently of the pricing application |
+| [`ValueDistribution/UniformPricing.lean`](../Auctionlib/ValueDistribution/UniformPricing.lean) | Uniform profit identity, clamped candidate, `IsMaxOn`, and uniqueness | Applies the generic seller objective over prices in the value interval; no-sale prices above the interval are outside the uniqueness claim |
 | [`Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
 | [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |

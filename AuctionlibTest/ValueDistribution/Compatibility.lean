@@ -127,6 +127,56 @@ example (price : ℝ) (hprice : price ∈ Ioo a b) :
 
 end UniformInterval
 
+/-! ## Uniform posted pricing -/
+
+section UniformPricing
+
+variable (a b continuationValue acquisitionCost : ℝ) (hab : a < b)
+
+/-- The candidate price is explicitly the midpoint formula clamped to the
+value interval. -/
+example :
+    ValueDistribution.uniformOptimalPrice a b continuationValue =
+      max a (min b ((b + continuationValue) / 2)) :=
+  rfl
+
+example :
+    ValueDistribution.uniformOptimalPrice a b continuationValue ∈ Icc a b :=
+  ValueDistribution.uniformOptimalPrice_mem_Icc a b continuationValue hab
+
+/-- The price formula uses the existing seller-profit objective. -/
+example (price : ℝ) (hprice : price ∈ Icc a b) :
+    (ValueDistribution.uniformInterval a b hab).sellerProfit
+        (postedPriceProblem a b price) continuationValue acquisitionCost =
+      continuationValue - acquisitionCost +
+        (price - continuationValue) * ((b - price) / (b - a)) :=
+  ValueDistribution.sellerProfit_uniformInterval a b hab
+    price continuationValue acquisitionCost hprice
+
+/-- The chosen price maximizes profit over the stated feasible interval. -/
+example :
+    IsMaxOn
+      (fun price ↦
+        (ValueDistribution.uniformInterval a b hab).sellerProfit
+          (postedPriceProblem a b price) continuationValue acquisitionCost)
+      (Icc a b) (ValueDistribution.uniformOptimalPrice a b continuationValue) :=
+  ValueDistribution.isMaxOn_sellerProfit_uniformInterval a b hab
+    continuationValue acquisitionCost
+
+/-- Any feasible maximizing price is the chosen price, including in the
+boundary regimes. -/
+example (price : ℝ) (hprice : price ∈ Icc a b)
+    (hmax : IsMaxOn
+      (fun candidate ↦
+        (ValueDistribution.uniformInterval a b hab).sellerProfit
+          (postedPriceProblem a b candidate) continuationValue acquisitionCost)
+      (Icc a b) price) :
+    price = ValueDistribution.uniformOptimalPrice a b continuationValue :=
+  ValueDistribution.uniformOptimalPrice_eq_of_isMaxOn_sellerProfit_uniformInterval
+    a b hab price continuationValue acquisitionCost hprice hmax
+
+end UniformPricing
+
 /-! ## Density, virtual surplus, and tail integration -/
 
 /-- The canonical real density remains the real-valued Radon--Nikodym
