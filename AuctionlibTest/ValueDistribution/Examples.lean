@@ -2,7 +2,7 @@ module
 
 import Auctionlib.ValueDistribution.PostedPriceFirstOrder
 import Auctionlib.ValueDistribution.PostedPriceOptimality
-import Mathlib.MeasureTheory.Constructions.UnitInterval
+import Auctionlib.ValueDistribution.Uniform
 import Mathlib.Probability.Distributions.Cauchy
 import Mathlib.Probability.UniformOn
 
@@ -17,8 +17,6 @@ demand API on finite-support atomic and unbounded atomless distributions.
 
 noncomputable section
 
-open scoped unitInterval
-
 open MeasureTheory Set
 open SingleParameterProblem
 
@@ -26,95 +24,24 @@ namespace ValueDistributionExamples
 
 /-! ## Bounded continuous distribution -/
 
-/-- The uniform distribution on `[0, 1]`, constructed by pushing the canonical
-probability measure on mathlib's unit interval into `ℝ`. -/
+/-- The uniform law on `[0, 1]`, as a specialization of the reusable
+interval-uniform family. -/
 def uniformUnitIntervalDistribution : ValueDistribution :=
-  ValueDistribution.ofRandomVariable
-    (⟨volume, inferInstance⟩ : ProbabilityMeasure unitInterval)
-    ((↑) : unitInterval → ℝ)
-    measurable_subtype_coe.aemeasurable
+  ValueDistribution.uniformInterval 0 1 (by norm_num)
 
-/-- The pushforward construction is Lebesgue measure restricted to `[0, 1]`. -/
-private lemma uniformUnitIntervalDistribution_toMeasure :
+/-- The family specializes to the same restricted Lebesgue measure used in
+the original unit-interval example. -/
+example :
     ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) =
       volume.restrict (Icc 0 1) := by
-  rw [uniformUnitIntervalDistribution,
-    ValueDistribution.toMeasure_ofRandomVariable]
-  exact unitInterval.measurePreserving_coe.map_eq
+  rw [uniformUnitIntervalDistribution, ValueDistribution.toMeasure_uniformInterval,
+    ProbabilityTheory.cond, Real.volume_Icc]
+  norm_num
 
 local instance :
     NoAtoms ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) := by
-  rw [uniformUnitIntervalDistribution_toMeasure]
+  unfold uniformUnitIntervalDistribution
   infer_instance
-
-/-- Its values lie in `[0, 1]` almost surely. -/
-private lemma uniformUnitIntervalDistribution_supported :
-    uniformUnitIntervalDistribution.IsSupportedOnInterval 0 1 := by
-  rw [ValueDistribution.IsSupportedOnInterval,
-    uniformUnitIntervalDistribution_toMeasure]
-  exact ae_restrict_mem measurableSet_Icc
-
-/-- The uniform law is absolutely continuous with respect to Lebesgue measure. -/
-private lemma uniformUnitIntervalDistribution_absolutelyContinuous :
-    ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) ≪
-      volume := by
-  rw [uniformUnitIntervalDistribution_toMeasure]
-  exact Measure.absolutelyContinuous_restrict
-
-/-- The constant function one is a density representative on `[0, 1]`. -/
-private lemma uniformUnitIntervalDistribution_density_one :
-    (fun _ : ℝ => (1 : ℝ)) =ᵐ[volume.restrict (Icc 0 1)]
-      uniformUnitIntervalDistribution.realDensity := by
-  have hrn :
-      ((volume : Measure ℝ).restrict (Icc 0 1)).rnDeriv volume =ᵐ[volume]
-        (Icc 0 1).indicator 1 :=
-    Measure.rnDeriv_restrict_self volume measurableSet_Icc
-  filter_upwards [ae_restrict_mem measurableSet_Icc,
-    ae_restrict_of_ae hrn] with value hvalue hrnvalue
-  rw [ValueDistribution.realDensity,
-    uniformUnitIntervalDistribution_toMeasure, hrnvalue]
-  simp [hvalue]
-
-/-- Demand under the uniform law is the length of the remaining upper tail. -/
-private lemma uniformUnitIntervalDistribution_probAtLeast
-    (value : ℝ) (hvalue : value ∈ Icc 0 1) :
-    uniformUnitIntervalDistribution.probAtLeast value = 1 - value := by
-  rw [ValueDistribution.probAtLeast,
-    ← uniformUnitIntervalDistribution.measureReal_eq_coe_coeFn,
-    uniformUnitIntervalDistribution_toMeasure, Measure.real,
-    Measure.restrict_apply measurableSet_Ici]
-  have hset : Ici value ∩ Icc 0 1 = Icc value 1 := by
-    ext point
-    simp only [mem_inter_iff, mem_Ici, mem_Icc]
-    constructor
-    · rintro ⟨hvaluePoint, _, hpointOne⟩
-      exact ⟨hvaluePoint, hpointOne⟩
-    · rintro ⟨hvaluePoint, hpointOne⟩
-      exact ⟨hvaluePoint, hvalue.1.trans hvaluePoint, hpointOne⟩
-  rw [hset, Real.volume_Icc]
-  exact ENNReal.toReal_ofReal (sub_nonneg.mpr hvalue.2)
-
-/-- On the support interval, the uniform CDF is the identity function. -/
-private lemma uniformUnitIntervalDistribution_cdf
-    (value : ℝ) (hvalue : value ∈ Icc 0 1) :
-    ProbabilityTheory.cdf
-        (uniformUnitIntervalDistribution : Measure ℝ) value = value := by
-  have hdemand :=
-    uniformUnitIntervalDistribution_probAtLeast value hvalue
-  rw [uniformUnitIntervalDistribution.probAtLeast_eq_one_sub_cdf] at hdemand
-  linarith
-
-/-- At the interior price `1 / 2`, the uniform CDF has derivative one. -/
-private lemma uniformUnitIntervalDistribution_hasDerivAt_cdf_half :
-    HasDerivAt
-      (ProbabilityTheory.cdf
-        (uniformUnitIntervalDistribution : Measure ℝ))
-      1 ((1 : ℝ) / 2) := by
-  apply (hasDerivAt_id ((1 : ℝ) / 2)).congr_of_eventuallyEq
-  filter_upwards [Icc_mem_nhds (a := (0 : ℝ)) (b := 1)
-    (by norm_num) (by norm_num)] with value hvalue
-  simpa only [id_eq] using
-    uniformUnitIntervalDistribution_cdf value hvalue
 
 /-- Uniform virtual-surplus weight is the affine function `2 * value - 1`. -/
 private lemma uniformUnitIntervalDistribution_virtualSurplusWeight
@@ -123,7 +50,9 @@ private lemma uniformUnitIntervalDistribution_virtualSurplusWeight
         (fun _ : ℝ => (1 : ℝ)) value =
       2 * value - 1 := by
   rw [ValueDistribution.virtualSurplusWeight,
-    uniformUnitIntervalDistribution_probAtLeast value hvalue]
+    show uniformUnitIntervalDistribution.probAtLeast value = (1 - value) by
+      simpa [uniformUnitIntervalDistribution] using
+        (ValueDistribution.uniformInterval_probAtLeast 0 1 (by norm_num) value hvalue)]
   ring
 
 /-- Uniform virtual-surplus weight is nonpositive below one half. -/
@@ -171,11 +100,12 @@ private lemma uniformUnitIntervalDistribution_isMaxOn_sellerProfit_half :
     simpa using
       uniformUnitIntervalDistribution_virtualSurplusWeight_nonneg
   case hdensity =>
-    exact uniformUnitIntervalDistribution_density_one
+    simpa [uniformUnitIntervalDistribution] using
+      (ValueDistribution.uniformInterval_density 0 1 (by norm_num))
   case hD =>
-    exact uniformUnitIntervalDistribution_absolutelyContinuous
+    exact ValueDistribution.uniformInterval_absolutelyContinuous 0 1 (by norm_num)
   case hsupport =>
-    exact uniformUnitIntervalDistribution_supported
+    exact ValueDistribution.uniformInterval_supported 0 1 (by norm_num)
   case hcutoff =>
     norm_num
 
@@ -191,7 +121,9 @@ example :
   case hprice =>
     norm_num
   case hcdf =>
-    exact uniformUnitIntervalDistribution_hasDerivAt_cdf_half
+    simpa [uniformUnitIntervalDistribution] using
+      (ValueDistribution.uniformInterval_hasDerivAt_cdf 0 1
+        (by norm_num) ((1 : ℝ) / 2) (by norm_num))
   case hmax =>
     exact uniformUnitIntervalDistribution_isMaxOn_sellerProfit_half.localize
   case hdensity =>
@@ -202,9 +134,7 @@ probability. -/
 example (price : ℝ) :
     ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ)
         {price} = 0 := by
-  rw [uniformUnitIntervalDistribution_toMeasure,
-    Measure.restrict_apply (measurableSet_singleton price)]
-  exact measure_mono_null inter_subset_left (measure_singleton price)
+  exact measure_singleton price
 
 /-! ## Finite-support distribution -/
 

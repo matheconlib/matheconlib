@@ -10,4 +10,5 @@ public import Auctionlib.ValueDistribution.PostedPriceOptimality
 public import Auctionlib.ValueDistribution.SellerProfit
 public import Auctionlib.ValueDistribution.SingleParameter
 public import Auctionlib.ValueDistribution.TailIntegral
+public import Auctionlib.ValueDistribution.Uniform
 public import Auctionlib.ValueDistribution.VirtualValue

@@ -67,6 +67,66 @@ example (D : ValueDistribution) [NoAtoms (D : Measure ℝ)] (price : ℝ) :
     D.probAtLeast price = 1 - cdf (D : Measure ℝ) price :=
   D.probAtLeast_eq_one_sub_cdf price
 
+/-! ## Uniform interval distributions -/
+
+section UniformInterval
+
+variable (a b : ℝ) (hab : a < b)
+
+/-- The interval-uniform law is Mathlib's conditioned Lebesgue measure. -/
+example :
+    ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) =
+      ProbabilityTheory.cond volume (Icc a b) :=
+  ValueDistribution.toMeasure_uniformInterval a b hab
+
+/-- The constructor also satisfies Mathlib's uniform-law predicate. -/
+example :
+    MeasureTheory.pdf.IsUniform (id : ℝ → ℝ) (Icc a b)
+      ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) volume :=
+  ValueDistribution.isUniform_uniformInterval a b hab
+
+/-- Interval support is a property of the resulting distribution. -/
+example :
+    (ValueDistribution.uniformInterval a b hab).IsSupportedOnInterval a b :=
+  ValueDistribution.uniformInterval_supported a b hab
+
+/-- The uniform law is absolutely continuous and atomless. -/
+example :
+    ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) ≪
+      volume :=
+  ValueDistribution.uniformInterval_absolutelyContinuous a b hab
+
+example :
+    NoAtoms ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) :=
+  inferInstance
+
+/-- Its density is the reciprocal of interval length, almost everywhere on
+the interval. -/
+example :
+    (fun _ : ℝ ↦ 1 / (b - a)) =ᵐ[volume.restrict (Icc a b)]
+      (ValueDistribution.uniformInterval a b hab).realDensity :=
+  ValueDistribution.uniformInterval_density a b hab
+
+/-- Uniform demand and the CDF are valid at both support endpoints. -/
+example (price : ℝ) (hprice : price ∈ Icc a b) :
+    (ValueDistribution.uniformInterval a b hab).probAtLeast price =
+      (b - price) / (b - a) :=
+  ValueDistribution.uniformInterval_probAtLeast a b hab price hprice
+
+example (price : ℝ) (hprice : price ∈ Icc a b) :
+    cdf ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) price =
+      (price - a) / (b - a) :=
+  ValueDistribution.uniformInterval_cdf a b hab price hprice
+
+/-- The pointwise CDF derivative is asserted only in the interior. -/
+example (price : ℝ) (hprice : price ∈ Ioo a b) :
+    HasDerivAt
+      (cdf ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ))
+      (1 / (b - a)) price :=
+  ValueDistribution.uniformInterval_hasDerivAt_cdf a b hab price hprice
+
+end UniformInterval
+
 /-! ## Density, virtual surplus, and tail integration -/
 
 /-- The canonical real density remains the real-valued Radon--Nikodym
