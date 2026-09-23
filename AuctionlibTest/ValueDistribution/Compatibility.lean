@@ -177,6 +177,50 @@ example (price : ℝ) (hprice : price ∈ Icc a b)
 
 end UniformPricing
 
+/-! ## Comparative statics of uniform posted prices -/
+
+section UniformPricingComparativeStatics
+
+variable (a b continuationValue : ℝ)
+
+example : Monotone (fun lowerEndpoint ↦
+    ValueDistribution.uniformOptimalPrice lowerEndpoint b continuationValue) :=
+  ValueDistribution.monotone_uniformOptimalPrice_lowerEndpoint b continuationValue
+
+example : Monotone (fun upperEndpoint ↦
+    ValueDistribution.uniformOptimalPrice a upperEndpoint continuationValue) :=
+  ValueDistribution.monotone_uniformOptimalPrice_upperEndpoint a continuationValue
+
+example : Monotone (fun continuation ↦
+    ValueDistribution.uniformOptimalPrice a b continuation) :=
+  ValueDistribution.monotone_uniformOptimalPrice_continuationValue a b
+
+example (a₁ a₂ : ℝ)
+    (h₁ : (b + continuationValue) / 2 ∈ Ioo a₁ b)
+    (h₂ : (b + continuationValue) / 2 ∈ Ioo a₂ b) :
+    ValueDistribution.uniformOptimalPrice a₂ b continuationValue =
+      ValueDistribution.uniformOptimalPrice a₁ b continuationValue :=
+  ValueDistribution.uniformOptimalPrice_lowerEndpoint_eq_of_interior
+    a₁ a₂ b continuationValue h₁ h₂
+
+example (b₁ b₂ : ℝ)
+    (h₁ : (b₁ + continuationValue) / 2 ∈ Ioo a b₁)
+    (h₂ : (b₂ + continuationValue) / 2 ∈ Ioo a b₂) :
+    ValueDistribution.uniformOptimalPrice a b₂ continuationValue -
+        ValueDistribution.uniformOptimalPrice a b₁ continuationValue = (b₂ - b₁) / 2 :=
+  ValueDistribution.uniformOptimalPrice_upperEndpoint_sub_of_interior
+    a b₁ b₂ continuationValue h₁ h₂
+
+example (r₁ r₂ : ℝ)
+    (h₁ : (b + r₁) / 2 ∈ Ioo a b)
+    (h₂ : (b + r₂) / 2 ∈ Ioo a b) :
+    ValueDistribution.uniformOptimalPrice a b r₂ -
+        ValueDistribution.uniformOptimalPrice a b r₁ = (r₂ - r₁) / 2 :=
+  ValueDistribution.uniformOptimalPrice_continuationValue_sub_of_interior
+    a b r₁ r₂ h₁ h₂
+
+end UniformPricingComparativeStatics
+
 /-! ## Density, virtual surplus, and tail integration -/
 
 /-- The canonical real density remains the real-valued Radon--Nikodym

@@ -180,6 +180,28 @@ example :
       1 2 3 (by norm_num)]
   norm_num
 
+/-- The lower endpoint does not affect the price while both optima are interior. -/
+example :
+    ValueDistribution.uniformOptimalPrice (-1) 2 0 =
+      ValueDistribution.uniformOptimalPrice 0 2 0 := by
+  apply ValueDistribution.uniformOptimalPrice_lowerEndpoint_eq_of_interior
+  all_goals norm_num
+
+/-- Doubling the upper endpoint from two to four raises the interior price
+by one, half of the endpoint change. -/
+example :
+    ValueDistribution.uniformOptimalPrice 0 4 0 -
+      ValueDistribution.uniformOptimalPrice 0 2 0 = 1 := by
+  rw [ValueDistribution.uniformOptimalPrice_upperEndpoint_sub_of_interior]
+  all_goals norm_num
+
+/-- A unit increase in continuation value raises the interior price by one half. -/
+example :
+    ValueDistribution.uniformOptimalPrice 0 2 1 -
+      ValueDistribution.uniformOptimalPrice 0 2 0 = (1 : ℝ) / 2 := by
+  rw [ValueDistribution.uniformOptimalPrice_continuationValue_sub_of_interior]
+  all_goals norm_num
+
 /-- At an interior optimum for any uniform interval, the generic first-order
 theorem gives virtual value equal to continuation value. -/
 example (a b continuationValue acquisitionCost : ℝ) (hab : a < b)

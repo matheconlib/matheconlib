@@ -215,6 +215,65 @@ theorem uniformOptimalPrice_eq_of_isMaxOn_sellerProfit_uniformInterval
   exact (uniform_margin_gap_nonneg_and_eq a b continuationValue price hab hprice).2
     hnumerator
 
+/-! ## Comparative statics of the maximizing price -/
+
+/-- Raising the lower endpoint cannot lower the optimal posted price. This
+algebraic statement also holds when the interval endpoints are not ordered. -/
+theorem monotone_uniformOptimalPrice_lowerEndpoint (b continuationValue : ℝ) :
+    Monotone (fun a ↦ uniformOptimalPrice a b continuationValue) := by
+  intro a₁ a₂ ha
+  exact max_le_max ha le_rfl
+
+/-- Raising the upper endpoint cannot lower the optimal posted price. -/
+theorem monotone_uniformOptimalPrice_upperEndpoint (a continuationValue : ℝ) :
+    Monotone (fun b ↦ uniformOptimalPrice a b continuationValue) := by
+  intro b₁ b₂ hb
+  have hmid : (b₁ + continuationValue) / 2 ≤ (b₂ + continuationValue) / 2 := by
+    linarith
+  exact max_le_max le_rfl (min_le_min hb hmid)
+
+/-- Raising the seller's continuation value cannot lower the optimal price. -/
+theorem monotone_uniformOptimalPrice_continuationValue (a b : ℝ) :
+    Monotone (fun continuationValue ↦ uniformOptimalPrice a b continuationValue) := by
+  intro r₁ r₂ hr
+  have hmid : (b + r₁) / 2 ≤ (b + r₂) / 2 := by
+    linarith
+  exact max_le_max le_rfl (min_le_min le_rfl hmid)
+
+/-- If both prices remain interior, changing the lower endpoint leaves the
+optimal price unchanged. -/
+theorem uniformOptimalPrice_lowerEndpoint_eq_of_interior
+    (a₁ a₂ b continuationValue : ℝ)
+    (h₁ : (b + continuationValue) / 2 ∈ Ioo a₁ b)
+    (h₂ : (b + continuationValue) / 2 ∈ Ioo a₂ b) :
+    uniformOptimalPrice a₂ b continuationValue =
+      uniformOptimalPrice a₁ b continuationValue := by
+  rw [uniformOptimalPrice_eq_peak a₂ b continuationValue ⟨h₂.1.le, h₂.2.le⟩,
+    uniformOptimalPrice_eq_peak a₁ b continuationValue ⟨h₁.1.le, h₁.2.le⟩]
+
+/-- While both optima remain interior, half of a change in the upper endpoint
+passes through to the optimal price. -/
+theorem uniformOptimalPrice_upperEndpoint_sub_of_interior
+    (a b₁ b₂ continuationValue : ℝ)
+    (h₁ : (b₁ + continuationValue) / 2 ∈ Ioo a b₁)
+    (h₂ : (b₂ + continuationValue) / 2 ∈ Ioo a b₂) :
+    uniformOptimalPrice a b₂ continuationValue -
+        uniformOptimalPrice a b₁ continuationValue = (b₂ - b₁) / 2 := by
+  rw [uniformOptimalPrice_eq_peak a b₂ continuationValue ⟨h₂.1.le, h₂.2.le⟩,
+    uniformOptimalPrice_eq_peak a b₁ continuationValue ⟨h₁.1.le, h₁.2.le⟩]
+  ring
+
+/-- While both optima remain interior, half of a change in continuation
+value passes through to the optimal price. -/
+theorem uniformOptimalPrice_continuationValue_sub_of_interior
+    (a b r₁ r₂ : ℝ)
+    (h₁ : (b + r₁) / 2 ∈ Ioo a b)
+    (h₂ : (b + r₂) / 2 ∈ Ioo a b) :
+    uniformOptimalPrice a b r₂ - uniformOptimalPrice a b r₁ = (r₂ - r₁) / 2 := by
+  rw [uniformOptimalPrice_eq_peak a b r₂ ⟨h₂.1.le, h₂.2.le⟩,
+    uniformOptimalPrice_eq_peak a b r₁ ⟨h₁.1.le, h₁.2.le⟩]
+  ring
+
 end ValueDistribution
 
 end
