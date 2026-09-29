@@ -1,15 +1,13 @@
 module
 
 import Auctionlib.BidderProblem
-import Auctionlib.SingleParameter.PostedPrice
-import Auctionlib.SingleParameter.Revelation
+import Auctionlib.SingleParameter
 
 /-!
 # Compatibility Checks for the Single-Parameter Foundation
 
 This file contains compile-time examples rather than new library definitions.
-It checks the two paths that the first pricing-foundations pull request is
-intended to support:
+It checks three paths through the single-parameter layer:
 
 1. a new problem with a non-real action type can use the complete generic IC,
    envelope, payment, and participation API;
