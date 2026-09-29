@@ -63,14 +63,14 @@ missing build there rather than at a moving branch tip:
 Compare the printed SHA with the reviewed commit before relying on any result.
 For a young layer, inspect its compatibility pin before the build:
 
-    rg '^import ' AuctionlibTest/<Layer>/Compatibility.lean
+    rg '^import ' MathEconLibTest/<Layer>/Compatibility.lean
 
 The pin imports only the layer's documented umbrella. Adding a leaf or
 implementation import to make the examples compile defeats the check: a missing
 export or public dependency should fail here. Build the pins explicitly when
 investigating that boundary:
 
-    lake build AuctionlibTest
+    lake build MathEconLibTest
 
 Then the escape-hatch sweep over the diff: grep for `sorry`,
 `native_decide`, `nolint`, `set_option linter`, `maxHeartbeats`, and

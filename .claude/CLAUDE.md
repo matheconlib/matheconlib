@@ -49,8 +49,8 @@ Structures for parametric families:
 
 ## Useful lake commands
 
-- `lake exe mk_all --lib Auctionlib --git`: regenerate `Auctionlib.lean` with all imports, using git to determine which files to include (respects `.gitignore`, so e.g. the Playground folder is excluded).
-- `lake build`: build the whole project, should be run after `lake exe mk_all --lib Auctionlib --git` to
+- `lake exe mk_all --lib MathEconLib --git`: regenerate `MathEconLib.lean` with all imports, using git to determine which files to include (respects `.gitignore`, so e.g. the Playground folder is excluded).
+- `lake build`: build the whole project, should be run after `lake exe mk_all --lib MathEconLib --git` to
 ensure all relevant files would be built.
 
 ## Some Lean4 Requirement and Tips

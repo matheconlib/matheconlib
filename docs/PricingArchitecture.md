@@ -10,56 +10,56 @@ links to the public interface rather than duplicating it.
 
 The core `SingleParameterProblem` structure and its elementary derived
 quantities are implemented in
-[`Auctionlib/SingleParameter/Basic.lean`](../Auctionlib/SingleParameter/Basic.lean).
+[`MathEconLib/SingleParameter/Basic.lean`](../MathEconLib/SingleParameter/Basic.lean).
 The incentive-compatibility and individual-rationality predicates are
 implemented in
-[`Auctionlib/SingleParameter/IC.lean`](../Auctionlib/SingleParameter/IC.lean).
+[`MathEconLib/SingleParameter/IC.lean`](../MathEconLib/SingleParameter/IC.lean).
 The analytic envelope results are implemented in
-[`Auctionlib/SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean),
+[`MathEconLib/SingleParameter/EnvelopeIC.lean`](../MathEconLib/SingleParameter/EnvelopeIC.lean),
 and the payment identity, uniqueness, and sufficiency results are implemented
 in
-[`Auctionlib/SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean).
+[`MathEconLib/SingleParameter/Payment.lean`](../MathEconLib/SingleParameter/Payment.lean).
 The compatibility bridge from `BidderProblem` is implemented in the existing
-[`Auctionlib/BidderProblem`](../Auctionlib/BidderProblem) modules.
+[`MathEconLib/BidderProblem`](../MathEconLib/BidderProblem) modules.
 The deterministic posted-price example is implemented in
-[`Auctionlib/SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean).
+[`MathEconLib/SingleParameter/PostedPrice.lean`](../MathEconLib/SingleParameter/PostedPrice.lean).
 The measure-first representation of real-valued type distributions and its
 optional bounded-support predicate are implemented in
-[`Auctionlib/ValueDistribution/Basic.lean`](../Auctionlib/ValueDistribution/Basic.lean),
+[`MathEconLib/ValueDistribution/Basic.lean`](../MathEconLib/ValueDistribution/Basic.lean),
 while posted-price demand and its relationship to the CDF are implemented in
-[`Auctionlib/ValueDistribution/Demand.lean`](../Auctionlib/ValueDistribution/Demand.lean).
+[`MathEconLib/ValueDistribution/Demand.lean`](../MathEconLib/ValueDistribution/Demand.lean).
 Generic expected allocation, expected payment, seller profit, and their
 reduced-form contracts are implemented in
-[`Auctionlib/ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean).
+[`MathEconLib/ValueDistribution/SingleParameter.lean`](../MathEconLib/ValueDistribution/SingleParameter.lean).
 Their specialization to distributional posted pricing is implemented in
-[`Auctionlib/ValueDistribution/PostedPrice.lean`](../Auctionlib/ValueDistribution/PostedPrice.lean).
+[`MathEconLib/ValueDistribution/PostedPrice.lean`](../MathEconLib/ValueDistribution/PostedPrice.lean).
 Optional density and virtual-surplus vocabulary are implemented in
-[`Auctionlib/ValueDistribution/Density.lean`](../Auctionlib/ValueDistribution/Density.lean)
+[`MathEconLib/ValueDistribution/Density.lean`](../MathEconLib/ValueDistribution/Density.lean)
 and
-[`Auctionlib/ValueDistribution/VirtualValue.lean`](../Auctionlib/ValueDistribution/VirtualValue.lean).
+[`MathEconLib/ValueDistribution/VirtualValue.lean`](../MathEconLib/ValueDistribution/VirtualValue.lean).
 The density-free tail identity and its applications to expected payment and
 seller profit are implemented in
-[`Auctionlib/ValueDistribution/TailIntegral.lean`](../Auctionlib/ValueDistribution/TailIntegral.lean),
-[`Auctionlib/ValueDistribution/ExpectedPayment.lean`](../Auctionlib/ValueDistribution/ExpectedPayment.lean),
+[`MathEconLib/ValueDistribution/TailIntegral.lean`](../MathEconLib/ValueDistribution/TailIntegral.lean),
+[`MathEconLib/ValueDistribution/ExpectedPayment.lean`](../MathEconLib/ValueDistribution/ExpectedPayment.lean),
 and
-[`Auctionlib/ValueDistribution/SellerProfit.lean`](../Auctionlib/ValueDistribution/SellerProfit.lean).
+[`MathEconLib/ValueDistribution/SellerProfit.lean`](../MathEconLib/ValueDistribution/SellerProfit.lean).
 The posted-price cutoff representation and sufficient sign conditions for
 global and boundary optimality among posted prices are implemented in
-[`Auctionlib/ValueDistribution/PostedPriceOptimality.lean`](../Auctionlib/ValueDistribution/PostedPriceOptimality.lean).
+[`MathEconLib/ValueDistribution/PostedPriceOptimality.lean`](../MathEconLib/ValueDistribution/PostedPriceOptimality.lean).
 Pointwise differentiation of posted-price seller profit and necessary
 first-order conditions at an interior local optimum are implemented in
-[`Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean`](../Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean).
+[`MathEconLib/ValueDistribution/PostedPriceFirstOrder.lean`](../MathEconLib/ValueDistribution/PostedPriceFirstOrder.lean).
 The additive bridge from auction type random variables to bidder value
 distributions is implemented in
-[`Auctionlib/Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean).
+[`MathEconLib/Auction/ValueDistribution.lean`](../MathEconLib/Auction/ValueDistribution.lean).
 End-to-end compile-time checks for both the new and legacy APIs are in
-[`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean)
+[`MathEconLibTest/SingleParameter/Compatibility.lean`](../MathEconLibTest/SingleParameter/Compatibility.lean)
 and
-[`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean),
+[`MathEconLibTest/ValueDistribution/Compatibility.lean`](../MathEconLibTest/ValueDistribution/Compatibility.lean),
 with representative continuous, finite-support, and unbounded distributions in
-[`AuctionlibTest/ValueDistribution/Examples.lean`](../AuctionlibTest/ValueDistribution/Examples.lean)
+[`MathEconLibTest/ValueDistribution/Examples.lean`](../MathEconLibTest/ValueDistribution/Examples.lean)
 and end-to-end seller-objective checks in
-[`AuctionlibTest/Pricing/Compatibility.lean`](../AuctionlibTest/Pricing/Compatibility.lean).
+[`MathEconLibTest/Pricing/Compatibility.lean`](../MathEconLibTest/Pricing/Compatibility.lean).
 
 The first application is optimal posted pricing for one buyer. The
 foundations are intended to be reusable for auctions, screening, contracts,
@@ -293,10 +293,10 @@ after reduction.
 
 The formal results are divided by their mathematical role:
 
-- [`SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean)
+- [`SingleParameter/EnvelopeIC.lean`](../MathEconLib/SingleParameter/EnvelopeIC.lean)
   proves `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`,
   and `U_nonneg`.
-- [`SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean)
+- [`SingleParameter/Payment.lean`](../MathEconLib/SingleParameter/Payment.lean)
   proves `payment_identity`, `payment_unique`, and
   `typeDeviationIC_of_monotone_q`.
 
@@ -313,28 +313,28 @@ of their definitions.
 
 | Source | Principal public API | Architectural role |
 |---|---|---|
-| [`SingleParameter/Basic.lean`](../Auctionlib/SingleParameter/Basic.lean) | `SingleParameterProblem`, `typeInterval`, `payoff`, `q`, `U`, `withStrategy`, `reduce` | Deterministic affine-in-type model, explicit strategy replacement, and canonical direct reduction |
-| [`SingleParameter/IC.lean`](../Auctionlib/SingleParameter/IC.lean) | `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversalIC`, `IsIndividuallyRational`, `HasZeroLowestTypeUtility` | IC hierarchy, participation normalization, and envelope/type-deviation bridges to `P.reduce` |
-| [`SingleParameter/EnvelopeIC.lean`](../Auctionlib/SingleParameter/EnvelopeIC.lean) | `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`, `U_nonneg` | Analytic consequences of envelope IC |
-| [`SingleParameter/Payment.lean`](../Auctionlib/SingleParameter/Payment.lean) | `payment_identity`, `payment_unique`, `typeDeviationIC_of_monotone_q` | Payment necessity, uniqueness, and sufficiency |
-| [`SingleParameter/PostedPrice.lean`](../Auctionlib/SingleParameter/PostedPrice.lean) | `PurchaseDecision`, `postedPriceProblem`, its payoff, demand, IC, and participation results | Finite-action example with a continuous real type interval |
-| [`ValueDistribution/Basic.lean`](../Auctionlib/ValueDistribution/Basic.lean) | `ValueDistribution`, `ofRandomVariable`, `IsSupportedOnInterval` | Measure-first representation, pushforwards of random variables, and optional bounded support |
-| [`ValueDistribution/Demand.lean`](../Auctionlib/ValueDistribution/Demand.lean) | `probAtLeast` and its monotonicity, lower-tail, CDF, and atom identities | Posted-price demand with tie-breaking that remains correct for atomic and mixed distributions |
-| [`ValueDistribution/SingleParameter.lean`](../Auctionlib/ValueDistribution/SingleParameter.lean) | `expectedAllocation`, `expectedPayment`, `sellerProfit`, and their `_reduce` contracts | Ordinary-integral expectations and seller accounting for a separately supplied single-parameter problem |
-| [`ValueDistribution/PostedPrice.lean`](../Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price expected allocation, expected payment, seller profit, revenue, and comparison formulas | Distributional specialization of the deterministic posted-price problem and generic seller objective |
-| [`ValueDistribution/Density.lean`](../Auctionlib/ValueDistribution/Density.lean) | `realDensity` and integration against canonical or chosen density representatives | Optional absolutely continuous representation built from mathlib's Radon--Nikodym derivative, not a second density typeclass |
-| [`ValueDistribution/VirtualValue.lean`](../Auctionlib/ValueDistribution/VirtualValue.lean) | `virtualSurplusWeight`, `virtualValue`, and their density and CDF forms | Density-weighted virtual surplus as the primary object, with virtual value available when division is justified |
-| [`ValueDistribution/TailIntegral.lean`](../Auctionlib/ValueDistribution/TailIntegral.lean) | Tail-probability integral identity | Measure-theoretic bridge from envelope utility to expected payment, valid before choosing a density |
-| [`ValueDistribution/ExpectedPayment.lean`](../Auctionlib/ValueDistribution/ExpectedPayment.lean) | Expected-payment identities in tail-probability, canonical-density, chosen-density, and CDF forms | Revenue-equivalence consequences expressed first without a density and then specialized under absolute continuity |
-| [`ValueDistribution/SellerProfit.lean`](../Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density representation and seller-profit virtual-surplus decompositions | Rewrites the existing scalar seller objective without adding costs, continuation values, or densities to foundational structures |
-| [`ValueDistribution/PostedPriceOptimality.lean`](../Auctionlib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and `IsMaxOn` sign and boundary theorems | Gives sufficient global optimality conditions among posted prices without claiming the full Riley--Zeckhauser result over arbitrary selling rules |
-| [`ValueDistribution/PostedPriceFirstOrder.lean`](../Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise profit derivative, division-free interior first-order condition, and nonzero-density virtual-value corollaries | Gives necessary conditions at an interior local optimum without global smoothness or a global density representative |
-| [`Auction/ValueDistribution.lean`](../Auctionlib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
-| [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
-| [`AuctionlibTest/SingleParameter/Compatibility.lean`](../AuctionlibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
-| [`AuctionlibTest/ValueDistribution/Compatibility.lean`](../AuctionlibTest/ValueDistribution/Compatibility.lean) | Compile-time API pins | Young-layer contract checks, including atomic posted-price tie-breaking and the auction pushforward bridge |
-| [`AuctionlibTest/ValueDistribution/Examples.lean`](../AuctionlibTest/ValueDistribution/Examples.lean) | Representative distribution examples | Bounded continuous, finite-support, and unbounded laws using mathlib probability measures |
-| [`AuctionlibTest/Pricing/Compatibility.lean`](../AuctionlibTest/Pricing/Compatibility.lean) | End-to-end pricing examples | Certain sale and non-sale, acquisition-cost ranking invariance, and reduced-form seller profit |
+| [`SingleParameter/Basic.lean`](../MathEconLib/SingleParameter/Basic.lean) | `SingleParameterProblem`, `typeInterval`, `payoff`, `q`, `U`, `withStrategy`, `reduce` | Deterministic affine-in-type model, explicit strategy replacement, and canonical direct reduction |
+| [`SingleParameter/IC.lean`](../MathEconLib/SingleParameter/IC.lean) | `HasEnvelopeIC`, `HasTypeDeviationIC`, `HasUniversalIC`, `IsIndividuallyRational`, `HasZeroLowestTypeUtility` | IC hierarchy, participation normalization, and envelope/type-deviation bridges to `P.reduce` |
+| [`SingleParameter/EnvelopeIC.lean`](../MathEconLib/SingleParameter/EnvelopeIC.lean) | `lipschitz`, `q_monotoneOn`, `aeDifferentiable`, `integral_rep`, `U_nonneg` | Analytic consequences of envelope IC |
+| [`SingleParameter/Payment.lean`](../MathEconLib/SingleParameter/Payment.lean) | `payment_identity`, `payment_unique`, `typeDeviationIC_of_monotone_q` | Payment necessity, uniqueness, and sufficiency |
+| [`SingleParameter/PostedPrice.lean`](../MathEconLib/SingleParameter/PostedPrice.lean) | `PurchaseDecision`, `postedPriceProblem`, its payoff, demand, IC, and participation results | Finite-action example with a continuous real type interval |
+| [`ValueDistribution/Basic.lean`](../MathEconLib/ValueDistribution/Basic.lean) | `ValueDistribution`, `ofRandomVariable`, `IsSupportedOnInterval` | Measure-first representation, pushforwards of random variables, and optional bounded support |
+| [`ValueDistribution/Demand.lean`](../MathEconLib/ValueDistribution/Demand.lean) | `probAtLeast` and its monotonicity, lower-tail, CDF, and atom identities | Posted-price demand with tie-breaking that remains correct for atomic and mixed distributions |
+| [`ValueDistribution/SingleParameter.lean`](../MathEconLib/ValueDistribution/SingleParameter.lean) | `expectedAllocation`, `expectedPayment`, `sellerProfit`, and their `_reduce` contracts | Ordinary-integral expectations and seller accounting for a separately supplied single-parameter problem |
+| [`ValueDistribution/PostedPrice.lean`](../MathEconLib/ValueDistribution/PostedPrice.lean) | Posted-price expected allocation, expected payment, seller profit, revenue, and comparison formulas | Distributional specialization of the deterministic posted-price problem and generic seller objective |
+| [`ValueDistribution/Density.lean`](../MathEconLib/ValueDistribution/Density.lean) | `realDensity` and integration against canonical or chosen density representatives | Optional absolutely continuous representation built from mathlib's Radon--Nikodym derivative, not a second density typeclass |
+| [`ValueDistribution/VirtualValue.lean`](../MathEconLib/ValueDistribution/VirtualValue.lean) | `virtualSurplusWeight`, `virtualValue`, and their density and CDF forms | Density-weighted virtual surplus as the primary object, with virtual value available when division is justified |
+| [`ValueDistribution/TailIntegral.lean`](../MathEconLib/ValueDistribution/TailIntegral.lean) | Tail-probability integral identity | Measure-theoretic bridge from envelope utility to expected payment, valid before choosing a density |
+| [`ValueDistribution/ExpectedPayment.lean`](../MathEconLib/ValueDistribution/ExpectedPayment.lean) | Expected-payment identities in tail-probability, canonical-density, chosen-density, and CDF forms | Revenue-equivalence consequences expressed first without a density and then specialized under absolute continuity |
+| [`ValueDistribution/SellerProfit.lean`](../MathEconLib/ValueDistribution/SellerProfit.lean) | Expected-allocation density representation and seller-profit virtual-surplus decompositions | Rewrites the existing scalar seller objective without adding costs, continuation values, or densities to foundational structures |
+| [`ValueDistribution/PostedPriceOptimality.lean`](../MathEconLib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and `IsMaxOn` sign and boundary theorems | Gives sufficient global optimality conditions among posted prices without claiming the full Riley--Zeckhauser result over arbitrary selling rules |
+| [`ValueDistribution/PostedPriceFirstOrder.lean`](../MathEconLib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise profit derivative, division-free interior first-order condition, and nonzero-density virtual-value corollaries | Gives necessary conditions at an interior local optimum without global smoothness or a global density representative |
+| [`Auction/ValueDistribution.lean`](../MathEconLib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
+| [`BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
+| [`MathEconLibTest/SingleParameter/Compatibility.lean`](../MathEconLibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
+| [`MathEconLibTest/ValueDistribution/Compatibility.lean`](../MathEconLibTest/ValueDistribution/Compatibility.lean) | Compile-time API pins | Young-layer contract checks, including atomic posted-price tie-breaking and the auction pushforward bridge |
+| [`MathEconLibTest/ValueDistribution/Examples.lean`](../MathEconLibTest/ValueDistribution/Examples.lean) | Representative distribution examples | Bounded continuous, finite-support, and unbounded laws using mathlib probability measures |
+| [`MathEconLibTest/Pricing/Compatibility.lean`](../MathEconLibTest/Pricing/Compatibility.lean) | End-to-end pricing examples | Certain sale and non-sale, acquisition-cost ranking invariance, and reduced-form seller profit |
 
 The implication instances follow
 `HasUniversalIC → HasTypeDeviationIC → HasEnvelopeIC`. A problem's IC instances
@@ -373,7 +373,7 @@ a subsequent layer.
 The current `BidderProblem` has not been renamed or replaced.
 
 The conversion `BidderProblem.toSingleParameterProblem` is implemented in
-[`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean). Its fields
+[`BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean). Its fields
 have the following correspondence:
 
 | General field | Existing `BidderProblem` field |

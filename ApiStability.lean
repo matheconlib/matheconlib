@@ -1,4 +1,4 @@
-import Auctionlib
+import MathEconLib
 
 /-!
 # API stability pins
@@ -15,11 +15,11 @@ declaration. Per `CONTRIBUTING.md` that needs a design discussion first: open
 an issue and get agreement before changing the statement. Do **not** silently
 edit the pin to make it pass.
 
-The file lives at the repository root (outside `Auctionlib/`) so that
+The file lives at the repository root (outside `MathEconLib/`) so that
 `lake exe mk_all` never touches it, and is built as its own `lean_lib`
 (`ApiStability`), listed in `defaultTargets` so a plain `lake build` checks it.
 (It is deliberately a non-`module` file: it imports the mk_all-generated root
-`Auctionlib`, which is itself a plain import list.)
+`MathEconLib`, which is itself a plain import list.)
 -/
 
 open MeasureTheory ProbabilityTheory

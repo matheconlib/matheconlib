@@ -1,4 +1,4 @@
-# Reviewing for auctionlib
+# Reviewing for MathEconLib
 
 How review works here, written down for the second reviewer and everyone
 after. This is observed practice from the first ~60 PRs, not aspiration.
