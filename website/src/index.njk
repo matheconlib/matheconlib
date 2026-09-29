@@ -140,27 +140,8 @@
     color: var(--muted); margin: 2rem 0 0.6rem;
   }
   p { margin: 0 0 1rem; max-width: 40rem; }
-  ul, ol { padding-left: 1.3rem; margin: 0 0 1rem; max-width: 40rem; }
+  ul { padding-left: 1.3rem; margin: 0 0 1rem; max-width: 40rem; }
   li { margin-bottom: 0.35rem; }
-
-  .stack { list-style: none; padding: 0; margin: 1.2rem 0 1.4rem; max-width: 40rem; }
-  .stack .layer {
-    display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: 0.2rem 1.2rem; align-items: baseline;
-    padding: 0.7rem 1rem; background: var(--code-bg); border-radius: 3px; margin: 0;
-  }
-  .stack .layer code { background: none; padding: 0; font-weight: 500; color: var(--accent-ink); }
-  .stack .step {
-    margin: 0; padding: 0.3rem 0 0.3rem 1rem;
-    color: var(--muted); font-size: 0.86rem;
-  }
-  .stack .step::before { content: "↓  "; color: var(--accent); font-weight: 600; }
-  @media (max-width: 30rem) { .stack .layer { grid-template-columns: 1fr; } }
-
-  .tbl-wrap { overflow-x: auto; margin: 1rem 0 1rem; }
-  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
-  th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.8rem 0.55rem 0; border-bottom: 1px solid var(--rule); }
-  th { font-weight: 600; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule-strong); }
-  td code { white-space: nowrap; }
 
   dl.docs, dl.scope { margin: 0 0 1rem; max-width: 40rem; }
   dl.docs dt, dl.scope dt { font-weight: 500; margin-top: 0.9rem; }
@@ -194,7 +175,6 @@
       <ul>
         <li><a href="#about">About</a></li>
         <li><a href="#vision">Scope</a></li>
-        <li><a href="#auctionlib">auctionlib</a></li>
         <li><a href="#docs">Docs</a></li>
         <li><a href="#contribute">Contribute</a></li>
         <li><a href="#people">People</a></li>
@@ -224,37 +204,6 @@
       <dt>Econometrics</dt>
       <dd>Probability and statistical foundations, identification, estimation, inference, and causal and structural methods.</dd>
     </dl>
-
-    <h2 id="auctionlib">First library: auctionlib</h2>
-    <p>MathEconLib begins with <code>auctionlib</code>, its first substantial library. It formalizes the single-parameter theory of auctions and pricing, from incentive compatibility through revenue equivalence, together with the game-theoretic foundations those results assume. Its source is on <a href="https://github.com/AxiomMath/auctionlib">GitHub</a>.</p>
-    <p>The library keeps apart three things that textbooks usually blend:</p>
-
-    <ol class="stack" aria-label="Architecture layers">
-      <li class="layer"><code>Mechanism n</code><span>the rules of the game: an allocation rule <em>x</em> and a payment rule <em>t</em> over the vector of reports</span></li>
-      <li class="step">add random types for each bidder on a probability space (Ω, ℙ)</li>
-      <li class="layer"><code>Auction Ω n</code><span>a mechanism inside its probabilistic environment</span></li>
-      <li class="step">fix one bidder and the strategy the others play</li>
-      <li class="layer"><code>BidderProblem</code><span>that bidder's interim decision problem: win probability, cost, strategy</span></li>
-    </ol>
-    <p>A <code>BidderProblem</code> is a special case of a <code>SingleParameterProblem</code>, which covers any quasilinear problem with payoff <em>u</em>(<em>v</em>,<em>a</em>) = <em>v</em>·<em>x</em>(<em>a</em>) − <em>t</em>(<em>a</em>), whether the action is a bid, a report, a contract choice, or a purchase decision. The envelope theorem and the payment identity are proved once at that level and reused by every application.</p>
-
-    <h3>Current results in auctionlib</h3>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>Result</th><th>Where</th></tr></thead>
-        <tbody>
-          <tr><td>Envelope theorem: <em>U</em> is Lipschitz, <em>U′</em> = <em>q</em> almost everywhere, integral representation</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/BidderProblem/EnvelopeIC.lean"><code>BidderProblem/EnvelopeIC</code></a></td></tr>
-          <tr><td>Myerson's lemma, both directions</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/BidderProblem/TypeDeviationIC.lean"><code>BidderProblem/TypeDeviationIC</code></a></td></tr>
-          <tr><td>Revenue equivalence; expected revenue equals E[<em>S</em><sub>2</sub>] under symmetric independent private values</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/Auction/RevenueEquivalence.lean"><code>Auction/RevenueEquivalence</code></a></td></tr>
-          <tr><td>Seller profit as expected virtual surplus; posted-price optimality conditions</td><td><a href="https://github.com/AxiomMath/auctionlib/tree/main/Auctionlib/ValueDistribution"><code>ValueDistribution/</code></a></td></tr>
-          <tr><td>All-purchase auctions: explicit equilibria, revenue and welfare decompositions, optimal pricing</td><td><a href="https://github.com/AxiomMath/auctionlib/tree/main/Auctionlib/Auction/AllPurchase"><code>Auction/AllPurchase/</code></a></td></tr>
-          <tr><td>Winner's-curse inequality for affiliated signals on finite lattices</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/Auction/Affiliation/WinnersCurse.lean"><code>Auction/Affiliation/WinnersCurse</code></a></td></tr>
-          <tr><td>Existence of pure and mixed Nash equilibria, via Kakutani–Glicksberg–Fan</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/GameTheory/NashExistence.lean"><code>GameTheory/NashExistence</code></a></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>The <a href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">README</a> indexes every file and theorem and is the authoritative list; this page shows only the headline results.</p>
-    <p>Every result compiles without <code>sorry</code>, and <code>#print axioms</code> on the main theorems shows only <code>propext</code>, <code>Classical.choice</code>, and <code>Quot.sound</code>. The statements of the core theorems are pinned in a separate file that the build checks, so a change to any public statement breaks the build loudly rather than silently.</p>
 
     <h2 id="docs">Documentation</h2>
     <dl class="docs">
