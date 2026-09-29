@@ -8,7 +8,7 @@
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MathEconLib">
-<meta property="og:description" content="Shared foundations for new economic research in Lean 4.">
+<meta property="og:description" content="Machine-checked foundations for new research in economics.">
 <meta property="og:url" content="https://matheconlib.bo-cowgill.workers.dev/">
 <meta property="og:site_name" content="MathEconLib">
 <meta name="twitter:card" content="summary">
@@ -206,17 +206,16 @@
         <li><a href="#auctionlib">auctionlib</a></li>
         <li><a href="#docs">Docs</a></li>
         <li><a href="#contribute">Contribute</a></li>
-        <li><a href="#roadmap">Roadmap</a></li>
         <li><a href="#people">People</a></li>
         <li><a href="#cite">Cite</a></li>
-        <li><a href="https://github.com/AxiomMath/auctionlib">auctionlib repository</a></li>
+        <li><a href="https://github.com/AxiomMath/auctionlib">GitHub</a></li>
       </ul>
     </nav>
   </header>
 
   <main id="top">
     <h1 id="about">MathEconLib</h1>
-    <p class="tagline">Shared foundations for new economic research.</p>
+    <p class="tagline">Machine-checked foundations&nbsp;for new research in economics.</p>
     <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming.</p>
     <p class="lede">MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
     <h2 id="research">Build new results from shared foundations</h2>
@@ -237,7 +236,7 @@
     </dl>
 
     <h2 id="auctionlib">First library: auctionlib</h2>
-    <p>MathEconLib begins with <code>auctionlib</code>, its first substantial library. It formalizes the single-parameter theory of auctions and pricing, from incentive compatibility through revenue equivalence, together with the game-theoretic foundations those results assume. The <a href="https://github.com/AxiomMath/auctionlib">auctionlib repository</a> is hosted on GitHub.</p>
+    <p>MathEconLib begins with <code>auctionlib</code>, its first substantial library. It formalizes the single-parameter theory of auctions and pricing, from incentive compatibility through revenue equivalence, together with the game-theoretic foundations those results assume. Its source is on <a href="https://github.com/AxiomMath/auctionlib">GitHub</a>.</p>
     <p>The library keeps apart three things that textbooks usually blend:</p>
 
     <ol class="stack" aria-label="Architecture layers">
@@ -286,26 +285,6 @@
     <p>Changes to the foundational layers start with a design issue: sketch the definitions and main statements and get agreement on the shape before writing proofs. Every pull request must build cleanly, contain no <code>sorry</code>, <code>admit</code>, or <code>native_decide</code>, and add no axioms beyond the standard three.</p>
     <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. Questions go to the person listed under <a href="#people">People</a>.</p>
 
-    <h2 id="roadmap">Roadmap</h2>
-    <p>The roadmap has two horizons: extending MathEconLib across economics and deepening the current work in <code>auctionlib</code>.</p>
-
-    <h3>Across economics</h3>
-    <ul>
-      <li>Build shared foundations for microeconomic theory beyond auctions, including decision theory, information, contracts, industrial organization, and general equilibrium</li>
-      <li>Develop macroeconomic libraries for dynamic optimization, recursive equilibrium, growth, heterogeneous-agent models, and monetary and fiscal theory</li>
-      <li>Develop econometric libraries for identification, estimation, inference, and causal and structural methods</li>
-    </ul>
-
-    <h3>Immediate auctionlib work</h3>
-    <ul>
-      <li>Riley–Zeckhauser comparison of posted prices with general selling rules</li>
-      <li>Posted-price comparative statics, starting with uniform-distribution parameters</li>
-      <li>Continuous affiliation results and the Linkage Principle</li>
-      <li>Revelation principle over abstract message spaces</li>
-      <li>Extensive-form and obviously strategy-proof mechanisms</li>
-      <li>Multi-unit and simultaneous ascending auction models</li>
-    </ul>
-
     <h2 id="people">People</h2>
     <h3>Core contributors</h3>
     <p>Alphabetical. <span class="placeholder">[Affiliations and personal links to confirm with each person.]</span></p>
@@ -324,7 +303,7 @@
       <table>
         <thead><tr><th>Topic</th><th>Contact</th></tr></thead>
         <tbody>
-          <tr><td>Mathematical scope and the formalization roadmap</td><td>Scott Duke Kominers</td></tr>
+          <tr><td>Mathematical scope and project direction</td><td>Scott Duke Kominers</td></tr>
           <tr><td>Core framework: mechanisms, auctions, bidder problems, revenue equivalence</td><td>Jujian Zhang</td></tr>
           <tr><td>Value distributions, posted pricing, the single-parameter layer, documentation</td><td>Bo Cowgill</td></tr>
           <tr><td>All-purchase auctions, affiliation, winner's curse</td><td>Ruiz Chen</td></tr>
