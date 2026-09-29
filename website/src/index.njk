@@ -74,21 +74,12 @@
   a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
   a:hover { color: var(--accent-ink); border-bottom-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  code, pre {
+  code {
     font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
     font-size: 0.88em;
   }
   code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 3px; }
   a > code { color: inherit; }
-  pre {
-    background: var(--code-bg);
-    padding: 1rem 1.1rem;
-    overflow-x: auto;
-    line-height: 1.5;
-    border-left: 3px solid var(--accent);
-    margin: 1.2rem 0;
-  }
-  pre code { background: none; padding: 0; }
 
   .page { max-width: 44rem; margin: 0 auto; padding: 0 1.25rem 5rem; }
 
@@ -207,7 +198,6 @@
         <li><a href="#docs">Docs</a></li>
         <li><a href="#contribute">Contribute</a></li>
         <li><a href="#people">People</a></li>
-        <li><a href="#cite">Cite</a></li>
         <li><a href="https://github.com/AxiomMath/auctionlib">GitHub</a></li>
       </ul>
     </nav>
@@ -298,36 +288,8 @@
       <li>Jujian Zhang<span class="aff">Axiom Math</span><a class="handle" href="https://github.com/jjaassoonn">@jjaassoonn</a></li>
     </ul>
 
-    <h3>Who to ask</h3>
-    <p>Based on who has written each part of the library. Reach people through their GitHub handle above. <span class="placeholder">[Please correct.]</span></p>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>Topic</th><th>Contact</th></tr></thead>
-        <tbody>
-          <tr><td>Mathematical scope and project direction</td><td>Scott Duke Kominers</td></tr>
-          <tr><td>Core framework: mechanisms, auctions, bidder problems, revenue equivalence</td><td>Jujian Zhang</td></tr>
-          <tr><td>Value distributions, posted pricing, the single-parameter layer, documentation</td><td>Bo Cowgill</td></tr>
-          <tr><td>All-purchase auctions, affiliation, winner's curse</td><td>Ruiz Chen</td></tr>
-          <tr><td>Game theory, Nash existence, fixed-point theorems for Mathlib</td><td>Ben Eltschig</td></tr>
-          <tr><td>Revelation principle; onboarding for economists new to Lean</td><td>Moran Koren</td></tr>
-          <tr><td>Repository access, continuous integration, toolchain</td><td><span class="placeholder">[maintainer]</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-
     <h3>Acknowledgments</h3>
     <p>MathEconLib was developed with the support of <a href="https://axiommath.ai">Axiom Math</a>.</p>
-
-    <h2 id="cite">Citing current libraries</h2>
-    <p>If you use the library in academic work, please cite it. <span class="placeholder">[Finalize the author list, and mint a Zenodo DOI once the repository is public.]</span></p>
-<pre><code>@software{auctionlib2026,
-  author = {Chen, Ruiz and Cowgill, Bo and Eltschig, Ben and
-            Kominers, Scott Duke and Koren, Moran and Zhang, Jujian},
-  title  = {auctionlib: A Lean 4 formalization of auction theory},
-  year   = {2026},
-  url    = {https://github.com/AxiomMath/auctionlib},
-  note   = {Part of MathEconLib}
-}</code></pre>
   </main>
 
   <footer>
