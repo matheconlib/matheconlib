@@ -155,11 +155,11 @@ private lemma F_pow_strict_mono
 
 /-- **Lemma 6.2 — Strict monotonicity.** In a symmetric IPV auction with positive density and
 strict-highest-bid allocation, if the `BidderProblem` constructed via `toBidderProblem` is regular
-and satisfies universal IC over nonnegative bids, then the equilibrium strategy is strictly monotone
-on the type interval. -/
+and satisfies universal IC over nonnegative bids, then the equilibrium strategy is strictly
+monotone on the type interval. -/
 theorem strictMonotonicity
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
-    (halloc : IsValidAllocation A.rules (fun o i => o i))
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     {σ : ℝ → ℝ} (hσ_meas : Measurable σ) (i : Fin n)
     (hlo_nonneg : 0 ≤ lo)
@@ -206,7 +206,7 @@ theorem strictMonotonicity
 /-- Distinct types in the interior have distinct bids. -/
 theorem no_ties
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
-    (halloc : IsValidAllocation A.rules (fun o i => o i))
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     {σ : ℝ → ℝ} (hσ_meas : Measurable σ) (i : Fin n)
     (hlo_nonneg : 0 ≤ lo)

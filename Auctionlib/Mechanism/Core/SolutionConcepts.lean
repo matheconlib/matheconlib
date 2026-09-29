@@ -24,21 +24,21 @@ aggregate transfers at every action profile, for direct or indirect mechanisms.
 
 ## Main definitions
 
-* `DirectMechanism.IsDSIC`: truthful reporting weakly dominates every own report.
-* `DirectMechanism.IsExPostIR`: truthful participation gives every agent nonnegative utility.
-* `DirectMechanism.IsEfficient`: truthful outcomes maximize total value.
-* `Mechanism.IsBudgetBalanced`: aggregate signed transfers are zero at every action profile.
-* `Mechanism.IsNoDeficit`: aggregate signed transfers are nonpositive at every action profile.
+* `DirectMechanism.IsDSIC`: Truthful reporting weakly dominates every own report.
+* `DirectMechanism.IsExPostIR`: Truthful participation gives every agent nonnegative utility.
+* `DirectMechanism.IsEfficient`: Truthful outcomes maximize total value.
+* `Mechanism.IsBudgetBalanced`: Aggregate signed transfers are zero at every action profile.
+* `Mechanism.IsNoDeficit`: Aggregate signed transfers are nonpositive at every action profile.
 
 ## Main statements
 
-* `DirectMechanism.isEfficient_iff`: efficiency is equivalent to weakly exceeding the total value
+* `DirectMechanism.isEfficient_iff`: Efficiency is equivalent to weakly exceeding the total value
   of every alternative outcome at each truthful profile.
-* `Mechanism.isBudgetBalanced_iff_revenue_eq_zero`: strong budget balance is equivalent to zero
+* `Mechanism.isBudgetBalanced_iff_revenue_eq_zero`: Strong budget balance is equivalent to zero
   designer revenue at every action profile.
-* `Mechanism.isNoDeficit_iff_revenue_nonneg`: no deficit is equivalent to nonnegative designer
+* `Mechanism.isNoDeficit_iff_revenue_nonneg`: No deficit is equivalent to nonnegative designer
   revenue at every action profile.
-* `Mechanism.IsBudgetBalanced.isNoDeficit`: strong budget balance implies no deficit.
+* `Mechanism.IsBudgetBalanced.isNoDeficit`: Strong budget balance implies no deficit.
 
 ## Tags
 
@@ -46,8 +46,6 @@ mechanism design, incentive compatibility, individual rationality, efficiency, b
 -/
 
 @[expose] public section
-
-set_option linter.dupNamespace false
 
 universe uI uΘ uA uO
 
@@ -72,7 +70,7 @@ true type profile, every agent has nonnegative utility when all agents report tr
 outside utility normalized to zero. -/
 def IsExPostIR : Prop := ∀ i θ, 0 ≤ E.utility M i θ θ
 
-/-- Efficiency of the reporting mechanism `M` under valuations `E`: at every true type profile, the
+/-- Efficiency of the reporting mechanism `M` under valuations `E`: At every true type profile, the
 outcome selected when everyone reports truthfully maximizes total value over all outcomes in `O`.
 Total value is the sum of agents' values, excluding transfers. -/
 def IsEfficient [Fintype I] : Prop :=
@@ -85,14 +83,12 @@ theorem isEfficient_iff [Fintype I] :
 
 end DirectMechanism
 
-namespace Mechanism
-
 variable (M : Mechanism I A O)
 
-/-- Strong budget balance: agents' signed transfers sum to zero at every action profile. -/
+/-- Strong budget balance: Agents' signed transfers sum to zero at every action profile. -/
 def IsBudgetBalanced [Fintype I] : Prop := ∀ a, ∑ i, M.transfer i a = 0
 
-/-- No deficit: the designer never pays out on net at any action profile. -/
+/-- No deficit: The designer never pays out on net at any action profile. -/
 def IsNoDeficit [Fintype I] : Prop := ∀ a, ∑ i, M.transfer i a ≤ 0
 
 /-- Strong budget balance holds exactly when the designer's revenue is zero at every action
@@ -109,8 +105,6 @@ theorem isNoDeficit_iff_revenue_nonneg [Fintype I] :
 /-- A budget-balanced mechanism never runs a deficit. -/
 theorem IsBudgetBalanced.isNoDeficit [Fintype I] (h : M.IsBudgetBalanced) :
     M.IsNoDeficit := fun a => le_of_eq (h a)
-
-end Mechanism
 
 end Auctionlib.Mechanism
 

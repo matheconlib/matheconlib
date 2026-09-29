@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Daniel Lyng
+-/
 module
 
 public import Auctionlib.Mechanism.Auctions.Allocation
@@ -26,7 +31,8 @@ nonnegative here.
 ## Main statements
 
 * `AllPurchaseSpec.payment_eq`: net payment equals gross purchase expenditure minus resale proceeds.
-* `AllPurchaseSpec.isValidAllocation`: prize allocation probabilities lie between zero and one.
+* `AllPurchaseSpec.isUnitIntervalAllocation`: prize allocation probabilities lie between zero and
+  one.
 
 ## Tags
 
@@ -84,9 +90,9 @@ theorem payment_eq (spec : AllPurchaseSpec M alloc) (i : I) (b : I → ℝ) :
   simp [Mechanism.payment, spec.transfer_eq]
 
 /-- All-purchase prize allocation probabilities lie between zero and one. -/
-theorem isValidAllocation (spec : AllPurchaseSpec M alloc) :
-    IsValidAllocation M alloc :=
-  spec.usesStrictHighestBidAllocation.isValidAllocation
+theorem isUnitIntervalAllocation (spec : AllPurchaseSpec M alloc) :
+    IsUnitIntervalAllocation M alloc :=
+  spec.usesStrictHighestBidAllocation.isUnitIntervalAllocation
 
 end AllPurchaseSpec
 

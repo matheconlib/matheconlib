@@ -22,16 +22,16 @@ the outcome and transfers; truthful reporting means that every agent reports the
 
 ## Main definitions
 
-* `Mechanism`: an outcome rule and signed monetary transfers on agents' action profiles.
-* `DirectMechanism`: a mechanism whose actions are reports of agents' types.
-* `Mechanism.payment`: the money charged to an agent at an action profile.
-* `Mechanism.revenue`: the designer's net monetary receipts at an action profile.
+* `Mechanism`: An outcome rule and signed monetary transfers on agents' action profiles.
+* `Mechanism.DirectMechanism`: A mechanism whose actions are reports of agents' types.
+* `Mechanism.payment`: The money charged to an agent at an action profile.
+* `Mechanism.revenue`: The designer's net monetary receipts at an action profile.
 
 ## Main statements
 
-* `Mechanism.payment_eq_neg_transfer`: an agent's payment is the negative of their transfer.
-* `Mechanism.revenue_eq_neg_sum_transfer`: revenue is the negative of total transfers to agents.
-* `Mechanism.revenue_eq_sum_payment`: revenue is the sum of agents' payments.
+* `Mechanism.payment_eq_neg_transfer`: An agent's payment is the negative of their transfer.
+* `Mechanism.revenue_eq_neg_sum_transfer`: Revenue is the negative of total transfers to agents.
+* `Mechanism.revenue_eq_sum_payment`: Revenue is the sum of agents' payments.
 
 ## Tags
 
@@ -40,16 +40,15 @@ mechanism design, direct mechanisms, transfers, payments, revenue
 
 @[expose] public section
 
--- The carrier `Mechanism` belongs to the library's `Auctionlib.Mechanism` namespace.
-set_option linter.dupNamespace false
-
 universe uI uA uO
 
-namespace Auctionlib.Mechanism
+namespace Auctionlib
+
+open Mechanism (Profile)
 
 /-- An outcome rule and monetary transfers for agents `I`, where `A i` is the action space of agent
 `i` and `O` is the outcome space. At an action profile `a`, `outcome a` is the selected outcome and
-`transfer i a` is agent `i`'s net monetary receipt: positive amounts are received by the agent, and
+`transfer i a` is agent `i`'s net monetary receipt: Positive amounts are received by the agent, and
 negative amounts are paid by the agent. -/
 @[ext]
 structure Mechanism (I : Type uI) (A : I → Type uA) (O : Type uO) where
@@ -58,13 +57,13 @@ structure Mechanism (I : Type uI) (A : I → Type uA) (O : Type uO) where
   /-- Net money received by agent `i` at an action profile, negative when the agent pays. -/
   transfer : (i : I) → Profile A → ℝ
 
+namespace Mechanism
+
 /-- A mechanism in which each agent `i : I` reports a type in `Θ i`. The reported profile
 determines an outcome in `O` and monetary transfers. Reports may differ from agents' true types;
 truthful reporting means that each agent reports their own true type. -/
 abbrev DirectMechanism (I : Type uI) (Θ : I → Type uA) (O : Type uO) :=
   Mechanism I Θ O
-
-namespace Mechanism
 
 variable {I : Type uI} {A : I → Type uA} {O : Type uO} (M : Mechanism I A O)
 
@@ -89,6 +88,6 @@ theorem revenue_eq_sum_payment [Fintype I] (a : Profile A) :
 
 end Mechanism
 
-end Auctionlib.Mechanism
+end Auctionlib
 
 end

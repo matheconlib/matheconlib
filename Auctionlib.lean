@@ -35,6 +35,7 @@ import Auctionlib.ForMathlib.Schauder
 import Auctionlib.ForMathlib.StochasticOrder
 import Auctionlib.GameTheory.Basic
 import Auctionlib.GameTheory.NashExistence
+import Auctionlib.Mechanism
 import Auctionlib.Mechanism.Auctions.AllPurchase.Spec
 import Auctionlib.Mechanism.Auctions.Allocation
 import Auctionlib.Mechanism.Core.Comap

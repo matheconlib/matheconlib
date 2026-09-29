@@ -215,14 +215,14 @@ theorem boundary_regime_strategy_auction
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n)
-    (hIC : (A.toBidderProblem A.spec.isValidAllocation β i).HasTypeDeviationIC)
-    (hBR : (A.toBidderProblem A.spec.isValidAllocation β i).IsBoundaryRegime)
+    (hIC : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (hBR : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
     (hK : 0 ≤ A.K_linear β)
-    (v : ℝ) (hv : v ∈ (A.toBidderProblem A.spec.isValidAllocation β i).typeInterval)
-    (h_bAP_nn : 0 ≤ (A.toBidderProblem A.spec.isValidAllocation β i).allPayBid v)
+    (v : ℝ) (hv : v ∈ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).typeInterval)
+    (h_bAP_nn : 0 ≤ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v)
     (h_strat_nn : 0 ≤ β v) :
     β v = strategyBoundary A.α_coeff (A.K_linear β)
-      ((A.toBidderProblem A.spec.isValidAllocation β i).allPayBid v) := by
+      ((A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
   let P := A.toQuadraticCostProblem β hβ_meas hβ_int i
   letI : BidderProblem.HasTypeDeviationIC P.toBidderProblem := hIC
   letI : BidderProblem.IsBoundaryRegime P.toBidderProblem := hBR
@@ -239,16 +239,16 @@ theorem interior_regime_strategy_auction
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n)
-    (hIC : (A.toBidderProblem A.spec.isValidAllocation β i).HasTypeDeviationIC)
+    (hIC : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
     (hK_neg : A.K_linear β < 0)
-    (hU_eq : (A.toBidderProblem A.spec.isValidAllocation β i).U
-        (A.toBidderProblem A.spec.isValidAllocation β i).lowestType =
+    (hU_eq : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+        (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
         (A.K_linear β) ^ 2 / (4 * A.α_coeff))
-    (v : ℝ) (hv : v ∈ (A.toBidderProblem A.spec.isValidAllocation β i).typeInterval)
-    (h_bAP_nn : 0 ≤ (A.toBidderProblem A.spec.isValidAllocation β i).allPayBid v)
+    (v : ℝ) (hv : v ∈ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).typeInterval)
+    (h_bAP_nn : 0 ≤ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v)
     (h_strat_ge : -(A.K_linear β) / (2 * A.α_coeff) ≤ β v) :
     β v = strategyInterior A.α_coeff (-(A.K_linear β))
-      ((A.toBidderProblem A.spec.isValidAllocation β i).allPayBid v) := by
+      ((A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
   let P : InteriorRegimeProblem := {
     A.toQuadraticCostProblem β hβ_meas hβ_int i with
     K_neg := hK_neg

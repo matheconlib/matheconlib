@@ -237,7 +237,7 @@ noncomputable def toQuadraticCostProblem
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n) : QuadraticCostProblem where
-  toBidderProblem := A.toBidderProblem A.spec.isValidAllocation β i
+  toBidderProblem := A.toBidderProblem A.spec.isUnitIntervalAllocation β i
   α_coeff := A.α_coeff
   K_param := A.K_linear β
   α_pos := A.α_pos

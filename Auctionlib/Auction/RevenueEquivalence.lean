@@ -27,25 +27,24 @@ variable (A : Auction Ω n) [A.IsSymmetricIPV]
 /-- Under BIC, strict-highest-bid allocation, and zero lowest-type utility, the per-type expected
 payment is uniquely determined by the common CDF. -/
 lemma payment_formula_strictHighestBid
-    (halloc : IsValidAllocation A.rules (fun o i => o i))
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     [A.BIC] [A.HasZeroLowestTypeUtility]
     (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) :
     A.p i s = s * A.commonCDF s ^ (n - 1) -
       ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1) := by
-  have hpf := A.payment_formula halloc i hs
+  have hpf := A.payment_formula hwinner.isUnitIntervalAllocation i hs
   simp [A.q_eq_pow hwinner, HasZeroLowestTypeUtility.zeroLowestTypeUtility i] at hpf ⊢
   linarith
 
 /-- **Revenue Equivalence Theorem.**
 
-Two BIC symmetric IPV auctions with zero lowest-type utility, the same `q`, same type bounds,
-and identically distributed types yield the same expected total revenue. -/
+Two BIC symmetric IPV auctions with zero lowest-type utility, the same `q`, same type bounds, and
+identically distributed types yield the same expected total revenue. -/
 theorem revenue_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.IsSymmetricIPV]
-    (halloc : IsValidAllocation A.rules (fun o i => o i))
-    (halloc₂ : IsValidAllocation A₂.rules (fun o i => o i))
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (halloc₂ : IsUnitIntervalAllocation A₂.rules (fun o i => o i))
     (hq : ∀ i, A.q i = A₂.q i)
     (hmin : A.lowestType = A₂.lowestType)
     (hmax : A.highestType = A₂.highestType)
@@ -75,10 +74,9 @@ theorem revenue_equivalence
     _ = ∫ ω, A₂.p i (A₂.θ i ω) ∂ℙ :=
         ((ident i).comp (p_meas i)).integral_eq
 
-/-- Under strict-highest-bid allocation, BIC, and zero lowest-type utility, the expected total revenue
-equals `𝔼[S₂]`, the expected second-highest order statistic. -/
+/-- Under strict-highest-bid allocation, BIC, and zero lowest-type utility, the expected total
+revenue equals `𝔼[S₂]`, the expected second-highest order statistic. -/
 lemma total_revenue
-    (halloc : IsValidAllocation A.rules (fun o i => o i))
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     [A.BIC] [A.HasZeroLowestTypeUtility] :
     A.expectedRevenue = 𝔼[A.S₂] := by
@@ -87,7 +85,7 @@ lemma total_revenue
     fun s => s * A.commonCDF s ^ (n - 1) -
       ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1)
   have hrw (j ω) : A.p j (A.θ j ω) = φ (A.θ j ω) :=
-    A.payment_formula_strictHighestBid halloc hwinner j (HasBoundedTypes.θ_in j ω)
+    A.payment_formula_strictHighestBid hwinner j (HasBoundedTypes.θ_in j ω)
   simp_rw [hrw]
   have hφ_meas : Measurable φ := by
     refine Measurable.sub

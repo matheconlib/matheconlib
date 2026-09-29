@@ -16,12 +16,12 @@ these maps are strategies, and the induced mechanism is a direct mechanism on th
 
 ## Main definitions
 
-* `Auctionlib.Mechanism.Mechanism.comap`: the mechanism induced by maps from reports to actions.
+* `Auctionlib.Mechanism.comap`: the mechanism induced by maps from reports to actions.
 
 ## Main statements
 
-* `Auctionlib.Mechanism.Mechanism.comap_id`: identity report maps induce the original mechanism.
-* `Auctionlib.Mechanism.Mechanism.comap_comp`: successive report maps compose pointwise.
+* `Auctionlib.Mechanism.comap_id`: identity report maps induce the original mechanism.
+* `Auctionlib.Mechanism.comap_comp`: successive report maps compose pointwise.
 
 ## Tags
 
@@ -30,12 +30,9 @@ mechanism design, direct mechanisms, strategy profiles, report maps
 
 @[expose] public section
 
--- Operations on the carrier retain the enclosing `Auctionlib.Mechanism` namespace.
-set_option linter.dupNamespace false
-
 universe uI uA uB uC uO
 
-namespace Auctionlib.Mechanism.Mechanism
+namespace Auctionlib.Mechanism
 
 variable {I : Type uI} {A : I → Type uA} {B : I → Type uB} {C : I → Type uC}
   {O : Type uO} (M : Mechanism I A O)
@@ -74,6 +71,6 @@ profile prescribed by `σ`. -/
 theorem comap_comp (σ : ∀ i, B i → A i) (τ : ∀ i, C i → B i) :
     (M.comap σ).comap τ = M.comap (fun i => σ i ∘ τ i) := rfl
 
-end Auctionlib.Mechanism.Mechanism
+end Auctionlib.Mechanism
 
 end

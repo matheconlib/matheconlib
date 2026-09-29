@@ -4,13 +4,13 @@ This is Lean4 project (lean-4.28.0) to formalize theorems in auction theory. The
 
 Three-layer design following the mathematical reference (Section 2-3):
 
-1. **Mechanism** (`Mechanism/Core/`): `Auctionlib.Mechanism.Mechanism I A O` stores an outcome rule and signed transfers (positive to the agent). Carriers are explicit; payment is negative transfer. Environments and deterministic solution predicates are prior-free.
+1. **Mechanism** (`Mechanism/Core/`): `Auctionlib.Mechanism I A O` stores an outcome rule and signed transfers (positive to the agent). Carriers are explicit; payment is negative transfer. Environments and deterministic solution predicates are prior-free.
 2. **Auction** (`Auction/`): mechanism + probabilistic environment (`θ`, `θmin`, `θmax`) on probability space `(Ω, ℙ)` (Section 3a+3b)
 3. **BidderProblem** (`BidderProblem/`): per-bidder interim view (`winProb`, `cost`, `strategy`) with IC typeclass chain
 
-Flow: `Auction → toBidderProblem halloc → BidderProblem` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem). Allocation bounds are an explicit `IsValidAllocation` proof.
+Flow: `Auction → toBidderProblem halloc → BidderProblem` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem). Allocation bounds are an explicit `IsUnitIntervalAllocation` proof.
 
-Strategy-dependent interim quantities use the coordinate of `rules.outcome` and the canonical `rules.payment` (negative transfer). Standard `q`/`p` are the `σ = id` case. All-purchase calculations receive an explicit `AllPurchaseSpec` for selected price/scarcity data and its `payment_eq` identity. Under linear scarcity, `LinearScarcityAuction.toQuadraticCostProblem` uses `A.spec` and proves the quadratic cost form.
+Strategy-dependent interim quantities use the coordinate of `rules.outcome` and the canonical `rules.payment` (negative transfer). Standard `q`/`p` are the `σ = id` case. `Auction` carries allocation-rule measurability. Arbitrary strategies use totalized integrals; measurable strategies and allocation bounds ensure integrable allocation, while payment integrability is separate. All-purchase calculations receive an explicit `AllPurchaseSpec` for selected price/scarcity data and its `payment_eq` identity. Under linear scarcity, `LinearScarcityAuction.toQuadraticCostProblem` uses `A.spec` and proves the quadratic cost form.
 
 Mechanism properties are ordinary propositions. `UsesStrictHighestBidAllocation` preserves the old rule that tied highest bids allocate nothing; it is distinct from environment-relative welfare efficiency. `AllPurchaseSpec` carries selected data, while `IsAllPurchase` is its `Nonempty` predicate. Neither is a typeclass.
 

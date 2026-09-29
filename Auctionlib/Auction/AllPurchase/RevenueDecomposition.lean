@@ -91,7 +91,7 @@ noncomputable def expectedAllPayBid : ℝ :=
 This is the common baseline utility only when lowest-type utilities are equal across bidders, as
 required explicitly in the revenue decomposition. -/
 noncomputable def lowestTypeUtility
-    (halloc : IsValidAllocation A.rules (fun o i => o i)) (β : ℝ → ℝ) : ℝ :=
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i)) (β : ℝ → ℝ) : ℝ :=
   (A.toBidderProblem halloc β 0).U (A.toBidderProblem halloc β 0).lowestType
 
 /-! ### Seller's three mechanism options (for Corollary 6.11) -/
@@ -191,7 +191,7 @@ lemma toBidderProblem_q_eq_cdf_pow
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
     (hβ_meas : Measurable β)
     (i : Fin n) {v : ℝ} (hv : v ∈ Icc A.lowestType A.highestType) :
-    (A.toBidderProblem hstrict.isValidAllocation β i).q v = A.commonCDF v ^ (n - 1) := by
+    (A.toBidderProblem hstrict.isUnitIntervalAllocation β i).q v = A.commonCDF v ^ (n - 1) := by
   simp only [BidderProblem.q_eq, toBidderProblem_winProb,
     toBidderProblem_strategy]
   exact A.q_strat_at_strictMono_eq hstrict hβ_mono hβ_meas i hv
@@ -208,14 +208,15 @@ lemma toBidderProblem_allPayBid_eq
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
     (hβ_meas : Measurable β)
     (i : Fin n)
-    [BidderProblem.HasTypeDeviationIC (A.toBidderProblem hstrict.isValidAllocation β i)]
+    [BidderProblem.HasTypeDeviationIC (A.toBidderProblem hstrict.isUnitIntervalAllocation β i)]
     {v : ℝ} (hv : v ∈ Icc A.lowestType A.highestType) :
-    (A.toBidderProblem hstrict.isValidAllocation β i).allPayBid v = A.allPayBid v := by
+    (A.toBidderProblem hstrict.isUnitIntervalAllocation β i).allPayBid v = A.allPayBid v := by
   -- Both sides are `v · _ - ∫ lowestType..v, _`; the `_` pieces agree on [lowestType, v].
   simp only [BidderProblem.allPayBid, allPayBid]
-  have hlo : (A.toBidderProblem hstrict.isValidAllocation β i).lowestType = A.lowestType := by
+  have hlo : (A.toBidderProblem hstrict.isUnitIntervalAllocation β i).lowestType =
+      A.lowestType := by
     simp [toBidderProblem]
-  have hq_at_v : (A.toBidderProblem hstrict.isValidAllocation β i).q v =
+  have hq_at_v : (A.toBidderProblem hstrict.isUnitIntervalAllocation β i).q v =
       A.commonCDF v ^ (n - 1) :=
     A.toBidderProblem_q_eq_cdf_pow hstrict hβ_mono hβ_meas i hv
   rw [hlo, hq_at_v]
@@ -361,16 +362,16 @@ lemma expectedNetPayment_eq
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
-    (hIC : ∀ i, (A.toBidderProblem spec.isValidAllocation β i).HasTypeDeviationIC)
+    (hIC : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
     (ht_int : ∀ i, Integrable
       (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) ℙ)
     (hallPayBid_meas : Measurable A.allPayBid)
     (hallPayBid_int : ∀ i, Integrable (fun ω => A.allPayBid (A.θ i ω)) ℙ)
-    (hU_sym : ∀ i, (A.toBidderProblem spec.isValidAllocation β i).U
-        (A.toBidderProblem spec.isValidAllocation β i).lowestType
-        = A.lowestTypeUtility spec.isValidAllocation β) :
+    (hU_sym : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+        (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType
+        = A.lowestTypeUtility spec.isUnitIntervalAllocation β) :
     A.expectedNetPayment β =
-      n * (A.expectedAllPayBid - A.lowestTypeUtility spec.isValidAllocation β) := by
+      n * (A.expectedAllPayBid - A.lowestTypeUtility spec.isUnitIntervalAllocation β) := by
   -- Step 1: pull the sum out of the integral using integrability of each term.
   have step1 : A.expectedNetPayment β =
       ∑ i, 𝔼[fun ω => A.rules.payment i (fun j => β (A.θ j ω))] := by
@@ -380,12 +381,12 @@ lemma expectedNetPayment_eq
   -- Step 2: show each per-bidder integral equals `expectedAllPayBid − lowestTypeUtility β`.
   have per_bidder : ∀ i,
       𝔼[fun ω => A.rules.payment i (fun j => β (A.θ j ω))] =
-        A.expectedAllPayBid - A.lowestTypeUtility spec.isValidAllocation β := fun i => by
+        A.expectedAllPayBid - A.lowestTypeUtility spec.isUnitIntervalAllocation β := fun i => by
     -- (a) iterated expectation
     rw [A.integral_t_i_eq_integral_p_strat spec β hβ_meas i (ht_int i)]
     -- (b)+(c)+(d) pointwise: p_strat β i (β v) = A.allPayBid v − U(lowestType)
     have hθ_mem : ∀ ω,
-        A.θ i ω ∈ (A.toBidderProblem spec.isValidAllocation β i).typeInterval :=
+        A.θ i ω ∈ (A.toBidderProblem spec.isUnitIntervalAllocation β i).typeInterval :=
       fun ω => HasBoundedTypes.θ_in (A := A) i ω
     have hθ_mem' : ∀ ω, A.θ i ω ∈ Icc A.lowestType A.highestType := fun ω => by
       have := HasBoundedTypes.θ_in (A := A) i ω
@@ -394,10 +395,10 @@ lemma expectedNetPayment_eq
     have pointwise : ∀ ω,
         A.p_strat β i (β (A.θ i ω)) =
           A.allPayBid (A.θ i ω) -
-            (A.toBidderProblem spec.isValidAllocation β i).U
-              (A.toBidderProblem spec.isValidAllocation β i).lowestType := by
+            (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+              (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType := by
       intro ω
-      have hBP := (A.toBidderProblem spec.isValidAllocation β i).netPaymentIdentity
+      have hBP := (A.toBidderProblem spec.isUnitIntervalAllocation β i).netPaymentIdentity
         (A.θ i ω) (hθ_mem ω)
       have hbridge :=
         A.toBidderProblem_allPayBid_eq spec.usesStrictHighestBidAllocation hβ_mono hβ_meas i
@@ -408,8 +409,8 @@ lemma expectedNetPayment_eq
       exact hBP
     rw [show (fun ω => A.p_strat β i (β (A.θ i ω))) =
           (fun ω => A.allPayBid (A.θ i ω) -
-            (A.toBidderProblem spec.isValidAllocation β i).U
-              (A.toBidderProblem spec.isValidAllocation β i).lowestType)
+            (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+              (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType)
         from funext pointwise]
     -- linearity: 𝔼[f(θᵢ) − c] = 𝔼[f(θᵢ)] − c
     rw [integral_sub (hallPayBid_int i) (integrable_const _)]
@@ -443,18 +444,18 @@ theorem revenue_decomposition
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
-    (hIC : ∀ i, (A.toBidderProblem spec.isValidAllocation β i).HasTypeDeviationIC)
+    (hIC : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
     (ht_int : ∀ i, Integrable
       (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) ℙ)
     (hedition_int : Integrable
       (fun ω => A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) ℙ)
     (hallPayBid_meas : Measurable A.allPayBid)
     (hallPayBid_int : ∀ i, Integrable (fun ω => A.allPayBid (A.θ i ω)) ℙ)
-    (hU_sym : ∀ i, (A.toBidderProblem spec.isValidAllocation β i).U
-        (A.toBidderProblem spec.isValidAllocation β i).lowestType
-        = A.lowestTypeUtility spec.isValidAllocation β) :
+    (hU_sym : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+        (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType
+        = A.lowestTypeUtility spec.isUnitIntervalAllocation β) :
     A.sellerGrossRevenue spec β =
-      n * A.expectedAllPayBid - n * A.lowestTypeUtility spec.isValidAllocation β +
+      n * A.expectedAllPayBid - n * A.lowestTypeUtility spec.isUnitIntervalAllocation β +
         A.expectedEditionValue spec β := by
   have hnet_int : Integrable
       (fun ω => ∑ i, A.rules.payment i (fun j => β (A.θ j ω))) ℙ :=
@@ -475,17 +476,17 @@ theorem revenue_decomposition_boundary
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
-    (hIC : ∀ i, (A.toBidderProblem spec.isValidAllocation β i).HasTypeDeviationIC)
+    (hIC : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
     (ht_int : ∀ i, Integrable
       (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) ℙ)
     (hedition_int : Integrable
       (fun ω => A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) ℙ)
     (hallPayBid_meas : Measurable A.allPayBid)
     (hallPayBid_int : ∀ i, Integrable (fun ω => A.allPayBid (A.θ i ω)) ℙ)
-    (hU_sym : ∀ i, (A.toBidderProblem spec.isValidAllocation β i).U
-        (A.toBidderProblem spec.isValidAllocation β i).lowestType
-        = A.lowestTypeUtility spec.isValidAllocation β)
-    (hU0 : A.lowestTypeUtility spec.isValidAllocation β = 0) :
+    (hU_sym : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+        (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType
+        = A.lowestTypeUtility spec.isUnitIntervalAllocation β)
+    (hU0 : A.lowestTypeUtility spec.isUnitIntervalAllocation β = 0) :
     A.sellerGrossRevenue spec β =
       n * A.expectedAllPayBid + A.expectedEditionValue spec β := by
   rw [A.revenue_decomposition spec β hβ_meas hβ_mono hIC
@@ -510,17 +511,17 @@ theorem bundling_revenue_gain
     [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
-    (hIC : ∀ i, (A.toBidderProblem spec.isValidAllocation β i).HasTypeDeviationIC)
+    (hIC : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
     (ht_int : ∀ i, Integrable
       (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) ℙ)
     (hedition_int : Integrable
       (fun ω => A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) ℙ)
     (hallPayBid_meas : Measurable A.allPayBid)
     (hallPayBid_int : ∀ i, Integrable (fun ω => A.allPayBid (A.θ i ω)) ℙ)
-    (hU_sym : ∀ i, (A.toBidderProblem spec.isValidAllocation β i).U
-        (A.toBidderProblem spec.isValidAllocation β i).lowestType
-        = A.lowestTypeUtility spec.isValidAllocation β)
-    (hU0 : A.lowestTypeUtility spec.isValidAllocation β = 0)
+    (hU_sym : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+        (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType
+        = A.lowestTypeUtility spec.isUnitIntervalAllocation β)
+    (hU0 : A.lowestTypeUtility spec.isUnitIntervalAllocation β = 0)
     (c B_ed : ℝ) :
     A.bundledProfit spec β c -
         A.allPayBenchmarkProfit -
@@ -559,8 +560,9 @@ and integrable payments, all-pay benchmark bids, and aggregate edition value. -/
 theorem revenue_decomposition_boundary_of_isBoundaryRegime
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
-    (hIC : ∀ i, (A.toAuction.toBidderProblem A.spec.isValidAllocation β i).HasTypeDeviationIC)
-    (hBR : ∀ i, (A.toAuction.toBidderProblem A.spec.isValidAllocation β i).IsBoundaryRegime)
+    (hIC : ∀ i,
+      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (hBR : ∀ i, (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
     (ht_int : ∀ i, Integrable
       (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) ℙ)
     (hedition_int : Integrable
@@ -571,14 +573,14 @@ theorem revenue_decomposition_boundary_of_isBoundaryRegime
     A.toAuction.sellerGrossRevenue A.spec β =
       n * A.toAuction.expectedAllPayBid +
         A.toAuction.expectedEditionValue A.spec β := by
-  have hU0 : A.toAuction.lowestTypeUtility A.spec.isValidAllocation β = 0 := by
-    change (A.toAuction.toBidderProblem A.spec.isValidAllocation β 0).U
-      (A.toAuction.toBidderProblem A.spec.isValidAllocation β 0).lowestType = 0
+  have hU0 : A.toAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β = 0 := by
+    change (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
+      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType = 0
     exact (hBR 0).U_lowestType_zero
   have hU_sym : ∀ i,
-      (A.toAuction.toBidderProblem A.spec.isValidAllocation β i).U
-        (A.toAuction.toBidderProblem A.spec.isValidAllocation β i).lowestType =
-        A.toAuction.lowestTypeUtility A.spec.isValidAllocation β := fun i => by
+      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+        (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
+        A.toAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β := fun i => by
     rw [(hBR i).U_lowestType_zero, hU0]
   exact A.toAuction.revenue_decomposition_boundary A.spec β hβ_meas hβ_mono hIC
     ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
@@ -608,8 +610,9 @@ nonnegative purchase quantity only when `φ̄ ≥ p`. -/
 theorem bundling_revenue_gain_of_isBoundaryRegime
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
-    (hIC : ∀ i, (A.toAuction.toBidderProblem A.spec.isValidAllocation β i).HasTypeDeviationIC)
-    (hBR : ∀ i, (A.toAuction.toBidderProblem A.spec.isValidAllocation β i).IsBoundaryRegime)
+    (hIC : ∀ i,
+      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (hBR : ∀ i, (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
     (ht_int : ∀ i, Integrable
       (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) ℙ)
     (hedition_int : Integrable
@@ -624,14 +627,14 @@ theorem bundling_revenue_gain_of_isBoundaryRegime
       A.toAuction.expectedEditionValue A.spec β -
         c * A.toAuction.expectedAggregateBid β -
         (A.spec.price - c) * A.cournotQuantityLinear := by
-  have hU0 : A.toAuction.lowestTypeUtility A.spec.isValidAllocation β = 0 := by
-    change (A.toAuction.toBidderProblem A.spec.isValidAllocation β 0).U
-      (A.toAuction.toBidderProblem A.spec.isValidAllocation β 0).lowestType = 0
+  have hU0 : A.toAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β = 0 := by
+    change (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
+      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType = 0
     exact (hBR 0).U_lowestType_zero
   have hU_sym : ∀ i,
-      (A.toAuction.toBidderProblem A.spec.isValidAllocation β i).U
-        (A.toAuction.toBidderProblem A.spec.isValidAllocation β i).lowestType =
-        A.toAuction.lowestTypeUtility A.spec.isValidAllocation β := fun i => by
+      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+        (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
+        A.toAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β := fun i => by
     rw [(hBR i).U_lowestType_zero, hU0]
   exact A.toAuction.bundling_revenue_gain A.spec β hβ_meas hβ_mono hIC
     ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
