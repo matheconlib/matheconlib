@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MathEconLib</title>
-<meta name="description" content="MathEconLib is building shared Lean 4 foundations for new research in microeconomic theory, macroeconomic theory, and econometrics.">
+<meta name="description" content="MathEconLib develops Lean 4 software libraries of definitions and theorems for new research in economics.">
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MathEconLib">
@@ -215,12 +215,12 @@
 
   <main id="top">
     <h1 id="about">MathEconLib</h1>
-    <p class="tagline">Machine-checked foundations&nbsp;for new research in economics.</p>
+    <p class="tagline">Lean 4 libraries of definitions and theorems for new research in economics.</p>
     <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming.</p>
-    <p class="lede">MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
-    <h2 id="research">Build new results from shared foundations</h2>
-    <p>MathEconLib develops common definitions, explicit assumptions, and reusable intermediate results that researchers can combine and extend. Researchers can use these building blocks to assemble new models and develop results about preferences, incentives, equilibrium, dynamics, identification, estimation, and inference.</p>
-    <p>Lean checks each new proof against the formalized foundations it uses. Shared assumptions make clear where a new model agrees with earlier formalized work, where it departs, and which differences open new research questions.</p>
+    <p class="lede">MathEconLib is a long-term project to build software libraries of mathematical definitions, theorems, and machine-checked proofs for economics. Its first library, <code>auctionlib</code>, formalizes auctions and pricing; the intended scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
+    <h2 id="research">Use existing theorems to prove new ones</h2>
+    <p>Researchers can import definitions, state a model's assumptions, and apply existing lemmas in a new proof. In <code>auctionlib</code>, the envelope theorem is proved for a general single-parameter problem and then applied to bidder problems. A researcher can use that theorem in a new model without proving it again.</p>
+    <p>Lean checks each proof against the definitions, assumptions, and earlier theorems it uses. If a new model changes a definition or assumption, that change is visible in its definitions or theorem statements, making its relationship to earlier formalized results precise.</p>
     <p>MathEconLib reuses <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>’s mathematical foundations, contributes broadly reusable results upstream, and maintains economics-specific definitions and theorems in its own libraries. The project is developed with <a href="https://axiommath.ai">Axiom Math</a>.</p>
     <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics. AI-assisted tools help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem.</p>
 
