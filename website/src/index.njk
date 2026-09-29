@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MathEconLib</title>
-<meta name="description" content="MathEconLib develops Lean 4 software libraries of definitions and theorems for new research in economics.">
+<meta name="description" content="MathEconLib is building shared Lean 4 foundations for new research in microeconomic theory, macroeconomic theory, and econometrics.">
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MathEconLib">
-<meta property="og:description" content="Lean 4 libraries of definitions and theorems for new research in economics.">
+<meta property="og:description" content="Machine-checked foundations for new research in economics.">
 <meta property="og:url" content="https://matheconlib.bo-cowgill.workers.dev/">
 <meta property="og:site_name" content="MathEconLib">
 <meta name="twitter:card" content="summary">
@@ -185,17 +185,18 @@
 
   <main id="top">
     <h1 id="about">MathEconLib</h1>
-    <p class="tagline">Lean 4 libraries of definitions and theorems for new research in economics.</p>
+    <p class="tagline">Machine-checked foundations&nbsp;for new research in economics.</p>
     <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming.</p>
-    <p class="lede">MathEconLib is a long-term project to build software libraries of mathematical definitions, theorems, and machine-checked proofs for economics. Its first library, <code>auctionlib</code>, formalizes auctions and pricing; the intended scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
+    <p class="lede">MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
     <h2 id="research">Use existing theorems to prove new ones</h2>
-    <p>Researchers can import definitions, state a model's assumptions, and apply existing lemmas in a new proof. In <code>auctionlib</code>, the envelope theorem is proved for a general single-parameter problem and then applied to bidder problems. A researcher can use that theorem in a new model without proving it again.</p>
-    <p>Lean checks each proof against the definitions, assumptions, and earlier theorems it uses. If a new model changes a definition or assumption, that change is visible in its definitions or theorem statements, making its relationship to earlier formalized results precise.</p>
-    <p>MathEconLib reuses <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>’s mathematical foundations, contributes broadly reusable results upstream, and maintains economics-specific definitions and theorems in its own libraries. The project is developed with <a href="https://axiommath.ai">Axiom Math</a>.</p>
-    <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics. AI-assisted tools help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem.</p>
+    <p>MathEconLib develops common definitions, explicit assumptions, and reusable intermediate results that researchers can combine and extend. Researchers can use these building blocks to assemble new models and develop results about preferences, incentives, equilibrium, dynamics, identification, estimation, and inference.</p>
+    <p>Lean checks each new proof against the formalized foundations it uses. Shared assumptions make clear where a new model agrees with earlier formalized work, where it departs, and which differences open new research questions.</p>
+    <p>MathEconLib reuses <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>’s mathematical foundations, contributes broadly reusable results upstream, and maintains economics-specific definitions and theorems in its own libraries.</p>
+    <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics.</p>
+    <p>We welcome researchers to use AI to help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem. Contributions receive human review for consistency with our <a href="https://github.com/AxiomMath/auctionlib/pull/77">draft design principles</a>.</p>
 
     <h2 id="vision">Long-term scope</h2>
-    <p>MathEconLib is intended to grow as a family of interoperable libraries covering the major mathematical areas of economics.</p>
+    <p>MathEconLib is intended to cover all major mathematical areas of economics.</p>
     <dl class="scope">
       <dt>Microeconomic theory</dt>
       <dd>Preferences and choice, games, information, contracts, market and mechanism design, industrial organization, and general equilibrium.</dd>
@@ -213,8 +214,6 @@
       <dd>How the auction layers extend to posted pricing and other single-parameter problems.</dd>
       <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">auctionlib README</a></dt>
       <dd>File-by-file index of definitions and theorems, with build instructions.</dd>
-      <dt>Auction Theory: introduction and sketch of formalization objectives</dt>
-      <dd>Scott Duke Kominers' evolving mathematical overview that guides the auction development. <span class="placeholder">[Currently an Overleaf project; decide whether to publish a PDF here.]</span></dd>
       <dt><span class="placeholder">[API reference]</span></dt>
       <dd>Generated documentation for every declaration, once the repository is public.</dd>
     </dl>
@@ -222,11 +221,11 @@
     <h2 id="contribute">Contributing</h2>
     <p>Research questions and new models are welcome in design issues. New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Results destined for Mathlib, kept in the <code>ForMathlib</code> folder, are a good first contribution.</p>
     <p>Changes to the foundational layers start with a design issue: sketch the definitions and main statements and get agreement on the shape before writing proofs. Every pull request must build cleanly, contain no <code>sorry</code>, <code>admit</code>, or <code>native_decide</code>, and add no axioms beyond the standard three.</p>
-    <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. To use the library, propose a research project, or contribute, email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a>.</p>
+    <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. To use the library, propose a research project, or contribute, email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a> or open a <a href="https://github.com/AxiomMath/auctionlib/issues">Github issue</a> and tag one of us.</p>
 
     <h2 id="people">People</h2>
     <h3>Core contributors</h3>
-    <p>Alphabetical. <span class="placeholder">[Affiliations and personal links to confirm with each person.]</span></p>
+    <p>Alphabetical.</p>
     <ul class="people">
       <li>Ruiz Chen<span class="aff">Axiom</span><a class="handle" href="https://github.com/Ruizsolveall">@Ruizsolveall</a></li>
       <li>Bo Cowgill<span class="aff">University of Toronto</span><a class="handle" href="https://github.com/bocowgill">@bocowgill</a></li>
