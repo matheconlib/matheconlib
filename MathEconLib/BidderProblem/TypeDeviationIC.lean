@@ -26,6 +26,8 @@ The public bidder statements are unchanged. Their general analytic content is
 provided by `SingleParameterProblem.Payment`.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set MeasureTheory
@@ -173,3 +175,5 @@ theorem typeDeviationIC_of_monotone_q
 end BidderProblem
 
 end
+
+end MathEconLib

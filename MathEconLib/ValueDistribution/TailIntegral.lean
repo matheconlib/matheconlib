@@ -30,6 +30,8 @@ compatibility and the allocation range rather than expose redundant analytic
 assumptions to economic users.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory Set
@@ -325,3 +327,5 @@ theorem integral_intervalIntegral_eq_integral_mul_probAtLeast
 end ValueDistribution
 
 end
+
+end MathEconLib

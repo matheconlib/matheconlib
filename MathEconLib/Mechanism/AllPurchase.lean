@@ -18,6 +18,8 @@ The payment for bidder `i` given bids `b` is `(p − φ(Σ bⱼ)) · bᵢ`.
 Chapter 6 of the mathematical reference.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set
@@ -57,3 +59,5 @@ abbrev allPurchase_p_price : ℝ := IsAllPurchase.p_price (M := M)
 end Mechanism
 
 end
+
+end MathEconLib

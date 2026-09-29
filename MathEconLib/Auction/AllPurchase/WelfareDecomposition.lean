@@ -20,6 +20,8 @@ Edition welfare under linear scarcity `φ(B) = φ̄ − α·B`, net of productio
   edition welfare with the auction quantity `𝔼[B·φ(B)] − c·𝔼[B]`.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 namespace AllPurchase
@@ -147,3 +149,5 @@ theorem bundledEditionWelfare_eq (β : ℝ → ℝ) (c : ℝ)
 end LinearScarcityAuction
 
 end
+
+end MathEconLib

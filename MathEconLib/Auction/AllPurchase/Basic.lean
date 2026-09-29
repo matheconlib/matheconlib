@@ -25,6 +25,8 @@ net payment identity) are available at the `BidderProblem` / general `Auction`
 level and do not depend on the all-purchase-specific parameters.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -75,3 +77,5 @@ lemma allPayBid_measurable : Measurable A.allPayBid := by
 end Auction
 
 end
+
+end MathEconLib

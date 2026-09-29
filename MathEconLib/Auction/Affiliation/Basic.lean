@@ -25,6 +25,8 @@ It contains three things:
   together with the `IsPrivateValues` predicate isolating the private-values case.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Finset
@@ -171,3 +173,7 @@ theorem IsIPV.hasAffiliatedSignals {n : ℕ} {E : SignalValueEnv n}
   h.2.hasAffiliatedSignals
 
 end Auction.Affiliation
+
+end
+
+end MathEconLib

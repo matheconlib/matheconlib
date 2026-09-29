@@ -37,6 +37,8 @@ claim that the inequality is generically strict is outside this first finite
 scope.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 namespace Auction.Affiliation
@@ -248,3 +250,7 @@ theorem SignalValueEnv.condExpWinningSlice_le_condExpSlice {n : ℕ}
     haff hpos hsub (E.v_mono i) (fun x _ => E.v_nonneg i x) i t hwin
 
 end Auction.Affiliation
+
+end
+
+end MathEconLib

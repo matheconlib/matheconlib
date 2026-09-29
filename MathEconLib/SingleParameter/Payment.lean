@@ -18,6 +18,8 @@ These results use only the induced allocation and utility. They do not depend
 on the concrete type of action chosen by the agent.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set MeasureTheory
@@ -123,3 +125,5 @@ theorem typeDeviationIC_of_monotone_q
 end SingleParameterProblem
 
 end
+
+end MathEconLib

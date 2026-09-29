@@ -224,6 +224,8 @@ Finally, confirm you can reach the library itself:
 ```lean
 import MathEconLib.BidderProblem.Basic
 
+open MathEconLib
+
 #check BidderProblem
 #check BidderProblem.payoff
 ```
@@ -1211,12 +1213,14 @@ Two practical notes. First, none of this applies to the scratch files you have b
 
 Open [`GameTheory/NashExistence.lean`](../MathEconLib/GameTheory/NashExistence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
 
-Now scroll to the bottom of [`BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean) and find the bare `end`. That is the partner of `@[expose] public section` at the top; everything between them is what the rest of the library can see.
+Now scroll to the bottom of [`BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean). The bare `end` closes the `@[expose] public section`; `end MathEconLib` closes the project namespace. Everything in the public section is available to importers under `MathEconLib`.
 
 Finally, confirm the reassurance above in your own scratch file:
 
 ```lean
 import MathEconLib.BidderProblem.Basic
+
+open MathEconLib
 
 #check BidderProblem.winProb
 ```
@@ -1273,6 +1277,8 @@ Then, in your own scratch file, confirm the vocabulary from the table above is r
 
 ```lean
 import MathEconLib.BidderProblem.Basic
+
+open MathEconLib
 
 #check BidderProblem.winProb
 #check BidderProblem.cost
@@ -1385,7 +1391,7 @@ namespace BidderProblem
 variable (B : BidderProblem)
 ```
 
-`namespace` puts a prefix on everything that follows, so `payoff` is really `BidderProblem.payoff`. That is what makes **dot notation** work: for `B : BidderProblem`, writing `B.payoff v b` is shorthand for `BidderProblem.payoff B v b`. Lean looks at the type of `B` and searches the matching namespace.
+The file is already inside `namespace MathEconLib`. Its nested `namespace BidderProblem` puts another prefix on what follows, so the full name of `payoff` is `MathEconLib.BidderProblem.payoff`. That is what makes **dot notation** work: for `B : MathEconLib.BidderProblem`, writing `B.payoff v b` invokes that declaration. `open MathEconLib` lets examples use the shorter `BidderProblem.payoff` spelling.
 
 Dot notation is everywhere in Mathlib, and always means the same thing: `h.1`, `h.symm`, `h.trans h'` are all this mechanism.
 

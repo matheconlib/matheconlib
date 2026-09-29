@@ -25,6 +25,8 @@ The bridge is the **net-payment identity** (Proposition 6.4):
   `β(v) = −K/(2α) + √(allPayBid(v)/α)`
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Real
@@ -248,3 +250,5 @@ theorem interior_regime_strategy_auction
 end LinearScarcityAuction
 
 end
+
+end MathEconLib

@@ -6,6 +6,8 @@ public import Mathlib.Probability.Notation
 
 /-! # Auction — Environment + Mechanism + Probability -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -203,3 +205,5 @@ theorem payment_equivalence
 end Auction
 
 end
+
+end MathEconLib

@@ -65,6 +65,8 @@ absolute-continuity results rather than assumed, so no integrability side
 conditions appear in the public statements.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory Set
@@ -445,3 +447,5 @@ theorem isMaxOn_sellerProfit_postedPriceProblem_highestType_of_netVirtualSurplus
 end ValueDistribution
 
 end
+
+end MathEconLib

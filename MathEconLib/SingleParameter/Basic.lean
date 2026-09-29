@@ -28,6 +28,8 @@ This structure contains no probability distribution and no seller objective.
 Those belong to later layers of the pricing development.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set
@@ -155,3 +157,5 @@ theorem reduce_payoff (v w : ℝ) :
 end SingleParameterProblem
 
 end
+
+end MathEconLib

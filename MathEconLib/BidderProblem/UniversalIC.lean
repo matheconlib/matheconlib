@@ -22,6 +22,8 @@ distributional structure (CDF, density, number of bidders) beyond what
 access to the probability space and type distribution.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set
@@ -71,3 +73,5 @@ instance {B : BidderProblem} {S : Set ℝ} [h : HasUniversalIC B S] :
 end BidderProblem
 
 end
+
+end MathEconLib

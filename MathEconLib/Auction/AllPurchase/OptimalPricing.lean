@@ -38,6 +38,8 @@ The key algebraic identity, after factoring `b := n/(α(n+1)) > 0` and
 so `Π(p*) − Π(p) = b · (p − p*)² ≥ 0`.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 namespace AllPurchase
@@ -166,3 +168,5 @@ theorem optimalPriceInterior_in_interior_regime
 end AllPurchase
 
 end
+
+end MathEconLib

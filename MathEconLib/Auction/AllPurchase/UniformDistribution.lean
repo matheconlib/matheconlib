@@ -16,6 +16,8 @@ This is the lead-in identity of §9.6.3 on which the uniform equilibrium
 on `[0, v̄]` is taken as a hypothesis, which characterises the uniform law.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set intervalIntegral
@@ -65,3 +67,5 @@ theorem allPayBid_uniform
 end Auction
 
 end
+
+end MathEconLib

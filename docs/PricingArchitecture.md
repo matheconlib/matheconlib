@@ -7,6 +7,8 @@ mathematical scope, terminology, compatibility promises, and design boundaries
 of the pricing foundations. The Lean source is authoritative for exact
 declaration syntax; this document explains how the pieces fit together and
 links to the public interface rather than duplicating it.
+Unqualified Lean names below are relative to `MathEconLib`; the
+[namespace guide](NamespaceMigration.md) records the public names.
 
 The core `SingleParameterProblem` structure and its elementary derived
 quantities are implemented in

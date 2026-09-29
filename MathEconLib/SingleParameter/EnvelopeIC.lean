@@ -24,6 +24,8 @@ affine in the one-dimensional type. They do not cover genuinely nonseparable
 type-action utility.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set MeasureTheory Filter Topology Asymptotics
@@ -167,3 +169,5 @@ theorem U_nonneg [HasEnvelopeIC P]
 end SingleParameterProblem
 
 end
+
+end MathEconLib

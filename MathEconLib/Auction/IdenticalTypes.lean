@@ -8,6 +8,8 @@ public import MathEconLib.Auction.Typeclasses
 Results that depend on `HasIdenticalTypes` but not the full `IsSymmetricIPV` bundle.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -40,3 +42,5 @@ theorem expected_sum_erase [HasIdenticalTypes A]
 end Auction
 
 end
+
+end MathEconLib

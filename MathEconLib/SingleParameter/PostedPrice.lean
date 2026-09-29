@@ -23,6 +23,8 @@ distribution nor a seller objective. Those belong to the next layer of the
 pricing development.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set
@@ -182,3 +184,5 @@ theorem postedPriceProblem_hasZeroLowestTypeUtility
 end SingleParameterProblem
 
 end
+
+end MathEconLib

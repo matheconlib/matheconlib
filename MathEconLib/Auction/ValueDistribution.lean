@@ -16,6 +16,8 @@ a density. Later results in this file can request those assumptions separately
 when they use them.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory
@@ -91,3 +93,5 @@ theorem cdf_valueDistribution_eq_commonCDF
 end Auction
 
 end
+
+end MathEconLib

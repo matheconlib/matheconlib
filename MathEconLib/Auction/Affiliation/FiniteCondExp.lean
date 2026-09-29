@@ -21,6 +21,8 @@ general result to signal slices for finite Lemma 7.3, and
 Proposition 7.4.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Finset
@@ -291,3 +293,7 @@ theorem condExpOn_le_condExpOn_of_affiliated {n : ℕ}
   exact (add_le_add_iff_right c).mp hshifted
 
 end Auction.Affiliation
+
+end
+
+end MathEconLib

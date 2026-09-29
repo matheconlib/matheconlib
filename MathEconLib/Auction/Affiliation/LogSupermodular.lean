@@ -20,6 +20,8 @@ of the monotonicity of `Real.log` on positive reals (`Real.log_le_log_iff`)
 together with `Real.log_mul`.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 namespace Auction.Affiliation
@@ -52,3 +54,7 @@ theorem affiliated_iff_logSupermodular {n : ℕ} {f : (Fin n → ℝ) → ℝ}
     exact (key x y).mp (h x y)
 
 end Auction.Affiliation
+
+end
+
+end MathEconLib

@@ -26,6 +26,8 @@ Their statements have not changed. The proofs now reuse the action-parametric
 single-parameter results.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set MeasureTheory
@@ -107,3 +109,5 @@ theorem U_nonneg [HasEnvelopeIC B]
 end BidderProblem
 
 end
+
+end MathEconLib

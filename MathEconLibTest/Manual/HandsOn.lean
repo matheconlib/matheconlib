@@ -34,6 +34,8 @@ set_option linter.style.whitespace false
 
 namespace Manual
 
+open MathEconLib
+
 open Set
 
 /-! ## Part 1 — meet the kernel -/

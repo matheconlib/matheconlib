@@ -18,6 +18,8 @@ density. Differentiability, virtual values, and price optimization belong to
 later layers.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory Set
@@ -113,3 +115,5 @@ theorem sellerProfit_postedPriceProblem_sub
 end ValueDistribution
 
 end
+
+end MathEconLib

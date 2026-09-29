@@ -28,6 +28,8 @@ hypotheses that the caller must supply.  The proof goes through
 iterated-expectation step derived from `iIndepFun` + `indepFun_finset_sum_of_notMem`.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Finset
@@ -635,3 +637,5 @@ theorem bundling_revenue_gain_of_isBoundaryRegime
 end LinearScarcityAuction
 
 end
+
+end MathEconLib

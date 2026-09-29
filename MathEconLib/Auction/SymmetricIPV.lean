@@ -14,6 +14,8 @@ public import MathEconLib.Statistics.OrderStatistics
 - `Auction.S₂`: second-highest order statistic
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -229,3 +231,5 @@ noncomputable def S₂ [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity
 end Auction
 
 end
+
+end MathEconLib

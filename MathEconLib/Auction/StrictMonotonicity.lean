@@ -18,6 +18,8 @@ monotone on the type interval.
 - `BidderProblem.HasUniversalIC` on `A.toBidderProblem` over `Ici 0` — IC over nonneg bids
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set MeasureTheory ProbabilityTheory
@@ -217,3 +219,5 @@ theorem no_ties
 end Auction
 
 end
+
+end MathEconLib

@@ -5,6 +5,8 @@ public import MathEconLib.SingleParameter.Basic
 
 /-! # BidderProblem — Per-Bidder Interim View -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set
@@ -121,3 +123,5 @@ class IsRegular (B : BidderProblem) : Prop where
 end BidderProblem
 
 end
+
+end MathEconLib

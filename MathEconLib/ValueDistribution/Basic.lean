@@ -15,6 +15,8 @@ Bounded support is an optional property. This lets the same definition
 represent bounded, unbounded, continuous, discrete, and mixed distributions.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory Set
@@ -62,3 +64,5 @@ def IsSupportedOnInterval
 end ValueDistribution
 
 end
+
+end MathEconLib

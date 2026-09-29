@@ -7,6 +7,8 @@ public import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 Examples: first-price, second-price, all-pay auctions are different `Mechanism` values.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set
@@ -46,3 +48,5 @@ instance IsEfficient.instHasValidAllocation [IsEfficient M] : HasValidAllocation
 end Mechanism
 
 end
+
+end MathEconLib

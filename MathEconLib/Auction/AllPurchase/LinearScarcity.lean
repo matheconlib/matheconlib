@@ -9,6 +9,8 @@ public import MathEconLib.ForMathlib.FinsetUpdate
 # Linear Scarcity for All-Purchase Auctions (Chapter 6)
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 /-! ## BidderProblem-level structures -/
@@ -214,3 +216,5 @@ noncomputable def toQuadraticCostProblem
 end LinearScarcityAuction
 
 end
+
+end MathEconLib
