@@ -1,7 +1,7 @@
 {
   "name": "MathEconLib",
-  "workingName": true,
-  "description": "Machine-checked foundations for microeconomic theory, macroeconomic theory, and econometrics in Lean 4.",
+  "workingName": false,
+  "description": "Building shared Lean 4 foundations for new research in microeconomic theory, macroeconomic theory, and econometrics.",
   "url": "https://matheconlib.bo-cowgill.workers.dev",
   "repository": "https://github.com/AxiomMath/auctionlib",
   "issues": "https://github.com/AxiomMath/auctionlib/issues",
