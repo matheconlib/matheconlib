@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MathEconLib</title>
-<meta name="description" content="MathEconLib: machine-checked foundations for microeconomic theory, macroeconomic theory, and econometrics in Lean 4.">
+<meta name="description" content="MathEconLib is building shared Lean 4 foundations for new research in microeconomic theory, macroeconomic theory, and econometrics.">
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MathEconLib">
-<meta property="og:description" content="Machine-checked foundations for microeconomic theory, macroeconomic theory, and econometrics in Lean 4.">
+<meta property="og:description" content="Shared foundations for new economic research in Lean 4.">
 <meta property="og:url" content="https://matheconlib.bo-cowgill.workers.dev/">
 <meta property="og:site_name" content="MathEconLib">
 <meta name="twitter:card" content="summary">
@@ -216,11 +216,12 @@
 
   <main id="top">
     <h1 id="about">MathEconLib</h1>
-    <p class="tagline">Machine-checked foundations for economics.</p>
+    <p class="tagline">Shared foundations for new economic research.</p>
     <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming.</p>
     <p class="lede">MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
-    <p>MathEconLib is intended both to formalize established knowledge and to serve as a working environment for developing new research. By representing preferences, incentives, equilibrium, dynamics, identification, estimation, and inference as reusable formal objects, researchers can assemble models, compare assumptions, state conjectures precisely, and develop new results on top of a checked body of earlier work.</p>
-    <p>A machine-checked theorem is one whose statement and proof have been verified by a small, trusted kernel. For economics, where conclusions are repeatedly applied under subtly different assumptions, formalization makes those assumptions explicit and ensures that later results inherit them correctly.</p>
+    <h2 id="research">Build new results from shared foundations</h2>
+    <p>MathEconLib develops common definitions, explicit assumptions, and reusable intermediate results that researchers can combine and extend. Researchers can use these building blocks to assemble new models and develop results about preferences, incentives, equilibrium, dynamics, identification, estimation, and inference.</p>
+    <p>Lean checks each new proof against the formalized foundations it uses. Shared assumptions make clear where a new model agrees with earlier formalized work, where it departs, and which differences open new research questions.</p>
     <p>MathEconLib reuses <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>’s mathematical foundations, contributes broadly reusable results upstream, and maintains economics-specific definitions and theorems in its own libraries. The project is developed with <a href="https://axiommath.ai">Axiom Math</a>.</p>
     <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics. AI-assisted tools help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem.</p>
 
@@ -281,7 +282,7 @@
     </dl>
 
     <h2 id="contribute">Contributing</h2>
-    <p>New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Results destined for Mathlib, kept in the <code>ForMathlib</code> folder, are a good first contribution.</p>
+    <p>Research questions and new models are welcome in design issues. New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Results destined for Mathlib, kept in the <code>ForMathlib</code> folder, are a good first contribution.</p>
     <p>Changes to the foundational layers start with a design issue: sketch the definitions and main statements and get agreement on the shape before writing proofs. Every pull request must build cleanly, contain no <code>sorry</code>, <code>admit</code>, or <code>native_decide</code>, and add no axioms beyond the standard three.</p>
     <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. Questions go to the person listed under <a href="#people">People</a>.</p>
 
