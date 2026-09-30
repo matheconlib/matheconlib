@@ -2,7 +2,11 @@
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "matheconlib",
   "compatibility_date": "2026-09-09",
-  "workers_dev": true,
+  "workers_dev": false,
+  "route": {
+		"pattern": "mathecon.dev",
+		"custom_domain": true
+	},
   "assets": {
     "directory": "./_site",
     "not_found_handling": "404-page"
