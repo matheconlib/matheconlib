@@ -258,8 +258,12 @@ separate integration work.
 lake exe cache get                           # fetch prebuilt Mathlib oleans (do this first)
 lake exe mk_all --lib Auctionlib --git       # regenerate library imports
 lake exe mk_all --lib AuctionlibTest --git   # regenerate test imports
-lake build                                    # build library, API pins, and compatibility tests
+lake build                                    # build library, API pins, tests, and examples
+lake build MathEconLibExamples                 # build the mathematical economics examples
 ```
+
+`MathEconLibExamples/GameTheory/MatchingPennies.lean` constructs matching pennies, proves that
+uniform randomization is its unique mixed Nash equilibrium, and rules out pure Nash equilibria.
 
 Run `lake exe cache get` before the first build, and again after any change that
 bumps the Mathlib revision or after `lake clean`; without it Lean compiles
