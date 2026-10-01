@@ -15,16 +15,19 @@ A strategic game assigns a payoff to each player at each action profile. Nash eq
 an incumbent payoff weakly above every unilateral deviation's payoff. Dominance compares actions
 against all opponents' choices; strict Nash equilibrium requires losses from every unilateral
 change, while strong Nash equilibrium requires each changed profile to leave some changing player
-weakly worse off. For partially ordered payoffs, Nash equilibrium also excludes unilateral
-deviations with incomparable payoffs, and strong Nash equilibrium requires a weakly worse-off
-changing player even when some payoffs are incomparable. Their usual characterizations by the
-absence of strictly profitable deviations require a linear order.
+weakly worse off. Strict dominance requires strict improvement at every opponent profile, whereas
+being strictly above every alternative in the dominance preorder allows ties at some profiles. For
+partially ordered payoffs, Nash equilibrium also excludes unilateral deviations with incomparable
+payoffs, and strong Nash equilibrium requires a weakly worse-off changing player even when some
+payoffs are incomparable. Their usual characterizations by the absence of strictly profitable
+deviations require a linear order.
 
 ## Main definitions
 
 * `StrategicGame`, `StrategicGame.nashProblem`, and `StrategicGame.IsNash`.
 * `StrategicGame.Strategy`, with the preorder of weak dominance.
-* `StrategicGame.Strategy.IsDominant` and `StrategicGame.Strategy.IsStrictlyDominant`.
+* `StrategicGame.Strategy.IsDominant`, `StrategicGame.Strategy.IsStrictOrderDominant`, and
+  `StrategicGame.Strategy.IsStrictlyDominant`.
 * `StrategicGame.IsStrictNash` and `StrategicGame.IsStrongNash`.
 
 ## Main statements
@@ -35,6 +38,8 @@ absence of strictly profitable deviations require a linear order.
 * `StrategicGame.isNash_iff_not_lt` and `StrategicGame.isStrongNash_iff_not_lt`: For linearly
   ordered payoffs, Nash and strong Nash equilibria exclude strictly profitable deviations.
 * `StrategicGame.isNash_of_isDominant`: Dominant strategy profiles are Nash equilibria.
+* `StrategicGame.isStrictNash_of_isStrictlyDominant`: Strictly dominant strategy profiles are
+  strict Nash equilibria.
 * `StrategicGame.IsStrictNash.isNash` and `StrategicGame.IsStrongNash.isNash`: Strict and strong
   Nash equilibria are Nash equilibria.
 
@@ -178,17 +183,50 @@ protected lemma lt_iff [DecidableEq ι] {G : StrategicGame ι A V} (i : ι)
 /-- A strategy above every other strategy in the strict part of the weak-dominance preorder: for
 each alternative, payoff weakly improves at every opponent profile and strictly improves at some
 opponent profile. The profile giving strict improvement may depend on the alternative. -/
-def IsStrictlyDominant {G : StrategicGame ι A V} {i : ι} (s : G.Strategy i) :=
+def IsStrictOrderDominant {G : StrategicGame ι A V} {i : ι} (s : G.Strategy i) :=
   ∀ s' ≠ s, s' < s
 
 /-- A strategy above every alternative in the strict part of the weak-dominance preorder is weakly
 dominant. -/
-lemma IsStrictlyDominant.isDominant {G : StrategicGame ι A V} {i : ι}
-    {s : G.Strategy i} (hs : s.IsStrictlyDominant) : s.IsDominant := by
+lemma IsStrictOrderDominant.isDominant {G : StrategicGame ι A V} {i : ι}
+    {s : G.Strategy i} (hs : s.IsStrictOrderDominant) : s.IsDominant := by
   intro s'
   by_cases h : s' = s
   · exact h.le
   · exact (hs _ h).le
+
+end Strategy
+
+namespace Strategy
+
+/-- A strictly dominant strategy gives strictly greater payoff than every distinct alternative at
+every opponent profile. -/
+def IsStrictlyDominant [LT V] [DecidableEq ι] {G : StrategicGame ι A V} {i : ι}
+    (s : G.Strategy i) : Prop :=
+  ∀ s' ≠ s, ∀ a : (j : ι) → A j,
+    G.payoff i (Function.update a i s') < G.payoff i (Function.update a i s)
+
+/-- Every strictly dominant strategy is weakly dominant. -/
+lemma IsStrictlyDominant.isDominant [Preorder V] [DecidableEq ι]
+    {G : StrategicGame ι A V} {i : ι} {s : G.Strategy i}
+    (hs : s.IsStrictlyDominant) : s.IsDominant := by
+  intro s'
+  rw [Strategy.le_iff']
+  intro a
+  by_cases h : s' = s
+  · subst s'
+    exact le_rfl
+  · exact (hs s' h a).le
+
+/-- With a nonempty action-profile space, a strictly dominant strategy is strictly above every
+distinct alternative in the weak-dominance preorder. -/
+lemma IsStrictlyDominant.isStrictOrderDominant [Preorder V] [DecidableEq ι]
+    [Nonempty ((j : ι) → A j)] {G : StrategicGame ι A V} {i : ι} {s : G.Strategy i}
+    (hs : s.IsStrictlyDominant) : s.IsStrictOrderDominant := by
+  obtain ⟨a⟩ := ‹Nonempty ((j : ι) → A j)›
+  intro s' h
+  rw [Strategy.lt_iff i]
+  exact ⟨hs.isDominant s', ⟨a, hs s' h a⟩⟩
 
 end Strategy
 
@@ -201,6 +239,13 @@ the deviating player's payoff. -/
 def IsStrictNash [LT V] [DecidableEq ι] (G : StrategicGame ι A V)
     (a : (i : ι) → A i) :=
   ∀ i, ∀ s ≠ a i, G.payoff i (Function.update a i s) < G.payoff i a
+
+/-- A profile of strictly dominant strategies is a strict Nash equilibrium. -/
+lemma isStrictNash_of_isStrictlyDominant [LT V] [DecidableEq ι]
+    {G : StrategicGame ι A V} {a : (i : ι) → A i}
+    (ha : ∀ i, Strategy.IsStrictlyDominant (G := G) (a i)) : G.IsStrictNash a := by
+  intro i s h
+  simpa only [Function.update_eq_self] using ha i s h a
 
 /-- Every strict Nash equilibrium is a Nash equilibrium. -/
 lemma IsStrictNash.isNash [Preorder V] [DecidableEq ι] {G : StrategicGame ι A V} {a : (i : ι) → A i}
