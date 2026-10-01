@@ -213,8 +213,11 @@ computational interface is in `GameTheory/Strategic/Mixed/Finite.lean`, with `Fi
 structure on finite actions and evaluates payoffs by finite sums. Finite priors and finite mixed
 actions share `FinDist`, a probability-oriented alias of Mathlib's real simplex. Both mixed
 representation bridges follow from `StrategicGame.isNash_iff_of_actionEquiv` and payoff agreement.
-The integral construction uses the totalized Bochner integral; an expected-utility interpretation
-requires integrability.
+The raw `mixedExtension` uses the totalized Bochner integral. `IsMixedNash` requires integrable
+incumbent payoffs and compares unilateral deviations with integrable deviator payoffs. When all
+unilateral payoffs are integrable, it agrees with Nash equilibrium of the raw mixed extension;
+finite discrete games and bounded measurable payoffs in second countable payoff spaces satisfy
+this condition.
 
 The Bayesian game carrier takes players, types, actions, and payoff values as explicit parameters.
 Priors are supplied separately. Finite BNE constrains positive-probability types, and the finite

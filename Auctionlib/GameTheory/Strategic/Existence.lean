@@ -618,18 +618,26 @@ theorem exists_isMixedNash_of_isCompact (G : StrategicGame ι A ℝ)
     [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
     [∀ i, MeasurableSpace (A i)] [∀ i, BorelSpace (A i)] [G.Continuous] :
     ∃ σ, G.IsMixedNash σ := by
-  change ∃ σ, G.mixedExtension.IsNash σ
-  rw [mixedExtension_eq_ofOutcome]
-  exact G.outcomeGame.exists_isNash_of_isCompact G.payoffStructure
+  have hexists : ∃ σ, G.mixedExtension.IsNash σ := by
+    rw [mixedExtension_eq_ofOutcome]
+    exact G.outcomeGame.exists_isNash_of_isCompact G.payoffStructure
+  obtain ⟨σ, hσ⟩ := hexists
+  refine ⟨σ, (isMixedNash_iff_isNash_of_integrable G σ ?_).2 hσ⟩
+  intro i τ
+  exact (Continuous.continuous_payoff (G := G) i).integrable
 
 /-- Every finite strategic game with nonempty discrete measurable action spaces has a mixed Nash
 equilibrium. -/
 theorem exists_isMixedNash_of_finite (G : StrategicGame ι A ℝ) [Fintype ι] [DecidableEq ι]
     [∀ i, Finite (A i)] [∀ i, Nonempty (A i)] [∀ i, MeasurableSpace (A i)]
     [∀ i, DiscreteMeasurableSpace (A i)] : ∃ σ, G.IsMixedNash σ := by
-  change ∃ σ, G.mixedExtension.IsNash σ
-  rw [mixedExtension_eq_ofOutcome]
-  exact G.outcomeGame.exists_isNash_of_finite G.payoffStructure
+  have hexists : ∃ σ, G.mixedExtension.IsNash σ := by
+    rw [mixedExtension_eq_ofOutcome]
+    exact G.outcomeGame.exists_isNash_of_finite G.payoffStructure
+  obtain ⟨σ, hσ⟩ := hexists
+  refine ⟨σ, (isMixedNash_iff_isNash_of_integrable G σ ?_).2 hσ⟩
+  intro i τ
+  exact Integrable.of_finite
 
 /-- Every finite strategic game with nonempty action spaces has an equilibrium in finite
 probability weights. -/

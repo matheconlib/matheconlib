@@ -44,6 +44,14 @@ namespace Auctionlib.GameTheory.StrategicGame
 
 variable {I : Type*} {A : I → Type*} {V : Type*}
 
+/-- Finite discrete action spaces give every player's payoff a finite expectation under each
+independent mixed strategy profile. -/
+lemma integrable_payoff [Fintype I] [∀ i, Finite (A i)] [∀ i, MeasurableSpace (A i)]
+    [∀ i, DiscreteMeasurableSpace (A i)] [NormedAddCommGroup V]
+    (G : StrategicGame I A V) (i : I) (σ : MixedStrategy A) :
+    Integrable (G.payoff i) (Measure.pi (fun j ↦ (σ j : Measure (A j)))) :=
+  .of_finite
+
 variable [∀ i, Fintype (A i)]
 
 /-- Each player chooses nonnegative weights summing to one on their finite action space. -/
@@ -140,10 +148,7 @@ lemma mixedExtension_payoff_eq_finiteExpectedPayoff (G : StrategicGame I A V) (i
     G.mixedExtension.payoff i σ = G.finiteExpectedPayoff i (toSimplex σ) := by
   classical
   change (∫ a, G.payoff i a ∂Measure.pi (fun j ↦ (σ j : Measure (A j)))) = _
-  rw [integral_fintype _ (by
-    obtain ⟨C, hC⟩ := (Set.finite_range (G.payoff i)).isBounded.exists_norm_le
-    exact Integrable.of_bound .of_discrete C
-      (Filter.Eventually.of_forall fun a ↦ hC _ ⟨a, rfl⟩))]
+  rw [integral_fintype _ (G.integrable_payoff i σ)]
   rw [finiteExpectedPayoff_eq_sum]
   apply Finset.sum_congr rfl
   intro a _
@@ -163,11 +168,13 @@ lemma finiteMixedExtension_payoff_eq_mixedExtension (G : StrategicGame I A V) (i
   rw [mixedExtension_payoff_eq_finiteExpectedPayoff, toSimplex_toProbability]
   rfl
 
-/-- A simplex profile is a mixed Nash equilibrium exactly when its probability-measure profile is a
-Nash equilibrium in the measure mixed extension. -/
+/-- A simplex profile is a mixed Nash equilibrium exactly when its probability-measure profile has
+integrable payoffs and withstands every integrable unilateral deviation. -/
 theorem isFiniteMixedNash_iff_isMixedNash [LE V] (G : StrategicGame I A V)
     (σ : FiniteMixedStrategy A) :
     G.IsFiniteMixedNash σ ↔ G.IsMixedNash (toProbability σ) := by
+  rw [G.isMixedNash_iff_isNash_of_integrable (toProbability σ)
+    (fun i τ ↦ G.integrable_payoff i (Function.update (toProbability σ) i τ))]
   exact isNash_iff_of_actionEquiv G.finiteMixedExtension G.mixedExtension
     (fun _ ↦ ProbabilityMeasure.equivStdSimplex.symm)
     (finiteMixedExtension_payoff_eq_mixedExtension G) σ

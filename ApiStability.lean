@@ -352,6 +352,43 @@ example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [LT V] [DecidableEq
     (∀ i, StrategicGame.Strategy.IsStrictlyDominant (G := G) (a i)) → G.IsStrictNash a :=
   @StrategicGame.isStrictNash_of_isStrictlyDominant
 
+/-- The raw mixed extension evaluates payoffs by the totalized independent-product integral. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype ι] (G : StrategicGame ι A V) (i : ι) (σ : StrategicGame.MixedStrategy A) :
+    G.mixedExtension.payoff i σ =
+      ∫ a, G.payoff i a ∂Measure.pi (fun j ↦ (σ j : Measure (A j))) :=
+  rfl
+
+/-- Mixed Nash includes incumbent integrability and compares only integrable unilateral payoffs. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype ι] [DecidableEq ι] [LE V] (G : StrategicGame ι A V)
+    (σ : StrategicGame.MixedStrategy A) :
+    G.IsMixedNash σ ↔
+      (∀ i, Integrable (G.payoff i) (Measure.pi (fun j ↦ (σ j : Measure (A j))))) ∧
+      ∀ i τ, Integrable (G.payoff i)
+        (Measure.pi (fun j ↦ (Function.update σ i τ j : Measure (A j)))) →
+        G.mixedExtension.payoff i (Function.update σ i τ) ≤ G.mixedExtension.payoff i σ :=
+  G.isMixedNash_iff σ
+
+/-- With integrable unilateral payoffs, mixed Nash agrees with Nash in the integral extension. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype ι] [DecidableEq ι] [LE V] (G : StrategicGame ι A V)
+    (σ : StrategicGame.MixedStrategy A)
+    (hint : ∀ i τ, Integrable (G.payoff i)
+      (Measure.pi (fun j ↦ (Function.update σ i τ j : Measure (A j))))) :
+    G.IsMixedNash σ ↔ G.mixedExtension.IsNash σ :=
+  G.isMixedNash_iff_isNash_of_integrable σ hint
+
+/-- Bounded measurable payoffs preserve agreement with Nash in the raw integral extension. -/
+example {ι : Type u} {A : ι → Type v} [∀ i, MeasurableSpace (A i)]
+    [Fintype ι] [DecidableEq ι] (G : StrategicGame ι A ℝ) [G.Measurable]
+    (σ : StrategicGame.MixedStrategy A) (hbound : ∀ i, ∃ C, ∀ a, ‖G.payoff i a‖ ≤ C) :
+    G.IsMixedNash σ ↔ G.mixedExtension.IsNash σ :=
+  G.isMixedNash_iff_isNash_of_bdd σ hbound
+
 /-- Finite games with nonempty action spaces admit mixed Nash equilibria. -/
 example : ∀ {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A ℝ)
     [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)],
