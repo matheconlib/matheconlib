@@ -322,6 +322,44 @@ example {ι : Type u} {A : ι → Type v} {V : Type w} [LE V] [DecidableEq ι]
     G.IsNash a ↔ ∀ (i : ι) (s : A i), G.payoff i (Function.update a i s) ≤ G.payoff i a :=
   G.isNash_iff a
 
+/-- Dominance in the strict preorder places every distinct strategy strictly below the incumbent. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w} [Preorder V]
+    (G : StrategicGame ι A V) (i : ι) (s : G.Strategy i) :
+    s.IsStrictOrderDominant ↔ ∀ s' ≠ s, s' < s :=
+  Iff.rfl
+
+/-- Strict dominance requires a strict payoff improvement at every opponent profile. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w} [LT V] [DecidableEq ι]
+    (G : StrategicGame ι A V) (i : ι) (s : G.Strategy i) :
+    s.IsStrictlyDominant ↔ ∀ s' ≠ s, ∀ a : (j : ι) → A j,
+      G.payoff i (Function.update a i s') < G.payoff i (Function.update a i s) :=
+  Iff.rfl
+
+/-- Dominance in the strict preorder implies weak dominance. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [Preorder V]
+    {G : StrategicGame ι A V} {i : ι} {s : G.Strategy i},
+    s.IsStrictOrderDominant → s.IsDominant :=
+  @StrategicGame.Strategy.IsStrictOrderDominant.isDominant
+
+/-- Pointwise strict dominance implies weak dominance. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [Preorder V] [DecidableEq ι]
+    {G : StrategicGame ι A V} {i : ι} {s : G.Strategy i},
+    s.IsStrictlyDominant → s.IsDominant :=
+  @StrategicGame.Strategy.IsStrictlyDominant.isDominant
+
+/-- Pointwise strict dominance implies dominance in the strict preorder when the profile space is
+nonempty. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [Preorder V] [DecidableEq ι]
+    [Nonempty ((j : ι) → A j)] {G : StrategicGame ι A V} {i : ι} {s : G.Strategy i},
+    s.IsStrictlyDominant → s.IsStrictOrderDominant :=
+  @StrategicGame.Strategy.IsStrictlyDominant.isStrictOrderDominant
+
+/-- Strictly dominant strategy profiles are strict Nash equilibria. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [LT V] [DecidableEq ι]
+    {G : StrategicGame ι A V} {a : (i : ι) → A i},
+    (∀ i, StrategicGame.Strategy.IsStrictlyDominant (G := G) (a i)) → G.IsStrictNash a :=
+  @StrategicGame.isStrictNash_of_isStrictlyDominant
+
 /-- Finite games with nonempty action spaces admit mixed Nash equilibria. -/
 example : ∀ {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A ℝ)
     [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)],

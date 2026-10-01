@@ -9,26 +9,34 @@ public import MathEconLib.GameTheory.Strategic.Existence
 import Mathlib.Logic.Equiv.Prod
 
 /-!
-# Matching pennies and the prisoners' dilemma
+# Dominance, matching pennies, and the prisoners' dilemma
 
 Matching pennies has no pure Nash equilibrium and has a fair-coin mixed equilibrium. In the
 prisoners' dilemma, mutual defection is strict Nash while mutual cooperation is not Nash. The
 outcome-distribution representation gives the same expected utilities and mixed equilibria.
+Additional games compare strict dominance at every opponent profile with the strict part of the
+weak-dominance preorder. An empty opponent action space leaves no profiles, so pointwise strict
+dominance holds vacuously without a strict payoff comparison.
 
 ## Main definitions
 
 * `matchingPennies`: A two-player zero-sum game of matching or opposing actions.
 * `prisonersDilemma`: A two-player game in which defection is strictly dominant.
+* `tiedDominanceGame`: A game with ties at some opponent profiles.
+* `emptyOpponentGame`: A game in which one player has no available action.
 * `fairCoin`: Uniform randomization over Boolean actions.
 
 ## Main statements
 
 * `matchingPennies_not_isNash` and `matchingPennies_isFiniteMixedNash_fairCoin`.
-* `prisonersDilemma_isStrictNash_defect` and `prisonersDilemma_not_isNash_cooperate`.
+* `prisonersDilemma_isStrictlyDominant_defect`, `prisonersDilemma_isStrictNash_defect`, and
+  `prisonersDilemma_not_isNash_cooperate`.
+* `tiedDominanceGame_isStrictOrderDominant` and `tiedDominanceGame_not_isStrictlyDominant`.
+* `tiedDominanceGame_not_isStrictNash`: Dominance in the strict preorder permits payoff ties.
 
 ## Tags
 
-matching pennies, prisoners dilemma, nash equilibrium
+dominance, matching pennies, prisoners dilemma, nash equilibrium
 -/
 
 @[expose] public noncomputable section
@@ -56,11 +64,22 @@ defection pays three to the defector and zero to the cooperator. -/
 def prisonersDilemma : StrategicGame Bool (fun _ ↦ Bool) ℝ where
   payoff i a := if a i then (if a (!i) then 1 else 3) else (if a (!i) then 0 else 2)
 
+/-- Defection strictly improves payoff against either action of the opponent. -/
+theorem prisonersDilemma_isStrictlyDominant_defect (i : Bool) :
+    StrategicGame.Strategy.IsStrictlyDominant (G := prisonersDilemma) (i := i) true := by
+  intro b hb a
+  cases b
+  · cases i <;> (simp [prisonersDilemma, Function.update]; split <;> norm_num)
+  · exact (hb rfl).elim
+
 /-- Mutual defection is a strict Nash equilibrium of the prisoners' dilemma. -/
-theorem prisonersDilemma_isStrictNash_defect : prisonersDilemma.IsStrictNash (fun _ ↦ true) := by
-  intro i b hb
-  cases i <;> cases b
-  all_goals first | exact (hb rfl).elim | norm_num [prisonersDilemma, Function.update]
+theorem prisonersDilemma_isStrictNash_defect : prisonersDilemma.IsStrictNash (fun _ ↦ true) :=
+  StrategicGame.isStrictNash_of_isStrictlyDominant prisonersDilemma_isStrictlyDominant_defect
+
+/-- Strict dominance implies dominance in the strict part of the weak-dominance preorder. -/
+example (i : Bool) :
+    StrategicGame.Strategy.IsStrictOrderDominant (G := prisonersDilemma) (i := i) true :=
+  (prisonersDilemma_isStrictlyDominant_defect i).isStrictOrderDominant
 
 /-- Mutual defection is a Nash equilibrium. -/
 example : prisonersDilemma.IsNash (fun _ ↦ true) := prisonersDilemma_isStrictNash_defect.isNash
@@ -71,6 +90,61 @@ theorem prisonersDilemma_not_isNash_cooperate : ¬ prisonersDilemma.IsNash (fun 
   intro h
   have := h false true
   norm_num [prisonersDilemma, Function.update] at this
+
+/-- Choosing `true` pays one against `false`; all other choices give zero. -/
+def tiedDominanceGame : StrategicGame Bool (fun _ ↦ Bool) ℕ where
+  payoff i a := if a i && !(a (!i)) then 1 else 0
+
+/-- Choosing `true` weakly improves payoff everywhere and strictly improves it against `false`. -/
+theorem tiedDominanceGame_isStrictOrderDominant (i : Bool) :
+    StrategicGame.Strategy.IsStrictOrderDominant (G := tiedDominanceGame) (i := i) true := by
+  intro b hb
+  cases b
+  · apply (StrategicGame.Strategy.lt_iff (G := tiedDominanceGame)
+      (s := false) (s' := true) i).2
+    constructor
+    · apply (StrategicGame.Strategy.le_iff' (G := tiedDominanceGame)
+        (i := i) (s := false) (s' := true)).2
+      intro a
+      cases i <;> simp [tiedDominanceGame, Function.update]
+    · exact ⟨fun _ ↦ false, by cases i <;> norm_num [tiedDominanceGame, Function.update]⟩
+  · exact (hb rfl).elim
+
+/-- The payoff tie against `true` prevents pointwise strict dominance. -/
+theorem tiedDominanceGame_not_isStrictlyDominant (i : Bool) :
+    ¬ StrategicGame.Strategy.IsStrictlyDominant (G := tiedDominanceGame) (i := i) true := by
+  intro h
+  have hlt := h false Bool.false_ne_true (fun _ ↦ true)
+  cases i <;> norm_num [tiedDominanceGame, Function.update] at hlt
+
+/-- A profile dominant in the strict preorder is Nash even when payoff ties remain. -/
+example : tiedDominanceGame.IsNash (fun _ ↦ true) :=
+  StrategicGame.isNash_of_isDominant fun i ↦ (tiedDominanceGame_isStrictOrderDominant i).isDominant
+
+/-- Dominance in the strict preorder does not force the resulting profile to be strict Nash. -/
+theorem tiedDominanceGame_not_isStrictNash :
+    ¬ tiedDominanceGame.IsStrictNash (fun _ ↦ true) := by
+  intro h
+  have hlt := h false false (by decide)
+  norm_num [tiedDominanceGame, Function.update] at hlt
+
+/-- Player `true` has no available action, so there are no action profiles. -/
+def emptyOpponentGame : StrategicGame Bool (fun i ↦ if i then Empty else Bool) ℕ where
+  payoff _ _ := 0
+
+/-- Pointwise strict dominance is vacuous when an opponent has no available action. -/
+example :
+    StrategicGame.Strategy.IsStrictlyDominant (G := emptyOpponentGame) (i := false) true := by
+  intro b hb a
+  exact (a true).elim
+
+/-- With no action profiles, distinct actions are equivalent in the weak-dominance preorder. -/
+example :
+    ¬ StrategicGame.Strategy.IsStrictOrderDominant (G := emptyOpponentGame) (i := false) true := by
+  intro h
+  obtain ⟨a, ha⟩ := ((StrategicGame.Strategy.lt_iff (G := emptyOpponentGame)
+    (s := false) (s' := true) false).1 (h false Bool.false_ne_true)).2
+  exact (a true).elim
 
 /-- Uniform randomization over two actions. -/
 def fairCoin : FinDist Bool := ⟨fun _ ↦ 1 / 2, by constructor <;> norm_num⟩
