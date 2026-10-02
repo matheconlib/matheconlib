@@ -5,6 +5,7 @@ Authors: Daniel Lyng
 -/
 module
 
+public import Auctionlib.ForMathlib.ProbabilityMeasure
 public import Auctionlib.Probability.FinDist.Expect
 public import Mathlib.Probability.ProbabilityMassFunction.Integrals
 
@@ -25,6 +26,8 @@ function. Finite expectations agree with Bochner integrals on discrete measurabl
 
 * `FinDist.toPMF_ofPMF`: Converting a probability mass function to real-valued masses and back
   preserves it.
+* `FinDist.toMeasure_eq_equivStdSimplex_symm`: The finite distribution and its simplex probability
+  measure assign the same mass to every event on a discrete space.
 * `FinDist.integrable_toMeasure`: Functions on finite discrete spaces are integrable.
 * `FinDist.expect_eq_integral`: Finite expectations agree with integrals.
 
@@ -76,6 +79,17 @@ def toMeasure (d : FinDist α) : Measure α := d.toPMF.toMeasure
 /-- The measure induced by a finite distribution is a probability measure. -/
 instance (d : FinDist α) : IsProbabilityMeasure d.toMeasure :=
   PMF.toMeasure.isProbabilityMeasure d.toPMF
+
+/-- On a finite discrete space, the measure of a finite distribution equals the probability measure
+corresponding to its simplex weights. -/
+lemma toMeasure_eq_equivStdSimplex_symm [DiscreteMeasurableSpace α] (d : FinDist α) :
+    d.toMeasure = (ProbabilityMeasure.equivStdSimplex.symm d : Measure α) := by
+  classical
+  apply Measure.ext_of_singleton
+  intro a
+  rw [toMeasure, PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton a)]
+  simpa [toPMF, ProbabilityMeasure.equivStdSimplex, Set.indicator] using
+    ENNReal.ofReal_eq_coe_nnreal (d.nonneg a)
 
 /-- Every function from a finite discrete space into a normed additive group is integrable. -/
 lemma integrable_toMeasure [MeasurableSingletonClass α] {V : Type*} [NormedAddCommGroup V]

@@ -85,6 +85,12 @@ example (σ : StrategicGame.FiniteMixedStrategy (fun _ : Unit ↦ Bool)) :
   rw [← game.finiteMixedExtension_payoff_eq_mixedExtension]
   exact expectedPayoff_eq σ
 
+/-- Each player's finite distribution gives the same action law as its probability-measure mixed
+strategy. -/
+example (σ : StrategicGame.FiniteMixedStrategy (fun _ : Unit ↦ Bool)) (i : Unit) :
+    (σ i).toMeasure = (StrategicGame.toProbability σ i : Measure Bool) :=
+  (σ i).toMeasure_eq_equivStdSimplex_symm
+
 /-- A fair lottery averages both payoff coordinates. -/
 example : (FinDist.mixture ⟨1 / 2, by constructor <;> norm_num⟩
     (FinDist.pure false) (FinDist.pure true)).expect
