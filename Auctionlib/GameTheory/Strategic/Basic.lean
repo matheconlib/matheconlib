@@ -23,12 +23,15 @@ payoffs are incomparable. Their usual characterizations by the absence of strict
 deviations require a linear order.
 
 Action maps give a strategic game on new action spaces by evaluating payoffs at the translated
-actions. Identity maps preserve the game, and successive action translations compose pointwise.
+actions. Identity maps preserve the game; successive action translations compose pointwise.
+Every unilateral deviation translates to a unilateral deviation, so a profile is a Nash equilibrium
+in the translated game whenever its image is a Nash equilibrium in the original game.
 
 ## Main definitions
 
 * `StrategicGame`, `StrategicGame.nashProblem`, and `StrategicGame.IsNash`.
 * `StrategicGame.comapActions`: The game obtained by translating each player's action.
+* `StrategicGame.comapActionsComorphism`: Action translation between Nash equilibrium problems.
 * `StrategicGame.Strategy`, with the preorder of weak dominance.
 * `StrategicGame.Strategy.IsDominant`, `StrategicGame.Strategy.IsStrictOrderDominant`, and
   `StrategicGame.Strategy.IsStrictlyDominant`.
@@ -37,8 +40,9 @@ actions. Identity maps preserve the game, and successive action translations com
 ## Main statements
 
 * `StrategicGame.comapActions_id` and `StrategicGame.comapActions_comp`: Identity action maps
-  preserve the game, and successive action translations compose.
+  preserve the game; successive action translations compose.
 * `StrategicGame.isNash_iff` gives the unilateral payoff inequalities.
+* `StrategicGame.IsNash.comapActions`: Nash equilibrium pulls back along action translations.
 * `StrategicGame.isNash_iff_of_actionEquiv`: Payoff-preserving relabelings preserve Nash
   equilibrium.
 * `StrategicGame.isNash_iff_not_lt` and `StrategicGame.isStrongNash_iff_not_lt`: For linearly
@@ -92,9 +96,28 @@ def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) : EquilibriumProblem
   deviation i a a' := ∃ s, a' = Function.update a i s
   value := G.payoff
 
+/-- Action translation maps unilateral deviations to unilateral deviations and preserves each
+player's payoff. -/
+def comapActionsComorphism [DecidableEq ι] {B : ι → Type*} (G : StrategicGame ι A V)
+    (κ : ∀ i, B i → A i) :
+    GameComorphism (G.comapActions κ).nashProblem G.nashProblem where
+  toFun b := fun i ↦ κ i (b i)
+  deviatorMap := id
+  deviation_maps i b b' hb := by
+    obtain ⟨s, rfl⟩ := hb
+    exact ⟨κ i s, funext (Function.apply_update κ b i s)⟩
+  value_eq _ _ := rfl
+
 /-- Every unilateral deviation gives the player a payoff at most their incumbent payoff. -/
 def IsNash [LE V] [DecidableEq ι] (G : StrategicGame ι A V) (a : ∀ i, A i) : Prop :=
   G.nashProblem.IsEquilibrium a
+
+/-- A profile is a Nash equilibrium in the game with translated actions if its image is a Nash
+equilibrium in the original game. The action maps need not be injective or surjective. -/
+theorem IsNash.comapActions [LE V] [DecidableEq ι] {B : ι → Type*}
+    {G : StrategicGame ι A V} (κ : ∀ i, B i → A i) {b : ∀ i, B i}
+    (h : G.IsNash (fun i ↦ κ i (b i))) : (G.comapActions κ).IsNash b :=
+  (G.comapActionsComorphism κ).pullback h
 
 /-- Nash equilibrium is equivalent to the unilateral payoff inequalities. -/
 @[simp] lemma isNash_iff [LE V] [DecidableEq ι] (G : StrategicGame ι A V) (a : ∀ i, A i) :

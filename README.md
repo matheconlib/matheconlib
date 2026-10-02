@@ -243,6 +243,10 @@ integration work.
 `StrategicGame.comapActions` and `BayesianGame.comapActions` evaluate payoffs at translated
 actions, with identity and composition laws, and `BayesianGame.toStrategicGame θ` fixes the full
 true type profile. Fixing types commutes with action translation.
+`StrategicGame.comapActionsComorphism` sends unilateral deviations in the translated game to
+unilateral deviations in the original game. `StrategicGame.IsNash.comapActions` pulls Nash
+equilibrium back along this map: if the translated profile is Nash in the original game, the
+profile is Nash in the game on the new action spaces. No injectivity or surjectivity is required.
 [`AuctionlibTest/GameTheory/ActionMaps.lean`](AuctionlibTest/GameTheory/ActionMaps.lean) pins
 these signatures with independent carrier universes and arbitrary payoff values.
 
