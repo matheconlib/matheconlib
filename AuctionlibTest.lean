@@ -9,6 +9,7 @@ import AuctionlibTest.GameTheory.Transport
 import AuctionlibTest.GameTheory.VectorPayoffs
 import AuctionlibTest.Manual.HandsOn
 import AuctionlibTest.Mechanism.Core
+import AuctionlibTest.Mechanism.Games
 import AuctionlibTest.Pricing.Compatibility
 import AuctionlibTest.SingleParameter.Compatibility
 import AuctionlibTest.ValueDistribution.Compatibility
