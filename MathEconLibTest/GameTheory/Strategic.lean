@@ -6,17 +6,19 @@ Authors: Daniel Lyng
 module
 
 public import MathEconLib.GameTheory.Strategic.Existence
+public import MathEconLib.SingleParameter.PostedPrice
 import Mathlib.Logic.Equiv.Prod
 
 /-!
-# Dominance, matching pennies, and the prisoners' dilemma
+# Dominance, matching pennies, the prisoners' dilemma, and posted pricing
 
 Matching pennies has no pure Nash equilibrium and has a fair-coin mixed equilibrium. In the
 prisoners' dilemma, mutual defection is strict Nash while mutual cooperation is not Nash. The
 outcome-distribution representation gives the same expected utilities and mixed equilibria.
 Additional games compare strict dominance at every opponent profile with the strict part of the
 weak-dominance preorder. An empty opponent action space leaves no profiles, so pointwise strict
-dominance holds vacuously without a strict payoff comparison.
+dominance holds vacuously without a strict payoff comparison. A buyer's posted-price choice is a
+one-player Nash equilibrium by universal incentive compatibility over both purchase decisions.
 
 ## Main definitions
 
@@ -25,6 +27,7 @@ dominance holds vacuously without a strict payoff comparison.
 * `tiedDominanceGame`: A game with ties at some opponent profiles.
 * `emptyOpponentGame`: A game in which one player has no available action.
 * `fairCoin`: Uniform randomization over Boolean actions.
+* `postedPriceGame`: A buyer's payoff from either purchase decision at a fixed price and type.
 
 ## Main statements
 
@@ -33,15 +36,17 @@ dominance holds vacuously without a strict payoff comparison.
   `prisonersDilemma_not_isNash_cooperate`.
 * `tiedDominanceGame_isStrictOrderDominant` and `tiedDominanceGame_not_isStrictlyDominant`.
 * `tiedDominanceGame_not_isStrictNash`: Dominance in the strict preorder permits payoff ties.
+* `postedPriceGame_isNash`: The posted-price threshold strategy is Nash for every type in the
+  stated interval.
 
 ## Tags
 
-dominance, matching pennies, prisoners dilemma, nash equilibrium
+dominance, matching pennies, prisoners dilemma, posted price, nash equilibrium
 -/
 
 @[expose] public noncomputable section
 
-open MathEconLib.GameTheory MathEconLib.Probability MeasureTheory
+open MathEconLib MathEconLib.GameTheory MathEconLib.Probability MeasureTheory
 
 namespace MathEconLibTest.GameTheory
 
@@ -215,6 +220,31 @@ example (σ : Bool → stdSimplex ℝ Bool) :
       (StrategicGame.ofOutcome outcomeExample.mixed utilities.expected).IsNash
         (StrategicGame.toProbability σ) :=
   StrategicGame.isFiniteMixedNash_iff_ofOutcome_mixed_isNash _ _ _
+
+/-! ## Posted-price choice -/
+
+/-- The buyer chooses whether to purchase at a fixed price, with utility given by the posted-price
+problem at type `v`. -/
+def postedPriceGame (lowestType highestType price v : ℝ) :
+    StrategicGame Unit (fun _ ↦ SingleParameterProblem.PurchaseDecision) ℝ where
+  payoff _ a := (SingleParameterProblem.postedPriceProblem lowestType highestType price).payoff v
+    (a ())
+
+/-- Universal incentive compatibility makes the posted-price threshold choice Nash against both
+purchase decisions for every type in the stated interval. -/
+theorem postedPriceGame_isNash (lowestType highestType price v : ℝ)
+    (hv : v ∈
+      (SingleParameterProblem.postedPriceProblem lowestType highestType price).typeInterval) :
+    (postedPriceGame lowestType highestType price v).IsNash
+      (fun _ ↦
+        (SingleParameterProblem.postedPriceProblem lowestType highestType price).strategy v) := by
+  rw [StrategicGame.isNash_iff]
+  intro i decision
+  cases i
+  simpa only [postedPriceGame, Function.update_self] using
+    SingleParameterProblem.HasUniversalIC.universalIC
+      (P := SingleParameterProblem.postedPriceProblem lowestType highestType price)
+      (S := Set.univ) v hv decision (Set.mem_univ decision)
 
 end MathEconLibTest.GameTheory
 
