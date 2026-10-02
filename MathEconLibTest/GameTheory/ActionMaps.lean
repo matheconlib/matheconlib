@@ -12,7 +12,8 @@ public import MathEconLib.GameTheory.Strategic.Bayesian.Game
 
 Action translations evaluate strategic-game payoffs at the translated profile. Identity
 translations preserve the game, and successive translations compose. Fixing the full true type
-profile of a Bayesian game gives a strategic game and commutes with action translation.
+profile of a Bayesian game gives a strategic game and commutes with action translation. Nash
+equilibrium pulls back along action translations, which preserve unilateral deviations and payoffs.
 
 The player, type, action, and payoff spaces may occupy independent universes. These constructions
 and equalities apply to arbitrary payoff carriers and arbitrary action maps.
@@ -20,6 +21,7 @@ and equalities apply to arbitrary payoff carriers and arbitrary action maps.
 ## Main statements
 
 * Strategic action translation has the stated payoff, identity, and composition laws.
+* Nash equilibrium pulls back along arbitrary action maps.
 * Fixing true types preserves Bayesian payoffs and commutes with action translation.
 
 ## Tags
@@ -57,6 +59,18 @@ example : ∀ {I : Type uI} {A : I → Type uA} {V : Type uV} {B : I → Type uB
     (τ : ∀ i, C i → B i),
     (G.comapActions κ).comapActions τ = G.comapActions (fun i ↦ κ i ∘ τ i) :=
   @StrategicGame.comapActions_comp
+
+/-- Action translation preserves unilateral deviations and payoffs without an order on payoffs. -/
+example : ∀ {I : Type uI} {A : I → Type uA} {V : Type uV} [DecidableEq I]
+    {B : I → Type uB} (G : StrategicGame I A V) (κ : ∀ i, B i → A i),
+    GameComorphism (G.comapActions κ).nashProblem G.nashProblem :=
+  @StrategicGame.comapActionsComorphism
+
+/-- Nash equilibrium pulls back with only a payoff comparison and decidable equality of players. -/
+example : ∀ {I : Type uI} {A : I → Type uA} {V : Type uV} [LE V] [DecidableEq I]
+    {B : I → Type uB} {G : StrategicGame I A V} (κ : ∀ i, B i → A i) {b : ∀ i, B i},
+    G.IsNash (fun i ↦ κ i (b i)) → (G.comapActions κ).IsNash b :=
+  @StrategicGame.IsNash.comapActions
 
 /-- Fixing true types gives a strategic game in the same actions and payoff carrier. -/
 example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {V : Type uV},
