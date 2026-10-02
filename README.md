@@ -257,6 +257,8 @@ almost-everywhere interim characterization under the stated measurability and
 conditional-integrability assumptions. Pointwise auction IC and induced mechanism games remain
 separate integration work.
 
+`StrategicGame.comapActions` and `BayesianGame.comapActions` evaluate payoffs at translated actions, with identity and composition laws, and `BayesianGame.toStrategicGame θ` fixes the full true type profile. Fixing types commutes with action translation. [`MathEconLibTest/GameTheory/ActionMaps.lean`](MathEconLibTest/GameTheory/ActionMaps.lean) pins these signatures with independent carrier universes and arbitrary payoff values.
+
 ### Key Theorems
 
 The linked Lean statements specify each result's definitions and hypotheses.

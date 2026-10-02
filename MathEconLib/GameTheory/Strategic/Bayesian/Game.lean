@@ -5,7 +5,7 @@ Authors: Daniel Lyng
 -/
 module
 
-import Mathlib.Tactic.Lemma
+public import MathEconLib.GameTheory.Strategic.Basic
 
 /-!
 # Bayesian games and pure strategies
@@ -19,6 +19,7 @@ players' types. A pure strategy assigns an action to each of a player's types.
 * `BayesianGame`: Type-dependent payoffs with explicit player, type, action, and payoff carriers.
 * `BayesianGame.PureStrategy`: A profile of type-contingent actions.
 * `BayesianGame.actionProfile`: The actions prescribed at a realized type profile.
+* `BayesianGame.toStrategicGame`: The strategic game at a fixed true type profile.
 * `BayesianGame.comapActions`: A game whose actions are translated into another game's actions.
 * `BayesianGame.mapPureStrategy`: Translation of the actions prescribed by a strategy profile.
 
@@ -26,6 +27,7 @@ players' types. A pure strategy assigns an action to each of a player's types.
 
 * `BayesianGame.comapActions_id`: Identity translation preserves the game.
 * `BayesianGame.comapActions_comp`: Successive action translations compose.
+* `BayesianGame.toStrategicGame_comapActions`: Fixing true types commutes with action translation.
 
 ## Tags
 
@@ -62,7 +64,16 @@ def actionProfile (G : BayesianGame I Θ A V) (s : G.PureStrategy) (θ : ∀ i, 
 @[simp] lemma actionProfile_apply (G : BayesianGame I Θ A V) (s : G.PureStrategy)
     (θ : ∀ i, Θ i) (i : I) : G.actionProfile s θ i = s i (θ i) := rfl
 
-/-- Translate each player's action before evaluating the original game's payoffs. -/
+/-- Fixing the full true type profile gives a strategic game in the same actions and payoffs. -/
+def toStrategicGame (G : BayesianGame I Θ A V) (θ : ∀ i, Θ i) : StrategicGame I A V where
+  payoff i a := G.payoff i a θ
+
+/-- Payoffs in the fixed-type strategic game are evaluated at that true type profile. -/
+@[simp] lemma toStrategicGame_payoff (G : BayesianGame I Θ A V) (θ : ∀ i, Θ i)
+    (i : I) (a : ∀ i, A i) :
+    (G.toStrategicGame θ).payoff i a = G.payoff i a θ := rfl
+
+/-- The Bayesian game obtained by translating each player's action before evaluating payoffs. -/
 def comapActions (G : BayesianGame I Θ A V) (κ : ∀ i, B i → A i) : BayesianGame I Θ B V where
   payoff i b θ := G.payoff i (fun j ↦ κ j (b j)) θ
 
@@ -70,6 +81,11 @@ def comapActions (G : BayesianGame I Θ A V) (κ : ∀ i, B i → A i) : Bayesia
 @[simp] lemma comapActions_payoff (G : BayesianGame I Θ A V) (κ : ∀ i, B i → A i)
     (i : I) (b : ∀ i, B i) (θ : ∀ i, Θ i) :
     (G.comapActions κ).payoff i b θ = G.payoff i (fun j ↦ κ j (b j)) θ := rfl
+
+/-- Fixing true types commutes with translating the actions of the Bayesian game. -/
+@[simp] lemma toStrategicGame_comapActions (G : BayesianGame I Θ A V)
+    (κ : ∀ i, B i → A i) (θ : ∀ i, Θ i) :
+    (G.comapActions κ).toStrategicGame θ = (G.toStrategicGame θ).comapActions κ := rfl
 
 /-- Translating actions by the identity preserves the game. -/
 @[simp] lemma comapActions_id (G : BayesianGame I Θ A V) :
@@ -80,7 +96,7 @@ lemma comapActions_comp (G : BayesianGame I Θ A V) (κ : ∀ i, B i → A i)
     (τ : ∀ i, C i → B i) :
     (G.comapActions κ).comapActions τ = G.comapActions (fun i ↦ κ i ∘ τ i) := rfl
 
-/-- Translate the actions prescribed by a pure strategy profile. -/
+/-- The pure strategy profile obtained by translating each prescribed action. -/
 def mapPureStrategy (G : BayesianGame I Θ A V) (κ : ∀ i, B i → A i)
     (s : (G.comapActions κ).PureStrategy) : G.PureStrategy :=
   fun i ↦ κ i ∘ s i
