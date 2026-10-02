@@ -22,9 +22,13 @@ payoffs, and strong Nash equilibrium requires a weakly worse-off changing player
 payoffs are incomparable. Their usual characterizations by the absence of strictly profitable
 deviations require a linear order.
 
+Action maps give a strategic game on new action spaces by evaluating payoffs at the translated
+actions. Identity maps preserve the game, and successive action translations compose pointwise.
+
 ## Main definitions
 
 * `StrategicGame`, `StrategicGame.nashProblem`, and `StrategicGame.IsNash`.
+* `StrategicGame.comapActions`: The game obtained by translating each player's action.
 * `StrategicGame.Strategy`, with the preorder of weak dominance.
 * `StrategicGame.Strategy.IsDominant`, `StrategicGame.Strategy.IsStrictOrderDominant`, and
   `StrategicGame.Strategy.IsStrictlyDominant`.
@@ -32,6 +36,8 @@ deviations require a linear order.
 
 ## Main statements
 
+* `StrategicGame.comapActions_id` and `StrategicGame.comapActions_comp`: Identity action maps
+  preserve the game, and successive action translations compose.
 * `StrategicGame.isNash_iff` gives the unilateral payoff inequalities.
 * `StrategicGame.isNash_iff_of_actionEquiv`: Payoff-preserving relabelings preserve Nash
   equilibrium.
@@ -60,6 +66,26 @@ structure StrategicGame (I : Type*) (A : I → Type*) (V : Type*) where
 variable {ι : Type*} {A : ι → Type*} {V : Type*}
 
 namespace StrategicGame
+
+/-- The strategic game in which each player's action is translated by `κ` before the original
+game's payoffs are evaluated. -/
+def comapActions {B : ι → Type*} (G : StrategicGame ι A V)
+    (κ : ∀ i, B i → A i) : StrategicGame ι B V where
+  payoff i b := G.payoff i (fun j ↦ κ j (b j))
+
+/-- Payoffs in the translated game are the original payoffs at translated actions. -/
+@[simp] lemma comapActions_payoff {B : ι → Type*} (G : StrategicGame ι A V)
+    (κ : ∀ i, B i → A i) (i : ι) (b : ∀ i, B i) :
+    (G.comapActions κ).payoff i b = G.payoff i (fun j ↦ κ j (b j)) := rfl
+
+/-- Translating actions by the identity preserves the game. -/
+@[simp] lemma comapActions_id (G : StrategicGame ι A V) :
+    G.comapActions (fun _ ↦ id) = G := rfl
+
+/-- Successive action translations agree with their composition. -/
+lemma comapActions_comp {B : ι → Type*} {C : ι → Type*} (G : StrategicGame ι A V)
+    (κ : ∀ i, B i → A i) (τ : ∀ i, C i → B i) :
+    (G.comapActions κ).comapActions τ = G.comapActions (fun i ↦ κ i ∘ τ i) := rfl
 
 /-- The equilibrium problem in which a player may replace only their own action. -/
 def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) : EquilibriumProblem (∀ i, A i) ι V where
@@ -180,7 +206,7 @@ protected lemma lt_iff [DecidableEq ι] {G : StrategicGame ι A V} (i : ι)
   refine lt_iff_le_not_ge.trans <| and_congr_right fun h ↦ ?_
   simp only [Strategy.le_iff', not_forall, lt_iff_le_not_ge, Strategy.le_iff'.1 h, true_and]
 
-/-- A strategy above every other strategy in the strict part of the weak-dominance preorder: for
+/-- A strategy above every other strategy in the strict part of the weak-dominance preorder: For
 each alternative, payoff weakly improves at every opponent profile and strictly improves at some
 opponent profile. The profile giving strict improvement may depend on the alternative. -/
 def IsStrictOrderDominant {G : StrategicGame ι A V} {i : ι} (s : G.Strategy i) :=
