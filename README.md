@@ -140,12 +140,18 @@ and
 | [`Mechanism/Core/Comap.lean`](MathEconLib/Mechanism/Core/Comap.lean) | Induced mechanisms and identity/composition laws |
 | [`Mechanism/Core/Environment.lean`](MathEconLib/Mechanism/Core/Environment.lean) | Quasilinear environments, private values, utility, and welfare |
 | [`Mechanism/Core/SolutionConcepts.lean`](MathEconLib/Mechanism/Core/SolutionConcepts.lean) | DSIC, ex-post IR, welfare efficiency, budget balance, and no deficit |
+| [`Mechanism/Core/Strategic.lean`](MathEconLib/Mechanism/Core/Strategic.lean) | Utility games, DSIC as truthful dominance, and truthful Nash equilibrium |
+| [`Mechanism/Core/Bayesian.lean`](MathEconLib/Mechanism/Core/Bayesian.lean) | Induced Bayesian games, fixed-type agreement, and action-change agreement |
 | [`Mechanism/Auctions/Allocation.lean`](MathEconLib/Mechanism/Auctions/Allocation.lean) | `IsUnitIntervalAllocation` coordinate bounds and `UsesStrictHighestBidAllocation` |
 | [`Mechanism/Auctions/AllPurchase/Spec.lean`](MathEconLib/Mechanism/Auctions/AllPurchase/Spec.lean) | Explicit `AllPurchaseSpec` price/scarcity data and the `IsAllPurchase` existence predicate |
 
 `IsUnitIntervalAllocation` bounds each coordinate in `[0, 1]`; aggregate feasibility depends on the outcome space and allocation rule. Welfare efficiency compares outcomes using a valuation environment. The strict-highest-bid rule instead describes allocations from bids, awarding nothing on ties.
 
 Checked examples in [`MathEconLibTest/Mechanism/Core.lean`](MathEconLibTest/Mechanism/Core.lean) use the umbrella import, including a truthful posted-price mechanism, concrete all-purchase payments, and a mechanism with infinitely many agents.
+
+[`MathEconLibTest/Mechanism/Games.lean`](MathEconLibTest/Mechanism/Games.lean) pins the induced-game contracts. The utility game keeps the full true profile fixed while reports vary. DSIC requires truthful reports to be dominant against all opponents' reports; truthful Nash equilibrium alone compares against truthful opponents.
+
+`M.inducedBayesianGame E` evaluates `E.utility M` at each action and true type profile. Its `toStrategicGame θ` is exactly `E.utilityGame M θ`. Inducing either game commutes with `Mechanism.comap`, including action maps that restrict the available reports or identify several actions. These constructions require no prior or private-values assumption.
 
 ### Bidder Problem (`BidderProblem/`)
 
@@ -249,13 +255,7 @@ finite discrete games and bounded measurable payoffs in second countable payoff 
 this condition. For bounded measurable games, `StrategicGame.Bounded` supplies the
 integrability hypotheses of `isMixedNash_iff_isNash`.
 
-The Bayesian game carrier takes players, types, actions, and payoff values as explicit parameters.
-Priors are supplied separately. Finite BNE constrains positive-probability types, and the finite
-Bayesian equivalences hold for partially ordered real modules whose order respects addition and
-nonnegative scaling. Measurable BNE includes incumbent integrability and, for real payoffs, has an
-almost-everywhere interim characterization under the stated measurability and
-conditional-integrability assumptions. Pointwise auction IC and induced mechanism games remain
-separate integration work.
+The Bayesian game carrier takes players, types, actions, and payoff values as explicit parameters. Priors are supplied separately. Finite BNE constrains positive-probability types, and the finite Bayesian equivalences hold for partially ordered real modules whose order respects addition and nonnegative scaling. Measurable BNE includes incumbent integrability and, for real payoffs, has an almost-everywhere interim characterization under the stated measurability and conditional-integrability assumptions. Mechanism utility already supplies the induced Bayesian game; connecting auction priors, interim utility, and pointwise auction IC remains separate integration work.
 
 `StrategicGame.comapActions` and `BayesianGame.comapActions` evaluate payoffs at translated actions, with identity and composition laws, and `BayesianGame.toStrategicGame θ` fixes the full true type profile. Fixing types commutes with action translation. [`MathEconLibTest/GameTheory/ActionMaps.lean`](MathEconLibTest/GameTheory/ActionMaps.lean) pins these signatures with independent carrier universes and arbitrary payoff values.
 

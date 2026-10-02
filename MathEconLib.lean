@@ -55,11 +55,13 @@ import MathEconLib.GameTheory.Strategic.Outcome
 import MathEconLib.Mechanism
 import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 import MathEconLib.Mechanism.Auctions.Allocation
+import MathEconLib.Mechanism.Core.Bayesian
 import MathEconLib.Mechanism.Core.Comap
 import MathEconLib.Mechanism.Core.Environment
 import MathEconLib.Mechanism.Core.Mechanism
 import MathEconLib.Mechanism.Core.Profile
 import MathEconLib.Mechanism.Core.SolutionConcepts
+import MathEconLib.Mechanism.Core.Strategic
 import MathEconLib.Probability.FinDist.Basic
 import MathEconLib.Probability.FinDist.ConditionalOn
 import MathEconLib.Probability.FinDist.Expect
