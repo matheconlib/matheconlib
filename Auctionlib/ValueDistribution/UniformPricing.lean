@@ -2,7 +2,10 @@ module
 
 public import Auctionlib.ValueDistribution.PostedPrice
 public import Auctionlib.ValueDistribution.Uniform
+public import Auctionlib.ValueDistribution.VirtualValue
 
+import Auctionlib.ValueDistribution.PostedPriceFirstOrder
+import Auctionlib.ValueDistribution.PostedPriceOptimality
 import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 
@@ -10,22 +13,37 @@ import Mathlib.Tactic.Linarith
 # Posted Pricing with Uniform Buyer Values
 
 For a buyer whose value is uniform on `[a, b]`, this file specializes the
-existing seller-profit formula. The maximization is over posted prices in
+shared seller-profit and pricing results. The maximization is over posted prices in
 `[a, b]`; prices above `b` are not included because they all yield no sale.
 
 The candidate price is the unconstrained quadratic optimum `(b + r) / 2`
 projected onto the feasible interval. Here `r` is continuation value, and
 the unconditional acquisition cost does not affect the maximizing price.
+
+The uniform virtual-surplus weight supplies the sign conditions for
+`PostedPriceOptimality`, including at both boundaries. At an interior optimum,
+`PostedPriceFirstOrder` gives virtual value equal to continuation value. A
+private quadratic profit-gap identity establishes uniqueness on `[a, b]`.
 -/
 
 @[expose] public section
 
 noncomputable section
 
-open Set
+open MeasureTheory Set
 open SingleParameterProblem
 
 namespace ValueDistribution
+
+/-- On the uniform support, the virtual-surplus weight for the constant
+density representative is `(2 * value - b) / (b - a)`. -/
+theorem uniformInterval_virtualSurplusWeight (a b : ℝ) (hab : a < b)
+    (value : ℝ) (hvalue : value ∈ Icc a b) :
+    (uniformInterval a b hab).virtualSurplusWeight
+        (fun _ : ℝ ↦ 1 / (b - a)) value =
+      (2 * value - b) / (b - a) := by
+  rw [virtualSurplusWeight, uniformInterval_probAtLeast a b hab value hvalue]
+  ring
 
 /-- The unconstrained uniform-profit maximizer projected onto `[a, b]`. -/
 def uniformOptimalPrice (a b continuationValue : ℝ) : ℝ :=
@@ -58,65 +76,63 @@ theorem uniformOptimalPrice_eq_peak (a b continuationValue : ℝ)
     uniformOptimalPrice a b continuationValue = (b + continuationValue) / 2 := by
   simp [uniformOptimalPrice, min_eq_right hpeak.2, max_eq_right hpeak.1]
 
-private theorem uniform_margin_gap (b continuationValue price candidate : ℝ) :
-    (candidate - continuationValue) * (b - candidate) -
-        (price - continuationValue) * (b - price) =
-      (candidate - price) * (b + continuationValue - candidate - price) := by
-  ring
+/-- The projected price separates the nonpositive and nonnegative net
+virtual surplus. At a support boundary, one comparison interval is a
+Lebesgue-null singleton, so the corresponding sign condition is automatic. -/
+private theorem uniformInterval_netVirtualSurplus_sign
+    (a b : ℝ) (hab : a < b) (continuationValue : ℝ) :
+    (∀ᵐ value ∂volume.restrict (Icc a (uniformOptimalPrice a b continuationValue)),
+      (uniformInterval a b hab).virtualSurplusWeight
+          (fun _ : ℝ ↦ 1 / (b - a)) value -
+        continuationValue * (1 / (b - a)) ≤ 0) ∧
+    (∀ᵐ value ∂volume.restrict (Icc (uniformOptimalPrice a b continuationValue) b),
+      0 ≤ (uniformInterval a b hab).virtualSurplusWeight
+          (fun _ : ℝ ↦ 1 / (b - a)) value -
+        continuationValue * (1 / (b - a))) := by
+  constructor
+  · by_cases hleft : (b + continuationValue) / 2 ≤ a
+    · simp [uniformOptimalPrice_eq_left a b continuationValue hleft]
+    · have hcutoff_le_peak :
+          uniformOptimalPrice a b continuationValue ≤ (b + continuationValue) / 2 :=
+        max_le (le_of_lt (lt_of_not_ge hleft)) (min_le_right _ _)
+      filter_upwards [ae_restrict_mem measurableSet_Icc] with value hvalue
+      rw [uniformInterval_virtualSurplusWeight a b hab value
+        ⟨hvalue.1, hvalue.2.trans (uniformOptimalPrice_mem_Icc a b continuationValue hab).2⟩]
+      calc
+        (2 * value - b) / (b - a) - continuationValue * (1 / (b - a)) =
+            (2 * value - b - continuationValue) / (b - a) := by ring
+        _ ≤ 0 := div_nonpos_of_nonpos_of_nonneg (by linarith [hvalue.2])
+          (sub_nonneg.mpr hab.le)
+  · by_cases hright : b ≤ (b + continuationValue) / 2
+    · simp [uniformOptimalPrice_eq_right a b continuationValue hab hright]
+    · have hpeak_le_cutoff :
+          (b + continuationValue) / 2 ≤ uniformOptimalPrice a b continuationValue :=
+        (le_min (le_of_lt (lt_of_not_ge hright)) le_rfl).trans (le_max_right _ _)
+      filter_upwards [ae_restrict_mem measurableSet_Icc] with value hvalue
+      rw [uniformInterval_virtualSurplusWeight a b hab value
+        ⟨(uniformOptimalPrice_mem_Icc a b continuationValue hab).1.trans hvalue.1, hvalue.2⟩]
+      calc
+        0 ≤ (2 * value - b - continuationValue) / (b - a) :=
+          div_nonneg (by linarith [hvalue.1]) (sub_nonneg.mpr hab.le)
+        _ = (2 * value - b) / (b - a) - continuationValue * (1 / (b - a)) := by ring
 
-/-- The projected quadratic peak has a nonnegative margin gap, and the gap
-vanishes only at that price. The three cases correspond to the lower endpoint,
-the upper endpoint, and the interior of the feasible interval. -/
-private theorem uniform_margin_gap_nonneg_and_eq
-    (a b continuationValue price : ℝ) (hab : a < b) (hprice : price ∈ Icc a b) :
-    let candidate := uniformOptimalPrice a b continuationValue
-    0 ≤ (candidate - price) * (b + continuationValue - candidate - price) ∧
-      ((candidate - price) * (b + continuationValue - candidate - price) = 0 →
-        price = candidate) := by
-  dsimp only
-  by_cases hlow : (b + continuationValue) / 2 ≤ a
-  · rw [uniformOptimalPrice_eq_left a b continuationValue hlow]
-    have hfactor : b + continuationValue - a - price ≤ a - price := by
-      linarith
-    have hleft : a - price ≤ 0 := sub_nonpos.mpr hprice.1
-    have hright : b + continuationValue - a - price ≤ 0 := hfactor.trans hleft
-    constructor
-    · exact mul_nonneg_of_nonpos_of_nonpos hleft hright
-    · intro hzero
-      by_contra hne
-      have hstrict : a < price := lt_of_le_of_ne hprice.1 (Ne.symm hne)
-      have hleftStrict : a - price < 0 := sub_neg.mpr hstrict
-      have hrightStrict : b + continuationValue - a - price < 0 :=
-        hfactor.trans_lt hleftStrict
-      exact (ne_of_gt (mul_pos_of_neg_of_neg hleftStrict hrightStrict)) hzero
-  · by_cases hhigh : b ≤ (b + continuationValue) / 2
-    · rw [uniformOptimalPrice_eq_right a b continuationValue hab hhigh]
-      have hfactor : b - price ≤ b + continuationValue - b - price := by
-        linarith
-      have hleft : 0 ≤ b - price := sub_nonneg.mpr hprice.2
-      have hright : 0 ≤ b + continuationValue - b - price := hleft.trans hfactor
-      constructor
-      · exact mul_nonneg hleft hright
-      · intro hzero
-        by_contra hne
-        have hstrict : price < b := lt_of_le_of_ne hprice.2 hne
-        have hleftStrict : 0 < b - price := sub_pos.mpr hstrict
-        have hrightStrict : 0 < b + continuationValue - b - price :=
-          hleftStrict.trans_le hfactor
-        exact (ne_of_gt (mul_pos hleftStrict hrightStrict)) hzero
-    · have hpeak : (b + continuationValue) / 2 ∈ Icc a b :=
-        ⟨le_of_lt (lt_of_not_ge hlow), le_of_lt (lt_of_not_ge hhigh)⟩
-      rw [uniformOptimalPrice_eq_peak a b continuationValue hpeak]
-      have hfactor :
-          b + continuationValue - (b + continuationValue) / 2 - price =
-            (b + continuationValue) / 2 - price := by
-        ring
-      rw [hfactor]
-      constructor
-      · exact mul_self_nonneg _
-      · intro hzero
-        have hdiff : (b + continuationValue) / 2 - price = 0 :=
-          mul_self_eq_zero.mp hzero
+/-- A feasible price with zero quadratic margin gap equals the projected peak. -/
+private theorem uniform_price_eq_of_margin_gap_eq_zero
+    (a b continuationValue price : ℝ) (hab : a < b) (hprice : price ∈ Icc a b)
+    (hzero : (uniformOptimalPrice a b continuationValue - price) *
+      (b + continuationValue - uniformOptimalPrice a b continuationValue - price) = 0) :
+    price = uniformOptimalPrice a b continuationValue := by
+  rcases mul_eq_zero.mp hzero with hsame | hreflected
+  · exact (sub_eq_zero.mp hsame).symm
+  · by_cases hlow : (b + continuationValue) / 2 ≤ a
+    · rw [uniformOptimalPrice_eq_left a b continuationValue hlow] at hreflected ⊢
+      linarith [hprice.1]
+    · by_cases hhigh : b ≤ (b + continuationValue) / 2
+      · rw [uniformOptimalPrice_eq_right a b continuationValue hab hhigh] at hreflected ⊢
+        linarith [hprice.2]
+      · have hpeak : (b + continuationValue) / 2 ∈ Icc a b :=
+          ⟨le_of_lt (lt_of_not_ge hlow), le_of_lt (lt_of_not_ge hhigh)⟩
+        rw [uniformOptimalPrice_eq_peak a b continuationValue hpeak] at hreflected ⊢
         linarith
 
 /-- Uniform posted-price seller profit is continuation value minus the
@@ -144,8 +160,6 @@ private theorem sellerProfit_uniformInterval_gap (a b : ℝ) (hab : a < b)
   rw [sellerProfit_uniformInterval a b hab _ continuationValue acquisitionCost
       (uniformOptimalPrice_mem_Icc a b continuationValue hab),
     sellerProfit_uniformInterval a b hab price continuationValue acquisitionCost hprice]
-  rw [← uniform_margin_gap b continuationValue price
-    (uniformOptimalPrice a b continuationValue)]
   ring
 
 /-- Among prices in the value interval, the projected quadratic peak
@@ -157,20 +171,13 @@ theorem isMaxOn_sellerProfit_uniformInterval (a b : ℝ) (hab : a < b)
         (uniformInterval a b hab).sellerProfit
           (postedPriceProblem a b price) continuationValue acquisitionCost)
       (Icc a b) (uniformOptimalPrice a b continuationValue) := by
-  intro price hprice
-  have hgap :=
-    (uniform_margin_gap_nonneg_and_eq a b continuationValue price hab hprice).1
-  have hprofitGap :=
-    sellerProfit_uniformInterval_gap a b hab price continuationValue acquisitionCost hprice
-  have hden : 0 ≤ b - a := sub_nonneg.mpr hab.le
-  have hquotient :
-      0 ≤ (uniformOptimalPrice a b continuationValue - price) *
-        (b + continuationValue - uniformOptimalPrice a b continuationValue - price) /
-          (b - a) :=
-    div_nonneg hgap hden
-  dsimp only at hprofitGap
-  rw [← hprofitGap] at hquotient
-  exact sub_nonneg.mp hquotient
+  obtain ⟨hbelow, habove⟩ := uniformInterval_netVirtualSurplus_sign a b hab continuationValue
+  exact isMaxOn_sellerProfit_postedPriceProblem_of_netVirtualSurplus_sign
+    (uniformInterval a b hab) a b (uniformOptimalPrice a b continuationValue)
+    (fun _ : ℝ ↦ 1 / (b - a)) continuationValue acquisitionCost
+    (uniformOptimalPrice_mem_Icc a b continuationValue hab)
+    (uniformInterval_supported a b hab) (uniformInterval_absolutelyContinuous a b hab)
+    (uniformInterval_density a b hab) hbelow habove
 
 /-- Any maximizing feasible uniform posted price is the projected peak.
 Uniqueness is stated only within `[a, b]`: prices above `b` all produce no
@@ -207,8 +214,24 @@ theorem uniformOptimalPrice_eq_of_isMaxOn_sellerProfit_uniformInterval
       (uniformOptimalPrice a b continuationValue - price) *
         (b + continuationValue - uniformOptimalPrice a b continuationValue - price) = 0 := by
     simpa [hden] using hzero
-  exact (uniform_margin_gap_nonneg_and_eq a b continuationValue price hab hprice).2
+  exact uniform_price_eq_of_margin_gap_eq_zero a b continuationValue price hab hprice
     hnumerator
+
+/-- At an interior uniform optimal price, virtual value for the constant
+density representative equals the seller's continuation value. -/
+theorem uniformInterval_virtualValue_eq_continuationValue_of_interior
+    (a b : ℝ) (hab : a < b) (continuationValue : ℝ)
+    (hpeak : (b + continuationValue) / 2 ∈ Ioo a b) :
+    (uniformInterval a b hab).virtualValue
+        (fun _ : ℝ ↦ 1 / (b - a)) ((b + continuationValue) / 2) =
+      continuationValue := by
+  have hmax := isMaxOn_sellerProfit_uniformInterval a b hab continuationValue 0
+  rw [uniformOptimalPrice_eq_peak a b continuationValue ⟨hpeak.1.le, hpeak.2.le⟩] at hmax
+  exact virtualValue_eq_continuationValue_of_isLocalMaxOn_sellerProfit_postedPriceProblem
+    (uniformInterval a b hab) a b (fun _ : ℝ ↦ 1 / (b - a))
+    continuationValue 0 ((b + continuationValue) / 2) hpeak
+    (uniformInterval_hasDerivAt_cdf a b hab _ hpeak) hmax.localize
+    (by simp [ne_of_gt (sub_pos.mpr hab)])
 
 /-! ## Comparative statics of the maximizing price -/
 

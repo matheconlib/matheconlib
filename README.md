@@ -98,11 +98,11 @@ integration theory.
 | [`ValueDistribution/SingleParameter.lean`](Auctionlib/ValueDistribution/SingleParameter.lean) | Expected allocation, expected payment, seller profit, and reduced-form preservation |
 | [`ValueDistribution/ExpectedPayment.lean`](Auctionlib/ValueDistribution/ExpectedPayment.lean) | Density-free expected-payment representation and density and CDF corollaries |
 | [`ValueDistribution/SellerProfit.lean`](Auctionlib/ValueDistribution/SellerProfit.lean) | Expected-allocation density formula and seller-profit virtual-surplus representations |
-| [`ValueDistribution/PostedPrice.lean`](Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price demand, expected payment, seller-profit, revenue, and price-comparison formulas |
+| [`ValueDistribution/PostedPrice.lean`](Auctionlib/ValueDistribution/PostedPrice.lean) | Posted-price demand, payment, profit, and acquisition-cost invariance of price optimality |
 | [`ValueDistribution/PostedPriceOptimality.lean`](Auctionlib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and sufficient global and boundary optimality conditions among posted prices |
 | [`ValueDistribution/PostedPriceFirstOrder.lean`](Auctionlib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise seller-profit differentiation, the division-free necessary condition at an interior local optimum, and nonzero-density virtual-value corollaries |
 | [`ValueDistribution/Uniform.lean`](Auctionlib/ValueDistribution/Uniform.lean) | Reusable uniform laws on real intervals, with support, density, demand, and CDF results |
-| [`ValueDistribution/UniformPricing.lean`](Auctionlib/ValueDistribution/UniformPricing.lean) | Uniform posted-price profit, the unique maximizing price within the value interval, and its comparative statics |
+| [`ValueDistribution/UniformPricing.lean`](Auctionlib/ValueDistribution/UniformPricing.lean) | Uniform profit and virtual-surplus formulas, unique optimum within the value interval, interior first-order condition, and comparative statics |
 
 Compile-time pins, representative distributions, and end-to-end pricing checks
 live respectively in
@@ -229,6 +229,7 @@ The mathematical overview is intentionally broader than the current library. Cur
 - [x] Action-parametric single-parameter foundations and a deterministic fixed-price buyer problem
 - [x] Measure-first value distributions, seller-profit decompositions, posted-price sign
   conditions, and interior virtual-value first-order conditions
+- [x] Uniform posted-price optimality and comparative statics of interval endpoints and continuation value
 - [x] General `Mechanism` + `Auction` + `BidderProblem` framework
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
 - [x] All-purchase equilibrium characterization, explicit solutions, revenue analysis, optimal pricing, and welfare decomposition
@@ -238,7 +239,7 @@ The mathematical overview is intentionally broader than the current library. Cur
 Further work includes:
 
 - [ ] Full Riley--Zeckhauser comparison between posted prices and general selling rules
-- [ ] Posted-price comparative statics, beginning with uniform-distribution parameters
+- [ ] Posted-price comparative statics beyond the uniform family
 - [ ] Continuous affiliation results, including the continuous winner's-curse inequality, and later applications such as the Linkage Principle
 - [ ] Remaining game-theoretic concepts and their integration with the auction layer
 - [ ] Extensive-form and obviously strategy-proof mechanisms

@@ -38,93 +38,36 @@ example :
   norm_num
 
 local instance :
-    NoAtoms ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) := by
-  unfold uniformUnitIntervalDistribution
-  infer_instance
+    NoAtoms ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) :=
+  ValueDistribution.uniformInterval_noAtoms 0 1 (by norm_num)
 
 /-- Uniform virtual-surplus weight is the affine function `2 * value - 1`. -/
-private lemma uniformUnitIntervalDistribution_virtualSurplusWeight
-    (value : ℝ) (hvalue : value ∈ Icc 0 1) :
+example (value : ℝ) (hvalue : value ∈ Icc 0 1) :
     uniformUnitIntervalDistribution.virtualSurplusWeight
-        (fun _ : ℝ => (1 : ℝ)) value =
+        (fun _ : ℝ ↦ (1 : ℝ)) value =
       2 * value - 1 := by
-  rw [ValueDistribution.virtualSurplusWeight,
-    show uniformUnitIntervalDistribution.probAtLeast value = (1 - value) by
-      simpa [uniformUnitIntervalDistribution] using
-        (ValueDistribution.uniformInterval_probAtLeast 0 1 (by norm_num) value hvalue)]
-  ring
+  simpa [uniformUnitIntervalDistribution] using
+    (ValueDistribution.uniformInterval_virtualSurplusWeight 0 1 (by norm_num) value hvalue)
 
-/-- Uniform virtual-surplus weight is nonpositive below one half. -/
-private lemma uniformUnitIntervalDistribution_virtualSurplusWeight_nonpos :
-    ∀ᵐ value ∂volume.restrict (Icc 0 ((1 : ℝ) / 2)),
-      uniformUnitIntervalDistribution.virtualSurplusWeight
-        (fun _ : ℝ => (1 : ℝ)) value ≤ 0 := by
-  filter_upwards [ae_restrict_mem measurableSet_Icc] with value hvalue
-  have hvalueUnit : value ∈ Icc 0 1 := by
-    constructor
-    · exact hvalue.1
-    · exact hvalue.2.trans (by norm_num)
-  rw [uniformUnitIntervalDistribution_virtualSurplusWeight value hvalueUnit]
-  linarith [hvalue.2]
-
-/-- Uniform virtual-surplus weight is nonnegative above one half. -/
-private lemma uniformUnitIntervalDistribution_virtualSurplusWeight_nonneg :
-    ∀ᵐ value ∂volume.restrict (Icc ((1 : ℝ) / 2) 1),
-      0 ≤ uniformUnitIntervalDistribution.virtualSurplusWeight
-        (fun _ : ℝ => (1 : ℝ)) value := by
-  filter_upwards [ae_restrict_mem measurableSet_Icc] with value hvalue
-  have hvalueUnit : value ∈ Icc 0 1 := by
-    constructor
-    · exact (show (0 : ℝ) ≤ 1 / 2 by norm_num).trans hvalue.1
-    · exact hvalue.2
-  rw [uniformUnitIntervalDistribution_virtualSurplusWeight value hvalueUnit]
-  linarith [hvalue.1]
-
-/-- One half globally maximizes seller profit among prices in `[0, 1]` for a
-uniform buyer value, zero continuation value, and zero acquisition cost. -/
-private lemma uniformUnitIntervalDistribution_isMaxOn_sellerProfit_half :
-    IsMaxOn
-      (fun price =>
-        uniformUnitIntervalDistribution.sellerProfit
-          (postedPriceProblem 0 1 price) 0 0)
-      (Icc 0 1) ((1 : ℝ) / 2) := by
-  apply
-    ValueDistribution.isMaxOn_sellerProfit_postedPriceProblem_of_netVirtualSurplus_sign
-      uniformUnitIntervalDistribution 0 1 ((1 : ℝ) / 2)
-      (fun _ : ℝ => (1 : ℝ)) 0 0
-  case hbelow =>
-    simpa using
-      uniformUnitIntervalDistribution_virtualSurplusWeight_nonpos
-  case habove =>
-    simpa using
-      uniformUnitIntervalDistribution_virtualSurplusWeight_nonneg
-  case hdensity =>
-    simpa [uniformUnitIntervalDistribution] using
-      (ValueDistribution.uniformInterval_density 0 1 (by norm_num))
-  case hD =>
-    exact ValueDistribution.uniformInterval_absolutelyContinuous 0 1 (by norm_num)
-  case hsupport =>
-    exact ValueDistribution.uniformInterval_supported 0 1 (by norm_num)
-  case hcutoff =>
-    norm_num
-
-/-- The uniform-pricing theorem agrees with the earlier virtual-surplus
-argument in the interior `r = 0` case. -/
+/-- With uniform values on `[0, 1]` and zero continuation value, the
+candidate price is one half. -/
 example :
     ValueDistribution.uniformOptimalPrice 0 1 0 = (1 : ℝ) / 2 := by
   norm_num [ValueDistribution.uniformOptimalPrice]
 
-example :
+/-- An unconditional acquisition cost leaves the uniform monopoly price unchanged. -/
+example (acquisitionCost : ℝ) :
     IsMaxOn
       (fun price ↦
         uniformUnitIntervalDistribution.sellerProfit
-          (postedPriceProblem 0 1 price) 0 0)
+          (postedPriceProblem 0 1 price) 0 acquisitionCost)
       (Icc 0 1) ((1 : ℝ) / 2) := by
   have hmax := ValueDistribution.isMaxOn_sellerProfit_uniformInterval 0 1
     (by norm_num) 0 0
   rw [show ValueDistribution.uniformOptimalPrice 0 1 0 = (1 : ℝ) / 2 by
     norm_num [ValueDistribution.uniformOptimalPrice]] at hmax
-  simpa only [uniformUnitIntervalDistribution] using hmax
+  exact (uniformUnitIntervalDistribution.isMaxOn_sellerProfit_postedPriceProblem_acquisitionCost_iff
+    0 1 (Icc 0 1) ((1 : ℝ) / 2) 0 0 acquisitionCost).mp hmax
 
 /-- Low continuation value makes selling at the lower endpoint optimal;
 high continuation value makes retaining the object optimal. -/
@@ -199,51 +142,14 @@ example :
   rw [ValueDistribution.uniformOptimalPrice_continuationValue_sub_of_interior]
   all_goals norm_num
 
-/-- At an interior optimum for any uniform interval, the generic first-order
-theorem gives virtual value equal to continuation value. -/
-example (a b continuationValue acquisitionCost : ℝ) (hab : a < b)
-    (hpeak : (b + continuationValue) / 2 ∈ Ioo a b) :
-    (ValueDistribution.uniformInterval a b hab).virtualValue
-        (fun _ : ℝ ↦ 1 / (b - a)) ((b + continuationValue) / 2) =
-      continuationValue := by
-  have hmax := ValueDistribution.isMaxOn_sellerProfit_uniformInterval
-    a b hab continuationValue acquisitionCost
-  rw [ValueDistribution.uniformOptimalPrice_eq_peak a b continuationValue
-    ⟨hpeak.1.le, hpeak.2.le⟩] at hmax
-  apply
-    virtualValue_eq_continuationValue_of_isLocalMaxOn_sellerProfit_postedPriceProblem
-      (ValueDistribution.uniformInterval a b hab)
-      a b (fun _ : ℝ ↦ 1 / (b - a)) continuationValue acquisitionCost
-      ((b + continuationValue) / 2)
-  case hprice =>
-    exact hpeak
-  case hcdf =>
-    exact ValueDistribution.uniformInterval_hasDerivAt_cdf
-      a b hab _ hpeak
-  case hmax =>
-    exact hmax.localize
-  case hdensity =>
-    simp [ne_of_gt (sub_pos.mpr hab)]
-
 /-- The interior first-order condition recovers zero virtual value at the
 uniform monopoly price. -/
 example :
     uniformUnitIntervalDistribution.virtualValue
         (fun _ : ℝ ↦ (1 : ℝ)) ((1 : ℝ) / 2) = 0 := by
-  apply
-    ValueDistribution.virtualValue_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem
-      uniformUnitIntervalDistribution
-      0 1 (fun _ : ℝ ↦ (1 : ℝ)) 0 ((1 : ℝ) / 2)
-  case hprice =>
-    norm_num
-  case hcdf =>
-    simpa [uniformUnitIntervalDistribution] using
-      (ValueDistribution.uniformInterval_hasDerivAt_cdf 0 1
-        (by norm_num) ((1 : ℝ) / 2) (by norm_num))
-  case hmax =>
-    exact uniformUnitIntervalDistribution_isMaxOn_sellerProfit_half.localize
-  case hdensity =>
-    norm_num
+  simpa [uniformUnitIntervalDistribution] using
+    (ValueDistribution.uniformInterval_virtualValue_eq_continuationValue_of_interior
+      0 1 (by norm_num) 0 (by norm_num))
 
 /-- It is continuous in the atomless sense: no individual value has positive
 probability. -/

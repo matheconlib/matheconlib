@@ -133,6 +133,14 @@ section UniformPricing
 
 variable (a b continuationValue acquisitionCost : ℝ) (hab : a < b)
 
+/-- The uniform virtual-surplus weight uses the chosen constant density
+representative and is valid at both support endpoints. -/
+example (value : ℝ) (hvalue : value ∈ Icc a b) :
+    (ValueDistribution.uniformInterval a b hab).virtualSurplusWeight
+        (fun _ : ℝ ↦ 1 / (b - a)) value =
+      (2 * value - b) / (b - a) :=
+  ValueDistribution.uniformInterval_virtualSurplusWeight a b hab value hvalue
+
 /-- The candidate price is explicitly the midpoint formula clamped to the
 value interval. -/
 example :
@@ -148,6 +156,16 @@ example :
 example (hpeak : (b + continuationValue) / 2 ≤ a) :
     ValueDistribution.uniformOptimalPrice a b continuationValue = a :=
   ValueDistribution.uniformOptimalPrice_eq_left a b continuationValue hpeak
+
+/-- Above the support, the unconstrained peak is clamped to the upper endpoint. -/
+example (hpeak : b ≤ (b + continuationValue) / 2) :
+    ValueDistribution.uniformOptimalPrice a b continuationValue = b :=
+  ValueDistribution.uniformOptimalPrice_eq_right a b continuationValue hab hpeak
+
+/-- A feasible unconstrained peak is unchanged, including at either endpoint. -/
+example (hpeak : (b + continuationValue) / 2 ∈ Icc a b) :
+    ValueDistribution.uniformOptimalPrice a b continuationValue = (b + continuationValue) / 2 :=
+  ValueDistribution.uniformOptimalPrice_eq_peak a b continuationValue hpeak
 
 /-- The price formula uses the existing seller-profit objective. -/
 example (price : ℝ) (hprice : price ∈ Icc a b) :
@@ -179,6 +197,14 @@ example (price : ℝ) (hprice : price ∈ Icc a b)
     price = ValueDistribution.uniformOptimalPrice a b continuationValue :=
   ValueDistribution.uniformOptimalPrice_eq_of_isMaxOn_sellerProfit_uniformInterval
     a b hab price continuationValue acquisitionCost hprice hmax
+
+/-- At an interior uniform optimum, virtual value equals continuation value. -/
+example (hpeak : (b + continuationValue) / 2 ∈ Ioo a b) :
+    (ValueDistribution.uniformInterval a b hab).virtualValue
+        (fun _ : ℝ ↦ 1 / (b - a)) ((b + continuationValue) / 2) =
+      continuationValue :=
+  ValueDistribution.uniformInterval_virtualValue_eq_continuationValue_of_interior
+    a b hab continuationValue hpeak
 
 end UniformPricing
 
@@ -703,6 +729,22 @@ example (price₂ continuationValue acquisitionCost : ℝ) :
         (price₂ - continuationValue) * D.probAtLeast price₂ :=
   D.sellerProfit_postedPriceProblem_sub lowestType highestType price price₂
     continuationValue acquisitionCost
+
+/-- Changing an unconditional acquisition cost preserves the same price
+comparisons on any fixed feasible set, without distributional assumptions. -/
+example (prices : Set ℝ) (continuationValue acquisitionCost₁ acquisitionCost₂ : ℝ) :
+    IsMaxOn
+        (fun candidatePrice ↦
+          D.sellerProfit (postedPriceProblem lowestType highestType candidatePrice)
+            continuationValue acquisitionCost₁)
+        prices price ↔
+      IsMaxOn
+        (fun candidatePrice ↦
+          D.sellerProfit (postedPriceProblem lowestType highestType candidatePrice)
+            continuationValue acquisitionCost₂)
+        prices price :=
+  D.isMaxOn_sellerProfit_postedPriceProblem_acquisitionCost_iff
+    lowestType highestType prices price continuationValue acquisitionCost₁ acquisitionCost₂
 
 /-- A buyer whose value equals the posted price purchases: a Dirac mass at
 the price therefore has expected allocation one. -/
