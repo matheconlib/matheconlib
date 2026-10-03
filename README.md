@@ -137,7 +137,7 @@ equilibrium alone compares against truthful opponents.
 `M.inducedBayesianGame E` evaluates `E.utility M` at each action and true type profile. Its
 `toStrategicGame θ` is exactly `E.utilityGame M θ`. Inducing either game commutes with
 `Mechanism.comap`, including action maps that restrict the available reports or identify several
-actions. These constructions require no prior or private-values assumption.
+actions. These constructions do not require a prior or private-values assumption.
 
 ### Bidder Problem (`BidderProblem/`)
 

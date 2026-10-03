@@ -53,7 +53,6 @@ import Auctionlib.Math.MeasureTheory.AnalyticNullMeasurable
 import Auctionlib.Math.MeasureTheory.AnalyticUniformization
 import Auctionlib.Math.MeasureTheory.VonNeumannSelection
 import Auctionlib.Mechanism
-
 import Auctionlib.Mechanism.Auctions.AllPurchase.Spec
 import Auctionlib.Mechanism.Auctions.Allocation
 import Auctionlib.Mechanism.Core.Bayesian
@@ -68,7 +67,6 @@ import Auctionlib.Probability.FinDist.ConditionalOn
 import Auctionlib.Probability.FinDist.Expect
 import Auctionlib.Probability.FinDist.Measure
 import Auctionlib.Probability.FinDist.Simplex
-
 import Auctionlib.SingleParameter
 import Auctionlib.SingleParameter.Basic
 import Auctionlib.SingleParameter.EnvelopeIC

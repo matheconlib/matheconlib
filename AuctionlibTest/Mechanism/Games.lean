@@ -12,8 +12,8 @@ public import Auctionlib.Mechanism
 
 Dominant-strategy incentives agree with dominance in the strategic game at each true type profile
 and give a truthful Nash equilibrium. The induced Bayesian game evaluates the same utility at each
-realized type profile. Its fixed-type strategic view agrees with the utility game, and action
-translation agrees with translating the underlying mechanism.
+realized type profile. Fixing the true types gives the utility game. Action translation commutes
+with both induced-game constructions.
 
 ## Main statements
 
