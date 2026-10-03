@@ -23,8 +23,8 @@ problems is described in
 The library has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
 
 ```
-Mechanism n      — allocation x + payment t over agent report vectors
-Auction Ω n      — mechanism + type environment (θ, distributions) on (Ω, ℙ)
+Mechanism I A O  — outcome rule + signed transfers over dependent action profiles
+Auction Ω n      — real-bid rules + measurable allocation + type environment on (Ω, ℙ)
 BidderProblem    — one bidder's interim view (winProb, cost, strategy)
 ```
 
@@ -111,12 +111,21 @@ and
 
 ### Mechanism (`Mechanism/`)
 
-[`Mechanism n`](Auctionlib/Mechanism/Basic.lean) defines allocation and payment rules as functions of the full report vector. Reports specialize to bids in the auction applications below.
+[`Auctionlib.Mechanism I A O`](Auctionlib/Mechanism/Core/Mechanism.lean) assigns an outcome and signed transfers to a dependent action profile. Positive transfers are money received by agents; payments are negative transfers. Import [`Auctionlib.Mechanism`](Auctionlib/Mechanism.lean) for the family API.
 
 | File | Contents |
 |------|----------|
-| [`Mechanism/Basic.lean`](Auctionlib/Mechanism/Basic.lean) | `Mechanism`, `HasValidAllocation`, and `IsEfficient` |
-| [`Mechanism/AllPurchase.lean`](Auctionlib/Mechanism/AllPurchase.lean) | `Mechanism.IsAllPurchase`: efficient allocation together with a posted price, scarcity function, and payment identity `t_eq` |
+| [`Mechanism/Core/Profile.lean`](Auctionlib/Mechanism/Core/Profile.lean) | Dependent action and type profiles |
+| [`Mechanism/Core/Mechanism.lean`](Auctionlib/Mechanism/Core/Mechanism.lean) | Generic carrier, direct mechanisms, payments, and revenue |
+| [`Mechanism/Core/Comap.lean`](Auctionlib/Mechanism/Core/Comap.lean) | Induced mechanisms and identity/composition laws |
+| [`Mechanism/Core/Environment.lean`](Auctionlib/Mechanism/Core/Environment.lean) | Quasilinear environments, private values, utility, and welfare |
+| [`Mechanism/Core/SolutionConcepts.lean`](Auctionlib/Mechanism/Core/SolutionConcepts.lean) | DSIC, ex-post IR, welfare efficiency, budget balance, and no deficit |
+| [`Mechanism/Auctions/Allocation.lean`](Auctionlib/Mechanism/Auctions/Allocation.lean) | `IsUnitIntervalAllocation` coordinate bounds and `UsesStrictHighestBidAllocation` |
+| [`Mechanism/Auctions/AllPurchase/Spec.lean`](Auctionlib/Mechanism/Auctions/AllPurchase/Spec.lean) | Explicit `AllPurchaseSpec` price/scarcity data and the `IsAllPurchase` existence predicate |
+
+`IsUnitIntervalAllocation` bounds each coordinate in `[0, 1]`; aggregate feasibility depends on the outcome space and allocation rule. Welfare efficiency compares outcomes using a valuation environment. The strict-highest-bid rule instead describes allocations from bids, awarding nothing on ties.
+
+Checked examples in [`AuctionlibTest/Mechanism/Core.lean`](AuctionlibTest/Mechanism/Core.lean) use the umbrella import, including a truthful posted-price mechanism, concrete all-purchase payments, and a mechanism with infinitely many agents.
 
 ### Bidder Problem (`BidderProblem/`)
 
@@ -135,7 +144,9 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 
 ### Auction (`Auction/`)
 
-[`Auction Ω n`](Auctionlib/Auction/Basic.lean) combines a `Mechanism` with the probabilistic environment.
+[`Auction Ω n`](Auctionlib/Auction/Basic.lean) combines real-bid mechanism rules with measurable allocation coordinates and the probabilistic environment. The generic mechanism itself has no measurability requirement.
+
+Interim quantities use Mathlib’s totalized Bochner integral, which equals zero when its integrand is not integrable. Arbitrary strategies need not be measurable. Measurable strategies together with `IsUnitIntervalAllocation` ensure allocation integrability, including truthful reporting; payment integrability requires separate hypotheses.
 
 | File | Contents |
 |------|----------|

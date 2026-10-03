@@ -1,4 +1,5 @@
 import AuctionlibTest.Manual.HandsOn
+import AuctionlibTest.Mechanism.Core
 import AuctionlibTest.Pricing.Compatibility
 import AuctionlibTest.SingleParameter.Compatibility
 import AuctionlibTest.ValueDistribution.Compatibility
