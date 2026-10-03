@@ -98,7 +98,7 @@ example :
 
 example :
     NoAtoms ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) :=
-  inferInstance
+  ValueDistribution.uniformInterval_noAtoms a b hab
 
 /-- Its density is the reciprocal of interval length, almost everywhere on
 the interval. -/
@@ -143,6 +143,11 @@ example :
 example :
     ValueDistribution.uniformOptimalPrice a b continuationValue ∈ Icc a b :=
   ValueDistribution.uniformOptimalPrice_mem_Icc a b continuationValue hab
+
+/-- The lower-endpoint formula needs only the peak inequality. -/
+example (hpeak : (b + continuationValue) / 2 ≤ a) :
+    ValueDistribution.uniformOptimalPrice a b continuationValue = a :=
+  ValueDistribution.uniformOptimalPrice_eq_left a b continuationValue hpeak
 
 /-- The price formula uses the existing seller-profit objective. -/
 example (price : ℝ) (hprice : price ∈ Icc a b) :

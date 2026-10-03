@@ -1,8 +1,3 @@
-/-
-Copyright (c) 2026 Bo Cowgill. All rights reserved.
-Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Bo Cowgill
--/
 module
 
 public import Auctionlib.ValueDistribution.PostedPrice
@@ -45,10 +40,10 @@ theorem uniformOptimalPrice_mem_Icc (a b continuationValue : ℝ) (hab : a < b) 
 
 /-- If the unconstrained peak lies below the support, the lower endpoint is
 the selected price. -/
-theorem uniformOptimalPrice_eq_left (a b continuationValue : ℝ) (hab : a < b)
+theorem uniformOptimalPrice_eq_left (a b continuationValue : ℝ)
     (hpeak : (b + continuationValue) / 2 ≤ a) :
     uniformOptimalPrice a b continuationValue = a := by
-  simp [uniformOptimalPrice, min_eq_right (hpeak.trans hab.le), max_eq_left hpeak]
+  exact max_eq_left ((min_le_right b ((b + continuationValue) / 2)).trans hpeak)
 
 /-- If the unconstrained peak lies above the support, the upper endpoint is
 the selected price. -/
@@ -80,7 +75,7 @@ private theorem uniform_margin_gap_nonneg_and_eq
         price = candidate) := by
   dsimp only
   by_cases hlow : (b + continuationValue) / 2 ≤ a
-  · rw [uniformOptimalPrice_eq_left a b continuationValue hab hlow]
+  · rw [uniformOptimalPrice_eq_left a b continuationValue hlow]
     have hfactor : b + continuationValue - a - price ≤ a - price := by
       linarith
     have hleft : a - price ≤ 0 := sub_nonpos.mpr hprice.1

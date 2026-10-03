@@ -1,9 +1,6 @@
 module
 
-import Auctionlib.ValueDistribution.PostedPriceFirstOrder
-import Auctionlib.ValueDistribution.PostedPriceOptimality
-import Auctionlib.ValueDistribution.Uniform
-import Auctionlib.ValueDistribution.UniformPricing
+import Auctionlib.ValueDistribution
 import Mathlib.Probability.Distributions.Cauchy
 import Mathlib.Probability.UniformOn
 
