@@ -4,15 +4,15 @@ This is Lean4 project (lean-4.28.0) to formalize theorems in auction theory. The
 
 Three-layer design following the mathematical reference (Section 2-3):
 
-1. **Mechanism** (`Mechanism/Basic.lean`): allocation rule `x` + payment rule `t` over bid vectors (the rules of the game, Section 3b)
+1. **Mechanism** (`Mechanism/Core/`): `Auctionlib.Mechanism I A O` stores an outcome rule and signed transfers (positive to the agent). Carriers are explicit; payment is negative transfer. Environments and deterministic solution predicates are prior-free.
 2. **Auction** (`Auction/`): mechanism + probabilistic environment (`θ`, `θmin`, `θmax`) on probability space `(Ω, ℙ)` (Section 3a+3b)
 3. **BidderProblem** (`BidderProblem/`): per-bidder interim view (`winProb`, `cost`, `strategy`) with IC typeclass chain
 
-Flow: `Auction → toBidderProblem → BidderProblem` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem)
+Flow: `Auction → toBidderProblem halloc → BidderProblem` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem). Allocation bounds are an explicit `IsUnitIntervalAllocation` proof.
 
-Strategy-dependent interim quantities: `q_strat σ i b = 𝔼[xᵢ(b, σ(θ₋ᵢ))]`, `p_strat σ i b = 𝔼[tᵢ(b, σ(θ₋ᵢ))]`. Standard `q`/`p` are the `σ = id` case. For the all-purchase auction, `toAllPurchaseBidderProblem` derives `winProb` from `q_strat` (via `x_eq`) and `cost` from `allPurchaseNetCost` (via `t_eq`). Under linear scarcity, `LinearScarcityAuction.toQuadraticCostProblem` extends this with the quadratic cost proof.
+Strategy-dependent interim quantities use the coordinate of `rules.outcome` and the canonical `rules.payment` (negative transfer). Standard `q`/`p` are the `σ = id` case. `Auction` carries allocation-rule measurability. Arbitrary strategies use totalized integrals; measurable strategies and allocation bounds ensure integrable allocation, while payment integrability is separate. All-purchase calculations receive an explicit `AllPurchaseSpec` for selected price/scarcity data and its `payment_eq` identity. Under linear scarcity, `LinearScarcityAuction.toQuadraticCostProblem` uses `A.spec` and proves the quadratic cost form.
 
-Typeclasses on Mechanism: `IsAllPurchase` (posted price + scarcity function + `x_eq`/`t_eq`, derives `hasValidAllocation`)
+Mechanism properties are ordinary propositions. `UsesStrictHighestBidAllocation` preserves the old rule that tied highest bids allocate nothing; it is distinct from environment-relative welfare efficiency. `AllPurchaseSpec` carries selected data, while `IsAllPurchase` is its `Nonempty` predicate. Neither is a typeclass.
 
 Typeclasses on Auction: `HasIndependentTypes`, `HasIdenticalTypes`, `HasBoundedTypes`, `HasDensity`, `HasAtomlessTypes`, `IsSymmetricIPV` (bundle), `HasPosDensity`
 

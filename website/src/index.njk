@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MathEconLib</title>
-<meta name="description" content="MathEconLib: machine-checked foundations for microeconomic theory, macroeconomic theory, and econometrics in Lean 4.">
+<meta name="description" content="MathEconLib is building shared Lean 4 foundations for new research in microeconomic theory, macroeconomic theory, and econometrics.">
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MathEconLib">
-<meta property="og:description" content="Machine-checked foundations for microeconomic theory, macroeconomic theory, and econometrics in Lean 4.">
+<meta property="og:description" content="Machine-checked foundations for new research in economics.">
 <meta property="og:url" content="https://matheconlib.bo-cowgill.workers.dev/">
 <meta property="og:site_name" content="MathEconLib">
 <meta name="twitter:card" content="summary">
@@ -74,21 +74,12 @@
   a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
   a:hover { color: var(--accent-ink); border-bottom-color: var(--accent); }
   a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-  code, pre {
+  code {
     font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
     font-size: 0.88em;
   }
   code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 3px; }
   a > code { color: inherit; }
-  pre {
-    background: var(--code-bg);
-    padding: 1rem 1.1rem;
-    overflow-x: auto;
-    line-height: 1.5;
-    border-left: 3px solid var(--accent);
-    margin: 1.2rem 0;
-  }
-  pre code { background: none; padding: 0; }
 
   .page { max-width: 44rem; margin: 0 auto; padding: 0 1.25rem 5rem; }
 
@@ -149,27 +140,8 @@
     color: var(--muted); margin: 2rem 0 0.6rem;
   }
   p { margin: 0 0 1rem; max-width: 40rem; }
-  ul, ol { padding-left: 1.3rem; margin: 0 0 1rem; max-width: 40rem; }
+  ul { padding-left: 1.3rem; margin: 0 0 1rem; max-width: 40rem; }
   li { margin-bottom: 0.35rem; }
-
-  .stack { list-style: none; padding: 0; margin: 1.2rem 0 1.4rem; max-width: 40rem; }
-  .stack .layer {
-    display: grid; grid-template-columns: minmax(9rem, max-content) 1fr; gap: 0.2rem 1.2rem; align-items: baseline;
-    padding: 0.7rem 1rem; background: var(--code-bg); border-radius: 3px; margin: 0;
-  }
-  .stack .layer code { background: none; padding: 0; font-weight: 500; color: var(--accent-ink); }
-  .stack .step {
-    margin: 0; padding: 0.3rem 0 0.3rem 1rem;
-    color: var(--muted); font-size: 0.86rem;
-  }
-  .stack .step::before { content: "↓  "; color: var(--accent); font-weight: 600; }
-  @media (max-width: 30rem) { .stack .layer { grid-template-columns: 1fr; } }
-
-  .tbl-wrap { overflow-x: auto; margin: 1rem 0 1rem; }
-  table { border-collapse: collapse; width: 100%; font-size: 0.93rem; }
-  th, td { text-align: left; vertical-align: top; padding: 0.55rem 0.8rem 0.55rem 0; border-bottom: 1px solid var(--rule); }
-  th { font-weight: 600; font-size: 0.78rem; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); border-bottom: 1px solid var(--rule-strong); }
-  td code { white-space: nowrap; }
 
   dl.docs, dl.scope { margin: 0 0 1rem; max-width: 40rem; }
   dl.docs dt, dl.scope dt { font-weight: 500; margin-top: 0.9rem; }
@@ -203,29 +175,28 @@
       <ul>
         <li><a href="#about">About</a></li>
         <li><a href="#vision">Scope</a></li>
-        <li><a href="#auctionlib">auctionlib</a></li>
         <li><a href="#docs">Docs</a></li>
         <li><a href="#contribute">Contribute</a></li>
-        <li><a href="#roadmap">Roadmap</a></li>
         <li><a href="#people">People</a></li>
-        <li><a href="#cite">Cite</a></li>
-        <li><a href="https://github.com/AxiomMath/auctionlib">auctionlib repository</a></li>
+        <li><a href="https://github.com/AxiomMath/auctionlib">GitHub</a></li>
       </ul>
     </nav>
   </header>
 
   <main id="top">
     <h1 id="about">MathEconLib</h1>
-    <p class="tagline">Machine-checked foundations for economics.</p>
-    <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming. The name MathEconLib is provisional.</p>
+    <p class="tagline">Machine-checked foundations&nbsp;for new research in economics.</p>
+    <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming.</p>
     <p class="lede">MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
-    <p>MathEconLib is intended both to formalize established knowledge and to serve as a working environment for developing new research. By representing preferences, incentives, equilibrium, dynamics, identification, estimation, and inference as reusable formal objects, researchers can assemble models, compare assumptions, state conjectures precisely, and develop new results on top of a checked body of earlier work.</p>
-    <p>A machine-checked theorem is one whose statement and proof have been verified by a small, trusted kernel. For economics, where conclusions are repeatedly applied under subtly different assumptions, formalization makes those assumptions explicit and ensures that later results inherit them correctly.</p>
-    <p>Everything is built on <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>, the community library of formal mathematics, so probability, measure theory, and analysis come from the same source the rest of the formal-mathematics world uses. The project is developed with <a href="https://axiommath.ai">Axiom Math</a>.</p>
-    <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics. AI-assisted tools help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem.</p>
+    <h2 id="research">Use existing theorems to prove new ones</h2>
+    <p>MathEconLib develops common definitions, explicit assumptions, and reusable intermediate results that researchers can combine and extend. Researchers can use these building blocks to assemble new models and develop results about preferences, incentives, equilibrium, dynamics, identification, estimation, and inference.</p>
+    <p>Lean checks each new proof against the formalized foundations it uses. Shared assumptions make clear where a new model agrees with earlier formalized work, where it departs, and which differences open new research questions.</p>
+    <p>MathEconLib reuses <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a>’s mathematical foundations, contributes broadly reusable results upstream, and maintains economics-specific definitions and theorems in its own libraries.</p>
+    <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics.</p>
+    <p>We welcome researchers to use AI to help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem. Contributions receive human review for consistency with our <a href="https://github.com/AxiomMath/auctionlib/pull/77">draft design principles</a>.</p>
 
     <h2 id="vision">Long-term scope</h2>
-    <p>MathEconLib is intended to grow as a family of interoperable libraries covering the major mathematical areas of economics.</p>
+    <p>MathEconLib is intended to cover all major mathematical areas of economics.</p>
     <dl class="scope">
       <dt>Microeconomic theory</dt>
       <dd>Preferences and choice, games, information, contracts, market and mechanism design, industrial organization, and general equilibrium.</dd>
@@ -235,37 +206,6 @@
       <dd>Probability and statistical foundations, identification, estimation, inference, and causal and structural methods.</dd>
     </dl>
 
-    <h2 id="auctionlib">First library: auctionlib</h2>
-    <p>MathEconLib begins with <code>auctionlib</code>, its first substantial library. It formalizes the single-parameter theory of auctions and pricing, from incentive compatibility through revenue equivalence, together with the game-theoretic foundations those results assume. The <a href="https://github.com/AxiomMath/auctionlib">auctionlib repository</a> is hosted on GitHub.</p>
-    <p>The library keeps apart three things that textbooks usually blend:</p>
-
-    <ol class="stack" aria-label="Architecture layers">
-      <li class="layer"><code>Mechanism n</code><span>the rules of the game: an allocation rule <em>x</em> and a payment rule <em>t</em> over the vector of reports</span></li>
-      <li class="step">add random types for each bidder on a probability space (Ω, ℙ)</li>
-      <li class="layer"><code>Auction Ω n</code><span>a mechanism inside its probabilistic environment</span></li>
-      <li class="step">fix one bidder and the strategy the others play</li>
-      <li class="layer"><code>BidderProblem</code><span>that bidder's interim decision problem: win probability, cost, strategy</span></li>
-    </ol>
-    <p>A <code>BidderProblem</code> is a special case of a <code>SingleParameterProblem</code>, which covers any quasilinear problem with payoff <em>u</em>(<em>v</em>,<em>a</em>) = <em>v</em>·<em>x</em>(<em>a</em>) − <em>t</em>(<em>a</em>), whether the action is a bid, a report, a contract choice, or a purchase decision. The envelope theorem and the payment identity are proved once at that level and reused by every application.</p>
-
-    <h3>Current results in auctionlib</h3>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>Result</th><th>Where</th></tr></thead>
-        <tbody>
-          <tr><td>Envelope theorem: <em>U</em> is Lipschitz, <em>U′</em> = <em>q</em> almost everywhere, integral representation</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/BidderProblem/EnvelopeIC.lean"><code>BidderProblem/EnvelopeIC</code></a></td></tr>
-          <tr><td>Myerson's lemma, both directions</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/BidderProblem/TypeDeviationIC.lean"><code>BidderProblem/TypeDeviationIC</code></a></td></tr>
-          <tr><td>Revenue equivalence; expected revenue equals E[<em>S</em><sub>2</sub>] under symmetric independent private values</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/Auction/RevenueEquivalence.lean"><code>Auction/RevenueEquivalence</code></a></td></tr>
-          <tr><td>Seller profit as expected virtual surplus; posted-price optimality conditions</td><td><a href="https://github.com/AxiomMath/auctionlib/tree/main/Auctionlib/ValueDistribution"><code>ValueDistribution/</code></a></td></tr>
-          <tr><td>All-purchase auctions: explicit equilibria, revenue and welfare decompositions, optimal pricing</td><td><a href="https://github.com/AxiomMath/auctionlib/tree/main/Auctionlib/Auction/AllPurchase"><code>Auction/AllPurchase/</code></a></td></tr>
-          <tr><td>Winner's-curse inequality for affiliated signals on finite lattices</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/Auction/Affiliation/WinnersCurse.lean"><code>Auction/Affiliation/WinnersCurse</code></a></td></tr>
-          <tr><td>Existence of pure and mixed Nash equilibria, via Kakutani–Glicksberg–Fan</td><td><a href="https://github.com/AxiomMath/auctionlib/blob/main/Auctionlib/GameTheory/NashExistence.lean"><code>GameTheory/NashExistence</code></a></td></tr>
-        </tbody>
-      </table>
-    </div>
-    <p>The <a href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">README</a> indexes every file and theorem and is the authoritative list; this page shows only the headline results.</p>
-    <p>Every result compiles without <code>sorry</code>, and <code>#print axioms</code> on the main theorems shows only <code>propext</code>, <code>Classical.choice</code>, and <code>Quot.sound</code>. The statements of the core theorems are pinned in a separate file that the build checks, so a change to any public statement breaks the build loudly rather than silently.</p>
-
     <h2 id="docs">Documentation</h2>
     <dl class="docs">
       <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/docs/BeginnersManual.md">Lean 4 and auctionlib: A Beginner's Manual</a></dt>
@@ -274,79 +214,30 @@
       <dd>How the auction layers extend to posted pricing and other single-parameter problems.</dd>
       <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">auctionlib README</a></dt>
       <dd>File-by-file index of definitions and theorems, with build instructions.</dd>
-      <dt>Auction Theory: introduction and sketch of formalization objectives</dt>
-      <dd>Scott Duke Kominers' evolving mathematical overview that guides the auction development. <span class="placeholder">[Currently an Overleaf project; decide whether to publish a PDF here.]</span></dd>
       <dt><span class="placeholder">[API reference]</span></dt>
       <dd>Generated documentation for every declaration, once the repository is public.</dd>
     </dl>
 
     <h2 id="contribute">Contributing</h2>
-    <p>New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Results destined for Mathlib, kept in the <code>ForMathlib</code> folder, are a good first contribution.</p>
+    <p>Research questions and new models are welcome in design issues. New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Results destined for Mathlib, kept in the <code>ForMathlib</code> folder, are a good first contribution.</p>
     <p>Changes to the foundational layers start with a design issue: sketch the definitions and main statements and get agreement on the shape before writing proofs. Every pull request must build cleanly, contain no <code>sorry</code>, <code>admit</code>, or <code>native_decide</code>, and add no axioms beyond the standard three.</p>
-    <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. Questions go to the person listed under <a href="#people">People</a>.</p>
-
-    <h2 id="roadmap">Roadmap</h2>
-    <p>The roadmap has two horizons: extending MathEconLib across economics and deepening the current work in <code>auctionlib</code>.</p>
-
-    <h3>Across economics</h3>
-    <ul>
-      <li>Build shared foundations for microeconomic theory beyond auctions, including decision theory, information, contracts, industrial organization, and general equilibrium</li>
-      <li>Develop macroeconomic libraries for dynamic optimization, recursive equilibrium, growth, heterogeneous-agent models, and monetary and fiscal theory</li>
-      <li>Develop econometric libraries for identification, estimation, inference, and causal and structural methods</li>
-    </ul>
-
-    <h3>Immediate auctionlib work</h3>
-    <ul>
-      <li>Riley–Zeckhauser comparison of posted prices with general selling rules</li>
-      <li>Posted-price comparative statics, starting with uniform-distribution parameters</li>
-      <li>Continuous affiliation results and the Linkage Principle</li>
-      <li>Revelation principle over abstract message spaces</li>
-      <li>Extensive-form and obviously strategy-proof mechanisms</li>
-      <li>Multi-unit and simultaneous ascending auction models</li>
-    </ul>
+    <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. To use the library, propose a research project, or contribute, email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a> or open a <a href="https://github.com/AxiomMath/auctionlib/issues">Github issue</a> and tag one of us.</p>
 
     <h2 id="people">People</h2>
     <h3>Core contributors</h3>
-    <p>Alphabetical. <span class="placeholder">[Affiliations and personal links to confirm with each person.]</span></p>
+    <p>Alphabetical.</p>
     <ul class="people">
       <li>Ruiz Chen<span class="aff">Axiom</span><a class="handle" href="https://github.com/Ruizsolveall">@Ruizsolveall</a></li>
       <li>Bo Cowgill<span class="aff">University of Toronto</span><a class="handle" href="https://github.com/bocowgill">@bocowgill</a></li>
       <li>Ben Eltschig<span class="aff">Axiom</span><a class="handle" href="https://github.com/peabrainiac">@peabrainiac</a></li>
       <li>Scott Duke Kominers<span class="aff">Harvard Business School</span><a class="handle" href="https://github.com/scduko">@scduko</a></li>
       <li>Moran Koren<span class="aff">Ben-Gurion University</span><a class="handle" href="https://github.com/morankor">@morankor</a></li>
+      <li>Daniel Lyng<span class="aff">Princeton University</span><a class="handle" href="https://github.com/danlyng">@danlyng</a></li>
       <li>Jujian Zhang<span class="aff">Axiom Math</span><a class="handle" href="https://github.com/jjaassoonn">@jjaassoonn</a></li>
     </ul>
 
-    <h3>Who to ask</h3>
-    <p>Based on who has written each part of the library. Reach people through their GitHub handle above. <span class="placeholder">[Please correct.]</span></p>
-    <div class="tbl-wrap">
-      <table>
-        <thead><tr><th>Topic</th><th>Contact</th></tr></thead>
-        <tbody>
-          <tr><td>Mathematical scope and the formalization roadmap</td><td>Scott Duke Kominers</td></tr>
-          <tr><td>Core framework: mechanisms, auctions, bidder problems, revenue equivalence</td><td>Jujian Zhang</td></tr>
-          <tr><td>Value distributions, posted pricing, the single-parameter layer, documentation</td><td>Bo Cowgill</td></tr>
-          <tr><td>All-purchase auctions, affiliation, winner's curse</td><td>Ruiz Chen</td></tr>
-          <tr><td>Game theory, Nash existence, fixed-point theorems for Mathlib</td><td>Ben Eltschig</td></tr>
-          <tr><td>Revelation principle; onboarding for economists new to Lean</td><td>Moran Koren</td></tr>
-          <tr><td>Repository access, continuous integration, toolchain</td><td><span class="placeholder">[maintainer]</span></td></tr>
-        </tbody>
-      </table>
-    </div>
-
     <h3>Acknowledgments</h3>
     <p>MathEconLib was developed with the support of <a href="https://axiommath.ai">Axiom Math</a>.</p>
-
-    <h2 id="cite">Citing current libraries</h2>
-    <p>If you use the library in academic work, please cite it. <span class="placeholder">[Finalize the author list, and mint a Zenodo DOI once the repository is public.]</span></p>
-<pre><code>@software{auctionlib2026,
-  author = {Chen, Ruiz and Cowgill, Bo and Eltschig, Ben and
-            Kominers, Scott Duke and Koren, Moran and Zhang, Jujian},
-  title  = {auctionlib: A Lean 4 formalization of auction theory},
-  year   = {2026},
-  url    = {https://github.com/AxiomMath/auctionlib},
-  note   = {Part of MathEconLib}
-}</code></pre>
   </main>
 
   <footer>

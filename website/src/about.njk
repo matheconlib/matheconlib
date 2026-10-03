@@ -1,14 +1,14 @@
 ---
 layout: layouts/base.njk
 title: About
-description: The mission and architecture of MathEconLib.
+description: MathEconLib's Lean 4 definitions and theorems for new economic research.
 permalink: /about/index.html
 ---
 
 <header class="page-hero">
   <div class="shell page-hero-grid">
-    <div><p class="eyebrow"><span></span> About the project</p><h1>A shared foundation for formal economic theory.</h1></div>
-    <p>{{ site.name }} develops economic definitions and theorems as checked Lean 4 code. The goal is a library that researchers can read, test, cite, and extend.</p>
+    <div><p class="eyebrow"><span></span> About the project</p><h1>A Lean 4 library for mathematical economics.</h1></div>
+    <p>{{ site.name }} develops definitions and proofs as Lean 4 code. Researchers can import them into new models, reuse proved results, and have Lean check new theorems.</p>
   </div>
 </header>
 
@@ -16,9 +16,9 @@ permalink: /about/index.html
   <div class="shell editorial-grid">
     <div class="sticky-label">Our purpose</div>
     <div class="prose-large">
-      <h2>Formalization makes the structure of an argument visible.</h2>
-      <p>Economic theorems depend on precise choices about agents, information, incentives, distributions, and equilibrium. Writing those choices in Lean exposes hidden dependencies and produces proofs that a small trusted kernel can check.</p>
-      <p>The project is public and modular. Researchers should be able to reuse established foundations, formalize a new model, and understand exactly which hypotheses support a conclusion.</p>
+      <h2>Formal definitions expose assumptions.</h2>
+      <p>Economic theorems depend on precise choices about agents, information, incentives, distributions, and equilibrium. Formalizing those choices makes the relationships among results visible and allows Lean's small trusted kernel to check each proof.</p>
+      <p>Researchers can reuse earlier formalized definitions and theorems, compare the hypotheses required by different models, and state precisely what changes in a new result.</p>
     </div>
   </div>
 </section>
@@ -42,7 +42,7 @@ permalink: /about/index.html
     <div class="value-list">
       <article><span>01</span><div><h3>Economic objects stay recognizable</h3><p>Definitions use the language of allocations, payments, types, utility, strategies, and seller objectives.</p></div></article>
       <article><span>02</span><div><h3>Assumptions compose</h3><p>Independent types, identical types, bounded support, density conditions, and incentive notions are expressed separately and combined when needed.</p></div></article>
-      <article><span>03</span><div><h3>General theory supports applications</h3><p>Reusable single-parameter results feed concrete analyses of auctions, posted prices, and welfare.</p></div></article>
+      <article><span>03</span><div><h3>General theory supports new results</h3><p>Reusable single-parameter results feed new analyses of auctions, posted prices, and welfare.</p></div></article>
     </div>
   </div>
 </section>

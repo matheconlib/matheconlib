@@ -3,28 +3,139 @@ import Auctionlib
 /-!
 # API stability pins
 
-This file pins the **exact statements** of the library's core theorems and
-definitions. Each `example` below restates a public declaration's full type
-and proves it by the declaration itself, so this file compiles if and only if
-every pinned statement is unchanged (binder *names* are free to differ; the
-hypotheses, conclusion, and implicitness are locked).
+This file pins the **exact statements** of the library's core theorems and definitions. Each
+`example` below restates a public declaration's full type and proves it by the declaration itself,
+so this file compiles if and only if every pinned statement is unchanged (binder *names* are free
+to differ; the hypotheses, conclusion, and implicitness are locked).
 
-**The rule**: if your change turns this file red, the change alters a public
-statement — an added hypothesis, a changed conclusion, a renamed or deleted
-declaration. Per `CONTRIBUTING.md` that needs a design discussion first: open
-an issue and get agreement before changing the statement. Do **not** silently
-edit the pin to make it pass.
+**The rule**: if your change turns this file red, the change alters a public statement — an added
+hypothesis, a changed conclusion, a renamed or deleted declaration. Per `CONTRIBUTING.md` that
+needs a design discussion first: open an issue and get agreement before changing the statement. Do
+**not** silently edit the pin to make it pass.
 
-The file lives at the repository root (outside `Auctionlib/`) so that
-`lake exe mk_all` never touches it, and is built as its own `lean_lib`
-(`ApiStability`), listed in `defaultTargets` so a plain `lake build` checks it.
-(It is deliberately a non-`module` file: it imports the mk_all-generated root
-`Auctionlib`, which is itself a plain import list.)
+The file lives at the repository root (outside `Auctionlib/`) so that `lake exe mk_all` never
+touches it, and is built as its own `lean_lib` (`ApiStability`), listed in `defaultTargets` so a
+plain `lake build` checks it. (It is deliberately a non-`module` file: it imports the
+mk_all-generated root `Auctionlib`, which is itself a plain import list.)
 -/
 
 open MeasureTheory ProbabilityTheory
+open Auctionlib.Mechanism.Auctions
 
-universe u v w
+universe u v w uI uA uB uC uΘ uO
+
+/-! ## Mechanism core — carriers, report maps, and transfer signs -/
+
+section MechanismCore
+
+open Auctionlib.Mechanism
+
+-- Mechanisms allow agent-specific actions and an independent outcome universe.
+example : (I : Type uI) → (I → Type uA) → Type uO → Type (max uI uA uO) :=
+  @Auctionlib.Mechanism
+
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
+    (Profile A → O) → ((i : I) → Profile A → ℝ) → Auctionlib.Mechanism I A O :=
+  @Auctionlib.Mechanism.mk
+
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
+    Auctionlib.Mechanism I A O → Profile A → O :=
+  @Auctionlib.Mechanism.outcome
+
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
+    Auctionlib.Mechanism I A O → (i : I) → Profile A → ℝ :=
+  @Auctionlib.Mechanism.transfer
+
+example : (I : Type uI) → (I → Type uΘ) → Type uO → Type (max uI uΘ uO) :=
+  @DirectMechanism
+
+-- Payments are amounts paid by agents; transfers are amounts received by agents.
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
+    Auctionlib.Mechanism I A O → (i : I) → Profile A → ℝ :=
+  @payment
+
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO}
+    (M : Auctionlib.Mechanism I A O) (i : I) (a : Profile A),
+    M.payment i a = -M.transfer i a :=
+  @payment_eq_neg_transfer
+
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
+    Auctionlib.Mechanism I A O → [Fintype I] → Profile A → ℝ :=
+  @revenue
+
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO}
+    (M : Auctionlib.Mechanism I A O) [Fintype I] (a : Profile A),
+    M.revenue a = -∑ i, M.transfer i a :=
+  @revenue_eq_neg_sum_transfer
+
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO}
+    (M : Auctionlib.Mechanism I A O) [Fintype I] (a : Profile A),
+    M.revenue a = ∑ i, M.payment i a :=
+  @revenue_eq_sum_payment
+
+-- Report maps preserve outcomes and transfers and compose pointwise.
+example : ∀ {I : Type uI} {A : I → Type uA} {B : I → Type uB} {O : Type uO},
+    Auctionlib.Mechanism I A O → (∀ i, B i → A i) → Auctionlib.Mechanism I B O :=
+  @comap
+
+example : ∀ {I : Type uI} {A : I → Type uA} {B : I → Type uB} {O : Type uO}
+    (M : Auctionlib.Mechanism I A O) (σ : ∀ i, B i → A i) (b : Profile B),
+    (M.comap σ).outcome b = M.outcome (fun i => σ i (b i)) :=
+  @outcome_comap
+
+example : ∀ {I : Type uI} {A : I → Type uA} {B : I → Type uB} {O : Type uO}
+    (M : Auctionlib.Mechanism I A O) (σ : ∀ i, B i → A i) (i : I) (b : Profile B),
+    (M.comap σ).transfer i b = M.transfer i (fun j => σ j (b j)) :=
+  @transfer_comap
+
+example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO}
+    (M : Auctionlib.Mechanism I A O), M.comap (fun _ => id) = M :=
+  @comap_id
+
+example : ∀ {I : Type uI} {A : I → Type uA} {B : I → Type uB} {C : I → Type uC}
+    {O : Type uO} (M : Auctionlib.Mechanism I A O)
+    (σ : ∀ i, B i → A i) (τ : ∀ i, C i → B i),
+    (M.comap σ).comap τ = M.comap (fun i => σ i ∘ τ i) :=
+  @comap_comp
+
+-- Values use true types, independently of the mechanism's action spaces.
+example : (I : Type uI) → (I → Type uΘ) → Type uO → Type (max uI uΘ uO) :=
+  @QuasilinearEnvironment
+
+example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO},
+    ((i : I) → Profile Θ → O → ℝ) → QuasilinearEnvironment I Θ O :=
+  @QuasilinearEnvironment.mk
+
+example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO},
+    QuasilinearEnvironment I Θ O → (i : I) → Profile Θ → O → ℝ :=
+  @QuasilinearEnvironment.value
+
+example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO},
+    ((i : I) → Θ i → O → ℝ) → QuasilinearEnvironment I Θ O :=
+  @QuasilinearEnvironment.ofPrivate
+
+example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO}
+    (v : (i : I) → Θ i → O → ℝ), (QuasilinearEnvironment.ofPrivate v).IsPrivateValues :=
+  @QuasilinearEnvironment.isPrivateValues_ofPrivate
+
+example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO},
+    QuasilinearEnvironment I Θ O → Auctionlib.Mechanism I A O →
+      (i : I) → Profile Θ → Profile A → ℝ :=
+  @QuasilinearEnvironment.utility
+
+example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO}
+    (E : QuasilinearEnvironment I Θ O) (M : Auctionlib.Mechanism I A O)
+    (i : I) (θ : Profile Θ) (a : Profile A),
+    E.utility M i θ a = E.value i θ (M.outcome a) + M.transfer i a :=
+  @QuasilinearEnvironment.utility_eq_value_add_transfer
+
+example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO}
+    (E : QuasilinearEnvironment I Θ O) (M : Auctionlib.Mechanism I A O)
+    (i : I) (θ : Profile Θ) (a : Profile A),
+    E.utility M i θ a = E.value i θ (M.outcome a) - M.payment i a :=
+  @QuasilinearEnvironment.utility_eq_value_sub_payment
+
+end MechanismCore
 
 /-! ## BidderProblem — envelope theorem and Myerson lemmas -/
 
@@ -71,7 +182,8 @@ example : ∀ (B : BidderProblem),
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : Auction Ω n) {Ω₂ : Type} [MeasureSpace Ω₂]
     [IsProbabilityMeasure (volume : Measure Ω₂)] (A₂ : Auction Ω₂ n)
-    [A.rules.HasValidAllocation] [A₂.rules.HasValidAllocation] [A.BIC] [A₂.BIC] (i j : Fin n),
+    (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)) [A.BIC] [A₂.BIC] (i j : Fin n),
     A.θmin i = A₂.θmin j → A.θmax i = A₂.θmax j → A.q i = A₂.q j →
       A.U i (A.θmin i) = A₂.U j (A₂.θmin j) →
         ∀ {s : ℝ}, s ∈ A.interval i → A.p i s = A₂.p j s :=
@@ -82,7 +194,8 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
     {n : ℕ} [n.AtLeastTwo] (A : Auction Ω n) [A.IsSymmetricIPV]
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.IsSymmetricIPV]
-    [A.rules.HasValidAllocation] [A₂.rules.HasValidAllocation],
+    (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)),
     (∀ i : Fin n, A.q i = A₂.q i) →
       A.lowestType = A₂.lowestType →
         A.highestType = A₂.highestType →
@@ -94,10 +207,21 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
                     A.expectedRevenue = A₂.expectedRevenue :=
   @Auction.revenue_equivalence
 
--- Expected revenue = expected second-highest value for efficient auctions
+-- Strict-highest-bid allocation already supplies the unit-interval allocation bound.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : Auction Ω n) [A.IsSymmetricIPV]
-    [A.rules.HasValidAllocation] [A.rules.IsEfficient] [A.BIC] [A.HasZeroLowestTypeUtility],
+    (_ : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
+    [A.BIC] [A.HasZeroLowestTypeUtility] (i : Fin n) {s : ℝ},
+    s ∈ A.interval i →
+      A.p i s = s * A.commonCDF s ^ (n - 1) -
+        ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1) :=
+  @Auction.payment_formula_strictHighestBid
+
+-- Expected revenue = expected second-highest value for strict-highest-bid auctions
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [n.AtLeastTwo] (A : Auction Ω n) [A.IsSymmetricIPV]
+    (_ : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
+    [A.BIC] [A.HasZeroLowestTypeUtility],
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @Auction.total_revenue
 
