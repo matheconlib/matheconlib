@@ -12,7 +12,7 @@ public import MathEconLib.Mechanism.Core.Strategic
 /-!
 # Bayesian games induced by mechanisms
 
-A mechanism and quasilinear valuation environment determine a Bayesian game: agents choose
+A mechanism and quasilinear valuation environment determine a Bayesian game. Agents choose
 mechanism actions and receive their utility at the full true type profile. Outcomes and signed
 transfers depend on the chosen actions, while valuations use the true types, including other
 agents' true types when values are interdependent.

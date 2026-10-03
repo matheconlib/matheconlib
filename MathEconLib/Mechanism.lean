@@ -21,7 +21,7 @@ describe allocation and payment rules for auctions in which every agent pays.
 Direct mechanisms induce strategic games in which dominant-strategy incentive compatibility is
 equivalent to dominance of truthful reporting. Mechanisms also induce Bayesian games whose payoffs
 evaluate the same utility at the realized true type profile. Fixing those types recovers the
-strategic utility game, and translating actions commutes with both induced-game constructions.
+strategic utility game. Action translation commutes with both induced-game constructions.
 
 ## Main definitions
 
