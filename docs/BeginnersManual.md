@@ -1904,7 +1904,7 @@ Posted pricing is a second branch rather than a further rung on this ladder. If 
 
 ### Contributing to `auctionlib`
 
-The `ForMathlib/` folder holds results intended for eventual inclusion in Mathlib itself. These tend to be self-contained pieces of mathematics that do not require understanding the auction-theoretic architecture, which makes them a natural place for a first contribution.
+The `ForMathlib/` folder holds general mathematical results needed by MathEconLib that may be suitable for upstream contribution to Mathlib. Small, well-scoped additions can be suitable first contributions, but the folder also contains substantial results. Upstream contributions are voluntary, with no promised submission or deadline; see the [ForMathlib policy](../CONTRIBUTING.md#formathlib-and-upstream-contributions).
 
 Before opening a pull request, run `lake exe mk_all --lib Auctionlib --git` to regenerate the import list, then `lake build` to confirm everything still compiles.
 
@@ -1997,5 +1997,5 @@ The rest of the library:
 | `Auction/` | auctions with a probabilistic environment; revenue equivalence, symmetric private values, affiliation, all-purchase auctions |
 | `BidderProblem/` | the single-bidder view and the IC hierarchy |
 | `GameTheory/` | existence of Nash equilibria for continuous games |
-| `ForMathlib/` | general results destined for Mathlib itself — Kakutani and Schauder fixed points, measure-theoretic lemmas |
+| `ForMathlib/` | general mathematics and potential Mathlib contributions — Kakutani and Schauder fixed points, measure-theoretic lemmas |
 | `Statistics/` | order statistics |

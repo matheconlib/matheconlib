@@ -5,7 +5,8 @@ Thanks for contributing! This is a short guide to how changes land in this repos
 New to Lean 4 or to this library? Start with
 [*Lean 4 and `auctionlib` — A Beginner's Manual*](docs/BeginnersManual.md),
 which covers the toolchain, the editor loop, and how to read the library's
-core files. The `ForMathlib/` folder is a good place for a first contribution.
+core files. Small, well-scoped additions to `ForMathlib/` can be suitable first
+contributions; the folder also contains substantial results.
 
 ## Design first for core layers
 
@@ -16,6 +17,24 @@ statements, and get agreement on the shape before writing the proofs.
 
 Leaf contributions — new theorems in existing chapters, documentation, applications
 built on the existing layers — can go straight to a PR.
+
+## ForMathlib and upstream contributions
+
+`ForMathlib/` contains general mathematical definitions and results needed by
+MathEconLib that are missing from the Mathlib version we use and may be suitable
+for upstream contribution. Keep this material independent of economics-specific
+definitions, follow Mathlib conventions, and check for existing results before
+adding duplicates. Economic models and economics-specific definitions and
+theorems belong in the relevant topic folders.
+
+Contributors are encouraged to submit suitable material to Mathlib when they
+have the time and interest. Placement in `ForMathlib/` does not imply a commitment
+to submit it, a deadline, or guaranteed acceptance. Upstream submission is not
+required before merging into MathEconLib; the code must meet our usual review and
+build requirements. Link any upstream PR from the corresponding file. Once an
+upstream result is available in our Mathlib dependency, replace the local
+duplicate through a reviewed change. A volunteer can open or select a scoped
+issue to coordinate an upstream contribution.
 
 ## Public API
 
