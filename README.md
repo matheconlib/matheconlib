@@ -167,10 +167,18 @@ The all-purchase development specializes the general framework to auctions in wh
 | [`Auction/AllPurchase/Basic.lean`](Auctionlib/Auction/AllPurchase/Basic.lean) | The distribution-based all-pay benchmark bid `Auction.allPayBid` |
 | [`Auction/AllPurchase/LinearScarcity.lean`](Auctionlib/Auction/AllPurchase/LinearScarcity.lean) | `QuadraticCostProblem`, `LinearCostProblem`, `InteriorRegimeProblem`, `IsBoundaryRegime`, `LinearScarcityAuction`, and `toQuadraticCostProblem` |
 | [`Auction/AllPurchase/ExplicitSolutions.lean`](Auctionlib/Auction/AllPurchase/ExplicitSolutions.lean) | Constant-scarcity, boundary-regime, and interior-regime equilibrium strategy formulas at bidder-problem and auction levels |
-| [`Auction/AllPurchase/RevenueDecomposition.lean`](Auctionlib/Auction/AllPurchase/RevenueDecomposition.lean) | Seller-revenue decomposition and the bundled-versus-standalone revenue comparison |
-| [`Auction/AllPurchase/OptimalPricing.lean`](Auctionlib/Auction/AllPurchase/OptimalPricing.lean) | Interior-regime profit maximization, uniqueness, and feasibility of the optimal price |
+| [`Auction/AllPurchase/RevenueDecomposition.lean`](Auctionlib/Auction/AllPurchase/RevenueDecomposition.lean) | Seller gross-revenue decomposition and, under zero lowest-type utility, a bundled-versus-standalone profit-difference identity |
+| [`Auction/AllPurchase/OptimalPricing.lean`](Auctionlib/Auction/AllPurchase/OptimalPricing.lean) | Unique unconstrained maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1`, plus an algebraic interior-regime condition |
 | [`Auction/AllPurchase/UniformDistribution.lean`](Auctionlib/Auction/AllPurchase/UniformDistribution.lean) | Closed form for the all-pay benchmark bid under a uniform type distribution |
-| [`Auction/AllPurchase/WelfareDecomposition.lean`](Auctionlib/Auction/AllPurchase/WelfareDecomposition.lean) | First-best edition surplus, Cournot and contest losses, the welfare decomposition, and the variance penalty |
+| [`Auction/AllPurchase/WelfareDecomposition.lean`](Auctionlib/Auction/AllPurchase/WelfareDecomposition.lean) | Edition-welfare benchmarks and an upper bound for `α > 0`, algebraic welfare-gap and moment identities, and an expected edition-welfare formula under integrability assumptions |
+
+The pricing file proves maximization and uniqueness for a specified quadratic
+profit formula. Connecting that formula to an auction's equilibrium quantity
+and actual seller profit remains work in progress. The welfare file proves
+benchmark bounds, algebraic gap identities, and an expected edition-welfare
+formula when aggregate quantity and its square are integrable. The
+equilibrium-based Cournot and contest-loss decomposition remains work in
+progress in [#46](https://github.com/AxiomMath/auctionlib/issues/46).
 
 ### Affiliation (`Auction/Affiliation/`)
 
@@ -189,23 +197,26 @@ The continuous conditional-expectation and winner's-curse results, together with
 | File | Contents |
 |------|----------|
 | [`GameTheory/Basic.lean`](Auctionlib/GameTheory/Basic.lean) | Normal-form games, payoff structures, dominant strategies, pure/strict/strong Nash equilibria, mixed games, and expected payoff |
-| [`GameTheory/NashExistence.lean`](Auctionlib/GameTheory/NashExistence.lean) | Pure Nash existence for compact convex action spaces with quasiconcave payoffs, mixed Nash existence for compact metrizable action spaces, and finite-game mixed Nash existence |
+| [`GameTheory/NashExistence.lean`](Auctionlib/GameTheory/NashExistence.lean) | Pure Nash existence under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed Nash existence for finite games and compact metrizable action spaces under the stated continuity assumptions |
 
 ### Key Theorems
 
+The linked Lean statements specify each result's definitions and hypotheses.
+
 | Result | Location |
 |--------|----------|
-| Envelope theorem ($U$ Lipschitz, $U' = q$ a.e., integral representation) | [`BidderProblem/EnvelopeIC.lean`](Auctionlib/BidderProblem/EnvelopeIC.lean) |
-| Myerson's lemma (monotone allocation and payment identity, with a sufficiency direction) | [`BidderProblem/TypeDeviationIC.lean`](Auctionlib/BidderProblem/TypeDeviationIC.lean) |
-| General payment equivalence for BIC auctions with the same type interval, interim allocation, and base utility | [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) |
-| $q(i,s)=F(s)^{n-1}$ under efficient allocation in the symmetric IPV setting | [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) |
-| Revenue equivalence and total revenue $=\mathbb{E}[S_2]$ under the stated BIC, IR, efficiency, and symmetry assumptions | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) |
-| Strict monotonicity of equilibrium strategies under positive-density and IC assumptions | [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) |
-| All-purchase revenue decomposition and bundled-versus-standalone revenue comparison | [`Auction/AllPurchase/RevenueDecomposition.lean`](Auctionlib/Auction/AllPurchase/RevenueDecomposition.lean) |
-| Interior-regime optimal pricing | [`Auction/AllPurchase/OptimalPricing.lean`](Auctionlib/Auction/AllPurchase/OptimalPricing.lean) |
-| All-purchase welfare decomposition | [`Auction/AllPurchase/WelfareDecomposition.lean`](Auctionlib/Auction/AllPurchase/WelfareDecomposition.lean) |
-| Winner's-curse inequality for affiliated finite-support environments | [`Auction/Affiliation/WinnersCurse.lean`](Auctionlib/Auction/Affiliation/WinnersCurse.lean) |
-| Pure and mixed Nash existence theorems | [`GameTheory/NashExistence.lean`](Auctionlib/GameTheory/NashExistence.lean) |
+| Envelope theorem: 1-Lipschitz utility, $U' = q$ a.e., and integral representation on the type interval under `HasEnvelopeIC` | [`BidderProblem/EnvelopeIC.lean`](Auctionlib/BidderProblem/EnvelopeIC.lean) |
+| Myerson's lemma: monotone allocation, payment identity, and payment uniqueness under type-deviation IC; the converse follows from monotonicity and the payment identity | [`BidderProblem/TypeDeviationIC.lean`](Auctionlib/BidderProblem/TypeDeviationIC.lean) |
+| General payment equivalence for BIC auctions with allocation coordinates in `[0, 1]`, matching type bounds, interim allocation, and lowest-type utility | [`Auction/Basic.lean`](Auctionlib/Auction/Basic.lean) |
+| Truthful-opponent winning probability $q(i,s)=F(s)^{n-1}$ under strict-highest-bid allocation and independent, identically distributed, atomless types | [`Auction/SymmetricIPV.lean`](Auctionlib/Auction/SymmetricIPV.lean) |
+| Revenue equivalence for symmetric IPV BIC auctions with at least two bidders, allocation coordinates in `[0, 1]`, matching type bounds, interim allocations and type distributions, zero lowest-type utility, and the stated payment measurability/integrability assumptions | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) |
+| Expected revenue $=\mathbb{E}[S_2]$ for symmetric IPV auctions with at least two bidders, strict-highest-bid allocation, BIC, and zero lowest-type utility | [`Auction/RevenueEquivalence.lean`](Auctionlib/Auction/RevenueEquivalence.lean) |
+| Strict monotonicity on the type interval with at least two bidders, strict-highest-bid allocation, the stated type assumptions, positive density, a measurable regular strategy, nonnegative lowest type, and universal IC over nonnegative bids | [`Auction/StrictMonotonicity.lean`](Auctionlib/Auction/StrictMonotonicity.lean) |
+| All-purchase revenue decomposition under the stated type, strategy, IC, and integrability assumptions; zero lowest-type utility gives a bundled-versus-standalone profit-difference identity | [`Auction/AllPurchase/RevenueDecomposition.lean`](Auctionlib/Auction/AllPurchase/RevenueDecomposition.lean) |
+| Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1` | [`Auction/AllPurchase/OptimalPricing.lean`](Auctionlib/Auction/AllPurchase/OptimalPricing.lean) |
+| Edition-welfare bound for `α > 0`, algebraic welfare-gap identities, and an expected edition-welfare formula when aggregate quantity and its square are integrable | [`Auction/AllPurchase/WelfareDecomposition.lean`](Auctionlib/Auction/AllPurchase/WelfareDecomposition.lean) |
+| Winner's-curse inequality on finite sublattices with affiliated positive weights, monotone nonnegative values, and a nonempty winning event | [`Auction/Affiliation/WinnersCurse.lean`](Auctionlib/Auction/Affiliation/WinnersCurse.lean) |
+| Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with the stated expected-payoff continuity | [`GameTheory/NashExistence.lean`](Auctionlib/GameTheory/NashExistence.lean) |
 
 ### Auxiliary
 
@@ -240,12 +251,15 @@ The mathematical overview is intentionally broader than the current library. Cur
   conditions, and interior virtual-value first-order conditions
 - [x] General `Mechanism` + `Auction` + `BidderProblem` framework
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
-- [x] All-purchase equilibrium characterization, explicit solutions, revenue analysis, optimal pricing, and welfare decomposition
-- [x] Normal-form game foundations and pure/mixed Nash existence
+- [x] All-purchase equilibrium characterization, explicit solutions, and revenue decomposition
+- [x] Quadratic-profit maximization and edition-welfare benchmark and moment identities
+- [x] Normal-form game foundations and pure/mixed Nash existence under the stated action-space and payoff assumptions
 - [x] Affiliation definitions, log-supermodularity, finite monotone conditional expectations, and the finite winner's-curse inequality
 
 Further work includes:
 
+- [ ] Auction-level derivation of the interior-regime profit formula ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
+- [ ] Equilibrium-based welfare decomposition and separately justified loss-nonnegativity results ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
 - [ ] Full Riley--Zeckhauser comparison between posted prices and general selling rules
 - [ ] Posted-price comparative statics, beginning with uniform-distribution parameters
 - [ ] Continuous affiliation results, including the continuous winner's-curse inequality, and later applications such as the Linkage Principle
