@@ -20,7 +20,7 @@ these design choices:
 
 No finite counterexample exists — that is the content of
 `ChoiceFunction.substitutable_iff_forall_insert_insert` — so this is
-inherently an infinite-universe phenomenon.
+inherently an infinite-domain phenomenon.
 -/
 
 namespace ChoiceFunction
