@@ -7,17 +7,26 @@ import Mathlib.Tactic.NormNum
 /-!
 # A Becker-inspired crime choice
 
-This is a stylized, risk-neutral binary choice, not Becker's full model of
-enforcement. A type `v` is the net gain from committing an offense rather than
-abstaining. If the probability of a monetary fine is `p` and the fine is `f`,
-the expected sanction is `p * f`. Committing has expected payoff `v - p * f`;
-abstaining has payoff zero. The strategy commits at the equality tie.
+This is a stylized, risk-neutral binary choice inspired by Becker's analysis
+of crime and punishment, not a formalization of his full enforcement model.
+A type `v` is the net gain from committing an offense rather than choosing
+not to. If the probability of a monetary fine is `p` and the fine is `f`,
+the expected sanction is `p * f`. Committing an offense has expected payoff
+`v - p * f`; choosing not to has payoff zero. When `v = p * f`, both actions
+give payoff zero. This example chooses to commit the offense as a tie-breaking
+convention.
 
 The allocation in `SingleParameterProblem` is interpreted here as the offense
 indicator. This example imports the shared single-parameter foundation; it
 does not add another choice-problem structure or a probability distribution.
-The policy interpretation presumes `p ∈ [0, 1]` and `0 ≤ f`. Only the
-comparative-statics corollaries that need those bounds assume them explicitly.
+While the policy interpretation presumes `p ∈ [0, 1]` and `0 ≤ f`, only the
+comparative-statics corollaries that need nonnegativity assume it explicitly.
+
+## References
+
+Gary S. Becker (1968), *Crime and Punishment: An Economic Approach*,
+*Journal of Political Economy* **76**(2), 169–217.
+[DOI: 10.1086/259394](https://doi.org/10.1086/259394).
 -/
 
 namespace MathEconLibExamples
@@ -32,7 +41,7 @@ namespace SingleParameter
 inductive CrimeDecision where
   /-- Commit the offense. -/
   | commit
-  /-- Abstain from the offense. -/
+  /-- Abstain from committing the offense. -/
   | abstain
   deriving DecidableEq
 
@@ -43,7 +52,10 @@ def allocation : CrimeDecision → ℝ
   | commit => 1
   | abstain => 0
 
-/-- The risk-neutral expected fine associated with each action. -/
+/-- The risk-neutral expected fine paid by the individual at each action.
+
+This is a payment, not a payoff: `SingleParameterProblem.payoff` subtracts it
+from the gain associated with the action. -/
 def expectedPayment (p f : ℝ) : CrimeDecision → ℝ
   | commit => p * f
   | abstain => 0
@@ -81,7 +93,7 @@ lemma crimeProblem_payoff_abstain
   simp [crimeProblem, SingleParameterProblem.payoff,
     CrimeDecision.allocation, CrimeDecision.expectedPayment]
 
-/-- A type commits exactly when its net gain reaches the expected sanction. -/
+/-- A type chooses to commit the offense exactly when its net gain reaches the expected sanction. -/
 theorem crimeProblem_strategy_commit_iff
     (lowestType highestType p f v : ℝ) :
     (crimeProblem lowestType highestType p f).strategy v = .commit ↔
@@ -147,7 +159,7 @@ theorem crimeProblem_isIndividuallyRational
 
 /-- Raising the expected sanction weakly reduces the offense indicator for
 every type. -/
-theorem crimeProblem_q_antitone_expectedSanction
+theorem crimeProblem_q_antitone_in_expectedSanction
     (lowestType highestType p f p' f' v : ℝ)
     (hsanction : p * f ≤ p' * f') :
     (crimeProblem lowestType highestType p' f').q v ≤
@@ -160,23 +172,23 @@ theorem crimeProblem_q_antitone_expectedSanction
 
 /-- At a nonnegative fine, raising the conviction probability weakly reduces
 the offense indicator. -/
-theorem crimeProblem_q_antitone_probability
+theorem crimeProblem_q_antitone_in_probability_of_nonneg_fine
     (lowestType highestType p p' f v : ℝ)
     (hp : p ≤ p') (hf : 0 ≤ f) :
     (crimeProblem lowestType highestType p' f).q v ≤
       (crimeProblem lowestType highestType p f).q v :=
-  crimeProblem_q_antitone_expectedSanction
+  crimeProblem_q_antitone_in_expectedSanction
     lowestType highestType p f p' f v
     (mul_le_mul_of_nonneg_right hp hf)
 
 /-- At a nonnegative conviction probability, raising the fine weakly reduces
 the offense indicator. -/
-theorem crimeProblem_q_antitone_fine
+theorem crimeProblem_q_antitone_in_fine_of_nonneg_probability
     (lowestType highestType p f f' v : ℝ)
     (hf : f ≤ f') (hp : 0 ≤ p) :
     (crimeProblem lowestType highestType p f').q v ≤
       (crimeProblem lowestType highestType p f).q v :=
-  crimeProblem_q_antitone_expectedSanction
+  crimeProblem_q_antitone_in_expectedSanction
     lowestType highestType p f p f' v
     (mul_le_mul_of_nonneg_left hf hp)
 
@@ -187,7 +199,7 @@ example :
     (crimeProblem 0 2 (1 / 2) 2).strategy (3 / 4) = .abstain := by
   norm_num [crimeProblem]
 
-/-- Under the same policy, type `3/2` commits. -/
+/-- Under the same policy, type `3/2` chooses to commit the offense. -/
 example :
     (crimeProblem 0 2 (1 / 2) 2).strategy (3 / 2) = .commit := by
   norm_num [crimeProblem]
@@ -197,7 +209,7 @@ probability, from `1/4` to `1/2`, at fine `2`. -/
 example (v : ℝ) :
     (crimeProblem 0 2 (1 / 2) 2).q v ≤
       (crimeProblem 0 2 (1 / 4) 2).q v := by
-  apply crimeProblem_q_antitone_probability
+  apply crimeProblem_q_antitone_in_probability_of_nonneg_fine
   all_goals norm_num
 
 end SingleParameter
