@@ -66,3 +66,24 @@ theorem OrderHom.exists_iterate_bot_eq_lfp {L : Type*} [CompleteLattice L]
     [Finite L] (f : L →o L) :
     ∃ n, (f : L → L)^[n] ⊥ = OrderHom.lfp f := by
   exact OrderHom.exists_iterate_top_eq_gfp (L := Lᵒᵈ) f.dual
+
+/-- An inflationary self-map of a finite partial order has a stationary
+iterate from any initial state. Unlike monotone fixed-point theorems, this
+requires no comparison between the images of two different states. -/
+theorem Function.exists_iterate_succ_eq_of_inflationary {L : Type*}
+    [PartialOrder L] [Finite L] (f : L → L)
+    (hf : ∀ x, x ≤ f x) (a : L) :
+    ∃ n, f^[n + 1] a = f^[n] a := by
+  have hstep (n : ℕ) : f^[n] a ≤ f^[n + 1] a := by
+    rw [Function.iterate_succ_apply']
+    exact hf _
+  have hmono : Monotone (fun n : ℕ => f^[n] a) :=
+    monotone_nat_of_le_succ hstep
+  obtain ⟨m, n, hne, heq⟩ :=
+    Finite.exists_ne_map_eq_of_infinite (fun k : ℕ => f^[k] a)
+  rcases lt_trichotomy m n with hlt | heq' | hlt
+  · refine ⟨m, le_antisymm ?_ (hstep m)⟩
+    exact (hmono (Nat.succ_le_of_lt hlt)).trans heq.ge
+  · exact (hne heq').elim
+  · refine ⟨n, le_antisymm ?_ (hstep n)⟩
+    exact (hmono (Nat.succ_le_of_lt hlt)).trans heq.le

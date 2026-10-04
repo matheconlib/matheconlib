@@ -2,7 +2,7 @@ import MatchingTheory.Contracts.Basic
 import Mathlib.Order.FixedPoints
 
 /-!
-# Deferred acceptance and stable outcomes
+# Stable outcomes as deferred-acceptance fixed points
 
 The generalized operator acts on `Set X × (Set X)ᵒᵈ`. Its first coordinate
 contains contracts available to sellers; its second contains contracts

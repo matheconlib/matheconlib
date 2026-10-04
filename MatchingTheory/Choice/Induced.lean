@@ -573,5 +573,44 @@ instance decidableMem_ofSingletonSetLinearOrder [Fintype α]
 
 /-! ## Transport along embeddings -/
 
--- Continue here with your existing `map` definition and its lemmas.
--- Keep the existing final `end ChoiceFunction`.
+/-- Transport a choice function along an embedding. Alternatives outside the
+range of the embedding are ignored. -/
+def map (C : ChoiceFunction α) (e : α ↪ β) : ChoiceFunction β where
+  toFun Y := e '' C (e ⁻¹' Y)
+  choose_subset := by
+    rintro Y _ ⟨x, hx, rfl⟩
+    exact C.choose_subset (e ⁻¹' Y) hx
+
+@[simp] theorem mem_map_iff (C : ChoiceFunction α) (e : α ↪ β)
+    {Y : Set β} {y : β} :
+    y ∈ C.map e Y ↔ ∃ x, x ∈ C (e ⁻¹' Y) ∧ e x = y :=
+  Iff.rfl
+
+theorem UnitDemand.map {C : ChoiceFunction α}
+    (hunit : C.UnitDemand) (e : α ↪ β) :
+    (C.map e).UnitDemand := by
+  rintro Y _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
+  exact congrArg e (hunit _ hx hy)
+
+theorem Consistent.map {C : ChoiceFunction α}
+    (hcons : C.Consistent) (e : α ↪ β) :
+    (C.map e).Consistent := by
+  intro Y Z hchoice hZY
+  have hchoice' : C (e ⁻¹' Y) ⊆ e ⁻¹' Z := by
+    intro x hx
+    exact hchoice ⟨x, hx, rfl⟩
+  have hZY' : e ⁻¹' Z ⊆ e ⁻¹' Y := fun _ hx => hZY hx
+  change e '' C (e ⁻¹' Z) = e '' C (e ⁻¹' Y)
+  rw [hcons hchoice' hZY']
+
+theorem Substitutable.map {C : ChoiceFunction α}
+    (hsub : C.Substitutable) (e : α ↪ β) :
+    (C.map e).Substitutable := by
+  apply substitutable_iff_chernoff.mpr
+  intro Y Z hYZ y hy
+  obtain ⟨x, hx, rfl⟩ := hy.1
+  refine ⟨x, ?_, rfl⟩
+  exact substitutable_iff_chernoff.mp hsub
+    (fun _ ha => hYZ ha) ⟨hx, hy.2⟩
+
+end ChoiceFunction

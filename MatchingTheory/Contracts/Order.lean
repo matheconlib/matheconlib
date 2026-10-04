@@ -1,4 +1,4 @@
-import MatchingTheory.Contracts.FixedPointCore
+import MatchingTheory.Contracts.StableCorrespondence
 
 /-!
 # The order and lattice of stable outcomes

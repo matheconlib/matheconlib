@@ -4,6 +4,13 @@ import MatchingTheory.Choice.Induced
 import MatchingTheory.Choice.WeakSubstitutes
 import MatchingTheory.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability
 import MatchingTheory.Contracts.Basic
-import MatchingTheory.Contracts.FixedPoint
+import MatchingTheory.Contracts.StableCorrespondence
+import MatchingTheory.Contracts.Order
+import MatchingTheory.Contracts.RuralHospitals
+import MatchingTheory.Contracts.Iteration
 import MatchingTheory.Contracts.WeakSubstitutes
+import MatchingTheory.Order.IterateFixedPoint
+import MatchingTheory.Order.IterateFiniteSet
 import MatchingTheory.Classical.Marriage
+import MatchingTheory.Classical.DeferredAcceptance
+import MatchingTheory.Classical.DeferredAcceptanceFinite
