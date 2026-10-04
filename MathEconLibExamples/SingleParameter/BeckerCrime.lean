@@ -42,6 +42,8 @@ open MathEconLib
 
 namespace SingleParameter
 
+/-! ## The choice problem -/
+
 /-- The two actions in the stylized crime-choice problem. -/
 inductive CrimeDecision where
   /-- Commit the offense. -/
@@ -69,9 +71,13 @@ end CrimeDecision
 
 /-- The crime-choice problem with an exogenous probability `p` and fine `f`.
 
-The type is the net gain from the offense. The real comparison used in the
-strategy makes this definition `noncomputable`; this adds no economic
-assumption. -/
+The type is the net gain from the offense. The type interval limits the
+generic incentive-compatibility and participation statements. The cutoff
+strategy is defined for every real gain; the population distribution is
+supplied separately.
+
+The real comparison used in the strategy makes this definition
+`noncomputable`; this adds no economic assumption. -/
 noncomputable def crimeProblem
     (lowestType highestType p f : ℝ) :
     SingleParameterProblem CrimeDecision where
@@ -112,6 +118,8 @@ theorem crimeProblem_q
       if p * f ≤ v then 1 else 0 := by
   by_cases h : p * f ≤ v <;>
     simp [crimeProblem, SingleParameterProblem.q, CrimeDecision.allocation, h]
+
+/-! ## Optimality and participation -/
 
 -- The action correspondence is used only to reuse posted-price optimality.
 private def toPurchaseDecision : CrimeDecision → SingleParameterProblem.PurchaseDecision
@@ -176,6 +184,8 @@ theorem crimeProblem_isIndividuallyRational
   change 0 ≤ (crimeProblem lowestType highestType p f).payoff
     v ((crimeProblem lowestType highestType p f).strategy v)
   simpa only [crimeProblem_payoff_abstain] using h
+
+/-! ## Pointwise comparative statics -/
 
 /-- Raising the expected sanction weakly reduces the offense indicator for
 every type. -/
@@ -286,6 +296,19 @@ example (D : ValueDistribution) :
       D.expectedAllocation (crimeProblem 0 2 (1 / 4) 2) := by
   apply crimeProblem_expectedAllocation_antitone_in_expectedSanction
   norm_num
+
+/-- In a population with net gain `1` for every individual and fine `2`, the
+crime rate falls from `1` to `0` when the probability rises from `1/2` to `3/4`.
+At the lower probability, the entire population is exactly at the cutoff and
+chooses to commit the offense, so its probability mass is included. -/
+example :
+    let D : ValueDistribution := ⟨MeasureTheory.Measure.dirac (1 : ℝ), inferInstance⟩
+    D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) = 1 ∧
+      D.expectedAllocation (crimeProblem 0 2 (3 / 4) 2) = 0 := by
+  dsimp only
+  rw [crimeProblem_expectedAllocation_eq_probAtLeast,
+    crimeProblem_expectedAllocation_eq_probAtLeast]
+  norm_num [ValueDistribution.probAtLeast, MeasureTheory.ProbabilityMeasure.coeFn_def]
 
 end SingleParameter
 
