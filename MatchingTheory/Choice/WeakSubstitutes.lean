@@ -2,6 +2,7 @@
 Matching with contracts: counterparty-relative choice conditions.
 -/
 import MatchingTheory.Choice.Basic
+import MatchingTheory.Choice.Induced
 
 /-!
 # Weak substitutability and completions
@@ -191,5 +192,34 @@ theorem UnilaterallySubstitutable.bilaterallySubstitutable
     (hC : C.UnilaterallySubstitutable counterparty) :
     C.BilaterallySubstitutable counterparty :=
   fun _x _z _Y hfx _hfz hx => hC hfx hx
+
+/-! ## Identity completions for singleton preferences -/
+
+/-- Singleton-or-empty preferences admit the identity completion,
+for every counterparty map. -/
+theorem hasConsistentSubstitutableCompletion_ofLinearOrder
+    [Finite X]
+    (counterparty : X → A)
+    (pref : LinearOrder (Option X)) :
+    ChoiceFunction.HasConsistentSubstitutableCompletion
+      counterparty (ofLinearOrder pref) := by
+  refine ⟨ofLinearOrder pref, ?_, ?_, ?_⟩
+  · exact isCompletionOf_refl counterparty (ofLinearOrder pref)
+  · exact substitutable_ofLinearOrder pref
+  · exact consistent_ofLinearOrder pref
+
+/-- The singleton restriction of set preferences admits the identity
+completion, for every counterparty map. -/
+theorem hasConsistentSubstitutableCompletion_ofSingletonSetLinearOrder
+    [Finite X]
+    (counterparty : X → A)
+    (pref : LinearOrder (Set X)) :
+    ChoiceFunction.HasConsistentSubstitutableCompletion
+      counterparty (ofSingletonSetLinearOrder pref) := by
+  refine ⟨ofSingletonSetLinearOrder pref, ?_, ?_, ?_⟩
+  · exact isCompletionOf_refl counterparty
+      (ofSingletonSetLinearOrder pref)
+  · exact substitutable_ofSingletonSetLinearOrder pref
+  · exact consistent_ofSingletonSetLinearOrder pref
 
 end ChoiceFunction
