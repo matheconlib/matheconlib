@@ -77,21 +77,114 @@ def AcceptableW (w : W) (m : M) : Prop :=
 
 /-! ## Classical matchings and stability -/
 
-/-- Individual rationality: no agent is matched below the outside option. -/
-def IndividuallyRational (μ : M ≃. W) : Prop :=
-  (∀ m, mkt.leM m none (μ m)) ∧
-    ∀ w, mkt.leW w none (μ.symm w)
+/-- Individual rationality for a given man: his assignment is no worse
+than remaining single. -/
+def IndividuallyRationalForM (μ : M ≃. W) (m : M) : Prop :=
+  mkt.leM m none (μ m)
 
-/-- `(m,w)` blocks `μ` if both agents strictly prefer one another to their
+/-- Individual rationality for a given woman: her assignment is no worse
+than remaining single. -/
+def IndividuallyRationalForW (μ : M ≃. W) (w : W) : Prop :=
+  mkt.leW w none (μ.symm w)
+
+/-- Individual rationality for all men. -/
+def IndividuallyRationalM (μ : M ≃. W) : Prop :=
+  ∀ m, mkt.IndividuallyRationalForM μ m
+
+/-- Individual rationality for all women. -/
+def IndividuallyRationalW (μ : M ≃. W) : Prop :=
+  ∀ w, mkt.IndividuallyRationalForW μ w
+
+/-- Individual rationality for every agent. -/
+def IndividuallyRational (μ : M ≃. W) : Prop :=
+  mkt.IndividuallyRationalM μ ∧
+    mkt.IndividuallyRationalW μ
+
+/-- Man `m` strictly prefers `w` to his current assignment.
+
+This is only the man's condition for blocking; it does not require that
+`w` reciprocates. -/
+def BlocksM (μ : M ≃. W) (m : M) (w : W) : Prop :=
+  mkt.ltM m (μ m) (some w)
+
+/-- Woman `w` strictly prefers `m` to her current assignment.
+
+This is only the woman's condition for blocking; it does not require that
+`m` reciprocates. The woman is the first agent argument. -/
+def BlocksW (μ : M ≃. W) (w : W) (m : M) : Prop :=
+  mkt.ltW w (μ.symm w) (some m)
+
+/-- `(m, w)` blocks `μ` if both agents strictly prefer one another to their
 current assignments. -/
 def IsBlockingPair (μ : M ≃. W) (m : M) (w : W) : Prop :=
-  mkt.ltM m (μ m) (some w) ∧
-    mkt.ltW w (μ.symm w) (some m)
+  mkt.BlocksM μ m w ∧ mkt.BlocksW μ w m
 
-/-- Classical stability. -/
+/-- No blocking pair involves man `m`. -/
+def UnblockedM (μ : M ≃. W) (m : M) : Prop :=
+  ∀ w, ¬mkt.IsBlockingPair μ m w
+
+/-- No blocking pair involves woman `w`. -/
+def UnblockedW (μ : M ≃. W) (w : W) : Prop :=
+  ∀ m, ¬mkt.IsBlockingPair μ m w
+
+/-- The matching has no blocking pair.
+
+Note that we impose no blocking on both sides of the market for the sake of
+symmetry even though in this setting blocking on one side of the market implies
+blocking on the other side.-/
+def Unblocked (μ : M ≃. W) : Prop :=
+  (∀ m, mkt.UnblockedM μ m) ∧ (∀ w, mkt.UnblockedW μ w)
+
+/-- Classical stability: individual rationality and no blocking pair. -/
 def IsStableMatching (μ : M ≃. W) : Prop :=
-  mkt.IndividuallyRational μ ∧
-    ∀ m w, ¬mkt.IsBlockingPair μ m w
+  mkt.IndividuallyRational μ ∧ mkt.Unblocked μ
+
+/-! ### Elementary interfaces -/
+
+theorem unblocked_iff_forall_m (μ : M ≃. W) :
+    mkt.Unblocked μ ↔ ∀ m, mkt.UnblockedM μ m := by
+  constructor
+  · intro h
+    exact h.1
+  · intro h
+    exact ⟨h, fun w m => h m w⟩
+
+theorem unblocked_iff_forall_w (μ : M ≃. W) :
+    mkt.Unblocked μ ↔ ∀ w, mkt.UnblockedW μ w := by
+  constructor
+  · intro h
+    exact h.2
+  · intro h
+    exact ⟨fun m w => h w m, h⟩
+
+theorem unblocked_iff_no_blockingPair (μ : M ≃. W) :
+    mkt.Unblocked μ ↔
+      ∀ m w, ¬mkt.IsBlockingPair μ m w := by
+  constructor
+  · intro h
+    exact h.1
+  · intro h
+    exact ⟨h, fun w m => h m w⟩
+
+theorem IsStableMatching.individuallyRationalForM
+    {μ : M ≃. W} (h : mkt.IsStableMatching μ) (m : M) :
+    mkt.IndividuallyRationalForM μ m :=
+  h.1.1 m
+
+theorem IsStableMatching.individuallyRationalForW
+    {μ : M ≃. W} (h : mkt.IsStableMatching μ) (w : W) :
+    mkt.IndividuallyRationalForW μ w :=
+  h.1.2 w
+
+theorem IsStableMatching.unblockedM
+    {μ : M ≃. W} (h : mkt.IsStableMatching μ) (m : M) :
+    mkt.UnblockedM μ m :=
+  h.2.1 m
+
+theorem IsStableMatching.unblockedW
+    {μ : M ≃. W} (h : mkt.IsStableMatching μ) (w : W) :
+    mkt.UnblockedW μ w :=
+  h.2.2 w
 
 /-! ## Finite preference-induced choice
 
@@ -528,8 +621,11 @@ theorem graphOf_leftUnique (μ : M ≃. W) {m m' : M} {w : W}
 
 /-! ## Individual rationality translation -/
 
+/-- A man's individual rationality implies that he chooses his entire
+side of the matching graph. -/
 theorem choiceM_graphOf_eq_side
-    {μ : M ≃. W} (hIR : mkt.IndividuallyRational μ) (m : M) :
+    {μ : M ≃. W} {m : M}
+    (hIR : mkt.IndividuallyRationalForM μ m) :
     mkt.toMarket.choiceS m (mkt.graphOf μ) =
       mkt.toMarket.sellerSide m (mkt.graphOf μ) := by
   ext p
@@ -544,15 +640,18 @@ theorem choiceM_graphOf_eq_side
     rw [mkt.toMarket_choiceS, mkt.mem_inducedChoiceM_iff]
     have hμ : μ m = some w := mkt.mem_graphOf.mp hpY
     refine ⟨hpY, ?_, ?_⟩
-    · have h := hIR.1 m
+    · have h : mkt.leM m none (μ m) := hIR
       rwa [hμ] at h
     · intro w' hw'
       letI := mkt.prefM m
       have hww' : w' = w := mkt.graphOf_rightUnique μ hw' hpY
       exact le_of_eq (congrArg Option.some hww')
 
+/-- A woman's individual rationality implies that she chooses her entire
+side of the matching graph. -/
 theorem choiceW_graphOf_eq_side
-    {μ : M ≃. W} (hIR : mkt.IndividuallyRational μ) (w : W) :
+    {μ : M ≃. W} {w : W}
+    (hIR : mkt.IndividuallyRationalForW μ w) :
     mkt.toMarket.choiceB w (mkt.graphOf μ) =
       mkt.toMarket.buyerSide w (mkt.graphOf μ) := by
   ext p
@@ -567,7 +666,7 @@ theorem choiceW_graphOf_eq_side
     rw [mkt.toMarket_choiceB, mkt.mem_inducedChoiceW_iff]
     have hμ : μ.symm w = some m := mkt.mem_graphOf_symm.mp hpY
     refine ⟨hpY, ?_, ?_⟩
-    · have h := hIR.2 w
+    · have h : mkt.leW w none (μ.symm w) := hIR
       rwa [hμ] at h
     · intro m' hm'
       letI := mkt.prefW w
@@ -577,8 +676,8 @@ theorem choiceW_graphOf_eq_side
 theorem individuallyRational_graphOf
     {μ : M ≃. W} (hIR : mkt.IndividuallyRational μ) :
     mkt.toMarket.IndRational (mkt.graphOf μ) :=
-  ⟨mkt.choiceW_graphOf_eq_side hIR,
-    mkt.choiceM_graphOf_eq_side hIR⟩
+  ⟨fun w => mkt.choiceW_graphOf_eq_side (hIR.2 w),
+    fun m => mkt.choiceM_graphOf_eq_side (hIR.1 m)⟩
 
 theorem individuallyRational_of_graphOf
     {μ : M ≃. W}
@@ -586,6 +685,7 @@ theorem individuallyRational_of_graphOf
     mkt.IndividuallyRational μ := by
   constructor
   · intro m
+    change mkt.leM m none (μ m)
     letI := mkt.prefM m
     cases hμ : μ m with
     | none =>
@@ -602,6 +702,7 @@ theorem individuallyRational_of_graphOf
           exact hwSide
         exact (mkt.mem_inducedChoiceM_iff.mp hwChoice).2.1
   · intro w
+    change mkt.leW w none (μ.symm w)
     letI := mkt.prefW w
     cases hμ : μ.symm w with
     | none =>
@@ -626,14 +727,18 @@ theorem individuallyRational_iff_indRational_graphOf (μ : M ≃. W) :
 
 /-! ## Singleton acceptance and blocking pairs -/
 
+/-- An individually rational man accepts a new contract precisely when
+his side of the blocking condition holds. -/
 theorem mem_choiceM_insert_graphOf_iff
-    {μ : M ≃. W} (hIR : mkt.IndividuallyRational μ)
-    {m : M} {w : W} (hnew : μ m ≠ some w) :
+    {μ : M ≃. W} {m : M} {w : W}
+    (hIR : mkt.IndividuallyRationalForM μ m)
+    (hnew : μ m ≠ some w) :
     (m, w) ∈ mkt.toMarket.choiceS m
         (insert (m, w) (mkt.graphOf μ)) ↔
-      mkt.ltM m (μ m) (some w) := by
+      mkt.BlocksM μ m w := by
   classical
   letI := mkt.prefM m
+  unfold BlocksM
   rw [mkt.toMarket_choiceS, mkt.mem_inducedChoiceM_iff]
   constructor
   · rintro ⟨-, hnone, hmax⟩
@@ -646,7 +751,7 @@ theorem mem_choiceM_insert_graphOf_iff
     exact lt_of_le_of_ne hle hnew
   · intro hlt
     refine ⟨Set.mem_insert _ _, ?_, ?_⟩
-    · exact le_trans (hIR.1 m) (le_of_lt hlt)
+    · exact le_trans hIR (le_of_lt hlt)
     · intro w' hw'
       rcases Set.mem_insert_iff.mp hw' with hw' | hw'
       · exact le_of_eq (congrArg Option.some (congrArg Prod.snd hw'))
@@ -655,14 +760,18 @@ theorem mem_choiceM_insert_graphOf_iff
         rw [hμ] at h
         exact h
 
+/-- An individually rational woman accepts a new contract precisely when
+her side of the blocking condition holds. -/
 theorem mem_choiceW_insert_graphOf_iff
-    {μ : M ≃. W} (hIR : mkt.IndividuallyRational μ)
-    {m : M} {w : W} (hnew : μ.symm w ≠ some m) :
+    {μ : M ≃. W} {m : M} {w : W}
+    (hIR : mkt.IndividuallyRationalForW μ w)
+    (hnew : μ.symm w ≠ some m) :
     (m, w) ∈ mkt.toMarket.choiceB w
         (insert (m, w) (mkt.graphOf μ)) ↔
-      mkt.ltW w (μ.symm w) (some m) := by
+      mkt.BlocksW μ w m := by
   classical
   letI := mkt.prefW w
+  unfold BlocksW
   rw [mkt.toMarket_choiceB, mkt.mem_inducedChoiceW_iff]
   constructor
   · rintro ⟨-, hnone, hmax⟩
@@ -675,7 +784,7 @@ theorem mem_choiceW_insert_graphOf_iff
     exact lt_of_le_of_ne hle hnew
   · intro hlt
     refine ⟨Set.mem_insert _ _, ?_, ?_⟩
-    · exact le_trans (hIR.2 w) (le_of_lt hlt)
+    · exact le_trans hIR (le_of_lt hlt)
     · intro m' hm'
       rcases Set.mem_insert_iff.mp hm' with hm' | hm'
       · exact le_of_eq (congrArg Option.some (congrArg Prod.fst hm'))
@@ -697,8 +806,8 @@ theorem blocks_singleton_graphOf_iff
     have hnewW : μ.symm w ≠ some m := fun h =>
       hnew (mkt.mem_graphOf_symm.mpr h)
     exact ⟨
-      (mkt.mem_choiceM_insert_graphOf_iff hIR hnewM).mp hm,
-      (mkt.mem_choiceW_insert_graphOf_iff hIR hnewW).mp hw⟩
+      (mkt.mem_choiceM_insert_graphOf_iff (hIR.1 m) hnewM).mp hm,
+      (mkt.mem_choiceW_insert_graphOf_iff (hIR.2 w) hnewW).mp hw⟩
   · rintro ⟨hm, hw⟩
     have hnewM : μ m ≠ some w := by
       letI := mkt.prefM m
@@ -709,8 +818,10 @@ theorem blocks_singleton_graphOf_iff
     refine ⟨?_, ?_, ?_⟩
     · intro hmem
       exact hnewM (mkt.mem_graphOf.mp hmem)
-    · exact (mkt.mem_choiceW_insert_graphOf_iff hIR hnewW).mpr hw
-    · exact (mkt.mem_choiceM_insert_graphOf_iff hIR hnewM).mpr hm
+    · exact
+        (mkt.mem_choiceW_insert_graphOf_iff (hIR.2 w) hnewW).mpr hw
+    · exact
+        (mkt.mem_choiceM_insert_graphOf_iff (hIR.1 m) hnewM).mpr hm
 
 /-- Classical stability is exactly stability of the matching graph in the
 induced contracts market. -/
@@ -725,11 +836,12 @@ theorem isStableMatching_iff_stable_graphOf (μ : M ≃. W) :
     refine ⟨mkt.individuallyRational_graphOf hIR, ?_⟩
     rintro ⟨m, w⟩
     rw [mkt.blocks_singleton_graphOf_iff hIR]
-    exact hno m w
+    exact hno.1 m w
   · rintro ⟨hIRg, hno⟩
     have hIR : mkt.IndividuallyRational μ :=
       mkt.individuallyRational_of_graphOf hIRg
     refine ⟨hIR, ?_⟩
+    apply (mkt.unblocked_iff_no_blockingPair μ).mpr
     intro m w
     rw [← mkt.blocks_singleton_graphOf_iff hIR]
     exact hno (m, w)
@@ -900,7 +1012,7 @@ theorem leM_of_sellerChosen_graphOf
       | some w =>
           exfalso
           have hle0 : (none : Option W) ≤ some w := by
-            have h := hν.1 m
+            have h : mkt.leM m none (ν m) := hν.1 m
             rw [hνm] at h
             exact h
           have hlt : (none : Option W) < some w :=
@@ -948,7 +1060,7 @@ theorem leM_of_sellerChosen_graphOf
         (mkt.mem_inducedChoiceM_iff.mp hwChoice).2.2
       cases hνm : ν m with
       | none =>
-          have h := hμ.1 m
+          have h : mkt.leM m none (μ m) := hμ.1 m
           rw [hμm] at h
           exact h
       | some w' =>
@@ -1188,7 +1300,12 @@ variable [Fintype M] [Fintype W] [DecidableEq M] [DecidableEq W]
 
 instance : DecidablePred mkt.IsStableMatching := by
   intro μ
-  unfold IsStableMatching IndividuallyRational IsBlockingPair
+  unfold IsStableMatching
+  unfold IndividuallyRational
+  unfold IndividuallyRationalM IndividuallyRationalW
+  unfold IndividuallyRationalForM IndividuallyRationalForW
+  unfold Unblocked UnblockedM UnblockedW
+  unfold IsBlockingPair BlocksM BlocksW
   unfold leM leW ltM ltW
   infer_instance
 
