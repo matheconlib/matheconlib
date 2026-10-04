@@ -10,6 +10,10 @@ contributions; the folder also contains substantial results.
 
 ## Design first for core layers
 
+The project-wide framework for choosing abstractions, theorem scope,
+transformations, and public interfaces lives in
+[`DESIGN.md`](DESIGN.md).
+
 Changes to the foundational layers — `Mechanism/`, `BidderProblem/`, `GameTheory/`,
 `Auction/Basic.lean` — or the introduction of a new foundational layer start with a
 **design issue** before implementation. Sketch the intended definitions and the main
