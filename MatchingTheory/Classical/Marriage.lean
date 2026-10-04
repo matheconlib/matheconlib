@@ -1,5 +1,6 @@
 /-
-  Matching with contracts, classical layer: the marriage market.
+  Matching with contracts ~> classical model instance:
+    the Gale–Shapley marriage model.
 -/
 
 import MatchingTheory.Contracts.FixedPoint

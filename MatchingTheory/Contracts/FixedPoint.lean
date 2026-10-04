@@ -1,3 +1,4 @@
+import MatchingTheory.Contracts.FixedPointCore
 import MatchingTheory.Contracts.Order
 import MatchingTheory.Contracts.RuralHospitals
 import MatchingTheory.Contracts.Iteration
