@@ -27,6 +27,12 @@ For compatibility, `C.IsCompletionOf counterparty D` means that **D** is
 a completion of **C**. Completion and substitutable completability do not
 include IRC. `HasConsistentSubstitutableCompletion` states the stronger
 existence hypothesis explicitly.
+
+A completion need not enlarge the original choices pointwise. The results
+`IsCompletionOf.unilaterallySubstitutable_of_le` and the hull
+characterization in
+`Choice/UnilateralSubstitutabilityImpliesSubstitutableCompletability.lean`
+therefore state the extra pointwise inclusion separately.
 -/
 
 namespace ChoiceFunction
@@ -118,7 +124,7 @@ theorem IsCompletionOf.eq_of_injOn {counterparty : X → A}
   · exact (hne (hY hx hx' heq)).elim
 
 /-- In particular, a completion agrees with the original choice function on every
-many-to-one--feasible menu. -/
+many-to-one-feasible menu. -/
 theorem IsCompletionOf.eq_of_injOn_menu {counterparty : X → A}
     {C D : ChoiceFunction X} (hCD : C.IsCompletionOf counterparty D)
     {Y : Set X} (hY : Set.InjOn counterparty Y) :
@@ -135,6 +141,90 @@ theorem IsCompletionOf.apply_singleton {counterparty : X → A}
   apply hCD.eq_of_injOn_menu
   intro y hy z hz _
   exact (Set.mem_singleton_iff.mp hy).trans (Set.mem_singleton_iff.mp hz).symm
+
+/-- An enlargement which introduces no new represented counterparties is
+a completion. Neither feasibility nor IRC is needed for this implication. -/
+theorem isCompletionOf_of_le_of_image_subset {counterparty : X → A}
+    {C D : ChoiceFunction X} (hCD : C ≤ D)
+    (himage : ∀ Y, counterparty '' D Y ⊆ counterparty '' C Y) :
+    C.IsCompletionOf counterparty D := by
+  classical
+  intro Y
+  by_cases hDC : D Y ⊆ C Y
+  · exact Or.inl (Set.Subset.antisymm hDC (hCD Y))
+  · right
+    have hex : ∃ x ∈ D Y, x ∉ C Y := by
+      by_contra hnone
+      apply hDC
+      intro x hx
+      by_contra hxnot
+      exact hnone ⟨x, hx, hxnot⟩
+    obtain ⟨x, hxD, hxC⟩ := hex
+    obtain ⟨y, hyC, hsame⟩ := himage Y ⟨x, hxD, rfl⟩
+    refine ⟨x, hxD, y, hCD Y hyC, ?_, hsame.symm⟩
+    intro hxy
+    apply hxC
+    rw [hxy]
+    exact hyC
+
+/-- A substitutable completion which enlarges choices preserves the
+counterparty of every retained, previously chosen contract under contraction.
+
+Only the choice from the smaller menu needs to be feasible. The contract
+type and the chosen sets may be infinite. -/
+theorem IsCompletionOf.exists_chosen_counterparty_of_le
+    {counterparty : X → A} {C D : ChoiceFunction X}
+    (hcomp : C.IsCompletionOf counterparty D)
+    (hD : D.Substitutable) (hCD : C ≤ D) (hIRC : C.Consistent)
+    {Y Z : Set X} {x : X}
+    (hfeasible : Set.InjOn counterparty (C Y))
+    (hYZ : Y ⊆ Z) (hxY : x ∈ Y) (hxZ : x ∈ C Z) :
+    ∃ y ∈ C Y, counterparty y = counterparty x := by
+  classical
+  by_contra hnone
+  have hVY : insert x (C Y) ⊆ Y :=
+    Set.insert_subset hxY (C.choose_subset Y)
+  have hV : Set.InjOn counterparty (insert x (C Y)) := by
+    intro y hy z hz heq
+    rcases hy with rfl | hy
+    · rcases hz with rfl | hz
+      · rfl
+      · exact (hnone ⟨z, hz, heq.symm⟩).elim
+    · rcases hz with rfl | hz
+      · exact (hnone ⟨y, hy, heq⟩).elim
+      · exact hfeasible hy hz heq
+  have hCV : C (insert x (C Y)) = C Y :=
+    hIRC (fun _ hy => Set.mem_insert_of_mem x hy) hVY
+  have hxDV : x ∈ D (insert x (C Y)) :=
+    (substitutable_iff_chernoff.mp hD)
+      (fun _ hy => hYZ (hVY hy))
+      ⟨hCD Z hxZ, Set.mem_insert x (C Y)⟩
+  rw [hcomp.eq_of_injOn_menu hV, hCV] at hxDV
+  exact hnone ⟨x, hxDV, rfl⟩
+
+/-- For feasible IRC choice, a substitutable completion which enlarges
+choices implies unilateral substitutability. No finiteness assumption is
+needed in this direction; arbitrary completions need not satisfy the
+pointwise inclusion hypothesis. -/
+theorem IsCompletionOf.unilaterallySubstitutable_of_le
+    {counterparty : X → A} {C D : ChoiceFunction X}
+    (hcomp : C.IsCompletionOf counterparty D)
+    (hD : D.Substitutable) (hCD : C ≤ D) (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y)) :
+    C.UnilaterallySubstitutable counterparty := by
+  intro x z Y hfresh hxnot hxlarge
+  have hsmall : insert x Y ⊆ insert x (insert z Y) := by
+    intro y hy
+    rcases hy with hxy | hyY
+    · exact Or.inl hxy
+    · exact Or.inr (Or.inr hyY)
+  obtain ⟨y, hy, hsame⟩ :=
+    hcomp.exists_chosen_counterparty_of_le hD hCD hIRC
+      (hfeasible (insert x Y)) hsmall (Set.mem_insert x Y) hxlarge
+  rcases C.choose_subset (insert x Y) hy with hxy | hyY
+  · rw [hxy] at hy
+    exact hxnot hy
+  · exact hfresh y hyY hsame
 
 /-- Substitutable completions preserve support. A contract chosen by the
 completion is chosen from its singleton menu by substitutability, and on

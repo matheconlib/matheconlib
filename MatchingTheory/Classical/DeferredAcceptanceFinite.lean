@@ -9,7 +9,7 @@ sets. Each agent's supplied `LinearOrder` decides comparisons, and explicit
 `DecidableEq` instances decide finite membership; the algorithm uses no
 classical choice.
 
-`gsRejectedFinset n` performs exactly `n` simultaneous proposal rounds.
+`gsRejectedFinset n` performs exactly `n` simultaneous rejection updates.
 `galeShapleyFinset` evaluates the held contracts at the rejection state
 reached after `card (M × W)` rounds.
 The coercion theorems identify every finite state with the corresponding
@@ -162,7 +162,8 @@ def galeShapleyFinsetWithFuel (n : ℕ) : Finset (M × W) :=
       mkt.gsHeld (mkt.gsRejected n) := by
   simp only [galeShapleyFinsetWithFuel, coe_gsHeldFinset, coe_gsRejectedFinset]
 
-/-- Run Gale–Shapley for the number of possible contracts. -/
+/-- Perform one rejection update per possible contract, then evaluate the
+held contracts at the resulting terminal rejection state. -/
 def galeShapleyFinset : Finset (M × W) :=
   mkt.galeShapleyFinsetWithFuel (Fintype.card (M × W))
 

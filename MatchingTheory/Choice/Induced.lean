@@ -17,8 +17,8 @@ represented family of bundles. The embedding `bundle : β ↪ Set α`
 specifies the admissible bundles; a represented bundle is feasible at
 menu `Y` precisely when it is a subset of `Y`.
 
-`ofSetLinearOrder pref` admits every bundle and therefore chooses the
-greatest subset of the menu under `pref : LinearOrder (Set α)`.
+`ofSetLinearOrder pref` admits every bundle and chooses the greatest
+subset of the menu under `pref : LinearOrder (Set α)`, when one exists.
 
 `ofLinearOrder pref` is the singleton-or-empty specialization. It retains
 the existing `LinearOrder (Option α)` API, interpreting `none` as `∅`
@@ -37,7 +37,8 @@ Arbitrary bundle preferences need not induce substitutable or
 size-monotone choice. Those properties are proved for the singleton
 specialization.
 
-Preference comparisons use `pref.le`; they are distinct from set inclusion.
+Preference comparisons use `pref.le`, with larger elements weakly preferred.
+They are distinct from set inclusion.
 -/
 
 universe u v

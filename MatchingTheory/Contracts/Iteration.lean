@@ -22,17 +22,20 @@ variable (M : Market B S X)
 /-! ### Deferred acceptance as iteration
 
 `⊤ = (univ, toDual ∅)`: all contracts available to sellers, none to buyers.
-That is the classical initial state of *seller*-proposing deferred acceptance,
-and by the orientation convention above it converges to the seller-optimal
-state.  Dually `⊥ = (∅, toDual univ)` runs the buyer-proposing algorithm.
+This is the initial state of generalized seller-proposing deferred acceptance;
+on a finite contract type its iterates reach the greatest fixed point.
+Dually, iteration from `⊥ = (∅, toDual univ)` reaches the least fixed point.
+With IRC, these fixed points carry the seller-optimal and buyer-optimal stable
+outcomes, respectively.
 
 Both convergence statements specialize the order-theoretic iteration lemmas.
-They assert an existential stopping time; executable choice and iteration
-remain separate implementation obligations. -/
+They assert an existential stopping time. The classical simultaneous proposal
+process and its executable finite refinement are developed separately in
+`Classical/DeferredAcceptance` and `Classical/DeferredAcceptanceFinite`. -/
 
-/-- Seller-proposing deferred acceptance: under substitutability, iterating
-from `(univ, ∅) = ⊤` computes the seller-optimal state in finitely many
-steps. -/
+/-- Generalized seller-proposing deferred acceptance reaches the greatest
+fixed point in finitely many steps. IRC is needed to interpret its outcome
+as a seller-optimal stable outcome. -/
 theorem exists_iterate_daFun_top (hsub : M.Substitutable) [Finite X] :
     ∃ n, M.daFun^[n] (Set.univ, toDual (∅ : Set X)) =
       OrderHom.gfp (M.daHom hsub) := by
@@ -45,7 +48,7 @@ theorem exists_iterate_daFun_top (hsub : M.Substitutable) [Finite X] :
   rw [htop]
   exact hn
 
-/-- Buyer-proposing deferred acceptance. -/
+/-- Generalized buyer-proposing deferred acceptance reaches the least fixed point. -/
 theorem exists_iterate_daFun_bot (hsub : M.Substitutable) [Finite X] :
     ∃ n, M.daFun^[n] (∅, toDual (Set.univ : Set X)) =
       OrderHom.lfp (M.daHom hsub) := by
@@ -57,8 +60,8 @@ theorem exists_iterate_daFun_bot (hsub : M.Substitutable) [Finite X] :
   rw [hbot]
   exact hn
 
-/-- The algorithmic form of Theorem 2.2, outcome level: seller-proposing
-deferred acceptance terminates at the seller-optimal *outcome*. -/
+/-- Outcome-level convergence to the named `sellerOptimal` endpoint.
+Its stability and optimality follow when IRC is also imposed. -/
 theorem exists_iterate_outcomeOf_eq_sellerOptimal (hsub : M.Substitutable)
     [Finite X] :
     ∃ n, M.outcomeOf (M.daFun^[n] (Set.univ, toDual (∅ : Set X)))
@@ -73,9 +76,8 @@ theorem exists_iterate_outcomeOf_eq_buyerOptimal (hsub : M.Substitutable)
   obtain ⟨n, hn⟩ := M.exists_iterate_daFun_bot hsub
   exact ⟨n, congrArg M.outcomeOf hn⟩
 
-/-- Lattice form: the iterates of `⊤` reach `state (sellerOptimalOutcome)`.
-Stated through `sellerOptimalOutcome` rather than `⊤` per the orientation
-convention, so that downstream files never spell `gfp` either. -/
+/-- Lattice form: iteration from `⊤` reaches the state of
+`sellerOptimalOutcome`, the top element of the fixed-point lattice. -/
 theorem exists_iterate_daFun_top_eq_state (hsub : M.Substitutable)
     [Finite X] :
     ∃ n, M.daFun^[n] (Set.univ, toDual (∅ : Set X)) =

@@ -13,8 +13,9 @@ import Mathlib.Data.Finset.Max
 /-!
 # The classical marriage market (Gale–Shapley 1962)
 
-Men are sellers/proposers and women are buyers/receivers. Contracts are pairs
-`M × W`, with seller `Prod.fst` and buyer `Prod.snd`.
+Men are sellers and women are buyers. Contracts are pairs `M × W`, with
+seller `Prod.fst` and buyer `Prod.snd`. Thus seller-proposing deferred
+acceptance is man-proposing, and buyer-proposing is woman-proposing.
 
 The file defines preference-induced unit-demand choice directly. The outside
 option `none` is included in every finite menu; the selected contract is the
@@ -24,7 +25,8 @@ Classical matchings are `PEquiv`s. Their graphs are outcomes in the induced
 contracts market, and classical stability is proved equivalent to contracts
 stability.
 
-Generalized deferred-acceptance iterates from `(univ, ∅)` and `(∅, univ)`
+For finite partner types, generalized deferred-acceptance iterates from
+`(univ, ∅)` and `(∅, univ)`
 reach the greatest and least fixed points. Their outcomes yield the
 man-optimal/woman-pessimal and woman-optimal/man-pessimal matchings.
 `Classical.DeferredAcceptance` supplies the classical proposal process and
@@ -38,7 +40,7 @@ universe u v
 variable {M : Type u} {W : Type v}
 
 /-- A classical marriage market. Each agent has a linear order over possible
-partners together with the outside option `none`. -/
+partners together with the outside option `none`; larger options are preferred. -/
 structure MarriageMarket (M : Type u) (W : Type v) where
   /-- Man `m`'s preference over women-or-single. -/
   prefM : M → LinearOrder (Option W)
@@ -161,9 +163,8 @@ def UnblockedW (μ : M ≃. W) (w : W) : Prop :=
 
 /-- The matching has no blocking pair.
 
-Note that we impose no blocking on both sides of the market for the sake of
-symmetry even though in this setting blocking on one side of the market implies
-blocking on the other side.-/
+Both side-indexed formulations are retained for a symmetric API.
+They quantify over the same blocking pairs and are proved equivalent below. -/
 def Unblocked (μ : M ≃. W) : Prop :=
   (∀ m, mkt.UnblockedM μ m) ∧ (∀ w, mkt.UnblockedW μ w)
 

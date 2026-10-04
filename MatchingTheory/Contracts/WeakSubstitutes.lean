@@ -2,7 +2,7 @@
 Matching with contracts: weakened substitutability conditions (survey §6).
 -/
 import MatchingTheory.Contracts.Basic
-import MatchingTheory.Choice.WeakSubstitutes
+import MatchingTheory.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability
 
 /-!
 # Market-level weak substitutability
@@ -13,11 +13,17 @@ imposed on each buyer's choice with freshness measured by `M.seller`.
 The choice-level definitions and elementary completion API live in
 `Choice/WeakSubstitutes.lean`, which does not import the market layer.
 
-The completion-based existence theorem requires IRC of the same completion
-that satisfies substitutability. The stronger hypothesis below records this
-explicitly. Original buyer IRC cannot silently substitute for completion IRC.
-Sellers' unit demand and regularity belong in the eventual reduction theorem,
-not in these definitions.
+A completion-based existence reduction requires IRC of the same completion
+that satisfies substitutability. `BuyersHaveConsistentSubstitutableCompletions`
+records this joint requirement. The choice-level substitute-hull theorem
+supplies such completions from unilateral substitutability, IRC, counterparty
+feasibility, and finite-valued buyer choice. Neither the contract type nor the
+agent types need be finite for this implication. Its finite-contract
+specialization is also provided below.
+
+These are hypotheses and choice-level implications for a future market
+reduction; they do not yet assert existence under weak substitutability.
+Sellers' unit demand and regularity belong in that reduction theorem.
 -/
 
 namespace Market
@@ -64,6 +70,27 @@ theorem buyersHaveConsistentSubstitutableCompletions
     (hsub : M.Substitutable) (hcons : M.Consistent) :
     M.BuyersHaveConsistentSubstitutableCompletions :=
   fun b => (hsub.1 b).hasConsistentSubstitutableCompletion (hcons.1 b) M.seller
+
+/-- The finite-valued strengthening of the Zhang (2016) completion implication,
+applied separately to each buyer. Only buyer-side hypotheses enter this result;
+seller regularity is needed when using the completions in a market reduction. -/
+theorem buyersHaveConsistentSubstitutableCompletions_of_unilaterallySubstitutable_of_finiteValued
+    (hUS : M.BuyersUnilaterallySubstitutable)
+    (hcons : ∀ b, (M.choiceB b).Consistent)
+    (hfeasible : ∀ b Y, Set.InjOn M.seller (M.choiceB b Y))
+    (hfinite : ∀ b, (M.choiceB b).FiniteValued) :
+    M.BuyersHaveConsistentSubstitutableCompletions :=
+  fun b => (hUS b).hasConsistentSubstitutableCompletion_of_finiteValued
+    (hcons b) (hfeasible b) (hfinite b)
+
+/-- Finite-contract specialization. The buyer and seller types remain arbitrary. -/
+theorem buyersHaveConsistentSubstitutableCompletions_of_unilaterallySubstitutable
+    [Finite X] (hUS : M.BuyersUnilaterallySubstitutable)
+    (hcons : ∀ b, (M.choiceB b).Consistent)
+    (hfeasible : ∀ b Y, Set.InjOn M.seller (M.choiceB b Y)) :
+    M.BuyersHaveConsistentSubstitutableCompletions :=
+  M.buyersHaveConsistentSubstitutableCompletions_of_unilaterallySubstitutable_of_finiteValued
+    hUS hcons hfeasible (fun _ _ => Set.toFinite _)
 
 /-- A substitutable completion of a buyer's choice still selects only that
 buyer's contracts. Thus support need not be postulated separately when

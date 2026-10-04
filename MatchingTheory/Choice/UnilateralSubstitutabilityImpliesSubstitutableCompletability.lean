@@ -1,101 +1,46 @@
 /-
-On finite domains, unilateral substitutability implies substitutable completability.
+Matching with contracts: substitute hulls and unilateral substitutability.
 -/
 import MatchingTheory.Choice.WeakSubstitutes
-import MatchingTheory.Choice.Induced
-import Mathlib.Data.Set.Finite.Basic
+import MatchingTheory.Choice.SubstituteHull
 
 /-!
-# Unilateral substitutability and consistent substitutable completions
+# Unilateral substitutability and path-independent completions
 
-For finite contract types, a consistent, many-to-one-feasible,
-unilaterally substitutable choice function has a completion satisfying
-both substitutability and consistency.
+A feasible, finite-valued IRC choice function is unilaterally substitutable
+if and only if its substitute hull is a completion. Equivalently, the hull
+preserves the set of represented counterparties, or there exists a
+substitutable completion which enlarges the original choices pointwise.
+The hull is then the least such completion and is path independent.
 
-This is a result of Kadam (2016), but we give a new, more structural proof
-using a substitute hull.
+The contract and counterparty types may both be infinite: only the chosen
+sets must be finite. The converse from an enlarging substitutable
+completion requires no finiteness assumption. The finite-contract
+existence theorems are retained as corollaries.
 
-Our development does not implement Kadam's iterative preference-editing algorithm
-or construct an explicit completed linear preference order.
+Zhang (2016), *On sufficient conditions for the existence of stable
+matchings with contracts*, Proposition 2, proves the finite-domain
+implication to substitutable completability for feasible IRC choice.
+The contraction lemma below extends the one-addition observation in his
+Lemma 2. Kadam (2017), *Unilateral substitutability implies substitutable
+completability in many-to-one matching with contracts*, proves the
+preference-based implication. Here the generic substitute-hull results
+supply IRC as well; no completed linear preference order is constructed.
 
-Only the contract type must be finite; the counterparty type need not be.
+The general hull construction and its minimality and IRC properties live
+in `Choice/SubstituteHull.lean`. Completion alone is not pointwise
+enlargement, so the characterization states that extra condition explicitly.
 -/
 
 namespace ChoiceFunction
 
 variable {A : Type*} {X : Type*}
 
-namespace UnilateralSubstitutabilityImpliesSubstitutableCompletability
-
-/-! ## The substitute hull -/
-
-/-- Keep contracts that the original choice selects from some larger menu. -/
-def hull (C : ChoiceFunction X) : ChoiceFunction X where
-  toFun Y :=
-    {x | x ∈ Y ∧ ∃ Z, Y ⊆ Z ∧ x ∈ C Z}
-  choose_subset := by
-    intro Y x hx
-    exact hx.1
-
-@[simp] theorem mem_hull
-    (C : ChoiceFunction X) {Y : Set X} {x : X} :
-    x ∈ hull C Y ↔
-      x ∈ Y ∧ ∃ Z, Y ⊆ Z ∧ x ∈ C Z :=
-  Iff.rfl
-
-/-- The hull enlarges the original choice pointwise. -/
-theorem subset_hull
-    (C : ChoiceFunction X) (Y : Set X) :
-    C Y ⊆ hull C Y := by
-  intro x hx
-  exact ⟨C.choose_subset Y hx, Y, fun _ hy => hy, hx⟩
-
-/-- The hull is substitutable, without finiteness or IRC assumptions. -/
-theorem hull_substitutable
-    (C : ChoiceFunction X) :
-    (hull C).Substitutable := by
-  apply substitutable_iff_chernoff.mpr
-  intro Y Z hYZ x hx
-  rcases hx with ⟨⟨_hxZ, W, hZW, hxW⟩, hxY⟩
-  exact ⟨hxY, W, fun y hy => hZW (hYZ hy), hxW⟩
-
-/-- IRC is preserved by the substitute hull.
-
-For a witness menu `W`, compare `W` with `W ∪ Y`. Every contract chosen
-from the union that belongs to `Y` belongs to the hull at `Y`, and hence
-to the retained menu `Z`. Thus the original choice from the union lies
-inside `W`, allowing IRC to be applied. -/
-theorem hull_consistent
-    {C : ChoiceFunction X}
-    (hIRC : C.Consistent) :
-    (hull C).Consistent := by
-  intro Y Z hchoice hZY
-  ext x
-  constructor
-  · rintro ⟨hxZ, W, hZW, hxW⟩
-    have hCW : C (W ∪ Y) ⊆ W := by
-      intro y hy
-      rcases C.choose_subset (W ∪ Y) hy with hyW | hyY
-      · exact hyW
-      · exact hZW
-          (hchoice
-            ⟨hyY, W ∪ Y, Set.subset_union_right, hy⟩)
-    have heq : C W = C (W ∪ Y) := by
-      apply hIRC
-      · exact hCW
-      · exact Set.subset_union_left
-    refine ⟨hZY hxZ, W ∪ Y, Set.subset_union_right, ?_⟩
-    rw [← heq]
-    exact hxW
-  · intro hx
-    exact
-      (substitutable_iff_chernoff.mp (hull_substitutable C))
-        hZY ⟨hx, hchoice hx⟩
-
-/-! ## Iterating unilateral substitutability over a finite set -/
+/-! ## Iterating unilateral substitutability over finitely many additions -/
 
 /-- Rejection persists after finitely many additions when the rejected
-contract's counterparty is absent from the base menus. -/
+contract's counterparty is absent from the base menus. The initial menu
+need not be finite. -/
 private theorem reject_union_of_finite
     {counterparty : X → A} {C : ChoiceFunction X}
     (hUS : C.UnilaterallySubstitutable counterparty)
@@ -116,177 +61,228 @@ private theorem reject_union_of_finite
         rcases hw with hw | hw
         · exact Or.inl hw
         · exact Or.inr (Set.mem_insert_of_mem z hw)
-      have hnot :=
-        hUS (z := z) hf' (ih hf')
+      have hnot := hUS (z := z) hf' (ih hf')
       simpa only [Set.union_insert] using hnot
-
-/-- The corresponding contraction statement on fresh finite menus. -/
-private theorem mem_insert_of_subset_fresh
-    {counterparty : X → A} {C : ChoiceFunction X}
-    (hUS : C.UnilaterallySubstitutable counterparty)
-    {x : X} {Y Z : Set X}
-    (hZ : Z.Finite)
-    (hYZ : Y ⊆ Z)
-    (hfresh : Fresh counterparty x Z)
-    (hxZ : x ∈ C (insert x Z)) :
-    x ∈ C (insert x Y) := by
-  classical
-  by_contra hxY
-  have hf : Fresh counterparty x (Y ∪ Z) := by
-    intro w hw
-    apply hfresh w
-    rcases hw with hw | hw
-    · exact hYZ hw
-    · exact hw
-  have hnot :=
-    reject_union_of_finite hUS hZ hxY hf
-  have hUnion : Y ∪ Z = Z :=
-    Set.union_eq_right.mpr hYZ
-  rw [hUnion] at hnot
-  exact hnot hxZ
 
 /-! ## Recalled contracts have represented counterparties -/
 
-/-- If `x` is available at `Y` and chosen from a finite larger menu `Z`,
-then its counterparty is represented in `C Y`.
+/-- If `x` is available at `Y` and chosen from a larger menu `Z`, then its
+counterparty is represented in `C Y`, provided **the choice `C Z`** is
+finite and feasible. Neither menu needs to be finite.
 
-Feasibility is required only for the choice from `Z`.
-
-This conclusion does not assert that `x` itself belongs to `C Y`. -/
-theorem exists_chosen_counterparty
+This extends Zhang (2016), Lemma 2, from a one-addition comparison to
+arbitrary nested menus. It does not assert that `x` itself is chosen at `Y`.
+-/
+theorem UnilaterallySubstitutable.exists_chosen_counterparty_of_finite_choice
     {counterparty : X → A} {C : ChoiceFunction X}
     (hUS : C.UnilaterallySubstitutable counterparty)
     (hIRC : C.Consistent)
     {Y Z : Set X} {x : X}
-    (hZ : Z.Finite)
+    (hCZ : (C Z).Finite)
     (hfeasible : Set.InjOn counterparty (C Z))
-    (hYZ : Y ⊆ Z)
-    (hxY : x ∈ Y)
-    (hxZ : x ∈ C Z) :
+    (hYZ : Y ⊆ Z) (hxY : x ∈ Y) (hxZ : x ∈ C Z) :
     ∃ y ∈ C Y, counterparty y = counterparty x := by
   classical
-
-  -- Remove all contracts with x's counterparty, then reinsert x.
-  let Y0 : Set X :=
-    {y | y ∈ Y ∧ counterparty y ≠ counterparty x}
-  let Z0 : Set X :=
-    {y | y ∈ Z ∧ counterparty y ≠ counterparty x}
-
-  have hY0Z0 : Y0 ⊆ Z0 := by
-    intro y hy
-    exact ⟨hYZ hy.1, hy.2⟩
-
-  have hZ0 : Z0.Finite :=
-    hZ.subset (fun _ hy => hy.1)
-
-  have hfresh : Fresh counterparty x Z0 := by
-    intro y hy
-    exact hy.2
-
-  -- Since x is chosen and the chosen set is feasible, all other
-  -- contracts with its counterparty are rejected at Z.
-  have hCZ : C Z ⊆ insert x Z0 := by
-    intro y hy
-    by_cases heq : counterparty y = counterparty x
-    · exact Or.inl (hfeasible hy hxZ heq)
-    · exact Or.inr ⟨C.choose_subset Z hy, heq⟩
-
-  have hCZ0 : C (insert x Z0) = C Z := by
-    apply hIRC
-    · exact hCZ
-    · exact Set.insert_subset
-        (C.choose_subset Z hxZ)
-        (fun _ hy => hy.1)
-
-  have hxZ0 : x ∈ C (insert x Z0) := by
-    rw [hCZ0]
-    exact hxZ
-
-  have hxY0 : x ∈ C (insert x Y0) :=
-    mem_insert_of_subset_fresh
-      hUS hZ0 hY0Z0 hfresh hxZ0
-
-  -- If C Y contains no contract with x's counterparty, IRC also
-  -- permits the corresponding deletion at Y, a contradiction.
   by_contra hnone
-
-  have hCY : C Y ⊆ insert x Y0 := by
-    intro y hy
-    refine Or.inr ⟨C.choose_subset Y hy, ?_⟩
-    intro heq
-    exact hnone ⟨y, hy, heq⟩
-
-  have hCY0 : C (insert x Y0) = C Y := by
+  let Y0 : Set X := {y | y ∈ Y ∧ counterparty y ≠ counterparty x}
+  let E : Set X := {y | y ∈ C Z ∧ y ≠ x}
+  have hE : E.Finite := hCZ.subset (fun _ hy => hy.1)
+  have hbase : C (insert x Y0) = C Y := by
     apply hIRC
-    · exact hCY
+    · intro y hy
+      refine Or.inr ⟨C.choose_subset Y hy, ?_⟩
+      intro heq
+      exact hnone ⟨y, hy, heq⟩
     · exact Set.insert_subset hxY (fun _ hy => hy.1)
+  have hxbase : x ∉ C (insert x Y0) := by
+    rw [hbase]
+    intro hx
+    exact hnone ⟨x, hx, rfl⟩
+  have hfresh : Fresh counterparty x (Y0 ∪ E) := by
+    intro y hy
+    rcases hy with hy | hy
+    · exact hy.2
+    · intro heq
+      exact hy.2 (hfeasible hy.1 hxZ heq)
+  have hupper : C (insert x (Y0 ∪ E)) = C Z := by
+    apply hIRC
+    · intro y hy
+      by_cases hyx : y = x
+      · exact Or.inl hyx
+      · exact Or.inr (Or.inr ⟨hy, hyx⟩)
+    · apply Set.insert_subset (C.choose_subset Z hxZ)
+      intro y hy
+      rcases hy with hy | hy
+      · exact hYZ hy.1
+      · exact C.choose_subset Z hy.1
+  have hnot := reject_union_of_finite hUS hE hxbase hfresh
+  rw [hupper] at hnot
+  exact hnot hxZ
 
-  apply hnone
-  refine ⟨x, ?_, rfl⟩
-  rw [← hCY0]
-  exact hxY0
-
-/-! ## The hull is a completion -/
-
-/-- Under finite unilateral substitutability, IRC, and many-to-one
-feasibility, the substitute hull is a completion.
-
-If a newly chosen contract `x` was not in `C Y`, the preceding lemma
-supplies a distinct contract in `C Y` with the same counterparty.
-Both belong to the hull. -/
-theorem hull_isCompletionOf [Finite X]
+/-- The substitute hull preserves precisely the represented counterparties.
+Finite-valuedness replaces finiteness of the entire contract type. -/
+theorem UnilaterallySubstitutable.image_substituteHull_eq
     {counterparty : X → A} {C : ChoiceFunction X}
     (hUS : C.UnilaterallySubstitutable counterparty)
     (hIRC : C.Consistent)
-    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y)) :
-    C.IsCompletionOf counterparty (hull C) := by
-  classical
-  intro Y
-  by_cases hsub : hull C Y ⊆ C Y
-  · exact Or.inl
-      (Set.Subset.antisymm hsub (subset_hull C Y))
-  · right
-    have hex : ∃ x ∈ hull C Y, x ∉ C Y := by
-      by_contra hnone
-      apply hsub
-      intro x hx
-      by_contra hxnot
-      exact hnone ⟨x, hx, hxnot⟩
-
-    obtain ⟨x, hxH, hxnot⟩ := hex
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y))
+    (hfinite : C.FiniteValued) (Y : Set X) :
+    counterparty '' C.substituteHull Y = counterparty '' C Y := by
+  ext a
+  constructor
+  · rintro ⟨x, hxH, rfl⟩
     rcases hxH with ⟨hxY, Z, hYZ, hxZ⟩
-
     obtain ⟨y, hy, hsame⟩ :=
-      exists_chosen_counterparty
-        hUS hIRC (Set.toFinite Z) (hfeasible Z)
-        hYZ hxY hxZ
+      hUS.exists_chosen_counterparty_of_finite_choice hIRC
+        (hfinite Z) (hfeasible Z) hYZ hxY hxZ
+    exact ⟨y, hy, hsame⟩
+  · rintro ⟨x, hx, rfl⟩
+    exact ⟨x, le_substituteHull C Y hx, rfl⟩
 
-    refine
-      ⟨x, ⟨hxY, Z, hYZ, hxZ⟩,
-        y, subset_hull C Y hy, ?_, hsame.symm⟩
-    intro hxy
-    apply hxnot
-    rw [hxy]
-    exact hy
+/-- For feasible, finite-valued IRC choice, unilateral substitutability
+makes the substitute hull a completion. The hull is already substitutable,
+and its IRC follows separately from that of the original choice. -/
+theorem UnilaterallySubstitutable.substituteHull_isCompletionOf
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hUS : C.UnilaterallySubstitutable counterparty)
+    (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y))
+    (hfinite : C.FiniteValued) :
+    C.IsCompletionOf counterparty C.substituteHull := by
+  apply isCompletionOf_of_le_of_image_subset (le_substituteHull C)
+  intro Y
+  exact (hUS.image_substituteHull_eq hIRC hfeasible hfinite Y).subset
 
-end UnilateralSubstitutabilityImpliesSubstitutableCompletability
+/-! ## Characterization by enlarging completions -/
 
-/-! ## Public existence theorems -/
+/-- If the hull introduces no new counterparties, the original choice is
+unilaterally substitutable. This direction requires neither finiteness,
+feasibility, nor IRC. -/
+theorem unilaterallySubstitutable_of_image_substituteHull_subset
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (himage : ∀ Y, counterparty '' C.substituteHull Y ⊆ counterparty '' C Y) :
+    C.UnilaterallySubstitutable counterparty := by
+  intro x z Y hfresh hxnot hxlarge
+  have hsmall : insert x Y ⊆ insert x (insert z Y) := by
+    intro y hy
+    rcases hy with hxy | hyY
+    · exact Or.inl hxy
+    · exact Or.inr (Or.inr hyY)
+  have hxH : x ∈ C.substituteHull (insert x Y) :=
+    ⟨Set.mem_insert x Y, insert x (insert z Y), hsmall, hxlarge⟩
+  obtain ⟨y, hy, hsame⟩ := himage (insert x Y) ⟨x, hxH, rfl⟩
+  rcases C.choose_subset (insert x Y) hy with hxy | hyY
+  · rw [hxy] at hy
+    exact hxnot hy
+  · exact hfresh y hyY hsame
 
-/-- Finite unilateral substitutability, IRC, and many-to-one feasibility
-imply existence of a completion satisfying both substitutability and IRC. -/
+/-- For feasible finite-valued IRC choice, unilateral substitutability is
+exactly preservation of counterparty images by the substitute hull. -/
+theorem unilaterallySubstitutable_iff_image_substituteHull_eq
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y))
+    (hfinite : C.FiniteValued) :
+    C.UnilaterallySubstitutable counterparty ↔
+      ∀ Y, counterparty '' C.substituteHull Y = counterparty '' C Y := by
+  constructor
+  · intro hUS
+    exact hUS.image_substituteHull_eq hIRC hfeasible hfinite
+  · intro himage
+    exact unilaterallySubstitutable_of_image_substituteHull_subset
+      (fun Y => (himage Y).subset)
+
+/-- For feasible finite-valued IRC choice, unilateral substitutability is
+exactly the assertion that the canonical hull is a completion. -/
+theorem unilaterallySubstitutable_iff_substituteHull_isCompletionOf
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y))
+    (hfinite : C.FiniteValued) :
+    C.UnilaterallySubstitutable counterparty ↔
+      C.IsCompletionOf counterparty C.substituteHull := by
+  constructor
+  · intro hUS
+    exact hUS.substituteHull_isCompletionOf hIRC hfeasible hfinite
+  · intro hcomp
+    exact hcomp.unilaterallySubstitutable_of_le
+      (substituteHull_substitutable C) (le_substituteHull C) hIRC hfeasible
+
+/-- For feasible finite-valued IRC choice, unilateral substitutability is
+exactly the existence of a substitutable completion which enlarges choices
+pointwise. The pointwise inclusion is essential. -/
+theorem unilaterallySubstitutable_iff_exists_substitutable_enlarging_completion
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y))
+    (hfinite : C.FiniteValued) :
+    C.UnilaterallySubstitutable counterparty ↔
+      ∃ D : ChoiceFunction X,
+        C.IsCompletionOf counterparty D ∧ D.Substitutable ∧ C ≤ D := by
+  constructor
+  · intro hUS
+    exact ⟨C.substituteHull,
+      hUS.substituteHull_isCompletionOf hIRC hfeasible hfinite,
+      substituteHull_substitutable C, le_substituteHull C⟩
+  · rintro ⟨D, hcomp, hD, hCD⟩
+    exact hcomp.unilaterallySubstitutable_of_le hD hCD hIRC hfeasible
+
+/-- The hull is the least substitutable completion among pointwise
+extensions of a feasible, finite-valued, unilaterally substitutable IRC
+choice function. This does not assert leastness among arbitrary completions. -/
+theorem UnilaterallySubstitutable.isLeast_substitutable_enlarging_completion
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hUS : C.UnilaterallySubstitutable counterparty)
+    (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y))
+    (hfinite : C.FiniteValued) :
+    IsLeast {D : ChoiceFunction X |
+      C.IsCompletionOf counterparty D ∧ D.Substitutable ∧ C ≤ D}
+      C.substituteHull := by
+  refine ⟨⟨hUS.substituteHull_isCompletionOf hIRC hfeasible hfinite,
+    substituteHull_substitutable C, le_substituteHull C⟩, ?_⟩
+  intro D hD
+  exact substituteHull_le hD.2.1 hD.2.2
+
+/-! ## Existence, with finite chosen sets -/
+
+/-- Finite-valued unilateral substitutability, IRC, and feasibility imply
+existence of a completion satisfying both substitutability and IRC. The
+contract type and counterparty type need not be finite. -/
+theorem UnilaterallySubstitutable.hasConsistentSubstitutableCompletion_of_finiteValued
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hUS : C.UnilaterallySubstitutable counterparty)
+    (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y))
+    (hfinite : C.FiniteValued) :
+    C.HasConsistentSubstitutableCompletion counterparty :=
+  ⟨C.substituteHull,
+    hUS.substituteHull_isCompletionOf hIRC hfeasible hfinite,
+    substituteHull_substitutable C, substituteHull_consistent hIRC⟩
+
+/-- Forgetting IRC gives the weaker completability predicate. -/
+theorem UnilaterallySubstitutable.substitutablyCompletable_of_finiteValued
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hUS : C.UnilaterallySubstitutable counterparty)
+    (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y))
+    (hfinite : C.FiniteValued) :
+    C.SubstitutablyCompletable counterparty :=
+  (hUS.hasConsistentSubstitutableCompletion_of_finiteValued
+    hIRC hfeasible hfinite).substitutablyCompletable
+
+/-- The finite-contract corollary of the finite-valued completion theorem.
+Zhang (2016), Proposition 2, gives substitutable completability; hull IRC
+also supplies a consistent completion. -/
 theorem UnilaterallySubstitutable.hasConsistentSubstitutableCompletion
     [Finite X]
     {counterparty : X → A} {C : ChoiceFunction X}
     (hUS : C.UnilaterallySubstitutable counterparty)
     (hIRC : C.Consistent)
     (hfeasible : ∀ Y, Set.InjOn counterparty (C Y)) :
-    C.HasConsistentSubstitutableCompletion counterparty := by
-  exact
-    ⟨UnilateralSubstitutabilityImpliesSubstitutableCompletability.hull C,
-      UnilateralSubstitutabilityImpliesSubstitutableCompletability.hull_isCompletionOf hUS hIRC hfeasible,
-      UnilateralSubstitutabilityImpliesSubstitutableCompletability.hull_substitutable C,
-      UnilateralSubstitutabilityImpliesSubstitutableCompletability.hull_consistent hIRC⟩
+    C.HasConsistentSubstitutableCompletion counterparty :=
+  hUS.hasConsistentSubstitutableCompletion_of_finiteValued
+    hIRC hfeasible (finiteValued_of_finite C)
 
 /-- Forgetting IRC gives the weaker completability predicate. -/
 theorem UnilaterallySubstitutable.substitutablyCompletable
@@ -296,13 +292,68 @@ theorem UnilaterallySubstitutable.substitutablyCompletable
     (hIRC : C.Consistent)
     (hfeasible : ∀ Y, Set.InjOn counterparty (C Y)) :
     C.SubstitutablyCompletable counterparty :=
-  (hUS.hasConsistentSubstitutableCompletion
-    hIRC hfeasible).substitutablyCompletable
+  hUS.substitutablyCompletable_of_finiteValued
+    hIRC hfeasible (finiteValued_of_finite C)
+
+/-! ## Compatibility names
+
+The hull is now a general choice-theoretic construction. These names keep
+existing imports and uses of the original completion module valid.
+-/
+
+namespace UnilateralSubstitutabilityImpliesSubstitutableCompletability
+
+/-- Compatibility abbreviation for the general substitute hull. -/
+abbrev hull (C : ChoiceFunction X) : ChoiceFunction X := C.substituteHull
+
+@[simp] theorem mem_hull (C : ChoiceFunction X) {Y : Set X} {x : X} :
+    x ∈ hull C Y ↔ x ∈ Y ∧ ∃ Z, Y ⊆ Z ∧ x ∈ C Z :=
+  Iff.rfl
+
+/-- Compatibility name for pointwise enlargement by the hull. -/
+theorem subset_hull (C : ChoiceFunction X) (Y : Set X) :
+    C Y ⊆ hull C Y :=
+  le_substituteHull C Y
+
+/-- Compatibility name for substitutability of the hull. -/
+theorem hull_substitutable (C : ChoiceFunction X) :
+    (hull C).Substitutable :=
+  substituteHull_substitutable C
+
+/-- Compatibility name for IRC preservation by the hull. -/
+theorem hull_consistent {C : ChoiceFunction X} (hIRC : C.Consistent) :
+    (hull C).Consistent :=
+  substituteHull_consistent hIRC
+
+/-- The original finite-menu contraction statement, derived from the
+stronger theorem requiring only a finite choice from the upper menu. -/
+theorem exists_chosen_counterparty
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hUS : C.UnilaterallySubstitutable counterparty)
+    (hIRC : C.Consistent)
+    {Y Z : Set X} {x : X}
+    (hZ : Z.Finite)
+    (hfeasible : Set.InjOn counterparty (C Z))
+    (hYZ : Y ⊆ Z) (hxY : x ∈ Y) (hxZ : x ∈ C Z) :
+    ∃ y ∈ C Y, counterparty y = counterparty x :=
+  hUS.exists_chosen_counterparty_of_finite_choice hIRC
+    (hZ.subset (C.choose_subset Z)) hfeasible hYZ hxY hxZ
+
+/-- Compatibility name for the finite-contract hull completion theorem. -/
+theorem hull_isCompletionOf [Finite X]
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hUS : C.UnilaterallySubstitutable counterparty)
+    (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y)) :
+    C.IsCompletionOf counterparty (hull C) :=
+  hUS.substituteHull_isCompletionOf hIRC hfeasible (finiteValued_of_finite C)
+
+end UnilateralSubstitutabilityImpliesSubstitutableCompletability
 
 /-! ## Preference-induced choice -/
 
-/-- Kadam's implication for preference-induced choice over represented
-many-to-one-feasible bundles.
+/-- The unilateral-substitutability completion implication for preferences
+over represented many-to-one-feasible bundles.
 
 IRC follows from preference maximization on a finite contract type.
 Feasibility follows from feasibility of every represented bundle. -/
@@ -319,15 +370,7 @@ theorem hasConsistentSubstitutableCompletion_ofBundleOrder
       counterparty := by
   apply hUS.hasConsistentSubstitutableCompletion
   · exact consistent_ofBundleOrder pref bundle
-  · intro Y x hx y hy hxy
-    obtain ⟨b, hb, hxb, hmax⟩ :=
-      (mem_ofBundleOrder pref bundle).mp hx
-    have heq : ofBundleOrder pref bundle Y = bundle b :=
-      ofBundleOrder_eq_of_max pref bundle hb hmax
-    have hyb : y ∈ bundle b := by
-      rw [← heq]
-      exact hy
-    exact hbundle b hxb hyb hxy
+  · exact injOn_ofBundleOrder pref bundle hbundle
 
 /-! ## Preference-induced completions
 

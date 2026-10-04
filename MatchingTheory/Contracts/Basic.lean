@@ -16,8 +16,9 @@ to every agent, subject only to the *support* condition (agents choose only
 contracts to which they are associated).
 
 Irrelevance of rejected contracts (IRC) and substitutability are theorem
-hypotheses via the market-level predicates below, never structure fields —
-the maximal-domain theorems (survey Thm 2.7/3.6) need non-substitutable instances.
+hypotheses via the market-level predicates below, never structure fields.
+This also permits non-substitutable instances for the planned maximal-domain
+results (survey Thm 2.7/3.6).
 
 Everything here is implemented at Hatfield–Kominers **many-to-many generality**.
 The definitions impose no unit-demand or unitarity hypothesis.
@@ -112,7 +113,8 @@ def Consistent : Prop :=
 def Substitutable : Prop :=
   (∀ b, (M.choiceB b).Substitutable) ∧ ∀ s, (M.choiceS s).Substitutable
 
-/-- Every agent's choice function satisfies the law of aggregate demand. -/
+/-- Every agent's choice function satisfies the law of aggregate demand on
+finite menus. -/
 def SizeMonotone : Prop :=
   (∀ b, (M.choiceB b).SizeMonotone) ∧ ∀ s, (M.choiceS s).SizeMonotone
 

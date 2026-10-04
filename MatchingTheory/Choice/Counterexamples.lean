@@ -15,8 +15,13 @@ these design choices:
 * the superset quantification in `ChoiceFunction.Substitutable` (the printed
   single-contract form is too weak to drive the finiteness-free fixed-point
   development), and
-* stating the §6 weakened conditions (`MatchingTheory.Choice.WeakSubstitutes`)
-  as finite-market notions in the literature's single-contract shape.
+* retaining the literature's single-contract shape for the §6 weakened
+  conditions (`MatchingTheory.Choice.WeakSubstitutes`), while exposing the
+  hypotheses needed to extend their consequences beyond finite markets.
+
+The completion theorem now permits arbitrary contract types when choice is
+finite-valued. This example chooses an infinite set from an infinite menu,
+so it does not satisfy that hypothesis.
 
 No finite counterexample exists — that is the content of
 `ChoiceFunction.substitutable_iff_forall_insert_insert` — so this is

@@ -284,8 +284,9 @@ theorem gsMatchingAt_eq_manOptimalMatching (n : ℕ)
     (mkt.le_manOptimalMatching (mkt.stable_gsMatchingAt n hn) m)
     (mkt.gsMatchingAt_manOptimal n hn mkt.stable_manOptimalMatching m)
 
-/-- A uniform bound on proposal rounds: there are at most this many distinct
-rejections before the history must become stationary. -/
+/-- A uniform bound on simultaneous rejection updates: each nonstationary
+update adds a previously unrejected pair. This is a fuel bound for the state
+iteration, not a running-time bound or a count of individual proposals. -/
 def gsStoppingTime (_mkt : MarriageMarket M W) : ℕ := Fintype.card (M × W)
 
 theorem gs_stoppingTime_terminal :

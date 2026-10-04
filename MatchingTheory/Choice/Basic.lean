@@ -23,8 +23,11 @@ networks later) reuses this layer unchanged.
 * `ChoiceFunction.Substitutable` — no newly available alternative rescues a
   rejected one (survey Definition 2.1, superset form); rejection-function
   monotonicity is the *derived* characterization.
-* `ChoiceFunction.SizeMonotone` — the law of aggregate demand (Definition 2.2).
+* `ChoiceFunction.SizeMonotone` — the law of aggregate demand on finite menus
+  (Definition 2.2).
 * `ChoiceFunction.UnitDemand`, `ChoiceFunction.PathIndependent`.
+* `ChoiceFunction.FiniteValued` — every chosen set is finite, even when the
+  menu or the universe of alternatives is infinite.
 
 ## Design notes
 
@@ -70,6 +73,19 @@ instance : FunLike (ChoiceFunction α) (Set α) (Set α) where
 lemma ext {C D : ChoiceFunction α} (h : ∀ Y, C Y = D Y) : C = D :=
   DFunLike.ext _ _ h
 
+/-- Choice functions are ordered by pointwise inclusion of their choices.
+Thus `C ≤ D` means that `D` enlarges `C` at every menu. -/
+instance : PartialOrder (ChoiceFunction α) where
+  le C D := ∀ Y, C Y ⊆ D Y
+  le_refl C Y := Set.Subset.rfl
+  le_trans C D E hCD hDE Y x hx := hDE Y (hCD Y hx)
+  le_antisymm C D hCD hDC :=
+    ext (fun Y => Set.Subset.antisymm (hCD Y) (hDC Y))
+
+theorem le_def {C D : ChoiceFunction α} :
+    C ≤ D ↔ ∀ Y, C Y ⊆ D Y :=
+  Iff.rfl
+
 variable (C : ChoiceFunction α)
 
 /-- The rejection function: available but not chosen. -/
@@ -83,7 +99,7 @@ lemma mem_rejected {Y : Set α} {x : α} :
 lemma choose_union_rejected (Y : Set α) : C Y ∪ C.rejected Y = Y :=
   Set.union_diff_cancel (C.choose_subset Y)
 
-/-! ### The four key regularity conditions -/
+/-! ### Choice properties -/
 
 /-- Irrelevance of rejected alternatives (IRC / consistency), set form. -/
 def Consistent : Prop :=
@@ -107,6 +123,11 @@ def SizeMonotone : Prop :=
 def UnitDemand : Prop :=
   ∀ Y, (C Y).Subsingleton
 
+/-- Every choice is finite. This does not require finite menus or a finite
+universe of alternatives. -/
+def FiniteValued : Prop :=
+  ∀ Y, (C Y).Finite
+
 /-- Path independence (Plott). -/
 def PathIndependent : Prop :=
   ∀ Y Z, C (Y ∪ Z) = C (C Y ∪ Z)
@@ -118,6 +139,16 @@ def Chernoff : Prop :=
 /-! ### Characterizations of substitutability -/
 
 variable {C}
+
+/-- Every choice function on a finite universe is finite-valued. -/
+theorem finiteValued_of_finite [Finite α] (C : ChoiceFunction α) :
+    C.FiniteValued :=
+  fun Y => Set.toFinite (C Y)
+
+/-- Passing to pointwise smaller choices preserves finite-valuedness. -/
+theorem FiniteValued.of_le {D : ChoiceFunction α}
+    (hD : D.FiniteValued) (hCD : C ≤ D) : C.FiniteValued :=
+  fun Y => (hD Y).subset (hCD Y)
 
 /-- Apply finite-menu aggregate demand with an explicit finite larger menu. -/
 theorem SizeMonotone.ncard_le_of_finite (hC : C.SizeMonotone)

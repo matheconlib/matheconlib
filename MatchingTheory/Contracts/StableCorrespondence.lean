@@ -7,7 +7,9 @@ import Mathlib.Order.FixedPoints
 The generalized operator acts on `Set X × (Set X)ᵒᵈ`. Its first coordinate
 contains contracts available to sellers; its second contains contracts
 available to buyers. Thus `⊤ = (univ, ∅)` is the seller-proposing initial
-state and the greatest fixed point yields the seller-optimal outcome.
+state. Under substitutability and IRC, the greatest fixed point yields the
+seller-optimal stable outcome, and the least fixed point yields the
+buyer-optimal stable outcome.
 
 Under substitutability and set-form IRC, `stateOf` and `outcomeOf` identify
 stable outcomes with fixed points. Knaster–Tarski then gives existence.

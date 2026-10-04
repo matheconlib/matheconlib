@@ -3,9 +3,11 @@ import MatchingTheory.Contracts.StableCorrespondence
 /-!
 # The order and lattice of stable outcomes
 
-The fixed-point order is unanimous seller choice and reverse unanimous
-buyer choice. This yields both side-optimality results and the stable-outcome
-lattice, without finiteness, unit demand, or the law of aggregate demand.
+Under substitutability and IRC, the fixed-point order corresponds to unanimous
+seller choice and reverse unanimous buyer choice. This yields both
+side-optimality results without finiteness, unit demand, or aggregate demand.
+The complete lattice is carried by the operator's fixed points;
+`stableEquivFixedPoints` identifies this carrier with stable contract sets.
 -/
 
 open Function OrderDual
@@ -20,7 +22,7 @@ variable (M : Market B S X)
 
 /-! ### The order dictionary
 
-The three statements
+For fixed points `p` and `q`, under substitutability and IRC, the three statements
 
 * `p ≤ q` in the state lattice,
 * `SellerChosen (outcomeOf q) (outcomeOf p)` — every seller chooses their part
@@ -28,12 +30,11 @@ The three statements
 * `BuyerChosen (outcomeOf p) (outcomeOf q)` — every buyer chooses their part
   of the `p`-outcome out of the union,
 
-are equivalent.  This is *opposition of interests*, and it is phrased through
-choice functions rather than preference relations: at many-to-many generality
-there is no primitive preference over sets, and `Cˢ(A ∪ A') = A'` is the form
-that survives (and the form that feeds comparative statics).  The many-to-one
-"each seller weakly prefers their contract in `A'`" reading is a unit-demand
-specialisation and belongs downstream, not here — that is the Blair trap.
+are equivalent. This is opposition of interests expressed through choice
+functions. The market structure has no primitive preferences over sets.
+In a preference-induced unit-demand model, the seller-choice relation can
+also be read as each seller weakly preferring their assigned contract; the
+marriage layer proves that interpretation separately.
 
 None of this uses `SizeMonotone`. -/
 
@@ -302,9 +303,9 @@ The lattice operations need not agree with ambient componentwise operations.
 The API uses the order characterization rather than unfolding those operations.
 -/
 
-/-- The Knaster–Tarski lattice of stable outcomes, carried by the fixed points
-of the deferred-acceptance operator.  Reducible, so that the `CompleteLattice`
-instance on `fixedPoints` applies. -/
+/-- The Knaster–Tarski lattice of deferred-acceptance fixed points.
+Its stable-outcome interpretation requires IRC. This abbreviation inherits
+the `CompleteLattice` instance on `fixedPoints` directly. -/
 abbrev StableOutcomes (M : Market B S X) (hsub : M.Substitutable) : Type w :=
   fixedPoints (M.daHom hsub)
 
@@ -370,7 +371,9 @@ end StableOutcomes
 
 end StableOutcomesAPI
 
-/-- Lemma 2.1, packaged as an equivalence with the lattice carrier. -/
+/-- Lemma 2.1, packaged as an equivalence with the lattice carrier.
+This is an `Equiv`; no preference-order instance is installed on the subtype
+of stable contract sets. The order dictionary is supplied separately. -/
 def stableEquivFixedPoints (hsub : M.Substitutable)
     (hcons : M.Consistent) :
     {A : Set X // M.Stable A} ≃ M.StableOutcomes hsub where
@@ -386,16 +389,16 @@ def stableEquivFixedPoints (hsub : M.Substitutable)
 
 /-! #### Orientation
 
-`⊤` is seller-optimal and buyer-pessimal.  This is the one fact in the file
-that is a coin flip fixed by which coordinate carries the `ᵒᵈ`; state it once,
-here, and route every downstream result through the two abbreviations rather
-than through bare `⊤`/`⊥`. -/
+With IRC, `⊤` is seller-optimal and buyer-pessimal, while `⊥` is buyer-optimal
+and seller-pessimal. This orientation follows from placing `OrderDual` on the
+buyer-available coordinate. The named extrema expose that convention to
+downstream results. -/
 
-/-- The **seller-optimal** stable outcome: the top of the lattice. -/
+/-- The top fixed point, interpreted under IRC as the seller-optimal stable outcome. -/
 abbrev sellerOptimalOutcome (M : Market B S X) (hsub : M.Substitutable) :
     M.StableOutcomes hsub := ⊤
 
-/-- The **buyer-optimal** stable outcome: the bottom of the lattice. -/
+/-- The bottom fixed point, interpreted under IRC as the buyer-optimal stable outcome. -/
 abbrev buyerOptimalOutcome (M : Market B S X) (hsub : M.Substitutable) :
     M.StableOutcomes hsub := ⊥
 
