@@ -2,24 +2,42 @@
 Preference-induced choice, independent of agents and markets.
 -/
 import MatchingTheory.Choice.Basic
-import Mathlib.Data.Finset.Max
+import Mathlib.Data.Set.Finite.Lemmas
+import Mathlib.Data.Set.Finite.Powerset
+import Mathlib.Data.Set.Subsingleton
+import Mathlib.Order.Basic
 
 /-!
-# Choice from a linear preference order
+# Choice from linear preferences over bundles
 
-`ofLinearOrder pref` selects the greatest available alternative above the
-outside option `none`, where `pref : LinearOrder (Option α)` is data rather
-than a globally installed order. Its definition needs neither finiteness nor
-decidability. Unit demand and substitutability hold on arbitrary types.
+A bundle is a set of alternatives.
 
-Consistency requires existence of a greatest option whenever there is an
-acceptable option. Here it is proved for finite menus, then for finite types.
-On an infinite menu with no greatest option the choice is empty, so there is
-no unconditional infinite-menu consistency assertion.
+`ofBundleOrder pref bundle` maximizes a linear preference order over a
+represented family of bundles. The embedding `bundle : β ↪ Set α`
+specifies the admissible bundles; a represented bundle is feasible at
+menu `Y` precisely when it is a subset of `Y`.
 
-`map` transports a choice function along an embedding. In a marriage market,
-the embeddings are `w ↦ (m, w)` and `m ↦ (m, w)`. This handles restriction to
-an agent's own contracts without putting market data in the choice layer.
+`ofSetLinearOrder pref` admits every bundle and therefore chooses the
+greatest subset of the menu under `pref : LinearOrder (Set α)`.
+
+`ofLinearOrder pref` is the singleton-or-empty specialization. It retains
+the existing `LinearOrder (Option α)` API, interpreting `none` as `∅`
+and `some x` as `{x}`.
+
+`singletonPreference pref` restricts a preference order on all sets to
+the singleton-or-empty bundles. Consequently,
+`ofSingletonSetLinearOrder pref` derives singleton choice directly from
+set preferences.
+
+All definitions work on arbitrary types. If no greatest feasible bundle
+exists, the choice is empty. Consistency is proved for finite menus,
+then for finite alternative types.
+
+Arbitrary bundle preferences need not induce substitutable or
+size-monotone choice. Those properties are proved for the singleton
+specialization.
+
+Preference comparisons use `pref.le`; they are distinct from set inclusion.
 -/
 
 universe u v
@@ -28,108 +46,316 @@ namespace ChoiceFunction
 
 variable {α : Type u} {β : Type v}
 
-/-- Choice of the greatest acceptable alternative. Larger options are
-preferred, and `none` is the outside option. A menu without a greatest
-acceptable alternative yields the empty set. -/
-def ofLinearOrder (pref : LinearOrder (Option α)) : ChoiceFunction α :=
-  letI := pref
-  { toFun := fun Y =>
-      {x | x ∈ Y ∧ none ≤ some x ∧ ∀ y ∈ Y, some y ≤ some x}
-    choose_subset := fun _ _ hx => hx.1 }
+/-! ## Choice over a represented family of bundles -/
 
-@[simp] theorem mem_ofLinearOrder (pref : LinearOrder (Option α))
+/-- Choose the greatest feasible represented bundle.
+
+`bundle` specifies the admissible bundles. Feasibility means containment
+in the current menu. A menu without a greatest feasible bundle yields
+the empty set.
+
+The existential definition needs no additional decidability instances.
+Antisymmetry ensures that all maximizing witnesses represent the same
+bundle. -/
+def ofBundleOrder
+    (pref : LinearOrder β) (bundle : β ↪ Set α) :
+    ChoiceFunction α where
+  toFun Y :=
+    {x | ∃ b,
+      bundle b ⊆ Y ∧
+      x ∈ bundle b ∧
+      ∀ c, bundle c ⊆ Y → pref.le c b}
+  choose_subset := by
+    rintro Y x ⟨b, hb, hx, _⟩
+    exact hb hx
+
+@[simp] theorem mem_ofBundleOrder
+    (pref : LinearOrder β) (bundle : β ↪ Set α)
     {Y : Set α} {x : α} :
-    x ∈ ofLinearOrder pref Y ↔
-      x ∈ Y ∧ pref.le none (some x) ∧
-        ∀ y ∈ Y, pref.le (some y) (some x) :=
+    x ∈ ofBundleOrder pref bundle Y ↔
+      ∃ b,
+        bundle b ⊆ Y ∧
+        x ∈ bundle b ∧
+        ∀ c, bundle c ⊆ Y → pref.le c b :=
   Iff.rfl
 
-/-- Strict preferences imply unit demand, even for infinite menus. -/
-theorem unitDemand_ofLinearOrder (pref : LinearOrder (Option α)) :
-    (ofLinearOrder pref).UnitDemand := by
-  letI := pref
-  intro Y x hx y hy
-  exact Option.some.inj
-    (le_antisymm (hy.2.2 x hx.1) (hx.2.2 y hy.1))
-
-/-- Deleting alternatives cannot displace a chosen greatest alternative. -/
-theorem substitutable_ofLinearOrder (pref : LinearOrder (Option α)) :
-    (ofLinearOrder pref).Substitutable := by
-  apply substitutable_iff_chernoff.mpr
-  intro Y Z hYZ x hx
-  exact ⟨hx.2, hx.1.2.1, fun y hy => hx.1.2.2 y (hYZ hy)⟩
-
-/-- A finite menu with an acceptable alternative has a chosen alternative. -/
-theorem nonempty_ofLinearOrder_of_finite
-    (pref : LinearOrder (Option α)) {Y : Set α} (hY : Y.Finite)
-    {x : α} (hx : x ∈ Y) (haccept : pref.le none (some x)) :
-    (ofLinearOrder pref Y).Nonempty := by
-  classical
-  letI := pref
-  let s : Finset α := hY.toFinset
-  let menu : Finset (Option α) := insert none (s.image some)
-  have hmenu : menu.Nonempty := ⟨none, Finset.mem_insert_self _ _⟩
-  have hsome_mem (y : α) (hy : y ∈ Y) : some y ∈ menu := by
-    apply Finset.mem_insert_of_mem
-    exact Finset.mem_image_of_mem some (hY.mem_toFinset.mpr hy)
-  have hxmax : some x ≤ menu.max' hmenu :=
-    Finset.le_max' menu (some x) (hsome_mem x hx)
-  have hmax_mem := Finset.max'_mem menu hmenu
-  cases hmax : menu.max' hmenu with
-  | none =>
-      have hsome_none : some x = none :=
-        le_antisymm (hmax ▸ hxmax) haccept
-      cases hsome_none
-  | some y =>
-      have hy : y ∈ Y := by
-        rw [hmax] at hmax_mem
-        have hy_image : some y ∈ s.image some := by
-          simpa [menu] using hmax_mem
-        obtain ⟨z, hz, hzy⟩ := Finset.mem_image.mp hy_image
-        have hzy' : z = y := Option.some.inj hzy
-        exact hzy' ▸ hY.mem_toFinset.mp hz
-      refine ⟨y, hy, ?_, ?_⟩
-      · have hnone : (none : Option α) ≤ menu.max' hmenu :=
-          Finset.le_max' menu none (Finset.mem_insert_self _ _)
-        exact hmax ▸ hnone
-      · intro z hz
-        have hzmax : some z ≤ menu.max' hmenu :=
-          Finset.le_max' menu (some z) (hsome_mem z hz)
-        exact hmax ▸ hzmax
-
-/-- IRC at a finite menu. The ambient alternative type may be infinite. -/
-theorem ofLinearOrder_eq_of_choice_subset
-    (pref : LinearOrder (Option α)) {Y Z : Set α} (hY : Y.Finite)
-    (hchoice : ofLinearOrder pref Y ⊆ Z) (hZY : Z ⊆ Y) :
-    ofLinearOrder pref Z = ofLinearOrder pref Y := by
+/-- If a greatest feasible bundle exists, it is exactly the chosen set. -/
+theorem ofBundleOrder_eq_of_max
+    (pref : LinearOrder β) (bundle : β ↪ Set α)
+    {Y : Set α} {b : β}
+    (hb : bundle b ⊆ Y)
+    (hmax : ∀ c, bundle c ⊆ Y → pref.le c b) :
+    ofBundleOrder pref bundle Y = bundle b := by
   letI := pref
   ext x
   constructor
+  · rintro ⟨c, hc, hx, hcmax⟩
+    have hcb : c = b :=
+      le_antisymm (hmax c hc) (hcmax b hb)
+    simpa only [hcb] using hx
   · intro hx
-    obtain ⟨y, hy⟩ := nonempty_ofLinearOrder_of_finite pref hY
-      (hZY hx.1) hx.2.1
-    refine ⟨hZY hx.1, hx.2.1, ?_⟩
-    intro z hz
-    exact le_trans (hy.2.2 z hz) (hx.2.2 y (hchoice hy))
-  · intro hx
-    exact ⟨hchoice hx, hx.2.1, fun y hy => hx.2.2 y (hZY hy)⟩
+    exact ⟨b, hb, hx, hmax⟩
+
+/-- A finite menu has only finitely many represented feasible bundles.
+If at least one is feasible, a greatest one exists. -/
+theorem exists_greatest_bundle_of_finite
+    (pref : LinearOrder β) (bundle : β ↪ Set α)
+    {Y : Set α} (hY : Y.Finite)
+    (hne : ∃ b, bundle b ⊆ Y) :
+    ∃ b, bundle b ⊆ Y ∧
+      ∀ c, bundle c ⊆ Y → pref.le c b := by
+  letI := pref
+  have hfinite : {b : β | bundle b ⊆ Y}.Finite :=
+    hY.finite_subsets.preimage_embedding bundle
+  exact Set.exists_max_image
+    {b : β | bundle b ⊆ Y} id hfinite hne
+
+/-- IRC at a finite menu, for an arbitrary represented family of bundles.
+
+The family need not contain the empty set: if no represented bundle is
+feasible, the choice is empty. -/
+theorem ofBundleOrder_eq_of_choice_subset
+    (pref : LinearOrder β) (bundle : β ↪ Set α)
+    {Y Z : Set α} (hY : Y.Finite)
+    (hchoice : ofBundleOrder pref bundle Y ⊆ Z)
+    (hZY : Z ⊆ Y) :
+    ofBundleOrder pref bundle Z =
+      ofBundleOrder pref bundle Y := by
+  letI := pref
+  ext x
+  constructor
+  · rintro ⟨b, hbZ, hxb, hmaxb⟩
+    have hbY : bundle b ⊆ Y :=
+      fun z hz => hZY (hbZ hz)
+    obtain ⟨c, hcY, hmaxc⟩ :=
+      exists_greatest_bundle_of_finite pref bundle hY ⟨b, hbY⟩
+    have hcZ : bundle c ⊆ Z := by
+      intro z hz
+      exact hchoice ⟨c, hcY, hz, hmaxc⟩
+    refine ⟨b, hbY, hxb, ?_⟩
+    intro d hdY
+    exact le_trans (hmaxc d hdY) (hmaxb c hcZ)
+  · rintro ⟨b, hbY, hxb, hmaxb⟩
+    have hbZ : bundle b ⊆ Z := by
+      intro z hz
+      exact hchoice ⟨b, hbY, hz, hmaxb⟩
+    refine ⟨b, hbZ, hxb, ?_⟩
+    intro c hcZ
+    exact hmaxb c (fun z hz => hZY (hcZ hz))
+
+theorem consistent_ofBundleOrder [Finite α]
+    (pref : LinearOrder β) (bundle : β ↪ Set α) :
+    (ofBundleOrder pref bundle).Consistent := by
+  intro Y Z hchoice hZY
+  exact ofBundleOrder_eq_of_choice_subset
+    pref bundle (Set.toFinite Y) hchoice hZY
+
+/-! ## Unrestricted preferences over sets -/
+
+/-- Choice induced by a linear preference order over all sets.
+
+At menu `Y`, every subset of `Y` is feasible, including `∅`. -/
+def ofSetLinearOrder (pref : LinearOrder (Set α)) :
+    ChoiceFunction α :=
+  ofBundleOrder pref (Function.Embedding.refl (Set α))
+
+@[simp] theorem mem_ofSetLinearOrder
+    (pref : LinearOrder (Set α)) {Y : Set α} {x : α} :
+    x ∈ ofSetLinearOrder pref Y ↔
+      ∃ A : Set α,
+        A ⊆ Y ∧
+        x ∈ A ∧
+        ∀ B : Set α, B ⊆ Y → pref.le B A :=
+  Iff.rfl
+
+theorem ofSetLinearOrder_eq_of_max
+    (pref : LinearOrder (Set α)) {Y A : Set α}
+    (hA : A ⊆ Y)
+    (hmax : ∀ B : Set α, B ⊆ Y → pref.le B A) :
+    ofSetLinearOrder pref Y = A :=
+  ofBundleOrder_eq_of_max
+    pref (Function.Embedding.refl (Set α)) hA hmax
+
+/-- On a finite menu, the chosen set is weakly preferred to every
+feasible bundle. -/
+theorem le_ofSetLinearOrder_of_subset
+    (pref : LinearOrder (Set α))
+    {Y A : Set α} (hY : Y.Finite) (hA : A ⊆ Y) :
+    pref.le A (ofSetLinearOrder pref Y) := by
+  obtain ⟨B, hB, hmax⟩ :=
+    exists_greatest_bundle_of_finite
+      pref (Function.Embedding.refl (Set α))
+      hY ⟨∅, Set.empty_subset Y⟩
+  have heq : ofSetLinearOrder pref Y = B :=
+    ofSetLinearOrder_eq_of_max pref hB hmax
+  rw [heq]
+  exact hmax A hA
+
+theorem ofSetLinearOrder_eq_of_choice_subset
+    (pref : LinearOrder (Set α))
+    {Y Z : Set α} (hY : Y.Finite)
+    (hchoice : ofSetLinearOrder pref Y ⊆ Z)
+    (hZY : Z ⊆ Y) :
+    ofSetLinearOrder pref Z = ofSetLinearOrder pref Y :=
+  ofBundleOrder_eq_of_choice_subset
+    pref (Function.Embedding.refl (Set α)) hY hchoice hZY
+
+theorem consistent_ofSetLinearOrder [Finite α]
+    (pref : LinearOrder (Set α)) :
+    (ofSetLinearOrder pref).Consistent :=
+  consistent_ofBundleOrder
+    pref (Function.Embedding.refl (Set α))
+
+/-! ## Singleton-or-empty bundles -/
+
+/-- Represent the outside option by `∅` and an alternative by its singleton. -/
+def optionBundle : Option α ↪ Set α where
+  toFun := fun
+    | none => ∅
+    | some x => {x}
+  inj' := by
+    intro a b h
+    cases a <;> cases b
+    · rfl
+    · simp at h
+    · simp at h
+    · simpa using h
+
+@[simp] theorem optionBundle_none :
+    optionBundle (none : Option α) = ∅ :=
+  rfl
+
+@[simp] theorem optionBundle_some (x : α) :
+    optionBundle (some x) = {x} :=
+  rfl
+
+/-- The represented bundles are exactly the empty set and singletons. -/
+theorem mem_range_optionBundle {A : Set α} :
+    A ∈ Set.range (optionBundle : Option α ↪ Set α) ↔
+      A.Subsingleton := by
+  constructor
+  · rintro ⟨o, rfl⟩
+    cases o <;> simp
+  · intro hA
+    rcases hA.eq_empty_or_singleton with rfl | ⟨x, rfl⟩
+    · exact ⟨none, rfl⟩
+    · exact ⟨some x, rfl⟩
+
+/-- Singleton-or-empty choice.
+
+This preserves the original API, but is now a specialization of the
+general bundle construction rather than a separate construction. -/
+def ofLinearOrder (pref : LinearOrder (Option α)) :
+    ChoiceFunction α :=
+  ofBundleOrder pref optionBundle
+
+@[simp] theorem mem_ofLinearOrder
+    (pref : LinearOrder (Option α)) {Y : Set α} {x : α} :
+    x ∈ ofLinearOrder pref Y ↔
+      x ∈ Y ∧ pref.le none (some x) ∧
+        ∀ y ∈ Y, pref.le (some y) (some x) := by
+  change
+    (∃ o : Option α,
+      optionBundle o ⊆ Y ∧
+      x ∈ optionBundle o ∧
+      ∀ p, optionBundle p ⊆ Y → pref.le p o) ↔ _
+  constructor
+  · rintro ⟨o, ho, hx, hmax⟩
+    cases o with
+    | none =>
+        exact hx.elim
+    | some y =>
+        have hxy : x = y :=
+          Set.mem_singleton_iff.mp hx
+        subst y
+        refine ⟨ho (by simp), hmax none (by simp), ?_⟩
+        intro z hz
+        exact hmax (some z) (by simpa using hz)
+  · rintro ⟨hx, hnone, hmax⟩
+    refine ⟨some x, ?_, ?_, ?_⟩
+    · simpa using hx
+    · simp
+    · intro o ho
+      cases o with
+      | none =>
+          exact hnone
+      | some y =>
+          exact hmax y (ho (by simp))
+
+/-- Singleton bundle choice has unit demand, even on infinite menus. -/
+theorem unitDemand_ofLinearOrder
+    (pref : LinearOrder (Option α)) :
+    (ofLinearOrder pref).UnitDemand := by
+  letI := pref
+  intro Y x hx y hy
+  have hx' := (mem_ofLinearOrder pref).mp hx
+  have hy' := (mem_ofLinearOrder pref).mp hy
+  exact Option.some.inj
+    (le_antisymm
+      (hy'.2.2 x hx'.1)
+      (hx'.2.2 y hy'.1))
+
+/-- Deleting alternatives cannot displace a chosen singleton. -/
+theorem substitutable_ofLinearOrder
+    (pref : LinearOrder (Option α)) :
+    (ofLinearOrder pref).Substitutable := by
+  apply substitutable_iff_chernoff.mpr
+  intro Y Z hYZ x hx
+  have hx' := (mem_ofLinearOrder pref).mp hx.1
+  apply (mem_ofLinearOrder pref).mpr
+  exact ⟨hx.2, hx'.2.1, fun y hy => hx'.2.2 y (hYZ hy)⟩
+
+/-- A finite menu with an acceptable alternative has nonempty choice. -/
+theorem nonempty_ofLinearOrder_of_finite
+    (pref : LinearOrder (Option α))
+    {Y : Set α} (hY : Y.Finite)
+    {x : α} (hx : x ∈ Y)
+    (haccept : pref.le none (some x)) :
+    (ofLinearOrder pref Y).Nonempty := by
+  letI := pref
+  have hxY : optionBundle (some x) ⊆ Y := by
+    simpa using hx
+  obtain ⟨o, ho, hmax⟩ :=
+    exists_greatest_bundle_of_finite
+      pref optionBundle hY ⟨some x, hxY⟩
+  cases o with
+  | none =>
+      have hsome_none : some x = (none : Option α) :=
+        le_antisymm (hmax (some x) hxY) haccept
+      cases hsome_none
+  | some y =>
+      refine ⟨y, (mem_ofLinearOrder pref).mpr ?_⟩
+      refine ⟨ho (by simp), hmax none (by simp), ?_⟩
+      intro z hz
+      exact hmax (some z) (by simpa using hz)
+
+/-- Singleton IRC is inherited from general bundle IRC. -/
+theorem ofLinearOrder_eq_of_choice_subset
+    (pref : LinearOrder (Option α))
+    {Y Z : Set α} (hY : Y.Finite)
+    (hchoice : ofLinearOrder pref Y ⊆ Z)
+    (hZY : Z ⊆ Y) :
+    ofLinearOrder pref Z = ofLinearOrder pref Y :=
+  ofBundleOrder_eq_of_choice_subset
+    pref optionBundle hY hchoice hZY
 
 theorem consistent_ofLinearOrder [Finite α]
     (pref : LinearOrder (Option α)) :
-    (ofLinearOrder pref).Consistent := by
-  intro Y Z hchoice hZY
-  exact ofLinearOrder_eq_of_choice_subset pref (Set.toFinite Y) hchoice hZY
+    (ofLinearOrder pref).Consistent :=
+  consistent_ofBundleOrder pref optionBundle
 
-/-- Aggregate demand is monotone on finite menus, even when the ambient
-alternative type is infinite. -/
+/-- Aggregate demand is monotone on finite menus. -/
 theorem sizeMonotone_ofLinearOrder
     (pref : LinearOrder (Option α)) :
     (ofLinearOrder pref).SizeMonotone := by
   intro Y Z hZ hYZ
-  rcases Set.eq_empty_or_nonempty (ofLinearOrder pref Y) with hY | ⟨x, hx⟩
+  rcases Set.eq_empty_or_nonempty (ofLinearOrder pref Y) with
+    hY | ⟨x, hx⟩
   · simp [hY]
-  · obtain ⟨z, hz⟩ := nonempty_ofLinearOrder_of_finite pref hZ
-      (hYZ hx.1) hx.2.1
+  · have hx' := (mem_ofLinearOrder pref).mp hx
+    obtain ⟨z, hz⟩ :=
+      nonempty_ofLinearOrder_of_finite
+        pref hZ (hYZ hx'.1) hx'.2.1
     rw [((unitDemand_ofLinearOrder pref) Y).eq_singleton_of_mem hx,
       ((unitDemand_ofLinearOrder pref) Z).eq_singleton_of_mem hz]
     simp
@@ -137,56 +363,123 @@ theorem sizeMonotone_ofLinearOrder
 theorem pathIndependent_ofLinearOrder [Finite α]
     (pref : LinearOrder (Option α)) :
     (ofLinearOrder pref).PathIndependent :=
-  (substitutable_ofLinearOrder pref).pathIndependent (consistent_ofLinearOrder pref)
+  (substitutable_ofLinearOrder pref).pathIndependent
+    (consistent_ofLinearOrder pref)
 
-/-- Finite preference-induced choice is decidable when menu membership is
-provided as data. This does not make arbitrary `Set` inputs computable. -/
+/-- Finite singleton choice is decidable when menu membership is supplied
+as data. Arbitrary `Set` inputs are not thereby made computable. -/
 instance decidableMem_ofLinearOrder [Fintype α]
-    (pref : LinearOrder (Option α)) (Y : Set α) [DecidablePred (· ∈ Y)] :
+    (pref : LinearOrder (Option α))
+    (Y : Set α) [DecidablePred (· ∈ Y)] :
     DecidablePred (· ∈ ofLinearOrder pref Y) := by
   intro x
   letI := pref
-  change Decidable (x ∈ Y ∧ none ≤ some x ∧ ∀ y ∈ Y, some y ≤ some x)
-  infer_instance
+  exact decidable_of_iff
+    (x ∈ Y ∧ none ≤ some x ∧ ∀ y ∈ Y, some y ≤ some x)
+    (mem_ofLinearOrder pref).symm
 
-/-- Transport a choice function along an embedding. Alternatives outside the
-range of the embedding are ignored. -/
-def map (C : ChoiceFunction α) (e : α ↪ β) : ChoiceFunction β where
-  toFun Y := e '' C (e ⁻¹' Y)
-  choose_subset := by
-    rintro Y _ ⟨x, hx, rfl⟩
-    exact C.choose_subset (e ⁻¹' Y) hx
+/-! ## Restricting set preferences to singleton-or-empty bundles -/
 
-@[simp] theorem mem_map_iff (C : ChoiceFunction α) (e : α ↪ β)
-    {Y : Set β} {y : β} :
-    y ∈ C.map e Y ↔ ∃ x, x ∈ C (e ⁻¹' Y) ∧ e x = y :=
+/-- Restrict a linear preference order over sets to `∅` and singletons.
+
+No preference comparisons involving larger bundles affect this order. -/
+def singletonPreference (pref : LinearOrder (Set α)) :
+    LinearOrder (Option α) := by
+  letI := pref
+  exact LinearOrder.lift'
+    (optionBundle : Option α ↪ Set α)
+    optionBundle.injective
+
+@[simp] theorem singletonPreference_le
+    (pref : LinearOrder (Set α)) (a b : Option α) :
+    (singletonPreference pref).le a b ↔
+      pref.le (optionBundle a) (optionBundle b) :=
   Iff.rfl
 
-theorem UnitDemand.map {C : ChoiceFunction α}
-    (hunit : C.UnitDemand) (e : α ↪ β) :
-    (C.map e).UnitDemand := by
-  rintro Y _ ⟨x, hx, rfl⟩ _ ⟨y, hy, rfl⟩
-  exact congrArg e (hunit _ hx hy)
+/-- Singleton choice derived from a preference order over sets.
 
-theorem Consistent.map {C : ChoiceFunction α}
-    (hcons : C.Consistent) (e : α ↪ β) :
-    (C.map e).Consistent := by
-  intro Y Z hchoice hZY
-  have hchoice' : C (e ⁻¹' Y) ⊆ e ⁻¹' Z := by
-    intro x hx
-    exact hchoice ⟨x, hx, rfl⟩
-  have hZY' : e ⁻¹' Z ⊆ e ⁻¹' Y := fun _ hx => hZY hx
-  change e '' C (e ⁻¹' Z) = e '' C (e ⁻¹' Y)
-  rw [hcons hchoice' hZY']
+Only the empty set and singleton subsets of the menu are admissible.
+This is generally different from unrestricted `ofSetLinearOrder pref`. -/
+def ofSingletonSetLinearOrder (pref : LinearOrder (Set α)) :
+    ChoiceFunction α :=
+  ofLinearOrder (singletonPreference pref)
 
-theorem Substitutable.map {C : ChoiceFunction α}
-    (hsub : C.Substitutable) (e : α ↪ β) :
-    (C.map e).Substitutable := by
-  apply substitutable_iff_chernoff.mpr
-  intro Y Z hYZ y hy
-  obtain ⟨x, hx, rfl⟩ := hy.1
-  refine ⟨x, ?_, rfl⟩
-  exact substitutable_iff_chernoff.mp hsub
-    (fun _ ha => hYZ ha) ⟨hx, hy.2⟩
+@[simp] theorem mem_ofSingletonSetLinearOrder
+    (pref : LinearOrder (Set α)) {Y : Set α} {x : α} :
+    x ∈ ofSingletonSetLinearOrder pref Y ↔
+      x ∈ Y ∧ pref.le ∅ {x} ∧
+        ∀ y ∈ Y, pref.le {y} {x} :=
+  mem_ofLinearOrder (singletonPreference pref)
 
-end ChoiceFunction
+/-- An explicit set-based characterization of the singleton restriction. -/
+theorem mem_ofSingletonSetLinearOrder_iff
+    (pref : LinearOrder (Set α)) {Y : Set α} {x : α} :
+    x ∈ ofSingletonSetLinearOrder pref Y ↔
+      ∃ A : Set α,
+        A.Subsingleton ∧
+        A ⊆ Y ∧
+        x ∈ A ∧
+        ∀ B : Set α,
+          B.Subsingleton → B ⊆ Y → pref.le B A := by
+  rw [mem_ofSingletonSetLinearOrder]
+  constructor
+  · rintro ⟨hx, hnone, hmax⟩
+    refine ⟨{x}, Set.subsingleton_singleton, ?_, by simp, ?_⟩
+    · simpa using hx
+    · intro B hB hBY
+      rcases hB.eq_empty_or_singleton with rfl | ⟨y, rfl⟩
+      · exact hnone
+      · exact hmax y (hBY (by simp))
+  · rintro ⟨A, hA, hAY, hx, hmax⟩
+    have hEq : A = {x} :=
+      hA.eq_singleton_of_mem hx
+    subst A
+    refine ⟨hAY (by simp), hmax ∅ (by simp) (by simp), ?_⟩
+    intro y hy
+    exact hmax {y} (by simp) (by simpa using hy)
+
+theorem unitDemand_ofSingletonSetLinearOrder
+    (pref : LinearOrder (Set α)) :
+    (ofSingletonSetLinearOrder pref).UnitDemand :=
+  unitDemand_ofLinearOrder (singletonPreference pref)
+
+theorem substitutable_ofSingletonSetLinearOrder
+    (pref : LinearOrder (Set α)) :
+    (ofSingletonSetLinearOrder pref).Substitutable :=
+  substitutable_ofLinearOrder (singletonPreference pref)
+
+theorem ofSingletonSetLinearOrder_eq_of_choice_subset
+    (pref : LinearOrder (Set α))
+    {Y Z : Set α} (hY : Y.Finite)
+    (hchoice : ofSingletonSetLinearOrder pref Y ⊆ Z)
+    (hZY : Z ⊆ Y) :
+    ofSingletonSetLinearOrder pref Z =
+      ofSingletonSetLinearOrder pref Y :=
+  ofLinearOrder_eq_of_choice_subset
+    (singletonPreference pref) hY hchoice hZY
+
+theorem consistent_ofSingletonSetLinearOrder [Finite α]
+    (pref : LinearOrder (Set α)) :
+    (ofSingletonSetLinearOrder pref).Consistent :=
+  consistent_ofLinearOrder (singletonPreference pref)
+
+theorem sizeMonotone_ofSingletonSetLinearOrder
+    (pref : LinearOrder (Set α)) :
+    (ofSingletonSetLinearOrder pref).SizeMonotone :=
+  sizeMonotone_ofLinearOrder (singletonPreference pref)
+
+theorem pathIndependent_ofSingletonSetLinearOrder [Finite α]
+    (pref : LinearOrder (Set α)) :
+    (ofSingletonSetLinearOrder pref).PathIndependent :=
+  pathIndependent_ofLinearOrder (singletonPreference pref)
+
+instance decidableMem_ofSingletonSetLinearOrder [Fintype α]
+    (pref : LinearOrder (Set α))
+    (Y : Set α) [DecidablePred (· ∈ Y)] :
+    DecidablePred (· ∈ ofSingletonSetLinearOrder pref Y) :=
+  decidableMem_ofLinearOrder (singletonPreference pref) Y
+
+/-! ## Transport along embeddings -/
+
+-- Continue here with your existing `map` definition and its lemmas.
+-- Keep the existing final `end ChoiceFunction`.
