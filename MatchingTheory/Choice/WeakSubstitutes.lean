@@ -11,11 +11,9 @@ These choice conditions depend on a counterparty map, but not on a market.
 
 `UnilaterallySubstitutable` and `BilaterallySubstitutable` use the
 single-new-contract formulations of Hatfield–Kojima, *Substitutes and
-Stability for Matching with Contracts* (2010). Their author manuscript
-(February 26, 2008), Definition 3 and Definition 4, footnote 11, gives these
-freshness restrictions. The unilateral restriction is on the rejected
-contract; the bilateral restriction is on both contracts. No assumption
-that their counterparties are distinct is added.
+Stability for Matching with Contracts* (2010). The unilateral restriction
+is on the rejected contract; the bilateral restriction is on both contracts.
+No assumption that their counterparties are distinct is added.
 
 The predicates make sense on arbitrary types. Their finite-market
 interpretation in the cited literature is not an assertion that the
@@ -28,11 +26,6 @@ For compatibility, `C.IsCompletionOf counterparty D` means that **D** is
 a completion of **C**. Completion and substitutable completability do not
 include IRC. `HasConsistentSubstitutableCompletion` states the stronger
 existence hypothesis explicitly.
-
-## References
-
-* https://www.eecs.harvard.edu/cs286r/courses/fall09/papers/hatfield_kojima_subst.pdf
-* https://www.scottkom.com/assets/articles/Hatfield_Kominers_Hidden_Substitutes.pdf
 -/
 
 namespace ChoiceFunction
@@ -96,12 +89,12 @@ theorem fresh_iff_not_mem_image {counterparty : X → A} {x : X} {Y : Set X} :
   · intro h y hy heq
     exact h ⟨y, hy, heq⟩
 
-/-- Every choice function is its own completion. -/
+/-- Every choice function is a completion of itself. -/
 theorem isCompletionOf_refl (counterparty : X → A) (C : ChoiceFunction X) :
     C.IsCompletionOf counterparty C :=
   fun _ => Or.inl rfl
 
-/-- Completing a completion gives a completion of the original choice. -/
+/-- Completing a completion gives a completion of the original choice function. -/
 theorem IsCompletionOf.trans {counterparty : X → A}
     {C D E : ChoiceFunction X}
     (hCD : C.IsCompletionOf counterparty D)
@@ -113,8 +106,8 @@ theorem IsCompletionOf.trans {counterparty : X → A}
     exact hCD Y
   · exact Or.inr hE
 
-/-- A completion must agree with the original choice whenever its chosen
-set has at most one contract per counterparty. -/
+/-- A completion must agree with the original choice function whenever its
+chosen set has at most one contract per counterparty. -/
 theorem IsCompletionOf.eq_of_injOn {counterparty : X → A}
     {C D : ChoiceFunction X} (hCD : C.IsCompletionOf counterparty D)
     {Y : Set X} (hY : Set.InjOn counterparty (D Y)) :
@@ -123,7 +116,8 @@ theorem IsCompletionOf.eq_of_injOn {counterparty : X → A}
   · exact h
   · exact (hne (hY hx hx' heq)).elim
 
-/-- In particular, a completion agrees on every feasible menu. -/
+/-- In particular, a completion agrees with the original choice function on every
+many-to-one--feasible menu. -/
 theorem IsCompletionOf.eq_of_injOn_menu {counterparty : X → A}
     {C D : ChoiceFunction X} (hCD : C.IsCompletionOf counterparty D)
     {Y : Set X} (hY : Set.InjOn counterparty Y) :
@@ -174,7 +168,7 @@ theorem Substitutable.hasConsistentSubstitutableCompletion {C : ChoiceFunction X
     C.HasConsistentSubstitutableCompletion counterparty :=
   ⟨C, isCompletionOf_refl counterparty C, hC, hIRC⟩
 
-/-- Forget IRC of the completion. -/
+/-- We can forget IRC of the completion. -/
 theorem HasConsistentSubstitutableCompletion.substitutablyCompletable
     {counterparty : X → A} {C : ChoiceFunction X}
     (hC : C.HasConsistentSubstitutableCompletion counterparty) :
