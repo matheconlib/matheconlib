@@ -198,7 +198,7 @@ theorem Substitutable.consistent_of_sizeMonotone [Finite α]
   fun {_Y _Z} hCY hZY =>
     hsub.consistent_on_finite_menu hload (Set.toFinite _) hCY hZY
 
-/-- Chosen-from-more implies chosen-from-less. -/
+/-- Under substitutability, chosen-from-more implies chosen-from-less. -/
 theorem Substitutable.mem_insert_of_subset
     (hsub : C.Substitutable) {x : α} {Y Z : Set α}
     (hYZ : Y ⊆ Z) (hx : x ∈ C (insert x Z)) :
@@ -206,7 +206,7 @@ theorem Substitutable.mem_insert_of_subset
   by_contra h
   exact hsub hYZ h hx
 
-/-- The single-new-alternative form (survey Definition 2.1 as printed). -/
+/-- The single-new-alternative form (survey Definition 2.1). -/
 theorem Substitutable.not_mem_insert_insert
     (hsub : C.Substitutable) {x z : α} {Y : Set α}
     (hx : x ∉ C (insert x Y)) :
@@ -231,7 +231,7 @@ theorem not_mem_of_forall_insert_insert
   rw [← Set.union_diff_cancel hYZ]
   exact key (Z \ Y) hfin
 
-/-- On a finite type the single-new-alternative form and `Substitutable`
+/-- On a finite domain the single-new-alternative form and `Substitutable`
 coincide. -/
 theorem substitutable_iff_forall_insert_insert [Finite α] :
     C.Substitutable ↔
@@ -298,7 +298,7 @@ theorem Substitutable.pathIndependent
       (hch Set.subset_union_left ⟨hx, hxY⟩)
   · exact Set.mem_union_right _ hxZ
 
-/-- Path independence implies consistency — with no finiteness. -/
+/-- Path independence implies consistency — even without finiteness. -/
 theorem PathIndependent.consistent
     (hpi : C.PathIndependent) :
     C.Consistent := by
@@ -312,7 +312,7 @@ theorem PathIndependent.consistent
     _ = C (Y ∪ Z) := (hpi Y Z).symm
     _ = C Y := by rw [e2]
 
-/-- Path independence implies substitutability — with no finiteness — via the
+/-- Path independence implies substitutability — even without finiteness — via the
 Chernoff condition. -/
 theorem PathIndependent.substitutable
     (hpi : C.PathIndependent) :
