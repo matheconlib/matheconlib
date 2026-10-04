@@ -12,12 +12,12 @@ the original choice selects it from some larger menu. This is the classical
 hereditary upper approximation (Litvakov, 1985, Theorem 5, row H), here
 defined on the full power set.
 
-The hull is the least substitutable pointwise enlargement of any choice
+The hull is the minimal substitutable pointwise enlargement of any choice
 function. It is monotone and idempotent, and its fixed points are exactly
 the substitutable choice functions. It also preserves consistency (IRC),
-so an IRC choice function has a least path-independent enlargement.
+so an IRC choice function has a minimal path-independent enlargement.
 
-All results in this module hold on arbitrary types. Neither finiteness nor
+All results in this module hold for arbitrary types. Neither finiteness nor
 a counterparty map is needed. The matching-specific question of when this
 enlargement is a completion is treated separately in
 `MatchingTheory.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability`.

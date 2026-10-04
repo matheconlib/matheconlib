@@ -5,7 +5,7 @@ import MatchingTheory.Contracts.Basic
 import MatchingTheory.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability
 
 /-!
-# Market-level weak substitutability
+# A matching with contract markets under weakened substitutability conditions
 
 Buyers are the hospitals/branches and sellers the unit-demand doctors/cadets
 in the orientation of survey §6. Accordingly, weak substitutability is

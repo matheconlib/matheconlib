@@ -7,7 +7,6 @@ import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert
 
 /-!
-# Two-sided markets with contracts
 
 A contract is an element of a bare type `X` equipped with maps to
 the buyer type `B` and seller type `S`; the "terms" of the contract
@@ -17,11 +16,10 @@ contracts to which they are associated).
 
 Irrelevance of rejected contracts (IRC) and substitutability are theorem
 hypotheses via the market-level predicates below, never structure fields.
-This also permits non-substitutable instances for the planned maximal-domain
-results (survey Thm 2.7/3.6).
+This also permits non-substitutable instances.
 
 Everything here is implemented at Hatfield–Kominers **many-to-many generality**.
-The definitions impose no unit-demand or unitarity hypothesis.
+The definitions impose no unit-demand or unitarity hypotheses.
 
 ## Main definitions
 

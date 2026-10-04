@@ -141,7 +141,7 @@ theorem ncard_sellerSide_eq_of_stable (hsub : M.Substitutable)
   (M.ncard_sides_eq_of_stable hsub hcons hload hA hA').2 s
 
 /-- Rural hospitals with no redundant IRC hypothesis. On a finite contract
-type, substitutability and aggregate demand imply consistency. -/
+domain, substitutability and the law of aggregate demand imply consistency. -/
 theorem ruralHospitals (hsub : M.Substitutable) (hload : M.SizeMonotone)
     {A A' : Set X} (hA : M.Stable A) (hA' : M.Stable A') :
     (∀ b, (M.buyerSide b A).ncard = (M.buyerSide b A').ncard) ∧
