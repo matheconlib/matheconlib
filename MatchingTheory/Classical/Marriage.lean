@@ -102,6 +102,7 @@ section InducedChoice
 
 variable [Fintype M] [Fintype W]
 
+set_option linter.unusedVariables false in
 /-- The option menu available to man `m`. -/
 noncomputable def menuM
     (mkt : MarriageMarket M W) (m : M) (Y : Set (M × W)) :
@@ -110,6 +111,7 @@ noncomputable def menuM
   exact Finset.univ.filter fun o =>
     o = none ∨ ∃ w, o = some w ∧ (m, w) ∈ Y
 
+set_option linter.unusedVariables false in
 /-- The option menu available to woman `w`. -/
 noncomputable def menuW
     (mkt : MarriageMarket M W) (w : W) (Y : Set (M × W)) :
@@ -118,36 +120,43 @@ noncomputable def menuW
   exact Finset.univ.filter fun o =>
     o = none ∨ ∃ m, o = some m ∧ (m, w) ∈ Y
 
+omit [Fintype M] in
 theorem none_mem_menuM (m : M) (Y : Set (M × W)) :
     none ∈ mkt.menuM m Y := by
   classical
   simp [menuM]
 
+omit [Fintype W] in
 theorem none_mem_menuW (w : W) (Y : Set (M × W)) :
     none ∈ mkt.menuW w Y := by
   classical
   simp [menuW]
 
+omit [Fintype M] in
 theorem menuM_nonempty (m : M) (Y : Set (M × W)) :
     (mkt.menuM m Y).Nonempty :=
   ⟨none, mkt.none_mem_menuM m Y⟩
 
+omit [Fintype W] in
 theorem menuW_nonempty (w : W) (Y : Set (M × W)) :
     (mkt.menuW w Y).Nonempty :=
   ⟨none, mkt.none_mem_menuW w Y⟩
 
+omit [Fintype M] in
 @[simp] theorem some_mem_menuM {m : M} {w : W}
     {Y : Set (M × W)} :
     some w ∈ mkt.menuM m Y ↔ (m, w) ∈ Y := by
   classical
   simp [menuM]
 
+omit [Fintype W] in
 @[simp] theorem some_mem_menuW {m : M} {w : W}
     {Y : Set (M × W)} :
     some m ∈ mkt.menuW w Y ↔ (m, w) ∈ Y := by
   classical
   simp [menuW]
 
+omit [Fintype M] in
 theorem menuM_mono {m : M} {Y Z : Set (M × W)}
     (hYZ : Y ⊆ Z) :
     mkt.menuM m Y ⊆ mkt.menuM m Z := by
@@ -158,6 +167,7 @@ theorem menuM_mono {m : M} {Y Z : Set (M × W)}
   · exact Or.inl rfl
   · exact Or.inr ⟨w, rfl, hYZ hw⟩
 
+omit [Fintype W] in
 theorem menuW_mono {w : W} {Y Z : Set (M × W)}
     (hYZ : Y ⊆ Z) :
     mkt.menuW w Y ⊆ mkt.menuW w Z := by
@@ -178,30 +188,35 @@ noncomputable def bestW (w : W) (Y : Set (M × W)) : Option M := by
   letI := mkt.prefW w
   exact (mkt.menuW w Y).max' (mkt.menuW_nonempty w Y)
 
+omit [Fintype M] in
 theorem bestM_mem_menuM (m : M) (Y : Set (M × W)) :
     mkt.bestM m Y ∈ mkt.menuM m Y := by
   classical
   letI := mkt.prefM m
   exact Finset.max'_mem _ _
 
+omit [Fintype W] in
 theorem bestW_mem_menuW (w : W) (Y : Set (M × W)) :
     mkt.bestW w Y ∈ mkt.menuW w Y := by
   classical
   letI := mkt.prefW w
   exact Finset.max'_mem _ _
 
+omit [Fintype M] in
 theorem none_le_bestM (m : M) (Y : Set (M × W)) :
     mkt.leM m none (mkt.bestM m Y) := by
   classical
   letI := mkt.prefM m
   exact Finset.le_max' _ _ (mkt.none_mem_menuM m Y)
 
+omit [Fintype W] in
 theorem none_le_bestW (w : W) (Y : Set (M × W)) :
     mkt.leW w none (mkt.bestW w Y) := by
   classical
   letI := mkt.prefW w
   exact Finset.le_max' _ _ (mkt.none_mem_menuW w Y)
 
+omit [Fintype M] in
 theorem le_bestM_of_mem {m : M} {Y : Set (M × W)} {o : Option W}
     (ho : o ∈ mkt.menuM m Y) :
     mkt.leM m o (mkt.bestM m Y) := by
@@ -209,6 +224,7 @@ theorem le_bestM_of_mem {m : M} {Y : Set (M × W)} {o : Option W}
   letI := mkt.prefM m
   exact Finset.le_max' _ _ ho
 
+omit [Fintype W] in
 theorem le_bestW_of_mem {w : W} {Y : Set (M × W)} {o : Option M}
     (ho : o ∈ mkt.menuW w Y) :
     mkt.leW w o (mkt.bestW w Y) := by
@@ -216,12 +232,14 @@ theorem le_bestW_of_mem {w : W} {Y : Set (M × W)} {o : Option M}
   letI := mkt.prefW w
   exact Finset.le_max' _ _ ho
 
+omit [Fintype M] in
 theorem bestM_mono {m : M} {Y Z : Set (M × W)}
     (hYZ : Y ⊆ Z) :
     mkt.leM m (mkt.bestM m Y) (mkt.bestM m Z) := by
   apply mkt.le_bestM_of_mem
   exact mkt.menuM_mono hYZ (mkt.bestM_mem_menuM m Y)
 
+omit [Fintype W] in
 theorem bestW_mono {w : W} {Y Z : Set (M × W)}
     (hYZ : Y ⊆ Z) :
     mkt.leW w (mkt.bestW w Y) (mkt.bestW w Z) := by
@@ -250,18 +268,21 @@ noncomputable def inducedChoiceW (w : W) : ChoiceFunction (M × W) where
     rw [← hp] at hmem
     exact (some_mem_menuW (mkt := mkt)).mp hmem
 
+omit [Fintype M] in
 @[simp] theorem mem_inducedChoiceM {m : M} {p : M × W}
     {Y : Set (M × W)} :
     p ∈ mkt.inducedChoiceM m Y ↔
       p.1 = m ∧ some p.2 = mkt.bestM m Y :=
   Iff.rfl
 
+omit [Fintype W] in
 @[simp] theorem mem_inducedChoiceW {w : W} {p : M × W}
     {Y : Set (M × W)} :
     p ∈ mkt.inducedChoiceW w Y ↔
       p.2 = w ∧ some p.1 = mkt.bestW w Y :=
   Iff.rfl
 
+omit [Fintype M] in
 /-- Choice characterized without mentioning `bestM`. -/
 theorem mem_inducedChoiceM_iff {m : M} {w : W} {Y : Set (M × W)} :
     (m, w) ∈ mkt.inducedChoiceM m Y ↔
@@ -294,6 +315,7 @@ theorem mem_inducedChoiceM_iff {m : M} {w : W} {Y : Set (M × W)} :
       mkt.le_bestM_of_mem (mkt.some_mem_menuM.mpr hwY)
     exact ⟨rfl, le_antisymm hlb hub⟩
 
+omit [Fintype W] in
 /-- Choice characterized without mentioning `bestW`. -/
 theorem mem_inducedChoiceW_iff {m : M} {w : W} {Y : Set (M × W)} :
     (m, w) ∈ mkt.inducedChoiceW w Y ↔
@@ -326,24 +348,27 @@ theorem mem_inducedChoiceW_iff {m : M} {w : W} {Y : Set (M × W)} :
       mkt.le_bestW_of_mem (mkt.some_mem_menuW.mpr hmY)
     exact ⟨rfl, le_antisymm hlb hub⟩
 
+omit [Fintype M] in
 theorem unitDemand_inducedChoiceM (m : M) :
     (mkt.inducedChoiceM m).UnitDemand := by
-  intro Y p q hp hq
+  intro Y p hp q hq
   obtain ⟨hp1, hp2⟩ := mkt.mem_inducedChoiceM.mp hp
   obtain ⟨hq1, hq2⟩ := mkt.mem_inducedChoiceM.mp hq
   apply Prod.ext
   · exact hp1.trans hq1.symm
   · exact Option.some.inj (hp2.trans hq2.symm)
 
+omit [Fintype W] in
 theorem unitDemand_inducedChoiceW (w : W) :
     (mkt.inducedChoiceW w).UnitDemand := by
-  intro Y p q hp hq
+  intro Y p hp q hq
   obtain ⟨hp2, hp1⟩ := mkt.mem_inducedChoiceW.mp hp
   obtain ⟨hq2, hq1⟩ := mkt.mem_inducedChoiceW.mp hq
   apply Prod.ext
   · exact Option.some.inj (hp1.trans hq1.symm)
   · exact hp2.trans hq2.symm
 
+omit [Fintype M] in
 theorem bestM_eq_of_choice_subset {m : M} {Y Z : Set (M × W)}
     (hchoice : mkt.inducedChoiceM m Y ⊆ Z) (hZY : Z ⊆ Y) :
     mkt.bestM m Z = mkt.bestM m Y := by
@@ -365,6 +390,7 @@ theorem bestM_eq_of_choice_subset {m : M} {Y Z : Set (M × W)}
         mkt.le_bestM_of_mem (mkt.some_mem_menuM.mpr hwZ)
       exact le_antisymm hle hge
 
+omit [Fintype W] in
 theorem bestW_eq_of_choice_subset {w : W} {Y Z : Set (M × W)}
     (hchoice : mkt.inducedChoiceW w Y ⊆ Z) (hZY : Z ⊆ Y) :
     mkt.bestW w Z = mkt.bestW w Y := by
@@ -386,6 +412,7 @@ theorem bestW_eq_of_choice_subset {w : W} {Y Z : Set (M × W)}
         mkt.le_bestW_of_mem (mkt.some_mem_menuW.mpr hmZ)
       exact le_antisymm hle hge
 
+omit [Fintype M] in
 theorem consistent_inducedChoiceM (m : M) :
     (mkt.inducedChoiceM m).Consistent := by
   intro Y Z hchoice hZY
@@ -393,6 +420,7 @@ theorem consistent_inducedChoiceM (m : M) :
   simp only [mem_inducedChoiceM]
   rw [mkt.bestM_eq_of_choice_subset hchoice hZY]
 
+omit [Fintype W] in
 theorem consistent_inducedChoiceW (w : W) :
     (mkt.inducedChoiceW w).Consistent := by
   intro Y Z hchoice hZY
@@ -455,6 +483,7 @@ theorem sizeMonotone_toMarket : mkt.toMarket.SizeMonotone :=
 
 /-! ## Graphs of partial matchings -/
 
+set_option linter.unusedVariables false in
 /-- The contract graph of a partial matching.
 
 The market parameter is intentionally explicit even though the graph itself
@@ -463,15 +492,18 @@ does not depend on preferences. This preserves the downstream API
 def graphOf (mkt : MarriageMarket M W) (μ : M ≃. W) : Set (M × W) :=
   {p | μ p.1 = some p.2}
 
+omit [Fintype M] [Fintype W] in
 @[simp] theorem mem_graphOf {μ : M ≃. W} {m : M} {w : W} :
     (m, w) ∈ mkt.graphOf μ ↔ μ m = some w :=
   Iff.rfl
 
+omit [Fintype M] [Fintype W] in
 @[simp] theorem mem_graphOf_symm {μ : M ≃. W} {m : M} {w : W} :
     (m, w) ∈ mkt.graphOf μ ↔ μ.symm w = some m := by
   change μ m = some w ↔ μ.symm w = some m
   exact (μ.eq_some_iff).symm
 
+omit [Fintype M] [Fintype W] in
 theorem graphOf_rightUnique (μ : M ≃. W) {m : M} {w w' : W}
     (hw : (m, w) ∈ mkt.graphOf μ)
     (hw' : (m, w') ∈ mkt.graphOf μ) :
@@ -482,6 +514,7 @@ theorem graphOf_rightUnique (μ : M ≃. W) {m : M} {w w' : W}
     mkt.mem_graphOf.mp hw'
   exact Option.some.inj (hwEq.symm.trans hwEq')
 
+omit [Fintype M] [Fintype W] in
 theorem graphOf_leftUnique (μ : M ≃. W) {m m' : M} {w : W}
     (hm : (m, w) ∈ mkt.graphOf μ)
     (hm' : (m', w) ∈ mkt.graphOf μ) :
@@ -513,6 +546,7 @@ theorem choiceM_graphOf_eq_side
     · have h := hIR.1 m
       rwa [hμ] at h
     · intro w' hw'
+      letI := mkt.prefM m
       have hww' : w' = w := mkt.graphOf_rightUnique μ hw' hpY
       exact le_of_eq (congrArg Option.some hww')
 
@@ -535,6 +569,7 @@ theorem choiceW_graphOf_eq_side
     · have h := hIR.2 w
       rwa [hμ] at h
     · intro m' hm'
+      letI := mkt.prefW w
       have hmm' : m' = m := mkt.graphOf_leftUnique μ hm' hpY
       exact le_of_eq (congrArg Option.some hmm')
 
@@ -550,6 +585,7 @@ theorem individuallyRational_of_graphOf
     mkt.IndividuallyRational μ := by
   constructor
   · intro m
+    letI := mkt.prefM m
     cases hμ : μ m with
     | none =>
         exact le_rfl
@@ -565,6 +601,7 @@ theorem individuallyRational_of_graphOf
           exact hwSide
         exact (mkt.mem_inducedChoiceM_iff.mp hwChoice).2.1
   · intro w
+    letI := mkt.prefW w
     cases hμ : μ.symm w with
     | none =>
         exact le_rfl
@@ -662,8 +699,12 @@ theorem blocks_singleton_graphOf_iff
       (mkt.mem_choiceM_insert_graphOf_iff hIR hnewM).mp hm,
       (mkt.mem_choiceW_insert_graphOf_iff hIR hnewW).mp hw⟩
   · rintro ⟨hm, hw⟩
-    have hnewM : μ m ≠ some w := ne_of_lt hm
-    have hnewW : μ.symm w ≠ some m := ne_of_lt hw
+    have hnewM : μ m ≠ some w := by
+      letI := mkt.prefM m
+      exact ne_of_lt hm
+    have hnewW : μ.symm w ≠ some m := by
+      letI := mkt.prefW w
+      exact ne_of_lt hw
     refine ⟨?_, ?_, ?_⟩
     · intro hmem
       exact hnewM (mkt.mem_graphOf.mp hmem)
@@ -722,6 +763,7 @@ theorem buyer_fiber_subsingleton {A : Set (M × W)}
     mkt.unitDemand_inducedChoiceW w A h1 h2
   exact congrArg Prod.fst hp
 
+set_option linter.unusedVariables false in
 /-- The partner of `m` in outcome `A`, if any.
 
 The market parameter is intentionally explicit even though the partner map
@@ -735,6 +777,7 @@ noncomputable def partnerMOf
   else
     none
 
+set_option linter.unusedVariables false in
 /-- The partner of `w` in outcome `A`, if any. See `partnerMOf` regarding the
 explicit market parameter. -/
 noncomputable def partnerWOf
@@ -745,6 +788,7 @@ noncomputable def partnerWOf
   else
     none
 
+omit [Fintype M] in
 theorem partnerMOf_eq_some_iff {A : Set (M × W)}
     (hsub : ∀ m, {w | (m, w) ∈ A}.Subsingleton)
     {m : M} {w : W} :
@@ -765,6 +809,7 @@ theorem partnerMOf_eq_some_iff {A : Set (M × W)}
     · intro hw
       exact (h ⟨w, hw⟩).elim
 
+omit [Fintype W] in
 theorem partnerWOf_eq_some_iff {A : Set (M × W)}
     (hsub : ∀ w, {m | (m, w) ∈ A}.Subsingleton)
     {m : M} {w : W} :
@@ -792,9 +837,11 @@ noncomputable def matchingOfIndRational {A : Set (M × W)}
   invFun := mkt.partnerWOf A
   inv := by
     intro m w
-    simp only [Option.mem_def]
-    rw [mkt.partnerWOf_eq_some_iff (mkt.buyer_fiber_subsingleton hA),
-      mkt.partnerMOf_eq_some_iff (mkt.seller_fiber_subsingleton hA)]
+    exact
+      (mkt.partnerWOf_eq_some_iff
+        (mkt.buyer_fiber_subsingleton hA)).trans
+      (mkt.partnerMOf_eq_some_iff
+        (mkt.seller_fiber_subsingleton hA)).symm
 
 /-- A stable contracts outcome induces a partial matching. -/
 noncomputable def matchingOfStable {A : Set (M × W)}
@@ -870,7 +917,7 @@ theorem leM_of_sellerChosen_graphOf
               have hEq : μ m = some w' :=
                 mkt.mem_graphOf.mp hwμ
               rw [hμm] at hEq
-              exact Option.noConfusion hEq
+              cases hEq
             · have hν' : ν m = some w' :=
                 mkt.mem_graphOf.mp hwν'
               have hww' : w' = w :=
@@ -884,7 +931,7 @@ theorem leM_of_sellerChosen_graphOf
           have hwμ : μ m = some w :=
             mkt.mem_graphOf.mp hwSide.1
           rw [hμm] at hwμ
-          exact Option.noConfusion hwμ
+          cases hwμ
   | some w =>
       have hwμ : (m, w) ∈ mkt.graphOf μ :=
         mkt.mem_graphOf.mpr hμm
@@ -965,6 +1012,7 @@ started at its top state:
 The terminal matching is the matching carried by the greatest fixed point.
 -/
 
+set_option linter.unusedVariables false in
 /-- Initial state of man-proposing deferred acceptance.
 
 The market parameter is intentionally explicit even though the state itself
