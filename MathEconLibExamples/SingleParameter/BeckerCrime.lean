@@ -1,7 +1,7 @@
 module
 
 public import MathEconLib.SingleParameter.IC
-import Mathlib.Tactic.Linarith
+import MathEconLib.SingleParameter.PostedPrice
 import Mathlib.Tactic.NormNum
 
 /-!
@@ -21,6 +21,9 @@ indicator. This example imports the shared single-parameter foundation; it
 does not add another choice-problem structure or a probability distribution.
 While the policy interpretation presumes `p ∈ [0, 1]` and `0 ≤ f`, only the
 comparative-statics corollaries that need nonnegativity assume it explicitly.
+
+The optimality proof reuses the posted-price problem at price `p * f`, with
+a local correspondence between crime and purchase decisions.
 
 ## References
 
@@ -108,6 +111,28 @@ theorem crimeProblem_q
   by_cases h : p * f ≤ v <;>
     simp [crimeProblem, SingleParameterProblem.q, CrimeDecision.allocation, h]
 
+-- The action correspondence is used only to reuse posted-price optimality.
+private def toPurchaseDecision : CrimeDecision → SingleParameterProblem.PurchaseDecision
+  | .commit => .buy
+  | .abstain => .doNotBuy
+
+private lemma crimeProblem_payoff_eq_postedPriceProblem
+    (lowestType highestType p f v : ℝ) (decision : CrimeDecision) :
+    (crimeProblem lowestType highestType p f).payoff v decision =
+      (SingleParameterProblem.postedPriceProblem lowestType highestType (p * f)).payoff
+        v (toPurchaseDecision decision) := by
+  cases decision <;>
+    simp only [toPurchaseDecision, crimeProblem_payoff_commit, crimeProblem_payoff_abstain,
+      SingleParameterProblem.postedPriceProblem_payoff_buy,
+      SingleParameterProblem.postedPriceProblem_payoff_doNotBuy]
+
+private lemma crimeProblem_strategy_eq_postedPriceProblem
+    (lowestType highestType p f v : ℝ) :
+    toPurchaseDecision ((crimeProblem lowestType highestType p f).strategy v) =
+      (SingleParameterProblem.postedPriceProblem lowestType highestType (p * f)).strategy v := by
+  by_cases h : p * f ≤ v <;>
+    simp [crimeProblem, SingleParameterProblem.postedPriceProblem, toPurchaseDecision, h]
+
 /-- The threshold strategy maximizes expected payoff among both actions. -/
 instance crimeProblem_hasUniversalIC
     (lowestType highestType p f : ℝ) :
@@ -115,20 +140,13 @@ instance crimeProblem_hasUniversalIC
       (crimeProblem lowestType highestType p f)
       (Set.univ : Set CrimeDecision) where
   strategyInS _ _ := Set.mem_univ _
-  universalIC v _ decision _ := by
-    by_cases h : p * f ≤ v
-    · cases decision <;>
-        simp [crimeProblem, SingleParameterProblem.payoff,
-          CrimeDecision.allocation, CrimeDecision.expectedPayment, h]
-    · have hv : v < p * f := lt_of_not_ge h
-      cases decision with
-      | commit =>
-        simp [crimeProblem, SingleParameterProblem.payoff,
-          CrimeDecision.allocation, CrimeDecision.expectedPayment, h]
-        linarith
-      | abstain =>
-        simp [crimeProblem, SingleParameterProblem.payoff,
-          CrimeDecision.allocation, CrimeDecision.expectedPayment, h]
+  universalIC v hv decision _ := by
+    have h := (inferInstance : SingleParameterProblem.HasUniversalIC
+      (SingleParameterProblem.postedPriceProblem lowestType highestType (p * f))
+      (Set.univ : Set SingleParameterProblem.PurchaseDecision)).universalIC
+        v hv (toPurchaseDecision decision) (Set.mem_univ _)
+    rw [← crimeProblem_strategy_eq_postedPriceProblem] at h
+    simpa only [← crimeProblem_payoff_eq_postedPriceProblem] using h
 
 /-- The shared IC hierarchy also supplies type-deviation IC. -/
 example (lowestType highestType p f : ℝ) :
