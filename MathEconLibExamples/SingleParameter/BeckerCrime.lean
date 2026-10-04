@@ -1,7 +1,7 @@
 module
 
 public import MathEconLib.SingleParameter.IC
-import MathEconLib.SingleParameter.PostedPrice
+public import MathEconLib.ValueDistribution.PostedPrice
 import Mathlib.Tactic.NormNum
 
 /-!
@@ -17,8 +17,10 @@ give payoff zero. This example chooses to commit the offense as a tie-breaking
 convention.
 
 The allocation in `SingleParameterProblem` is interpreted here as the offense
-indicator. This example imports the shared single-parameter foundation; it
-does not add another choice-problem structure or a probability distribution.
+indicator. Individual choice and pointwise comparative statics use the shared
+single-parameter foundation without a type distribution. The final section
+adds an exogenous `ValueDistribution` to derive the aggregate crime rate,
+holding that distribution fixed when comparing policies.
 While the policy interpretation presumes `p ∈ [0, 1]` and `0 ≤ f`, only the
 comparative-statics corollaries that need nonnegativity assume it explicitly.
 
@@ -210,7 +212,7 @@ theorem crimeProblem_q_antitone_in_fine_of_nonneg_probability
     lowestType highestType p f p f' v
     (mul_le_mul_of_nonneg_left hf hp)
 
-/-! ## A concrete policy and two types -/
+/-! ## A concrete policy -/
 
 /-- With probability `1/2` and fine `2`, type `3/4` abstains. -/
 example :
@@ -229,6 +231,61 @@ example (v : ℝ) :
       (crimeProblem 0 2 (1 / 4) 2).q v := by
   apply crimeProblem_q_antitone_in_probability_of_nonneg_fine
   all_goals norm_num
+
+/-- At the cutoff, both actions give zero payoff; the chosen offense indicator is one. -/
+example :
+    (crimeProblem 0 2 (1 / 2) 2).q 1 = 1 ∧
+      (crimeProblem 0 2 (1 / 2) 2).payoff 1 .commit = 0 ∧
+      (crimeProblem 0 2 (1 / 2) 2).payoff 1 .abstain = 0 := by
+  rw [crimeProblem_q, crimeProblem_payoff_commit, crimeProblem_payoff_abstain]
+  norm_num
+
+/-! ## Aggregate crime under a fixed type distribution
+
+Let `D` describe the population's net gains from committing an offense.
+The expected offense indicator, `D.expectedAllocation`, is the aggregate
+crime rate. The same distribution is used for both policies; the comparison
+does not model a policy-induced change in the population's gains.
+
+Because individuals choose to commit at the cutoff, the crime rate includes
+any probability mass at `p * f`. No density or atomlessness is assumed.
+-/
+
+/-- The aggregate crime rate is the probability that the net gain is at least
+the expected sanction, including types exactly at the cutoff. -/
+theorem crimeProblem_expectedAllocation_eq_probAtLeast
+    (D : ValueDistribution) (lowestType highestType p f : ℝ) :
+    D.expectedAllocation (crimeProblem lowestType highestType p f) =
+      D.probAtLeast (p * f) := by
+  calc
+    D.expectedAllocation (crimeProblem lowestType highestType p f) =
+        D.expectedAllocation
+          (SingleParameterProblem.postedPriceProblem lowestType highestType (p * f)) := by
+      unfold ValueDistribution.expectedAllocation
+      apply MeasureTheory.integral_congr_ae
+      filter_upwards [] with v
+      rw [crimeProblem_q, SingleParameterProblem.postedPriceProblem_q]
+    _ = D.probAtLeast (p * f) :=
+      D.expectedAllocation_postedPriceProblem lowestType highestType (p * f)
+
+/-- For a fixed type distribution, raising the expected sanction weakly
+reduces the aggregate crime rate. -/
+theorem crimeProblem_expectedAllocation_antitone_in_expectedSanction
+    (D : ValueDistribution) (lowestType highestType p f p' f' : ℝ)
+    (hsanction : p * f ≤ p' * f') :
+    D.expectedAllocation (crimeProblem lowestType highestType p' f') ≤
+      D.expectedAllocation (crimeProblem lowestType highestType p f) := by
+  rw [crimeProblem_expectedAllocation_eq_probAtLeast,
+    crimeProblem_expectedAllocation_eq_probAtLeast]
+  exact D.antitone_probAtLeast hsanction
+
+/-- The same increase from probability `1/4` to `1/2` at fine `2` weakly
+reduces aggregate crime under any fixed type distribution. -/
+example (D : ValueDistribution) :
+    D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) ≤
+      D.expectedAllocation (crimeProblem 0 2 (1 / 4) 2) := by
+  apply crimeProblem_expectedAllocation_antitone_in_expectedSanction
+  norm_num
 
 end SingleParameter
 
