@@ -1,5 +1,7 @@
 import MatchingTheory.Choice.Basic
 import MatchingTheory.Choice.Counterexamples
+import MatchingTheory.Choice.Induced
+import MatchingTheory.Choice.WeakSubstitutes
 import MatchingTheory.Contracts.Basic
 import MatchingTheory.Contracts.FixedPoint
 import MatchingTheory.Contracts.WeakSubstitutes

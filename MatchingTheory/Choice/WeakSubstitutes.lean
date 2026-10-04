@@ -1,0 +1,201 @@
+/-
+Matching with contracts: counterparty-relative choice conditions.
+-/
+import MatchingTheory.Choice.Basic
+
+/-!
+# Weak substitutability and completions
+
+These choice conditions depend on a counterparty map, but not on a market.
+`Contracts/WeakSubstitutes.lean` supplies the buyer/seller instantiation.
+
+`UnilaterallySubstitutable` and `BilaterallySubstitutable` use the
+single-new-contract formulations of Hatfield–Kojima, *Substitutes and
+Stability for Matching with Contracts* (2010). Their author manuscript
+(February 26, 2008), Definition 3 and Definition 4, footnote 11, gives these
+freshness restrictions. The unilateral restriction is on the rejected
+contract; the bilateral restriction is on both contracts. No assumption
+that their counterparties are distinct is added.
+
+The predicates make sense on arbitrary types. Their finite-market
+interpretation in the cited literature is not an assertion that the
+single-contract formulation implies arbitrary-superset monotonicity on
+infinite types.
+
+`IsCompletionOf` is the choice-function definition in Hatfield–Kominers,
+*Hidden Substitutes*, §3 (author manuscript, May 16, 2016, pp. 8–11).
+For compatibility, `C.IsCompletionOf counterparty D` means that **D** is
+a completion of **C**. Completion and substitutable completability do not
+include IRC. `HasConsistentSubstitutableCompletion` states the stronger
+existence hypothesis explicitly.
+
+## References
+
+* https://www.eecs.harvard.edu/cs286r/courses/fall09/papers/hatfield_kojima_subst.pdf
+* https://www.scottkom.com/assets/articles/Hatfield_Kominers_Hidden_Substitutes.pdf
+-/
+
+namespace ChoiceFunction
+
+variable {A : Type*} {X : Type*}
+
+section Defs
+
+variable (counterparty : X → A) (C : ChoiceFunction X)
+
+/-- No contract in `Y` shares its counterparty with `x` — the literature's
+`d(x) ∉ d(Y)` (Hatfield–Kojima 2010, `d` the doctor map; sellers, in the
+survey's dictionary). -/
+def Fresh (x : X) (Y : Set X) : Prop :=
+  ∀ y ∈ Y, counterparty y ≠ counterparty x
+
+/-- **Unilateral substitutability** (Hatfield–Kojima 2010): the
+substitutability implication is required only when the *rejected* contract's
+counterparty has no other contract on the menu. -/
+def UnilaterallySubstitutable : Prop :=
+  ∀ ⦃x z : X⦄ ⦃Y : Set X⦄, Fresh counterparty x Y →
+    x ∉ C (insert x Y) → x ∉ C (insert x (insert z Y))
+
+/-- **Bilateral substitutability** (Hatfield–Kojima 2010): the implication is
+required only when *both* the rejected contract's and the newly available
+contract's counterparties have no contract on the menu. -/
+def BilaterallySubstitutable : Prop :=
+  ∀ ⦃x z : X⦄ ⦃Y : Set X⦄,
+    Fresh counterparty x Y → Fresh counterparty z Y →
+      x ∉ C (insert x Y) → x ∉ C (insert x (insert z Y))
+
+/-- `C'` is a **completion** of `C`: on every menu it either agrees with `C`
+or chooses at least two contracts with a common counterparty
+(Hatfield–Kominers, *Hidden Substitutes*, §3). -/
+def IsCompletionOf (C' : ChoiceFunction X) : Prop :=
+  ∀ Y, C' Y = C Y ∨
+    ∃ x ∈ C' Y, ∃ x' ∈ C' Y, x ≠ x' ∧ counterparty x = counterparty x'
+
+/-- **Substitutable completability**: some completion is substitutable.
+This condition alone does not assert IRC of that completion; existence
+reductions use `HasConsistentSubstitutableCompletion` below. -/
+def SubstitutablyCompletable : Prop :=
+  ∃ C' : ChoiceFunction X, C.IsCompletionOf counterparty C' ∧ C'.Substitutable
+
+/-- A completion satisfying both substitutability and IRC.
+The existential witnesses must be the same choice function: separate
+existence of a substitutable completion and a consistent completion is
+not the hypothesis needed for stable-outcome existence. -/
+def HasConsistentSubstitutableCompletion : Prop :=
+  ∃ C' : ChoiceFunction X,
+    C.IsCompletionOf counterparty C' ∧ C'.Substitutable ∧ C'.Consistent
+
+end Defs
+
+/-- Freshness is absence from the image of the counterparty map. -/
+theorem fresh_iff_not_mem_image {counterparty : X → A} {x : X} {Y : Set X} :
+    Fresh counterparty x Y ↔ counterparty x ∉ counterparty '' Y := by
+  constructor
+  · intro h ⟨y, hy, heq⟩
+    exact h y hy heq
+  · intro h y hy heq
+    exact h ⟨y, hy, heq⟩
+
+/-- Every choice function is its own completion. -/
+theorem isCompletionOf_refl (counterparty : X → A) (C : ChoiceFunction X) :
+    C.IsCompletionOf counterparty C :=
+  fun _ => Or.inl rfl
+
+/-- Completing a completion gives a completion of the original choice. -/
+theorem IsCompletionOf.trans {counterparty : X → A}
+    {C D E : ChoiceFunction X}
+    (hCD : C.IsCompletionOf counterparty D)
+    (hDE : D.IsCompletionOf counterparty E) :
+    C.IsCompletionOf counterparty E := by
+  intro Y
+  rcases hDE Y with hED | hE
+  · rw [hED]
+    exact hCD Y
+  · exact Or.inr hE
+
+/-- A completion must agree with the original choice whenever its chosen
+set has at most one contract per counterparty. -/
+theorem IsCompletionOf.eq_of_injOn {counterparty : X → A}
+    {C D : ChoiceFunction X} (hCD : C.IsCompletionOf counterparty D)
+    {Y : Set X} (hY : Set.InjOn counterparty (D Y)) :
+    D Y = C Y := by
+  rcases hCD Y with h | ⟨x, hx, x', hx', hne, heq⟩
+  · exact h
+  · exact (hne (hY hx hx' heq)).elim
+
+/-- In particular, a completion agrees on every feasible menu. -/
+theorem IsCompletionOf.eq_of_injOn_menu {counterparty : X → A}
+    {C D : ChoiceFunction X} (hCD : C.IsCompletionOf counterparty D)
+    {Y : Set X} (hY : Set.InjOn counterparty Y) :
+    D Y = C Y := by
+  apply hCD.eq_of_injOn
+  intro x hx x' hx' heq
+  exact hY (D.choose_subset Y hx) (D.choose_subset Y hx') heq
+
+/-- A completion agrees on singleton menus, independently of the
+counterparty map. -/
+theorem IsCompletionOf.apply_singleton {counterparty : X → A}
+    {C D : ChoiceFunction X} (hCD : C.IsCompletionOf counterparty D) (x : X) :
+    D {x} = C {x} := by
+  apply hCD.eq_of_injOn_menu
+  intro y hy z hz _
+  exact (Set.mem_singleton_iff.mp hy).trans (Set.mem_singleton_iff.mp hz).symm
+
+/-- Substitutable completions preserve support. A contract chosen by the
+completion is chosen from its singleton menu by substitutability, and on
+that menu the completion agrees with the original choice.
+
+This is the support lemma needed to assemble individual completions into
+a `Market`; it does not assume that completions already satisfy support. -/
+theorem IsCompletionOf.preserves_support {counterparty : X → A}
+    {C D : ChoiceFunction X} (hCD : C.IsCompletionOf counterparty D)
+    (hD : D.Substitutable) {P : Set X} (hC : ∀ Y, C Y ⊆ P) :
+    ∀ Y, D Y ⊆ P := by
+  intro Y x hx
+  have hsmall : ({x} : Set X) ⊆ Y := by
+    intro y hy
+    rw [Set.mem_singleton_iff.mp hy]
+    exact D.choose_subset Y hx
+  have hxsmall : x ∈ D ({x} : Set X) :=
+    (substitutable_iff_chernoff.mp hD) hsmall ⟨hx, Set.mem_singleton x⟩
+  rw [hCD.apply_singleton x] at hxsmall
+  exact hC {x} hxsmall
+
+/-- The identity completion witnesses completability of a substitutable
+choice function. -/
+theorem Substitutable.substitutablyCompletable {C : ChoiceFunction X}
+    (hC : C.Substitutable) (counterparty : X → A) :
+    C.SubstitutablyCompletable counterparty :=
+  ⟨C, isCompletionOf_refl counterparty C, hC⟩
+
+/-- Substitutability and IRC provide a completion with both properties. -/
+theorem Substitutable.hasConsistentSubstitutableCompletion {C : ChoiceFunction X}
+    (hC : C.Substitutable) (hIRC : C.Consistent) (counterparty : X → A) :
+    C.HasConsistentSubstitutableCompletion counterparty :=
+  ⟨C, isCompletionOf_refl counterparty C, hC, hIRC⟩
+
+/-- Forget IRC of the completion. -/
+theorem HasConsistentSubstitutableCompletion.substitutablyCompletable
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hC : C.HasConsistentSubstitutableCompletion counterparty) :
+    C.SubstitutablyCompletable counterparty := by
+  obtain ⟨D, hcomp, hsub, _hIRC⟩ := hC
+  exact ⟨D, hcomp, hsub⟩
+
+/-- Substitutability implies unilateral substitutability, for any
+counterparty map: discard the side condition and apply the
+single-new-contract form. -/
+theorem Substitutable.unilaterallySubstitutable {C : ChoiceFunction X}
+    (hC : C.Substitutable) (counterparty : X → A) :
+    C.UnilaterallySubstitutable counterparty :=
+  fun _x _z _Y _hfresh hx => hC.not_mem_insert_insert hx
+
+/-- Unilateral substitutability implies bilateral substitutability:
+strengthen the hypotheses. -/
+theorem UnilaterallySubstitutable.bilaterallySubstitutable
+    {counterparty : X → A} {C : ChoiceFunction X}
+    (hC : C.UnilaterallySubstitutable counterparty) :
+    C.BilaterallySubstitutable counterparty :=
+  fun _x _z _Y hfx _hfz hx => hC hfx hx
+
+end ChoiceFunction

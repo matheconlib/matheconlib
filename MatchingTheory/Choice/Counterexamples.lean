@@ -15,7 +15,7 @@ these design choices:
 * the superset quantification in `ChoiceFunction.Substitutable` (the printed
   single-contract form is too weak to drive the finiteness-free fixed-point
   development), and
-* stating the §6 weakened conditions (`Matching.Contracts.WeakSubstitutes`)
+* stating the §6 weakened conditions (`MatchingTheory.Choice.WeakSubstitutes`)
   as finite-market notions in the literature's single-contract shape.
 
 No finite counterexample exists — that is the content of
@@ -156,6 +156,33 @@ theorem exists_forall_insert_insert_consistent_not_substitutable :
     forall_insert_insert_infiniteOrEmpty ℕ,
     consistent_infiniteOrEmpty ℕ,
     not_substitutable_infiniteOrEmpty⟩
+
+/-! ### Why aggregate demand is restricted to finite menus -/
+
+/-- The choice function accepting every available alternative. -/
+def acceptAll (α : Type*) : ChoiceFunction α where
+  toFun Y := Y
+  choose_subset _ := fun _ hx => hx
+
+/-- Accepting all alternatives satisfies aggregate demand on finite menus,
+even when the universe of alternatives is infinite. -/
+theorem sizeMonotone_acceptAll (α : Type*) :
+    (acceptAll α).SizeMonotone := by
+  intro Y Z hZ hYZ
+  exact Set.ncard_le_ncard hYZ hZ
+
+/-- Applying natural cardinality to arbitrary menus gives the wrong
+infinite-universe condition: even accepting everything would fail it.
+The singleton menu has cardinality `1`; `Set.univ : Set ℕ` has `ncard = 0`.
+This is a regression witness for the finite-menu definition of
+`ChoiceFunction.SizeMonotone`. -/
+theorem not_monotone_ncard_acceptAll :
+    ¬ Monotone (fun Y : Set ℕ => (acceptAll ℕ Y).ncard) := by
+  intro h
+  have hle := h (show ({0} : Set ℕ) ⊆ Set.univ from Set.subset_univ _)
+  change ({0} : Set ℕ).ncard ≤ (Set.univ : Set ℕ).ncard at hle
+  have hinfinite : (Set.univ : Set ℕ).Infinite := Set.infinite_univ
+  simp [hinfinite.ncard] at hle
 
 end Counterexamples
 

@@ -32,13 +32,13 @@ networks later) reuses this layer unchanged.
   (`Y ⊆ Z`), with `Monotone rejected` as the derived characterization
   (`substitutable_iff_monotone_rejected`). Rationale: the weakened conditions
   of survey §6 are choice-language statements with restricted quantifiers
-  (see `Matching.Contracts.WeakSubstitutes`), so the strong definition
+  (see `MatchingTheory.Choice.WeakSubstitutes`), so the strong definition
   anchors that family and `Substitutable → Unilateral → Bilateral` becomes
   quantifier bookkeeping. The survey's printed one-new-contract form is the
   corollary `Substitutable.not_mem_insert_insert` — the exact shape §6
   mirrors — and is strictly weaker on infinite types.
 * IRC is taken in set form so that agent locality and the fixed-point
-  development need no finiteness anywhere (SPEC §3, D2).
+  development need no finiteness anywhere.
 
 ## References
 
@@ -94,9 +94,14 @@ def Substitutable : Prop :=
   ∀ ⦃x : α⦄ ⦃Y Z : Set α⦄,
     Y ⊆ Z → x ∉ C (insert x Y) → x ∉ C (insert x Z)
 
-/-- The law of aggregate demand (size monotonicity). -/
+/-- The law of aggregate demand on finite menus.
+
+The larger menu is required to be finite: `Set.ncard` is `0` on infinite
+sets, so using it on arbitrary menus would incorrectly rule out even the
+identity choice function. On a finite contract type this is the usual law
+of aggregate demand. No condition on infinite menus is imposed here. -/
 def SizeMonotone : Prop :=
-  ∀ ⦃Y Z : Set α⦄, Y ⊆ Z → (C Y).ncard ≤ (C Z).ncard
+  ∀ ⦃Y Z : Set α⦄, Z.Finite → Y ⊆ Z → (C Y).ncard ≤ (C Z).ncard
 
 /-- Unit demand: at most one alternative is ever chosen. -/
 def UnitDemand : Prop :=
@@ -113,6 +118,25 @@ def Chernoff : Prop :=
 /-! ### Characterizations of substitutability -/
 
 variable {C}
+
+/-- Apply finite-menu aggregate demand with an explicit finite larger menu. -/
+theorem SizeMonotone.ncard_le_of_finite (hC : C.SizeMonotone)
+    {Y Z : Set α} (hZ : Z.Finite) (hYZ : Y ⊆ Z) :
+    (C Y).ncard ≤ (C Z).ncard :=
+  hC hZ hYZ
+
+/-- On a finite type, no menu-finiteness argument is needed. -/
+theorem SizeMonotone.ncard_le [Finite α] (hC : C.SizeMonotone)
+    {Y Z : Set α} (hYZ : Y ⊆ Z) :
+    (C Y).ncard ≤ (C Z).ncard :=
+  hC (Set.toFinite Z) hYZ
+
+/-- On a finite type, finite-menu aggregate demand is the usual
+unrestricted natural-cardinality inequality. -/
+theorem sizeMonotone_iff_ncard [Finite α] :
+    C.SizeMonotone ↔
+      ∀ ⦃Y Z : Set α⦄, Y ⊆ Z → (C Y).ncard ≤ (C Z).ncard :=
+  ⟨fun h _ _ hYZ => h.ncard_le hYZ, fun h _ _ _hZ hYZ => h hYZ⟩
 
 /-- Order-theoretic characterization: substitutability is exactly
 monotonicity of the rejection function. -/
@@ -151,6 +175,28 @@ theorem substitutable_iff_chernoff :
     exact hx
       (hch (Set.insert_subset_insert hYZ)
         ⟨hxZ, Set.mem_insert _ _⟩)
+
+/-- Substitutability and aggregate demand imply IRC whenever the original
+menu is finite. Substitutability gives `C Y ⊆ C Z`, while aggregate demand
+gives the reverse cardinality inequality. -/
+theorem Substitutable.consistent_on_finite_menu
+    (hsub : C.Substitutable) (hload : C.SizeMonotone)
+    {Y Z : Set α} (hY : Y.Finite) (hCY : C Y ⊆ Z) (hZY : Z ⊆ Y) :
+    C Z = C Y := by
+  have hchoice : C Y ⊆ C Z := fun _ hx =>
+    (substitutable_iff_chernoff.mp hsub) hZY ⟨hx, hCY hx⟩
+  have hcard : (C Z).ncard ≤ (C Y).ncard := hload hY hZY
+  have hfin : (C Z).Finite :=
+    hY.subset (fun _ hx => hZY (C.choose_subset Z hx))
+  exact (Set.eq_of_subset_of_ncard_le hchoice hcard hfin).symm
+
+/-- On a finite universe, substitutability and the law of aggregate demand
+already imply consistency (IRC). -/
+theorem Substitutable.consistent_of_sizeMonotone [Finite α]
+    (hsub : C.Substitutable) (hload : C.SizeMonotone) :
+    C.Consistent :=
+  fun {_Y _Z} hCY hZY =>
+    hsub.consistent_on_finite_menu hload (Set.toFinite _) hCY hZY
 
 /-- Chosen-from-more implies chosen-from-less. -/
 theorem Substitutable.mem_insert_of_subset
@@ -216,7 +262,7 @@ demand. -/
 theorem UnitDemand.sizeMonotone
     (hunit : C.UnitDemand) (hcons : C.Consistent) :
     C.SizeMonotone := by
-  intro Y Z hYZ
+  intro Y Z _hZfin hYZ
   rcases Set.eq_empty_or_nonempty (C Y) with hY | ⟨x, hx⟩
   · simp [hY]
   · have hZ : (C Z).Nonempty := by

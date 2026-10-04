@@ -20,7 +20,7 @@ hypotheses via the market-level predicates below, never structure fields —
 the maximal-domain theorems (survey Thm 2.7/3.6) need non-substitutable instances.
 
 Everything here is implemented at Hatfield–Kominers **many-to-many generality**.
-No unit-demand or unitarity hypothesis appears in this file or in `FixedPoint.lean`.
+The definitions impose no unit-demand or unitarity hypothesis.
 
 ## Main definitions
 
@@ -38,16 +38,16 @@ No unit-demand or unitarity hypothesis appears in this file or in `FixedPoint.le
   set-form IRC (one line; the reason IRC is taken in set form).
 * `Market.blocks_singleton_iff` — the single-contract blocking test in the
   `insert z A` form used by every downstream proof.
-* `Market.Stable.pairwiseStable`, `Market.pairwiseStable_iff_stable` —
-  survey Theorem 2.1(i)–(ii)/3.1.
+* `Market.Stable.pairwiseStable`,
+  `Market.pairwiseStable_iff_stable_of_substitutable` —
+  survey Theorem 2.1(i)–(ii)/3.1; IRC is not needed for this equivalence.
 
 ## Implementation notes
 
-`Market` is a structure but the predicates below are plain `def`s unfolding to
-`∧`/`∀`.  Anonymous constructors, `.1`/`.2` and `rcases`/`obtain` see through
-them (default transparency), but `rw`/`simp` do **not**; hence the explicit
-`mem_buyerSide`/`mem_sellerSide` simp lemmas and `blocks_singleton_iff`, which
-downstream files should use instead of unfolding by hand.
+`Market` is a structure; the predicates below are plain `def`s unfolding to
+`∧`/`∀`. The explicit `mem_buyerSide`/`mem_sellerSide` simp lemmas and
+`blocks_singleton_iff` provide stable rewriting interfaces, so downstream
+proofs need not unfold the predicates by hand.
 -/
 
 universe u v w
@@ -116,6 +116,13 @@ def Substitutable : Prop :=
 def SizeMonotone : Prop :=
   (∀ b, (M.choiceB b).SizeMonotone) ∧ ∀ s, (M.choiceS s).SizeMonotone
 
+/-- In a finite contract market, substitutability and aggregate demand
+already imply IRC on both sides. No finiteness of the agent types is needed. -/
+theorem consistent_of_substitutable_sizeMonotone [Finite X]
+    (hsub : M.Substitutable) (hload : M.SizeMonotone) : M.Consistent :=
+  ⟨fun b => (hsub.1 b).consistent_of_sizeMonotone (hload.1 b),
+   fun s => (hsub.2 s).consistent_of_sizeMonotone (hload.2 s)⟩
+
 /-! ### Locality
 
 Under set-form IRC and the support condition, an agent's choice depends only
@@ -140,13 +147,13 @@ def IndRational (A : Set X) : Prop :=
   (∀ b, M.choiceB b A = M.buyerSide b A) ∧
     ∀ s, M.choiceS s A = M.sellerSide s A
 
-/-- Accessors for `IndRational`, so downstream files need not redo this
-`rw`-and-`⟨hx, rfl⟩` dance (cf. `FixedPoint.subset_toSellers_of_indRational`). -/
+/-- An individually rational outcome is chosen by each contract's buyer. -/
 theorem mem_choiceB_of_indRational {A : Set X} (h : M.IndRational A) {x : X}
     (hx : x ∈ A) : x ∈ M.choiceB (M.buyer x) A := by
   rw [h.1 (M.buyer x)]
   exact M.mem_buyerSide.mpr ⟨hx, rfl⟩
 
+/-- An individually rational outcome is chosen by each contract's seller. -/
 theorem mem_choiceS_of_indRational {A : Set X} (h : M.IndRational A) {x : X}
     (hx : x ∈ A) : x ∈ M.choiceS (M.seller x) A := by
   rw [h.2 (M.seller x)]
@@ -169,13 +176,8 @@ contract. -/
 def PairwiseStable (A : Set X) : Prop :=
   M.IndRational A ∧ ∀ z, ¬ M.Blocks A {z}
 
-/-- FIX (new): the singleton blocking test, in the `insert z A` normal form.
-
-Blocking by `{z}` says exactly: `z` is new, and both of *its* agents take it on
-top of `A`.  Proving this once here removes the `Set.union_singleton`/
-`rw ... at *` boilerplate from every call site — in particular
-`FixedPoint.not_blocking_singleton` becomes
-`fun hA hyB hyS => by_contra fun hy => hA.2 {y} (M.blocks_singleton_iff.mpr ⟨hy, hyB, hyS⟩)`. -/
+/-- A singleton blocks exactly when its contract is new and both of its
+agents choose it from `insert z A`. -/
 theorem blocks_singleton_iff {A : Set X} {z : X} :
     M.Blocks A {z} ↔
       z ∉ A ∧ z ∈ M.choiceB (M.buyer z) (insert z A) ∧
@@ -213,14 +215,8 @@ theorem Stable.pairwiseStable {A : Set X} (h : M.Stable A) :
   ⟨h.1, fun z => h.2 {z}⟩
 
 /-- Theorem 2.1(ii)/3.1: under substitutability a blocking set yields a
-blocking contract, so pairwise stability implies stability.
-
-NOTE: `hcons` is genuinely unused — the argument below is IRC-free (drop a
-blocking contract `z ∈ Z` and use substitutability to shrink the menu from
-`A ∪ Z` to `A ∪ {z}`).  It is kept as `_hcons` so that the arity and argument
-positions are unchanged for callers such as `FixedPoint.stable_outcomeOf`
-(`(...).stable M hsub hcons`), while the `unusedVariables` linter stays quiet. -/
-theorem PairwiseStable.stable (hsub : M.Substitutable) (_hcons : M.Consistent)
+blocking contract, so pairwise stability implies stability. IRC is not needed. -/
+theorem PairwiseStable.stable_of_substitutable (hsub : M.Substitutable)
     {A : Set X} (h : M.PairwiseStable A) : M.Stable A := by
   refine ⟨h.1, fun Z hZ => ?_⟩
   obtain ⟨⟨z, hz⟩, hdisj, hB, hS⟩ := hZ
@@ -228,7 +224,7 @@ theorem PairwiseStable.stable (hsub : M.Substitutable) (_hcons : M.Consistent)
   have hzAZ : z ∈ A ∪ Z := Set.mem_union_right A hz
   refine h.2 z (M.blocks_singleton_iff.mpr
     ⟨Set.disjoint_left.mp hdisj hz, ?_, ?_⟩)
-  · -- buyers: shrink the menu `A ∪ Z ↝ A` by substitutability
+  · -- Buyers: shrink the menu from `A ∪ Z` to `insert z A`.
     have hmem : z ∈ M.choiceB (M.buyer z) (A ∪ Z) :=
       hB (M.buyer z) (M.mem_buyerSide.mpr ⟨hz, rfl⟩)
     have h1 : z ∈ M.choiceB (M.buyer z) (insert z (A ∪ Z)) := by
@@ -241,17 +237,29 @@ theorem PairwiseStable.stable (hsub : M.Substitutable) (_hcons : M.Consistent)
       rwa [Set.insert_eq_of_mem hzAZ]
     exact (hsub.2 (M.seller z)).mem_insert_of_subset hAZ h1
 
+/-- Under substitutability, pairwise stability and stability coincide. -/
+theorem pairwiseStable_iff_stable_of_substitutable (hsub : M.Substitutable)
+    {A : Set X} : M.PairwiseStable A ↔ M.Stable A :=
+  ⟨fun h => h.stable_of_substitutable M hsub, fun h => h.pairwiseStable M⟩
+
+/-- Compatibility form of `PairwiseStable.stable_of_substitutable`. The IRC
+argument is redundant; new callers can use the stronger theorem. -/
+theorem PairwiseStable.stable (hsub : M.Substitutable) (_hcons : M.Consistent)
+    {A : Set X} (h : M.PairwiseStable A) : M.Stable A :=
+  h.stable_of_substitutable M hsub
+
+/-- Compatibility form of `pairwiseStable_iff_stable_of_substitutable`. -/
 theorem pairwiseStable_iff_stable (hsub : M.Substitutable)
-    (hcons : M.Consistent) {A : Set X} :
+    (_hcons : M.Consistent) {A : Set X} :
     M.PairwiseStable A ↔ M.Stable A :=
-  ⟨fun h => h.stable M hsub hcons, fun h => h.pairwiseStable M⟩
+  M.pairwiseStable_iff_stable_of_substitutable hsub
 
 /-! ### The seller- and buyer-chosen relations (`⊒S`, `⊒B`) -/
 
 /-- `Y` is **seller-chosen** over `Z`: every seller chooses their part of `Y`
-from `Y ∪ Z`. On stable outcomes this is the order `⊒S`; its order structure
-is developed in `MatchingTheory.Contracts.Order` by transport from the
-fixed-point lattice, not proved directly. -/
+from `Y ∪ Z`. Under substitutability and IRC, this relation describes the
+reverse of the lattice order on stable outcomes: `A ≤ A'` means
+`SellerChosen A' A`. -/
 def SellerChosen (Y Z : Set X) : Prop :=
   ∀ s, M.choiceS s (Y ∪ Z) = M.sellerSide s Y
 
