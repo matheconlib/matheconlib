@@ -1,4 +1,5 @@
-import MatchingTheory.Classical.DeferredAcceptance
+import MatchingTheory.Classical.DeferredAcceptanceCorrespondence
+import MatchingTheory.Choice.FiniteOption
 
 /-!
 # Executable finite Gale–Shapley deferred acceptance
@@ -13,11 +14,13 @@ classical choice.
 `galeShapleyFinset` evaluates the held contracts at the rejection state
 reached after `card (M × W)` rounds.
 The coercion theorems identify every finite state with the corresponding
-semantic state, so the correctness proof applies to the executable function.
+semantic state. Both the direct classical correctness proof and the separate
+contracts-inherited proof therefore apply to the executable function.
 
-This implementation deliberately uses simple exhaustive menus. Its purpose
-is a transparent executable refinement, not the usual optimized running-time
-bound for preference lists and proposal queues.
+Partner menus are extracted from the supplied finite contracts, and their
+maxima use the general finite-option selection interface. Each rejection
+round still enumerates potential proposals. This is a transparent executable
+refinement, without a claim about optimized preference-list running time.
 -/
 
 open Function
@@ -30,17 +33,55 @@ variable {M : Type u} {W : Type v}
 variable (mkt : MarriageMarket M W)
 variable [Fintype M] [Fintype W] [DecidableEq M] [DecidableEq W]
 
+/-- Partners represented in a man's supplied finite contract menu. -/
+def partnersMFinset (m : M) (Y : Finset (M × W)) : Finset W :=
+  (Y.filter fun p => p.1 = m).image Prod.snd
+
+/-- Partners represented in a woman's supplied finite contract menu. -/
+def partnersWFinset (w : W) (Y : Finset (M × W)) : Finset M :=
+  (Y.filter fun p => p.2 = w).image Prod.fst
+
+omit [Fintype M] [Fintype W] in
+@[simp] theorem mem_partnersMFinset {m : M} {w : W} {Y : Finset (M × W)} :
+    w ∈ partnersMFinset m Y ↔ (m, w) ∈ Y := by
+  constructor
+  · intro hw
+    obtain ⟨⟨m', w'⟩, hp, he⟩ := Finset.mem_image.mp hw
+    obtain ⟨hY, hm⟩ := Finset.mem_filter.mp hp
+    dsimp only at hm he
+    cases hm
+    cases he
+    exact hY
+  · intro hY
+    exact Finset.mem_image.mpr
+      ⟨(m, w), Finset.mem_filter.mpr ⟨hY, rfl⟩, rfl⟩
+
+omit [Fintype M] [Fintype W] in
+@[simp] theorem mem_partnersWFinset {m : M} {w : W} {Y : Finset (M × W)} :
+    m ∈ partnersWFinset w Y ↔ (m, w) ∈ Y := by
+  constructor
+  · intro hm
+    obtain ⟨⟨m', w'⟩, hp, he⟩ := Finset.mem_image.mp hm
+    obtain ⟨hY, hw⟩ := Finset.mem_filter.mp hp
+    dsimp only at hw he
+    cases hw
+    cases he
+    exact hY
+  · intro hY
+    exact Finset.mem_image.mpr
+      ⟨(m, w), Finset.mem_filter.mpr ⟨hY, rfl⟩, rfl⟩
+
 set_option linter.unusedVariables false in
 /-- A man's finite menu, including the outside option. -/
 def menuMFinset (mkt : MarriageMarket M W) (m : M)
     (Y : Finset (M × W)) : Finset (Option W) :=
-  Finset.univ.filter fun o => o = none ∨ ∃ w, o = some w ∧ (m, w) ∈ Y
+  ChoiceFunction.optionMenu (partnersMFinset m Y)
 
 set_option linter.unusedVariables false in
 /-- A woman's finite menu, including the outside option. -/
 def menuWFinset (mkt : MarriageMarket M W) (w : W)
     (Y : Finset (M × W)) : Finset (Option M) :=
-  Finset.univ.filter fun o => o = none ∨ ∃ m, o = some m ∧ (m, w) ∈ Y
+  ChoiceFunction.optionMenu (partnersWFinset w Y)
 
 omit [Fintype M] in
 theorem menuMFinset_nonempty (m : M) (Y : Finset (M × W)) :
@@ -53,40 +94,54 @@ theorem menuWFinset_nonempty (w : W) (Y : Finset (M × W)) :
   exact ⟨none, by simp [menuWFinset]⟩
 
 /-- Computable best option according to the man's supplied order. -/
-def bestMFinset (m : M) (Y : Finset (M × W)) : Option W := by
-  letI := mkt.prefM m
-  exact (mkt.menuMFinset m Y).max' (mkt.menuMFinset_nonempty m Y)
+def bestMFinset (m : M) (Y : Finset (M × W)) : Option W :=
+  ChoiceFunction.bestOption (mkt.prefM m) (partnersMFinset m Y)
 
 /-- Computable best option according to the woman's supplied order. -/
-def bestWFinset (w : W) (Y : Finset (M × W)) : Option M := by
-  letI := mkt.prefW w
-  exact (mkt.menuWFinset w Y).max' (mkt.menuWFinset_nonempty w Y)
+def bestWFinset (w : W) (Y : Finset (M × W)) : Option M :=
+  ChoiceFunction.bestOption (mkt.prefW w) (partnersWFinset w Y)
 
 omit [Fintype M] in
 theorem menuMFinset_eq_menuM (m : M) (Y : Finset (M × W)) :
     mkt.menuMFinset m Y = mkt.menuM m (Y : Set (M × W)) := by
   classical
   ext o
-  simp [menuMFinset, menuM]
+  cases o <;> simp [menuMFinset, menuM]
 
 omit [Fintype W] in
 theorem menuWFinset_eq_menuW (w : W) (Y : Finset (M × W)) :
     mkt.menuWFinset w Y = mkt.menuW w (Y : Set (M × W)) := by
   classical
   ext o
-  simp [menuWFinset, menuW]
+  cases o <;> simp [menuWFinset, menuW]
 
 omit [Fintype M] in
 @[simp] theorem bestMFinset_eq_bestM (m : M) (Y : Finset (M × W)) :
     mkt.bestMFinset m Y = mkt.bestM m (Y : Set (M × W)) := by
   classical
-  simp only [bestMFinset, bestM, menuMFinset_eq_menuM]
+  letI := mkt.prefM m
+  apply le_antisymm
+  · apply mkt.le_bestM_of_mem
+    rw [← mkt.menuMFinset_eq_menuM m Y]
+    exact ChoiceFunction.bestOption_mem (mkt.prefM m) _
+  · apply ChoiceFunction.le_bestOption (mkt.prefM m)
+    change mkt.bestM m (Y : Set (M × W)) ∈ mkt.menuMFinset m Y
+    rw [mkt.menuMFinset_eq_menuM]
+    exact mkt.bestM_mem_menuM m _
 
 omit [Fintype W] in
 @[simp] theorem bestWFinset_eq_bestW (w : W) (Y : Finset (M × W)) :
     mkt.bestWFinset w Y = mkt.bestW w (Y : Set (M × W)) := by
   classical
-  simp only [bestWFinset, bestW, menuWFinset_eq_menuW]
+  letI := mkt.prefW w
+  apply le_antisymm
+  · apply mkt.le_bestW_of_mem
+    rw [← mkt.menuWFinset_eq_menuW w Y]
+    exact ChoiceFunction.bestOption_mem (mkt.prefW w) _
+  · apply ChoiceFunction.le_bestOption (mkt.prefW w)
+    change mkt.bestW w (Y : Set (M × W)) ∈ mkt.menuWFinset w Y
+    rw [mkt.menuWFinset_eq_menuW]
+    exact mkt.bestW_mem_menuW w _
 
 /-- Each man proposes to his best partner who has not rejected him.
 Choosing `none` produces no proposal. -/
@@ -94,14 +149,18 @@ def gsProposalsFinset (R : Finset (M × W)) : Finset (M × W) :=
   Finset.univ.filter fun p =>
     some p.2 = mkt.bestMFinset p.1 (Finset.univ \ R)
 
+/-- Each woman selects her best acceptable contract from the supplied proposals. -/
+def gsHoldProposalsFinset (P : Finset (M × W)) : Finset (M × W) :=
+  P.filter fun p => some p.1 = mkt.bestWFinset p.2 P
+
 /-- Each woman holds her best acceptable proposal, if any. -/
 def gsHeldFinset (R : Finset (M × W)) : Finset (M × W) :=
-  (mkt.gsProposalsFinset R).filter fun p =>
-    some p.1 = mkt.bestWFinset p.2 (mkt.gsProposalsFinset R)
+  mkt.gsHoldProposalsFinset (mkt.gsProposalsFinset R)
 
 /-- Add every unheld proposal to the rejected contracts. -/
 def gsStepFinset (R : Finset (M × W)) : Finset (M × W) :=
-  R ∪ (mkt.gsProposalsFinset R \ mkt.gsHeldFinset R)
+  let P := mkt.gsProposalsFinset R
+  R ∪ (P \ mkt.gsHoldProposalsFinset P)
 
 /-- The executable rejection state after `n` simultaneous rounds. -/
 def gsRejectedFinset (n : ℕ) : Finset (M × W) :=
@@ -132,25 +191,24 @@ private theorem coe_univ_sdiff (R : Finset (M × W)) :
     change p ∈ (mkt.gsProposalsFinset R : Set (M × W)) ↔ _
     rw [coe_gsProposalsFinset]
   ext p
-  simp [gsHeldFinset, gsHeld, hp]
+  simp [gsHeldFinset, gsHoldProposalsFinset, gsHeld, hp]
 
 @[simp] theorem coe_gsStepFinset (R : Finset (M × W)) :
     (mkt.gsStepFinset R : Set (M × W)) =
       mkt.gsStep (R : Set (M × W)) := by
   classical
+  change ((R ∪ (mkt.gsProposalsFinset R \ mkt.gsHeldFinset R) :
+    Finset (M × W)) : Set (M × W)) = _
   ext p
-  simp [gsStepFinset, gsStep]
+  simp [gsStep]
 
 /-- Every executable rejection state agrees with the semantic algorithm. -/
 @[simp] theorem coe_gsRejectedFinset (n : ℕ) :
     (mkt.gsRejectedFinset n : Set (M × W)) = mkt.gsRejected n := by
-  induction n with
-  | zero =>
-      simp [gsRejectedFinset, gsRejected]
-  | succ n ih =>
-      simp only [gsRejectedFinset, gsRejected, Function.iterate_succ_apply']
-      rw [coe_gsStepFinset]
-      exact congrArg mkt.gsStep ih
+  have hstep : Function.Semiconj (fun R : Finset (M × W) => (R : Set (M × W)))
+      mkt.gsStepFinset mkt.gsStep := mkt.coe_gsStepFinset
+  simpa only [gsRejectedFinset, gsRejected, Finset.coe_empty] using
+    hstep.iterate_right n (∅ : Finset (M × W))
 
 /-- Execute a bounded number of rejection rounds, then evaluate the held
 contracts at the resulting state. -/
@@ -179,26 +237,23 @@ theorem gs_inverseFinset {R : Finset (M × W)}
       mkt.bestMFinset m (Finset.univ \ R) = some w := by
   rw [bestWFinset_eq_bestW, bestMFinset_eq_bestM,
     coe_gsProposalsFinset, coe_univ_sdiff]
-  constructor
-  · intro h
-    have hp : some w = mkt.bestM m (R : Set (M × W))ᶜ :=
-      mkt.gs_bestW_mem h
-    exact hp.symm
-  · intro h
-    exact (mkt.gs_held_of_terminal hR h.symm).2.symm
+  exact (mkt.gsMatchingAt (R : Set (M × W)) hR).inv m w
 
 /-- Executable Gale–Shapley with a `PEquiv` result. Both partner maps are
-computed from finite menus; the inverse proof is erased during execution. -/
-def galeShapleyComputable : M ≃. W where
-  toFun m := mkt.bestMFinset m
-    (Finset.univ \ mkt.gsRejectedFinset (Fintype.card (M × W)))
-  invFun w := mkt.bestWFinset w
-    (mkt.gsProposalsFinset (mkt.gsRejectedFinset (Fintype.card (M × W))))
-  inv := by
-    intro m w
-    apply mkt.gs_inverseFinset
-    rw [coe_gsRejectedFinset]
-    exact mkt.gs_stoppingTime_terminal
+computed from the same final rejection state and proposal set; the inverse
+proof is erased during execution. -/
+def galeShapleyComputable : M ≃. W :=
+  let R := mkt.gsRejectedFinset (Fintype.card (M × W))
+  let P := mkt.gsProposalsFinset R
+  { toFun := fun m => mkt.bestMFinset m (Finset.univ \ R)
+    invFun := fun w => mkt.bestWFinset w P
+    inv := by
+      intro m w
+      apply mkt.gs_inverseFinset
+      change IsFixedPt mkt.gsStep
+        (mkt.gsRejectedFinset (Fintype.card (M × W)) : Set (M × W))
+      rw [coe_gsRejectedFinset]
+      exact mkt.gs_stoppingTime_terminal }
 
 /-- Executable and semantic Gale–Shapley produce the same partial equivalence. -/
 theorem galeShapleyComputable_eq_galeShapley :
@@ -238,21 +293,43 @@ theorem galeShapleyComputable_manOptimal {ν : M ≃. W}
   rw [mkt.galeShapleyComputable_eq_galeShapley]
   exact mkt.galeShapley_manOptimal hν m
 
+theorem isManOptimal_galeShapleyComputable :
+    mkt.IsManOptimal mkt.galeShapleyComputable := by
+  rw [mkt.galeShapleyComputable_eq_galeShapley]
+  exact mkt.isManOptimal_galeShapley
+
+theorem isWomanPessimal_galeShapleyComputable :
+    mkt.IsWomanPessimal mkt.galeShapleyComputable := by
+  rw [mkt.galeShapleyComputable_eq_galeShapley]
+  exact mkt.isWomanPessimal_galeShapley
+
+theorem galeShapleyComputable_womanPessimal {ν : M ≃. W}
+    (hν : mkt.IsStableMatching ν) (w : W) :
+    mkt.leW w (mkt.galeShapleyComputable.symm w) (ν.symm w) := by
+  rw [mkt.galeShapleyComputable_eq_galeShapley]
+  exact mkt.galeShapley_womanPessimal hν w
+
+/-- The finite graph and executable partial equivalence represent the same
+semantic terminal matching. -/
+theorem galeShapleyFinset_eq_graphOf_galeShapley :
+    (mkt.galeShapleyFinset : Set (M × W)) =
+      mkt.graphOf mkt.galeShapley := by
+  rw [coe_galeShapleyFinset]
+  exact (mkt.graphOf_gsMatchingAt_eq_held
+    (mkt.gsRejected mkt.gsStoppingTime) mkt.gs_stoppingTime_terminal).symm
+
+theorem galeShapleyFinset_eq_graphOf_galeShapleyComputable :
+    (mkt.galeShapleyFinset : Set (M × W)) =
+      mkt.graphOf mkt.galeShapleyComputable := by
+  rw [mkt.galeShapleyComputable_eq_galeShapley]
+  exact mkt.galeShapleyFinset_eq_graphOf_galeShapley
+
 /-- The finite graph returned by the algorithm is the man-optimal graph. -/
 theorem galeShapleyFinset_eq_graphOf_manOptimalMatching :
     (mkt.galeShapleyFinset : Set (M × W)) =
       mkt.graphOf mkt.manOptimalMatching := by
-  rw [coe_galeShapleyFinset]
-  have hh : mkt.gsHeld (mkt.gsRejected mkt.gsStoppingTime) =
-      mkt.gsProposals (mkt.gsRejected mkt.gsStoppingTime) := by
-    apply Set.Subset.antisymm
-    · intro p hp
-      exact hp.1
-    · rintro ⟨m, w⟩ hp
-      exact mkt.gs_held_of_terminal mkt.gs_stoppingTime_terminal hp
-  change mkt.gsHeld (mkt.gsRejected mkt.gsStoppingTime) = _
-  rw [hh, mkt.gs_terminal_proposals_eq_sellerOptimal,
-    mkt.graphOf_manOptimalMatching]
+  rw [mkt.galeShapleyFinset_eq_graphOf_galeShapley,
+    mkt.galeShapley_eq_manOptimalMatching]
 
 /-- Executable woman-proposing Gale–Shapley, transported from the market with
 the two sides exchanged. -/
@@ -283,13 +360,76 @@ theorem womanGaleShapleyComputable_eq_manPessimalMatching :
 
 theorem stable_womanGaleShapleyComputable :
     mkt.IsStableMatching mkt.womanGaleShapleyComputable := by
-  rw [mkt.womanGaleShapleyComputable_eq_womanOptimalMatching]
-  exact mkt.stable_womanOptimalMatching
+  rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
+  exact mkt.stable_womanGaleShapley
 
 theorem womanGaleShapleyComputable_womanOptimal {ν : M ≃. W}
     (hν : mkt.IsStableMatching ν) (w : W) :
     mkt.leW w (ν.symm w) (mkt.womanGaleShapleyComputable.symm w) := by
-  rw [mkt.womanGaleShapleyComputable_eq_womanOptimalMatching]
-  exact mkt.le_womanOptimalMatching hν w
+  rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
+  exact mkt.womanGaleShapley_womanOptimal hν w
+
+theorem isWomanOptimal_womanGaleShapleyComputable :
+    mkt.IsWomanOptimal mkt.womanGaleShapleyComputable := by
+  rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
+  exact mkt.isWomanOptimal_womanGaleShapley
+
+theorem isManPessimal_womanGaleShapleyComputable :
+    mkt.IsManPessimal mkt.womanGaleShapleyComputable := by
+  rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
+  exact mkt.isManPessimal_womanGaleShapley
+
+theorem womanGaleShapleyComputable_manPessimal {ν : M ≃. W}
+    (hν : mkt.IsStableMatching ν) (m : M) :
+    mkt.leM m (mkt.womanGaleShapleyComputable m) (ν m) := by
+  rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
+  exact mkt.womanGaleShapley_manPessimal hν m
+
+/-! ## Correctness inherited from generalized deferred acceptance
+
+The executable-to-semantic refinement above is shared by both proof routes.
+These statements use the fixed-point correspondence and inherited economic
+results; the earlier correctness statements retain the direct classical route.
+-/
+
+theorem galeShapleyComputable_eq_deferredAcceptance_via_fixedPoints :
+    mkt.galeShapleyComputable = mkt.deferredAcceptance :=
+  mkt.galeShapleyComputable_eq_galeShapley.trans
+    mkt.galeShapley_eq_deferredAcceptance_via_fixedPoints
+
+theorem womanGaleShapleyComputable_eq_womanProposingDeferredAcceptance_via_fixedPoints :
+    mkt.womanGaleShapleyComputable = mkt.womanProposingDeferredAcceptance :=
+  mkt.womanGaleShapleyComputable_eq_womanGaleShapley.trans
+    mkt.womanGaleShapley_eq_womanProposingDeferredAcceptance_via_fixedPoints
+
+theorem stable_galeShapleyComputable_via_contracts :
+    mkt.IsStableMatching mkt.galeShapleyComputable := by
+  rw [mkt.galeShapleyComputable_eq_galeShapley]
+  exact mkt.stable_galeShapley_via_contracts
+
+theorem isManOptimal_galeShapleyComputable_via_contracts :
+    mkt.IsManOptimal mkt.galeShapleyComputable := by
+  rw [mkt.galeShapleyComputable_eq_galeShapley]
+  exact mkt.isManOptimal_galeShapley_via_contracts
+
+theorem isWomanPessimal_galeShapleyComputable_via_contracts :
+    mkt.IsWomanPessimal mkt.galeShapleyComputable := by
+  rw [mkt.galeShapleyComputable_eq_galeShapley]
+  exact mkt.isWomanPessimal_galeShapley_via_contracts
+
+theorem stable_womanGaleShapleyComputable_via_contracts :
+    mkt.IsStableMatching mkt.womanGaleShapleyComputable := by
+  rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
+  exact mkt.stable_womanGaleShapley_via_contracts
+
+theorem isWomanOptimal_womanGaleShapleyComputable_via_contracts :
+    mkt.IsWomanOptimal mkt.womanGaleShapleyComputable := by
+  rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
+  exact mkt.isWomanOptimal_womanGaleShapley_via_contracts
+
+theorem isManPessimal_womanGaleShapleyComputable_via_contracts :
+    mkt.IsManPessimal mkt.womanGaleShapleyComputable := by
+  rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
+  exact mkt.isManPessimal_womanGaleShapley_via_contracts
 
 end MarriageMarket

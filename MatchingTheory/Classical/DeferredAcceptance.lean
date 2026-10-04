@@ -2,19 +2,26 @@ import MatchingTheory.Classical.Marriage
 import MatchingTheory.Order.IterateFiniteSet
 
 /-!
-# Classical deferred acceptance by simultaneous proposal rounds
+# Classical deferred acceptance with simultaneous proposal rounds
 
-This is the usual man-proposing Gale–Shapley algorithm, expressed by its set
-of rejected pairs. In each round every man proposes to his best unrejected
-acceptable woman; each woman retains her best acceptable proposal and rejects
-the others. A held man repeats his proposal, so only rejected men advance.
+This is the usual (man-proposing) Gale–Shapley algorithm, expressed via its set
+of rejected pairs. In each round every man proposes to his most-preferred
+acceptable woman who has not rejected him yet (if any); each woman retains her
+best acceptable proposal (if any) and rejects all others. A held man repeats his
+proposal, so only rejected men advance down their preference lists.
 
 The proof follows the classical argument: held proposals survive to the next
 round, women's holdings improve, and a pair in any stable matching is never
 rejected. These invariants give stability and man-optimality independently of
-the contracts fixed-point proof. Uniqueness of the man-optimal matching then
-identifies the terminal result with generalized deferred acceptance. The two
-algorithms need not have the same intermediate states or number of rounds.
+the contracts fixed-point proof. Exchanging the two sides gives the same direct
+correctness proof for the woman-proposing algorithm. Uniqueness of each
+side-optimal stable matching then identifies the classical output with the
+corresponding generalized deferred-acceptance endpoint. The two algorithms need
+not have the same intermediate states or number of rounds.
+
+`Classical.DeferredAcceptanceCorrespondence` supplies a second correspondence
+through a canonical fixed-point certificate and inherits correctness from the
+contracts theory without using the direct endpoint correctness theorems here.
 
 The definitions here use the existing set-valued preference-choice interface
 and are noncomputable. They specify actual successive proposal rounds; they
@@ -203,6 +210,14 @@ theorem gs_held_of_terminal {R : Set (M × W)}
   rw [hR] at hmem
   exact mkt.gs_proposal_not_rejected hp hmem
 
+/-- At a terminal round the held and proposed graphs coincide. -/
+theorem gsHeld_eq_gsProposals_of_terminal {R : Set (M × W)}
+    (hR : IsFixedPt mkt.gsStep R) : mkt.gsHeld R = mkt.gsProposals R := by
+  apply Set.Subset.antisymm
+  · exact fun _ hp => hp.1
+  · rintro ⟨m, w⟩ hp
+    exact mkt.gs_held_of_terminal hR hp
+
 /-- At a terminal round the men's and women's selected partners are inverse
 partial maps, hence constitute a classical matching. -/
 noncomputable def gsMatchingAt (R : Set (M × W))
@@ -232,6 +247,12 @@ theorem graphOf_gsMatchingAt (R : Set (M × W))
   ext p
   change mkt.bestM p.1 Rᶜ = some p.2 ↔ some p.2 = mkt.bestM p.1 Rᶜ
   exact eq_comm
+
+theorem graphOf_gsMatchingAt_eq_held (R : Set (M × W))
+    (hR : IsFixedPt mkt.gsStep R) :
+    mkt.graphOf (mkt.gsMatchingAt R hR) = mkt.gsHeld R :=
+  (mkt.graphOf_gsMatchingAt R hR).trans
+    (mkt.gsHeld_eq_gsProposals_of_terminal hR).symm
 
 /-- Finitely many pairs imply that some rejection round is terminal. The
 argument only uses inflationarity, not monotonicity of the rejection map. -/
@@ -273,16 +294,29 @@ theorem gsMatchingAt_manOptimal (n : ℕ)
     mkt.leM m (ν m) (mkt.gsMatchingAt (mkt.gsRejected n) hn m) :=
   mkt.gs_assignment_le_proposal (mkt.gs_rejected_not_mem_stable n hν) m
 
-/-- Any terminal round reached by the algorithm has the same output. -/
+/-- Intrinsic classical correctness of any reached terminal state. -/
+theorem isManOptimal_gsMatchingAt (n : ℕ)
+    (hn : IsFixedPt mkt.gsStep (mkt.gsRejected n)) :
+    mkt.IsManOptimal (mkt.gsMatchingAt (mkt.gsRejected n) hn) :=
+  ⟨mkt.stable_gsMatchingAt n hn,
+    fun ν hν m => mkt.gsMatchingAt_manOptimal n hn hν m⟩
+
+/-- The classical correctness proof makes the choice of terminal round irrelevant. -/
+theorem gsMatchingAt_eq_gsMatchingAt (n k : ℕ)
+    (hn : IsFixedPt mkt.gsStep (mkt.gsRejected n))
+    (hk : IsFixedPt mkt.gsStep (mkt.gsRejected k)) :
+    mkt.gsMatchingAt (mkt.gsRejected n) hn =
+      mkt.gsMatchingAt (mkt.gsRejected k) hk :=
+  IsManOptimal.unique mkt
+    (mkt.isManOptimal_gsMatchingAt n hn) (mkt.isManOptimal_gsMatchingAt k hk)
+
+/-- Classical optimality identifies each terminal output with the contracts
+construction of the man-optimal stable matching. -/
 theorem gsMatchingAt_eq_manOptimalMatching (n : ℕ)
     (hn : IsFixedPt mkt.gsStep (mkt.gsRejected n)) :
-    mkt.gsMatchingAt (mkt.gsRejected n) hn = mkt.manOptimalMatching := by
-  apply PEquiv.ext
-  intro m
-  letI := mkt.prefM m
-  exact le_antisymm
-    (mkt.le_manOptimalMatching (mkt.stable_gsMatchingAt n hn) m)
-    (mkt.gsMatchingAt_manOptimal n hn mkt.stable_manOptimalMatching m)
+    mkt.gsMatchingAt (mkt.gsRejected n) hn = mkt.manOptimalMatching :=
+  IsManOptimal.unique mkt
+    (mkt.isManOptimal_gsMatchingAt n hn) mkt.isManOptimal_manOptimalMatching
 
 /-- A uniform bound on simultaneous rejection updates: each nonstationary
 update adds a previously unrejected pair. This is a fuel bound for the state
@@ -304,6 +338,18 @@ theorem galeShapley_manOptimal {ν : M ≃. W}
     (hν : mkt.IsStableMatching ν) (m : M) :
     mkt.leM m (ν m) (mkt.galeShapley m) :=
   mkt.gsMatchingAt_manOptimal mkt.gsStoppingTime mkt.gs_stoppingTime_terminal hν m
+
+theorem isManOptimal_galeShapley : mkt.IsManOptimal mkt.galeShapley :=
+  mkt.isManOptimal_gsMatchingAt mkt.gsStoppingTime mkt.gs_stoppingTime_terminal
+
+/-- Opposition of interests gives the receiving side's intrinsic extremal property. -/
+theorem isWomanPessimal_galeShapley : mkt.IsWomanPessimal mkt.galeShapley :=
+  (mkt.isManOptimal_iff_isWomanPessimal _).mp mkt.isManOptimal_galeShapley
+
+theorem galeShapley_womanPessimal {ν : M ≃. W}
+    (hν : mkt.IsStableMatching ν) (w : W) :
+    mkt.leW w (mkt.galeShapley.symm w) (ν.symm w) :=
+  mkt.isWomanPessimal_galeShapley.2 ν hν w
 
 /-- The classical and contracts proofs compute the same man-optimal matching. -/
 theorem galeShapley_eq_manOptimalMatching :
@@ -341,10 +387,37 @@ sides exchanged, then transported back to an `M ≃. W` matching. -/
 noncomputable def womanGaleShapley : M ≃. W :=
   mkt.symm.galeShapley.symm
 
+/-- Stability follows by exchanging sides in the classical proposal proof. -/
+theorem stable_womanGaleShapley : mkt.IsStableMatching mkt.womanGaleShapley := by
+  apply (mkt.isStableMatching_symm mkt.womanGaleShapley).mp
+  simpa only [womanGaleShapley, PEquiv.symm_symm] using
+    mkt.symm.stable_galeShapley
+
+/-- The exchanged first-rejection proof gives woman-optimality directly. -/
+theorem womanGaleShapley_womanOptimal {ν : M ≃. W}
+    (hν : mkt.IsStableMatching ν) (w : W) :
+    mkt.leW w (ν.symm w) (mkt.womanGaleShapley.symm w) := by
+  simpa only [womanGaleShapley, PEquiv.symm_symm, leM_symm] using
+    mkt.symm.galeShapley_manOptimal ((mkt.isStableMatching_symm ν).mpr hν) w
+
+theorem isWomanOptimal_womanGaleShapley :
+    mkt.IsWomanOptimal mkt.womanGaleShapley :=
+  ⟨mkt.stable_womanGaleShapley, fun ν hν w => mkt.womanGaleShapley_womanOptimal hν w⟩
+
+theorem isManPessimal_womanGaleShapley :
+    mkt.IsManPessimal mkt.womanGaleShapley :=
+  (mkt.isWomanOptimal_iff_isManPessimal _).mp mkt.isWomanOptimal_womanGaleShapley
+
+theorem womanGaleShapley_manPessimal {ν : M ≃. W}
+    (hν : mkt.IsStableMatching ν) (m : M) :
+    mkt.leM m (mkt.womanGaleShapley m) (ν m) :=
+  mkt.isManPessimal_womanGaleShapley.2 ν hν m
+
+/-- Intrinsic classical optimality identifies the generalized endpoint. -/
 theorem womanGaleShapley_eq_womanOptimalMatching :
-    mkt.womanGaleShapley = mkt.womanOptimalMatching := by
-  simp only [womanGaleShapley, galeShapley_eq_manOptimalMatching,
-    manOptimalMatching_symm, PEquiv.symm_symm]
+    mkt.womanGaleShapley = mkt.womanOptimalMatching :=
+  IsWomanOptimal.unique mkt
+    mkt.isWomanOptimal_womanGaleShapley mkt.isWomanOptimal_womanOptimalMatching
 
 /-- The woman-proposing classical algorithm agrees with its generalized
 deferred-acceptance endpoint. -/
@@ -359,16 +432,6 @@ theorem exists_generalized_woman_round_eq_womanGaleShapley :
       mkt.graphOf mkt.womanGaleShapley := by
   rw [mkt.womanGaleShapley_eq_womanOptimalMatching]
   exact mkt.exists_womanProposingDeferredAcceptanceOutcome_eq_graph
-
-theorem stable_womanGaleShapley : mkt.IsStableMatching mkt.womanGaleShapley := by
-  rw [mkt.womanGaleShapley_eq_womanOptimalMatching]
-  exact mkt.stable_womanOptimalMatching
-
-theorem womanGaleShapley_womanOptimal {ν : M ≃. W}
-    (hν : mkt.IsStableMatching ν) (w : W) :
-    mkt.leW w (ν.symm w) (mkt.womanGaleShapley.symm w) := by
-  rw [mkt.womanGaleShapley_eq_womanOptimalMatching]
-  exact mkt.le_womanOptimalMatching hν w
 
 theorem galeShapley_eq_womanPessimalMatching :
     mkt.galeShapley = mkt.womanPessimalMatching :=

@@ -365,4 +365,32 @@ theorem pathIndependent_iff_substitutable_and_consistent :
   ⟨fun hpi => ⟨hpi.substitutable, hpi.consistent⟩,
    fun h => h.1.pathIndependent h.2⟩
 
+/-! ### Choice algebra -/
+
+/-- Choosing again from the chosen alternatives does not change an IRC choice. -/
+theorem Consistent.idempotent (hcons : C.Consistent) (Y : Set α) :
+    C (C Y) = C Y :=
+  hcons Set.Subset.rfl (C.choose_subset Y)
+
+/-- A chosen alternative remains chosen when the menu contracts around it. -/
+theorem Substitutable.mem_of_subset (hsub : C.Substitutable)
+    {Y Z : Set α} {x : α} (hYZ : Y ⊆ Z) (hxZ : x ∈ C Z) (hxY : x ∈ Y) :
+    x ∈ C Y :=
+  (substitutable_iff_chernoff.mp hsub) hYZ ⟨hxZ, hxY⟩
+
+/-- Under path independence, menus with the same choices remain equivalent
+after adding the same alternatives. -/
+theorem PathIndependent.union_congr_left (hpi : C.PathIndependent)
+    {A B : Set α} (hAB : C A = C B) (Z : Set α) :
+    C (A ∪ Z) = C (B ∪ Z) := by
+  rw [hpi A Z, hpi B Z, hAB]
+
+/-- A menu contributes nothing beyond alternatives whose choices are already
+available in the other menu. -/
+theorem PathIndependent.union_eq_left_of_choice_subset (hpi : C.PathIndependent)
+    {U W : Set α} (hW : C W ⊆ U) :
+    C (U ∪ W) = C U := by
+  rw [Set.union_comm U W, hpi W U,
+    Set.union_eq_self_of_subset_left hW]
+
 end ChoiceFunction

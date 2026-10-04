@@ -96,6 +96,12 @@ theorem fresh_iff_not_mem_image {counterparty : X → A} {x : X} {Y : Set X} :
   · intro h y hy heq
     exact h ⟨y, hy, heq⟩
 
+/-- Freshness is preserved by restricting the menu. -/
+theorem Fresh.mono {counterparty : X → A} {x : X} {Y Z : Set X}
+    (hfresh : Fresh counterparty x Z) (hYZ : Y ⊆ Z) :
+    Fresh counterparty x Y :=
+  fun y hy => hfresh y (hYZ hy)
+
 /-- Every choice function is a completion of itself. -/
 theorem isCompletionOf_refl (counterparty : X → A) (C : ChoiceFunction X) :
     C.IsCompletionOf counterparty C :=

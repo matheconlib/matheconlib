@@ -106,6 +106,88 @@ theorem subset_toBuyers_of_indRational {A : Set X} (h : M.IndRational A) :
   rw [Set.insert_eq_of_mem hx, h.2 (M.seller x)]
   exact ⟨hx, rfl⟩
 
+/-! ### Certifying a canonical state directly
+
+An algorithm can supply individual rationality and the singleton-acceptance
+test below without first proving a stability theorem. Substitutability and
+IRC then make its canonical state fixed; `stable_outcomeOf` subsequently
+supplies stability from the general correspondence.
+-/
+
+/-- Individual rationality and the singleton-acceptance test recover the
+outcome from its canonical state. No choice regularity is needed. -/
+theorem outcomeOf_stateOf_of_indRational_of_accepts {A : Set X}
+    (hIR : M.IndRational A)
+    (hno : ∀ y, y ∈ M.choiceB (M.buyer y) (insert y A) →
+      y ∈ M.choiceS (M.seller y) (insert y A) → y ∈ A) :
+    M.outcomeOf (M.stateOf A) = A := by
+  show M.toSellers A ∩ M.toBuyers A = A
+  apply Set.Subset.antisymm
+  · rintro y ⟨hyB, hyS⟩
+    exact hno y hyB hyS
+  · intro y hy
+    exact ⟨M.subset_toSellers_of_indRational hIR hy,
+      M.subset_toBuyers_of_indRational hIR hy⟩
+
+/-- Certify a deferred-acceptance fixed point directly from individual
+rationality and the singleton-acceptance test. The proof uses only choice
+contraction, IRC, and path independence, and does not invoke stability. -/
+theorem isFixedPt_stateOf_of_indRational_of_accepts
+    (hsub : M.Substitutable) (hcons : M.Consistent) {A : Set X}
+    (hIR : M.IndRational A)
+    (hno : ∀ y, y ∈ M.choiceB (M.buyer y) (insert y A) →
+      y ∈ M.choiceS (M.seller y) (insert y A) → y ∈ A) :
+    IsFixedPt M.daFun (M.stateOf A) := by
+  have hAs : A ⊆ M.toSellers A := M.subset_toSellers_of_indRational hIR
+  have hAb : A ⊆ M.toBuyers A := M.subset_toBuyers_of_indRational hIR
+  have hB : ∀ b, M.choiceB b (M.toBuyers A) = M.choiceB b A := by
+    intro b
+    apply Eq.symm
+    refine hcons.1 b ?_ hAb
+    intro y hy
+    have hyS : y ∈ M.toBuyers A := (M.choiceB b).choose_subset _ hy
+    have hyB : y ∈ M.choiceB b (insert y A) :=
+      (hsub.1 b).mem_of_subset (Set.insert_subset_iff.mpr ⟨hyS, hAb⟩)
+        hy (Set.mem_insert _ _)
+    refine hno y ?_ hyS
+    rw [M.buyer_eq_of_mem hy]
+    exact hyB
+  have hS : ∀ s, M.choiceS s (M.toSellers A) = M.choiceS s A := by
+    intro s
+    apply Eq.symm
+    refine hcons.2 s ?_ hAs
+    intro y hy
+    have hyB : y ∈ M.toSellers A := (M.choiceS s).choose_subset _ hy
+    have hyS : y ∈ M.choiceS s (insert y A) :=
+      (hsub.2 s).mem_of_subset (Set.insert_subset_iff.mpr ⟨hyB, hAs⟩)
+        hy (Set.mem_insert _ _)
+    apply hno y hyB
+    rw [M.seller_eq_of_mem hy]
+    exact hyS
+  have heqS : M.toSellers (M.toBuyers A) = M.toSellers A := by
+    ext x
+    have heq : M.choiceB (M.buyer x) (insert x (M.toBuyers A)) =
+        M.choiceB (M.buyer x) (insert x A) := by
+      have hpi := (hsub.1 (M.buyer x)).pathIndependent (hcons.1 (M.buyer x))
+      simpa only [Set.union_singleton] using
+        hpi.union_congr_left (hB (M.buyer x)) ({x} : Set X)
+    change x ∈ M.choiceB (M.buyer x) (insert x (M.toBuyers A)) ↔
+      x ∈ M.choiceB (M.buyer x) (insert x A)
+    rw [heq]
+  have heqB : M.toBuyers (M.toSellers A) = M.toBuyers A := by
+    ext x
+    have heq : M.choiceS (M.seller x) (insert x (M.toSellers A)) =
+        M.choiceS (M.seller x) (insert x A) := by
+      have hpi := (hsub.2 (M.seller x)).pathIndependent (hcons.2 (M.seller x))
+      simpa only [Set.union_singleton] using
+        hpi.union_congr_left (hS (M.seller x)) ({x} : Set X)
+    change x ∈ M.choiceS (M.seller x) (insert x (M.toSellers A)) ↔
+      x ∈ M.choiceS (M.seller x) (insert x A)
+    rw [heq]
+  change (M.toSellers (M.toBuyers A), toDual (M.toBuyers (M.toSellers A))) =
+    (M.toSellers A, toDual (M.toBuyers A))
+  rw [heqS, heqB]
+
 /-- The IRC step at a stable outcome, buyer side: enlarging the menu from `U`
 to `V` by contracts that the *sellers* would accept on top of `A` does not
 change any buyer's choice.  Chernoff pushes a chosen contract down to
@@ -234,146 +316,162 @@ theorem choiceS_eq_of_isFixedPt_sandwich (hcons : M.Consistent)
     M.choiceS s V = M.choiceS s p.1 :=
   hcons.2 s ((M.choiceS_subset_outcomeOf hp s).trans h1) h2
 
-/-- Chernoff + IRC at a fixed point: menus differing only in contracts drawn
+/-- Path independence at a fixed point: menus differing only in contracts
 from the buyer-available set induce the same buyer choice. -/
 theorem choiceB_eq_of_isFixedPt (hsub : M.Substitutable) (hcons : M.Consistent)
     {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) (b : B) {U V : Set X}
     (hAU : M.outcomeOf p ⊆ U) (hUV : U ⊆ V) (hXbV : (ofDual p.2 : Set X) ⊆ V)
     (hVU : ∀ y ∈ V, y ∉ U → y ∈ (ofDual p.2 : Set X)) :
     M.choiceB b V = M.choiceB b U := by
-  have hch : (M.choiceB b).Chernoff :=
-    ChoiceFunction.substitutable_iff_chernoff.mp (hsub.1 b)
-  have key : M.choiceB b V ⊆ U := by
-    intro y hy
-    by_contra hyU
-    have hyV : y ∈ V := (M.choiceB b).choose_subset _ hy
-    have hyXb : y ∈ (ofDual p.2 : Set X) := hVU y hyV hyU
-    have hyC : y ∈ M.choiceB b (ofDual p.2 : Set X) := hch hXbV ⟨hy, hyXb⟩
-    exact hyU (hAU (M.choiceB_subset_outcomeOf hp b hyC))
-  exact (hcons.1 b key hUV).symm
+  have hV : V = U ∪ (ofDual p.2 : Set X) := by
+    apply Set.Subset.antisymm
+    · intro y hy
+      by_cases hyU : y ∈ U
+      · exact Or.inl hyU
+      · exact Or.inr (hVU y hy hyU)
+    · exact Set.union_subset hUV hXbV
+  rw [hV]
+  exact ((hsub.1 b).pathIndependent (hcons.1 b)).union_eq_left_of_choice_subset
+    ((M.choiceB_subset_outcomeOf hp b).trans hAU)
 
 theorem choiceS_eq_of_isFixedPt (hsub : M.Substitutable) (hcons : M.Consistent)
     {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) (s : S) {U V : Set X}
     (hAU : M.outcomeOf p ⊆ U) (hUV : U ⊆ V) (hXsV : p.1 ⊆ V)
     (hVU : ∀ y ∈ V, y ∉ U → y ∈ p.1) :
     M.choiceS s V = M.choiceS s U := by
-  have hch : (M.choiceS s).Chernoff :=
-    ChoiceFunction.substitutable_iff_chernoff.mp (hsub.2 s)
-  have key : M.choiceS s V ⊆ U := by
-    intro y hy
-    by_contra hyU
-    have hyV : y ∈ V := (M.choiceS s).choose_subset _ hy
-    have hyXs : y ∈ p.1 := hVU y hyV hyU
-    have hyC : y ∈ M.choiceS s p.1 := hch hXsV ⟨hy, hyXs⟩
-    exact hyU (hAU (M.choiceS_subset_outcomeOf hp s hyC))
-  exact (hcons.2 s key hUV).symm
+  have hV : V = U ∪ p.1 := by
+    apply Set.Subset.antisymm
+    · intro y hy
+      by_cases hyU : y ∈ U
+      · exact Or.inl hyU
+      · exact Or.inr (hVU y hy hyU)
+    · exact Set.union_subset hUV hXsV
+  rw [hV]
+  exact ((hsub.2 s).pathIndependent (hcons.2 s)).union_eq_left_of_choice_subset
+    ((M.choiceS_subset_outcomeOf hp s).trans hAU)
 
 /-! ### Lemma 2.1: fixed points ↔ stable outcomes -/
 
-/-- Lemma 2.1, first half: the outcome of a fixed point is stable. -/
+/-- IRC alone makes the outcome of a fixed point individually rational.
+Substitutability is needed for nonblocking, not for this conclusion. -/
+theorem indRational_outcomeOf (hcons : M.Consistent)
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    M.IndRational (M.outcomeOf p) := by
+  have hAs : M.outcomeOf p ⊆ p.1 := fun x hx => hx.1
+  have hAb : M.outcomeOf p ⊆ (ofDual p.2 : Set X) := fun x hx => hx.2
+  constructor
+  · intro b
+    refine Set.Subset.antisymm
+      (fun x hx => ⟨(M.choiceB b).choose_subset _ hx, M.buyer_eq_of_mem hx⟩) ?_
+    rintro x ⟨hxA, hxb⟩
+    have hxXb : x ∈ (ofDual p.2 : Set X) := hAb hxA
+    have h1 : x ∈ M.choiceB (M.buyer x) (insert x (ofDual p.2 : Set X)) := by
+      have h2 : x ∈ M.toSellers (ofDual p.2 : Set X) := by
+        rw [M.toSellers_eq_of_isFixedPt hp]; exact hAs hxA
+      exact h2
+    rw [Set.insert_eq_of_mem hxXb, hxb] at h1
+    rw [M.choiceB_eq_of_isFixedPt_sandwich hcons hp b (subset_refl _) hAb]
+    exact h1
+  · intro s
+    refine Set.Subset.antisymm
+      (fun x hx => ⟨(M.choiceS s).choose_subset _ hx, M.seller_eq_of_mem hx⟩) ?_
+    rintro x ⟨hxA, hxs⟩
+    have hxXs : x ∈ p.1 := hAs hxA
+    have h1 : x ∈ M.choiceS (M.seller x) (insert x p.1) := by
+      have h2 : x ∈ M.toBuyers p.1 := by
+        rw [M.toBuyers_eq_of_isFixedPt hp]; exact hAb hxA
+      exact h2
+    rw [Set.insert_eq_of_mem hxXs, hxs] at h1
+    rw [M.choiceS_eq_of_isFixedPt_sandwich hcons hp s (subset_refl _) hAs]
+    exact h1
+
+/-- Recompute the seller-available coordinate from the outcome. IRC identifies
+the choices from the two menus; path independence preserves that identity when
+one contract is added. -/
+theorem toSellers_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    M.toSellers (M.outcomeOf p) = p.1 := by
+  rw [← M.toSellers_eq_of_isFixedPt hp]
+  ext x
+  have heq := M.choiceB_eq_of_isFixedPt_sandwich hcons hp (M.buyer x)
+    (subset_refl _) (fun _ hx => hx.2)
+  have hpi := (hsub.1 (M.buyer x)).pathIndependent (hcons.1 (M.buyer x))
+  have hins : M.choiceB (M.buyer x) (insert x (M.outcomeOf p)) =
+      M.choiceB (M.buyer x) (insert x (ofDual p.2 : Set X)) := by
+    simpa only [Set.union_singleton] using hpi.union_congr_left heq ({x} : Set X)
+  change x ∈ M.choiceB (M.buyer x) (insert x (M.outcomeOf p)) ↔
+    x ∈ M.choiceB (M.buyer x) (insert x (ofDual p.2 : Set X))
+  rw [hins]
+
+/-- Recompute the buyer-available coordinate from the outcome. -/
+theorem toBuyers_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    M.toBuyers (M.outcomeOf p) = (ofDual p.2 : Set X) := by
+  rw [← M.toBuyers_eq_of_isFixedPt hp]
+  ext x
+  have heq := M.choiceS_eq_of_isFixedPt_sandwich hcons hp (M.seller x)
+    (subset_refl _) (fun _ hx => hx.1)
+  have hpi := (hsub.2 (M.seller x)).pathIndependent (hcons.2 (M.seller x))
+  have hins : M.choiceS (M.seller x) (insert x (M.outcomeOf p)) =
+      M.choiceS (M.seller x) (insert x p.1) := by
+    simpa only [Set.union_singleton] using hpi.union_congr_left heq ({x} : Set X)
+  change x ∈ M.choiceS (M.seller x) (insert x (M.outcomeOf p)) ↔
+    x ∈ M.choiceS (M.seller x) (insert x p.1)
+  rw [hins]
+
+/-- The fixed-point round trip is a choice-theoretic result, established
+before stability and used to prove nonblocking. -/
+theorem stateOf_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    M.stateOf (M.outcomeOf p) = p := by
+  apply Prod.ext
+  · exact M.toSellers_outcomeOf hsub hcons hp
+  · exact congrArg toDual (M.toBuyers_outcomeOf hsub hcons hp)
+
+/-- A fixed point is determined by its outcome. Stability of the outcome is
+not an additional hypothesis. -/
+theorem eq_of_isFixedPt_of_outcomeOf_eq_state (hsub : M.Substitutable)
+    (hcons : M.Consistent) {A : Set X} {p : Set X × (Set X)ᵒᵈ}
+    (hp : IsFixedPt M.daFun p) (hout : M.outcomeOf p = A) :
+    p = M.stateOf A :=
+  (M.stateOf_outcomeOf hsub hcons hp).symm.trans (congrArg M.stateOf hout)
+
+/-- The outcome map is injective on deferred-acceptance fixed points. -/
+theorem outcomeOf_injOn_fixedPoints (hsub : M.Substitutable) (hcons : M.Consistent) :
+    Set.InjOn M.outcomeOf {p | IsFixedPt M.daFun p} := by
+  intro p hp q hq hpq
+  rw [← M.stateOf_outcomeOf hsub hcons hp, ← M.stateOf_outcomeOf hsub hcons hq]
+  exact congrArg M.stateOf hpq
+
+/-- Lemma 2.1, first half: the outcome of a fixed point is stable.
+The state round trip makes singleton nonblocking an immediate consequence of
+membership in both coordinates. -/
 theorem stable_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
     {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
     M.Stable (M.outcomeOf p) := by
-  have hAs : M.outcomeOf p ⊆ p.1 := fun x hx => hx.1
-  have hAb : M.outcomeOf p ⊆ (ofDual p.2 : Set X) := fun x hx => hx.2
-  -- Individual rationality: pure IRC via the sandwich lemma.
-  have hIR : M.IndRational (M.outcomeOf p) := by
-    constructor
-    · intro b
-      refine Set.Subset.antisymm
-        (fun x hx => ⟨(M.choiceB b).choose_subset _ hx, M.buyer_eq_of_mem hx⟩) ?_
-      rintro x ⟨hxA, hxb⟩
-      have hxXb : x ∈ (ofDual p.2 : Set X) := hAb hxA
-      have h1 : x ∈ M.choiceB (M.buyer x) (insert x (ofDual p.2 : Set X)) := by
-        have h2 : x ∈ M.toSellers (ofDual p.2 : Set X) := by
-          rw [M.toSellers_eq_of_isFixedPt hp]; exact hAs hxA
-        exact h2
-      rw [Set.insert_eq_of_mem hxXb, hxb] at h1
-      rw [M.choiceB_eq_of_isFixedPt_sandwich hcons hp b (subset_refl _) hAb]
-      exact h1
-    · intro s
-      refine Set.Subset.antisymm
-        (fun x hx => ⟨(M.choiceS s).choose_subset _ hx, M.seller_eq_of_mem hx⟩) ?_
-      rintro x ⟨hxA, hxs⟩
-      have hxXs : x ∈ p.1 := hAs hxA
-      have h1 : x ∈ M.choiceS (M.seller x) (insert x p.1) := by
-        have h2 : x ∈ M.toBuyers p.1 := by
-          rw [M.toBuyers_eq_of_isFixedPt hp]; exact hAb hxA
-        exact h2
-      rw [Set.insert_eq_of_mem hxXs, hxs] at h1
-      rw [M.choiceS_eq_of_isFixedPt_sandwich hcons hp s (subset_refl _) hAs]
-      exact h1
-  -- No single blocking contract: such a contract would lie in both
-  -- coordinates of the fixed point, hence in the outcome.
-  have hno : ∀ z : X, ¬ M.Blocks (M.outcomeOf p) {z} := by
-    intro z hz
-    have hzA : z ∉ M.outcomeOf p := by
-      have hd := hz.2.1
-      rwa [Set.disjoint_singleton_left] at hd
-    have hzB : z ∈ M.choiceB (M.buyer z) (insert z (M.outcomeOf p)) := by
-      have h := hz.2.2.1 (M.buyer z)
-        (⟨rfl, rfl⟩ : z ∈ M.buyerSide (M.buyer z) {z})
-      rwa [Set.union_singleton] at h
-    have hzS : z ∈ M.choiceS (M.seller z) (insert z (M.outcomeOf p)) := by
-      have h := hz.2.2.2 (M.seller z)
-        (⟨rfl, rfl⟩ : z ∈ M.sellerSide (M.seller z) {z})
-      rwa [Set.union_singleton] at h
-    have e1 : M.choiceB (M.buyer z) (insert z (ofDual p.2 : Set X))
-        = M.choiceB (M.buyer z) (insert z (M.outcomeOf p)) := by
-      refine M.choiceB_eq_of_isFixedPt hsub hcons hp (M.buyer z)
-        (Set.subset_insert _ _) (Set.insert_subset_insert hAb)
-        (Set.subset_insert _ _) ?_
-      intro y hy hy'
-      rcases Set.mem_insert_iff.mp hy with rfl | hy2
-      · exact absurd (Set.mem_insert _ _) hy'
-      · exact hy2
-    have e2 : M.choiceS (M.seller z) (insert z p.1)
-        = M.choiceS (M.seller z) (insert z (M.outcomeOf p)) := by
-      refine M.choiceS_eq_of_isFixedPt hsub hcons hp (M.seller z)
-        (Set.subset_insert _ _) (Set.insert_subset_insert hAs)
-        (Set.subset_insert _ _) ?_
-      intro y hy hy'
-      rcases Set.mem_insert_iff.mp hy with rfl | hy2
-      · exact absurd (Set.mem_insert _ _) hy'
-      · exact hy2
-    have hzXs : z ∈ p.1 := by
-      rw [← M.toSellers_eq_of_isFixedPt hp]
-      show z ∈ M.choiceB (M.buyer z) (insert z (ofDual p.2 : Set X))
-      rw [e1]; exact hzB
-    have hzXb : z ∈ (ofDual p.2 : Set X) := by
-      rw [← M.toBuyers_eq_of_isFixedPt hp]
-      show z ∈ M.choiceS (M.seller z) (insert z p.1)
-      rw [e2]; exact hzS
-    exact hzA ⟨hzXs, hzXb⟩
-  have hps : M.PairwiseStable (M.outcomeOf p) := ⟨hIR, hno⟩
-  exact hps.stable M hsub hcons
+  apply PairwiseStable.stable_of_substitutable M hsub
+  refine ⟨M.indRational_outcomeOf hcons hp, ?_⟩
+  intro z hz
+  obtain ⟨hzA, hzB, hzS⟩ := M.blocks_singleton_iff.mp hz
+  have hzout : z ∈ M.outcomeOf (M.stateOf (M.outcomeOf p)) := ⟨hzB, hzS⟩
+  rw [M.stateOf_outcomeOf hsub hcons hp] at hzout
+  exact hzA hzout
 
-/-- Lemma 2.1, second half (existence). -/
+/-- Lemma 2.1, second half (existence), specializing the direct canonical-state
+certificate to the singleton-acceptance test supplied by stability. -/
 theorem isFixedPt_daFun_of_stable (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
-    IsFixedPt M.daFun (M.daFun (A, toDual A)) := by
-  have hAb : A ⊆ M.toBuyers A := M.subset_toBuyers_of_indRational hA.1
-  have hAs : A ⊆ M.toSellers A := M.subset_toSellers_of_indRational hA.1
-  have h1 : M.toSellers (M.toBuyers A) = M.toSellers A :=
-    M.toSellers_eq_of_stable hsub hcons hA hAb (subset_refl _)
-  have h2 : M.toBuyers (M.toSellers A) = M.toBuyers A :=
-    M.toBuyers_eq_of_stable hsub hcons hA hAs (subset_refl _)
-  show (M.toSellers (M.toBuyers A), toDual (M.toBuyers (M.toSellers A)))
-      = (M.toSellers A, toDual (M.toBuyers A))
-  rw [h1, h2]
+    IsFixedPt M.daFun (M.daFun (A, toDual A)) :=
+  M.isFixedPt_stateOf_of_indRational_of_accepts hsub hcons hA.1
+    (fun _ hyB hyS => M.not_blocking_singleton hA hyB hyS)
 
 /-- Recovering a stable outcome from its canonical state needs no choice
 regularity: individual rationality gives one inclusion and absence of singleton
 blocks gives the other. -/
 theorem outcomeOf_stateOf_of_stable {A : Set X} (hA : M.Stable A) :
-    M.outcomeOf (M.stateOf A) = A := by
-  show M.toSellers A ∩ M.toBuyers A = A
-  refine Set.Subset.antisymm ?_ ?_
-  · rintro x ⟨hx1, hx2⟩
-    exact M.not_blocking_singleton hA hx1 hx2
-  · intro x hx
-    exact ⟨M.subset_toSellers_of_indRational hA.1 hx,
-           M.subset_toBuyers_of_indRational hA.1 hx⟩
+    M.outcomeOf (M.stateOf A) = A :=
+  M.outcomeOf_stateOf_of_indRational_of_accepts hA.1
+    (fun _ hyB hyS => M.not_blocking_singleton hA hyB hyS)
 
 /-- Compatibility form of `outcomeOf_stateOf_of_stable`, written using the
 raw operator. The regularity hypotheses are unnecessary for this direction. -/
@@ -382,52 +480,13 @@ theorem outcomeOf_daFun_of_stable (_hsub : M.Substitutable)
     M.outcomeOf (M.daFun (A, toDual A)) = A :=
   M.outcomeOf_stateOf_of_stable hA
 
-/-- Lemma 2.1, second half (uniqueness). -/
+/-- Compatibility form of fixed-point uniqueness. Stability of `A` is
+redundant; use `eq_of_isFixedPt_of_outcomeOf_eq_state` in new proofs. -/
 theorem eq_of_isFixedPt_of_outcomeOf_eq (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} {p : Set X × (Set X)ᵒᵈ}
     (_hA : M.Stable A) (hp : IsFixedPt M.daFun p)
-    (hout : M.outcomeOf p = A) :
-    p = M.daFun (A, toDual A) := by
-  have hAXb : A ⊆ (ofDual p.2 : Set X) := by
-    rw [← hout]; exact fun x hx => hx.2
-  have hAXs : A ⊆ p.1 := by
-    rw [← hout]; exact fun x hx => hx.1
-  have h1 : M.toSellers (ofDual p.2 : Set X) = M.toSellers A := by
-    ext x
-    have heq : M.choiceB (M.buyer x) (insert x (ofDual p.2 : Set X))
-        = M.choiceB (M.buyer x) (insert x A) := by
-      refine M.choiceB_eq_of_isFixedPt hsub hcons hp (M.buyer x) ?_
-        (Set.insert_subset_insert hAXb) (Set.subset_insert _ _) ?_
-      · rw [hout]; exact Set.subset_insert _ _
-      · intro y hy hy'
-        rcases Set.mem_insert_iff.mp hy with rfl | hy2
-        · exact absurd (Set.mem_insert _ _) hy'
-        · exact hy2
-    show x ∈ M.choiceB (M.buyer x) (insert x (ofDual p.2 : Set X)) ↔
-      x ∈ M.choiceB (M.buyer x) (insert x A)
-    rw [heq]
-  have h2 : M.toBuyers p.1 = M.toBuyers A := by
-    ext x
-    have heq : M.choiceS (M.seller x) (insert x p.1)
-        = M.choiceS (M.seller x) (insert x A) := by
-      refine M.choiceS_eq_of_isFixedPt hsub hcons hp (M.seller x) ?_
-        (Set.insert_subset_insert hAXs) (Set.subset_insert _ _) ?_
-      · rw [hout]; exact Set.subset_insert _ _
-      · intro y hy hy'
-        rcases Set.mem_insert_iff.mp hy with rfl | hy2
-        · exact absurd (Set.mem_insert _ _) hy'
-        · exact hy2
-    show x ∈ M.choiceS (M.seller x) (insert x p.1) ↔
-      x ∈ M.choiceS (M.seller x) (insert x A)
-    rw [heq]
-  have hp1 : p.1 = M.toSellers A := by
-    rw [← M.toSellers_eq_of_isFixedPt hp, h1]
-  have hp2 : p.2 = toDual (M.toBuyers A) := by
-    show (ofDual p.2 : Set X) = M.toBuyers A
-    rw [← M.toBuyers_eq_of_isFixedPt hp, h2]
-  show p = (M.toSellers A, toDual (M.toBuyers A))
-  calc p = (p.1, p.2) := rfl
-    _ = (M.toSellers A, toDual (M.toBuyers A)) := by rw [hp1, hp2]
+    (hout : M.outcomeOf p = A) : p = M.daFun (A, toDual A) :=
+  M.eq_of_isFixedPt_of_outcomeOf_eq_state hsub hcons hp hout
 
 /-! #### The Lemma 2.1 round trips, in `stateOf` form
 
@@ -444,25 +503,6 @@ theorem isFixedPt_stateOf (hsub : M.Substitutable) (hcons : M.Consistent)
 theorem outcomeOf_stateOf (hsub : M.Substitutable) (hcons : M.Consistent)
     {A : Set X} (hA : M.Stable A) : M.outcomeOf (M.stateOf A) = A :=
   M.outcomeOf_daFun_of_stable hsub hcons hA
-
-theorem stateOf_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
-    M.stateOf (M.outcomeOf p) = p :=
-  (M.eq_of_isFixedPt_of_outcomeOf_eq hsub hcons
-    (M.stable_outcomeOf hsub hcons hp) hp rfl).symm
-
-/-- Coordinate form of `stateOf_outcomeOf`: at a fixed point the
-seller-available set is recomputable from the outcome alone. -/
-theorem toSellers_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
-    M.toSellers (M.outcomeOf p) = p.1 :=
-  congrArg Prod.fst (M.stateOf_outcomeOf hsub hcons hp)
-
-theorem toBuyers_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
-    M.toBuyers (M.outcomeOf p) = (ofDual p.2 : Set X) :=
-  congrArg (fun r : Set X × (Set X)ᵒᵈ => (ofDual r.2 : Set X))
-    (M.stateOf_outcomeOf hsub hcons hp)
 
 /-! ### Theorem 2.2 / 3.2: existence and the two extremal states -/
 

@@ -12,6 +12,25 @@ statements for a stopping index, not an executable fixed-point solver.
 
 open Function OrderDual
 
+/-- A monotone sequence in a finite partial order has consecutive equal terms.
+This is the common finite-chain argument behind both kinds of iteration below. -/
+theorem Monotone.exists_succ_eq_of_finite {L : Type*}
+    [PartialOrder L] [Finite L] {f : ℕ → L} (hf : Monotone f) :
+    ∃ n, f (n + 1) = f n := by
+  obtain ⟨m, n, hne, heq⟩ := Finite.exists_ne_map_eq_of_infinite f
+  rcases lt_trichotomy m n with hlt | heq' | hlt
+  · refine ⟨m, le_antisymm ?_ (hf (Nat.le_succ m))⟩
+    exact (hf (Nat.succ_le_of_lt hlt)).trans heq.ge
+  · exact (hne heq').elim
+  · refine ⟨n, le_antisymm ?_ (hf (Nat.le_succ n))⟩
+    exact (hf (Nat.succ_le_of_lt hlt)).trans heq.le
+
+/-- The decreasing-sequence form is the same theorem on the order dual. -/
+theorem Antitone.exists_succ_eq_of_finite {L : Type*}
+    [PartialOrder L] [Finite L] {f : ℕ → L} (hf : Antitone f) :
+    ∃ n, f (n + 1) = f n :=
+  Monotone.exists_succ_eq_of_finite (L := Lᵒᵈ) hf
+
 /-- A monotone self-map of a finite complete lattice reaches its greatest
 fixed point by iterating from `⊤`.
 
@@ -32,9 +51,6 @@ theorem OrderHom.exists_iterate_top_eq_gfp {L : Type*} [CompleteLattice L]
           _ = (f : L → L)^[k + 1] ⊤ := (Function.iterate_succ_apply' _ _ _).symm
   have hanti : Antitone (fun n : ℕ => (f : L → L)^[n] (⊤ : L)) :=
     antitone_nat_of_succ_le hstep
-  -- a beta-reduced restatement, so later `Eq.trans_le`s unify syntactically
-  have hmono : ∀ a b : ℕ, a ≤ b →
-      (f : L → L)^[b] (⊤ : L) ≤ (f : L → L)^[a] ⊤ := fun _ _ h => hanti h
   have hge : ∀ k : ℕ, OrderHom.gfp f ≤ (f : L → L)^[k] ⊤ := by
     intro k
     induction k with
@@ -43,18 +59,7 @@ theorem OrderHom.exists_iterate_top_eq_gfp {L : Type*} [CompleteLattice L]
         calc OrderHom.gfp f = f (OrderHom.gfp f) := f.isGreatest_gfp.1.symm
           _ ≤ f ((f : L → L)^[j] ⊤) := f.monotone ih
           _ = (f : L → L)^[j + 1] ⊤ := (Function.iterate_succ_apply' _ _ _).symm
-  -- finiteness forces the chain to stabilize
-  obtain ⟨m, n, hmn, hval⟩ :=
-    Finite.exists_ne_map_eq_of_infinite (fun k : ℕ => (f : L → L)^[k] (⊤ : L))
-  have hval' : (f : L → L)^[m] (⊤ : L) = (f : L → L)^[n] ⊤ := hval
-  have key : ∃ k : ℕ, (f : L → L)^[k + 1] (⊤ : L) = (f : L → L)^[k] ⊤ := by
-        rcases lt_trichotomy m n with hlt | heq | hlt
-        · exact ⟨m, le_antisymm (hstep m)
-            (hval'.trans_le (hmono (m + 1) n (Nat.succ_le_of_lt hlt)))⟩
-        · exact absurd heq hmn
-        · exact ⟨n, le_antisymm (hstep n)
-            (hval'.symm.trans_le (hmono (n + 1) m (Nat.succ_le_of_lt hlt)))⟩
-  obtain ⟨k, hk⟩ := key
+  obtain ⟨k, hk⟩ := hanti.exists_succ_eq_of_finite
   refine ⟨k, le_antisymm ?_ (hge k)⟩
   have hfix : IsFixedPt (f : L → L) ((f : L → L)^[k] ⊤) :=
     (Function.iterate_succ_apply' (f : L → L) k ⊤).symm.trans hk
@@ -79,11 +84,4 @@ theorem Function.exists_iterate_succ_eq_of_inflationary {L : Type*}
     exact hf _
   have hmono : Monotone (fun n : ℕ => f^[n] a) :=
     monotone_nat_of_le_succ hstep
-  obtain ⟨m, n, hne, heq⟩ :=
-    Finite.exists_ne_map_eq_of_infinite (fun k : ℕ => f^[k] a)
-  rcases lt_trichotomy m n with hlt | heq' | hlt
-  · refine ⟨m, le_antisymm ?_ (hstep m)⟩
-    exact (hmono (Nat.succ_le_of_lt hlt)).trans heq.ge
-  · exact (hne heq').elim
-  · refine ⟨n, le_antisymm ?_ (hstep n)⟩
-    exact (hmono (Nat.succ_le_of_lt hlt)).trans heq.le
+  exact hmono.exists_succ_eq_of_finite
