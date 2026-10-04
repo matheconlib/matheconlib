@@ -7,6 +7,7 @@ import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert
 
 /-!
+# Two-sided matching markets with contracts
 
 A contract is an element of a bare type `X` equipped with maps to
 the buyer type `B` and seller type `S`; the "terms" of the contract
