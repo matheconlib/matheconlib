@@ -299,7 +299,7 @@ theorem isManOptimal_gsMatchingAt (n : ℕ)
     (hn : IsFixedPt mkt.gsStep (mkt.gsRejected n)) :
     mkt.IsManOptimal (mkt.gsMatchingAt (mkt.gsRejected n) hn) :=
   ⟨mkt.stable_gsMatchingAt n hn,
-    fun ν hν m => mkt.gsMatchingAt_manOptimal n hn hν m⟩
+    fun _ν hν m => mkt.gsMatchingAt_manOptimal n hn hν m⟩
 
 /-- The classical correctness proof makes the choice of terminal round irrelevant. -/
 theorem gsMatchingAt_eq_gsMatchingAt (n k : ℕ)
@@ -402,7 +402,7 @@ theorem womanGaleShapley_womanOptimal {ν : M ≃. W}
 
 theorem isWomanOptimal_womanGaleShapley :
     mkt.IsWomanOptimal mkt.womanGaleShapley :=
-  ⟨mkt.stable_womanGaleShapley, fun ν hν w => mkt.womanGaleShapley_womanOptimal hν w⟩
+  ⟨mkt.stable_womanGaleShapley, fun _ν hν w => mkt.womanGaleShapley_womanOptimal hν w⟩
 
 theorem isManPessimal_womanGaleShapley :
     mkt.IsManPessimal mkt.womanGaleShapley :=

@@ -21,6 +21,7 @@ variable [Fintype M] [Fintype W]
 
 /-! ## Lone wolf -/
 
+omit [Fintype M] [Fintype W] in
 theorem sellerSide_graphOf_eq_empty {μ : M ≃. W} {m : M}
     (hμ : μ m = none) :
     mkt.toMarket.sellerSide m (mkt.graphOf μ) = ∅ := by
@@ -32,6 +33,7 @@ theorem sellerSide_graphOf_eq_empty {μ : M ≃. W} {m : M}
   rw [hμ] at hp
   contradiction
 
+omit [Fintype M] [Fintype W] in
 theorem sellerSide_graphOf_eq_singleton {μ : M ≃. W}
     {m : M} {w : W} (hμ : μ m = some w) :
     mkt.toMarket.sellerSide m (mkt.graphOf μ) = {(m, w)} := by
@@ -50,6 +52,7 @@ theorem sellerSide_graphOf_eq_singleton {μ : M ≃. W}
     obtain ⟨rfl, rfl⟩ := hp'
     exact ⟨mkt.mem_graphOf.mpr hμ, rfl⟩
 
+omit [Fintype M] [Fintype W] in
 theorem ncard_sellerSide_graphOf_eq_zero_iff
     (μ : M ≃. W) (m : M) :
     (mkt.toMarket.sellerSide m (mkt.graphOf μ)).ncard = 0 ↔
@@ -62,6 +65,7 @@ theorem ncard_sellerSide_graphOf_eq_zero_iff
       rw [mkt.sellerSide_graphOf_eq_singleton hμ]
       simp
 
+omit [Fintype M] [Fintype W] in
 theorem buyerSide_graphOf_eq_empty {μ : M ≃. W} {w : W}
     (hμ : μ.symm w = none) :
     mkt.toMarket.buyerSide w (mkt.graphOf μ) = ∅ := by
@@ -76,6 +80,7 @@ theorem buyerSide_graphOf_eq_empty {μ : M ≃. W} {w : W}
   · intro hp
     exact hp.elim
 
+omit [Fintype M] [Fintype W] in
 theorem buyerSide_graphOf_eq_singleton {μ : M ≃. W}
     {m : M} {w : W} (hμ : μ.symm w = some m) :
     mkt.toMarket.buyerSide w (mkt.graphOf μ) = {(m, w)} := by
@@ -94,6 +99,7 @@ theorem buyerSide_graphOf_eq_singleton {μ : M ≃. W}
     obtain ⟨rfl, rfl⟩ := hp'
     exact ⟨mkt.mem_graphOf_symm.mpr hμ, rfl⟩
 
+omit [Fintype M] [Fintype W] in
 theorem ncard_buyerSide_graphOf_eq_zero_iff (μ : M ≃. W) (w : W) :
     (mkt.toMarket.buyerSide w (mkt.graphOf μ)).ncard = 0 ↔
       μ.symm w = none := by

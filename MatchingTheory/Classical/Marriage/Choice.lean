@@ -377,12 +377,14 @@ omit [Fintype W] in
     subst w'
     exact mkt.mem_inducedChoiceW_iff.mpr (mkt.bestW_eq_some_iff.mp hbest.symm)
 
+omit [Fintype M] in
 /-- Equality of the generic choice and its original finite maximum formula. -/
 theorem inducedChoiceM_apply_eq (m : M) (Y : Set (M × W)) :
     mkt.inducedChoiceM m Y = {p | p.1 = m ∧ some p.2 = mkt.bestM m Y} := by
   ext p
   exact mkt.mem_inducedChoiceM
 
+omit [Fintype W] in
 /-- Equality of the generic choice and its symmetric finite maximum formula. -/
 theorem inducedChoiceW_apply_eq (w : W) (Y : Set (M × W)) :
     mkt.inducedChoiceW w Y = {p | p.2 = w ∧ some p.1 = mkt.bestW w Y} := by

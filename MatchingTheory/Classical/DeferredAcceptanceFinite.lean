@@ -83,12 +83,12 @@ def menuWFinset (mkt : MarriageMarket M W) (w : W)
     (Y : Finset (M × W)) : Finset (Option M) :=
   ChoiceFunction.optionMenu (partnersWFinset w Y)
 
-omit [Fintype M] in
+omit [Fintype M] [Fintype W] in
 theorem menuMFinset_nonempty (m : M) (Y : Finset (M × W)) :
     (mkt.menuMFinset m Y).Nonempty := by
   exact ⟨none, by simp [menuMFinset]⟩
 
-omit [Fintype W] in
+omit [Fintype W] [Fintype M] in
 theorem menuWFinset_nonempty (w : W) (Y : Finset (M × W)) :
     (mkt.menuWFinset w Y).Nonempty := by
   exact ⟨none, by simp [menuWFinset]⟩

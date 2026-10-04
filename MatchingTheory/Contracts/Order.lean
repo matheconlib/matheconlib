@@ -77,12 +77,14 @@ variable (hsub : M.Substitutable) (hcons : M.Consistent)
 
 include hsub hcons
 
+omit hsub in
 /-- Compatibility form of `sellerChosen_outcomeOf_of_le_of_consistent`. -/
 theorem sellerChosen_outcomeOf_of_le {p q : Set X × (Set X)ᵒᵈ}
     (hq : IsFixedPt M.daFun q) (h : p ≤ q) :
     M.SellerChosen (M.outcomeOf q) (M.outcomeOf p) :=
   M.sellerChosen_outcomeOf_of_le_of_consistent hcons hq h
 
+omit hsub in
 /-- Compatibility form of `buyerChosen_outcomeOf_of_le_of_consistent`. -/
 theorem buyerChosen_outcomeOf_of_le {p q : Set X × (Set X)ᵒᵈ}
     (hp : IsFixedPt M.daFun p) (h : p ≤ q) :
