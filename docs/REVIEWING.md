@@ -6,6 +6,9 @@ Authoring rules live in CONTRIBUTING.md; this file is the other side of the
 table. A case index at the end maps each rule to the PRs where it happened.
 Project-wide design principles live in [`DESIGN.md`](../DESIGN.md); this file
 describes how review applies them.
+When reviewing an economic model family or instance, use the
+[economic model design principles](../DESIGN.md#economic-model-design-principles)
+alongside the review order below.
 
 ## What review is for
 

@@ -1,5 +1,30 @@
 # Library design
 
+## Contents
+
+- [Motivation](#motivation)
+- [Status and use](#status-and-use)
+- [Design principles](#design-principles)
+  - [P1. Prefer minimally constitutive definitions](#p1-prefer-minimally-constitutive-definitions)
+  - [P2. Generalize to the most useful shared level, then specialize](#p2-generalize-to-the-most-useful-shared-level-then-specialize)
+  - [P3. Compose high-level concepts from library primitives](#p3-compose-high-level-concepts-from-library-primitives)
+  - [P4. Match representation to logical role](#p4-match-representation-to-logical-role)
+  - [P5. Make changes of representation explicit](#p5-make-changes-of-representation-explicit)
+  - [P6. Distinguish total Lean operations from partial economic concepts](#p6-distinguish-total-lean-operations-from-partial-economic-concepts)
+  - [P7. Provide a usable interface, not only a general definition](#p7-provide-a-usable-interface-not-only-a-general-definition)
+  - [P8. Validate abstractions with representative instances and boundary cases](#p8-validate-abstractions-with-representative-instances-and-boundary-cases)
+- [Economic model design principles](#economic-model-design-principles)
+  - [M1. Separate a model family from its instances](#m1-separate-a-model-family-from-its-instances)
+  - [M2. Make the economic framework explicit](#m2-make-the-economic-framework-explicit)
+  - [M3. Separate solution concepts, existence, selection, and algorithms](#m3-separate-solution-concepts-existence-selection-and-algorithms)
+  - [M4. Prove that implementations realize their economic specifications](#m4-prove-that-implementations-realize-their-economic-specifications)
+  - [M5. Make instance-level conclusions auditable](#m5-make-instance-level-conclusions-auditable)
+- [Illustrative architectural designs](#illustrative-architectural-designs)
+  - [Separate mechanisms, environments, and priors](#separate-mechanisms-environments-and-priors)
+  - [Derive direct mechanisms and equilibrium notions](#derive-direct-mechanisms-and-equilibrium-notions)
+  - [Share affine menus across bidding and screening problems](#share-affine-menus-across-bidding-and-screening-problems)
+- [Provenance](#provenance)
+
 ## Motivation
 
 While a formal economic library can guarantee mathematical correctness through the Lean kernel, _economic_ correctness—that is, the faithfulness of the library's theorems and definitions to the concepts they purport to represent—must be enforced through careful and consistent design. A shared design framework gives contributors a common way to evaluate the abstractions in the library and helps users understand how the parts of the library fit together.
@@ -239,6 +264,101 @@ A mechanism abstraction should be exercised by a prior-free auction result and, 
 
 The affine-menu API should include a case demonstrating why type-dependent deviation sets require additional hypotheses for monotonicity. The `comap` API should include a case showing why a property of the induced mechanism need not hold for actions outside the map's range.
 
+## Economic model design principles
+
+_In addition to fully general economic foundations, the library will also need to support models of specific economic settings, the generality level of which may vary depending on the application context._
+
+For example, we might have:
+
+- a specialization of a generalized matching model to a more specific setting such as one-to-one marriage matching or many-to-one school choice matching;
+- a model of a specific auction environment used as the foundation for an empirical analysis;
+- a price theory model of a specific economic phenomenon, such as ticket pricing;
+- a general equilibrium macro model; or
+- an applied theory model drawing on the “Bayesian Persuasion” framework.
+
+_Models built on top of the library's reusable economic concepts should make explicit how these components describe a particular economic setting and which conclusions follow from the setting’s assumptions._
+
+These principles apply both to reusable model families, such as a two-sided marriage-matching problem, and to particular instances, such as an auction market with specified participants, rules, and beliefs. They supplement the general principles P1–P8 above, rather than replacing them.
+
+### M1. Separate a model family from its instances
+
+A reusable model should expose the data and assumptions intended to vary across its applications. A particular model instance should supply those data and establish the assumptions required by the results being applied.
+
+Keep the participants, environment, institutional rules, beliefs, and solution candidates separate when they can vary independently. A convenience record may collect these components for an application, but it should reuse the underlying objects to the greatest extent possible, rather than create competing definitions.
+
+A model family need not anticipate every possible extension. Expose variation justified by the family’s intended uses, and then re-factor to introduce further generality when it supports a concrete application or simplifies the shared theory.
+
+#### Examples
+
+A reusable marriage-matching model should parameterize the two populations and their preferences. Whether unmatched agents are allowed, how unacceptable partners are represented, and whether preferences admit ties should be explicit parts of the chosen scope. Particular preference profiles instantiate the family; they do not require a new definition of stability.
+
+A particular auction market should supply its participant and action types, valuation environment, auction rules, and---if conducting Bayesian analysis---an information structure. Changing the prior should not require redefining the mechanism, and comparing mechanisms should not require duplicating the environment.
+
+### M2. Make the economic framework explicit
+
+A model should state what its primitive objects represent and which choices are available to each participant. Distinguish true types, observations, reports, actions, outcomes, and transfers even when some share an underlying Lean type.
+
+For example, when relevant, a model should specify the information available when decisions are made, the admissible deviations, the treatment of randomization, and the conventions needed to interpret outcomes and utility. Conditions such as participation, feasibility, and outside options should appear in the appropriate definitions or explicit assumptions rather than be left to informal understanding. This may include conditions that are vacuous in practice but still important for understanding, such as setting up the information structure even in a setting where the analysis will show the existence of a dominant strategy.
+
+Documentation should describe these choices in economic language and identify any deliberate departure from the model being formalized.
+
+#### Examples
+
+A matching model should state how an agent compares a partner with remaining unmatched and what constitutes a blocking set. Stability predicates for different treatments of blocking and/or indifference should be explicitly distinguished.
+
+An auction model should specify the bid domain, reserve rule, tie-breaking rule, transfer sign convention, and treatment of nonparticipation. A Bayesian result should also state whether its incentive conditions hold at every type, almost everywhere, or in an ex-ante formulation.
+
+### M3. Separate solution concepts, existence, selection, and algorithms
+
+Define what constitutes a solution independently of a particular method for obtaining one. Keep distinct:
+
+- the predicate or correspondence describing valid solutions;
+- the assertion that a solution exists;
+- a selected solution and the justification for selecting it;
+- an algorithm that computes a solution.
+
+Do not build existence or uniqueness into the underlying model merely because a downstream construction requires it. State those properties separately and prove them under the relevant assumptions. When a conclusion depends on which solution is selected, expose that selection.
+
+A theorem about every solution should not be presented as establishing that a solution exists. Results advertised for a particular instance should either establish the needed existence claim or state clearly that they are conditional.
+
+#### Examples
+
+Define stable matching independently of deferred acceptance. Specify the algorithm separately and prove feasibility, termination, and stability under its stated hypotheses. If a particular extremal or optimality property is claimed, prove it as an additional result rather than incorporate it into the definition of stability.
+
+Define an auction’s equilibrium predicate before introducing a candidate bid schedule. Prove that the schedule satisfies the predicate; do not treat naming a schedule “the equilibrium” as supplying that proof.
+
+### M4. Prove that implementations realize their economic specifications
+
+A computational representation should be connected to the mathematical model by an explicit interpretation and a correctness theorem. Implementation choices should not silently determine the economic meaning of the model.
+
+Keep the mathematical specification independent of data structures and computational optimizations where possible. If an implementation uses finite tables, arrays, encoded participants, or discretized actions, define how those objects represent the model’s primitives.
+
+Distinguish exact computation from approximation. An approximate solver should establish a stated residual, error bound, or approximate solution property rather than inherit the name of an exact economic concept without qualification.
+
+#### Examples
+
+A matching implementation may use arrays of ranked participants, while the model uses preference relations and a matching predicate. Prove that the encoded rankings represent the supplied preferences and that interpreting the algorithm’s output yields a matching satisfying the intended solution concept.
+
+A numerical auction calculation should distinguish a certified equilibrium from a candidate found by a solver. If bids are restricted to a grid, identify whether the claim concerns the grid model or includes a bound on profitable deviations in the original action space.
+
+*A related Lean-specific distinction is worth preserving: selecting a witness through classical choice does not supply an executable algorithm. Lean explicitly marks such data constructions as noncomputable. Proofs of equivalence can then connect separate executable implementations to their specifications where appropriate.* ([lean-lang.org](https://lean-lang.org/theorem_proving_in_lean4/axioms_and_computation.html))
+
+### M5. Make instance-level conclusions auditable
+
+A particular model instance should make clear which facts are supplied as inputs, which are assumptions about the economic setting, and which are proved internally from the formal definitions.
+
+Derive instance-level results by applying the reusable model’s theorems and discharging their hypotheses. When a proof requires additional mathematics that does not depend on the particular instance, move that result to the reusable layer.
+
+Document the provenance and interpretation of externally supplied parameters or data. State conclusions at the strength actually established: for the supplied instance, for every instance satisfying stated assumptions, or for a specified range of parameter values.
+
+Formal verification establishes consequences of the formal model; it should not be presented as independently establishing that the model’s assumptions describe a real market.
+
+#### Example
+
+For an instantiated auction, the development should identify the supplied rules and environment, establish the analytic conditions needed for expected quantities, verify the claimed incentive or equilibrium properties, and derive the resulting revenue or welfare statement.
+
+If a valuation distribution comes from calibration rather than a theorem, record it as an input. If a conclusion is intended to be robust to changes in that distribution, state and prove the corresponding result over a family of priors rather than infer robustness from one calculation.
+
 ## Illustrative architectural designs
 
 The following examples combine the principles into prospective APIs for mechanisms, equilibrium, and single-parameter choice problems. They do not duplicate current source documentation; the repository source remains authoritative for exact names, fields, and statements.
@@ -339,4 +459,6 @@ This design applies P1 to keep allocation and distribution assumptions out of th
 
 ## Provenance
 
-Daniel Lyng (@danlyng) drafted these principles in the original discussion on [issue #60](https://github.com/AxiomMath/auctionlib/issues/60) and developed the version imported here in [his design-principles gist](https://gist.github.com/danlyng/1fc6bf249436782e1e00b99c3ff6ce5e). Comments from Scott Kominers (@scduko) on issue #60 motivated several revisions. Later refinements reflect the review practice recorded in [issue #72](https://github.com/AxiomMath/auctionlib/issues/72).
+Daniel Lyng (@danlyng) drafted the general principles (P1–P8) in the original discussion on [issue #60](https://github.com/AxiomMath/auctionlib/issues/60) and developed the version imported here in [his design-principles gist](https://gist.github.com/danlyng/1fc6bf249436782e1e00b99c3ff6ce5e). Comments from Scott Kominers (@scduko) on issue #60 motivated several revisions. Later refinements reflect the review practice recorded in [issue #72](https://github.com/AxiomMath/auctionlib/issues/72).
+
+Scott Duke Kominers (@scduko) drafted the economic-model design principles (M1–M5) in [issue #73](https://github.com/AxiomMath/auctionlib/issues/73). The principles and their examples are reproduced without changes.
