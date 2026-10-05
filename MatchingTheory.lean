@@ -11,13 +11,13 @@ import MatchingTheory.Choice.WeakSubstitutes
 import MatchingTheory.Classical.DeferredAcceptance
 import MatchingTheory.Classical.DeferredAcceptanceCorrespondence
 import MatchingTheory.Classical.DeferredAcceptanceFinite
+import MatchingTheory.Classical.Marriage
 import MatchingTheory.Classical.Marriage.Basic
 import MatchingTheory.Classical.Marriage.Choice
 import MatchingTheory.Classical.Marriage.GeneralizedDA
 import MatchingTheory.Classical.Marriage.LoneWolf
 import MatchingTheory.Classical.Marriage.Optimality
 import MatchingTheory.Classical.Marriage.Translation
-import MatchingTheory.Classical.Marriage
 import MatchingTheory.Classical.StableOrder
 import MatchingTheory.Contracts.Basic
 import MatchingTheory.Contracts.Iteration
