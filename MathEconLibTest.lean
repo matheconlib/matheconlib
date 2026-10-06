@@ -1,4 +1,5 @@
 import MathEconLibTest.Manual.HandsOn
+import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility

@@ -20,11 +20,14 @@ problems is described in
 
 ## Architecture
 
+The project-wide principles guiding library design are recorded in
+[`DESIGN.md`](DESIGN.md).
+
 The library has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
 
 ```
-Mechanism n      — allocation x + payment t over agent report vectors
-Auction Ω n      — mechanism + type environment (θ, distributions) on (Ω, ℙ)
+Mechanism I A O  — outcome rule + signed transfers over dependent action profiles
+Auction Ω n      — real-bid rules + measurable allocation + type environment on (Ω, ℙ)
 BidderProblem    — one bidder's interim view (winProb, cost, strategy)
 ```
 
@@ -98,9 +101,11 @@ integration theory.
 | [`ValueDistribution/SingleParameter.lean`](MathEconLib/ValueDistribution/SingleParameter.lean) | Expected allocation, expected payment, seller profit, and reduced-form preservation |
 | [`ValueDistribution/ExpectedPayment.lean`](MathEconLib/ValueDistribution/ExpectedPayment.lean) | Density-free expected-payment representation and density and CDF corollaries |
 | [`ValueDistribution/SellerProfit.lean`](MathEconLib/ValueDistribution/SellerProfit.lean) | Expected-allocation density formula and seller-profit virtual-surplus representations |
-| [`ValueDistribution/PostedPrice.lean`](MathEconLib/ValueDistribution/PostedPrice.lean) | Posted-price demand, expected payment, seller-profit, revenue, and price-comparison formulas |
+| [`ValueDistribution/PostedPrice.lean`](MathEconLib/ValueDistribution/PostedPrice.lean) | Posted-price demand, payment, profit, and acquisition-cost invariance of price optimality |
 | [`ValueDistribution/PostedPriceOptimality.lean`](MathEconLib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and sufficient global and boundary optimality conditions among posted prices |
 | [`ValueDistribution/PostedPriceFirstOrder.lean`](MathEconLib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise seller-profit differentiation, the division-free necessary condition at an interior local optimum, and nonzero-density virtual-value corollaries |
+| [`ValueDistribution/Uniform.lean`](MathEconLib/ValueDistribution/Uniform.lean) | Reusable uniform laws on real intervals, with support, density, demand, and CDF results |
+| [`ValueDistribution/UniformPricing.lean`](MathEconLib/ValueDistribution/UniformPricing.lean) | Uniform profit and virtual-surplus formulas, unique optimum within the value interval, interior first-order condition, and comparative statics |
 
 Compile-time pins, representative distributions, and end-to-end pricing checks
 live respectively in
@@ -111,12 +116,21 @@ and
 
 ### Mechanism (`Mechanism/`)
 
-[`Mechanism n`](MathEconLib/Mechanism/Basic.lean) defines allocation and payment rules as functions of the full report vector. Reports specialize to bids in the auction applications below.
+[`MathEconLib.Mechanism I A O`](MathEconLib/Mechanism/Core/Mechanism.lean) assigns an outcome and signed transfers to a dependent action profile. Positive transfers are money received by agents; payments are negative transfers. Import [`MathEconLib.Mechanism`](MathEconLib/Mechanism.lean) for the family API.
 
 | File | Contents |
 |------|----------|
-| [`Mechanism/Basic.lean`](MathEconLib/Mechanism/Basic.lean) | `Mechanism`, `HasValidAllocation`, and `IsEfficient` |
-| [`Mechanism/AllPurchase.lean`](MathEconLib/Mechanism/AllPurchase.lean) | `Mechanism.IsAllPurchase`: efficient allocation together with a posted price, scarcity function, and payment identity `t_eq` |
+| [`Mechanism/Core/Profile.lean`](MathEconLib/Mechanism/Core/Profile.lean) | Dependent action and type profiles |
+| [`Mechanism/Core/Mechanism.lean`](MathEconLib/Mechanism/Core/Mechanism.lean) | Generic carrier, direct mechanisms, payments, and revenue |
+| [`Mechanism/Core/Comap.lean`](MathEconLib/Mechanism/Core/Comap.lean) | Induced mechanisms and identity/composition laws |
+| [`Mechanism/Core/Environment.lean`](MathEconLib/Mechanism/Core/Environment.lean) | Quasilinear environments, private values, utility, and welfare |
+| [`Mechanism/Core/SolutionConcepts.lean`](MathEconLib/Mechanism/Core/SolutionConcepts.lean) | DSIC, ex-post IR, welfare efficiency, budget balance, and no deficit |
+| [`Mechanism/Auctions/Allocation.lean`](MathEconLib/Mechanism/Auctions/Allocation.lean) | `IsUnitIntervalAllocation` coordinate bounds and `UsesStrictHighestBidAllocation` |
+| [`Mechanism/Auctions/AllPurchase/Spec.lean`](MathEconLib/Mechanism/Auctions/AllPurchase/Spec.lean) | Explicit `AllPurchaseSpec` price/scarcity data and the `IsAllPurchase` existence predicate |
+
+`IsUnitIntervalAllocation` bounds each coordinate in `[0, 1]`; aggregate feasibility depends on the outcome space and allocation rule. Welfare efficiency compares outcomes using a valuation environment. The strict-highest-bid rule instead describes allocations from bids, awarding nothing on ties.
+
+Checked examples in [`MathEconLibTest/Mechanism/Core.lean`](MathEconLibTest/Mechanism/Core.lean) use the umbrella import, including a truthful posted-price mechanism, concrete all-purchase payments, and a mechanism with infinitely many agents.
 
 ### Bidder Problem (`BidderProblem/`)
 
@@ -135,7 +149,9 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 
 ### Auction (`Auction/`)
 
-[`Auction Ω n`](MathEconLib/Auction/Basic.lean) combines a `Mechanism` with the probabilistic environment.
+[`Auction Ω n`](MathEconLib/Auction/Basic.lean) combines real-bid mechanism rules with measurable allocation coordinates and the probabilistic environment. The generic mechanism itself has no measurability requirement.
+
+Interim quantities use Mathlib’s totalized Bochner integral, which equals zero when its integrand is not integrable. Arbitrary strategies need not be measurable. Measurable strategies together with `IsUnitIntervalAllocation` ensure allocation integrability, including truthful reporting; payment integrability requires separate hypotheses.
 
 | File | Contents |
 |------|----------|
@@ -156,10 +172,18 @@ The all-purchase development specializes the general framework to auctions in wh
 | [`Auction/AllPurchase/Basic.lean`](MathEconLib/Auction/AllPurchase/Basic.lean) | The distribution-based all-pay benchmark bid `Auction.allPayBid` |
 | [`Auction/AllPurchase/LinearScarcity.lean`](MathEconLib/Auction/AllPurchase/LinearScarcity.lean) | `QuadraticCostProblem`, `LinearCostProblem`, `InteriorRegimeProblem`, `IsBoundaryRegime`, `LinearScarcityAuction`, and `toQuadraticCostProblem` |
 | [`Auction/AllPurchase/ExplicitSolutions.lean`](MathEconLib/Auction/AllPurchase/ExplicitSolutions.lean) | Constant-scarcity, boundary-regime, and interior-regime equilibrium strategy formulas at bidder-problem and auction levels |
-| [`Auction/AllPurchase/RevenueDecomposition.lean`](MathEconLib/Auction/AllPurchase/RevenueDecomposition.lean) | Seller-revenue decomposition and the bundled-versus-standalone revenue comparison |
-| [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) | Interior-regime profit maximization, uniqueness, and feasibility of the optimal price |
+| [`Auction/AllPurchase/RevenueDecomposition.lean`](MathEconLib/Auction/AllPurchase/RevenueDecomposition.lean) | Seller gross-revenue decomposition and, under zero lowest-type utility, a bundled-versus-standalone profit-difference identity |
+| [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) | Unique unconstrained maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1`, plus an algebraic interior-regime condition |
 | [`Auction/AllPurchase/UniformDistribution.lean`](MathEconLib/Auction/AllPurchase/UniformDistribution.lean) | Closed form for the all-pay benchmark bid under a uniform type distribution |
-| [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) | First-best edition surplus, Cournot and contest losses, the welfare decomposition, and the variance penalty |
+| [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) | Edition-welfare benchmarks and an upper bound for `α > 0`, algebraic welfare-gap and moment identities, and an expected edition-welfare formula under integrability assumptions |
+
+The pricing file proves maximization and uniqueness for a specified quadratic
+profit formula. Connecting that formula to an auction's equilibrium quantity
+and actual seller profit remains work in progress. The welfare file proves
+benchmark bounds, algebraic gap identities, and an expected edition-welfare
+formula when aggregate quantity and its square are integrable. The
+equilibrium-based Cournot and contest-loss decomposition remains work in
+progress in [#46](https://github.com/AxiomMath/auctionlib/issues/46).
 
 ### Affiliation (`Auction/Affiliation/`)
 
@@ -178,23 +202,26 @@ The continuous conditional-expectation and winner's-curse results, together with
 | File | Contents |
 |------|----------|
 | [`GameTheory/Basic.lean`](MathEconLib/GameTheory/Basic.lean) | Normal-form games, payoff structures, dominant strategies, pure/strict/strong Nash equilibria, mixed games, and expected payoff |
-| [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) | Pure Nash existence for compact convex action spaces with quasiconcave payoffs, mixed Nash existence for compact metrizable action spaces, and finite-game mixed Nash existence |
+| [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) | Pure Nash existence under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed Nash existence for finite games and compact metrizable action spaces under the stated continuity assumptions |
 
 ### Key Theorems
 
+The linked Lean statements specify each result's definitions and hypotheses.
+
 | Result | Location |
 |--------|----------|
-| Envelope theorem ($U$ Lipschitz, $U' = q$ a.e., integral representation) | [`BidderProblem/EnvelopeIC.lean`](MathEconLib/BidderProblem/EnvelopeIC.lean) |
-| Myerson's lemma (monotone allocation and payment identity, with a sufficiency direction) | [`BidderProblem/TypeDeviationIC.lean`](MathEconLib/BidderProblem/TypeDeviationIC.lean) |
-| General payment equivalence for BIC auctions with the same type interval, interim allocation, and base utility | [`Auction/Basic.lean`](MathEconLib/Auction/Basic.lean) |
-| $q(i,s)=F(s)^{n-1}$ under efficient allocation in the symmetric IPV setting | [`Auction/SymmetricIPV.lean`](MathEconLib/Auction/SymmetricIPV.lean) |
-| Revenue equivalence and total revenue $=\mathbb{E}[S_2]$ under the stated BIC, IR, efficiency, and symmetry assumptions | [`Auction/RevenueEquivalence.lean`](MathEconLib/Auction/RevenueEquivalence.lean) |
-| Strict monotonicity of equilibrium strategies under positive-density and IC assumptions | [`Auction/StrictMonotonicity.lean`](MathEconLib/Auction/StrictMonotonicity.lean) |
-| All-purchase revenue decomposition and bundled-versus-standalone revenue comparison | [`Auction/AllPurchase/RevenueDecomposition.lean`](MathEconLib/Auction/AllPurchase/RevenueDecomposition.lean) |
-| Interior-regime optimal pricing | [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) |
-| All-purchase welfare decomposition | [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) |
-| Winner's-curse inequality for affiliated finite-support environments | [`Auction/Affiliation/WinnersCurse.lean`](MathEconLib/Auction/Affiliation/WinnersCurse.lean) |
-| Pure and mixed Nash existence theorems | [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) |
+| Envelope theorem: 1-Lipschitz utility, $U' = q$ a.e., and integral representation on the type interval under `HasEnvelopeIC` | [`BidderProblem/EnvelopeIC.lean`](MathEconLib/BidderProblem/EnvelopeIC.lean) |
+| Myerson's lemma: monotone allocation, payment identity, and payment uniqueness under type-deviation IC; the converse follows from monotonicity and the payment identity | [`BidderProblem/TypeDeviationIC.lean`](MathEconLib/BidderProblem/TypeDeviationIC.lean) |
+| General payment equivalence for BIC auctions with allocation coordinates in `[0, 1]`, matching type bounds, interim allocation, and lowest-type utility | [`Auction/Basic.lean`](MathEconLib/Auction/Basic.lean) |
+| Truthful-opponent winning probability $q(i,s)=F(s)^{n-1}$ under strict-highest-bid allocation and independent, identically distributed, atomless types | [`Auction/SymmetricIPV.lean`](MathEconLib/Auction/SymmetricIPV.lean) |
+| Revenue equivalence for symmetric IPV BIC auctions with at least two bidders, allocation coordinates in `[0, 1]`, matching type bounds, interim allocations and type distributions, zero lowest-type utility, and the stated payment measurability/integrability assumptions | [`Auction/RevenueEquivalence.lean`](MathEconLib/Auction/RevenueEquivalence.lean) |
+| Expected revenue $=\mathbb{E}[S_2]$ for symmetric IPV auctions with at least two bidders, strict-highest-bid allocation, BIC, and zero lowest-type utility | [`Auction/RevenueEquivalence.lean`](MathEconLib/Auction/RevenueEquivalence.lean) |
+| Strict monotonicity on the type interval with at least two bidders, strict-highest-bid allocation, the stated type assumptions, positive density, a measurable regular strategy, nonnegative lowest type, and universal IC over nonnegative bids | [`Auction/StrictMonotonicity.lean`](MathEconLib/Auction/StrictMonotonicity.lean) |
+| All-purchase revenue decomposition under the stated type, strategy, IC, and integrability assumptions; zero lowest-type utility gives a bundled-versus-standalone profit-difference identity | [`Auction/AllPurchase/RevenueDecomposition.lean`](MathEconLib/Auction/AllPurchase/RevenueDecomposition.lean) |
+| Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1` | [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) |
+| Edition-welfare bound for `α > 0`, algebraic welfare-gap identities, and an expected edition-welfare formula when aggregate quantity and its square are integrable | [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) |
+| Winner's-curse inequality on finite sublattices with affiliated positive weights, monotone nonnegative values, and a nonempty winning event | [`Auction/Affiliation/WinnersCurse.lean`](MathEconLib/Auction/Affiliation/WinnersCurse.lean) |
+| Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with the stated expected-payoff continuity | [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) |
 
 ### Auxiliary
 
@@ -227,16 +254,20 @@ The mathematical overview is intentionally broader than the current library. Cur
 - [x] Action-parametric single-parameter foundations and a deterministic fixed-price buyer problem
 - [x] Measure-first value distributions, seller-profit decompositions, posted-price sign
   conditions, and interior virtual-value first-order conditions
+- [x] Uniform posted-price optimality and comparative statics of interval endpoints and continuation value
 - [x] General `Mechanism` + `Auction` + `BidderProblem` framework
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
-- [x] All-purchase equilibrium characterization, explicit solutions, revenue analysis, optimal pricing, and welfare decomposition
-- [x] Normal-form game foundations and pure/mixed Nash existence
+- [x] All-purchase equilibrium characterization, explicit solutions, and revenue decomposition
+- [x] Quadratic-profit maximization and edition-welfare benchmark and moment identities
+- [x] Normal-form game foundations and pure/mixed Nash existence under the stated action-space and payoff assumptions
 - [x] Affiliation definitions, log-supermodularity, finite monotone conditional expectations, and the finite winner's-curse inequality
 
 Further work includes:
 
+- [ ] Auction-level derivation of the interior-regime profit formula ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
+- [ ] Equilibrium-based welfare decomposition and separately justified loss-nonnegativity results ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
 - [ ] Full Riley--Zeckhauser comparison between posted prices and general selling rules
-- [ ] Posted-price comparative statics, beginning with uniform-distribution parameters
+- [ ] Posted-price comparative statics beyond the uniform family
 - [ ] Continuous affiliation results, including the continuous winner's-curse inequality, and later applications such as the Linkage Principle
 - [ ] Remaining game-theoretic concepts and their integration with the auction layer
 - [ ] Extensive-form and obviously strategy-proof mechanisms

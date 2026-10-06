@@ -5,54 +5,65 @@ public import MathEconLib.BidderProblem.TypeDeviationIC
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-!
-# Explicit Equilibrium Solutions (Section 6.2)
+# Explicit strategy formulas for all-purchase auctions
 
-Closed-form equilibrium strategies for the all-purchase auction under
-specific scarcity functions, stated at the `BidderProblem` and `Auction` levels.
+Strategies for bidder problems with linear or quadratic net cost satisfy
+`cost(strategy(v)) = allPayBid(v) − U(lowestType)` under type-deviation incentive compatibility.
+The resulting formulas express purchases in terms of the all-pay bid and the lowest type's utility.
 
-The bridge is the **net-payment identity** (Proposition 6.4):
-`cost(strategy(v)) = allPayBid(v) − U(lowestType)`.
+For quadratic cost `αb² + Kb` with `α > 0`, the boundary regime has `U(lowestType) = 0`, while the
+interior regime has `K < 0` and `U(lowestType) = K²/(4α)`. Sign and lower-bound assumptions select
+the corresponding quadratic root. These formulas also apply to induced bidder problems in
+all-purchase auctions with linear scarcity and identical type distributions.
 
-## Main results
+## Main definitions
 
-- **Proposition 6.5** (`LinearCostProblem.constant_scarcity_strategy`):
-  `P.strategy(v) = P.allPayBid(v) / p_net`
-- **Proposition 6.6** (`QuadraticCostProblem.boundary_regime_strategy`,
-  `LinearScarcityAuction.boundary_regime_strategy_auction`):
-  `β(v) = (−K + √(K² + 4α · allPayBid(v))) / (2α)`
-- **Proposition 6.7** (`InteriorRegimeProblem.interior_regime_strategy`,
-  `LinearScarcityAuction.interior_regime_strategy_auction`):
-  `β(v) = −K/(2α) + √(allPayBid(v)/α)`
+* `AllPurchase.strategyBoundary`: the boundary-regime purchase formula.
+* `AllPurchase.strategyInterior`: the interior-regime purchase formula.
+
+## Main statements
+
+* `LinearCostProblem.constant_scarcity_strategy`: purchases equal the all-pay bid divided by
+  positive net cost per unit in the boundary regime.
+* `QuadraticCostProblem.boundary_regime_strategy`: the boundary formula for nonnegative purchases
+  and all-pay bids when `K ≥ 0`.
+* `InteriorRegimeProblem.interior_regime_strategy`: the interior formula for purchases at least
+  `−K/(2α)` and nonnegative all-pay bids.
+* `LinearScarcityAuction.boundary_regime_strategy_auction` and
+  `LinearScarcityAuction.interior_regime_strategy_auction`: the corresponding auction formulas.
+
+## Tags
+
+all-purchase auctions, scarcity, incentive compatibility, strategy formulas
 -/
 
 @[expose] public section
 
 open Real
 
-/-! ## Part 1: Algebraic strategy formulas -/
+/-! ## Algebraic strategy formulas -/
 
 namespace AllPurchase
 
-/-- Net cost under linear scarcity (private helper): `C(b) = α · b² + K · b`. -/
+/-- Quadratic net cost under linear scarcity: `C(b) = α · b² + K · b`. -/
 private noncomputable def netCostLinear (α K b : ℝ) : ℝ := α * b ^ 2 + K * b
 
-/-- Completed-square form (private helper):
-`C(b) = α · (b + K/(2α))² - K²/(4α)`. -/
+/-- For nonzero `α`, quadratic net cost equals `α · (b + K/(2α))² - K²/(4α)`. -/
 private theorem netCostLinear_completed_square (α K b : ℝ) (hα : α ≠ 0) :
     netCostLinear α K b = α * (b + K / (2 * α)) ^ 2 - K ^ 2 / (4 * α) := by
   unfold netCostLinear; field_simp; ring
 
-/-- Equilibrium strategy under linear scarcity, boundary regime (`K ≥ 0`):
-`β(v) = (−K + √(K² + 4α · bAP)) / (2α)`. -/
+/-- Boundary-regime purchase formula in terms of the all-pay bid `bAP`:
+`(−K + √(K² + 4α · bAP)) / (2α)`. -/
 noncomputable def strategyBoundary (α K bAP : ℝ) : ℝ :=
   (-K + sqrt (K ^ 2 + 4 * α * bAP)) / (2 * α)
 
-/-- Equilibrium strategy under linear scarcity, interior regime (`A = −K > 0`):
-`β(v) = A/(2α) + √(bAP/α)`. -/
+/-- Interior-regime purchase formula in terms of the all-pay bid `bAP`, with `A = −K`:
+`A/(2α) + √(bAP/α)`. -/
 noncomputable def strategyInterior (α A bAP : ℝ) : ℝ :=
   A / (2 * α) + sqrt (bAP / α)
 
-/-- The boundary strategy satisfies `αy² + Ky = c`. -/
+/-- For `α > 0` and `c ≥ 0`, the boundary formula gives a root of `αy² + Ky = c`. -/
 theorem boundary_regime_quadratic_raw (α K c : ℝ) (hα : 0 < α) (hc : 0 ≤ c) :
     α * strategyBoundary α K c ^ 2 + K * strategyBoundary α K c = c := by
   suffices h : netCostLinear α K (strategyBoundary α K c) = c by
@@ -68,27 +79,28 @@ theorem boundary_regime_quadratic_raw (α K c : ℝ) (hα : 0 < α) (hc : 0 ≤ 
   field_simp
   ring
 
-/-- The boundary strategy is nonneg. -/
+/-- The boundary formula is nonnegative when `α > 0`, `K ≥ 0`, and `bAP ≥ 0`. -/
 theorem strategyBoundary_nonneg (α K bAP : ℝ)
     (hα : 0 < α) (hK : 0 ≤ K) (hbAP : 0 ≤ bAP) :
     0 ≤ strategyBoundary α K bAP := by
   unfold strategyBoundary
   apply div_nonneg _ (by linarith)
   have : K ≤ sqrt (K ^ 2 + 4 * α * bAP) := by
-    calc K = sqrt (K ^ 2) := (sqrt_sq hK).symm
+    calc
+      K = sqrt (K ^ 2) := (sqrt_sq hK).symm
       _ ≤ sqrt (K ^ 2 + 4 * α * bAP) := sqrt_le_sqrt (by nlinarith)
   linarith
 
 end AllPurchase
 
-/-! ## Part 2: BidderProblem-level propositions -/
+/-! ## Strategies for bidder problems -/
 
 open AllPurchase
 
-/-! #### Proposition 6.5: Constant scarcity equilibrium -/
+/-! ### Constant scarcity -/
 
-/-- **Proposition 6.5.** Under linear cost and boundary regime, the equilibrium
-strategy is `strategy(v) = allPayBid(v) / p_net`. -/
+/-- Under type-deviation incentive compatibility, linear net cost with `p_net > 0`, and
+`U(lowestType) = 0`, purchases satisfy `strategy(v) = allPayBid(v) / p_net` on the type interval. -/
 theorem LinearCostProblem.constant_scarcity_strategy (P : LinearCostProblem)
     [BidderProblem.HasTypeDeviationIC P.toBidderProblem]
     [BidderProblem.IsBoundaryRegime P.toBidderProblem]
@@ -98,10 +110,10 @@ theorem LinearCostProblem.constant_scarcity_strategy (P : LinearCostProblem)
   rw [P.cost_eq, BidderProblem.IsBoundaryRegime.U_lowestType_zero, sub_zero] at hid
   rw [← hid, mul_div_cancel_left₀ _ (ne_of_gt P.p_net_pos)]
 
-/-! #### Proposition 6.6: Boundary regime equilibrium -/
+/-! ### Boundary regime -/
 
-/-- In the boundary regime with quadratic cost, the strategy satisfies
-`α · β(v)² + K · β(v) = allPayBid(v)`. -/
+/-- Under type-deviation incentive compatibility and `U(lowestType) = 0`, a quadratic-cost strategy
+satisfies `α · β(v)² + K · β(v) = allPayBid(v)` on the type interval. -/
 theorem QuadraticCostProblem.boundary_regime_quadratic (P : QuadraticCostProblem)
     [BidderProblem.HasTypeDeviationIC P.toBidderProblem]
     [BidderProblem.IsBoundaryRegime P.toBidderProblem]
@@ -112,9 +124,9 @@ theorem QuadraticCostProblem.boundary_regime_quadratic (P : QuadraticCostProblem
   rw [P.cost_eq, BidderProblem.IsBoundaryRegime.U_lowestType_zero, sub_zero] at hid
   linarith
 
-/-- **Proposition 6.6.** Under quadratic cost and boundary regime, if the
-strategy is nonneg and `K ≥ 0`, then
-`strategy(v) = (−K + √(K² + 4α · allPayBid(v))) / (2α)`. -/
+/-- Under type-deviation incentive compatibility, quadratic net cost, and `U(lowestType) = 0`, the
+strategy equals `(−K + √(K² + 4α · allPayBid(v))) / (2α)` at types in the interval where the
+strategy and all-pay bid are nonnegative, provided `K ≥ 0`. -/
 theorem QuadraticCostProblem.boundary_regime_strategy (P : QuadraticCostProblem)
     [BidderProblem.HasTypeDeviationIC P.toBidderProblem]
     [BidderProblem.IsBoundaryRegime P.toBidderProblem]
@@ -140,10 +152,10 @@ theorem QuadraticCostProblem.boundary_regime_strategy (P : QuadraticCostProblem)
     have : β + y = 0 := by rw [hsum, hK0]; simp
     linarith
 
-/-! #### Proposition 6.7: Interior regime equilibrium -/
+/-! ### Interior regime -/
 
-/-- In the interior regime, the strategy satisfies the shifted quadratic
-`α · β(v)² + K · β(v) = allPayBid(v) − K²/(4α)`. -/
+/-- Under type-deviation incentive compatibility in the interior regime, the strategy satisfies
+`α · β(v)² + K · β(v) = allPayBid(v) − K²/(4α)` on the type interval. -/
 theorem InteriorRegimeProblem.interior_regime_quadratic (P : InteriorRegimeProblem)
     [BidderProblem.HasTypeDeviationIC P.toBidderProblem]
     (v : ℝ) (hv : v ∈ P.typeInterval) :
@@ -153,9 +165,9 @@ theorem InteriorRegimeProblem.interior_regime_quadratic (P : InteriorRegimeProbl
   rw [P.cost_eq, P.U_lowestType_eq] at hid
   linarith
 
-/-- **Proposition 6.7.** Under quadratic cost and interior regime, if the
-strategy satisfies `strategy(v) ≥ −K/(2α)`, then
-`strategy(v) = −K/(2α) + √(allPayBid(v)/α)`. -/
+/-- Under type-deviation incentive compatibility in the interior regime, the strategy equals
+`−K/(2α) + √(allPayBid(v)/α)` at types in the interval where `allPayBid(v) ≥ 0` and
+`strategy(v) ≥ −K/(2α)`. -/
 theorem InteriorRegimeProblem.interior_regime_strategy (P : InteriorRegimeProblem)
     [BidderProblem.HasTypeDeviationIC P.toBidderProblem]
     (v : ℝ) (hv : v ∈ P.typeInterval)
@@ -182,10 +194,7 @@ theorem InteriorRegimeProblem.interior_regime_strategy (P : InteriorRegimeProble
     rw [← sqrt_sq h_diff_nn, hsq_eq]
   linarith [show K / (2 * α) + (-K / (2 * α)) = (0 : ℝ) from by ring]
 
-/-! ## Part 3: Auction-level corollaries
-
-These compose the full chain:
-`LinearScarcityAuction` → `QuadraticCostProblem` → explicit strategy formula. -/
+/-! ## Strategies in all-purchase auctions with linear scarcity -/
 
 open MeasureTheory ProbabilityTheory AllPurchase
 
@@ -196,46 +205,50 @@ namespace LinearScarcityAuction
 
 variable (A : LinearScarcityAuction Ω n)
 
-/-- **Proposition 6.6 (Auction level).** In a symmetric all-purchase auction
-with linear scarcity and boundary regime (`K ≥ 0`, `U(0) = 0`), the
-equilibrium strategy satisfies
-`β(v) = (−K + √(K² + 4α · allPayBid(v))) / (2α)`. -/
+/-- In an all-purchase auction with linear scarcity and identical type distributions, a measurable
+common strategy `β` with integrable purchases satisfies
+`β(v) = (−K + √(K² + 4α · allPayBid(v))) / (2α)` when bidder `i`'s induced problem is
+type-deviation incentive compatible, `U(lowestType) = 0`, and `K ≥ 0`. Here `v` lies in the
+bidder's type interval, and both `β(v)` and the induced all-pay bid are nonnegative. -/
 theorem boundary_regime_strategy_auction
     [A.HasIdenticalTypes]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n)
-    (hIC : (A.toBidderProblem β i).HasTypeDeviationIC)
-    (hBR : (A.toBidderProblem β i).IsBoundaryRegime)
+    (hIC : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (hBR : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
     (hK : 0 ≤ A.K_linear β)
-    (v : ℝ) (hv : v ∈ (A.toBidderProblem β i).typeInterval)
-    (h_bAP_nn : 0 ≤ (A.toBidderProblem β i).allPayBid v)
+    (v : ℝ) (hv : v ∈ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).typeInterval)
+    (h_bAP_nn : 0 ≤ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v)
     (h_strat_nn : 0 ≤ β v) :
     β v = strategyBoundary A.α_coeff (A.K_linear β)
-      ((A.toBidderProblem β i).allPayBid v) := by
+      ((A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
   let P := A.toQuadraticCostProblem β hβ_meas hβ_int i
   letI : BidderProblem.HasTypeDeviationIC P.toBidderProblem := hIC
   letI : BidderProblem.IsBoundaryRegime P.toBidderProblem := hBR
   change P.strategy v = _
   exact P.boundary_regime_strategy hK v hv h_bAP_nn h_strat_nn
 
-/-- **Proposition 6.7 (Auction level).** In a symmetric all-purchase auction
-with interior regime (`K < 0`), the equilibrium strategy satisfies
-`β(v) = −K/(2α) + √(allPayBid(v)/α)`. -/
+/-- In an all-purchase auction with linear scarcity and identical type distributions, a measurable
+common strategy `β` with integrable purchases satisfies `β(v) = −K/(2α) + √(allPayBid(v)/α)` when
+bidder `i`'s induced problem is type-deviation incentive compatible, `K < 0`, and
+`U(lowestType) = K²/(4α)`. Here `v` lies in the bidder's type interval, the induced all-pay bid is
+nonnegative, and `β(v) ≥ −K/(2α)`. -/
 theorem interior_regime_strategy_auction
     [A.HasIdenticalTypes]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
     (i : Fin n)
-    (hIC : (A.toBidderProblem β i).HasTypeDeviationIC)
+    (hIC : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
     (hK_neg : A.K_linear β < 0)
-    (hU_eq : (A.toBidderProblem β i).U (A.toBidderProblem β i).lowestType =
+    (hU_eq : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+        (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
         (A.K_linear β) ^ 2 / (4 * A.α_coeff))
-    (v : ℝ) (hv : v ∈ (A.toBidderProblem β i).typeInterval)
-    (h_bAP_nn : 0 ≤ (A.toBidderProblem β i).allPayBid v)
+    (v : ℝ) (hv : v ∈ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).typeInterval)
+    (h_bAP_nn : 0 ≤ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v)
     (h_strat_ge : -(A.K_linear β) / (2 * A.α_coeff) ≤ β v) :
     β v = strategyInterior A.α_coeff (-(A.K_linear β))
-      ((A.toBidderProblem β i).allPayBid v) := by
+      ((A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
   let P : InteriorRegimeProblem := {
     A.toQuadraticCostProblem β hβ_meas hβ_int i with
     K_neg := hK_neg

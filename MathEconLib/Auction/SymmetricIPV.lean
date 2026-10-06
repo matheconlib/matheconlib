@@ -4,25 +4,45 @@ public import MathEconLib.Auction.Typeclasses
 public import MathEconLib.Statistics.OrderStatistics
 
 /-!
-# Symmetric IPV Results
+# Winning probabilities and ordered types in symmetric IPV auctions
 
-- `bidThreshold`: supremum of types bidding below a given bid
-- `Auction.q_eq_pow`: under efficiency + IPV, `q(i, s) = F(s)^(n-1)`
-- `Auction.q_strat_eq_cdf_pow`: generalization for monotone strategy,
-  `q_strat(σ, i, b) = F(threshold)^(n-1)`
-- `Auction.toOrderStatisticsSetup`: bridge to order-statistics framework
-- `Auction.S₂`: second-highest order statistic
+For independent, identically distributed, atomless private values, a bidder's probability of
+winning under strict-highest-bid allocation is the probability that all opponents bid strictly
+less. Against truthful opponents this is `F(b)^(n-1)`, where `F` is the common type CDF. Against
+opponents using a common weakly increasing strategy on a bounded type interval, the same formula
+holds with `F` evaluated at the type threshold associated with the bid.
+
+When types have a common density, their order statistics describe the distribution of ordered
+bidder values. The second-highest type is the order statistic with zero-based index `n - 2`.
+
+## Main definitions
+
+* `bidThreshold`: the supremum of types bidding strictly below a bid, including the lower endpoint.
+* `Auction.toOrderStatisticsSetup`: the independent, identically distributed bidder types with
+  their common density.
+* `Auction.S₂`: the second-highest bidder type.
+
+## Main statements
+
+* `Auction.q_eq_pow`: the winning probability against truthful opponents is `F(s)^(n-1)`.
+* `Auction.q_strat_eq_cdf_pow`: the winning probability against opponents using a common weakly
+  increasing strategy is `F(v₀)^(n-1)`, where `v₀` is the bid threshold.
+
+## Tags
+
+auctions, independent private values, winning probability, order statistics
 -/
 
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
+open MathEconLib.Mechanism.Auctions
 
 /-! ### Bid threshold for monotone strategies -/
 
-/-- The bid threshold: supremum of types in `[lo, hi]` that bid below `b`
-under strategy `σ`. Always includes `lo` as a fallback, ensuring the set
-is nonempty and the result lies in `[lo, hi]`. -/
+/-- For a bidding strategy `σ` and bid `b`, the supremum of the types in `[lo, hi]` that bid
+strictly below `b`, with the lower endpoint `lo` included in the set. If `lo ≤ hi`, the threshold
+lies in `[lo, hi]`. -/
 noncomputable def bidThreshold (σ : ℝ → ℝ) (lo hi b : ℝ) : ℝ :=
   sSup (insert lo { v ∈ Icc lo hi | σ v < b })
 
@@ -61,7 +81,7 @@ lemma below (hle : lo ≤ hi) (hσ_mono : MonotoneOn σ (Icc lo hi))
   · exact lt_of_le_of_lt (hσ_mono hv hw_Icc (le_of_lt hvw)) hw_lt
 
 lemma le_of_not_lt (hle : lo ≤ hi) (hσ_mono : MonotoneOn σ (Icc lo hi))
-    (hv : v ∈ Icc lo hi) (hσ : ¬σ v < b) :
+    (hv : v ∈ Icc lo hi) (hσ : ¬ σ v < b) :
     bidThreshold σ lo hi b ≤ v :=
   not_lt.mp fun h => hσ (below hle hσ_mono hv h)
 
@@ -76,12 +96,16 @@ namespace Auction
 
 variable (A : Auction Ω n)
 
-/-- Under efficient allocation, `q(i, s) = F(s)^(n-1)`.
-Needs: independence + identical + atomless. -/
+/-- Under strict-highest-bid allocation and independent, identically distributed, atomless types,
+bidder `i` wins with probability `F(s)^(n-1)` when bidding `s` against truthful opponents, where
+`F` is the common type CDF. -/
 lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A]
-    [A.rules.IsEfficient] (i : Fin n) (s : ℝ) :
+    (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
+    (i : Fin n) (s : ℝ) :
     A.q i s = A.commonCDF s ^ (n - 1) := by
-  simp only [q, q_strat, id, Mechanism.IsEfficient.x_efficient i, ne_eq]
+  have hx (b) : A.rules.outcome b i =
+      {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}.indicator 1 b := congr_fun (hwinner i) b
+  simp only [q, q_strat, id, hx, ne_eq]
   have hrw (ω) :
       {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}.indicator 1
         (Function.update (A.θ · ω) i s) =
@@ -118,7 +142,7 @@ lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A
 section QStratCdfPow
 
 variable [HasIndependentTypes A] [HasIdenticalTypes A]
-         [HasBoundedTypes A] [HasAtomlessTypes A]
+    [HasBoundedTypes A] [HasAtomlessTypes A]
 
 omit [HasIndependentTypes A] [HasAtomlessTypes A] in
 private lemma lowestType_le_highestType : A.lowestType ≤ A.highestType := by
@@ -128,9 +152,9 @@ private lemma lowestType_le_highestType : A.lowestType ≤ A.highestType := by
   exact h.1.trans h.2
 
 omit [HasIndependentTypes A] in
-/-- Each opponent's probability of bidding below `b` equals `F(v₀)` where
-`v₀` is the bid threshold. Uses the squeeze: under bounded + atomless
-types and weakly monotone strategy, `P(σ(θⱼ) < b) = F(v₀)`. -/
+/-- For identically distributed, bounded, atomless types and a weakly increasing strategy `σ`, the
+probability that bidder `j` bids strictly below `b` is the probability that a type is at most the
+bid threshold. -/
 private lemma measure_sigma_lt_eq
     {σ : ℝ → ℝ} (hσ_mono : MonotoneOn σ (Icc A.lowestType A.highestType))
     (j : Fin n) (b : ℝ) :
@@ -149,7 +173,7 @@ private lemma measure_sigma_lt_eq
     have hθ := HasBoundedTypes.θ_in (A := A) j ω
     rw [A.θmin_eq_lowestType, A.θmax_eq_highestType] at hθ
     exact bidThreshold.above hle hθ hω
-  -- Identical + atomless squeeze
+  -- Squeeze using identical distributions and atomless types.
   have h_ident_lo : ℙ (A.θ j ⁻¹' Iio v₀) = ℙ (A.θ 0 ⁻¹' Iio v₀) :=
     (HasIdenticalTypes.θ_identical j 0).measure_mem_eq measurableSet_Iio
   have h_ident_hi : ℙ (A.θ j ⁻¹' Iic v₀) = ℙ (A.θ 0 ⁻¹' Iic v₀) :=
@@ -168,19 +192,20 @@ private lemma measure_sigma_lt_eq
         _ = ℙ (A.θ j ⁻¹' Iio v₀) := h_ident_lo.symm
         _ ≤ ℙ (A.θ j ⁻¹' (σ ⁻¹' Iio b)) := measure_mono h_lo
 
-/-- **Generalized winning probability.** Under efficient allocation,
-independent identical bounded atomless types, and a weakly monotone strategy,
-the interim win probability equals `F(v₀)^(n-1)` where `v₀` is the bid
-threshold — the supremum of types bidding below `b`.
-
-Generalizes `q_eq_pow` (the `σ = id` case). -/
-lemma q_strat_eq_cdf_pow [A.rules.IsEfficient] {σ : ℝ → ℝ}
+/-- Under strict-highest-bid allocation and independent, identically distributed, bounded, atomless
+types, bidder `i` wins with bid `b` against opponents using a measurable, weakly increasing
+strategy `σ` with probability `F(v₀)^(n-1)`, where `F` is the common type CDF and `v₀` is the bid
+threshold. -/
+lemma q_strat_eq_cdf_pow
+    (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i)) {σ : ℝ → ℝ}
     (hσ_mono : MonotoneOn σ (Icc A.lowestType A.highestType))
     (hσ_meas : Measurable σ) (i : Fin n) (b : ℝ) :
     A.q_strat σ i b =
       A.commonCDF (bidThreshold σ A.lowestType A.highestType b) ^ (n - 1) := by
   set v₀ := bidThreshold σ A.lowestType A.highestType b
-  simp only [q_strat, Mechanism.IsEfficient.x_efficient i, ne_eq]
+  have hx (b) : A.rules.outcome b i =
+      {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}.indicator 1 b := congr_fun (hwinner i) b
+  simp only [q_strat, hx, ne_eq]
   have hrw (ω) :
       {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}.indicator 1
         (Function.update (fun j => σ (A.θ j ω)) i b) =
@@ -207,10 +232,12 @@ lemma q_strat_eq_cdf_pow [A.rules.IsEfficient] {σ : ℝ → ℝ}
 
 end QStratCdfPow
 
-/-! ### Bridge to OrderStatistics and second-highest order statistic -/
+/-! ### Ordered bidder types -/
 
 variable [n.AtLeastTwo]
 
+/-- The auction's bidder types as independent, identically distributed real random variables with a
+common density. Their order statistics give the ordered bidder types. -/
 @[simps]
 noncomputable def toOrderStatisticsSetup
     [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity A] :
@@ -221,7 +248,7 @@ noncomputable def toOrderStatisticsSetup
   X_ident := HasIdenticalTypes.θ_identical
   X_hasPDF := HasDensity.θ_hasPDF
 
-/-- The second-highest order statistic. -/
+/-- The second-highest bidder type at state `ω`, for an auction with at least two bidders. -/
 noncomputable def S₂ [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity A]
     (ω : Ω) : ℝ :=
   A.toOrderStatisticsSetup.val ⟨n - 2, by grind [Nat.AtLeastTwo.prop (n := n)]⟩ ω
