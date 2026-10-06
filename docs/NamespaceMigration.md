@@ -8,7 +8,7 @@ An import path alone does not determine a declaration's name: for example,
 
 | Earlier name | Public name |
 | --- | --- |
-| `Mechanism`, `Mechanism.*` | `MathEconLib.Mechanism`, `MathEconLib.Mechanism.*` |
+| `Auctionlib.Mechanism`, `Auctionlib.Mechanism.*` | `MathEconLib.Mechanism`, `MathEconLib.Mechanism.*` |
 | `Auction`, `Auction.*` | `MathEconLib.Auction`, `MathEconLib.Auction.*` |
 | `Auction.Affiliation.*` | `MathEconLib.Auction.Affiliation.*` |
 | `BidderProblem`, `BidderProblem.*` | `MathEconLib.BidderProblem`, `MathEconLib.BidderProblem.*` |
@@ -22,6 +22,12 @@ An import path alone does not determine a declaration's name: for example,
 The same `MathEconLib` prefix applies to other project-owned declarations in
 these modules, including their nested topic namespaces. The source files and
 `ApiStability.lean` give the exact names and pinned theorem statements.
+
+The package/import migration in #90 already moves the mechanism core from its
+existing `Auctionlib` namespace to `MathEconLib`. This follow-up moves the
+remaining global economics declarations, including the revelation principle
+and interval-uniform pricing results, under that same root. It retains the
+current mechanism's agent, action, and outcome parameters: `Mechanism I A O`.
 
 Use fully qualified names in public API checks:
 
@@ -39,8 +45,8 @@ Within a file, `open MathEconLib` permits shorter references such as
 ## Intentional exception and compatibility
 
 Declarations in `MathEconLib/ForMathlib/` retain their existing Mathlib-style
-namespaces or global names. They are general mathematical results intended for
-upstreaming, rather than economics-specific API. The import path still begins
+namespaces or global names. They are general mathematical results that may be
+suitable for voluntary upstream contribution. The import path still begins
 with `MathEconLib.ForMathlib` while those declarations are in this repository.
 
 No compatibility aliases for the former global economics names are provided.

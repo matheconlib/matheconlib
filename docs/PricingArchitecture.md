@@ -51,6 +51,11 @@ global and boundary optimality among posted prices are implemented in
 Pointwise differentiation of posted-price seller profit and necessary
 first-order conditions at an interior local optimum are implemented in
 [`MathEconLib/ValueDistribution/PostedPriceFirstOrder.lean`](../MathEconLib/ValueDistribution/PostedPriceFirstOrder.lean).
+Reusable interval-uniform distribution facts are in
+[`MathEconLib/ValueDistribution/Uniform.lean`](../MathEconLib/ValueDistribution/Uniform.lean),
+while the uniform profit and virtual-surplus formulas, constrained optimum,
+interior first-order condition, and comparative statics are in
+[`MathEconLib/ValueDistribution/UniformPricing.lean`](../MathEconLib/ValueDistribution/UniformPricing.lean).
 The additive bridge from auction type random variables to bidder value
 distributions is implemented in
 [`MathEconLib/Auction/ValueDistribution.lean`](../MathEconLib/Auction/ValueDistribution.lean).
@@ -323,7 +328,7 @@ of their definitions.
 | [`ValueDistribution/Basic.lean`](../MathEconLib/ValueDistribution/Basic.lean) | `ValueDistribution`, `ofRandomVariable`, `IsSupportedOnInterval` | Measure-first representation, pushforwards of random variables, and optional bounded support |
 | [`ValueDistribution/Demand.lean`](../MathEconLib/ValueDistribution/Demand.lean) | `probAtLeast` and its monotonicity, lower-tail, CDF, and atom identities | Posted-price demand with tie-breaking that remains correct for atomic and mixed distributions |
 | [`ValueDistribution/SingleParameter.lean`](../MathEconLib/ValueDistribution/SingleParameter.lean) | `expectedAllocation`, `expectedPayment`, `sellerProfit`, and their `_reduce` contracts | Ordinary-integral expectations and seller accounting for a separately supplied single-parameter problem |
-| [`ValueDistribution/PostedPrice.lean`](../MathEconLib/ValueDistribution/PostedPrice.lean) | Posted-price expected allocation, expected payment, seller profit, revenue, and comparison formulas | Distributional specialization of the deterministic posted-price problem and generic seller objective |
+| [`ValueDistribution/PostedPrice.lean`](../MathEconLib/ValueDistribution/PostedPrice.lean) | Posted-price expected allocation, payment, profit, comparison formulas, and acquisition-cost invariance | Distributional specialization of the deterministic posted-price problem and generic seller objective, without density or support assumptions |
 | [`ValueDistribution/Density.lean`](../MathEconLib/ValueDistribution/Density.lean) | `realDensity` and integration against canonical or chosen density representatives | Optional absolutely continuous representation built from mathlib's Radon--Nikodym derivative, not a second density typeclass |
 | [`ValueDistribution/VirtualValue.lean`](../MathEconLib/ValueDistribution/VirtualValue.lean) | `virtualSurplusWeight`, `virtualValue`, and their density and CDF forms | Density-weighted virtual surplus as the primary object, with virtual value available when division is justified |
 | [`ValueDistribution/TailIntegral.lean`](../MathEconLib/ValueDistribution/TailIntegral.lean) | Tail-probability integral identity | Measure-theoretic bridge from envelope utility to expected payment, valid before choosing a density |
@@ -331,6 +336,8 @@ of their definitions.
 | [`ValueDistribution/SellerProfit.lean`](../MathEconLib/ValueDistribution/SellerProfit.lean) | Expected-allocation density representation and seller-profit virtual-surplus decompositions | Rewrites the existing scalar seller objective without adding costs, continuation values, or densities to foundational structures |
 | [`ValueDistribution/PostedPriceOptimality.lean`](../MathEconLib/ValueDistribution/PostedPriceOptimality.lean) | Cutoff-integral seller profit and `IsMaxOn` sign and boundary theorems | Gives sufficient global optimality conditions among posted prices without claiming the full Riley--Zeckhauser result over arbitrary selling rules |
 | [`ValueDistribution/PostedPriceFirstOrder.lean`](../MathEconLib/ValueDistribution/PostedPriceFirstOrder.lean) | Pointwise profit derivative, division-free interior first-order condition, and nonzero-density virtual-value corollaries | Gives necessary conditions at an interior local optimum without global smoothness or a global density representative |
+| [`ValueDistribution/Uniform.lean`](../MathEconLib/ValueDistribution/Uniform.lean) | `uniformInterval`, support, atomlessness, density, demand, and CDF results | Reuses Mathlib's conditioned Lebesgue measure independently of the pricing application |
+| [`ValueDistribution/UniformPricing.lean`](../MathEconLib/ValueDistribution/UniformPricing.lean) | Uniform profit and virtual-surplus formulas, clamped candidate, `IsMaxOn`, uniqueness, interior virtual-value condition, and comparative statics | Specializes the shared global-optimality and first-order theorems; uniqueness is restricted to prices in the value interval |
 | [`Auction/ValueDistribution.lean`](../MathEconLib/Auction/ValueDistribution.lean) | `valueDistribution`, its pushforward and support contracts, equality under identical types, and `commonCDF` agreement | Additive reuse of auction type laws as ordinary value distributions without changing `Auction` |
 | [`BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean) and IC modules | `toSingleParameterProblem` and the forward and reverse IC bridges | Compatibility with the existing bidder-facing API |
 | [`MathEconLibTest/SingleParameter/Compatibility.lean`](../MathEconLibTest/SingleParameter/Compatibility.lean) | Compile-time examples | Downstream checks for both the generic and legacy APIs |
@@ -369,6 +376,15 @@ they do not establish optimality from a zero derivative. Nor do they claim a
 zero derivative at a boundary optimum, where the existing one-sided sign
 results are the relevant tool. Optimization over general selling rules remains
 a subsequent layer.
+
+The uniform family exercises both pricing theorems. For `a < b`, its virtual-surplus
+weight is `(2 * value - b) / (b - a)` on `[a, b]`, and the resulting net-weight signs
+establish optimality of `max a (min b ((b + r) / 2))` throughout the interior
+and both boundary regimes. The first-order theorem gives virtual value `r`
+when the optimum is interior. A private quadratic profit-gap identity proves
+uniqueness within `[a, b]`; prices above `b` all yield no sale and are outside
+that uniqueness claim. The existing unit-interval example applies these
+public results through the `MathEconLib.ValueDistribution` umbrella import.
 
 ## 5. Relationship to `BidderProblem`
 
@@ -464,6 +480,11 @@ seller's continuation value and the cost of approaching the buyer. These are
 functions of the distribution and problem, not fields added to either object.
 In this first objective the continuation value is constant across buyer types,
 and the acquisition cost is an unconditional additive cost.
+
+For posted prices, changing that cost preserves optimality over any fixed
+feasible price set: it cancels from every pairwise profit difference. This
+general result requires no density or bounded-support assumption. It does not
+imply that the decision to approach the buyer is independent of the cost.
 
 Under envelope IC, when the distribution is absolutely continuous and
 supported on the problem's type interval, the seller objective has the
@@ -590,7 +611,8 @@ criteria are:
 The current analytic and optimization milestones add optional density
 representations, density-free expected-payment identities, virtual-surplus
 seller-profit formulas, sufficient sign conditions for optimality among
-posted prices, and necessary virtual-value conditions at an interior local
-optimum. They do so without putting probabilistic assumptions into
-`SingleParameterProblem` or changing `Auction`. Later layers will add the full
-Riley--Zeckhauser selling-rule result and comparative statics.
+posted prices, necessary virtual-value conditions at an interior local optimum,
+and uniform-price optimality and comparative statics. They do so without
+putting probabilistic assumptions into `SingleParameterProblem` or changing
+`Auction`. Later layers will add the full Riley--Zeckhauser selling-rule result
+and comparative statics beyond the uniform family.

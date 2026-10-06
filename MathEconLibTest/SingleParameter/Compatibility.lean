@@ -1,19 +1,20 @@
 module
 
 import MathEconLib.BidderProblem
-import MathEconLib.SingleParameter.PostedPrice
+import MathEconLib.SingleParameter
 
 /-!
 # Compatibility Checks for the Single-Parameter Foundation
 
 This file contains compile-time examples rather than new library definitions.
-It checks the two paths that the first pricing-foundations pull request is
-intended to support:
+It checks three paths through the single-parameter layer:
 
 1. a new problem with a non-real action type can use the complete generic IC,
    envelope, payment, and participation API;
 2. an existing `BidderProblem` can use the same general results without
-   changing its original public assumptions or conclusions.
+   changing its original public assumptions or conclusions;
+3. the single-agent revelation principle: reduction to a direct problem
+   preserves the interim quantities and yields universal IC.
 
 If a later refactor accidentally breaks one of these paths, this module will
 fail to compile as part of the ordinary `lake build`. It belongs to the
@@ -191,5 +192,90 @@ example
   BidderProblem.hasUniversalIC_of_toSingleParameterProblem hIC
 
 end BidderProblem
+
+/-! ## The single-agent revelation principle -/
+
+section Revelation
+
+universe u
+
+variable {Action : Type u} (P : SingleParameterProblem Action)
+
+/-- The reduced form has the identity strategy. -/
+example : P.reduce.HasIdentityStrategy :=
+  P.reduce_hasIdentityStrategy
+
+/-- Reduction is idempotent. -/
+example : P.reduce.reduce = P.reduce :=
+  P.reduce_reduce
+
+/-- Type-deviation IC yields truthfulness of the reduced form: universal IC
+over in-interval reports. -/
+example [SingleParameterProblem.HasTypeDeviationIC P] :
+    SingleParameterProblem.HasUniversalIC P.reduce P.typeInterval :=
+  inferInstance
+
+/-- The headline single-agent revelation principle. -/
+example [SingleParameterProblem.HasTypeDeviationIC P] :
+    ∃ D : SingleParameterProblem ℝ,
+      D.HasIdentityStrategy ∧
+      SingleParameterProblem.HasUniversalIC D D.typeInterval ∧
+      D.lowestType = P.lowestType ∧
+      D.highestType = P.highestType ∧
+      D.q = P.q ∧
+      D.U = P.U ∧
+      ∀ w : ℝ, D.payment w = P.payment (P.strategy w) :=
+  P.revelation_principle
+
+/-- Participation holds for the reduced form iff it holds for the original. -/
+example : P.reduce.IsIndividuallyRational ↔ P.IsIndividuallyRational :=
+  P.reduce_isIndividuallyRational
+
+/-- The binding participation constraint at the lowest type: likewise. -/
+example : P.reduce.HasZeroLowestTypeUtility ↔ P.HasZeroLowestTypeUtility :=
+  P.reduce_hasZeroLowestTypeUtility
+
+end Revelation
+
+/-! ## An example: the posted price `1/2` on `[0, 1]` -/
+
+section RevelationPostedPrice
+
+local notation "PP" => SingleParameterProblem.postedPriceProblem 0 1 (1/2)
+
+/-- The revelation principle instantiated at a concrete problem. The direct
+problem it produces has type interval `[0, 1]`, the same allocation and
+utility as the threshold strategy, and collects at report `w` what the
+original rules collect at the action the strategy chooses for `w`. -/
+example :
+    ∃ D : SingleParameterProblem ℝ,
+      D.HasIdentityStrategy ∧
+      SingleParameterProblem.HasUniversalIC D D.typeInterval ∧
+      D.lowestType = 0 ∧
+      D.highestType = 1 ∧
+      D.q = (PP).q ∧
+      D.U = (PP).U ∧
+      ∀ w : ℝ, D.payment w = (PP).payment ((PP).strategy w) :=
+  (PP).revelation_principle
+
+/-- Truthful reporting is incentive compatible in the direct posted-price
+problem, over reports in `[0, 1]`. -/
+example :
+    SingleParameterProblem.HasUniversalIC (PP).reduce (PP).typeInterval :=
+  inferInstance
+
+/-- In the direct problem, a report of `3/4` wins the object. -/
+example : (PP).reduce.q (3/4) = 1 := by
+  simp only [SingleParameterProblem.reduce_q,
+    SingleParameterProblem.postedPriceProblem_q]
+  norm_num
+
+/-- In the direct problem, a report of `1/4` does not. -/
+example : (PP).reduce.q (1/4) = 0 := by
+  simp only [SingleParameterProblem.reduce_q,
+    SingleParameterProblem.postedPriceProblem_q]
+  norm_num
+
+end RevelationPostedPrice
 
 end SingleParameterCompatibility

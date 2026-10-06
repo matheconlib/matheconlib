@@ -4,6 +4,8 @@ public import MathEconLib.SingleParameter.PostedPrice
 public import MathEconLib.ValueDistribution.Demand
 public import MathEconLib.ValueDistribution.SingleParameter
 
+public import Mathlib.Order.Filter.Extr
+
 /-!
 # Distributional Posted Pricing
 
@@ -14,7 +16,9 @@ posted price.
 
 The buyer purchases when `price ≤ value`, so demand includes any probability
 mass exactly at the price. The results require neither bounded support nor a
-density. Differentiability, virtual values, and price optimization belong to
+density. An unconditional acquisition cost cancels from price comparisons, so
+changing it preserves optimality over any fixed feasible price set.
+Characterizing optimal prices by derivatives or virtual surplus belongs to
 later layers.
 -/
 
@@ -111,6 +115,30 @@ theorem sellerProfit_postedPriceProblem_sub
   rw [D.sellerProfit_postedPriceProblem,
     D.sellerProfit_postedPriceProblem]
   ring
+
+/-- Changing an unconditional acquisition cost leaves posted-price optimality
+unchanged over any fixed set of allowed prices. The distribution and
+continuation value are held fixed. This does not assert that the decision
+to approach the buyer is unaffected by the cost. -/
+theorem isMaxOn_sellerProfit_postedPriceProblem_acquisitionCost_iff
+    (D : ValueDistribution) (lowestType highestType : ℝ) (prices : Set ℝ)
+    (price continuationValue acquisitionCost₁ acquisitionCost₂ : ℝ) :
+    IsMaxOn
+        (fun candidatePrice ↦
+          D.sellerProfit (postedPriceProblem lowestType highestType candidatePrice)
+            continuationValue acquisitionCost₁)
+        prices price ↔
+      IsMaxOn
+        (fun candidatePrice ↦
+          D.sellerProfit (postedPriceProblem lowestType highestType candidatePrice)
+            continuationValue acquisitionCost₂)
+        prices price := by
+  simp only [isMaxOn_iff]
+  constructor <;> intro hmax candidatePrice hcandidatePrice
+  all_goals
+    apply sub_nonneg.mp
+    simpa only [D.sellerProfit_postedPriceProblem_sub] using
+      (sub_nonneg.mpr (hmax candidatePrice hcandidatePrice))
 
 end ValueDistribution
 

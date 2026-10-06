@@ -1893,7 +1893,7 @@ The lesson: `exact?` is excellent at "which library lemma is this," and no help 
 ### Where to go next in the library
 
 1. **`SingleParameter/Basic.lean`**: mostly definitions, and the gentlest entry point. It is also the deterministic core the rest of the library is built on.
-2. **`Mechanism/Basic.lean`**: the rules of an auction, as functions of everyone's bids. Also mostly definitions.
+2. **`Mechanism/Core/Mechanism.lean`**: the rules of a mechanism: which outcome is chosen and how money moves, as functions of everyone's actions. Also mostly definitions.
 3. **`BidderProblem/Basic.lean`**: the file dissected above, and the bridge from that core into the auction setting.
 4. **`BidderProblem/EnvelopeIC.lean`**: the first file with substantial mathematics, and where you will see Mathlib's measure theory doing real work.
 5. **`BidderProblem/TypeDeviationIC.lean`**: payment identities and Myerson's lemma.
@@ -1910,7 +1910,7 @@ Posted pricing is a second branch rather than a further rung on this ladder. If 
 
 ### Contributing to `MathEconLib`
 
-The `ForMathlib/` folder holds results intended for eventual inclusion in Mathlib itself. These tend to be self-contained pieces of mathematics that do not require understanding the auction-theoretic architecture, which makes them a natural place for a first contribution.
+The `ForMathlib/` folder holds general mathematical results needed by MathEconLib that may be suitable for upstream contribution to Mathlib. Small, well-scoped additions can be suitable first contributions, but the folder also contains substantial results. Upstream contributions are voluntary, with no promised submission or deadline; see the [ForMathlib policy](../CONTRIBUTING.md#formathlib-and-upstream-contributions).
 
 Before opening a pull request, run `lake exe mk_all --lib MathEconLib --git` and `lake exe mk_all --lib MathEconLibTest --git` to regenerate both import lists, then `lake build` to confirm everything still compiles.
 
@@ -2003,5 +2003,5 @@ The rest of the library:
 | `Auction/` | auctions with a probabilistic environment; revenue equivalence, symmetric private values, affiliation, all-purchase auctions |
 | `BidderProblem/` | the single-bidder view and the IC hierarchy |
 | `GameTheory/` | existence of Nash equilibria for continuous games |
-| `ForMathlib/` | general results destined for Mathlib itself — Kakutani and Schauder fixed points, measure-theoretic lemmas |
+| `ForMathlib/` | general mathematics and potential Mathlib contributions — Kakutani and Schauder fixed points, measure-theoretic lemmas |
 | `Statistics/` | order statistics |
