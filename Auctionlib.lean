@@ -24,6 +24,7 @@ import Auctionlib.BidderProblem.Basic
 import Auctionlib.BidderProblem.EnvelopeIC
 import Auctionlib.BidderProblem.TypeDeviationIC
 import Auctionlib.BidderProblem.UniversalIC
+import Auctionlib.ForMathlib.AEEqSet
 import Auctionlib.ForMathlib.AbsolutelyContinuous
 import Auctionlib.ForMathlib.ApproximateSelection
 import Auctionlib.ForMathlib.FinsetUpdate
