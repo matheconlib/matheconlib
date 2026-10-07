@@ -1,9 +1,9 @@
-# Contributing to auctionlib
+# Contributing to MathEconLib
 
 Thanks for contributing! This is a short guide to how changes land in this repository.
 
 New to Lean 4 or to this library? Start with
-[*Lean 4 and `auctionlib` — A Beginner's Manual*](docs/BeginnersManual.md),
+[*Lean 4 and `MathEconLib` — A Beginner's Manual*](docs/BeginnersManual.md),
 which covers the toolchain, the editor loop, and how to read the library's
 core files. Small, well-scoped additions to `ForMathlib/` can be suitable first
 contributions; the folder also contains substantial results.
@@ -47,8 +47,10 @@ are API. Downstream files and external users rely on them, so any change to them
 however small — is called out explicitly in the PR description, with a sentence on
 why the change is needed.
 
-Following the naming ruling in #45, general carrier structures keep short names in
-a sufficiently specific namespace, such as `Auction` or `MatchingWithContracts.Market`.
+Project-owned declarations live under `MathEconLib`; see the
+[public-name mapping](docs/NamespaceMigration.md). Following the naming ruling
+in #45, general carrier structures keep short names in a sufficiently specific
+topic namespace, such as `MathEconLib.Auction`.
 Behavioral, optimality, and normalization predicates instead use precise,
 setting-specific names that state the condition they impose. If two carriers with
 the same short name routinely co-occur, distinguish the carrier names too.
@@ -70,13 +72,13 @@ From the repository root, use:
 lake exe cache get                 # first checkout, or after a dependency/toolchain change
 git add path/to/NewFile.lean        # if adding a file: --git reads tracked/staged paths
 bash scripts/update-imports.sh      # regenerate both root import files, then verify them
-lake build                         # includes API pins and AuctionlibTest/Manual/HandsOn.lean
+lake build                         # includes API pins and MathEconLibTest/Manual/HandsOn.lean
 ```
 
 Omit the `git add` line if you have not added a file. Include changes to
-`Auctionlib.lean` and `AuctionlibTest.lean` in your commit. The helper runs
-`lake exe mk_all --lib Auctionlib --git` and
-`lake exe mk_all --lib AuctionlibTest --git`, then checks both with `--check`.
+`MathEconLib.lean` and `MathEconLibTest.lean` in your commit. The helper runs
+`lake exe mk_all --lib MathEconLib --git` and
+`lake exe mk_all --lib MathEconLibTest --git`, then checks both with `--check`.
 For these single-library commands, exit 1 can mean one file was updated rather
 than a failure; the helper checks that a file actually changed and verifies the
 result. Do not join the raw generation commands with `&&` or hide their errors
@@ -99,8 +101,8 @@ agreement before changing the statement, and do not edit the pin merely to make 
 build pass. Once the API change is approved, update the signature and its pin
 together in the same PR.
 
-New layers pin their own public API next to themselves in `AuctionlibTest/` (see
-`AuctionlibTest/SingleParameter/Compatibility.lean`), so early iteration stays cheap
+New layers pin their own public API next to themselves in `MathEconLibTest/` (see
+`MathEconLibTest/SingleParameter/Compatibility.lean`), so early iteration stays cheap
 while a layer is young. Once a layer has downstream users inside the library, its
 pins are promoted into `ApiStability.lean`; from then on its statements follow the
 design-first rule.

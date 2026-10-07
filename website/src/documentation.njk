@@ -26,7 +26,7 @@ permalink: /documentation/index.html
       <p>The mathematical model and public API for deterministic single-parameter problems, incentive compatibility, and expected seller objectives.</p>
       <strong>Read the model</strong>
     </a>
-    <a class="resource-card" href="https://github.com/AxiomMath/auctionlib/tree/main/Auctionlib">
+    <a class="resource-card" href="https://github.com/AxiomMath/auctionlib/tree/main/MathEconLib">
       <div><span class="resource-type">Lean source</span><span aria-hidden="true">↗</span></div>
       <h2>Browse the library</h2>
       <p>Inspect the definitions and proofs organized under auctions, mechanisms, bidder problems, value distributions, and game theory.</p>
@@ -55,11 +55,12 @@ permalink: /documentation/index.html
 
 <section class="page-section section-rule soft-section">
   <div class="shell quickstart-grid">
-    <div><p class="kicker">Build locally</p><h2>Three commands to check the library.</h2><p>The project pins its Lean toolchain and Mathlib revision. Fetch the compiled Mathlib cache before building.</p></div>
+    <div><p class="kicker">Build locally</p><h2>Build and check the library.</h2><p>The project pins its Lean toolchain and Mathlib revision. Fetch the compiled Mathlib cache before building.</p></div>
     <div class="terminal-card">
       <div class="terminal-top"><span></span><span></span><span></span><b>MathEconLib</b></div>
       <pre><code><span>$</span> lake exe cache get
-<span>$</span> lake exe mk_all --lib Auctionlib --git
+<span>$</span> lake exe mk_all --lib MathEconLib --git
+<span>$</span> lake exe mk_all --lib MathEconLibTest --git
 <span>$</span> lake build</code></pre>
     </div>
   </div>

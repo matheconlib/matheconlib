@@ -15,17 +15,17 @@ if [ "$#" -gt 1 ]; then
 fi
 
 if [ "$check_only" = false ]; then
-  for lib in Auctionlib AuctionlibTest; do
+  for lib in MathEconLib MathEconLibTest; do
     before=missing
     if [ -f "$lib.lean" ]; then
-      before=$(git hash-object "$lib.lean")
+      before=$(git hash-object --no-filters "$lib.lean")
     fi
     status=0
     lake exe mk_all --lib "$lib" --git || status=$?
     case "$status" in
       0) ;;
       1)
-        if [ ! -f "$lib.lean" ] || [ "$(git hash-object "$lib.lean")" = "$before" ]; then
+        if [ ! -f "$lib.lean" ] || [ "$(git hash-object --no-filters "$lib.lean")" = "$before" ]; then
           echo "mk_all failed for $lib without updating $lib.lean" >&2
           exit 1
         fi
@@ -35,6 +35,6 @@ if [ "$check_only" = false ]; then
   done
 fi
 
-for lib in Auctionlib AuctionlibTest; do
+for lib in MathEconLib MathEconLibTest; do
   lake exe mk_all --lib "$lib" --git --check
 done

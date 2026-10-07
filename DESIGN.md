@@ -10,7 +10,7 @@ The design principles described herein give the library a shared language in bot
 
 This is a living document and will be revised as the library develops and the project learns from new applications. The principles are strong defaults for new code and separately approved refactors, not rigid rules. A departure may be appropriate, especially when its reason can be stated clearly. The principles do not by themselves deprecate an existing API or authorize a change to a public declaration.
 
-Authoring requirements live in [`CONTRIBUTING.md`](CONTRIBUTING.md), review policy lives in [`docs/REVIEWING.md`](docs/REVIEWING.md), and operational review procedures live in [`docs/TOOLING.md`](docs/TOOLING.md). The Lean fragments in this document express intended design directions, but they are not necessarily declarations currently provided by `auctionlib`. Exact API changes still require their own design and implementation review.
+Authoring requirements live in [`CONTRIBUTING.md`](CONTRIBUTING.md), review policy lives in [`docs/REVIEWING.md`](docs/REVIEWING.md), and operational review procedures live in [`docs/TOOLING.md`](docs/TOOLING.md). The Lean fragments in this document express intended design directions, but they are not necessarily declarations currently provided by `MathEconLib`. Exact API changes still require their own design and implementation review.
 
 ## Design principles
 
