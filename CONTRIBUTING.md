@@ -111,8 +111,9 @@ design-first rule.
 - Before merging, confirm that the applicable GitHub Actions checks pass on the
   latest PR revision and that review requests have been addressed. Report the
   build, import checks, and any relevant axiom/API-pin checks in the PR description.
-- Foundational changes and public API changes require the design agreement
-  described above; leaf contributions can go straight to a PR. This does not
-  waive maintainer review for a change that also touches a core layer.
+- Foundational changes require design agreement before implementation. If an
+  API change breaks a stability pin, obtain design agreement and update the
+  declaration and pin together. Leaf contributions can go straight to a PR;
+  changes that also touch a core layer still need maintainer review.
 - Keep PRs single-purpose and reviewable: one theme per PR, with a short
   description of what is proved and where it sits in the library.
