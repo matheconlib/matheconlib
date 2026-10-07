@@ -34,6 +34,8 @@ jobs:
         run: |
           lake exe mk_all --lib MathEconLib --git
           lake exe mk_all --lib MathEconLibTest --git
+          # Check newly imported declarations before committing regenerated roots.
+          lake build MathEconLibTest.Namespace
           git add MathEconLib.lean MathEconLibTest.lean
           if git diff --staged --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
