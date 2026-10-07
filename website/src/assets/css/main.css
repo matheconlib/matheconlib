@@ -209,7 +209,7 @@ h1, h2, h3, p { margin-top: 0; }
   :root { --shell: min(100% - 28px, 1160px); }
   .header-inner { min-height: 68px; }
   .draft-chip { display: none; }
-  .site-nav { font-size: .78rem; }
+  .site-nav { flex-wrap: wrap; gap: 12px 18px; font-size: .78rem; }
   .site-nav .nav-github { display: none; }
   .hero h1 { font-size: clamp(2.8rem, 14vw, 4rem); }
   .hero { padding-block: 65px 72px; }
