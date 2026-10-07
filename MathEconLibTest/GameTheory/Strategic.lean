@@ -55,6 +55,26 @@ receives the opposite payoff. -/
 def matchingPennies : StrategicGame Bool (fun _ ↦ Bool) ℝ where
   payoff i a := if (a false = a true) = (i = true) then 1 else -1
 
+/-- Every matching-pennies payoff is measurable on the finite profile space. -/
+instance : matchingPennies.Measurable := ⟨fun _ ↦ measurable_of_countable _⟩
+
+/-- Each matching-pennies player has a finite, hence bounded, payoff range. -/
+instance : matchingPennies.Bounded where
+  isBounded_payoff_range i := (Set.finite_range (matchingPennies.payoff i)).isBounded
+
+/-- Matching-pennies utilities are bounded on action-profile outcomes. -/
+example : matchingPennies.payoffStructure.Bounded := inferInstance
+
+/-- Matching-pennies payoffs are integrable under every independent action law. -/
+example (i : Bool) (σ : StrategicGame.MixedStrategy (fun _ : Bool ↦ Bool)) :
+    Integrable (matchingPennies.payoff i) (Measure.pi (fun j ↦ (σ j : Measure Bool))) :=
+  matchingPennies.integrable_payoff_of_bounded i σ
+
+/-- Matching pennies has the same mixed Nash equilibria as its integral extension. -/
+example (σ : StrategicGame.MixedStrategy (fun _ : Bool ↦ Bool)) :
+    matchingPennies.IsMixedNash σ ↔ matchingPennies.mixedExtension.IsNash σ :=
+  matchingPennies.isMixedNash_iff_isNash σ
+
 /-- Matching pennies has no pure Nash equilibrium. -/
 theorem matchingPennies_not_isNash (a : Bool → Bool) : ¬ matchingPennies.IsNash a := by
   rw [StrategicGame.isNash_iff]

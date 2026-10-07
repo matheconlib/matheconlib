@@ -46,9 +46,10 @@ universe uI uT uA uV
 variable {I : Type uI} {Θ : I → Type uT} {A : I → Type uA} {V : Type uV}
   [∀ i, MeasurableSpace (Θ i)] [∀ i, MeasurableSpace (A i)]
 
-/-- A measurable pure strategy profile depends only on each player's own type. -/
 -- The game argument identifies the type and action carriers of the strategy.
-def Strategy (_G : BayesianGame I Θ A V) := ∀ i, {f : Θ i → A i // Measurable f}
+set_option linter.unusedVariables false in
+/-- A measurable pure strategy profile depends only on each player's own type. -/
+def Strategy (G : BayesianGame I Θ A V) := ∀ i, {f : Θ i → A i // Measurable f}
 
 /-- Coerce a measurable strategy profile to its underlying profile of functions. -/
 instance (G : BayesianGame I Θ A V) : CoeFun G.Strategy (fun _ => ∀ i, Θ i → A i) where

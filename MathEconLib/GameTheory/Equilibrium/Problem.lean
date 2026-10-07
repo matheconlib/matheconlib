@@ -15,6 +15,12 @@ requires every admissible deviation's reward to be at most the incumbent reward.
 order this is stronger than absence of strict improvement: An incomparable reward also violates the
 equilibrium inequality. The two conditions agree for a linear order.
 
+The state space and deviation relations are arbitrary: No product structure, reflexivity,
+transitivity, or commutation of deviations is assumed. Equilibrium compares only the deviations
+admitted directly by the supplied relation. A concept that compares endpoints of repeated moves
+uses a relation closed under those moves, such as the transitive closure. Product action spaces and
+other game-specific structure belong to the games that define these problems.
+
 ## Main definitions
 
 * `EquilibriumProblem`: Admissible deviations and rewards over a space of states.
@@ -39,7 +45,10 @@ namespace MathEconLib.GameTheory
 
 universe u v w x y z r
 
-/-- States, admissible changes, and the reward evaluated by each deviator. -/
+/-- States, admissible changes, and the reward evaluated by each deviator.
+
+Deviation relations may be arbitrary; notably †he supplied relation need not commute or be
+transitive. Solution concepts should therefore take care to supply the correct relation. -/
 structure EquilibriumProblem (S : Type u) (I : Type v) (V : Type r) where
   /-- Whether a deviator may change the first state to the second state. -/
   deviation : I → S → S → Prop
@@ -50,8 +59,11 @@ namespace EquilibriumProblem
 
 variable {V : Type r} {S : Type u} {I : Type v} {P Q : EquilibriumProblem S I V}
 
-/-- Every admissible deviation gives its deviator a reward at most the incumbent reward. In a
-partial order this excludes incomparable rewards as well as strict improvements. -/
+/-- Every single admissible deviation gives its deviator a reward at most the incumbent reward.
+
+Note that, in a partial order, this excludes incomparable rewards as well as strict improvements.
+Also note that states are only compared if they are reachable through a single application of the
+deviation relation. -/
 def IsEquilibrium [LE V] (P : EquilibriumProblem S I V) (s : S) : Prop :=
   ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s
 

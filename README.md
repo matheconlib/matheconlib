@@ -246,7 +246,8 @@ The raw `mixedExtension` uses the totalized Bochner integral. `IsMixedNash` requ
 incumbent payoffs and compares unilateral deviations with integrable deviator payoffs. When all
 unilateral payoffs are integrable, it agrees with Nash equilibrium of the raw mixed extension;
 finite discrete games and bounded measurable payoffs in second countable payoff spaces satisfy
-this condition.
+this condition. For bounded measurable games, `StrategicGame.Bounded` supplies the
+integrability hypotheses of `isMixedNash_iff_isNash`.
 
 The Bayesian game carrier takes players, types, actions, and payoff values as explicit parameters.
 Priors are supplied separately. Finite BNE constrains positive-probability types, and the finite

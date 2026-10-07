@@ -397,6 +397,30 @@ example {ι : Type u} {A : ι → Type v} [∀ i, MeasurableSpace (A i)]
     G.IsMixedNash σ ↔ G.mixedExtension.IsNash σ :=
   G.isMixedNash_iff_isNash_of_bdd σ hbound
 
+/-- Strategic boundedness means each player's payoff range is bounded. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w} [Bornology V]
+    (G : StrategicGame ι A V) [G.Bounded] (i : ι) :
+    Bornology.IsBounded (Set.range (G.payoff i)) :=
+  G.isBounded_payoff_range i
+
+/-- Bounded measurable games have integrable payoffs under every independent action law. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V]
+    [MeasurableSpace V] [BorelSpace V] [SecondCountableTopology V] [Fintype ι]
+    (G : StrategicGame ι A V) [G.Measurable] [G.Bounded]
+    (i : ι) (σ : StrategicGame.MixedStrategy A) :
+    Integrable (G.payoff i) (Measure.pi (fun j ↦ (σ j : Measure (A j)))) :=
+  G.integrable_payoff_of_bounded i σ
+
+/-- Bounded measurable games identify mixed and integral-extension Nash equilibria. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [MeasurableSpace V] [BorelSpace V] [SecondCountableTopology V]
+    [Fintype ι] [DecidableEq ι] [LE V] (G : StrategicGame ι A V) [G.Measurable] [G.Bounded]
+    (σ : StrategicGame.MixedStrategy A) :
+    G.IsMixedNash σ ↔ G.mixedExtension.IsNash σ :=
+  G.isMixedNash_iff_isNash σ
+
 /-- Finite games with nonempty action spaces admit mixed Nash equilibria. -/
 example : ∀ {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A ℝ)
     [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)],

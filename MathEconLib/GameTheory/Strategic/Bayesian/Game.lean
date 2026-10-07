@@ -50,8 +50,9 @@ variable {I : Type uI} {Θ : I → Type uT} {A : I → Type uA}
   {B : I → Type uB} {C : I → Type uC} {V : Type uV}
 
 -- The game argument identifies the type and action carriers of the strategy.
+set_option linter.unusedVariables false in
 /-- A pure strategy profile prescribes each player's action as a function of their own type. -/
-abbrev PureStrategy (_G : BayesianGame I Θ A V) := ∀ i, Θ i → A i
+abbrev PureStrategy (G : BayesianGame I Θ A V) := ∀ i, Θ i → A i
 
 /-- The actions prescribed by a pure strategy profile at the realized types. -/
 def actionProfile (G : BayesianGame I Θ A V) (s : G.PureStrategy) (θ : ∀ i, Θ i) :

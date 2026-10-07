@@ -28,24 +28,24 @@ the nonintegrable uniform deviation, whose totalized utility is zero.
 
 ## Main definitions
 
-* `uniform`, `prior`: the uniform type distribution and induced one-player profile distribution.
-* `game`: action-independent reciprocal-type utility.
-* `strategy`: the constant zero action.
-* `Mixed.game`, `Mixed.shiftedGame`, `Mixed.loweredGame`: negative reciprocal utility and its
+* `uniform`, `prior`: The uniform type distribution and induced one-player profile distribution.
+* `game`: Action-independent reciprocal-type utility.
+* `strategy`: The constant zero action.
+* `Mixed.game`, `Mixed.shiftedGame`, `Mixed.loweredGame`: Negative reciprocal utility and its
   constant shifts.
-* `Mixed.strategy`: uniform action randomization.
+* `Mixed.strategy`: Uniform action randomization.
 
 ## Main statements
 
-* `not_integrable_payoff`: the realized payoff is not integrable under the uniform prior.
-* `exAntePayoff_eq_zero`: the nonintegrable payoff has zero Bochner integral.
-* `strategy_isEquilibrium`: the constant strategy satisfies the admissible-deviation inequalities.
-* `not_isBNE`: the constant strategy is not a Bayesian Nash equilibrium.
-* `Mixed.strategy_isNash`, `Mixed.strategy_not_isNash_shifted`: raw integral Nash is sensitive to a
+* `not_integrable_payoff`: The realized payoff is not integrable under the uniform prior.
+* `exAntePayoff_eq_zero`: The nonintegrable payoff has zero Bochner integral.
+* `strategy_isEquilibrium`: The constant strategy satisfies the admissible-deviation inequalities.
+* `not_isBNE`: The constant strategy is not a Bayesian Nash equilibrium.
+* `Mixed.strategy_isNash`, `Mixed.strategy_not_isNash_shifted`: Raw integral Nash is sensitive to a
   preference-preserving constant shift.
-* `Mixed.not_isMixedNash`, `Mixed.not_isMixedNash_shifted`: nonintegrable uniform randomization is
+* `Mixed.not_isMixedNash`, `Mixed.not_isMixedNash_shifted`: Nonintegrable uniform randomization is
   excluded from both games' mixed equilibria.
-* `Mixed.dirac_zero_isMixedNash_lowered`, `Mixed.dirac_zero_not_isNash_lowered`: pure zero is a
+* `Mixed.dirac_zero_isMixedNash_lowered`, `Mixed.dirac_zero_not_isNash_lowered`: Pure zero is a
   mixed equilibrium when nonintegrable deviations are excluded from comparison.
 
 ## Tags
@@ -59,7 +59,8 @@ open MeasureTheory MathEconLib.GameTheory Set
 
 namespace MathEconLibTest.GameTheory.Integrability
 
-/-- Uniform probability on the unit interval, with the left endpoint omitted. -/
+/-- Uniform probability on the unit interval. Restricting Lebesgue measure to `(0, 1]` gives the
+same measure as restricting to `[0, 1]`, since the endpoint `0` has measure zero. -/
 def uniform : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
 
 /-- The interval has unit Lebesgue measure. -/

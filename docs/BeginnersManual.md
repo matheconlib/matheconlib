@@ -527,7 +527,7 @@ Lean answers `fun x ↦ 1 / 2 : ℝ → ℝ`. Two things to notice. The type is 
 
 That last pattern is exactly how `winProb := fun _ => 1 / 2` works in Part 3: a bidder whose chance of winning is one half no matter what they bid.
 
-> **`=>` or `↦`?** Both are accepted and mean the same thing. `auctionlib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Strategic/Basic.lean` predominantly `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
+> **`=>` or `↦`?** Both are accepted and mean the same thing. `MathEconLib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Strategic/Basic.lean` predominantly `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
 
 ### 2.3 Symbols you will meet
 
