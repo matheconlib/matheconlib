@@ -5,7 +5,7 @@ Released under license as described in the file LICENSE.
 Authors: Ruiz Chen, Bo Cowgill, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
 
 Allocation predicates and the coordinate-bound proof are adapted from
-MathEconLib/Mechanism/Basic.lean, introduced in commit 384acbf and revised in ec59856.
+Auctionlib/Mechanism/Basic.lean, introduced in commit 384acbf and revised in ec59856.
 -/
 module
 

@@ -42,6 +42,13 @@ import MathEconLib
 Within a file, `open MathEconLib` permits shorter references such as
 `Auction` and `BidderProblem.integral_rep`; it does not create old-name aliases.
 
+`MathEconLibTest/Namespace.lean` checks the compiled environment for declarations
+from every module imported by the generated `MathEconLib` root. Declarations from
+project modules must use the `MathEconLib` namespace, except for Lean's internal
+and reserved generated names and the `ForMathlib` modules described below. The
+default `lake build` and CI run this check, so a new imported file that omits the
+namespace wrapper fails the build.
+
 ## Intentional exception and compatibility
 
 Declarations in `MathEconLib/ForMathlib/` retain their existing Mathlib-style
