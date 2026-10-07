@@ -97,6 +97,17 @@ This is why you must **open the project folder, not a lone file**: outside the f
 
 ### Step 4 — Open the project and build it
 
+If you do not already have a checkout, clone it first:
+
+```bash
+git clone https://github.com/AxiomMath/auctionlib.git
+cd auctionlib
+```
+
+The repository currently requires team access. Until it is public, authenticate
+Git with an account that has access, or use GitHub's SSH clone URL. Use the
+current repository URL shown on GitHub after the planned transfer.
+
 **File → Open Folder**, and select the repository root (the folder containing `lakefile.toml`). Not the folder above it, not a single file inside it. VS Code will ask whether you trust the authors; say yes, or nothing will run.
 
 Then, in a terminal (**⌃`** opens one inside VS Code, already in the right folder):
@@ -104,10 +115,14 @@ Then, in a terminal (**⌃`** opens one inside VS Code, already in the right fol
 ```bash
 lake exe cache get   # download Mathlib already compiled. ALWAYS do this first,
                      # or Lean will build Mathlib from source, which takes hours
+bash scripts/update-imports.sh  # regenerate and verify library and test imports
 lake build           # build the project
 ```
 
-Those two commands do very different jobs, and the order matters.
+The cache command downloads dependencies, the import helper updates the two
+root import files, and `lake build` checks the library and tests, including
+`MathEconLibTest/Manual/HandsOn.lean`. Run them in that order. On an unchanged
+checkout, the import helper should leave no diff.
 
 `lake build` compiles Lean source into `.olean` files, which are the compiled form Lean loads when one file imports another. MathEconLib has dozens of source files; Mathlib, which it imports, has thousands. Compiling Mathlib from source on a laptop takes hours.
 
@@ -1912,7 +1927,19 @@ Posted pricing is a second branch rather than a further rung on this ladder. If 
 
 The `ForMathlib/` folder holds general mathematical results needed by MathEconLib that may be suitable for upstream contribution to Mathlib. Small, well-scoped additions can be suitable first contributions, but the folder also contains substantial results. Upstream contributions are voluntary, with no promised submission or deadline; see the [ForMathlib policy](../CONTRIBUTING.md#formathlib-and-upstream-contributions).
 
-Before opening a pull request, run `lake exe mk_all --lib MathEconLib --git` and `lake exe mk_all --lib MathEconLibTest --git` to regenerate both import lists, then `lake build` to confirm everything still compiles.
+Before opening a pull request, stage any new Lean files with `git add` so that
+the import generator can see them. From the repository root, run:
+
+```bash
+bash scripts/update-imports.sh  # regenerate and verify both library and test imports
+lake build
+```
+
+Commit any changes to `MathEconLib.lean` and `MathEconLibTest.lean` with your work.
+Use `bash scripts/update-imports.sh --check` to verify without changing files.
+See the [verification and review requirements](../CONTRIBUTING.md#verification-bar)
+before requesting review. Core changes need maintainer review and the applicable
+CI checks must pass on the latest PR revision.
 
 **House rules.** Names follow the Mathlib conventions in [Part 7](#how-mathlib-names-things), and the tactic `native_decide` is not permitted anywhere in the library. [`CONTRIBUTING.md`](../CONTRIBUTING.md) has the rest — no `sorry` or `admit`, `#print axioms` on new results showing only the three axioms from [Part 1](#part-1--why-formalise-mathematics-at-all), the API stability pins, and the design-first rule for changes to the core layers.
 

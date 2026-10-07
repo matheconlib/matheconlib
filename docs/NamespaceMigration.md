@@ -48,8 +48,8 @@ project modules must use the `MathEconLib` namespace, except for Lean's internal
 and reserved generated names and the `ForMathlib` modules described below. The
 default `lake build` and CI run this check, so a new imported file that omits the
 namespace wrapper fails the build.
-CI also checks the namespace target after regenerating root imports, before
-committing any generated changes.
+CI regenerates root imports before the full build, which includes the namespace
+guard. Generated imports are committed only after the build passes.
 
 ## Intentional exception and compatibility
 

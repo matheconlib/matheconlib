@@ -63,8 +63,21 @@ Every PR must satisfy:
 - No `sorry`, `admit`, or `native_decide` anywhere in the change.
 - `#print axioms` on new main results shows only `propext`, `Classical.choice`,
   and `Quot.sound`.
-- Imports are regenerated with `lake exe mk_all --lib MathEconLib --git` and
-  `lake exe mk_all --lib MathEconLibTest --git`.
+- Both library and test imports are regenerated and verified with
+  `bash scripts/update-imports.sh`.
+
+From the repository root, use:
+
+```bash
+lake exe cache get                 # first checkout, or after a dependency/toolchain change
+git add path/to/NewFile.lean        # if adding a Lean file
+bash scripts/update-imports.sh      # regenerate both root import files, then verify them
+lake build                         # includes API pins and MathEconLibTest/Manual/HandsOn.lean
+```
+
+Omit the `git add` line if you have not added a file. Include changes to
+`MathEconLib.lean` and `MathEconLibTest.lean` in your commit.
+Use `bash scripts/update-imports.sh --check` to verify imports without changing files.
 
 ## API stability pins
 
@@ -87,5 +100,12 @@ design-first rule.
 ## Review
 
 - PRs touching the core layers get a maintainer review before merge.
+- Before merging, confirm that the applicable GitHub Actions checks pass on the
+  latest PR revision and that review requests have been addressed. Report the
+  build, import checks, and any relevant axiom/API-pin checks in the PR description.
+- Foundational changes require design agreement before implementation. If an
+  API change breaks a stability pin, obtain design agreement and update the
+  declaration and pin together. Leaf contributions can go straight to a PR;
+  changes that also touch a core layer still need maintainer review.
 - Keep PRs single-purpose and reviewable: one theme per PR, with a short
   description of what is proved and where it sits in the library.

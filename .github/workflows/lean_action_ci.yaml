@@ -26,26 +26,43 @@ jobs:
           # can commit back to it. Fork PRs and pushes: default checkout, which for
           # a PR is the merge ref - i.e. the contributor's code merged onto main.
           ref: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) && github.event.pull_request.head.ref || '' }}
-      - uses: leanprover/lean-action@v1
+      - name: Test import regeneration helper
+        run: python3 scripts/tests/test_update_imports.py
+      - name: Cache Lean build artifacts
+        uses: actions/cache@v5
         with:
+          path: .lake
+          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
+      - name: Set up Lean and Mathlib
+        uses: leanprover/lean-action@v1
+        with:
+          # Prepare the toolchain and dependencies; generate imports before building.
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
           mk_all-check: false
-      - name: Regenerate import lists and push (same-repo PRs only)
+      - name: Regenerate import lists (same-repo PRs only)
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
-          lake exe mk_all --lib MathEconLib --git
-          lake exe mk_all --lib MathEconLibTest --git
-          # Check newly imported declarations before committing regenerated roots.
-          lake build MathEconLibTest.Namespace
+          bash scripts/update-imports.sh
+      - name: Check import lists (fork PRs and pushes)
+        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
+        run: |
+          if ! bash scripts/update-imports.sh --check; then
+            echo "::error::Import-list verification failed. Run locally: bash scripts/update-imports.sh, then commit MathEconLib.lean and MathEconLibTest.lean."
+            exit 1
+          fi
+      - name: Build library, API pins, and namespace tests
+        run: lake build
+      - name: Commit verified import lists (same-repo PRs only)
+        if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+        run: |
           git add MathEconLib.lean MathEconLibTest.lean
           if git diff --staged --quiet; then exit 0; fi
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "Run mk_all: update imports"
           git push
-      - name: Check import lists (fork PRs and pushes)
-        if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name != github.repository
-        run: |
-          if ! (lake exe mk_all --lib MathEconLib --git --check && lake exe mk_all --lib MathEconLibTest --git --check); then
-            echo "::error::Generated import lists are out of date. Run locally: lake exe mk_all --lib MathEconLib --git && lake exe mk_all --lib MathEconLibTest --git, then commit the two root .lean files."
-            exit 1
-          fi

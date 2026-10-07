@@ -239,8 +239,7 @@ The linked Lean statements specify each result's definitions and hypotheses.
 
 ```bash
 lake exe cache get                           # fetch prebuilt Mathlib oleans (do this first)
-lake exe mk_all --lib MathEconLib --git       # regenerate library imports
-lake exe mk_all --lib MathEconLibTest --git   # regenerate test imports
+bash scripts/update-imports.sh               # regenerate and verify library and test imports
 lake build                                    # build library, API pins, and compatibility tests
 ```
 
