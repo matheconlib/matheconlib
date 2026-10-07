@@ -31,6 +31,8 @@ enters the all-purchase net-payment identity, which expresses equilibrium net ex
 all-purchase auction, all-pay auction, net expenditure
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -79,3 +81,5 @@ lemma allPayBid_measurable : Measurable A.allPayBid := by
 end Auction
 
 end
+
+end MathEconLib

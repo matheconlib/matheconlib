@@ -49,6 +49,8 @@ auctions.
 auctions, bayesian incentive compatibility, individual rationality, payment equivalence
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -288,3 +290,5 @@ theorem payment_equivalence
 end Auction
 
 end
+
+end MathEconLib

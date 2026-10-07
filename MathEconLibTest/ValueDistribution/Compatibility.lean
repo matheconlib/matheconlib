@@ -14,6 +14,8 @@ the atomic tie-breaking behavior of the distributional posted-price example.
 
 noncomputable section
 
+open MathEconLib
+
 open MeasureTheory ProbabilityTheory Set SingleParameterProblem
 
 namespace ValueDistributionCompatibility

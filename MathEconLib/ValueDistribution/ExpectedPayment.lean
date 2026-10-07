@@ -22,6 +22,8 @@ monotone, hence measurable, function without imposing any restriction on the
 problem's behavior at off-support types.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -584,3 +586,5 @@ theorem expectedPayment_eq_integral_q_mul_sub_one_sub_cdf
 end ValueDistribution
 
 end
+
+end MathEconLib

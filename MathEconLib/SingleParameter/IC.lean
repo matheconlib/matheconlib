@@ -27,6 +27,8 @@ from incentive compatibility: IC compares available actions, while individual
 rationality requires the resulting utility to be nonnegative.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set
@@ -153,3 +155,5 @@ def HasZeroLowestTypeUtility : Prop :=
 end SingleParameterProblem
 
 end
+
+end MathEconLib

@@ -13,6 +13,8 @@ The examples are test-only and do not extend the production API.
 
 noncomputable section
 
+open MathEconLib
+
 open MeasureTheory ProbabilityTheory SingleParameterProblem
 
 namespace PricingCompatibility

@@ -37,6 +37,8 @@ all-purchase auctions with linear scarcity and identical type distributions.
 all-purchase auctions, scarcity, incentive compatibility, strategy formulas
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Real
@@ -261,3 +263,5 @@ theorem interior_regime_strategy_auction
 end LinearScarcityAuction
 
 end
+
+end MathEconLib

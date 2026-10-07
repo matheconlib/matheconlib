@@ -19,6 +19,8 @@ adds no new measure representation. Its support, atomlessness, density, CDF,
 and demand facts can be used independently of posted pricing.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 noncomputable section
@@ -143,3 +145,7 @@ theorem uniformInterval_hasDerivAt_cdf (a b : ℝ) (hab : a < b)
 end ValueDistribution
 
 end
+
+end
+
+end MathEconLib

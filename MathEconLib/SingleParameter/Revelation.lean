@@ -38,6 +38,8 @@ The transfers of envelope and type-deviation IC between a problem and its
 reduced form are provided by `MathEconLib.SingleParameter.IC`.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set
@@ -124,3 +126,5 @@ theorem revelation_principle [HasTypeDeviationIC P] :
 end SingleParameterProblem
 
 end
+
+end MathEconLib

@@ -11,6 +11,8 @@ and unconditional acquisition cost remain separate scalar arguments of the
 existing `sellerProfit` definition.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -157,3 +159,5 @@ theorem sellerProfit_eq_virtualSurplus_cdf
 end ValueDistribution
 
 end
+
+end MathEconLib

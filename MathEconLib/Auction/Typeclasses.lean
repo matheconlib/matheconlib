@@ -7,6 +7,8 @@ public import Mathlib.Probability.CDF
 
 /-! # Auction Environment Typeclasses (Section 3a) -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -141,3 +143,5 @@ noncomputable def expectedRevenue : ℝ :=
 end Auction
 
 end
+
+end MathEconLib

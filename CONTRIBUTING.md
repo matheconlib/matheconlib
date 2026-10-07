@@ -47,8 +47,10 @@ are API. Downstream files and external users rely on them, so any change to them
 however small — is called out explicitly in the PR description, with a sentence on
 why the change is needed.
 
-Following the naming ruling in #45, general carrier structures keep short names in
-a sufficiently specific namespace, such as `Auction` or `MatchingWithContracts.Market`.
+Project-owned declarations live under `MathEconLib`; see the
+[public-name mapping](docs/NamespaceMigration.md). Following the naming ruling
+in #45, general carrier structures keep short names in a sufficiently specific
+topic namespace, such as `MathEconLib.Auction`.
 Behavioral, optimality, and normalization predicates instead use precise,
 setting-specific names that state the condition they impose. If two carriers with
 the same short name routinely co-occur, distinguish the carrier names too.

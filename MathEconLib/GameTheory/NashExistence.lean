@@ -34,6 +34,8 @@ All other declarations used in the proofs are kept private.
   `DiscreteMeasurableSpace O` and `Fintype O` in`Game.exists_isNashEquilibrium_of_finite`.
 -/
 
+namespace MathEconLib
+
 namespace GameTheory
 
 variable {ι : Type*} {A : ι → Type*} {O : Type*}
@@ -542,3 +544,5 @@ public theorem Game.exists_isNashEquilibrium_of_finite (G : Game A O) (P : Payof
   exact G.exists_isNashEquilibrium_of_isCompact P
 
 end GameTheory
+
+end MathEconLib

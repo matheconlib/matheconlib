@@ -33,6 +33,8 @@ bidder values. The second-highest type is the order statistic with zero-based in
 auctions, independent private values, winning probability, order statistics
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -256,3 +258,5 @@ noncomputable def S₂ [HasIndependentTypes A] [HasIdenticalTypes A] [HasDensity
 end Auction
 
 end
+
+end MathEconLib

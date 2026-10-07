@@ -26,6 +26,8 @@ The uniform virtual-surplus weight supplies the sign conditions for
 private quadratic profit-gap identity establishes uniqueness on `[a, b]`.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 noncomputable section
@@ -295,3 +297,7 @@ theorem uniformOptimalPrice_continuationValue_sub_of_interior
 end ValueDistribution
 
 end
+
+end
+
+end MathEconLib

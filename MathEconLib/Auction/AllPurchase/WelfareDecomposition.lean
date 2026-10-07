@@ -42,6 +42,8 @@ its square identifies the moment expression with expected edition value net of p
 all-purchase auction, linear scarcity, welfare, cournot competition, variance
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 namespace AllPurchase
@@ -186,3 +188,5 @@ theorem bundledEditionWelfare_eq (β : ℝ → ℝ) (c : ℝ)
 end LinearScarcityAuction
 
 end
+
+end MathEconLib

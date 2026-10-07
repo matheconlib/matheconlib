@@ -43,6 +43,8 @@ quantity. Under linear scarcity, the benchmark is the interior stationary Courno
 all-purchase auction, revenue decomposition, all-pay auction, bundling, cournot competition
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set Finset MathEconLib.Mechanism.Auctions
@@ -643,3 +645,5 @@ theorem bundling_revenue_gain_of_isBoundaryRegime
 end LinearScarcityAuction
 
 end
+
+end MathEconLib

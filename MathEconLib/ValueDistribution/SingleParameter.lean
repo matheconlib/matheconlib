@@ -28,6 +28,8 @@ layer. Future auction-facing density results should reuse the existing
 `Auction.HasDensity` class rather than create a parallel notion here.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory
@@ -105,3 +107,5 @@ theorem sellerProfit_reduce
 end ValueDistribution
 
 end
+
+end MathEconLib

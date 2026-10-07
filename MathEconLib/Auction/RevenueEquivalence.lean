@@ -12,6 +12,8 @@ More generally, two BIC mechanisms with zero lowest-type utility and the same `q
 expected revenue, without any efficiency assumption.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -175,3 +177,5 @@ lemma total_revenue
 end Auction
 
 end
+
+end MathEconLib

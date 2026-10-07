@@ -22,6 +22,8 @@ Characterizing optimal prices by derivatives or virtual surplus belongs to
 later layers.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory Set
@@ -141,3 +143,5 @@ theorem isMaxOn_sellerProfit_postedPriceProblem_acquisitionCost_iff
 end ValueDistribution
 
 end
+
+end MathEconLib

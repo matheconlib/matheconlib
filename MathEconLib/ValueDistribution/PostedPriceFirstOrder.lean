@@ -23,6 +23,8 @@ No global density representative, bounded-support assumption, or
 absolute-continuity assumption is required.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -152,3 +154,5 @@ theorem virtualValue_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem
 end ValueDistribution
 
 end
+
+end MathEconLib

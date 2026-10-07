@@ -19,6 +19,8 @@ The familiar formula `1 - F(price)` follows when the singleton `{price}` has
 probability zero.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory Set
@@ -103,3 +105,5 @@ theorem probAtLeast_eq_one_sub_cdf
 end ValueDistribution
 
 end
+
+end MathEconLib

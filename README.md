@@ -9,6 +9,9 @@ New to Lean 4, or to this library?
 from installing the toolchain to reading
 [`BidderProblem/Basic.lean`](MathEconLib/BidderProblem/Basic.lean) line by line,
 with runnable exercises throughout. It assumes no Lean and no auction theory.
+Project-owned Lean declarations live under the `MathEconLib` namespace; see
+the [public-name mapping](docs/NamespaceMigration.md) for migration guidance.
+Shorter names below abbreviate declarations under that namespace.
 
 ## Mathematical Reference
 
@@ -26,9 +29,9 @@ The project-wide principles guiding library design are recorded in
 The library has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
 
 ```
-Mechanism I A O  — outcome rule + signed transfers over dependent action profiles
-Auction Ω n      — real-bid rules + measurable allocation + type environment on (Ω, ℙ)
-BidderProblem    — one bidder's interim view (winProb, cost, strategy)
+MathEconLib.Mechanism I A O  — outcome rule + signed transfers over dependent action profiles
+MathEconLib.Auction Ω n      — real-bid rules + measurable allocation + type environment on (Ω, ℙ)
+MathEconLib.BidderProblem    — one bidder's interim view (winProb, cost, strategy)
 ```
 
 The reusable deterministic core
@@ -53,7 +56,7 @@ depend on these reduced quantities; reduction may forget original actions
 outside the strategy's image. The layer contains no probability distribution
 or seller objective.
 
-The existing `BidderProblem` API remains unchanged.
+The bidder-problem interface retains its mathematical assumptions and conclusions.
 `BidderProblem.toSingleParameterProblem` supplies a lossless compatibility
 bridge, so existing auction results can reuse the general theorems.
 

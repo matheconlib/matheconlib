@@ -33,6 +33,8 @@ their strategy. Boundary and interior regimes specify the lowest type's utility.
 all-purchase auctions, linear scarcity, quadratic cost, interim utility
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 /-! ## BidderProblem-level structures -/
@@ -246,3 +248,5 @@ noncomputable def toQuadraticCostProblem
 end LinearScarcityAuction
 
 end
+
+end MathEconLib

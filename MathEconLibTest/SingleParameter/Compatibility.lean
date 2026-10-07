@@ -22,6 +22,8 @@ separate `MathEconLibTest` library so compile-time checks are not part of the
 production `MathEconLib` import graph.
 -/
 
+open MathEconLib
+
 open Set MeasureTheory
 
 namespace SingleParameterCompatibility

@@ -15,6 +15,8 @@ demand API on finite-support atomic and unbounded atomless distributions.
 
 noncomputable section
 
+open MathEconLib
+
 open MeasureTheory Set
 open SingleParameterProblem
 open ValueDistribution

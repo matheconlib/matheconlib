@@ -47,6 +47,8 @@ identity used in auction theory (Section 5.3).
 
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Finset Nat ENNReal
@@ -739,3 +741,5 @@ end OrderStatisticsSetup
 end Probability
 
 end
+
+end MathEconLib

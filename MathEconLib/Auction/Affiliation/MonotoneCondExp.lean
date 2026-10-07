@@ -28,6 +28,8 @@ stochastic dominance ⇒ monotone conditional expectations) is future work;
 principle) build on this lemma.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Finset
@@ -110,3 +112,7 @@ theorem monotoneOn_condExpSlice_of_affiliated {n : ℕ}
     hA_subset hB_subset hA_nonempty hB_nonempty hsupAB hinfAB
 
 end Auction.Affiliation
+
+end
+
+end MathEconLib

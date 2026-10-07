@@ -62,6 +62,8 @@ consider for finding the right implementation:
 * When `G` is measurable, `G.toMixed` and `G.toMixed'` are as well.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 namespace GameTheory
@@ -348,3 +350,7 @@ end PayoffStructure
 end Continuous
 
 end GameTheory
+
+end
+
+end MathEconLib

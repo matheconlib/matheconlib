@@ -18,6 +18,8 @@ over nonnegative bids, the equilibrium strategy is strictly monotone on the type
 * `BidderProblem.HasUniversalIC` on `A.toBidderProblem` over `Ici 0` — IC over nonnegative bids
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open Set MeasureTheory ProbabilityTheory
@@ -220,3 +222,5 @@ theorem no_ties
 end Auction
 
 end
+
+end MathEconLib

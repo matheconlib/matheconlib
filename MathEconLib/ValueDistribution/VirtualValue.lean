@@ -15,6 +15,8 @@ virtual-surplus weight into density times virtual value requires a nonzero
 density and is stated with that hypothesis explicitly.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory ProbabilityTheory
@@ -66,3 +68,5 @@ theorem virtualSurplusWeight_eq_sub_one_sub_cdf
 end ValueDistribution
 
 end
+
+end MathEconLib

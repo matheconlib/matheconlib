@@ -22,6 +22,8 @@ pointwise density used in an application should consequently be related to
 equality.
 -/
 
+namespace MathEconLib
+
 @[expose] public section
 
 open MeasureTheory
@@ -120,3 +122,5 @@ theorem integral_eq_intervalIntegral_realDensity_mul
 end ValueDistribution
 
 end
+
+end MathEconLib
