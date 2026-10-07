@@ -1,6 +1,5 @@
 /-
 Copyright (c) 2026 Daniel Lyng. All rights reserved.
-Released under license as described in the file LICENSE.
 Authors: Daniel Lyng
 -/
 module

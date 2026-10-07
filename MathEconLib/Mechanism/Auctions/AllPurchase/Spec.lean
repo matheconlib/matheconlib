@@ -1,6 +1,5 @@
 /-
 Copyright (c) 2026 Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang. All rights reserved.
-Released under license as described in the file LICENSE.
 Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
 
 The all-purchase specification is adapted from Auctionlib/Mechanism/AllPurchase.lean,

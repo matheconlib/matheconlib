@@ -1,7 +1,6 @@
 /-
 Copyright (c) 2026 Ruiz Chen, Bo Cowgill, Scott Duke Kominers, Daniel Lyng, Jujian Zhang.
 All rights reserved.
-Released under license as described in the file LICENSE.
 Authors: Ruiz Chen, Bo Cowgill, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
 
 Allocation predicates and the coordinate-bound proof are adapted from
