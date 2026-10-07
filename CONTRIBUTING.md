@@ -70,24 +70,14 @@ From the repository root, use:
 
 ```bash
 lake exe cache get                 # first checkout, or after a dependency/toolchain change
-git add path/to/NewFile.lean        # if adding a file: --git reads tracked/staged paths
+git add path/to/NewFile.lean        # if adding a Lean file
 bash scripts/update-imports.sh      # regenerate both root import files, then verify them
 lake build                         # includes API pins and MathEconLibTest/Manual/HandsOn.lean
 ```
 
 Omit the `git add` line if you have not added a file. Include changes to
-`MathEconLib.lean` and `MathEconLibTest.lean` in your commit. The helper runs
-`lake exe mk_all --lib MathEconLib --git` and
-`lake exe mk_all --lib MathEconLibTest --git`, then checks both with `--check`.
-For these single-library commands, exit 1 can mean one file was updated rather
-than a failure; the helper checks that a file actually changed and verifies the
-result. Do not join the raw generation commands with `&&` or hide their errors
-with `|| true`. `bash scripts/update-imports.sh --check` verifies without writing.
-
-Same-repository PRs may receive an automated commit containing only those two
-generated files. Fork PRs are built using GitHub's merge ref and only check the
-import lists: CI does not commit or push to a fork. Fix stale imports locally
-and push the generated files with your change.
+`MathEconLib.lean` and `MathEconLibTest.lean` in your commit.
+Use `bash scripts/update-imports.sh --check` to verify imports without changing files.
 
 ## API stability pins
 

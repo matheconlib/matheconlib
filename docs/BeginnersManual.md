@@ -1936,12 +1936,10 @@ lake build
 ```
 
 Commit any changes to `MathEconLib.lean` and `MathEconLibTest.lean` with your work.
-The helper handles `mk_all`'s nonzero exit code for a successful update and checks
-the resulting lists. Use `bash scripts/update-imports.sh --check` to verify
-without changing files. See the [verification and review requirements](../CONTRIBUTING.md#verification-bar)
+Use `bash scripts/update-imports.sh --check` to verify without changing files.
+See the [verification and review requirements](../CONTRIBUTING.md#verification-bar)
 before requesting review. Core changes need maintainer review and the applicable
-CI checks must pass on the latest PR revision. Fork CI checks the proposed Lean
-change through GitHub's merge ref and does not push corrections to your fork.
+CI checks must pass on the latest PR revision.
 
 **House rules.** Names follow the Mathlib conventions in [Part 7](#how-mathlib-names-things), and the tactic `native_decide` is not permitted anywhere in the library. [`CONTRIBUTING.md`](../CONTRIBUTING.md) has the rest — no `sorry` or `admit`, `#print axioms` on new results showing only the three axioms from [Part 1](#part-1--why-formalise-mathematics-at-all), the API stability pins, and the design-first rule for changes to the core layers.
 
