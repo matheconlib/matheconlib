@@ -61,7 +61,31 @@ Every PR must satisfy:
 - No `sorry`, `admit`, or `native_decide` anywhere in the change.
 - `#print axioms` on new main results shows only `propext`, `Classical.choice`,
   and `Quot.sound`.
-- Imports are regenerated with `lake exe mk_all --lib Auctionlib --git`.
+- Both library and test imports are regenerated and verified with
+  `bash scripts/update-imports.sh`.
+
+From the repository root, use:
+
+```bash
+lake exe cache get                 # first checkout, or after a dependency/toolchain change
+git add path/to/NewFile.lean        # if adding a file: --git reads tracked/staged paths
+bash scripts/update-imports.sh      # regenerate both root import files, then verify them
+lake build                         # includes API pins and AuctionlibTest/Manual/HandsOn.lean
+```
+
+Omit the `git add` line if you have not added a file. Include changes to
+`Auctionlib.lean` and `AuctionlibTest.lean` in your commit. The helper runs
+`lake exe mk_all --lib Auctionlib --git` and
+`lake exe mk_all --lib AuctionlibTest --git`, then checks both with `--check`.
+For these single-library commands, exit 1 can mean one file was updated rather
+than a failure; the helper checks that a file actually changed and verifies the
+result. Do not join the raw generation commands with `&&` or hide their errors
+with `|| true`. `bash scripts/update-imports.sh --check` verifies without writing.
+
+Same-repository PRs may receive an automated commit containing only those two
+generated files. Fork PRs are built using GitHub's merge ref and only check the
+import lists: CI does not commit or push to a fork. Fix stale imports locally
+and push the generated files with your change.
 
 ## API stability pins
 
@@ -84,5 +108,11 @@ design-first rule.
 ## Review
 
 - PRs touching the core layers get a maintainer review before merge.
+- Before merging, confirm that the applicable GitHub Actions checks pass on the
+  latest PR revision and that review requests have been addressed. Report the
+  build, import checks, and any relevant axiom/API-pin checks in the PR description.
+- Foundational changes and public API changes require the design agreement
+  described above; leaf contributions can go straight to a PR. This does not
+  waive maintainer review for a change that also touches a core layer.
 - Keep PRs single-purpose and reviewable: one theme per PR, with a short
   description of what is proved and where it sits in the library.
