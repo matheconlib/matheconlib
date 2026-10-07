@@ -1,0 +1,222 @@
+module
+
+public import MathEconLib.Auction.SymmetricIPV
+public import MathEconLib.BidderProblem.UniversalIC
+
+/-!
+# Strict Monotonicity of Equilibrium Strategy (Lemma 6.2)
+
+In a symmetric IPV auction with positive density, strict-highest-bid allocation, and universal IC
+over nonnegative bids, the equilibrium strategy is strictly monotone on the type interval.
+
+## Hypotheses
+
+* `HasIdenticalTypes`, `HasIndependentTypes`, `HasBoundedTypes`, `HasAtomlessTypes`
+* `HasPosDensity` — CDF has positive continuous density
+* `BidderProblem.IsRegular` on `A.toBidderProblem` — monotone strategy, nonnegative bids,
+  continuous cost
+* `BidderProblem.HasUniversalIC` on `A.toBidderProblem` over `Ici 0` — IC over nonnegative bids
+-/
+
+@[expose] public section
+
+open Set MeasureTheory ProbabilityTheory
+open MathEconLib.Mechanism.Auctions
+
+variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+variable {n : ℕ} [NeZero n]
+
+namespace Auction
+
+/-! ### Density typeclass -/
+
+/-- The common CDF has a continuous density that is strictly positive on the interior of the type
+interval. -/
+class HasPosDensity (A : Auction Ω n) [HasIdenticalTypes A] where
+  /-- Density function. -/
+  f : ℝ → ℝ
+  /-- The CDF equals the integral of the density. -/
+  F_eq_integral : ∀ v ∈ Icc A.lowestType A.highestType,
+    A.commonCDF v = ∫ t in A.lowestType..v, f t
+  /-- The density is continuous on the type interval. -/
+  f_continuous : ContinuousOn f (Icc A.lowestType A.highestType)
+  /-- The density is strictly positive on the interior. -/
+  f_pos : ∀ v ∈ Ioo A.lowestType A.highestType, 0 < f v
+
+/-! ### Strict monotonicity proof -/
+
+variable (A : Auction Ω n) [HasIdenticalTypes A]
+
+-- Shorthand
+local notation "I" => Icc A.lowestType A.highestType
+local notation "I°" => Ioo A.lowestType A.highestType
+local notation "F" => A.commonCDF
+local notation "lo" => A.lowestType
+local notation "hi" => A.highestType
+
+private lemma winProb_gap
+    [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
+    (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i)) {σ : ℝ → ℝ}
+    (hσ_mono : MonotoneOn σ I) (hσ_meas : Measurable σ)
+    (i : Fin n)
+    (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°)
+    (_hlt : v₁ < v₂) (b₀ : ℝ)
+    (hβ₁ : σ v₁ = b₀) (hβ₂ : σ v₂ = b₀)
+    (ε : ℝ) (hε : 0 < ε) :
+    F v₂ ^ (n - 1) - F v₁ ^ (n - 1) ≤
+      A.q_strat σ i (b₀ + ε) - A.q_strat σ i b₀ := by
+  have hle : lo ≤ hi := by
+    have ⟨ω⟩ := nonempty_of_isProbabilityMeasure (ℙ : Measure Ω)
+    have h := HasBoundedTypes.θ_in (A := A) 0 ω
+    rw [A.θmin_eq_lowestType, A.θmax_eq_highestType] at h
+    exact h.1.trans h.2
+  rw [A.q_strat_eq_cdf_pow hwinner hσ_mono hσ_meas i b₀,
+      A.q_strat_eq_cdf_pow hwinner hσ_mono hσ_meas i (b₀ + ε)]
+  have hv₁' := Ioo_subset_Icc_self hv₁
+  have hv₂' := Ioo_subset_Icc_self hv₂
+  have hv₀_le_v₁ : bidThreshold σ lo hi b₀ ≤ v₁ :=
+    bidThreshold.le_of_not_lt hle hσ_mono hv₁'
+      (not_lt.mpr (le_of_eq hβ₁.symm))
+  have hv₂_le_v₀ε : v₂ ≤ bidThreshold σ lo hi (b₀ + ε) :=
+    bidThreshold.above hle hv₂' (by rw [hβ₂]; linarith)
+  linarith [pow_le_pow_left₀ (A.commonCDF_nonneg (bidThreshold σ lo hi b₀))
+              (A.commonCDF_mono hv₀_le_v₁) (n - 1),
+            pow_le_pow_left₀ (A.commonCDF_nonneg v₂)
+              (A.commonCDF_mono hv₂_le_v₀ε) (n - 1)]
+
+private lemma ic_contradiction
+    {σ : ℝ → ℝ} {winProb cost : ℝ → ℝ} (hcost_cont : Continuous cost)
+    (v₂ b₀ Δ : ℝ) (hv₂_mem : v₂ ∈ I) (hv₂_pos : lo < v₂)
+    (hβ₂ : σ v₂ = b₀) (hΔ : 0 < Δ)
+    (hgap : ∀ ε > 0, Δ ≤ winProb (b₀ + ε) - winProb b₀)
+    (hb₀_nonneg : 0 ≤ b₀) (hlo_nonneg : 0 ≤ lo)
+    (ic : ∀ v ∈ I, ∀ b, 0 ≤ b →
+        v * winProb b - cost b ≤ v * winProb (σ v) - cost (σ v)) :
+    False := by
+  have hv₂_pos' : 0 < v₂ := lt_of_le_of_lt hlo_nonneg hv₂_pos
+  obtain ⟨η, hη_pos, hη⟩ :=
+    (Metric.tendsto_nhds_nhds.mp (hcost_cont.tendsto b₀))
+      (v₂ * Δ) (mul_pos hv₂_pos' hΔ)
+  have hε : 0 < η / 2 := by linarith
+  have hic := ic v₂ hv₂_mem (b₀ + η / 2) (by linarith)
+  rw [hβ₂] at hic
+  have h_small := hη (show dist (b₀ + η / 2) b₀ < η by
+    rw [Real.dist_eq, show b₀ + η / 2 - b₀ = η / 2 by ring,
+      abs_of_pos hε]; linarith)
+  rw [Real.dist_eq] at h_small
+  linarith [abs_lt.mp h_small, hgap (η / 2) hε,
+    mul_le_mul_of_nonneg_left (hgap (η / 2) hε) (le_of_lt hv₂_pos')]
+
+variable [HasPosDensity A]
+
+private lemma F_strictMono_interior
+    (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°) (hlt : v₁ < v₂) :
+    F v₁ < F v₂ := by
+  have hv₁' := Ioo_subset_Icc_self hv₁
+  have hv₂' := Ioo_subset_Icc_self hv₂
+  rw [HasPosDensity.F_eq_integral v₁ hv₁', HasPosDensity.F_eq_integral v₂ hv₂']
+  have hcont : ContinuousOn (HasPosDensity.f A) (Icc v₁ v₂) :=
+    HasPosDensity.f_continuous.mono
+      (Icc_subset_Icc (le_of_lt hv₁.1) (le_of_lt hv₂.2))
+  have hint_pos : 0 < ∫ t in v₁..v₂, HasPosDensity.f A t :=
+    intervalIntegral.integral_pos hlt hcont
+      (fun x hx => le_of_lt (HasPosDensity.f_pos x
+        ⟨lt_of_lt_of_le hv₁.1 (le_of_lt hx.1),
+         lt_of_le_of_lt hx.2 hv₂.2⟩))
+      ⟨(v₁ + v₂) / 2, ⟨by linarith, by linarith⟩,
+        HasPosDensity.f_pos _
+          ⟨by linarith [hv₁.1], by linarith [hv₂.2]⟩⟩
+  have hv₂_nn : lo ≤ v₂ := le_of_lt hv₂.1
+  have hcont_full : ContinuousOn (HasPosDensity.f A)
+      (Set.uIcc lo v₂) := by
+    rw [Set.uIcc_of_le hv₂_nn]
+    exact HasPosDensity.f_continuous.mono
+      (Icc_subset_Icc le_rfl (le_of_lt hv₂.2))
+  have hint1 : IntervalIntegrable (HasPosDensity.f A) volume lo v₁ := by
+    apply (hcont_full.mono _).intervalIntegrable
+    apply Set.uIcc_subset_uIcc_left
+    rw [Set.uIcc_of_le hv₂_nn]
+    exact ⟨le_of_lt hv₁.1, le_of_lt hlt⟩
+  have hint2 : IntervalIntegrable (HasPosDensity.f A) volume v₁ v₂ :=
+    (show ContinuousOn (HasPosDensity.f A) (Set.uIcc v₁ v₂) by
+      rw [Set.uIcc_of_le (le_of_lt hlt)]; exact hcont).intervalIntegrable
+  linarith [intervalIntegral.integral_add_adjacent_intervals hint1 hint2]
+
+variable [n.AtLeastTwo]
+
+private lemma F_pow_strict_mono
+    (v₁ v₂ : ℝ) (hv₁ : v₁ ∈ I°) (hv₂ : v₂ ∈ I°) (hlt : v₁ < v₂) :
+    F v₁ ^ (n - 1) < F v₂ ^ (n - 1) :=
+  pow_lt_pow_left₀ (A.F_strictMono_interior v₁ v₂ hv₁ hv₂ hlt)
+    (A.commonCDF_nonneg v₁)
+    (by have := Nat.AtLeastTwo.prop (n := n); omega)
+
+/-! ### Main theorem -/
+
+/-- **Lemma 6.2 — Strict monotonicity.** In a symmetric IPV auction with positive density and
+strict-highest-bid allocation, if the `BidderProblem` constructed via `toBidderProblem` is regular
+and satisfies universal IC over nonnegative bids, then the equilibrium strategy is strictly
+monotone on the type interval. -/
+theorem strictMonotonicity
+    [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
+    {σ : ℝ → ℝ} (hσ_meas : Measurable σ) (i : Fin n)
+    (hlo_nonneg : 0 ≤ lo)
+    (hreg : (A.toBidderProblem halloc σ i).IsRegular)
+    (hic : (A.toBidderProblem halloc σ i).HasUniversalIC (Ici 0)) :
+    StrictMonoOn σ I := by
+  set B := A.toBidderProblem halloc σ i
+  have hBI : B.typeInterval = I :=
+    show Icc (A.θmin i) (A.θmax i) = _ by simp
+  have hσ_mono : MonotoneOn σ I := hBI ▸ hreg.strategy_mono
+  have hσ_nonneg : ∀ v ∈ I, 0 ≤ σ v := hBI ▸ hreg.strategy_nonneg
+  have hcost_cont : Continuous B.cost := hreg.cost_continuous
+  have ic : ∀ v ∈ I, ∀ b, 0 ≤ b →
+      v * B.winProb b - B.cost b ≤ v * B.winProb (σ v) - B.cost (σ v) :=
+    fun v hv b hb => by
+      simpa [BidderProblem.payoff] using hic.universalIC v (hBI ▸ hv) b (mem_Ici.mpr hb)
+  by_contra h
+  simp only [StrictMonoOn] at h; push_neg at h
+  obtain ⟨a, ha, b, hb, hab, hnlt⟩ := h
+  have heq : σ a = σ b := le_antisymm (hσ_mono ha hb hab.le) hnlt
+  have hv₁ : (2 * a + b) / 3 ∈ I° :=
+    ⟨by linarith [ha.1], by linarith [hb.2]⟩
+  have hv₂ : (a + 2 * b) / 3 ∈ I° :=
+    ⟨by linarith [ha.1], by linarith [hb.2]⟩
+  have hlt : (2 * a + b) / 3 < (a + 2 * b) / 3 := by linarith
+  have hflat (w) (hw : w ∈ Icc a b) : σ w = σ a := by
+    have hw_mem : w ∈ I := ⟨le_trans ha.1 hw.1, le_trans hw.2 hb.2⟩
+    linarith [hσ_mono ha hw_mem hw.1, hσ_mono hw_mem hb hw.2]
+  have heq' : σ ((2 * a + b) / 3) = σ ((a + 2 * b) / 3) :=
+    (hflat _ ⟨by linarith, by linarith⟩).trans
+      (hflat _ ⟨by linarith, by linarith⟩).symm
+  set v₁ := (2 * a + b) / 3
+  set v₂ := (a + 2 * b) / 3
+  set b₀ := σ v₁
+  exact A.ic_contradiction (winProb := B.winProb) hcost_cont v₂ b₀
+    (F v₂ ^ (n - 1) - F v₁ ^ (n - 1))
+    (Ioo_subset_Icc_self hv₂) hv₂.1 heq'.symm
+    (by linarith [A.F_pow_strict_mono v₁ v₂ hv₁ hv₂ hlt])
+    (fun ε hε => A.winProb_gap hwinner hσ_mono hσ_meas i
+      v₁ v₂ hv₁ hv₂ hlt b₀ rfl heq'.symm ε hε)
+    (hσ_nonneg v₁ (Ioo_subset_Icc_self hv₁))
+    hlo_nonneg ic
+
+/-- Distinct types in the interior have distinct bids. -/
+theorem no_ties
+    [HasIndependentTypes A] [HasBoundedTypes A] [HasAtomlessTypes A]
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
+    {σ : ℝ → ℝ} (hσ_meas : Measurable σ) (i : Fin n)
+    (hlo_nonneg : 0 ≤ lo)
+    (hreg : (A.toBidderProblem halloc σ i).IsRegular)
+    (hic : (A.toBidderProblem halloc σ i).HasUniversalIC (Ici 0)) :
+    ∀ v₁ ∈ I°, ∀ v₂ ∈ I°, v₁ ≠ v₂ → σ v₁ ≠ σ v₂ := by
+  intro v₁ hv₁ v₂ hv₂ hne
+  exact ((A.strictMonotonicity halloc hwinner hσ_meas i hlo_nonneg hreg hic).injOn
+    (Ioo_subset_Icc_self hv₁) (Ioo_subset_Icc_self hv₂)).mt hne
+
+end Auction
+
+end

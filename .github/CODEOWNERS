@@ -4,11 +4,11 @@
 * @Ruizsolveall
 
 # Core layers
-/Auctionlib/Mechanism/     @Ruizsolveall @jjaassoonn
-/Auctionlib/BidderProblem/ @Ruizsolveall @jjaassoonn
-/Auctionlib/GameTheory/    @Ruizsolveall @jjaassoonn
-/Auctionlib/Auction/       @Ruizsolveall @jjaassoonn
+/MathEconLib/Mechanism/     @Ruizsolveall @jjaassoonn
+/MathEconLib/BidderProblem/ @Ruizsolveall @jjaassoonn
+/MathEconLib/GameTheory/    @Ruizsolveall @jjaassoonn
+/MathEconLib/Auction/       @Ruizsolveall @jjaassoonn
 
 # Single-parameter layer
-/Auctionlib/SingleParameter/     @bocowgill @Ruizsolveall
-/AuctionlibTest/SingleParameter/ @bocowgill @Ruizsolveall
+/MathEconLib/SingleParameter/     @bocowgill @Ruizsolveall
+/MathEconLibTest/SingleParameter/ @bocowgill @Ruizsolveall

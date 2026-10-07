@@ -1,9 +1,9 @@
-# Contributing to auctionlib
+# Contributing to MathEconLib
 
 Thanks for contributing! This is a short guide to how changes land in this repository.
 
 New to Lean 4 or to this library? Start with
-[*Lean 4 and `auctionlib` — A Beginner's Manual*](docs/BeginnersManual.md),
+[*Lean 4 and `MathEconLib` — A Beginner's Manual*](docs/BeginnersManual.md),
 which covers the toolchain, the editor loop, and how to read the library's
 core files. Small, well-scoped additions to `ForMathlib/` can be suitable first
 contributions; the folder also contains substantial results.
@@ -61,7 +61,8 @@ Every PR must satisfy:
 - No `sorry`, `admit`, or `native_decide` anywhere in the change.
 - `#print axioms` on new main results shows only `propext`, `Classical.choice`,
   and `Quot.sound`.
-- Imports are regenerated with `lake exe mk_all --lib Auctionlib --git`.
+- Imports are regenerated with `lake exe mk_all --lib MathEconLib --git` and
+  `lake exe mk_all --lib MathEconLibTest --git`.
 
 ## API stability pins
 
@@ -75,8 +76,8 @@ agreement before changing the statement, and do not edit the pin merely to make 
 build pass. Once the API change is approved, update the signature and its pin
 together in the same PR.
 
-New layers pin their own public API next to themselves in `AuctionlibTest/` (see
-`AuctionlibTest/SingleParameter/Compatibility.lean`), so early iteration stays cheap
+New layers pin their own public API next to themselves in `MathEconLibTest/` (see
+`MathEconLibTest/SingleParameter/Compatibility.lean`), so early iteration stays cheap
 while a layer is young. Once a layer has downstream users inside the library, its
 pins are promoted into `ApiStability.lean`; from then on its statements follow the
 design-first rule.

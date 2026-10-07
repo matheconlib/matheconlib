@@ -1,4 +1,4 @@
-import Auctionlib
+import MathEconLib
 
 /-!
 # API stability pins
@@ -13,14 +13,14 @@ hypothesis, a changed conclusion, a renamed or deleted declaration. Per `CONTRIB
 needs a design discussion first: open an issue and get agreement before changing the statement. Do
 **not** silently edit the pin to make it pass.
 
-The file lives at the repository root (outside `Auctionlib/`) so that `lake exe mk_all` never
+The file lives at the repository root (outside `MathEconLib/`) so that `lake exe mk_all` never
 touches it, and is built as its own `lean_lib` (`ApiStability`), listed in `defaultTargets` so a
 plain `lake build` checks it. (It is deliberately a non-`module` file: it imports the
-mk_all-generated root `Auctionlib`, which is itself a plain import list.)
+mk_all-generated root `MathEconLib`, which is itself a plain import list.)
 -/
 
 open MeasureTheory ProbabilityTheory
-open Auctionlib.Mechanism.Auctions
+open MathEconLib.Mechanism.Auctions
 
 universe u v w uI uA uB uC uΘ uO
 
@@ -28,72 +28,72 @@ universe u v w uI uA uB uC uΘ uO
 
 section MechanismCore
 
-open Auctionlib.Mechanism
+open MathEconLib.Mechanism
 
 -- Mechanisms allow agent-specific actions and an independent outcome universe.
 example : (I : Type uI) → (I → Type uA) → Type uO → Type (max uI uA uO) :=
-  @Auctionlib.Mechanism
+  @MathEconLib.Mechanism
 
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
-    (Profile A → O) → ((i : I) → Profile A → ℝ) → Auctionlib.Mechanism I A O :=
-  @Auctionlib.Mechanism.mk
+    (Profile A → O) → ((i : I) → Profile A → ℝ) → MathEconLib.Mechanism I A O :=
+  @MathEconLib.Mechanism.mk
 
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
-    Auctionlib.Mechanism I A O → Profile A → O :=
-  @Auctionlib.Mechanism.outcome
+    MathEconLib.Mechanism I A O → Profile A → O :=
+  @MathEconLib.Mechanism.outcome
 
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
-    Auctionlib.Mechanism I A O → (i : I) → Profile A → ℝ :=
-  @Auctionlib.Mechanism.transfer
+    MathEconLib.Mechanism I A O → (i : I) → Profile A → ℝ :=
+  @MathEconLib.Mechanism.transfer
 
 example : (I : Type uI) → (I → Type uΘ) → Type uO → Type (max uI uΘ uO) :=
   @DirectMechanism
 
 -- Payments are amounts paid by agents; transfers are amounts received by agents.
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
-    Auctionlib.Mechanism I A O → (i : I) → Profile A → ℝ :=
+    MathEconLib.Mechanism I A O → (i : I) → Profile A → ℝ :=
   @payment
 
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO}
-    (M : Auctionlib.Mechanism I A O) (i : I) (a : Profile A),
+    (M : MathEconLib.Mechanism I A O) (i : I) (a : Profile A),
     M.payment i a = -M.transfer i a :=
   @payment_eq_neg_transfer
 
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO},
-    Auctionlib.Mechanism I A O → [Fintype I] → Profile A → ℝ :=
+    MathEconLib.Mechanism I A O → [Fintype I] → Profile A → ℝ :=
   @revenue
 
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO}
-    (M : Auctionlib.Mechanism I A O) [Fintype I] (a : Profile A),
+    (M : MathEconLib.Mechanism I A O) [Fintype I] (a : Profile A),
     M.revenue a = -∑ i, M.transfer i a :=
   @revenue_eq_neg_sum_transfer
 
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO}
-    (M : Auctionlib.Mechanism I A O) [Fintype I] (a : Profile A),
+    (M : MathEconLib.Mechanism I A O) [Fintype I] (a : Profile A),
     M.revenue a = ∑ i, M.payment i a :=
   @revenue_eq_sum_payment
 
 -- Report maps preserve outcomes and transfers and compose pointwise.
 example : ∀ {I : Type uI} {A : I → Type uA} {B : I → Type uB} {O : Type uO},
-    Auctionlib.Mechanism I A O → (∀ i, B i → A i) → Auctionlib.Mechanism I B O :=
+    MathEconLib.Mechanism I A O → (∀ i, B i → A i) → MathEconLib.Mechanism I B O :=
   @comap
 
 example : ∀ {I : Type uI} {A : I → Type uA} {B : I → Type uB} {O : Type uO}
-    (M : Auctionlib.Mechanism I A O) (σ : ∀ i, B i → A i) (b : Profile B),
+    (M : MathEconLib.Mechanism I A O) (σ : ∀ i, B i → A i) (b : Profile B),
     (M.comap σ).outcome b = M.outcome (fun i => σ i (b i)) :=
   @outcome_comap
 
 example : ∀ {I : Type uI} {A : I → Type uA} {B : I → Type uB} {O : Type uO}
-    (M : Auctionlib.Mechanism I A O) (σ : ∀ i, B i → A i) (i : I) (b : Profile B),
+    (M : MathEconLib.Mechanism I A O) (σ : ∀ i, B i → A i) (i : I) (b : Profile B),
     (M.comap σ).transfer i b = M.transfer i (fun j => σ j (b j)) :=
   @transfer_comap
 
 example : ∀ {I : Type uI} {A : I → Type uA} {O : Type uO}
-    (M : Auctionlib.Mechanism I A O), M.comap (fun _ => id) = M :=
+    (M : MathEconLib.Mechanism I A O), M.comap (fun _ => id) = M :=
   @comap_id
 
 example : ∀ {I : Type uI} {A : I → Type uA} {B : I → Type uB} {C : I → Type uC}
-    {O : Type uO} (M : Auctionlib.Mechanism I A O)
+    {O : Type uO} (M : MathEconLib.Mechanism I A O)
     (σ : ∀ i, B i → A i) (τ : ∀ i, C i → B i),
     (M.comap σ).comap τ = M.comap (fun i => σ i ∘ τ i) :=
   @comap_comp
@@ -119,18 +119,18 @@ example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO}
   @QuasilinearEnvironment.isPrivateValues_ofPrivate
 
 example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO},
-    QuasilinearEnvironment I Θ O → Auctionlib.Mechanism I A O →
+    QuasilinearEnvironment I Θ O → MathEconLib.Mechanism I A O →
       (i : I) → Profile Θ → Profile A → ℝ :=
   @QuasilinearEnvironment.utility
 
 example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO}
-    (E : QuasilinearEnvironment I Θ O) (M : Auctionlib.Mechanism I A O)
+    (E : QuasilinearEnvironment I Θ O) (M : MathEconLib.Mechanism I A O)
     (i : I) (θ : Profile Θ) (a : Profile A),
     E.utility M i θ a = E.value i θ (M.outcome a) + M.transfer i a :=
   @QuasilinearEnvironment.utility_eq_value_add_transfer
 
 example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO}
-    (E : QuasilinearEnvironment I Θ O) (M : Auctionlib.Mechanism I A O)
+    (E : QuasilinearEnvironment I Θ O) (M : MathEconLib.Mechanism I A O)
     (i : I) (θ : Profile Θ) (a : Profile A),
     E.utility M i θ a = E.value i θ (M.outcome a) - M.payment i a :=
   @QuasilinearEnvironment.utility_eq_value_sub_payment
