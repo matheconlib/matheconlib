@@ -4,38 +4,43 @@ public import MathEconLib.Auction.AllPurchase.LinearScarcity
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-!
-# Optimal Pricing (Proposition 6.12, §6.7.2)
+# Algebraic optimal-pricing formulas for all-purchase auctions
 
-In the interior regime of a linear-scarcity all-purchase auction
-(`ϕ(B) = ϕ̄ − αB`), Proposition 6.8 gives the closed form for the
-mean equilibrium quantity as a function of the posted price `p`:
-`𝔼[B](p) = n(ϕ̄ − p)/(α(n+1)) + 2nM/((n+1)√α)`,
-where `M = 𝔼[√(b^{AP}(V))]` depends only on `F` and `n` (not on `p`).
+The formulas here are motivated by Propositions 6.8 and 6.12 (§6.7.2) in Scott's notes.
+For supplied real parameters `φbar`, `α`, `c`, and `M`, and a natural number `n`,
+`interiorMeanQuantity` defines
+`Q(p) = n(φbar − p)/(α(n+1)) + 2nM/((n+1)√α)`, and `sellerProfitInterior` defines
+`Π(p) = (p − c) · Q(p)`. The candidate price is `p* = (φbar + c + 2√α·M)/2`.
 
-The seller's profit `Π(p) = (p − c)·𝔼[B](p)` is therefore a concave
-quadratic in `p`, and the FOC yields the unique unconstrained maximizer
-`p* = (ϕ̄ + c + 2√α·M)/2`.  This is **Proposition 6.12** in Scott's notes.
+When `α > 0` and `n ≥ 1`, the defined quadratic `Π` has the unique maximizer `p*` over
+all real prices. The bridge identifying `Q` with an auction's mean equilibrium quantity
+and `Π` with its actual seller profit remains to be formalized. In particular, this file
+does not identify `M` with the expected square root of the all-pay benchmark bid.
 
-This file states the proposition at the pure-algebra layer, mirroring how
-the paper itself proves it (the connection to the auction-level
-equilibrium is supplied by Proposition 6.8 / `interior_regime_strategy`).
+The final theorem rewrites the interior-regime inequality at the candidate price for arbitrary
+parameters. Auction feasibility and global optimality in the economic model require separate
+results.
 
-## Main results
+## Main definitions
 
-- `AllPurchase.interiorMeanQuantity` — closed form for `𝔼[B](p)` in the interior regime.
-- `AllPurchase.sellerProfitInterior` — `Π(p) = (p − c)·𝔼[B](p)`.
-- `AllPurchase.optimalPriceInterior` — the unique unconstrained maximizer `p*`.
-- `AllPurchase.sellerProfitInterior_le_at_optimal` — main inequality: `Π(p) ≤ Π(p*)`.
-- `AllPurchase.sellerProfitInterior_eq_at_optimal_iff` — strict concavity: equality iff `p = p*`.
-- `AllPurchase.optimalPriceInterior_in_interior_regime` — feasibility condition
-  `ϕ̄ − c > 2n√α·M` ⇔ `p*` satisfies the interior-regime inequality `ϕ̄ − p* > (n−1)√α·M`.
+* `AllPurchase.interiorMeanQuantity`: the supplied quantity formula `Q`.
+* `AllPurchase.sellerProfitInterior`: the defined profit formula `Π`.
+* `AllPurchase.optimalPriceInterior`: the candidate price `p*`.
+
+## Main statements
+
+* `AllPurchase.sellerProfitInterior_le_at_optimal`: `Π(p) ≤ Π(p*)` for every real price
+  when `α > 0` and `n ≥ 1`.
+* `AllPurchase.sellerProfitInterior_eq_at_optimal_iff`: under the same hypotheses, equality
+  holds exactly when `p = p*`.
+* `AllPurchase.optimalPriceInterior_in_interior_regime`: the algebraic equivalence
+  `φbar − p* > (n−1)√α·M ↔ φbar − c > 2n√α·M`.
 
 ## Proof strategy
 
-The key algebraic identity, after factoring `b := n/(α(n+1)) > 0` and
-`Φ := ϕ̄ + 2√α·M`, is
-`Π(p) = b · (p − c) · (Φ − p)`,
-so `Π(p*) − Π(p) = b · (p − p*)² ≥ 0`.
+For `α > 0` and `n ≥ 1`, set `b = n/(α(n+1)) > 0` and `Φ = φbar + 2√α·M`.
+Then `Π(p) = b · (p − c) · (Φ − p)` and
+`Π(p*) − Π(p) = b · (p − p*)²`, proving maximality and uniqueness for the defined formula.
 -/
 
 namespace MathEconLib
@@ -46,29 +51,29 @@ namespace AllPurchase
 
 open Real
 
-/-- **Mean aggregate equilibrium quantity in the interior regime**, as a
-function of the posted price `p`.  By Proposition 6.8, in the interior
-regime of a linear-scarcity all-purchase auction,
-`𝔼[B](p) = n(ϕ̄ − p)/(α(n+1)) + 2nM/((n+1)√α)`. -/
+/-- The quantity formula `Q(p) = n(φbar − p)/(α(n+1)) + 2nM/((n+1)√α)`, defined for
+supplied parameters and motivated by Proposition 6.8 in Scott's notes. Its identification with
+mean aggregate equilibrium quantity remains to be formalized. -/
 noncomputable def interiorMeanQuantity (φbar α M : ℝ) (n : ℕ) (p : ℝ) : ℝ :=
   (n : ℝ) * (φbar - p) / (α * ((n : ℝ) + 1)) +
     2 * (n : ℝ) * M / (((n : ℝ) + 1) * sqrt α)
 
-/-- **Seller profit in the interior regime**: `Π(p) = (p − c)·𝔼[B](p)`. -/
+/-- The defined profit formula `Π(p) = (p − c) · interiorMeanQuantity φbar α M n p`.
+Its identification with actual auction seller profit remains to be formalized. -/
 noncomputable def sellerProfitInterior (φbar α c M : ℝ) (n : ℕ) (p : ℝ) : ℝ :=
   (p - c) * interiorMeanQuantity φbar α M n p
 
-/-- **The unconstrained profit-maximizing price** (Prop 6.12):
-`p* = (ϕ̄ + c + 2√α·M)/2`. -/
+/-- The candidate price `p* = (φbar + c + 2√α·M)/2`, motivated by Proposition 6.12 in
+Scott's notes. For `α > 0` and `n ≥ 1`, the theorems below show that it uniquely maximizes
+the defined `sellerProfitInterior` formula over `ℝ`. -/
 noncomputable def optimalPriceInterior (φbar c α M : ℝ) : ℝ :=
   (φbar + c + 2 * sqrt α * M) / 2
 
 /-! ### Factored form of the profit -/
 
-/-- **Factored form.** Setting `b := n/(α(n+1))` and `Φ := ϕ̄ + 2√α·M`,
-the profit factors as `Π(p) = b · (p − c) · (Φ − p)`.
-
-This is the key algebraic identity behind Proposition 6.12. -/
+/-- The defined profit formula factors as `Π(p) = b · (p − c) · (Φ − p)`, where
+`b = n/(α(n+1))` and `Φ = φbar + 2√α·M`, under `α > 0` and `n ≥ 1`.
+This factorization supports the algebraic calculation motivated by Proposition 6.12. -/
 theorem sellerProfitInterior_eq_factored
     {φbar α c M : ℝ} {n : ℕ} (hα : 0 < α) (hn : 1 ≤ n) (p : ℝ) :
     sellerProfitInterior φbar α c M n p =
@@ -88,11 +93,8 @@ theorem sellerProfitInterior_eq_factored
 
 /-! ### Main inequality: `Π(p) ≤ Π(p*)` -/
 
-/-- **The profit gap is a square.**
-
-`Π(p*) − Π(p) = (n / (α(n+1))) · (p − p*)² ≥ 0`.
-
-Pure algebra after substituting the factored form. -/
+/-- For `α > 0` and `n ≥ 1`, the gap in the defined profit formula is
+`Π(p*) − Π(p) = (n / (α(n+1))) · (p − p*)²`, hence nonnegative. -/
 theorem sellerProfitInterior_optimal_sub
     {φbar α c M : ℝ} {n : ℕ} (hα : 0 < α) (hn : 1 ≤ n) (p : ℝ) :
     sellerProfitInterior φbar α c M n (optimalPriceInterior φbar c α M) -
@@ -111,12 +113,10 @@ theorem coeff_pos {α : ℝ} {n : ℕ} (hα : 0 < α) (hn : 1 ≤ n) :
   have h_denom : (0 : ℝ) < α * ((n : ℝ) + 1) := by positivity
   exact div_pos hn_pos h_denom
 
-/-- **Proposition 6.12 (main inequality).**
-
-For every `p`, the seller's profit in the interior regime satisfies
-`Π(p) ≤ Π(p*)`, where `p* = (ϕ̄ + c + 2√α·M)/2`.
-
-That is, `p*` is a global maximizer of `Π` over `ℝ`. -/
+/-- For `α > 0` and `n ≥ 1`, the candidate `p* = (φbar + c + 2√α·M)/2` maximizes the
+defined `sellerProfitInterior` formula over all real prices. This is the algebraic maximization
+component motivated by Proposition 6.12. The auction-level profit identification remains
+unproved. -/
 theorem sellerProfitInterior_le_at_optimal
     {φbar α c M : ℝ} {n : ℕ} (hα : 0 < α) (hn : 1 ≤ n) (p : ℝ) :
     sellerProfitInterior φbar α c M n p ≤
@@ -126,9 +126,8 @@ theorem sellerProfitInterior_le_at_optimal
   have hsq : 0 ≤ (p - optimalPriceInterior φbar c α M) ^ 2 := sq_nonneg _
   nlinarith [mul_nonneg hb.le hsq]
 
-/-- **Strict concavity (uniqueness of the maximizer).**
-
-`Π(p) = Π(p*)` if and only if `p = p*`. -/
+/-- For `α > 0` and `n ≥ 1`, equality with the maximum of the defined profit formula
+holds exactly at the candidate price: `Π(p) = Π(p*) ↔ p = p*`. -/
 theorem sellerProfitInterior_eq_at_optimal_iff
     {φbar α c M : ℝ} {n : ℕ} (hα : 0 < α) (hn : 1 ≤ n) (p : ℝ) :
     sellerProfitInterior φbar α c M n p =
@@ -146,16 +145,13 @@ theorem sellerProfitInterior_eq_at_optimal_iff
     pow_eq_zero_iff two_ne_zero |>.mp hsq_zero
   linarith
 
-/-! ### Feasibility: `p*` is in the interior regime -/
+/-! ### Algebraic interior-regime inequality -/
 
-/-- **Feasibility (Prop 6.12, second statement).**
-
-The optimal price `p*` lies in the interior regime — i.e. satisfies the
-interior-regime inequality `ϕ̄ − p* > (n−1)√α·M` from Prop 6.8 — if and
-only if `ϕ̄ − c > 2n√α·M`.
-
-In particular, when `ϕ̄ − c > 2n√α·M`, the unconstrained maximizer of
-`Π(p)` is a valid candidate for the seller's global optimum. -/
+/-- For arbitrary supplied parameters, the candidate price satisfies
+`φbar − p* > (n−1)√α·M` exactly when `φbar − c > 2n√α·M`.
+This algebraic equivalence is motivated by Proposition 6.8 and the second statement of
+Proposition 6.12 in Scott's notes. Auction feasibility and global optimality in the economic
+model require separate results. -/
 theorem optimalPriceInterior_in_interior_regime
     (φbar α c M : ℝ) (n : ℕ) :
     ((n : ℝ) - 1) * sqrt α * M < φbar - optimalPriceInterior φbar c α M ↔
