@@ -4,7 +4,7 @@ This is Lean4 project (lean-4.28.0) to formalize theorems in auction theory. The
 
 Three-layer design following the mathematical reference (Section 2-3):
 
-1. **Mechanism** (`Mechanism/Core/`): `Auctionlib.Mechanism I A O` stores an outcome rule and signed transfers (positive to the agent). Carriers are explicit; payment is negative transfer. Environments and deterministic solution predicates are prior-free.
+1. **Mechanism** (`Mechanism/Core/`): `MathEconLib.Mechanism I A O` stores an outcome rule and signed transfers (positive to the agent). Carriers are explicit; payment is negative transfer. Environments and deterministic solution predicates are prior-free.
 2. **Auction** (`Auction/`): mechanism + probabilistic environment (`θ`, `θmin`, `θmax`) on probability space `(Ω, ℙ)` (Section 3a+3b)
 3. **BidderProblem** (`BidderProblem/`): per-bidder interim view (`winProb`, `cost`, `strategy`) with IC typeclass chain
 
@@ -49,8 +49,8 @@ Structures for parametric families:
 
 ## Useful lake commands
 
-- `lake exe mk_all --lib Auctionlib --git`: regenerate `Auctionlib.lean` with all imports, using git to determine which files to include (respects `.gitignore`, so e.g. the Playground folder is excluded).
-- `lake build`: build the whole project, should be run after `lake exe mk_all --lib Auctionlib --git` to
+- `lake exe mk_all --lib MathEconLib --git`: regenerate `MathEconLib.lean` with all imports, using git to determine which files to include (respects `.gitignore`, so e.g. the Playground folder is excluded).
+- `lake build`: build the whole project, should be run after `lake exe mk_all --lib MathEconLib --git` to
 ensure all relevant files would be built.
 
 ## Some Lean4 Requirement and Tips

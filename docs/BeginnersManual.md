@@ -1,4 +1,4 @@
-# Lean 4 and `auctionlib` — A Beginner's Manual
+# Lean 4 and `MathEconLib` — A Beginner's Manual
 
 ## Status of this document
 
@@ -11,7 +11,7 @@ since, a pointer to `CONTRIBUTING.md` in place of a partial restatement of it,
 and a few typos.
 
 Its runnable snippets are collected in
-[`AuctionlibTest/Manual/HandsOn.lean`](../AuctionlibTest/Manual/HandsOn.lean),
+[`MathEconLibTest/Manual/HandsOn.lean`](../MathEconLibTest/Manual/HandsOn.lean),
 which `lake build` compiles, so a snippet that stops working turns the build
 red rather than quietly rotting in the prose.
 
@@ -25,7 +25,7 @@ You do not need prior experience with functional programming, type theory, or an
 
 ### What you will be able to do afterwards
 
-By the end you should be able to open a real file in the `auctionlib` library, read it, and follow what it claims and roughly how it proves it. You will not yet be able to write substantial proofs; that takes practice, and [Part 8](#part-8--exercises) starts you on it. But the syntax will have stopped being an obstacle.
+By the end you should be able to open a real file in the `MathEconLib` library, read it, and follow what it claims and roughly how it proves it. You will not yet be able to write substantial proofs; that takes practice, and [Part 8](#part-8--exercises) starts you on it. But the syntax will have stopped being an obstacle.
 
 ### How this manual is organised
 
@@ -37,25 +37,25 @@ The material is arranged so that nothing is used before it is explained.
 | [1](#part-1--why-formalise-mathematics-at-all) | Why anyone formalises mathematics | you are already convinced |
 | [2](#part-2--a-syntax-primer) | The punctuation and symbols of Lean | you have written Lean before |
 | [3](#part-3--the-one-big-idea-propositions-are-types) | **The central idea.** Read this one properly | never |
-| [4](#part-4--reading-a-real-file) | A guided tour of an actual `auctionlib` file | — |
+| [4](#part-4--reading-a-real-file) | A guided tour of an actual `MathEconLib` file | — |
 | [5](#part-5--watching-a-proof-happen) | A proof built one step at a time | — |
 | [6](#part-6--traps-for-beginners) | Traps that cost beginners hours | — |
 | [7](#part-7--reference-tables) | Lookup tables | it is reference material |
 | [8](#part-8--exercises) | Exercises, with full solutions | — |
 | [A](#appendix-a--glossary-of-auction-theory-terms) | Economics vocabulary | you are an economist |
-| [B](#appendix-b--how-auctionlib-is-organised) | The library's architecture | you only want the Lean |
+| [B](#appendix-b--how-matheconlib-is-organised) | The library's architecture | you only want the Lean |
 
 A practical suggestion: do Part 0 at the computer, read Parts 1–3 away from it, then return to the machine for Parts 4–5. Part 3 is the part that matters. Everything else is either preparation for it or consequence of it.
 
 ### A note on the code
 
-Every Lean snippet here was compiled against `auctionlib` at Lean `v4.28.0`. Where a snippet is meant to fail, it was checked that it fails, and the error quoted is the real one. If something does not typecheck for you, the likeliest cause is that the library or the Lean version has moved on. Please let us know.
+Every Lean snippet here was compiled against `MathEconLib` at Lean `v4.28.0`. Where a snippet is meant to fail, it was checked that it fails, and the error quoted is the real one. If something does not typecheck for you, the likeliest cause is that the library or the Lean version has moved on. Please let us know.
 
 ### ✍️ A note on the hands-on blocks
 
 Every section ends with a block marked ✍️. These are not decoration. Reading about a proof assistant teaches you very little; five minutes of typing teaches you a lot. Several blocks ask you to **break working code deliberately** and read the resulting error, which is where most of the learning happens.
 
-All of them are collected, ready to run, in [`AuctionlibTest/Manual/HandsOn.lean`](../AuctionlibTest/Manual/HandsOn.lean). That file is compiled by the ordinary `lake build`, so it cannot drift away from the manual without turning the build red. Examples meant to fail sit commented out, each labelled with the error you should see on uncommenting. Copy what you want into a scratch file of your own rather than editing it in place.
+All of them are collected, ready to run, in [`MathEconLibTest/Manual/HandsOn.lean`](../MathEconLibTest/Manual/HandsOn.lean). That file is compiled by the ordinary `lake build`, so it cannot drift away from the manual without turning the build red. Examples meant to fail sit commented out, each labelled with the error you should see on uncommenting. Copy what you want into a scratch file of your own rather than editing it in place.
 
 ---
 
@@ -97,23 +97,38 @@ This is why you must **open the project folder, not a lone file**: outside the f
 
 ### Step 4 — Open the project and build it
 
-**File → Open Folder**, and select the `auctionlib` folder itself. Not the folder above it, not a single file inside it. VS Code will ask whether you trust the authors; say yes, or nothing will run.
+If you do not already have a checkout, clone it first:
+
+```bash
+git clone https://github.com/AxiomMath/auctionlib.git
+cd auctionlib
+```
+
+The repository currently requires team access. Until it is public, authenticate
+Git with an account that has access, or use GitHub's SSH clone URL. Use the
+current repository URL shown on GitHub after the planned transfer.
+
+**File → Open Folder**, and select the repository root (the folder containing `lakefile.toml`). Not the folder above it, not a single file inside it. VS Code will ask whether you trust the authors; say yes, or nothing will run.
 
 Then, in a terminal (**⌃`** opens one inside VS Code, already in the right folder):
 
 ```bash
 lake exe cache get   # download Mathlib already compiled. ALWAYS do this first,
                      # or Lean will build Mathlib from source, which takes hours
+bash scripts/update-imports.sh  # regenerate and verify library and test imports
 lake build           # build the project
 ```
 
-Those two commands do very different jobs, and the order matters.
+The cache command downloads dependencies, the import helper updates the two
+root import files, and `lake build` checks the library and tests, including
+`MathEconLibTest/Manual/HandsOn.lean`. Run them in that order. On an unchanged
+checkout, the import helper should leave no diff.
 
-`lake build` compiles Lean source into `.olean` files, which are the compiled form Lean loads when one file imports another. `auctionlib` itself is 58 files as of this writing. Mathlib, which it imports, is over 7,600. Compiling Mathlib from source on a laptop takes hours.
+`lake build` compiles Lean source into `.olean` files, which are the compiled form Lean loads when one file imports another. MathEconLib has dozens of source files; Mathlib, which it imports, has thousands. Compiling Mathlib from source on a laptop takes hours.
 
 To avoid this, the Mathlib project publishes prebuilt `.olean` files for every commit (about 8,000 files, which unpack to some 5 GB). `lake exe cache get` downloads the set matching your pinned version, so nothing has to be compiled from source.
 
-So the first run takes roughly half an hour, nearly all of it network. After that, builds are fast: `lake` tracks which files changed and rebuilds only those and whatever depends on them. Editing one file in `Auctionlib/` and rebuilding is usually seconds.
+So the first run takes roughly half an hour, nearly all of it network. After that, builds are fast: `lake` tracks which files changed and rebuilds only those and whatever depends on them. Editing one file in `MathEconLib/` and rebuilding is usually seconds.
 
 Two things that will send you back to `cache get`: pulling changes that bump the Mathlib revision, and running `lake clean`. In both cases the cached oleans no longer match, and Lean will start compiling from source unless you fetch the new set first. If a build ever begins printing thousands of `Building Mathlib.…` lines, stop it and run `lake exe cache get`.
 
@@ -125,7 +140,7 @@ Two things that will send you back to `cache get`: pulling changes that bump the
 │  EXPLORER    │   your .lean file         │   INFOVIEW               │
 │  ⇧⌘E         │                           │   goals at your cursor   │
 │              │   example (x : ℝ) :       │                          │
-│  Auctionlib/ │       0 ≤ x^2 := by       │   x : ℝ                  │
+│  MathEconLib/ │       0 ≤ x^2 := by       │   x : ℝ                  │
 │    Bidder…/  │     positivity  ←cursor   │   ⊢ 0 ≤ x^2              │
 │              │                           │                          │
 ├──────────────┴───────────────────────────┴──────────────────────────┤
@@ -189,7 +204,7 @@ If you cannot remember an abbreviation, **hover the mouse over the symbol** anyw
 
 ### ✍️ Hands-on 0 — your first file, and the loop
 
-Inside the project, create `Auctionlib/Playground/Scratch.lean`. The `Playground` folder is excluded from version control, so nothing you write there can break anything.
+Inside the project, create `MathEconLib/Playground/Scratch.lean`. The `Playground` folder is excluded from version control, so nothing you write there can break anything.
 
 Type this. Actually type it, using `\R` for `ℝ` rather than pasting:
 
@@ -222,7 +237,9 @@ Now break it on purpose. Change `4` to `5` and watch the red squiggle appear. Ho
 Finally, confirm you can reach the library itself:
 
 ```lean
-import Auctionlib.BidderProblem.Basic
+import MathEconLib.BidderProblem.Basic
+
+open MathEconLib
 
 #check BidderProblem
 #check BidderProblem.payoff
@@ -242,11 +259,11 @@ Two important things about Lean:
 
 **It scales to real mathematics.** The Flyspeck project formally verified Thomas Hales's proof of the Kepler conjecture, a proof whose original referees famously declined to certify with complete confidence. More recently, Peter Scholze proposed the Liquid Tensor Experiment to check a result he himself was uneasy about, and the Lean community verified it.
 
-**There is a library.** Lean's mathematical library, **Mathlib**, contains a substantial fraction of an undergraduate and graduate curriculum (analysis, algebra, topology, measure theory, probability) already formalised. You are not starting from the axioms of set theory every morning. `auctionlib` builds on Mathlib the way an applied paper builds on standard results.
+**There is a library.** Lean's mathematical library, **Mathlib**, contains a substantial fraction of an undergraduate and graduate curriculum (analysis, algebra, topology, measure theory, probability) already formalised. You are not starting from the axioms of set theory every morning. `MathEconLib` builds on Mathlib the way an applied paper builds on standard results.
 
 The cost is real: formalising is slower than writing prose, and the language takes some weeks to become comfortable. The benefit is that a formalised result is one nobody has to check again.
 
-> **A note on names.** Mathlib is maintained by the Lean community, not by any one company. `auctionlib` is a separate library, developed by Axiom Math, that *uses* Mathlib. When this manual says "look it up in Mathlib," it means the general mathematical library; `auctionlib` is the auction-theory layer on top.
+> **A note on names.** Mathlib is maintained by the Lean community, not by any one company. MathEconLib is a library for mathematical economics that *uses* Mathlib's general foundations. When this manual says "look it up in Mathlib," it means the general mathematical library; MathEconLib contains the economics-specific definitions and theorems.
 
 ### ✍️ Hands-on 1 — meet the kernel
 
@@ -510,7 +527,7 @@ Lean answers `fun x ↦ 1 / 2 : ℝ → ℝ`. Two things to notice. The type is 
 
 That last pattern is exactly how `winProb := fun _ => 1 / 2` works in Part 3: a bidder whose chance of winning is one half no matter what they bid.
 
-> **`=>` or `↦`?** Both are accepted and mean the same thing. `auctionlib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Basic.lean` almost entirely `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
+> **`=>` or `↦`?** Both are accepted and mean the same thing. `MathEconLib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Basic.lean` almost entirely `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
 
 ### 2.3 Symbols you will meet
 
@@ -694,7 +711,7 @@ Lean may seem strange at first due to a single design decision we introduce next
 
 From §2.1: `x : T` says "`x` is a value of type `T`." Lean applies this uniformly, including in places where you might expect something else to be happening.
 
-Here are two adjacent lines from a real `auctionlib` declaration. It describes one bidder's situation in an auction: `winProb b` is the probability of winning when you bid `b`.
+Here are two adjacent lines from a real `MathEconLib` declaration. It describes one bidder's situation in an auction: `winProb b` is the probability of winning when you bid `b`.
 
 ```lean
 winProb       : ℝ → ℝ                      -- a function from bids to probabilities
@@ -1165,7 +1182,7 @@ That `{ x // P x }` notation is a **subtype**: the type of things satisfying `P`
 
 ## Part 4 — Reading a real file
 
-Open [`Auctionlib/BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) beside this section. It is about a hundred lines.
+Open [`MathEconLib/BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean) beside this section. It is about a hundred lines.
 
 ### 4.0 The three lines before the mathematics
 
@@ -1175,7 +1192,7 @@ The file does not open with mathematics. It opens with this:
 module
 
 public import Mathlib.MeasureTheory.Integral.DivergenceTheorem
-public import Auctionlib.SingleParameter.Basic
+public import MathEconLib.SingleParameter.Basic
 
 @[expose] public section
 ```
@@ -1184,20 +1201,20 @@ None of that is about auctions, and none of it has appeared so far in this manua
 
 | Line | What it does |
 | --- | --- |
-| `module` | opts this file into Lean's module system. Every file in `auctionlib` starts this way |
+| `module` | opts this file into Lean's module system. Every file in `MathEconLib` starts this way |
 | `public import X` | imports `X` **and passes it on**: files that import this file get `X` too |
 | `import X` (no `public`) | imports `X` for use here only; importers do not inherit it |
 | `@[expose] public section` | what follows is visible to importers — `public` exposes the statements, `@[expose]` also exposes the definitions |
 
 The matching `end` at the bottom of the file closes that section.
 
-The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/NashExistence.lean`](../Auctionlib/GameTheory/NashExistence.lean), which uses both:
+The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/NashExistence.lean`](../MathEconLib/GameTheory/NashExistence.lean), which uses both:
 
 ```lean
-public import Auctionlib.GameTheory.Basic
+public import MathEconLib.GameTheory.Basic
 public import Mathlib.Analysis.Convex.Quasiconvex
 
-import Auctionlib.ForMathlib.Kakutani
+import MathEconLib.ForMathlib.Kakutani
 import Mathlib.MeasureTheory.Measure.Prokhorov
 ```
 
@@ -1205,18 +1222,20 @@ The first two are public because the file's *statements* mention them: you canno
 
 > **`public` is about what your readers inherit, not about what you may use.**
 
-Two practical notes. First, none of this applies to the scratch files you have been writing: a file outside the library needs only `import Auctionlib.BidderProblem.Basic`, and everything in that exposed section is available. You will meet these keywords when you *add* a file to the library, not before. Second, §4.5 explains a separate reason a definition can still be opaque when you are proving things.
+Two practical notes. First, none of this applies to the scratch files you have been writing: a file outside the library needs only `import MathEconLib.BidderProblem.Basic`, and everything in that exposed section is available. You will meet these keywords when you *add* a file to the library, not before. Second, §4.5 explains a separate reason a definition can still be opaque when you are proving things.
 
 ### ✍️ Hands-on 4.0 — see the two kinds of import
 
-Open [`GameTheory/NashExistence.lean`](../Auctionlib/GameTheory/NashExistence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
+Open [`GameTheory/NashExistence.lean`](../MathEconLib/GameTheory/NashExistence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
 
-Now scroll to the bottom of [`BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) and find the bare `end`. That is the partner of `@[expose] public section` at the top; everything between them is what the rest of the library can see.
+Now scroll to the bottom of [`BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean). The bare `end` closes the `@[expose] public section`; `end MathEconLib` closes the project namespace. Everything in the public section is available to importers under `MathEconLib`.
 
 Finally, confirm the reassurance above in your own scratch file:
 
 ```lean
-import Auctionlib.BidderProblem.Basic
+import MathEconLib.BidderProblem.Basic
+
+open MathEconLib
 
 #check BidderProblem.winProb
 ```
@@ -1263,7 +1282,7 @@ IsRegular
 
 ### ✍️ Hands-on 4.1 — open the real thing
 
-Enough scratch files. Open [`Auctionlib/BidderProblem/Basic.lean`](../Auctionlib/BidderProblem/Basic.lean) in the editor and orient yourself in it.
+Enough scratch files. Open [`MathEconLib/BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean) in the editor and orient yourself in it.
 
 1. **⌘click** on `Icc` in the `winProb_range` line. VS Code jumps you into Mathlib's own source, where `Set.Icc` is defined. Come back with **⌃-** (control-minus).
 2. Hover over `Monotone` further down. A tooltip gives its definition and docstring, without your leaving the file.
@@ -1272,7 +1291,9 @@ Enough scratch files. Open [`Auctionlib/BidderProblem/Basic.lean`](../Auctionlib
 Then, in your own scratch file, confirm the vocabulary from the table above is really there:
 
 ```lean
-import Auctionlib.BidderProblem.Basic
+import MathEconLib.BidderProblem.Basic
+
+open MathEconLib
 
 #check BidderProblem.winProb
 #check BidderProblem.cost
@@ -1385,7 +1406,7 @@ namespace BidderProblem
 variable (B : BidderProblem)
 ```
 
-`namespace` puts a prefix on everything that follows, so `payoff` is really `BidderProblem.payoff`. That is what makes **dot notation** work: for `B : BidderProblem`, writing `B.payoff v b` is shorthand for `BidderProblem.payoff B v b`. Lean looks at the type of `B` and searches the matching namespace.
+The file is already inside `namespace MathEconLib`. Its nested `namespace BidderProblem` puts another prefix on what follows, so the full name of `payoff` is `MathEconLib.BidderProblem.payoff`. That is what makes **dot notation** work: for `B : MathEconLib.BidderProblem`, writing `B.payoff v b` invokes that declaration. `open MathEconLib` lets examples use the shorter `BidderProblem.payoff` spelling.
 
 Dot notation is everywhere in Mathlib, and always means the same thing: `h.1`, `h.symm`, `h.trans h'` are all this mechanism.
 
@@ -1477,7 +1498,7 @@ Later theorems that need these assumptions are written:
 theorem foo (B : BidderProblem) [IsRegular B] : ...
 ```
 
-The **square brackets** mean "Lean, find this argument yourself." You never pass it by hand; Lean searches for a registered `instance`. This is how the library arranges its hierarchy of assumptions so that establishing a strong hypothesis silently unlocks every theorem stated under weaker ones. [Appendix B](#appendix-b--how-auctionlib-is-organised) describes the mechanism.
+The **square brackets** mean "Lean, find this argument yourself." You never pass it by hand; Lean searches for a registered `instance`. This is how the library arranges its hierarchy of assumptions so that establishing a strong hypothesis silently unlocks every theorem stated under weaker ones. [Appendix B](#appendix-b--how-matheconlib-is-organised) describes the mechanism.
 
 Three kinds of brackets appear in Lean, and the difference matters:
 
@@ -1830,7 +1851,7 @@ Between `exact?`, name-guessing, and grep, you can find almost anything in Mathl
 
 ## Part 8 — Exercises
 
-Work in your own scratch file under `Auctionlib/Playground/`, which is excluded from version control, so nothing you do there can disturb the library. Worked versions of the Part 3 material live in [`AuctionlibTest/Manual/HandsOn.lean`](../AuctionlibTest/Manual/HandsOn.lean) if you want to compare.
+Work in your own scratch file under `MathEconLib/Playground/`, which is excluded from version control, so nothing you do there can disturb the library. Worked versions of the Part 3 material live in [`MathEconLibTest/Manual/HandsOn.lean`](../MathEconLibTest/Manual/HandsOn.lean) if you want to compare.
 
 Solutions follow the exercises. All of them have been compiled.
 
@@ -1902,11 +1923,23 @@ Posted pricing is a second branch rather than a further rung on this ladder. If 
 - **The Mathlib documentation.** Searchable, and pairs well with `exact?`.
 - **The Lean Zulip chat** (`leanprover.zulipchat.com`). Unusually welcoming, with a `#new members` stream that exists precisely for the questions you are about to have.
 
-### Contributing to `auctionlib`
+### Contributing to `MathEconLib`
 
 The `ForMathlib/` folder holds general mathematical results needed by MathEconLib that may be suitable for upstream contribution to Mathlib. Small, well-scoped additions can be suitable first contributions, but the folder also contains substantial results. Upstream contributions are voluntary, with no promised submission or deadline; see the [ForMathlib policy](../CONTRIBUTING.md#formathlib-and-upstream-contributions).
 
-Before opening a pull request, run `lake exe mk_all --lib Auctionlib --git` to regenerate the import list, then `lake build` to confirm everything still compiles.
+Before opening a pull request, stage any new Lean files with `git add` so that
+the import generator can see them. From the repository root, run:
+
+```bash
+bash scripts/update-imports.sh  # regenerate and verify both library and test imports
+lake build
+```
+
+Commit any changes to `MathEconLib.lean` and `MathEconLibTest.lean` with your work.
+Use `bash scripts/update-imports.sh --check` to verify without changing files.
+See the [verification and review requirements](../CONTRIBUTING.md#verification-bar)
+before requesting review. Core changes need maintainer review and the applicable
+CI checks must pass on the latest PR revision.
 
 **House rules.** Names follow the Mathlib conventions in [Part 7](#how-mathlib-names-things), and the tactic `native_decide` is not permitted anywhere in the library. [`CONTRIBUTING.md`](../CONTRIBUTING.md) has the rest — no `sorry` or `admit`, `#print axioms` on new results showing only the three axioms from [Part 1](#part-1--why-formalise-mathematics-at-all), the API stability pins, and the design-first rule for changes to the core layers.
 
@@ -1948,7 +1981,7 @@ Enough to read the library. Not a substitute for a course.
 
 ---
 
-## Appendix B — How `auctionlib` is organised
+## Appendix B — How `MathEconLib` is organised
 
 Three layers, separating the rules of an auction from its probabilistic setting from the single-bidder problem that results. The arrows run in the direction of increasing specialisation:
 
