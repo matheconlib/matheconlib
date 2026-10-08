@@ -42,9 +42,6 @@ issue to coordinate an upstream contribution.
 
 ## Examples and tests
 
-The names below follow the pending [package rename](https://github.com/AxiomMath/auctionlib/pull/90);
-the current core and test directories are `Auctionlib/` and `AuctionlibTest/`.
-
 - `MathEconLib/`: reusable definitions, results, constructions, and instances,
   alongside the relevant topic's core API.
 - `MathEconLibExamples/`: worked demonstrations of the public API. Definitions
