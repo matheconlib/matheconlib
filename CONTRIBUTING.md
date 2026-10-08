@@ -55,6 +55,10 @@ when another application needs them. Core code must not import examples or tests
 
 ## Citing sources
 
+Use the author–year format shown below as the default, with complete references.
+Detailed formatting guidance is tracked in
+[style conventions (#109)](https://github.com/AxiomMath/auctionlib/issues/109).
+
 For work based on a paper or book, give the author, year, title, and DOI or stable
 link in the module documentation. Include the theorem or section number when
 available, and explain any adaptations or differences in scope. For example:
@@ -75,7 +79,7 @@ Gary S. Becker (1968), *Crime and Punishment: An Economic Approach*,
 -/
 ```
 
-Standard toy examples need no invented citation. Sources without a DOI can use
+Standard textbook examples do not need to be cited. Sources without a DOI can use
 a stable link. For ported Lean code, record its source and preserve author credit.
 
 ## Public API
