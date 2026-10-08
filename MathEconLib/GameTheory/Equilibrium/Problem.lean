@@ -47,7 +47,7 @@ universe u v w x y z r
 
 /-- States, admissible changes, and the reward evaluated by each deviator.
 
-Deviation relations may be arbitrary; notably †he supplied relation need not commute or be
+Deviation relations may be arbitrary; notably the supplied relation need not commute or be
 transitive. Solution concepts should therefore take care to supply the correct relation. -/
 structure EquilibriumProblem (S : Type u) (I : Type v) (V : Type r) where
   /-- Whether a deviator may change the first state to the second state. -/
@@ -63,7 +63,8 @@ variable {V : Type r} {S : Type u} {I : Type v} {P Q : EquilibriumProblem S I V}
 
 Note that, in a partial order, this excludes incomparable rewards as well as strict improvements.
 Also note that states are only compared if they are reachable through a single application of the
-deviation relation. -/
+deviation relation. The predicate checks this relation as supplied, without adding paths of
+successive deviations or its transitive closure. -/
 def IsEquilibrium [LE V] (P : EquilibriumProblem S I V) (s : S) : Prop :=
   ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s
 

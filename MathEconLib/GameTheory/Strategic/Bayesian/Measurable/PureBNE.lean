@@ -13,7 +13,10 @@ public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Game
 
 A measurable pure strategy profile is a Bayesian Nash equilibrium when every player's realized
 payoff is integrable and every integrable unilateral strategy deviation weakly lowers their ex-ante
-payoff. Deviations may change the action prescribed at every type of the deviating player.
+payoff. Deviations may change the action prescribed at every type of the deviating player. The bare
+`bneProblem.IsEquilibrium` supplies only the deviation inequalities and does not require integrable
+incumbent payoffs; `IsBNE` expresses the economic equilibrium concept under a common probability
+prior.
 
 ## Main definitions
 
@@ -42,7 +45,12 @@ variable {I : Type uI} {Θ : I → Type uT} {A : I → Type uA} {V : Type uV}
   [∀ i, MeasurableSpace (Θ i)] [∀ i, MeasurableSpace (A i)]
 
 /-- The equilibrium problem in which admissible deviations preserve opponents' strategies and give
-the deviator an integrable realized payoff. Each player's value is their ex-ante payoff integral. -/
+the deviator an integrable realized payoff. Each player's value is their ex-ante payoff integral.
+
+Its bare `IsEquilibrium` predicate does not require integrable incumbent payoffs and can hold for
+nonintegrable incumbents, whose Bochner integrals are zero. Bayesian Nash equilibrium under a
+common probability prior is `IsBNE`, which additionally requires integrability of every incumbent
+payoff. -/
 def bneProblem (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) :
     EquilibriumProblem G.Strategy I V where
   deviation i s s' := (∀ j, j ≠ i → s' j = s j) ∧
