@@ -295,7 +295,8 @@ end Affiliation
 
 /-! ## All-purchase auctions -/
 
--- Proposition 6.13 (welfare decomposition): W* − W^C = L_Cournot + L_Contest
+-- Algebraic welfare-gap identity over supplied values, motivated by Proposition 6.13.
+-- Equilibrium interpretation and nonnegativity of the two gaps require additional results.
 example : ∀ φbar c α B_ed WC : ℝ,
     MathEconLib.AllPurchase.firstBestEditionSurplus φbar c α - WC
       = MathEconLib.AllPurchase.cournotLoss φbar c α B_ed +
