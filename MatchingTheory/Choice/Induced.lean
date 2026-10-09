@@ -54,7 +54,7 @@ variable {α : Type u} {β : Type v}
 
 `bundle` specifies the admissible bundles. Feasibility means containment
 in the current menu. A menu without a greatest feasible bundle yields
-the empty set.
+the empty set, which need not itself be a represented bundle.
 
 The existential definition needs no additional decidability instances.
 Antisymmetry ensures that all maximizing witnesses represent the same
