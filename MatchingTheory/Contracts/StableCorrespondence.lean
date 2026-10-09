@@ -76,9 +76,11 @@ def daHom (hsub : M.Substitutable) :
 def outcomeOf (_M : Market B S X) (p : Set X × (Set X)ᵒᵈ) : Set X :=
   p.1 ∩ ofDual p.2
 
-/-- The state carried by an outcome.  On stable outcomes this is a two-sided
-inverse to `outcomeOf` (Lemma 2.1), and it is the *only* bridge the order
-dictionary needs between set-level and state-level statements. -/
+/-- The canonical acceptance state of `A`.
+
+For stable `A`, `M.outcomeOf (M.stateOf A) = A` without choice regularity.
+Under substitutability and IRC, `stateOf` and `outcomeOf` are inverse maps
+between stable outcomes and deferred-acceptance fixed points. -/
 def stateOf (A : Set X) : Set X × (Set X)ᵒᵈ := M.daFun (A, toDual A)
 
 @[simp] lemma stateOf_fst (A : Set X) : (M.stateOf A).1 = M.toSellers A := rfl
