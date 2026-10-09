@@ -16,10 +16,11 @@ Stability for Matching with Contracts* (2010). The unilateral restriction
 is on the rejected contract; the bilateral restriction is on both contracts.
 No assumption that their counterparties are distinct is added.
 
-The predicates make sense on arbitrary types. Their finite-market
-interpretation in the cited literature is not an assertion that the
-single-contract formulation implies arbitrary-superset monotonicity on
-infinite types.
+The predicates make sense on arbitrary types and quantify over one added
+contract. For unilateral substitutability, finiteness alone does not imply
+`x ∉ C (insert x Y) → x ∉ C (insert x Z)` for `Y ⊆ Z` and
+`Fresh counterparty x Y`. This implication follows with IRC, at most one
+chosen contract per counterparty, and finite chosen sets.
 
 `IsCompletionOf` is the choice-function definition in Hatfield–Kominers,
 *Hidden Substitutes*, §3 (author manuscript, May 16, 2016, pp. 8–11).
