@@ -335,7 +335,7 @@ Define an auction’s equilibrium predicate before introducing a candidate bid s
 
 ### M4. Prove that implementations realize their economic specifications
 
-A computational representation should be connected to the mathematical model by an explicit interpretation and a correctness theorem. Implementation choices should not in and of themselves determine the economic meaning of the model.
+A computational representation should be connected to the mathematical model by an explicit interpretation and a correctness theorem. Implementation choices should not silently determine the economic meaning of the model.
 
 Consider the representation transformation guidance in [P5](#p5-make-changes-of-representation-explicit), which calls for explicit identification of what is preserved and what is lost when moving between representations.
 

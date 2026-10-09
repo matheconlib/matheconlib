@@ -14,7 +14,7 @@ The project-wide framework for choosing abstractions, theorem scope,
 transformations, and public interfaces lives in
 [`DESIGN.md`](DESIGN.md).
 For economic model families and their instances, also follow the
-[economic model design principles](DESIGN.md#economic-model-design-principles).
+[economic model design principles](DESIGN.md#design-principles-for-economic-models).
 
 Changes to the foundational layers — `Mechanism/`, `BidderProblem/`, `GameTheory/`,
 `Auction/Basic.lean` — or the introduction of a new foundational layer start with a
