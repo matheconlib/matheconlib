@@ -60,7 +60,7 @@ The same discipline applies to theorem statements. A theorem's name, documentati
 
 Consider a deterministic mechanism: Agents choose actions and the mechanism selects an outcome and monetary transfers. Its constitutive data can be expressed as follows:
 
-> **Note.** The prior-free generic mechanism used in these examples is the project's active architectural direction. Its detailed design is recorded in [issue #67](https://github.com/AxiomMath/auctionlib/issues/67), with the initial migration implemented in [PR #68](https://github.com/AxiomMath/auctionlib/pull/68). The principles here explain the intended architecture; the exact declarations remain subject to review until that PR is finalized.
+> **Note.** The prior-free generic mechanism was introduced in [PR #68](https://github.com/AxiomMath/auctionlib/pull/68), merged on 3 October 2026, following [issue #67](https://github.com/AxiomMath/auctionlib/issues/67). The current declarations are in [`MathEconLib/Mechanism/Core/Mechanism.lean`](MathEconLib/Mechanism/Core/Mechanism.lean). The examples below illustrate the design; the source remains authoritative for the exact API.
 
 ```lean
 /-- A profile assigning one value of type `X i` to each agent `i`. -/
