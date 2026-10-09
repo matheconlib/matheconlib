@@ -4,7 +4,7 @@ This directory contains the project's public website. It is built with
 [Eleventy](https://www.11ty.dev/) and is deliberately separate from the Lean
 build.
 
-The deployed site is [matheconlib.bo-cowgill.workers.dev](https://matheconlib.bo-cowgill.workers.dev/).
+The deployed site is [mathecon.dev](https://mathecon.dev/).
 
 ## Local development
 
@@ -36,16 +36,10 @@ it from a development machine after authenticating Wrangler:
 npm run deploy
 ```
 
-The GitHub Actions workflow at `.github/workflows/deploy_website.yaml` deploys
-the site whenever website changes reach `main`. It requires two GitHub Actions
-repository secrets:
+The GitHub Actions workflow at `.github/workflows/deploy_website.yaml` deploys the site whenever website changes reach `main` or the workflow is manually dispatched. It requires two GitHub Actions repository secrets:
 
-- `CLOUDFLARE_API_TOKEN`: a Cloudflare API token with Workers edit access
-- `CLOUDFLARE_ACCOUNT_ID`: the Cloudflare account ID that owns the Worker
-
-The default Cloudflare address is
-`https://matheconlib.bo-cowgill.workers.dev`. A custom domain can be attached
-later without changing the website source.
+- `CF_MATHECON_PASS`: a Cloudflare API token with Workers edit access
+- `CF_MATHECON_ACCT`: the Cloudflare account ID that owns the Worker
 
 The working project name and shared metadata are kept in
 `src/_data/site.json`, so the site can be renamed without editing every page.

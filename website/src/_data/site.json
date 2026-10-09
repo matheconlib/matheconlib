@@ -2,7 +2,7 @@
   "name": "MathEconLib",
   "workingName": false,
   "description": "One integrated Lean 4 library of mathematical definitions and theorems for new research in economics.",
-  "url": "https://matheconlib.bo-cowgill.workers.dev",
+  "url": "https://mathecon.dev",
   "repository": "https://github.com/matheconlib/matheconlib",
   "issues": "https://github.com/matheconlib/matheconlib/issues",
   "sourceBranch": "main"
