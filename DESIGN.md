@@ -41,7 +41,7 @@ These principles should be read alongside the other documentation provided for c
 
 ## Design principles
 
-These principles address semantic mismatch, unnecessary specificity, exposed implementation details, and duplicated concepts. They apply to definitions, constructions, theorem statements, and interfaces at every level described in [Scope](#scope). The [model principles](#design-principles-for-economic-models) add guidance for economic settings built from these components.
+These principles address semantic mismatch, unnecessary specificity, exposed implementation details, and duplicated concepts. They apply to definitions, constructions, theorem statements, and interfaces at every level described in [Scope](#scope). The [model principles](#design-principles-for-economic-models) add guidance for economic settings built using these components.
 
 ### P1. Prefer minimally constitutive definitions
 
@@ -272,7 +272,7 @@ The general design principles above apply to definitions, constructions, theorem
 
 ### Scope
 
-For our purposes, a model is a construct that describes a specific economic setting using the library's reusable concepts. Their generality varies with the application: A model family may support many settings, such as a two-sided marriage-matching problem, while an instance supplies inputs for one setting, such as an auction market with specified participants, rules, and beliefs.
+For our purposes, a _model_ is a construct that describes a specific economic setting using the library's reusable concepts. Their generality varies with the application: A _model family_ may support many settings, such as a two-sided marriage-matching problem, while a _model instance_ supplies inputs for one setting, such as an auction market with specified participants, rules, and beliefs.
 
 For example, we might have:
 
@@ -294,7 +294,7 @@ A model family need not anticipate every possible extension or make every scope 
 
 #### Examples
 
-A reusable marriage-matching model should parameterize the two populations and their preferences. Whether unmatched agents are allowed, how unacceptable partners are represented, and whether preferences admit ties should be explicit parts of the chosen scope. Particular preference profiles instantiate the family; they do not require a new definition of stability.
+A reusable marriage-matching model should introduce the two populations and their preferences. Explicit scope decisions may include: whether unmatched agents are allowed, how unacceptable partners are represented, and whether preferences admit ties. Particular preference profiles or preference-generating functional forms instantiate the family; they do not require a new definition of stability.
 
 A particular auction market should supply its participant and action types, valuation environment, auction rules, and---if conducting Bayesian analysis---an information structure. Changing the prior should not require redefining the mechanism, and comparing mechanisms should not require duplicating the environment.
 
@@ -304,9 +304,9 @@ A model should state what its primitive objects represent and which choices are 
 
 For example, when relevant, a model should specify the information available when decisions are made, the admissible deviations, the treatment of randomization, and the conventions needed to interpret outcomes and utility. Conditions such as participation, feasibility, and outside options should appear in the appropriate definitions or explicit assumptions rather than be left to informal understanding. This may include conditions that are vacuous in practice but still important for understanding, such as setting up the information structure even in a setting where the analysis will show the existence of a dominant strategy.
 
-Place constitutive constraints in the relevant definitions, following [P1](#p1-prefer-minimally-constitutive-definitions): An object called a matching must satisfy the matching constraints of its stated scope. Participation behavior, reservation utilities, and assumptions needed for particular conclusions should also be explicit at the appropriate layer. Expected quantities and conditioning require the validity conditions described in [P6](#p6-distinguish-total-lean-operations-from-partial-economic-concepts).
+Place constitutive constraints in the relevant definitions, following [P1](#p1-prefer-minimally-constitutive-definitions): An object called a "matching" must satisfy the matching constraints of its stated scope. Participation behavior, reservation utilities, and assumptions needed for particular conclusions should also be made explicit at the appropriate layer. Expected quantities and conditioning require the validity conditions described in [P6](#p6-distinguish-total-lean-operations-from-partial-economic-concepts).
 
-Documentation should describe these choices in economic language and identify any deliberate departure from the model being formalized.
+Documentation should describe these choices in economic language and identify any deliberate departure from the economic model being formalized.
 
 #### Examples
 
@@ -329,9 +329,9 @@ A theorem about every solution should not be presented as establishing that a so
 
 #### Examples
 
-Define stable matching independently of deferred acceptance. Specify the algorithm separately and prove feasibility, termination, and stability under its stated hypotheses. If a particular extremal or optimality property is claimed, prove it as an additional result rather than incorporate it into the definition of stability.
+Define stable matching independently of deferred acceptance. Specify the algorithm separately and prove feasibility, termination, and stability under its stated hypotheses, within the scope of the ambient model. If a particular extremal or optimality property is claimed, prove it as an additional result rather than incorporating it into the definition of stability.
 
-Define an auction’s equilibrium predicate before introducing a candidate bid schedule. Prove that the schedule satisfies the predicate; do not treat naming a schedule “the equilibrium” as supplying that proof.
+Define an auction's equilibrium predicate before introducing a candidate bid schedule. Prove that the schedule satisfies the predicate; do not treat naming a schedule "the equilibrium" as supplying that proof.
 
 ### M4. Prove that implementations realize their economic specifications
 
@@ -339,13 +339,13 @@ A computational representation should be connected to the mathematical model by 
 
 Consider the representation transformation guidance in [P5](#p5-make-changes-of-representation-explicit), which calls for explicit identification of what is preserved and what is lost when moving between representations.
 
-Keep the mathematical specification independent of data structures and computational optimizations where possible. If an implementation uses finite tables, arrays, encoded participants, or discretized actions, define how those objects represent the model’s primitives.
+Keep the mathematical specification independent of data structures and computational optimizations where possible. If an implementation uses finite tables, arrays, encoded participants, or discretized actions, define how those objects represent the model's primitives.
 
 Distinguish exact computation from approximation. An approximate solver should establish a stated residual, error bound, or approximate solution property rather than inherit the name of an exact economic concept without qualification.
 
 #### Examples
 
-A matching implementation may use arrays of ranked participants, while the model uses preference relations and a matching predicate. Prove that the encoded rankings represent the supplied preferences and that interpreting the algorithm’s output yields a matching satisfying the intended solution concept.
+A matching mechanism implementation may work off of arrays of ranked participants, while the model uses preference relations and a matching predicate. Prove that the encoded rankings represent the supplied preferences and that interpreting the algorithm's output yields a matching satisfying the intended solution concept under those preferences.
 
 A numerical auction calculation should distinguish a certified equilibrium from a candidate found by a solver. If bids are restricted to a grid, identify whether the claim concerns the grid model or includes a bound on profitable deviations in the original action space.
 
@@ -367,7 +367,7 @@ Formal verification establishes consequences of the formal model; it should not 
 
 For an instantiated auction, the development should identify the supplied rules and environment, establish the analytic conditions needed for expected quantities, verify the claimed incentive or equilibrium properties, and derive the resulting revenue or welfare statement.
 
-If a valuation distribution comes from calibration rather than a theorem, record it as an input. If a conclusion is intended to be robust to changes in that distribution, state and prove the corresponding result over a family of priors rather than infer robustness from one calculation.
+If a valuation distribution comes from calibration rather than a theorem, record that as an input. If a conclusion is intended to be robust to changes in the distribution, state and prove the corresponding result over a family of priors rather than inferring robustness from one calculation.
 
 ## Illustrative architectural designs
 
@@ -469,6 +469,6 @@ This design applies P1 to keep allocation and distribution assumptions out of th
 
 ## Provenance
 
-Daniel Lyng (@danlyng) drafted the general principles (P1–P8) in the original discussion on [issue #60](https://github.com/AxiomMath/auctionlib/issues/60) and developed the version imported here in [his design-principles gist](https://gist.github.com/danlyng/1fc6bf249436782e1e00b99c3ff6ce5e). Comments from Scott Kominers (@scduko) on issue #60 motivated several revisions. Later refinements reflect the review practice recorded in [issue #72](https://github.com/AxiomMath/auctionlib/issues/72).
+Daniel Lyng (@danlyng) drafted the general principles (P1–P8) in the original discussion on [issue #60](https://github.com/AxiomMath/auctionlib/issues/60) and developed the version imported here in [his design-principles gist](https://gist.github.com/danlyng/1fc6bf249436782e1e00b99c3ff6ce5e). Comments from Scott Duke Kominers (@scduko) on issue #60 motivated several revisions. Later refinements reflect the review practice recorded in [issue #72](https://github.com/AxiomMath/auctionlib/issues/72).
 
 Scott Duke Kominers (@scduko) drafted the economic-model design principles (M1–M5) in [issue #73](https://github.com/AxiomMath/auctionlib/issues/73). The version here clarifies their scope and relationship to P1–P8, specialization choices, information requirements, solution selection, computational guarantees, and reuse of instance-level mathematics.
