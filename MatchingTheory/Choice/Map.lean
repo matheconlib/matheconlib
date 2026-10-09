@@ -45,15 +45,8 @@ def map (C : ChoiceFunction α) (e : α ↪ β) : ChoiceFunction β where
 @[simp] theorem map_apply_image (C : ChoiceFunction α) (e : α ↪ β)
     (Y : Set α) :
     C.map e (e '' Y) = e '' C Y := by
-  have hpre : e ⁻¹' (e '' Y) = Y := by
-    ext x
-    constructor
-    · rintro ⟨y, hy, heq⟩
-      exact e.injective heq ▸ hy
-    · intro hx
-      exact ⟨x, hx, rfl⟩
   change e '' C (e ⁻¹' (e '' Y)) = e '' C Y
-  rw [hpre]
+  rw [Set.preimage_image_eq _ e.injective]
 
 @[simp] theorem map_refl (C : ChoiceFunction α) :
     C.map (Function.Embedding.refl α) = C := by
