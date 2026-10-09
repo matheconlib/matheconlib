@@ -34,9 +34,13 @@ variable (M : Market B S X)
 
 /-! ### The generalized deferred acceptance operator -/
 
+/-- Contracts accepted by their buyers when offered alongside `Xb`,
+made available to sellers. -/
 def toSellers (Xb : Set X) : Set X :=
   {x | x ∈ M.choiceB (M.buyer x) (insert x Xb)}
 
+/-- Contracts accepted by their sellers when offered alongside `Xs`,
+made available to buyers. -/
 def toBuyers (Xs : Set X) : Set X :=
   {x | x ∈ M.choiceS (M.seller x) (insert x Xs)}
 
