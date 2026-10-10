@@ -49,3 +49,10 @@ later without changing the website source.
 
 The working project name and shared metadata are kept in
 `src/_data/site.json`, so the site can be renamed without editing every page.
+
+## Design provenance
+
+The homepage design derives from Moran Koren's
+[MathEconLib proposal](https://github.com/morankor/MathEconLib). The
+[design-proposal inventory](design-proposals/README.md) records the imported
+sources and revision.
