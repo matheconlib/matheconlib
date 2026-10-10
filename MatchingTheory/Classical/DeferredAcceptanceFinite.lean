@@ -210,8 +210,9 @@ private theorem coe_univ_sdiff (R : Finset (M × W)) :
   simpa only [gsRejectedFinset, gsRejected, Finset.coe_empty] using
     hstep.iterate_right n (∅ : Finset (M × W))
 
-/-- Execute a bounded number of rejection rounds, then evaluate the held
-contracts at the resulting state. -/
+/-- Return the held contracts after `n` rejection updates.
+The supplied fuel may stop before stabilization. `galeShapleyFinset`
+uses a bound proved sufficient for a terminal state. -/
 def galeShapleyFinsetWithFuel (n : ℕ) : Finset (M × W) :=
   mkt.gsHeldFinset (mkt.gsRejectedFinset n)
 
@@ -220,8 +221,8 @@ def galeShapleyFinsetWithFuel (n : ℕ) : Finset (M × W) :=
       mkt.gsHeld (mkt.gsRejected n) := by
   simp only [galeShapleyFinsetWithFuel, coe_gsHeldFinset, coe_gsRejectedFinset]
 
-/-- Perform one rejection update per possible contract, then evaluate the
-held contracts at the resulting terminal rejection state. -/
+/-- Run `Fintype.card (M × W)` rejection updates and return the held
+contracts. This fuel bound guarantees a terminal rejection state. -/
 def galeShapleyFinset : Finset (M × W) :=
   mkt.galeShapleyFinsetWithFuel (Fintype.card (M × W))
 
