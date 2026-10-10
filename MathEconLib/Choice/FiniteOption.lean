@@ -40,6 +40,13 @@ theorem optionMenu_nonempty (A : Finset α) :
     (optionMenu A).Nonempty :=
   ⟨none, none_mem_optionMenu A⟩
 
+theorem optionMenu_mono {A B : Finset α} (hAB : A ⊆ B) :
+    optionMenu A ⊆ optionMenu B := by
+  intro o ho
+  rcases mem_optionMenu.mp ho with rfl | ⟨x, hx, rfl⟩
+  · exact none_mem_optionMenu B
+  · exact some_mem_optionMenu.mpr (hAB hx)
+
 /-- The best available alternative or outside option, computed from the menu. -/
 def bestOption (pref : LinearOrder (Option α)) (A : Finset α) : Option α := by
   letI := pref
@@ -62,6 +69,18 @@ theorem bestOption_eq_iff (pref : LinearOrder (Option α)) (A : Finset α)
       o ∈ optionMenu A ∧ ∀ p ∈ optionMenu A, pref.le p o := by
   letI := pref
   exact Finset.max'_eq_iff _ _ _
+
+/-- The finite selector attains the greatest element under the supplied order. -/
+theorem isGreatest_bestOption (pref : LinearOrder (Option α)) (A : Finset α) :
+    letI := pref
+    IsGreatest (↑(optionMenu A) : Set (Option α)) (bestOption pref A) := by
+  letI := pref
+  exact ⟨bestOption_mem pref A, fun _ ho => le_bestOption pref A ho⟩
+
+theorem bestOption_mono (pref : LinearOrder (Option α))
+    {A B : Finset α} (hAB : A ⊆ B) :
+    pref.le (bestOption pref A) (bestOption pref B) :=
+  le_bestOption pref B (optionMenu_mono hAB (bestOption_mem pref A))
 
 /-- An alternative is selected precisely when it is acceptable and maximal. -/
 theorem bestOption_eq_some_iff (pref : LinearOrder (Option α))

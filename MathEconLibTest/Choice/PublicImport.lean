@@ -27,4 +27,10 @@ example {α : Type*} (C : ChoiceFunction α) :
 example {α : Type*} (C : ChoiceFunction α) :
     ChoiceFunction.substituteHullClosure.IsClosed C ↔ C.Substitutable := Iff.rfl
 
+example {α : Type*} [DecidableEq α] (pref : LinearOrder (Option α)) (A : Finset α) :
+    letI := pref
+    IsGreatest (ChoiceFunction.optionMenu A : Set (Option α))
+      (ChoiceFunction.bestOption pref A) :=
+  ChoiceFunction.isGreatest_bestOption pref A
+
 end MathEconLibTest.Choice

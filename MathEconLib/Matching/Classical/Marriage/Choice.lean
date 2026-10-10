@@ -162,22 +162,20 @@ section InducedChoice
 variable [Fintype M] [Fintype W]
 
 set_option linter.unusedVariables false in
-/-- The option menu available to man `m`. -/
+/-- The shared option menu for the partners available to man `m`. -/
 noncomputable def menuM
     (mkt : MarriageMarket M W) (m : M) (Y : Set (M × W)) :
     Finset (Option W) := by
   classical
-  exact Finset.univ.filter fun o =>
-    o = none ∨ ∃ w, o = some w ∧ (m, w) ∈ Y
+  exact ChoiceFunction.optionMenu (Finset.univ.filter fun w => (m, w) ∈ Y)
 
 set_option linter.unusedVariables false in
-/-- The option menu available to woman `w`. -/
+/-- The shared option menu for the partners available to woman `w`. -/
 noncomputable def menuW
     (mkt : MarriageMarket M W) (w : W) (Y : Set (M × W)) :
     Finset (Option M) := by
   classical
-  exact Finset.univ.filter fun o =>
-    o = none ∨ ∃ m, o = some m ∧ (m, w) ∈ Y
+  exact ChoiceFunction.optionMenu (Finset.univ.filter fun m => (m, w) ∈ Y)
 
 omit [Fintype M] in
 theorem none_mem_menuM (m : M) (Y : Set (M × W)) :
@@ -220,76 +218,70 @@ theorem menuM_mono {m : M} {Y Z : Set (M × W)}
     (hYZ : Y ⊆ Z) :
     mkt.menuM m Y ⊆ mkt.menuM m Z := by
   classical
-  intro o ho
-  simp only [menuM, Finset.mem_filter, Finset.mem_univ, true_and] at ho ⊢
-  rcases ho with rfl | ⟨w, rfl, hw⟩
-  · exact Or.inl rfl
-  · exact Or.inr ⟨w, rfl, hYZ hw⟩
+  apply ChoiceFunction.optionMenu_mono
+  intro w hw
+  simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using
+    hYZ (Finset.mem_filter.mp hw).2
 
 omit [Fintype W] in
 theorem menuW_mono {w : W} {Y Z : Set (M × W)}
     (hYZ : Y ⊆ Z) :
     mkt.menuW w Y ⊆ mkt.menuW w Z := by
   classical
-  intro o ho
-  simp only [menuW, Finset.mem_filter, Finset.mem_univ, true_and] at ho ⊢
-  rcases ho with rfl | ⟨m, rfl, hm⟩
-  · exact Or.inl rfl
-  · exact Or.inr ⟨m, rfl, hYZ hm⟩
+  apply ChoiceFunction.optionMenu_mono
+  intro m hm
+  simpa only [Finset.mem_filter, Finset.mem_univ, true_and] using
+    hYZ (Finset.mem_filter.mp hm).2
 
 /-- Man `m`'s best option from `Y`, including remaining single. -/
 noncomputable def bestM (m : M) (Y : Set (M × W)) : Option W := by
-  letI := mkt.prefM m
-  exact (mkt.menuM m Y).max' (mkt.menuM_nonempty m Y)
+  classical
+  exact ChoiceFunction.bestOption (mkt.prefM m)
+    (Finset.univ.filter fun w => (m, w) ∈ Y)
 
 /-- Woman `w`'s best option from `Y`, including remaining single. -/
 noncomputable def bestW (w : W) (Y : Set (M × W)) : Option M := by
-  letI := mkt.prefW w
-  exact (mkt.menuW w Y).max' (mkt.menuW_nonempty w Y)
+  classical
+  exact ChoiceFunction.bestOption (mkt.prefW w)
+    (Finset.univ.filter fun m => (m, w) ∈ Y)
 
 omit [Fintype M] in
 theorem bestM_mem_menuM (m : M) (Y : Set (M × W)) :
     mkt.bestM m Y ∈ mkt.menuM m Y := by
   classical
-  letI := mkt.prefM m
-  exact Finset.max'_mem _ _
+  exact ChoiceFunction.bestOption_mem _ _
 
 omit [Fintype W] in
 theorem bestW_mem_menuW (w : W) (Y : Set (M × W)) :
     mkt.bestW w Y ∈ mkt.menuW w Y := by
   classical
-  letI := mkt.prefW w
-  exact Finset.max'_mem _ _
+  exact ChoiceFunction.bestOption_mem _ _
 
 omit [Fintype M] in
 theorem none_le_bestM (m : M) (Y : Set (M × W)) :
     mkt.leM m none (mkt.bestM m Y) := by
   classical
-  letI := mkt.prefM m
-  exact Finset.le_max' _ _ (mkt.none_mem_menuM m Y)
+  exact ChoiceFunction.le_bestOption _ _ (ChoiceFunction.none_mem_optionMenu _)
 
 omit [Fintype W] in
 theorem none_le_bestW (w : W) (Y : Set (M × W)) :
     mkt.leW w none (mkt.bestW w Y) := by
   classical
-  letI := mkt.prefW w
-  exact Finset.le_max' _ _ (mkt.none_mem_menuW w Y)
+  exact ChoiceFunction.le_bestOption _ _ (ChoiceFunction.none_mem_optionMenu _)
 
 omit [Fintype M] in
 theorem le_bestM_of_mem {m : M} {Y : Set (M × W)} {o : Option W}
     (ho : o ∈ mkt.menuM m Y) :
     mkt.leM m o (mkt.bestM m Y) := by
   classical
-  letI := mkt.prefM m
-  exact Finset.le_max' _ _ ho
+  exact ChoiceFunction.le_bestOption _ _ ho
 
 omit [Fintype W] in
 theorem le_bestW_of_mem {w : W} {Y : Set (M × W)} {o : Option M}
     (ho : o ∈ mkt.menuW w Y) :
     mkt.leW w o (mkt.bestW w Y) := by
   classical
-  letI := mkt.prefW w
-  exact Finset.le_max' _ _ ho
+  exact ChoiceFunction.le_bestOption _ _ ho
 
 omit [Fintype M] in
 theorem bestM_mono {m : M} {Y Z : Set (M × W)}
@@ -306,25 +298,15 @@ theorem bestW_mono {w : W} {Y Z : Set (M × W)}
   exact mkt.menuW_mono hYZ (mkt.bestW_mem_menuW w Y)
 
 omit [Fintype M] in
-/-- The finite maximum specification is the generic `Finset.max'_eq_iff`. -/
+/-- The finite realization inherits the shared selector's specification. -/
 theorem bestM_eq_some_iff {m : M} {w : W} {Y : Set (M × W)} :
     mkt.bestM m Y = some w ↔
       (m, w) ∈ Y ∧ mkt.leM m none (some w) ∧
         ∀ w', (m, w') ∈ Y → mkt.leM m (some w') (some w) := by
   classical
-  letI := mkt.prefM m
-  rw [bestM, Finset.max'_eq_iff]
-  constructor
-  · rintro ⟨hw, hmax⟩
-    exact ⟨mkt.some_mem_menuM.mp hw,
-      hmax none (mkt.none_mem_menuM m Y),
-      fun w' hw' => hmax (some w') (mkt.some_mem_menuM.mpr hw')⟩
-  · rintro ⟨hw, hnone, hmax⟩
-    refine ⟨mkt.some_mem_menuM.mpr hw, ?_⟩
-    intro o ho
-    cases o with
-    | none => exact hnone
-    | some w' => exact hmax w' (mkt.some_mem_menuM.mp ho)
+  simpa only [bestM, Finset.mem_filter, Finset.mem_univ, true_and] using
+    (ChoiceFunction.bestOption_eq_some_iff (mkt.prefM m)
+      (Finset.univ.filter fun w => (m, w) ∈ Y) (x := w))
 
 omit [Fintype W] in
 /-- The symmetric finite maximum specification. -/
@@ -333,19 +315,9 @@ theorem bestW_eq_some_iff {m : M} {w : W} {Y : Set (M × W)} :
       (m, w) ∈ Y ∧ mkt.leW w none (some m) ∧
         ∀ m', (m', w) ∈ Y → mkt.leW w (some m') (some m) := by
   classical
-  letI := mkt.prefW w
-  rw [bestW, Finset.max'_eq_iff]
-  constructor
-  · rintro ⟨hm, hmax⟩
-    exact ⟨mkt.some_mem_menuW.mp hm,
-      hmax none (mkt.none_mem_menuW w Y),
-      fun m' hm' => hmax (some m') (mkt.some_mem_menuW.mpr hm')⟩
-  · rintro ⟨hm, hnone, hmax⟩
-    refine ⟨mkt.some_mem_menuW.mpr hm, ?_⟩
-    intro o ho
-    cases o with
-    | none => exact hnone
-    | some m' => exact hmax m' (mkt.some_mem_menuW.mp ho)
+  simpa only [bestW, Finset.mem_filter, Finset.mem_univ, true_and] using
+    (ChoiceFunction.bestOption_eq_some_iff (mkt.prefW w)
+      (Finset.univ.filter fun m => (m, w) ∈ Y) (x := m))
 
 omit [Fintype M] in
 /-- The structural choice agrees with the finite maximum realization. -/
