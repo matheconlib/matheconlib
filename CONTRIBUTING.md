@@ -8,11 +8,17 @@ which covers the toolchain, the editor loop, and how to read the library's
 core files. Small, well-scoped additions to `ForMathlib/` can be suitable first
 contributions; the folder also contains substantial results.
 
+For a small documentation task, start with
+[documenting the BidderProblem umbrella (#118)](https://github.com/AxiomMath/auctionlib/issues/118).
+The issue gives the starting file, expected result, and build check.
+
 ## Design first for core layers
 
 The project-wide framework for choosing abstractions, theorem scope,
 transformations, and public interfaces lives in
 [`DESIGN.md`](DESIGN.md).
+For economic model families and their instances, also follow the
+[economic model design principles](DESIGN.md#design-principles-for-economic-models).
 
 Changes to the foundational layers — `Mechanism/`, `BidderProblem/`, `GameTheory/`,
 `Auction/Basic.lean` — or the introduction of a new foundational layer start with a
@@ -52,6 +58,18 @@ issue to coordinate an upstream contribution.
 
 Keep one canonical development. Move reusable parts of an example into the core
 when another application needs them. Core code must not import examples or tests.
+
+## Applying main results
+
+For a new or materially changed theorem presented as a main result in the
+README or website, include a checked theorem application: a Lean development
+that compiles, constructs a concrete model, proves all the theorem's assumptions
+for that model, and applies the named theorem to derive a meaningful conclusion.
+An existing development can qualify. Checking only the theorem's type
+(a "signature pin") does not.
+
+Additional applications of older main results remain post-launch work under
+[#47](https://github.com/AxiomMath/auctionlib/issues/47).
 
 ## Citing sources
 
