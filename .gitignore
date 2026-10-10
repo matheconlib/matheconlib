@@ -1,9 +1,9 @@
 /.lake
-Auctionlib/Playground/*
+MathEconLib/Playground/*
 documents/
 logs/
 
-.DS_STORE
+.DS_Store
 
 reports/
 .lake/

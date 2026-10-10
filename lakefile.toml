@@ -1,13 +1,13 @@
-name = "auctionlib"
+name = "matheconlib"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["Auctionlib", "ApiStability", "AuctionlibTest", "MatchingTheory"]
+defaultTargets = ["MathEconLib", "ApiStability", "MathEconLibTest", "MatchingTheory"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
 autoImplicit = false
-weak.mathlibStandardSet = true
+weak.linter.mathlibStandardSet = true
 maxSynthPendingDepth = 3
 linter.style.longLine = true
 
@@ -17,13 +17,13 @@ scope = "leanprover-community"
 rev = "v4.28.0"
 
 [[lean_lib]]
-name = "Auctionlib"
+name = "MathEconLib"
 
 [[lean_lib]]
 name = "ApiStability"
 
 [[lean_lib]]
-name = "AuctionlibTest"
+name = "MathEconLibTest"
 
 [[lean_lib]]
 name = "MatchingTheory"
