@@ -17,19 +17,6 @@ permissions:
   contents: write
 
 jobs:
-  matching-imports:
-    name: Check matching imports
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-      - uses: leanprover/lean-action@v1
-        with:
-          build: false
-          test: false
-          lint: false
-          mk_all-check: true
-          mk_all-args: "--lib MatchingTheory --git"
-
   build:
     runs-on: ubuntu-latest
     steps:
