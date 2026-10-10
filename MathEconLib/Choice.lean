@@ -1,9 +1,11 @@
 import MathEconLib.Choice.Basic
 import MathEconLib.Choice.Conditions.Individual
+import MathEconLib.Choice.Conditions.WithPartners.Basic
+import MathEconLib.Choice.Conditions.WithPartners.Preferences
+import MathEconLib.Choice.Conditions.WithPartners.Relationships
 import MathEconLib.Choice.FiniteOption
 import MathEconLib.Choice.Induced
+import MathEconLib.Choice.Induced.FeasibleBundles
 import MathEconLib.Choice.Map
 import MathEconLib.Choice.SubstituteHull
 import MathEconLib.Choice.SubstituteHullRepair
-import MathEconLib.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability
-import MathEconLib.Choice.WeakSubstitutes

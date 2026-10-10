@@ -55,10 +55,10 @@ represented feasible bundle retains the existing empty fallback.
 ## Staged module organization
 
 The first stage separates `Choice.Basic` from
-`Choice.Conditions.Individual` and corrects scope descriptions. The following
-stages reorganize existing declarations without changing their mathematical
-assumptions. The destinations below are the agreed plan, not claims that the
-later moves have already occurred.
+`Choice.Conditions.Individual` and corrects scope descriptions. The second
+stage implements the partner-dependent extension below. Stages 3 and 4 remain
+planned. These stages reorganize existing declarations without changing their
+mathematical assumptions.
 
 | Stage | Destination | Contents |
 | --- | --- | --- |

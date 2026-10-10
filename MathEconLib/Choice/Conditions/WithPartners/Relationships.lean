@@ -1,21 +1,23 @@
-/-
-Matching with contracts: substitute hulls and unilateral substitutability.
--/
-import MathEconLib.Choice.WeakSubstitutes
+import MathEconLib.Choice.Conditions.WithPartners.Basic
 import MathEconLib.Choice.SubstituteHull
 
 /-!
-# Unilateral substitutability and path-independent completions
+# Relationships between choice conditions involving matching partners
+
+The definitions of weak substitutability, completion, and substitutable
+completability are in `MathEconLib.Choice.Conditions.WithPartners.Basic`.
+This module relates those conditions to the general substitute hull. The
+partner map is arbitrary; no matching market is required.
 
 A feasible, finite-valued IRC choice function is unilaterally substitutable
 if and only if its substitute hull is a completion. Equivalently, the hull
-preserves the set of represented counterparties, or there exists a
-substitutable completion which enlarges the original choices pointwise.
-The hull is then the least such completion and is path independent.
+preserves the set of represented partners, or there exists a substitutable
+completion which enlarges the original choices pointwise. The hull is then
+the least such completion and is path independent.
 
-The contract and counterparty types may both be infinite: only the chosen
+The alternative and partner types may both be infinite: only the chosen
 sets must be finite. The converse from an enlarging substitutable
-completion requires no finiteness assumption. The finite-contract
+completion requires no finiteness assumption. The finite-alternative
 existence theorems are retained as corollaries.
 
 Zhang (2016), Proposition 2, p. 233, proves the finite-domain implication
@@ -25,10 +27,11 @@ The final paragraphs of §§5 and 6, p. 233, leave IRC of the completion
 unestablished. Here the generic substitute-hull results supply IRC as well.
 Kadam (2017) proves the preference-based implication by constructing a
 preference completion; no completed linear preference order is constructed
-in this module.
+here. Corollaries for preference-induced choices are in
+`MathEconLib.Choice.Conditions.WithPartners.Preferences`.
 
 The general hull construction and its minimality and IRC properties live
-in `Choice/SubstituteHull.lean`. Completion alone is not pointwise
+in `MathEconLib.Choice.SubstituteHull`. Completion alone is not pointwise
 enlargement, so the characterization states that extra condition explicitly.
 
 ## References
@@ -76,7 +79,7 @@ private theorem reject_union_of_finite
       have hnot := hUS (z := z) hf' (ih hf')
       simpa only [Set.union_insert] using hnot
 
-/-! ## Recalled contracts have represented counterparties -/
+/-! ## Recalled alternatives have represented partners -/
 
 /-- If `x` is available at `Y` and chosen from a larger menu `Z`, then its
 counterparty is represented in `C Y`, provided **the choice `C Z`** is
@@ -312,7 +315,7 @@ theorem UnilaterallySubstitutable.substitutablyCompletable
 /-! ## Compatibility names
 
 The hull is now a general choice-theoretic construction. These names keep
-existing imports and uses of the original completion module valid.
+existing uses of the original completion namespace valid.
 -/
 
 namespace UnilateralSubstitutabilityImpliesSubstitutableCompletability
@@ -363,72 +366,6 @@ theorem hull_isCompletionOf [Finite X]
   hUS.substituteHull_isCompletionOf hIRC hfeasible (finiteValued_of_finite C)
 
 end UnilateralSubstitutabilityImpliesSubstitutableCompletability
-
-/-! ## Preference-induced choice -/
-
-/-- The unilateral-substitutability completion implication for preferences
-over represented many-to-one-feasible bundles.
-
-IRC follows from preference maximization on a finite contract type.
-Feasibility follows from feasibility of every represented bundle. -/
-theorem hasConsistentSubstitutableCompletion_ofBundleOrder
-    [Finite X] {β : Type*}
-    (counterparty : X → A)
-    (pref : LinearOrder β)
-    (bundle : β ↪ Set X)
-    (hbundle : ∀ b, Set.InjOn counterparty (bundle b))
-    (hUS :
-      (ofBundleOrder pref bundle).UnilaterallySubstitutable
-        counterparty) :
-    (ofBundleOrder pref bundle).HasConsistentSubstitutableCompletion
-      counterparty := by
-  apply hUS.hasConsistentSubstitutableCompletion
-  · exact consistent_ofBundleOrder pref bundle
-  · exact injOn_ofBundleOrder pref bundle hbundle
-
-/-! ## Preference-induced completions
-
-These corollaries use the finite unilateral-substitutability completion
-theorem proved above.
-
-The original choice is induced by preferences. The completion witness
-is the substitute hull; no completed linear preference order is
-constructed.
--/
-
-/-- For preferences over counterparty-feasible bundles, neither
-feasibility nor IRC needs to be supplied separately. -/
-theorem hasConsistentSubstitutableCompletion_ofFeasibleBundleOrder
-    [Finite X]
-    (counterparty : X → A)
-    (pref : LinearOrder (FeasibleBundle counterparty))
-    (hUS :
-      UnilaterallySubstitutable counterparty
-        (ofFeasibleBundleOrder counterparty pref)) :
-    HasConsistentSubstitutableCompletion counterparty
-      (ofFeasibleBundleOrder counterparty pref) := by
-  exact UnilaterallySubstitutable.hasConsistentSubstitutableCompletion
-    hUS
-    (consistent_ofFeasibleBundleOrder counterparty pref)
-    (injOn_ofFeasibleBundleOrder counterparty pref)
-
-/-- For unrestricted set preferences, counterparty feasibility of the
-actual choices must be supplied separately.
-
-IRC follows from preference maximization on a finite contract type. -/
-theorem hasConsistentSubstitutableCompletion_ofSetLinearOrder
-    [Finite X]
-    (counterparty : X → A)
-    (pref : LinearOrder (Set X))
-    (hfeasible :
-      ∀ Y, Set.InjOn counterparty (ofSetLinearOrder pref Y))
-    (hUS :
-      (ofSetLinearOrder pref).UnilaterallySubstitutable counterparty) :
-    (ofSetLinearOrder pref).HasConsistentSubstitutableCompletion
-      counterparty := by
-  exact hUS.hasConsistentSubstitutableCompletion
-    (consistent_ofSetLinearOrder pref)
-    hfeasible
 
 end ChoiceFunction
 

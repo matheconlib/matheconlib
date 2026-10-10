@@ -34,7 +34,7 @@ restrict the alternatives to contracts or require agents or market sides.
   (`Y ⊆ Z`), with `Monotone rejected` as the derived characterization
   (`substitutable_iff_monotone_rejected`). The weakened conditions in HK2010
   restrict the quantifiers using matching-partner data; see
-  `MathEconLib.Choice.WeakSubstitutes`. The single-new-alternative form in
+  `MathEconLib.Choice.Conditions.WithPartners.Basic`. The single-new-alternative form in
   HK2010 is the corollary `Substitutable.not_mem_insert_insert`; this form is
   strictly weaker on infinite types.
 * IRC is taken in set form. The definition and the path-independence

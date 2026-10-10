@@ -134,6 +134,22 @@ The refined names and later stages are recorded in
 [MatchingArchitecture.md](MatchingArchitecture.md). This first stage does not
 yet perform those later file or public-name moves.
 
+## Partner-dependent conditions: second stage
+
+The partner-aware extension is now organized under `Choice.Conditions.WithPartners`.
+`Basic` includes all completion and weak-substitutability definitions and elementary
+facts, independently of preference constructors or matching markets.
+`Relationships` contains the contraction, hull and completion implication results;
+`Preferences` contains the five existing preference-induced completion corollaries.
+
+The partner-feasible bundle constructors moved from general `Choice.Induced` to
+`Choice.Induced.FeasibleBundles`. General induced choice now requires no partner
+map. The two former weak-substitutes/completion modules were replaced by these
+more discoverable modules. Public declaration names and proof bodies are unchanged.
+Imports, references and public roots were updated, and a dedicated import client
+checks that the completion definitions are available without preference or market
+modules. The old long compatibility namespace remains until public-name cleanup.
+
 ## Validation
 
 The complete revised source at

@@ -2,7 +2,7 @@
 Matching with contracts: weakened substitutability conditions.
 -/
 import MathEconLib.Matching.Contracts.Basic
-import MathEconLib.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability
+import MathEconLib.Choice.Conditions.WithPartners.Relationships
 
 /-!
 # Buyer weak substitutes and completion hypotheses
@@ -12,7 +12,7 @@ in Hatfield–Kojima (2010). The completion framework follows
 Hatfield–Kominers (2025), §6.1, p. 471. Weak substitutability is imposed on
 each buyer's choice with freshness measured by `M.seller`.
 The choice-level definitions and elementary completion API live in
-`Choice/WeakSubstitutes.lean`, which does not import the market layer.
+`Choice/Conditions/WithPartners/Basic.lean`, which does not import the market layer.
 
 A completion-based existence reduction requires IRC of the same completion
 that satisfies substitutability. `BuyersHaveConsistentSubstitutableCompletions`
@@ -48,7 +48,7 @@ namespace Market
 variable {B : Type*} {S : Type*} {X : Type*} (M : Market B S X)
 
 /-- Every **buyer**'s choice function is unilaterally substitutable, side
-conditions referencing **sellers**. See `Choice/WeakSubstitutes.lean`
+conditions referencing **sellers**. See `Choice/Conditions/WithPartners/Basic.lean`
 for the checked literature definitions and the counterparty convention. -/
 def BuyersUnilaterallySubstitutable : Prop :=
   ∀ b, (M.choiceB b).UnilaterallySubstitutable M.seller

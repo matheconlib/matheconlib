@@ -1,27 +1,32 @@
-/-
-Matching with contracts: counterparty-relative choice conditions.
--/
 import MathEconLib.Choice.Conditions.Individual
-import MathEconLib.Choice.Induced
 
 /-!
-# Weak substitutability and completions
+# Choice conditions involving matching partners
 
-These choice conditions depend on a counterparty map, but not on a market.
-`Contracts/WeakSubstitutes.lean` supplies the buyer/seller instantiation.
+These conditions use a map assigning each alternative to a matching partner.
+The map is the only additional data: no market or specified market sides are required. The binder `counterparty` denotes this partner map throughout.
+`MathEconLib.Matching.Contracts.WeakSubstitutes` supplies the market
+specialization.
+
+This module contains the basic definitions of unilateral and bilateral
+substitutability, completion, and substitutable completability, together with
+their elementary properties. Relationships involving the substitute hull are
+in `MathEconLib.Choice.Conditions.WithPartners.Relationships`; consequences
+for preference-induced choice are in
+`MathEconLib.Choice.Conditions.WithPartners.Preferences`.
 
 `UnilaterallySubstitutable` and `BilaterallySubstitutable` use the
 single-new-contract formulations of Hatfield–Kojima, *Substitutes and
 Stability for Matching with Contracts* (2010), Definitions 5 and 3
 (pp. 1715 and 1709), respectively. The unilateral restriction
 is on the rejected contract; the bilateral restriction is on both contracts.
-No assumption that their counterparties are distinct is added.
+No assumption that their matching partners are distinct is added.
 
 The predicates make sense on arbitrary types and quantify over one added
 contract. For unilateral substitutability, finiteness alone does not imply
 `x ∉ C (insert x Y) → x ∉ C (insert x Z)` for `Y ⊆ Z` and
 `Fresh counterparty x Y`. This implication follows with IRC, at most one
-chosen contract per counterparty, and finite chosen sets.
+chosen contract per partner, and finite chosen sets.
 
 `IsCompletionOf` uses the completion formula in Hatfield–Kominers,
 *The theory of matching with contracts* (2025), §6.1, the unnumbered
@@ -39,7 +44,7 @@ survey's standing IRC convention.
 A completion need not enlarge the original choices pointwise. The results
 `IsCompletionOf.unilaterallySubstitutable_of_le` and the hull
 characterization in
-`Choice/UnilateralSubstitutabilityImpliesSubstitutableCompletability.lean`
+`MathEconLib.Choice.Conditions.WithPartners.Relationships`
 therefore state the extra pointwise inclusion separately.
 -/
 
@@ -302,35 +307,6 @@ theorem UnilaterallySubstitutable.bilaterallySubstitutable
     (hC : C.UnilaterallySubstitutable counterparty) :
     C.BilaterallySubstitutable counterparty :=
   fun _x _z _Y hfx _hfz hx => hC hfx hx
-
-/-! ## Identity completions for singleton preferences -/
-
-/-- Singleton-or-empty preferences admit the identity completion,
-for every counterparty map. -/
-theorem hasConsistentSubstitutableCompletion_ofLinearOrder
-    [Finite X]
-    (counterparty : X → A)
-    (pref : LinearOrder (Option X)) :
-    ChoiceFunction.HasConsistentSubstitutableCompletion
-      counterparty (ofLinearOrder pref) := by
-  refine ⟨ofLinearOrder pref, ?_, ?_, ?_⟩
-  · exact isCompletionOf_refl counterparty (ofLinearOrder pref)
-  · exact substitutable_ofLinearOrder pref
-  · exact consistent_ofLinearOrder pref
-
-/-- The singleton restriction of set preferences admits the identity
-completion, for every counterparty map. -/
-theorem hasConsistentSubstitutableCompletion_ofSingletonSetLinearOrder
-    [Finite X]
-    (counterparty : X → A)
-    (pref : LinearOrder (Set X)) :
-    ChoiceFunction.HasConsistentSubstitutableCompletion
-      counterparty (ofSingletonSetLinearOrder pref) := by
-  refine ⟨ofSingletonSetLinearOrder pref, ?_, ?_, ?_⟩
-  · exact isCompletionOf_refl counterparty
-      (ofSingletonSetLinearOrder pref)
-  · exact substitutable_ofSingletonSetLinearOrder pref
-  · exact consistent_ofSingletonSetLinearOrder pref
 
 end ChoiceFunction
 

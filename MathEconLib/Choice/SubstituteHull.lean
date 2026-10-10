@@ -22,7 +22,7 @@ so an IRC choice function has a minimal path-independent enlargement.
 All results in this module hold for arbitrary types. Neither finiteness nor
 a counterparty map is needed. The matching-specific question of when this
 enlargement is a completion is treated separately in
-`MathEconLib.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability`.
+`MathEconLib.Choice.Conditions.WithPartners.Relationships`.
 An enlargement and a completion are different notions: a completion need
 not contain the original choices pointwise.
 
