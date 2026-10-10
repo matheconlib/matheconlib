@@ -39,9 +39,19 @@ were added alongside the new public APIs.
 | [Dan suggestion 1](https://github.com/AxiomMath/auctionlib/pull/103#issuecomment-6085033992) | [4fad40d](https://github.com/AxiomMath/auctionlib/commit/4fad40dffa009f390032a061715f37222cf8d417) | refactor(matching): require IRC in stable outcome interfaces |
 | [Dan suggestion 2: predicate-based alternative](https://github.com/AxiomMath/auctionlib/pull/103#issuecomment-6085033992) | [8984534](https://github.com/AxiomMath/auctionlib/commit/89845344555c054136a78edf008d118727765693) | feat(matching): make market locality explicit |
 | [Economic review citation request](https://github.com/AxiomMath/auctionlib/pull/103#pullrequestreview-5436306136) | [5c7acc8](https://github.com/AxiomMath/auctionlib/commit/5c7acc843a315acfb68818cb3879f049e304c9ac) | docs(matching): replace unverified theorem citations with checked references |
+| [Architecture integration/client checks and review traceability](https://github.com/AxiomMath/auctionlib/pull/103#pullrequestreview-5434835152) | [97e22a0](https://github.com/AxiomMath/auctionlib/commit/97e22a0aa936a49a618ab68242fa359d97523c1f) | docs(matching): document architecture and review changes |
+| [Architecture improvement 2: explicit dependency after iteration refactor](https://github.com/AxiomMath/auctionlib/pull/103#pullrequestreview-5434835152) | [5f9665c](https://github.com/AxiomMath/auctionlib/commit/5f9665cbeda8f7bb17d4bc8ff0422b9861c1ebba) | fix(choice): import the repair termination pigeonhole theorem explicitly |
+| [Dan suggestion 2: locality proof elaboration](https://github.com/AxiomMath/auctionlib/pull/103#issuecomment-6085033992) | [92cd6ad](https://github.com/AxiomMath/auctionlib/commit/92cd6ad6dd4348d55266d525db3ba2e2f5c9ee2a) | fix(matching): make locality proof congruences explicit |
+| [Dan suggestion 1: stable outcome accessor elaboration](https://github.com/AxiomMath/auctionlib/pull/103#issuecomment-6085033992) | [1f3d813](https://github.com/AxiomMath/auctionlib/commit/1f3d8132f33bbe2320972da11fb56d8ab786285c) | fix(matching): restore stable outcome field notation |
 
-The commit containing this document completes the architecture guide, namespace
-migration documentation and public-import client presentation.
+The final three fixes address concrete Lean errors found while compiling the
+complete series: an explicit pigeonhole import, typed locality congruences, and
+stable-outcome accessor wrappers. They retain the theorem statements and
+economic assumptions of the corresponding review changes.
+
+The intervening merge by the branch author at
+[`5f2ba6b`](https://github.com/AxiomMath/auctionlib/commit/5f2ba6b96fb05b30040079ea7852b4a11400ba9b)
+was preserved. Its tree was identical to the preceding import fix.
 
 ## Interpretation of the two modeling changes
 
@@ -63,26 +73,37 @@ that the inaccessible survey-number comparison has been completed.
 
 ## Validation
 
-The complete main integration at
+The complete revised source at
+[`1f3d813`](https://github.com/AxiomMath/auctionlib/commit/1f3d8132f33bbe2320972da11fb56d8ab786285c)
+passed [Lean CI run 38088964202](https://github.com/AxiomMath/auctionlib/actions/runs/38088964202).
+The completed job log confirms that exact checkout and reports
+`Build completed successfully (8141 jobs)`. It includes both public-import
+clients, API stability pins, the namespace guard, the moved counterexamples,
+and all three corrected modules, with no Lean errors. This checklist update
+changes documentation only; the validated Lean source is unchanged.
+
+Earlier exact-checkout builds also passed for the main integration
 [`bab3bcb`](https://github.com/AxiomMath/auctionlib/commit/bab3bcb636f474494d2ab008a5f355699bab6d36)
-passed an actual Lean build before the namespace and mathematical refactors.
-That result validates the merged baseline only.
+and mechanical namespace migration
+[`3f0def2`](https://github.com/AxiomMath/auctionlib/commit/3f0def2956991c74140499574bdcce960dc996ba).
 
-The reconstructed 32 matching modules were compared byte for byte with the
-reviewed local revision. Structural checks cover local imports, import cycles,
-Choice independence, production/test separation, generated root imports, and
-absence of proof placeholders. The 11 Python import-helper tests also pass.
-These checks do not replace compilation of the revised Lean.
+Before the three CI corrections above, the reconstructed 32 matching modules
+were compared byte for byte with the reviewed local revision. The corrected
+published source tree was then compared by Git blob hash with all 157 local
+files. Structural checks cover local imports, import cycles, Choice independence,
+production/test separation, generated root imports, and absence of proof
+placeholders. The 11 Python import-helper tests also pass.
 
-For compiled status of this revision, consult the
+For later revisions, consult the
 [PR checks](https://github.com/AxiomMath/auctionlib/pull/103/checks) and verify the
-actual checked-out commit in the job logs. The workflow builds the library,
-API pins, namespace guard, counterexamples and public clients. A historical
-green result is not certification of a later commit.
+actual checked-out commit in the job logs. A historical green result does not
+certify subsequent source changes.
 
 ## Deferred work
 
 Market side swapping/relabeling, utility adapters, ties, broader preference
-relations, optional generalizations, and post-merge issue management remain
-outside this series, as agreed in the discussion. No review replies or thread
-resolutions were posted by this implementation sequence.
+relations, removing finiteness from graph/stability translation, general
+chain-condition extensions, other optional generalizations, and post-merge
+issue management remain outside this series, as agreed in the discussion.
+No review replies or thread resolutions were posted by this implementation
+sequence.
