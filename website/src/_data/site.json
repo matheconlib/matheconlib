@@ -1,7 +1,7 @@
 {
   "name": "MathEconLib",
   "workingName": false,
-  "description": "Lean 4 software libraries of mathematical definitions and theorems for new research in economics.",
+  "description": "One integrated Lean 4 library of mathematical definitions and theorems for new research in economics.",
   "url": "https://matheconlib.bo-cowgill.workers.dev",
   "repository": "https://github.com/AxiomMath/auctionlib",
   "issues": "https://github.com/AxiomMath/auctionlib/issues",

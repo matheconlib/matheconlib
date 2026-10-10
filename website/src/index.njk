@@ -193,7 +193,7 @@
     <p>Lean checks each new proof against the formalized foundations it uses. Shared assumptions make clear where a new model agrees with earlier formalized work, where it departs, and which differences open new research questions.</p>
     <p>MathEconLib builds on <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a> and encourages upstream contributions of broadly reusable mathematical results.</p>
     <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics.</p>
-    <p>We welcome researchers to use AI to help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem. Contributions receive human review for consistency with our <a href="https://github.com/AxiomMath/auctionlib/pull/77">draft design principles</a>.</p>
+    <p>We welcome researchers to use AI to help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem. Contributions receive human review for consistency with our <a href="https://github.com/AxiomMath/auctionlib/blob/main/DESIGN.md">design principles</a>.</p>
 
     <h2 id="vision">Long-term scope</h2>
     <p>MathEconLib is intended to cover all major mathematical areas of economics, including:</p>
@@ -208,20 +208,21 @@
 
     <h2 id="docs">Documentation</h2>
     <dl class="docs">
-      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/docs/BeginnersManual.md">Lean 4 and auctionlib: A Beginner's Manual</a></dt>
+      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/docs/BeginnersManual.md">Lean 4 and MathEconLib: A Beginner's Manual</a></dt>
       <dd>From installing the toolchain to reading the bidder-problem file line by line, with runnable exercises. Assumes no Lean and no auction theory.</dd>
       <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/docs/PricingArchitecture.md">Pricing Foundations: Mathematical Model and Architecture</a></dt>
       <dd>How the auction layers extend to posted pricing and other single-parameter problems.</dd>
-      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">auctionlib README</a></dt>
+      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">MathEconLib README</a></dt>
       <dd>File-by-file index of definitions and theorems, with build instructions.</dd>
-      <dt><span class="placeholder">[API reference]</span></dt>
-      <dd>Generated documentation for every declaration, once the repository is public.</dd>
     </dl>
 
     <h2 id="contribute">Contributing</h2>
     <p>Research questions and new models are welcome in design issues. New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Small, well-scoped additions to the <code>ForMathlib</code> folder can be suitable first contributions.</p>
     <p>Changes to the foundational layers start with a design issue: sketch the definitions and main statements and get agreement on the shape before writing proofs. Every pull request must build cleanly, contain no <code>sorry</code>, <code>admit</code>, or <code>native_decide</code>, and add no axioms beyond the standard three.</p>
-    <p>The full rules are in <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a>. To use the library, propose a research project, or contribute, email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a> or open a <a href="https://github.com/AxiomMath/auctionlib/issues">Github issue</a> and tag one of us.</p>
+    <p>Lean contributors should read <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for the build, API, and review requirements. New contributors can work through the beginner's manual, improve documentation, or discuss a small task in <a href="https://github.com/AxiomMath/auctionlib/issues">GitHub Issues</a>. PRs touching the core layers require a maintainer review before merge.</p>
+    <p>For a first contribution, try <a href="https://github.com/AxiomMath/auctionlib/issues/118">documenting the BidderProblem umbrella</a>, a small documentation task with a starting file and build instructions.</p>
+    <h3>Propose a focused research project</h3>
+    <p>Email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a> or, with repository access, open a design issue. Describe the economic question and relevant literature, the intended definitions and assumptions, the main statement or example to formalize, and the existing library components you expect to reuse. Identify any changes to foundational definitions so the team can agree on the design before proofs are written.</p>
 
     <h2 id="people">People</h2>
     <h3>Core contributors</h3>
