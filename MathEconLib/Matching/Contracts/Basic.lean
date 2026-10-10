@@ -30,7 +30,7 @@ The definitions impose no unit-demand or unitarity hypotheses.
 * `Market.Consistent`, `Market.Substitutable`, `Market.SizeMonotone` —
   hypothesis bundles quantifying the choice-layer predicates over all agents.
 * `Market.IndRational`, `Market.Blocks`, `Market.Stable`,
-  `Market.PairwiseStable` — survey Definitions 2.3/2.4.
+  `Market.PairwiseStable` — HKContractDesign2016, Definition 2 and the following discussion.
 * `Market.SellerChosen`, `Market.BuyerChosen` — the relations `⊒S`, `⊒B`.
 
 ## Main statements
@@ -41,7 +41,15 @@ The definitions impose no unit-demand or unitarity hypotheses.
   `insert z A` form used by every downstream proof.
 * `Market.Stable.pairwiseStable`,
   `Market.pairwiseStable_iff_stable_of_substitutable` —
-  survey Theorem 2.1(i)–(ii)/3.1; IRC is not needed for this equivalence.
+  HKContractDesign2016, Proposition 2; IRC is not needed here.
+
+## References
+
+HKContractDesign2016: Hatfield–Kominers, *Contract Design and Stability in
+Many-to-Many Matching*, author manuscript dated February 11, 2016,
+Definition 2 (pp. 4–5) and Proposition 2 (p. 5). The present statements
+expose choice regularity separately and allow infinite contract types.
+https://scottkom.com/assets/articles/Hatfield_Kominers_Contract_Design.pdf
 
 ## Implementation notes
 
@@ -156,7 +164,7 @@ theorem Consistent.local (h : M.Consistent) : M.Local :=
   ⟨fun b Y => M.choiceB_buyerSide (h.1 b) Y,
     fun s Y => M.choiceS_sellerSide (h.2 s) Y⟩
 
-/-! ### Stability (survey Definitions 2.3 and 2.4) -/
+/-! ### Stability (HKContractDesign2016, Definition 2) -/
 
 /-- An outcome `A` is **individually rational** if every agent chooses exactly
 their part of `A` from `A`. -/
@@ -178,7 +186,7 @@ theorem mem_choiceS_of_indRational {A : Set X} (h : M.IndRational A) {x : X}
 
 /-- `Z` **blocks** `A`: `Z` is a nonempty set of new contracts, all of which
 every involved agent takes when offered `A ∪ Z`. (For an agent with no
-contract in `Z` the condition is vacuous — survey fn. 17.) -/
+contract in `Z` the condition is vacuous.) -/
 def Blocks (A Z : Set X) : Prop :=
   Z.Nonempty ∧ Disjoint Z A ∧
     (∀ b, M.buyerSide b Z ⊆ M.choiceB b (A ∪ Z)) ∧
@@ -226,13 +234,14 @@ theorem blocks_singleton_iff {A : Set X} {z : X} :
       rw [hAz, hxz', ← hsz]
       exact hS
 
-/-- Theorem 2.1(i): stable outcomes are pairwise stable. -/
+/-- Every stable outcome is pairwise stable, directly from the definitions. -/
 theorem Stable.pairwiseStable {A : Set X} (h : M.Stable A) :
     M.PairwiseStable A :=
   ⟨h.1, fun z => h.2 {z}⟩
 
-/-- Theorem 2.1(ii)/3.1: under substitutability a blocking set yields a
-blocking contract, so pairwise stability implies stability. IRC is not needed. -/
+/-- Substitutability reduces every blocking set to a blocking contract.
+This is the implication used in HKContractDesign2016, Proposition 2;
+the present proof requires neither IRC nor finiteness. -/
 theorem PairwiseStable.stable_of_substitutable (hsub : M.Substitutable)
     {A : Set X} (h : M.PairwiseStable A) : M.Stable A := by
   refine ⟨h.1, fun Z hZ => ?_⟩

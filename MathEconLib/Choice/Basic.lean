@@ -21,10 +21,10 @@ networks later) reuses this layer unchanged.
 * `ChoiceFunction.Consistent` — irrelevance of rejected alternatives (IRC),
   in *set form* (Aygün–Sönmez 2013; Alkan–Gale consistency).
 * `ChoiceFunction.Substitutable` — no newly available alternative rescues a
-  rejected one (survey Definition 2.1, superset form); rejection-function
+  rejected one (arbitrary-superset extension of HK2010, Definition 2); rejection-function
   monotonicity is the *derived* characterization.
 * `ChoiceFunction.SizeMonotone` — the law of aggregate demand on finite menus
-  (Definition 2.2).
+  (HK2010, Definition 7, p. 1718, on finite types).
 * `ChoiceFunction.UnitDemand`, `ChoiceFunction.PathIndependent`.
 * `ChoiceFunction.FiniteValued` — every chosen set is finite, even when the
   menu or the universe of alternatives is infinite.
@@ -34,18 +34,22 @@ networks later) reuses this layer unchanged.
 * Substitutability is *defined* in choice language over arbitrary supersets
   (`Y ⊆ Z`), with `Monotone rejected` as the derived characterization
   (`substitutable_iff_monotone_rejected`). Rationale: the weakened conditions
-  of survey §6 are choice-language statements with restricted quantifiers
+  in HK2010 are choice-language statements with restricted quantifiers
   (see `MathEconLib.Choice.WeakSubstitutes`), so the strong definition
   anchors that family and `Substitutable → Unilateral → Bilateral` becomes
-  quantifier bookkeeping. The survey's printed one-new-contract form is the
-  corollary `Substitutable.not_mem_insert_insert` — the exact shape §6
-  mirrors — and is strictly weaker on infinite types.
+  quantifier bookkeeping. The single-new-contract form in HK2010 is the
+  corollary `Substitutable.not_mem_insert_insert`; this form is strictly
+  weaker on infinite types.
 * IRC is taken in set form so that agent locality and the fixed-point
   development need no finiteness anywhere.
 
 ## References
 
-Hatfield–Kominers, *The theory of matching with contracts*, §§2.1–2.2;
+HK2010: Hatfield–Kojima, *Substitutes and stability for matching with
+contracts*, Journal of Economic Theory 145 (2010), 1704–1723,
+Definitions 2 and 7 (pp. 1708 and 1718), DOI 10.1016/j.jet.2010.01.007.
+For background, Hatfield–Kominers, *The theory of matching with contracts*,
+Handbook of the Economics of Matching 2 (2025), 409–487;
 Aizerman–Malishevski (1981); Chambers–Yenmez (2017); Plott (1973).
 -/
 
@@ -107,7 +111,8 @@ lemma choose_union_rejected (Y : Set α) : C Y ∪ C.rejected Y = Y :=
 def Consistent : Prop :=
   ∀ ⦃Y Z : Set α⦄, C Y ⊆ Z → Z ⊆ Y → C Z = C Y
 
-/-- Substitutability (survey Definition 2.1, superset form). -/
+/-- Arbitrary-superset substitutability. On finite types this agrees with
+HK2010, Definition 2; see `substitutable_iff_forall_insert_insert`. -/
 def Substitutable : Prop :=
   ∀ ⦃x : α⦄ ⦃Y Z : Set α⦄,
     Y ⊆ Z → x ∉ C (insert x Y) → x ∉ C (insert x Z)
@@ -239,7 +244,7 @@ theorem Substitutable.mem_insert_of_subset
   by_contra h
   exact hsub hYZ h hx
 
-/-- The single-new-alternative form (survey Definition 2.1). -/
+/-- The single-new-alternative form (HK2010, Definition 2, p. 1708). -/
 theorem Substitutable.not_mem_insert_insert
     (hsub : C.Substitutable) {x z : α} {Y : Set α}
     (hx : x ∉ C (insert x Y)) :

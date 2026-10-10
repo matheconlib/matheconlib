@@ -20,6 +20,14 @@ counting and finite convergence are in `RuralHospitals` and `Iteration`.
 This operator uses contract-wise acceptance from `insert x Y`; it is not
 merely the complement of the rejection set. The distinction matters for the
 bijection between fixed points and stable outcomes.
+
+## References
+
+HKContractDesign2016: Hatfield–Kominers, *Contract Design and Stability in Many-to-Many Matching*,
+author manuscript dated February 11, 2016, §4, Lemma 1 and Theorem 1 (p. 11).
+Here the correspondence and existence extend to arbitrary contract types
+under explicit substitutability and IRC.
+https://scottkom.com/assets/articles/Hatfield_Kominers_Contract_Design.pdf
 -/
 
 namespace MathEconLib.Matching
@@ -360,7 +368,7 @@ theorem choiceS_eq_of_isFixedPt (hsub : M.Substitutable) (hcons : M.Consistent)
   exact ((hsub.2 s).pathIndependent (hcons.2 s)).union_eq_left_of_choice_subset
     ((M.choiceS_subset_outcomeOf hp s).trans hAU)
 
-/-! ### Lemma 2.1: fixed points ↔ stable outcomes -/
+/-! ### HKContractDesign2016, Lemma 1: fixed points ↔ stable outcomes -/
 
 /-- IRC alone makes the outcome of a fixed point individually rational.
 Substitutability is needed for nonblocking, not for this conclusion. -/
@@ -453,7 +461,7 @@ theorem outcomeOf_injOn_fixedPoints (hsub : M.Substitutable) (hcons : M.Consiste
   rw [← M.stateOf_outcomeOf hsub hcons hp, ← M.stateOf_outcomeOf hsub hcons hq]
   exact congrArg M.stateOf hpq
 
-/-- Lemma 2.1, first half: the outcome of a fixed point is stable.
+/-- HKContractDesign2016, Lemma 1, first half: the outcome of a fixed point is stable.
 The state round trip makes singleton nonblocking an immediate consequence of
 membership in both coordinates. -/
 theorem stable_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
@@ -467,7 +475,7 @@ theorem stable_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
   rw [M.stateOf_outcomeOf hsub hcons hp] at hzout
   exact hzA hzout
 
-/-- Lemma 2.1, second half (existence), specializing the direct canonical-state
+/-- HKContractDesign2016, Lemma 1, second half (existence), specializing the direct canonical-state
 certificate to the singleton-acceptance test supplied by stability. -/
 theorem isFixedPt_daFun_of_stable (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
@@ -483,7 +491,7 @@ theorem outcomeOf_stateOf_of_stable {A : Set X} (hA : M.Stable A) :
   M.outcomeOf_stateOf_of_indRational_of_accepts hA.1
     (fun _ hyB hyS => M.not_blocking_singleton hA hyB hyS)
 
-/-! #### The Lemma 2.1 round trips, in `stateOf` form
+/-! #### The HKContractDesign2016, Lemma 1 round trips, in `stateOf` form
 
 These interfaces use `stateOf A` in place of `daFun (A, toDual A)`.
 `outcomeOf_stateOf_of_stable` above omits the regularity hypotheses
@@ -493,7 +501,7 @@ theorem isFixedPt_stateOf (hsub : M.Substitutable) (hcons : M.Consistent)
     {A : Set X} (hA : M.Stable A) : IsFixedPt M.daFun (M.stateOf A) :=
   M.isFixedPt_daFun_of_stable hsub hcons hA
 
-/-! ### Theorem 2.2 / 3.2: existence and the two extremal states -/
+/-! ### Existence and the two extremal states -/
 
 /-- The seller-optimal stable contract set, under substitutability and IRC. -/
 noncomputable def sellerOptimal (hsub : M.Substitutable)

@@ -8,14 +8,14 @@ import MathEconLib.Choice.Basic
 
 `infiniteOrEmpty` — take the whole menu when it is infinite, nothing
 otherwise — separates the single-new-alternative form of substitutability
-(survey Definition 2.1 as printed) from the superset-form definition on
+(Hatfield–Kojima 2010, Definition 2) from the superset-form definition on
 infinite types, **even in the presence of consistency/IRC**. This justifies
 these design choices:
 
 * the superset quantification in `ChoiceFunction.Substitutable` (the printed
   single-contract form is too weak to drive the finiteness-free fixed-point
   development), and
-* retaining the literature's single-contract shape for the §6 weakened
+* retaining the literature's single-contract shape for the weakened
   conditions (`MathEconLib.Choice.WeakSubstitutes`), while exposing the
   hypotheses needed to extend their consequences beyond finite markets.
 

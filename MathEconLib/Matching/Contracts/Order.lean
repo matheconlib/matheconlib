@@ -382,7 +382,8 @@ end StableOutcomes
 
 end StableOutcomesAPI
 
-/-- Lemma 2.1, packaged as an equivalence with the lattice carrier.
+/-- The fixed-point correspondence, packaged as an equivalence with the
+lattice carrier (HKContractDesign2016, Lemma 1; see `StableCorrespondence`).
 This is an `Equiv`; no preference-order instance is installed on the subtype
 of stable contract sets. The order dictionary is supplied separately. -/
 def stableEquivFixedPoints (hsub : M.Substitutable)

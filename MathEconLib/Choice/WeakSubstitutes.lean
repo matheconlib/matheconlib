@@ -12,7 +12,8 @@ These choice conditions depend on a counterparty map, but not on a market.
 
 `UnilaterallySubstitutable` and `BilaterallySubstitutable` use the
 single-new-contract formulations of Hatfield–Kojima, *Substitutes and
-Stability for Matching with Contracts* (2010). The unilateral restriction
+Stability for Matching with Contracts* (2010), Definitions 5 and 3
+(pp. 1715 and 1709), respectively. The unilateral restriction
 is on the rejected contract; the bilateral restriction is on both contracts.
 No assumption that their counterparties are distinct is added.
 
@@ -23,7 +24,9 @@ contract. For unilateral substitutability, finiteness alone does not imply
 chosen contract per counterparty, and finite chosen sets.
 
 `IsCompletionOf` is the choice-function definition in Hatfield–Kominers,
-*Hidden Substitutes*, §3 (author manuscript, May 16, 2016, pp. 8–11).
+*Hidden Substitutes*, §3 (author manuscript, May 16, 2016, pp. 8–9).
+The formula is exposed here on arbitrary choice functions; the manuscript
+applies it to many-to-one original choice.
 For compatibility, `C.IsCompletionOf counterparty D` means that **D** is
 a completion of **C**. Completion and substitutable completability do not
 include IRC. `HasConsistentSubstitutableCompletion` states the stronger
@@ -48,18 +51,19 @@ variable (counterparty : X → A) (C : ChoiceFunction X)
 
 /-- No contract in `Y` shares its counterparty with `x` — the literature's
 `d(x) ∉ d(Y)` (Hatfield–Kojima 2010, `d` the doctor map; sellers, in the
-survey's dictionary). -/
+market dictionary). -/
 def Fresh (x : X) (Y : Set X) : Prop :=
   ∀ y ∈ Y, counterparty y ≠ counterparty x
 
-/-- **Unilateral substitutability** (Hatfield–Kojima 2010): the
-substitutability implication is required only when the *rejected* contract's
+/-- **Unilateral substitutability** (Hatfield–Kojima 2010, Definition 5, p. 1715):
+the substitutability implication is required only when the *rejected* contract's
 counterparty has no other contract on the menu. -/
 def UnilaterallySubstitutable : Prop :=
   ∀ ⦃x z : X⦄ ⦃Y : Set X⦄, Fresh counterparty x Y →
     x ∉ C (insert x Y) → x ∉ C (insert x (insert z Y))
 
-/-- **Bilateral substitutability** (Hatfield–Kojima 2010): the implication is
+/-- **Bilateral substitutability** (Hatfield–Kojima 2010, Definition 3, p. 1709):
+the implication is
 required only when *both* the rejected contract's and the newly available
 contract's counterparties have no contract on the menu. -/
 def BilaterallySubstitutable : Prop :=
@@ -69,12 +73,13 @@ def BilaterallySubstitutable : Prop :=
 
 /-- `C'` is a **completion** of `C`: on every menu it either agrees with `C`
 or chooses at least two contracts with a common counterparty
-(Hatfield–Kominers, *Hidden Substitutes*, §3). -/
+(Hatfield–Kominers, *Hidden Substitutes*, May 16, 2016, §3, pp. 8–9). -/
 def IsCompletionOf (C' : ChoiceFunction X) : Prop :=
   ∀ Y, C' Y = C Y ∨
     ∃ x ∈ C' Y, ∃ x' ∈ C' Y, x ≠ x' ∧ counterparty x = counterparty x'
 
-/-- **Substitutable completability**: some completion is substitutable.
+/-- **Substitutable completability**: some completion is substitutable
+(Hatfield–Kominers, *Hidden Substitutes*, May 16, 2016, §3, p. 10).
 This condition alone does not assert IRC of that completion; existence
 reductions use `HasConsistentSubstitutableCompletion` below. -/
 def SubstitutablyCompletable : Prop :=

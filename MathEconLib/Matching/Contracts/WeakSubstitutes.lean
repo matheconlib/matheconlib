@@ -1,5 +1,5 @@
 /-
-Matching with contracts: weakened substitutability conditions (survey §6).
+Matching with contracts: weakened substitutability conditions.
 -/
 import MathEconLib.Matching.Contracts.Basic
 import MathEconLib.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability
@@ -8,7 +8,8 @@ import MathEconLib.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompleta
 # A matching with contract markets under weakened substitutability conditions
 
 Buyers are the hospitals/branches and sellers the unit-demand doctors/cadets
-in the orientation of survey §6. Accordingly, weak substitutability is
+in Hatfield–Kojima (2010) and Hatfield–Kominers, *Hidden Substitutes*.
+Accordingly, weak substitutability is
 imposed on each buyer's choice with freshness measured by `M.seller`.
 The choice-level definitions and elementary completion API live in
 `Choice/WeakSubstitutes.lean`, which does not import the market layer.
@@ -35,8 +36,8 @@ namespace Market
 variable {B : Type*} {S : Type*} {X : Type*} (M : Market B S X)
 
 /-- Every **buyer**'s choice function is unilaterally substitutable, side
-conditions referencing **sellers** — the orientation of survey §6 and all its
-applications (cadet–branch, IPMM). -/
+conditions referencing **sellers**. See `Choice/WeakSubstitutes.lean`
+for the checked literature definitions and the counterparty convention. -/
 def BuyersUnilaterallySubstitutable : Prop :=
   ∀ b, (M.choiceB b).UnilaterallySubstitutable M.seller
 
@@ -46,7 +47,7 @@ def BuyersBilaterallySubstitutable : Prop :=
   ∀ b, (M.choiceB b).BilaterallySubstitutable M.seller
 
 /-- Every buyer's choice function is substitutably completable with respect
-to the seller map (survey §6.1; Hatfield–Kominers, *Hidden Substitutes*). -/
+to the seller map (Hatfield–Kominers, *Hidden Substitutes*, May 16, 2016, §3). -/
 def BuyersSubstitutablyCompletable : Prop :=
   ∀ b, (M.choiceB b).SubstitutablyCompletable M.seller
 
