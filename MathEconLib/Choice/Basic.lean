@@ -48,9 +48,18 @@ networks later) reuses this layer unchanged.
 HK2010: Hatfield–Kojima, *Substitutes and stability for matching with
 contracts*, Journal of Economic Theory 145 (2010), 1704–1723,
 Definitions 2 and 7 (pp. 1708 and 1718), DOI 10.1016/j.jet.2010.01.007.
-For background, Hatfield–Kominers, *The theory of matching with contracts*,
-Handbook of the Economics of Matching 2 (2025), 409–487;
-Aizerman–Malishevski (1981); Chambers–Yenmez (2017); Plott (1973).
+
+HKSurvey2025: Hatfield–Kominers, *The theory of matching with contracts*,
+Chapter 5, Handbook of the Economics of Matching 2 (2025), 409–487,
+DOI 10.1016/bs.hesmat.2025.10.005. See §2.1.1, p. 412, for choice functions;
+p. 413 and footnote 10 for the standing IRC assumption; Definition 2.1
+and the following rejection-function discussion, p. 414, for substitutability;
+Definition 2.2, p. 415, for aggregate demand; and footnote 16, p. 414, for
+path independence. Unit demand is discussed on p. 413. The chapter's domains
+are finite, whereas the definitions here have the scope stated above.
+
+Further background: Aizerman–Malishevski (1981); Chambers–Yenmez (2017);
+Plott (1973).
 -/
 
 namespace MathEconLib.Choice

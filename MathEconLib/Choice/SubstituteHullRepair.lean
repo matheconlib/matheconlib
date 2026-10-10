@@ -15,14 +15,18 @@ stays between `C` and `C.substituteHull`; a terminal rule is substitutable
 and therefore equals the hull. On a finite alternative type no infinite
 sequence of strict repairs exists, and a terminal sequence exists.
 
-This makes the accumulating interpretation of the construction in
-Zhang (2016), §5, independent of its repair schedule. It concerns repairs
-of a single choice function, not a market's cumulative-offer process.
-No claim of IRC preservation is made for intermediate rules. If the
-original rule satisfies IRC, the terminal rule satisfies IRC by
-`substituteHull_consistent`.
+The update is the accumulating interpretation of Zhang (2016), proof of
+Proposition 2, §5, p. 233. His construction processes menu cardinalities in
+descending order. The schedule independence and convergence to the hull
+for the repair relation below are proved here. They concern repairs of a
+single choice function, not a market's cumulative-offer process.
+Zhang's Proposition 2 asserts bare substitutable completability and leaves
+IRC of the completion unestablished (§§5–6, p. 233). Here, if the original
+rule satisfies IRC, the terminal rule satisfies IRC by
+`substituteHull_consistent`; no claim of IRC preservation is made for
+intermediate rules.
 
-Reference: J. Zhang (2016), *On sufficient conditions for the existence of
+Reference: Jun Zhang (2016), *On sufficient conditions for the existence of
 stable matchings with contracts*, Economics Letters 145, 230–234,
 https://doi.org/10.1016/j.econlet.2016.06.029.
 -/

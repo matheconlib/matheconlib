@@ -8,15 +8,18 @@ import MathEconLib.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompleta
 # A matching with contract markets under weakened substitutability conditions
 
 Buyers are the hospitals/branches and sellers the unit-demand doctors/cadets
-in Hatfield–Kojima (2010) and Hatfield–Kominers, *Hidden Substitutes*.
-Accordingly, weak substitutability is
-imposed on each buyer's choice with freshness measured by `M.seller`.
+in Hatfield–Kojima (2010). The completion framework follows
+Hatfield–Kominers (2025), §6.1, p. 471. Weak substitutability is imposed on
+each buyer's choice with freshness measured by `M.seller`.
 The choice-level definitions and elementary completion API live in
 `Choice/WeakSubstitutes.lean`, which does not import the market layer.
 
 A completion-based existence reduction requires IRC of the same completion
 that satisfies substitutability. `BuyersHaveConsistentSubstitutableCompletions`
-records this joint requirement. The choice-level substitute-hull theorem
+records this joint requirement. The survey's completion definition and
+Definition 6.1, p. 471, do not separately include IRC; the chapter assumes
+IRC throughout (p. 413). Lean keeps the bare formula and the joint
+requirement separate. The choice-level substitute-hull theorem
 supplies such completions from unilateral substitutability, IRC, counterparty
 feasibility, and finite-valued buyer choice. Neither the contract type nor the
 agent types need be finite for this implication. Its finite-contract
@@ -25,6 +28,15 @@ specialization is also provided below.
 These are hypotheses and choice-level implications for a future market
 reduction; they do not yet assert existence under weak substitutability.
 Sellers' unit demand and regularity belong in that reduction theorem.
+
+## References
+
+* John William Hatfield and Scott Duke Kominers (2025), *The theory of
+  matching with contracts*, Chapter 5, Handbook of the Economics of
+  Matching 2, 409–487, https://doi.org/10.1016/bs.hesmat.2025.10.005.
+* Jun Zhang (2016), *On sufficient conditions for the existence of stable
+  matchings with contracts*, Economics Letters 145, 230–234,
+  https://doi.org/10.1016/j.econlet.2016.06.029.
 -/
 
 namespace MathEconLib.Matching
@@ -47,7 +59,9 @@ def BuyersBilaterallySubstitutable : Prop :=
   ∀ b, (M.choiceB b).BilaterallySubstitutable M.seller
 
 /-- Every buyer's choice function is substitutably completable with respect
-to the seller map (Hatfield–Kominers, *Hidden Substitutes*, May 16, 2016, §3). -/
+to the seller map (Hatfield–Kominers 2025, §6.1, Definition 6.1, p. 471).
+This predicate omits the survey's standing IRC assumption; the joint
+requirement is recorded below. -/
 def BuyersSubstitutablyCompletable : Prop :=
   ∀ b, (M.choiceB b).SubstitutablyCompletable M.seller
 
@@ -76,9 +90,12 @@ theorem buyersHaveConsistentSubstitutableCompletions
     M.BuyersHaveConsistentSubstitutableCompletions :=
   fun b => (hsub.1 b).hasConsistentSubstitutableCompletion (hcons.1 b) M.seller
 
-/-- The finite-valued strengthening of the Zhang (2016) completion implication,
-applied separately to each buyer. Only buyer-side hypotheses enter this result;
-seller regularity is needed when using the completions in a market reduction. -/
+/-- The finite-valued strengthening with an IRC completion of Zhang (2016),
+Proposition 2, p. 233, applied separately to each buyer. Zhang establishes
+bare substitutable completability; the additional IRC conclusion follows
+from the hull theorem proved here. Only buyer-side hypotheses enter this
+result; seller regularity is needed when using the completions in a market
+reduction. -/
 theorem buyersHaveConsistentSubstitutableCompletions_of_unilaterallySubstitutable_of_finiteValued
     (hUS : M.BuyersUnilaterallySubstitutable)
     (hcons : ∀ b, (M.choiceB b).Consistent)

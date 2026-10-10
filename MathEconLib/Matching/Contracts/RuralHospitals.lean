@@ -12,6 +12,20 @@ The counting core applies to finite, individually rational outcomes in an
 arbitrary contract type, when the two sides' choice comparisons have opposite
 orientations. The full rural-hospitals theorem retains a finite contract type
 so that the extremal outcome used for comparison is also finite.
+
+## References
+
+HKContractDesign2017: John William Hatfield and Scott Duke Kominers,
+*Contract design and stability in many-to-many matching*, Games and Economic
+Behavior **101** (2017), 78–97. Theorem 4, Appendix B (p. 95), gives
+contract-count invariance under substitutability and aggregate demand;
+§4.2 (p. 88) discusses the result and defines aggregate demand.
+https://doi.org/10.1016/j.geb.2016.01.002
+
+The article uses preference-induced choices. Here the public theorem assumes
+a finite contract type and derives IRC from substitutability and finite-menu
+size monotonicity. The conclusion concerns contract counts, not equality of
+partner sets or total quantities represented by those contracts.
 -/
 
 namespace MathEconLib.Matching
@@ -139,7 +153,9 @@ theorem ncard_sellerSide_eq_of_stable (hsub : M.Substitutable)
   (M.ncard_sides_eq_of_stable hsub hcons hload hA hA').2 s
 
 /-- Rural hospitals with no redundant IRC hypothesis. On a finite contract
-domain, substitutability and the law of aggregate demand imply consistency. -/
+domain, substitutability and the law of aggregate demand imply consistency.
+The count-invariance conclusion is HKContractDesign2017, Theorem 4,
+Appendix B (p. 95). -/
 theorem ruralHospitals (hsub : M.Substitutable) (hload : M.SizeMonotone)
     {A A' : Set X} (hA : M.Stable A) (hA' : M.Stable A') :
     (∀ b, (M.buyerSide b A).ncard = (M.buyerSide b A').ncard) ∧

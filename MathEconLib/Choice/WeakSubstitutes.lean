@@ -23,14 +23,18 @@ contract. For unilateral substitutability, finiteness alone does not imply
 `Fresh counterparty x Y`. This implication follows with IRC, at most one
 chosen contract per counterparty, and finite chosen sets.
 
-`IsCompletionOf` is the choice-function definition in Hatfield–Kominers,
-*Hidden Substitutes*, §3 (author manuscript, May 16, 2016, pp. 8–9).
-The formula is exposed here on arbitrary choice functions; the manuscript
-applies it to many-to-one original choice.
+`IsCompletionOf` uses the completion formula in Hatfield–Kominers,
+*The theory of matching with contracts* (2025), §6.1, the unnumbered
+definition immediately before Definition 6.1, p. 471; Definition 6.1
+on that page defines substitutable completability
+(DOI 10.1016/bs.hesmat.2025.10.005). The formula is exposed here on
+arbitrary choice functions; the survey applies it to many-to-one original
+choice and assumes IRC throughout (p. 413).
 For compatibility, `C.IsCompletionOf counterparty D` means that **D** is
 a completion of **C**. Completion and substitutable completability do not
-include IRC. `HasConsistentSubstitutableCompletion` states the stronger
-existence hypothesis explicitly.
+include IRC as Lean predicates. `HasConsistentSubstitutableCompletion`
+states the stronger existence hypothesis explicitly, accounting for the
+survey's standing IRC convention.
 
 A completion need not enlarge the original choices pointwise. The results
 `IsCompletionOf.unilaterallySubstitutable_of_le` and the hull
@@ -73,15 +77,17 @@ def BilaterallySubstitutable : Prop :=
 
 /-- `C'` is a **completion** of `C`: on every menu it either agrees with `C`
 or chooses at least two contracts with a common counterparty
-(Hatfield–Kominers, *Hidden Substitutes*, May 16, 2016, §3, pp. 8–9). -/
+(Hatfield–Kominers 2025, §6.1, unnumbered definition before Definition 6.1,
+p. 471). This formula does not include the survey's standing IRC assumption. -/
 def IsCompletionOf (C' : ChoiceFunction X) : Prop :=
   ∀ Y, C' Y = C Y ∨
     ∃ x ∈ C' Y, ∃ x' ∈ C' Y, x ≠ x' ∧ counterparty x = counterparty x'
 
 /-- **Substitutable completability**: some completion is substitutable
-(Hatfield–Kominers, *Hidden Substitutes*, May 16, 2016, §3, p. 10).
-This condition alone does not assert IRC of that completion; existence
-reductions use `HasConsistentSubstitutableCompletion` below. -/
+(Hatfield–Kominers 2025, Definition 6.1, p. 471).
+This Lean predicate does not assert IRC of that completion; the survey
+assumes IRC throughout (p. 413). Existence reductions use
+`HasConsistentSubstitutableCompletion` below. -/
 def SubstitutablyCompletable : Prop :=
   ∃ C' : ChoiceFunction X, C.IsCompletionOf counterparty C' ∧ C'.Substitutable
 

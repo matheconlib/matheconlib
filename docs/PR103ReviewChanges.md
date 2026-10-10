@@ -45,8 +45,11 @@ were added alongside the new public APIs.
 | [Dan suggestion 1: stable outcome accessor elaboration](https://github.com/AxiomMath/auctionlib/pull/103#issuecomment-6085033992) | [1f3d813](https://github.com/AxiomMath/auctionlib/commit/1f3d8132f33bbe2320972da11fb56d8ab786285c) | fix(matching): restore stable outcome field notation |
 
 The subsequent [checklist commit](https://github.com/AxiomMath/auctionlib/commit/5e7cf3ce95aa5899f11da3c9f6c66fcc8d02a317)
-records the completed build and these follow-ups. The later published-survey
-citation update is described under Citation disposition below.
+records the completed build and these follow-ups. The subsequent
+[survey citation audit](https://github.com/AxiomMath/auctionlib/commit/6fdc9fe9eee5ffae6da7197cb34a15edfb1d3136)
+and [published-article audit](https://github.com/AxiomMath/auctionlib/commit/e1837f1499e01fe5e579a8b1ac8100beb5a00394)
+established the reference map used by the Lean docstring alignment described
+under Citation disposition below.
 
 The final three fixes address concrete Lean errors found while compiling the
 complete series: an explicit pigeonhole import, typed locality congruences, and
@@ -87,16 +90,25 @@ checks; Litvakov's English translation is optional for English pagination.
 Hatfield–Kominers' published Theorem 4, p. 95, supplies the unambiguous
 many-to-many rural-hospitals reference. The paper's Theorem 1 preference-order
 lattice statement is distinguished from Lean's choice-order formulation.
-Zhang's Lemma 2, Proposition 2 and §5 repair proof are all on p. 233; his paper explicitly
-does not establish an IRC completion. The map separates that bare completion
+Zhang's Lemma 2, Proposition 2 and §5 repair proof are all on p. 233; his paper
+explicitly does not establish an IRC completion. The map separates that bare completion
 result from Lean's IRC and finite-valued strengthenings and repair schedule
 results. Monjardet–Raderanirina is cited for finite choice-lattice background,
 with Litvakov retained as the direct hull-formula reference.
 
-The published `HKContractDesign2017` locators were checked independently;
-the earlier `HKContractDesign2016` key in Lean docstrings still identifies the
-manuscript. These citation follow-ups update Markdown only; the validated
-Lean source remains unchanged.
+The Lean docstrings now use the independently checked `HKContractDesign2017`
+locators and the published survey's completion definitions and example.
+The source bibliography identifies Litvakov's Russian original as the checked
+source of the hull formula, and adds the exact published Zhang and
+Monjardet–Raderanirina locators. The choice-order lattice and rural-hospitals
+modules now carry their verified published references. Existing distinctions
+between source results and the stronger Lean statements are retained.
+
+The survey and article audit commits changed Markdown only. The subsequent
+commit, `docs(matching): align Lean citations with published sources for #103`,
+updates comments and docstrings in eleven Lean files and reconciles this
+record and the reference map. It changes no imports, declarations, theorem
+statements or proofs.
 
 ## Validation
 
@@ -106,8 +118,12 @@ passed [Lean CI run 38088964202](https://github.com/AxiomMath/auctionlib/actions
 The completed job log confirms that exact checkout and reports
 `Build completed successfully (8141 jobs)`. It includes both public-import
 clients, API stability pins, the namespace guard, the moved counterexamples,
-and all three corrected modules, with no Lean errors. This checklist update
-changes documentation only; the validated Lean source is unchanged.
+and all three corrected modules, with no Lean errors. The citation alignment
+was checked by comparing every Lean file with the pre-alignment snapshot
+after removing comments, with identical remaining source. Balanced nested
+comments and the absence of stale manuscript citations were also checked.
+This is a documentation-only verification, not a new full Lean build of the
+citation commit; the previously compiled declarations and proofs are unchanged.
 
 Earlier exact-checkout builds also passed for the main integration
 [`bab3bcb`](https://github.com/AxiomMath/auctionlib/commit/bab3bcb636f474494d2ab008a5f355699bab6d36)

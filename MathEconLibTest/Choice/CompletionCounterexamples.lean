@@ -9,11 +9,14 @@ import Mathlib.Tactic.Tauto
 /-!
 # A completion outside the pointwise-enlargement characterization
 
-The three-contract example from Hatfield–Kominers, *Hidden Substitutes*,
-§1 (author manuscript, May 16, 2016) separates ordinary substitutable
+This file formalizes the buyer's three-contract choice rule from
+Hatfield–Kominers, *The theory of matching with contracts* (2025),
+Example 6.1, p. 469, and its completion on pp. 471–472
+(DOI 10.1016/bs.hesmat.2025.10.005). Here `a`, `b`, `c` correspond to
+the survey's `x′`, `x`, `y`. The survey's full market also includes another
+buyer and the contract `ŷ`. The choice rule separates ordinary substitutable
 completability from the stronger requirement that the completion contain
-every original choice. It is also the finite example in the accompanying
-note, *Substitute hulls and path-independent completions*.
+every original choice.
 
 The original choice ranks the acceptable bundles
 `{a, c} > {b} > {c} > {a} > ∅`. The completion prepends `{a, b}`.

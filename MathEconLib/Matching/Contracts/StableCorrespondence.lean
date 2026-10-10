@@ -23,11 +23,19 @@ bijection between fixed points and stable outcomes.
 
 ## References
 
-HKContractDesign2016: Hatfield–Kominers, *Contract Design and Stability in Many-to-Many Matching*,
-author manuscript dated February 11, 2016, §4, Lemma 1 and Theorem 1 (p. 11).
-Here the correspondence and existence extend to arbitrary contract types
-under explicit substitutability and IRC.
-https://scottkom.com/assets/articles/Hatfield_Kominers_Contract_Design.pdf
+HKContractDesign2017: John William Hatfield and Scott Duke Kominers,
+*Contract design and stability in many-to-many matching*, Games and Economic
+Behavior **101** (2017), 78–97. The operator is displayed in §4 (p. 86);
+Lemma 1 and Theorem 1 are on p. 87, with proofs in Appendix A (pp. 91–92).
+https://doi.org/10.1016/j.geb.2016.01.002
+
+The paper's doctors correspond to sellers and its hospitals to buyers, so
+its offer-state coordinates and order agree with those used here. The article
+uses preference-induced choices; IRC is explained in footnote 8 (p. 80) and
+Definition 6 with footnote 49 (p. 91). Here correspondence and existence hold
+for arbitrary agent and contract types under explicit substitutability and
+set-form IRC. The choice-order lattice and its relation to the article's
+preference-order formulation are documented in `Order`.
 -/
 
 namespace MathEconLib.Matching
@@ -368,7 +376,7 @@ theorem choiceS_eq_of_isFixedPt (hsub : M.Substitutable) (hcons : M.Consistent)
   exact ((hsub.2 s).pathIndependent (hcons.2 s)).union_eq_left_of_choice_subset
     ((M.choiceS_subset_outcomeOf hp s).trans hAU)
 
-/-! ### HKContractDesign2016, Lemma 1: fixed points ↔ stable outcomes -/
+/-! ### HKContractDesign2017, Lemma 1 (p. 87): fixed points ↔ stable outcomes -/
 
 /-- IRC alone makes the outcome of a fixed point individually rational.
 Substitutability is needed for nonblocking, not for this conclusion. -/
@@ -461,7 +469,7 @@ theorem outcomeOf_injOn_fixedPoints (hsub : M.Substitutable) (hcons : M.Consiste
   rw [← M.stateOf_outcomeOf hsub hcons hp, ← M.stateOf_outcomeOf hsub hcons hq]
   exact congrArg M.stateOf hpq
 
-/-- HKContractDesign2016, Lemma 1, first half: the outcome of a fixed point is stable.
+/-- HKContractDesign2017, Lemma 1 (p. 87), first half: a fixed point has a stable outcome.
 The state round trip makes singleton nonblocking an immediate consequence of
 membership in both coordinates. -/
 theorem stable_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
@@ -475,8 +483,9 @@ theorem stable_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
   rw [M.stateOf_outcomeOf hsub hcons hp] at hzout
   exact hzA hzout
 
-/-- HKContractDesign2016, Lemma 1, second half (existence), specializing the direct canonical-state
-certificate to the singleton-acceptance test supplied by stability. -/
+/-- HKContractDesign2017, Lemma 1 (p. 87), second half (existence), specializing
+the direct canonical-state certificate to the singleton-acceptance test
+supplied by stability. -/
 theorem isFixedPt_daFun_of_stable (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
     IsFixedPt M.daFun (M.daFun (A, toDual A)) :=
@@ -491,7 +500,7 @@ theorem outcomeOf_stateOf_of_stable {A : Set X} (hA : M.Stable A) :
   M.outcomeOf_stateOf_of_indRational_of_accepts hA.1
     (fun _ hyB hyS => M.not_blocking_singleton hA hyB hyS)
 
-/-! #### The HKContractDesign2016, Lemma 1 round trips, in `stateOf` form
+/-! #### The HKContractDesign2017, Lemma 1 (p. 87) round trips, in `stateOf` form
 
 These interfaces use `stateOf A` in place of `daFun (A, toDual A)`.
 `outcomeOf_stateOf_of_stable` above omits the regularity hypotheses
@@ -537,7 +546,8 @@ theorem stable_buyerOptimal (hsub : M.Substitutable) (hcons : M.Consistent) :
     M.Stable (M.buyerOptimal hsub hcons) :=
   M.stable_outcomeOf hsub hcons (M.isFixedPt_lfp_daHom hsub)
 
-/-- Existence of stable outcomes (Hatfield–Milgrom/Fleiner). -/
+/-- Stable existence as in HKContractDesign2017, Theorem 1 (p. 87), with
+explicit substitutability and set-form IRC on arbitrary contract types. -/
 theorem exists_stable (hsub : M.Substitutable) (hcons : M.Consistent) :
     ∃ A : Set X, M.Stable A :=
   ⟨M.sellerOptimal hsub hcons, M.stable_sellerOptimal hsub hcons⟩

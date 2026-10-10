@@ -18,18 +18,28 @@ sets must be finite. The converse from an enlarging substitutable
 completion requires no finiteness assumption. The finite-contract
 existence theorems are retained as corollaries.
 
-Zhang (2016), *On sufficient conditions for the existence of stable
-matchings with contracts*, Proposition 2, proves the finite-domain
-implication to substitutable completability for feasible IRC choice.
-The contraction lemma below extends the one-addition observation in his
-Lemma 2. Kadam (2017), *Unilateral substitutability implies substitutable
-completability in many-to-one matching with contracts*, proves the
-preference-based implication. Here the generic substitute-hull results
-supply IRC as well; no completed linear preference order is constructed.
+Zhang (2016), Proposition 2, p. 233, proves the finite-domain implication
+to bare substitutable completability for feasible IRC choice. The
+contraction lemma below extends his one-addition Lemma 2 on the same page.
+The final paragraphs of §§5 and 6, p. 233, leave IRC of the completion
+unestablished. Here the generic substitute-hull results supply IRC as well.
+Kadam (2017) proves the preference-based implication by constructing a
+preference completion; no completed linear preference order is constructed
+in this module.
 
 The general hull construction and its minimality and IRC properties live
 in `Choice/SubstituteHull.lean`. Completion alone is not pointwise
 enlargement, so the characterization states that extra condition explicitly.
+
+## References
+
+* Jun Zhang (2016), *On sufficient conditions for the existence of stable
+  matchings with contracts*, Economics Letters 145, 230–234,
+  https://doi.org/10.1016/j.econlet.2016.06.029.
+* Sangram Vilasrao Kadam (2017), *Unilateral substitutability implies
+  substitutable completability in many-to-one matching with contracts*,
+  Games and Economic Behavior 102, 56–68,
+  https://doi.org/10.1016/j.geb.2016.10.002.
 -/
 
 namespace MathEconLib.Choice
@@ -72,7 +82,7 @@ private theorem reject_union_of_finite
 counterparty is represented in `C Y`, provided **the choice `C Z`** is
 finite and feasible. Neither menu needs to be finite.
 
-This extends Zhang (2016), Lemma 2, from a one-addition comparison to
+This extends Zhang (2016), Lemma 2, p. 233, from a one-addition comparison to
 arbitrary nested menus. It does not assert that `x` itself is chosen at `Y`.
 -/
 theorem UnilaterallySubstitutable.exists_chosen_counterparty_of_finite_choice
@@ -276,8 +286,8 @@ theorem UnilaterallySubstitutable.substitutablyCompletable_of_finiteValued
     hIRC hfeasible hfinite).substitutablyCompletable
 
 /-- The finite-contract corollary of the finite-valued completion theorem.
-Zhang (2016), Proposition 2, gives substitutable completability; hull IRC
-also supplies a consistent completion. -/
+Zhang (2016), Proposition 2, p. 233, gives bare substitutable completability;
+the hull IRC theorem proved here additionally supplies a consistent completion. -/
 theorem UnilaterallySubstitutable.hasConsistentSubstitutableCompletion
     [Finite X]
     {counterparty : X → A} {C : ChoiceFunction X}

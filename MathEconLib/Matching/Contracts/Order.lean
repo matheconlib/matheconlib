@@ -9,6 +9,22 @@ seller choice and reverse unanimous buyer choice. This yields both
 side-optimality results without finiteness, unit demand, or aggregate demand.
 The complete lattice is carried by the operator's fixed points;
 `stableEquivFixedPoints` identifies this carrier with stable contract sets.
+
+## References
+
+HKSurvey2025: John William Hatfield and Scott Duke Kominers, *The theory of
+matching with contracts*, Chapter 5, Handbook of the Economics of Matching
+**2** (2025), 409–487. Theorem 3.2 (p. 440) states the many-to-many
+choice-order lattice and the opposing optimal/pessimal endpoints.
+https://doi.org/10.1016/bs.hesmat.2025.10.005
+
+HKContractDesign2017: John William Hatfield and Scott Duke Kominers,
+*Contract design and stability in many-to-many matching*, Games and Economic
+Behavior **101** (2017), 78–97. Lemma 1 (p. 87) gives the fixed-point
+correspondence. Theorem 1 and the following paragraph (p. 87) give a
+preference-order lattice and opposition of interests. Here the lattice uses
+choice relations; no general bridge from primitive preferences is formalized.
+https://doi.org/10.1016/j.geb.2016.01.002
 -/
 
 namespace MathEconLib.Matching
@@ -407,7 +423,7 @@ end StableOutcomes
 end StableOutcomesAPI
 
 /-- The fixed-point correspondence, packaged as an equivalence with the
-lattice carrier (HKContractDesign2016, Lemma 1; see `StableCorrespondence`).
+lattice carrier (HKContractDesign2017, Lemma 1, p. 87; see `StableCorrespondence`).
 This is an `Equiv`; no preference-order instance is installed on the subtype
 of stable contract sets. The order dictionary is supplied separately. -/
 def stableEquivFixedPoints (hsub : M.Substitutable)

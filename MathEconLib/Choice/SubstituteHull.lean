@@ -10,8 +10,8 @@ import Mathlib.Order.Closure
 
 `ChoiceFunction.substituteHull` retains an available alternative whenever
 the original choice selects it from some larger menu. This is the classical
-hereditary upper approximation (Litvakov, 1985, Theorem 5, row H), here
-defined on the full power set.
+hereditary upper approximation (Litvakov, 1985, Theorem 5, table row H,
+p. 127 of the Russian original), here defined on the full power set.
 
 The hull is the minimal substitutable pointwise enlargement of any choice
 function. `substituteHullClosure` bundles it as a closure operator whose
@@ -26,12 +26,22 @@ enlargement is a completion is treated separately in
 An enlargement and a completion are different notions: a completion need
 not contain the original choices pointwise.
 
+Monjardet–Raderanirina (2004), §§3.1–3.2, Definitions 10–11 and
+Propositions 1–3, pp. 355–357, provide finite lattice background for the
+pointwise inclusion order and hereditary choices. The arbitrary-type hull,
+closure, and IRC-preservation results below are proved independently.
+
 ## References
 
 * Litvakov, B. M. (1985), *Approximation of choice functions with a bounded
-  set of presentations*, Automation and Remote Control 46, 248–252.
+  set of presentations*, Avtomatika i Telemekhanika, no. 2, 124–129
+  (Russian original), Theorem 5, table row H, p. 127.
+  Publication record: https://www.mathnet.ru/eng/at6893.
+  English translation: Automation and Remote Control 46, 248–252;
+  the English-page locator has not been checked.
 * Monjardet, B. and Raderanirina, V. (2004), *Lattices of choice functions
-  and consensus problems*, Social Choice and Welfare 23, 349–382.
+  and consensus problems*, Social Choice and Welfare 23, 349–382,
+  DOI 10.1007/s00355-003-0251-9.
 -/
 
 namespace MathEconLib.Choice

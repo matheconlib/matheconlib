@@ -56,9 +56,9 @@ completion; the survey's full market also has another buyer and contract
 counterexample beyond the survey's finite setting, not an example from the
 survey.
 
-Completion does not mean pointwise enlargement. Definition 6.1's displayed
-formula does not separately impose IRC; the chapter's standing convention
-must still be accounted for. Lean therefore keeps bare substitutable
+Completion does not mean pointwise enlargement. The completion formula
+immediately before Definition 6.1 does not separately impose IRC; the chapter's
+standing convention must still be accounted for. Lean therefore keeps bare substitutable
 completability separate from the existence of one completion satisfying both
 substitutability and IRC. The contracts development currently supplies those
 hypotheses and choice-level implications, not the market-existence reduction
@@ -221,11 +221,11 @@ its stable/pairwise-stable portion without IRC or finiteness. Theorem 4
 concerns contract counts under substitutability and aggregate demand;
 Lean's public counting theorem has the finite-contract scope described above.
 
-Earlier Lean docstrings retain the manuscript key `HKContractDesign2016`.
-The independently checked published replacements are Definition 2 and
-Proposition 2 on p. 81, and Lemma 1 and Theorem 1 on p. 87. The numbers happen
-to agree; the manuscript page locators do not. This Markdown map uses the new
-published key `HKContractDesign2017` without redefining the old key.
+The Lean docstrings now use the published key `HKContractDesign2017`.
+The independently checked replacements for the earlier manuscript citations
+are Definition 2 and Proposition 2 on p. 81, and Lemma 1 and Theorem 1 on
+p. 87. The numbers happen to agree; the manuscript page locators do not.
+The source references use the published article's DOI and page numbers.
 
 ## Zhang (2016)
 

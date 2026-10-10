@@ -30,7 +30,8 @@ The definitions impose no unit-demand or unitarity hypotheses.
 * `Market.Consistent`, `Market.Substitutable`, `Market.SizeMonotone` —
   hypothesis bundles quantifying the choice-layer predicates over all agents.
 * `Market.IndRational`, `Market.Blocks`, `Market.Stable`,
-  `Market.PairwiseStable` — HKContractDesign2016, Definition 2 and the following discussion.
+  `Market.PairwiseStable` — HKContractDesign2017, Definition 2 and the following
+  discussion (p. 81).
 * `Market.SellerChosen`, `Market.BuyerChosen` — the relations `⊒S`, `⊒B`.
 
 ## Main statements
@@ -41,15 +42,21 @@ The definitions impose no unit-demand or unitarity hypotheses.
   `insert z A` form used by every downstream proof.
 * `Market.Stable.pairwiseStable`,
   `Market.pairwiseStable_iff_stable_of_substitutable` —
-  HKContractDesign2016, Proposition 2; IRC is not needed here.
+  the stable/pairwise-stable portion of HKContractDesign2017, Proposition 2
+  (p. 81); IRC is not needed here.
 
 ## References
 
-HKContractDesign2016: Hatfield–Kominers, *Contract Design and Stability in
-Many-to-Many Matching*, author manuscript dated February 11, 2016,
-Definition 2 (pp. 4–5) and Proposition 2 (p. 5). The present statements
-expose choice regularity separately and allow infinite contract types.
-https://scottkom.com/assets/articles/Hatfield_Kominers_Contract_Design.pdf
+HKContractDesign2017: John William Hatfield and Scott Duke Kominers,
+*Contract design and stability in many-to-many matching*, Games and Economic
+Behavior **101** (2017), 78–97. Definition 2 and Proposition 2 are on p. 81;
+pairwise stability is defined in the paragraph following Definition 2.
+https://doi.org/10.1016/j.geb.2016.01.002
+
+Proposition 2 also includes a many-to-one stability notion not formalized here.
+The article uses preference-induced choices; IRC is discussed in footnote 8
+(p. 80) and Definition 6 (p. 91). The present statements expose choice
+regularity separately and allow arbitrary agent and contract types.
 
 ## Implementation notes
 
@@ -164,7 +171,7 @@ theorem Consistent.local (h : M.Consistent) : M.Local :=
   ⟨fun b Y => M.choiceB_buyerSide (h.1 b) Y,
     fun s Y => M.choiceS_sellerSide (h.2 s) Y⟩
 
-/-! ### Stability (HKContractDesign2016, Definition 2) -/
+/-! ### Stability (HKContractDesign2017, Definition 2, p. 81) -/
 
 /-- An outcome `A` is **individually rational** if every agent chooses exactly
 their part of `A` from `A`. -/
@@ -240,7 +247,8 @@ theorem Stable.pairwiseStable {A : Set X} (h : M.Stable A) :
   ⟨h.1, fun z => h.2 {z}⟩
 
 /-- Substitutability reduces every blocking set to a blocking contract.
-This is the implication used in HKContractDesign2016, Proposition 2;
+This is the implication used in HKContractDesign2017, Proposition 2 (p. 81),
+proved there as Lemma 2 in Appendix A (p. 91);
 the present proof requires neither IRC nor finiteness. -/
 theorem PairwiseStable.stable_of_substitutable (hsub : M.Substitutable)
     {A : Set X} (h : M.PairwiseStable A) : M.Stable A := by
