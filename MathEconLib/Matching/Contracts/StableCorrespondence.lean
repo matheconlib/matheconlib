@@ -483,36 +483,15 @@ theorem outcomeOf_stateOf_of_stable {A : Set X} (hA : M.Stable A) :
   M.outcomeOf_stateOf_of_indRational_of_accepts hA.1
     (fun _ hyB hyS => M.not_blocking_singleton hA hyB hyS)
 
-/-- Compatibility form of `outcomeOf_stateOf_of_stable`, written using the
-raw operator. The regularity hypotheses are unnecessary for this direction. -/
-theorem outcomeOf_daFun_of_stable (_hsub : M.Substitutable)
-    (_hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
-    M.outcomeOf (M.daFun (A, toDual A)) = A :=
-  M.outcomeOf_stateOf_of_stable hA
-
-/-- Compatibility form of fixed-point uniqueness. Stability of `A` is
-redundant; use `eq_of_isFixedPt_of_outcomeOf_eq_state` in new proofs. -/
-theorem eq_of_isFixedPt_of_outcomeOf_eq (hsub : M.Substitutable)
-    (hcons : M.Consistent) {A : Set X} {p : Set X × (Set X)ᵒᵈ}
-    (_hA : M.Stable A) (hp : IsFixedPt M.daFun p)
-    (hout : M.outcomeOf p = A) : p = M.daFun (A, toDual A) :=
-  M.eq_of_isFixedPt_of_outcomeOf_eq_state hsub hcons hp hout
-
 /-! #### The Lemma 2.1 round trips, in `stateOf` form
 
 These interfaces use `stateOf A` in place of `daFun (A, toDual A)`.
-The stronger `outcomeOf_stateOf_of_stable` above omits the regularity
-hypotheses in the outcome round trip; the original interface remains below
-for compatibility. -/
+`outcomeOf_stateOf_of_stable` above omits the regularity hypotheses
+in the outcome round trip. -/
 
 theorem isFixedPt_stateOf (hsub : M.Substitutable) (hcons : M.Consistent)
     {A : Set X} (hA : M.Stable A) : IsFixedPt M.daFun (M.stateOf A) :=
   M.isFixedPt_daFun_of_stable hsub hcons hA
-
-/-- Compatibility form of `outcomeOf_stateOf_of_stable`. -/
-theorem outcomeOf_stateOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {A : Set X} (hA : M.Stable A) : M.outcomeOf (M.stateOf A) = A :=
-  M.outcomeOf_daFun_of_stable hsub hcons hA
 
 /-! ### Theorem 2.2 / 3.2: existence and the two extremal states -/
 
