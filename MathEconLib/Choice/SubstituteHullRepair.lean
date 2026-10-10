@@ -1,6 +1,7 @@
 import MathEconLib.Choice.SubstituteHull
 import MathEconLib.ForMathlib.Order.IterateFixedPoint
 import Mathlib.Data.Finite.Prod
+import Mathlib.Data.Fintype.Pigeonhole
 import Mathlib.Data.Fintype.Powerset
 import Mathlib.Logic.Relation
 
