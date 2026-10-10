@@ -11,6 +11,21 @@ a finiteness instance.
 
 open scoped BigOperators
 
+namespace Set
+
+/-- A fiber is empty outside any set covering the image. No finiteness is needed. -/
+theorem fiber_eq_empty_of_not_mem {X I : Type*} {A : Set X} {T : Set I}
+    (f : X → I) (hT : ∀ x ∈ A, f x ∈ T) {i : I} (hi : i ∉ T) :
+    {x ∈ A | f x = i} = ∅ := by
+  ext x
+  constructor
+  · rintro ⟨hx, hxi⟩
+    exact (hi (hxi ▸ hT x hx)).elim
+  · intro hx
+    exact hx.elim
+
+end Set
+
 namespace Set.Finite
 
 /-- Count a finite set by fibers over any finite set covering its image. -/

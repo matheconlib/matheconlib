@@ -1,4 +1,5 @@
 import Mathlib.Data.PEquiv
+import Mathlib.Data.Set.Card
 import Mathlib.Data.Set.Subsingleton
 
 /-!
@@ -62,6 +63,58 @@ theorem graph_injective : Function.Injective (graph : (α ≃. β) → Set (α �
     μ.symm.graph = Prod.swap ⁻¹' μ.graph := by
   ext p
   exact μ.eq_some_iff
+
+/-- An unmatched argument has an empty row in the graph. -/
+theorem graph_fiber_fst_eq_empty {μ : α ≃. β} {a : α}
+    (hμ : μ a = none) : {p ∈ μ.graph | p.1 = a} = ∅ := by
+  ext ⟨a', b⟩
+  simp only [Set.mem_setOf_eq, mem_graph, Set.mem_empty_iff_false, iff_false, not_and]
+  rintro hp rfl
+  rw [hμ] at hp
+  contradiction
+
+/-- A matched argument has precisely its matched pair in its graph row. -/
+theorem graph_fiber_fst_eq_singleton {μ : α ≃. β} {a : α} {b : β}
+    (hμ : μ a = some b) : {p ∈ μ.graph | p.1 = a} = {(a, b)} := by
+  ext ⟨a', b'⟩
+  change (μ a' = some b' ∧ a' = a) ↔ (a', b') = (a, b)
+  rw [Prod.mk.injEq]
+  constructor
+  · rintro ⟨hp, rfl⟩
+    exact ⟨rfl, (Option.some.inj (hμ.symm.trans hp)).symm⟩
+  · rintro ⟨rfl, rfl⟩
+    exact ⟨hμ, rfl⟩
+
+/-- Columns are rows of the inverse partial equivalence, with coordinates swapped. -/
+theorem graph_fiber_snd_eq_swap_preimage (μ : α ≃. β) (b : β) :
+    {p ∈ μ.graph | p.2 = b} = Prod.swap ⁻¹' {q ∈ μ.symm.graph | q.1 = b} := by
+  ext ⟨a', b'⟩
+  exact and_congr mem_graph_symm Iff.rfl
+
+theorem graph_fiber_snd_eq_empty {μ : α ≃. β} {b : β}
+    (hμ : μ.symm b = none) : {p ∈ μ.graph | p.2 = b} = ∅ := by
+  rw [graph_fiber_snd_eq_swap_preimage, graph_fiber_fst_eq_empty hμ, Set.preimage_empty]
+
+theorem graph_fiber_snd_eq_singleton {μ : α ≃. β} {a : α} {b : β}
+    (hμ : μ.symm b = some a) : {p ∈ μ.graph | p.2 = b} = {(a, b)} := by
+  rw [graph_fiber_snd_eq_swap_preimage, graph_fiber_fst_eq_singleton hμ]
+  ext ⟨a', b'⟩
+  change (b', a') = (b, a) ↔ (a', b') = (a, b)
+  simp only [Prod.mk.injEq, and_comm]
+
+/-- A graph row has zero cardinality exactly at an unmatched argument. -/
+theorem ncard_graph_fiber_fst_eq_zero_iff (μ : α ≃. β) (a : α) :
+    ({p ∈ μ.graph | p.1 = a} : Set (α × β)).ncard = 0 ↔ μ a = none := by
+  cases hμ : μ a with
+  | none => rw [graph_fiber_fst_eq_empty hμ]; simp
+  | some b => rw [graph_fiber_fst_eq_singleton hμ]; simp
+
+/-- A graph column has zero cardinality exactly at an unmatched inverse argument. -/
+theorem ncard_graph_fiber_snd_eq_zero_iff (μ : α ≃. β) (b : β) :
+    ({p ∈ μ.graph | p.2 = b} : Set (α × β)).ncard = 0 ↔ μ.symm b = none := by
+  cases hμ : μ.symm b with
+  | none => rw [graph_fiber_snd_eq_empty hμ]; simp
+  | some a => rw [graph_fiber_snd_eq_singleton hμ]; simp
 
 /-- An optional value of a relation at an argument. Uniqueness is imposed
 by the correctness lemma and constructor, rather than by the definition. -/

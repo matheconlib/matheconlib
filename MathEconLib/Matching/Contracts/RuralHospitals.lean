@@ -84,29 +84,25 @@ theorem ncard_sides_eq_of_chosen (hload : M.SizeMonotone) {A A₀ : Set X}
   refine ⟨fun b => ?_, fun s => ?_⟩
   · by_cases hbT : b ∈ hfin.toFinset.image M.buyer
     · exact ((Finset.sum_eq_sum_iff_of_le (fun b _ => hb b)).mp hsumB b hbT).symm
-    · have e1 : M.buyerSide b A = ∅ := by
-        ext x
-        simp only [mem_buyerSide, Set.mem_empty_iff_false, iff_false, not_and]
-        intro hx hxb
-        exact hbT (hxb ▸ hmemB x (Or.inl hx))
-      have e2 : M.buyerSide b A₀ = ∅ := by
-        ext x
-        simp only [mem_buyerSide, Set.mem_empty_iff_false, iff_false, not_and]
-        intro hx hxb
-        exact hbT (hxb ▸ hmemB x (Or.inr hx))
+    · have e1 : M.buyerSide b A = ∅ :=
+        Set.fiber_eq_empty_of_not_mem M.buyer
+          (T := ↑(hfin.toFinset.image M.buyer))
+          (fun x hx => hmemB x (Or.inl hx)) hbT
+      have e2 : M.buyerSide b A₀ = ∅ :=
+        Set.fiber_eq_empty_of_not_mem M.buyer
+          (T := ↑(hfin.toFinset.image M.buyer))
+          (fun x hx => hmemB x (Or.inr hx)) hbT
       rw [e1, e2]
   · by_cases hsT : s ∈ hfin.toFinset.image M.seller
     · exact (Finset.sum_eq_sum_iff_of_le (fun s _ => hs s)).mp hsumS s hsT
-    · have e1 : M.sellerSide s A = ∅ := by
-        ext x
-        simp only [mem_sellerSide, Set.mem_empty_iff_false, iff_false, not_and]
-        intro hx hxs
-        exact hsT (hxs ▸ hmemS x (Or.inl hx))
-      have e2 : M.sellerSide s A₀ = ∅ := by
-        ext x
-        simp only [mem_sellerSide, Set.mem_empty_iff_false, iff_false, not_and]
-        intro hx hxs
-        exact hsT (hxs ▸ hmemS x (Or.inr hx))
+    · have e1 : M.sellerSide s A = ∅ :=
+        Set.fiber_eq_empty_of_not_mem M.seller
+          (T := ↑(hfin.toFinset.image M.seller))
+          (fun x hx => hmemS x (Or.inl hx)) hsT
+      have e2 : M.sellerSide s A₀ = ∅ :=
+        Set.fiber_eq_empty_of_not_mem M.seller
+          (T := ↑(hfin.toFinset.image M.seller))
+          (fun x hx => hmemS x (Or.inr hx)) hsT
       rw [e1, e2]
 
 section Counting
