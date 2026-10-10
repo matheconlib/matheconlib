@@ -33,4 +33,7 @@ example {α : Type*} [DecidableEq α] (pref : LinearOrder (Option α)) (A : Fins
       (ChoiceFunction.bestOption pref A) :=
   ChoiceFunction.isGreatest_bestOption pref A
 
+example {α β : Type*} (e : α ↪ β) :
+    ChoiceFunction α ↪o ChoiceFunction β := ChoiceFunction.mapOrderEmbedding e
+
 end MathEconLibTest.Choice

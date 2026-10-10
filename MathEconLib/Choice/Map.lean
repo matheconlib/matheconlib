@@ -1,4 +1,5 @@
 import MathEconLib.Choice.Basic
+import Mathlib.Order.Hom.Basic
 
 /-!
 # Transport of choice functions
@@ -90,6 +91,17 @@ theorem map_injective (e : α ↪ β) :
   apply le_antisymm
   · exact (map_le_map_iff e).mp (le_of_eq h)
   · exact (map_le_map_iff e).mp (le_of_eq h.symm)
+
+/-- Transport along an embedding as an order embedding of choice functions.
+The order is pointwise inclusion, so this bundles both preservation and
+reflection of pointwise enlargement. -/
+def mapOrderEmbedding (e : α ↪ β) : ChoiceFunction α ↪o ChoiceFunction β where
+  toFun C := C.map e
+  inj' := map_injective e
+  map_rel_iff' := map_le_map_iff e
+
+@[simp] theorem mapOrderEmbedding_apply (e : α ↪ β) (C : ChoiceFunction α) :
+    mapOrderEmbedding e C = C.map e := rfl
 
 theorem UnitDemand.map {C : ChoiceFunction α}
     (hunit : C.UnitDemand) (e : α ↪ β) :
