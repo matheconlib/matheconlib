@@ -84,6 +84,7 @@ theorem UnilaterallySubstitutable.exists_chosen_counterparty_of_finite_choice
     ∃ y ∈ C Y, counterparty y = counterparty x := by
   classical
   by_contra hnone
+  -- Remove x's counterparty from Y; IRC preserves choice on insert x Y0.
   let Y0 : Set X := {y | y ∈ Y ∧ counterparty y ≠ counterparty x}
   let E : Set X := {y | y ∈ C Z ∧ y ≠ x}
   have hE : E.Finite := hCZ.subset (fun _ hy => hy.1)
@@ -104,6 +105,7 @@ theorem UnilaterallySubstitutable.exists_chosen_counterparty_of_finite_choice
     · exact hy.2
     · intro heq
       exact hy.2 (hfeasible hy.1 hxZ heq)
+  -- This reduced menu contains C Z, so IRC recovers the larger menu's choice.
   have hupper : C (insert x (Y0 ∪ E)) = C Z := by
     apply hIRC
     · intro y hy
