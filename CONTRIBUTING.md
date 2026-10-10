@@ -57,13 +57,17 @@ issue to coordinate an upstream contribution.
 Keep one canonical development. Move reusable parts of an example into the core
 when another application needs them. Core code must not import examples or tests.
 
-## Headline theorem witnesses
+## Examples for main results
 
-A new or materially changed headline theorem requires a compiled client that
-constructs a concrete model, establishes its joint assumptions, and applies the
-named theorem to a meaningful conclusion. Existing clients can qualify; a
-signature pin alone does not. Expanding the historical witness set remains
-post-launch work under [#47](https://github.com/AxiomMath/auctionlib/issues/47).
+For a new or materially changed theorem highlighted as a main result in the
+README or website, include a Lean example that compiles, constructs a concrete
+model, proves that all the theorem's assumptions hold for that model, and uses
+the named theorem to derive a meaningful conclusion. An existing example can
+meet this requirement. Checking only the theorem's type (a "signature pin")
+does not.
+
+Additional examples for older main results remain post-launch work under
+[#47](https://github.com/AxiomMath/auctionlib/issues/47).
 
 ## Citing sources
 
