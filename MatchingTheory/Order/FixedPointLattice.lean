@@ -16,14 +16,10 @@ namespace OrderHom
 variable {L : Type*} [CompleteLattice L] (f : L →o L)
 
 /-- The top of the fixed-point lattice has value `gfp`. -/
-theorem fixedPoints_val_top : (⊤ : fixedPoints f).val = gfp f := by
-  refine le_antisymm (f.isGreatest_gfp.2 (⊤ : fixedPoints f).property) ?_
-  exact le_top (a := (⟨gfp f, f.isGreatest_gfp.1⟩ : fixedPoints f))
+theorem fixedPoints_val_top : (⊤ : fixedPoints f).val = gfp f := rfl
 
 /-- The bottom of the fixed-point lattice has value `lfp`. -/
-theorem fixedPoints_val_bot : (⊥ : fixedPoints f).val = lfp f := by
-  refine le_antisymm ?_ (f.isLeast_lfp.2 (⊥ : fixedPoints f).property)
-  exact bot_le (a := (⟨lfp f, f.isLeast_lfp.1⟩ : fixedPoints f))
+theorem fixedPoints_val_bot : (⊥ : fixedPoints f).val = lfp f := rfl
 
 /-- An ambient join that is fixed is also the join in the fixed-point lattice. -/
 theorem fixedPoints_val_sup_of_isFixedPt {p q : fixedPoints f}
