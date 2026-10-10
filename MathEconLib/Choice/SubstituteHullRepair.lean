@@ -2,7 +2,6 @@ import MathEconLib.Choice.SubstituteHull
 import MathEconLib.ForMathlib.Order.IterateFixedPoint
 import Mathlib.Data.Finite.Prod
 import Mathlib.Data.Fintype.Powerset
-import Mathlib.Data.Set.Finite.Powerset
 import Mathlib.Logic.Relation
 
 /-!
@@ -153,29 +152,11 @@ theorem SubstituteRepairReachable.consistent_of_terminal
   rw [h.eq_substituteHull hterminal]
   exact substituteHull_consistent hC
 
-/-- A choice rule is determined by its menu–alternative incidences. -/
-private def choiceIncidences (C : ChoiceFunction X) : Set (Set X × X) :=
-  {p | p.2 ∈ C p.1}
-
-private theorem choiceIncidences_injective :
-    Function.Injective (choiceIncidences (X := X)) := by
-  intro C D heq
-  apply ChoiceFunction.ext
-  intro Y
-  ext x
-  change (Y, x) ∈ choiceIncidences C ↔ (Y, x) ∈ choiceIncidences D
-  rw [heq]
-
-/-- On a finite carrier there are only finitely many incidence graphs. -/
+/-- On a finite carrier there are only finitely many menu-to-choice maps.
+Extensionality embeds choice rules into this finite function type. -/
 private theorem finite_choiceRules [Finite X] : Finite (ChoiceFunction X) := by
-  classical
-  letI : Fintype X := Fintype.ofFinite X
-  letI : Fintype (Set X) := inferInstance
-  letI : Fintype (Set X × X) := inferInstance
-  letI : Fintype (Set (Set X × X)) := inferInstance
   exact Finite.of_injective
-    (choiceIncidences (X := X))
-    (choiceIncidences_injective (X := X))
+    (fun C : ChoiceFunction X => (C : Set X → Set X)) DFunLike.coe_injective
 
 /-- A finite carrier rules out an infinite sequence of strict repairs.
 Combined with `SubstituteRepairReachable.eq_substituteHull`, this proves
