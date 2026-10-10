@@ -66,3 +66,10 @@ or image requests.
 squares in a unit). Each SVG declares its own `--unit-cells` and matching
 `viewBox`. Keep these values consistent when editing. Layout styles live in
 `art.css.njk`.
+
+## Design provenance
+
+The homepage design derives from Moran Koren's
+[MathEconLib proposal](https://github.com/morankor/MathEconLib). The
+[design-proposal inventory](design-proposals/README.md) records the imported
+sources and revision.
