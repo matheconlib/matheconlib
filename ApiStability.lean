@@ -153,6 +153,11 @@ example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC], MonotoneOn B.q B.typeInterval :=
   @MathEconLib.BidderProblem.q_monotoneOn
 
+-- Envelope theorem: interim utility has derivative q almost everywhere on the type interval.
+example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
+    ∀ᵐ s ∂volume.restrict B.typeInterval, HasDerivAt B.U (B.q s) s :=
+  @MathEconLib.BidderProblem.aeDifferentiable
+
 -- Myerson payment identity: cost(strategy(s)) = s·q(s) − U(low) − ∫ q (Lemma 5.2)
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasTypeDeviationIC],
     ∀ s ∈ B.typeInterval,
@@ -178,6 +183,26 @@ example : ∀ (B : MathEconLib.BidderProblem),
   @MathEconLib.BidderProblem.typeDeviationIC_of_monotone_q
 
 /-! ## MathEconLib.Auction — payment and revenue equivalence -/
+
+-- Truthful opponents give winning probability F(s)^(n−1) under strict-highest-bid allocation.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
+    [A.HasIndependentTypes] [A.HasIdenticalTypes] [A.HasAtomlessTypes]
+    (_ : UsesStrictHighestBidAllocation A.rules (fun o i ↦ o i)) (i : Fin n) (s : ℝ),
+    A.q i s = A.commonCDF s ^ (n - 1) :=
+  @MathEconLib.Auction.q_eq_pow
+
+-- Strict monotonicity retains density, regularity, and universal IC over nonnegative bids.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n) [A.HasIdenticalTypes]
+    [A.HasPosDensity] [n.AtLeastTwo] [A.HasIndependentTypes] [A.HasBoundedTypes]
+    [A.HasAtomlessTypes] (halloc : IsUnitIntervalAllocation A.rules (fun o i ↦ o i))
+    (_ : UsesStrictHighestBidAllocation A.rules (fun o i ↦ o i))
+    {σ : ℝ → ℝ} (_ : Measurable σ) (i : Fin n) (_ : 0 ≤ A.lowestType)
+    (_ : (A.toBidderProblem halloc σ i).IsRegular)
+    (_ : (A.toBidderProblem halloc σ i).HasUniversalIC (Set.Ici 0)),
+    StrictMonoOn σ (Set.Icc A.lowestType A.highestType) :=
+  @MathEconLib.Auction.strictMonotonicity
 
 -- Payment equivalence: two BIC auctions with matching q and boundary utility pay alike
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
@@ -295,6 +320,99 @@ end Affiliation
 
 /-! ## All-purchase auctions -/
 
+-- Revenue decomposition keeps every IC, integrability, and boundary-utility hypothesis.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
+    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (_ : ∀ i, Integrable (fun ω ↦ A.rules.payment i (fun j ↦ β (A.θ j ω))) volume)
+    (_ : Integrable (fun ω ↦ A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) volume)
+    (_ : Measurable A.allPayBid)
+    (_ : ∀ i, Integrable (fun ω ↦ A.allPayBid (A.θ i ω)) volume)
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+      (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType =
+        A.lowestTypeUtility spec.isUnitIntervalAllocation β),
+    A.sellerGrossRevenue spec β =
+      n * A.expectedAllPayBid - n * A.lowestTypeUtility spec.isUnitIntervalAllocation β +
+        A.expectedEditionValue spec β :=
+  @MathEconLib.Auction.revenue_decomposition
+
+-- Boundary form additionally requires zero lowest-type utility.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
+    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (_ : ∀ i, Integrable (fun ω ↦ A.rules.payment i (fun j ↦ β (A.θ j ω))) volume)
+    (_ : Integrable (fun ω ↦ A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) volume)
+    (_ : Measurable A.allPayBid)
+    (_ : ∀ i, Integrable (fun ω ↦ A.allPayBid (A.θ i ω)) volume)
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+      (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType =
+        A.lowestTypeUtility spec.isUnitIntervalAllocation β)
+    (_ : A.lowestTypeUtility spec.isUnitIntervalAllocation β = 0),
+    A.sellerGrossRevenue spec β = n * A.expectedAllPayBid + A.expectedEditionValue spec β :=
+  @MathEconLib.Auction.revenue_decomposition_boundary
+
+-- Bundling gain is a profit-difference identity, with no positivity conclusion.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
+    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (_ : ∀ i, Integrable (fun ω ↦ A.rules.payment i (fun j ↦ β (A.θ j ω))) volume)
+    (_ : Integrable (fun ω ↦ A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) volume)
+    (_ : Measurable A.allPayBid)
+    (_ : ∀ i, Integrable (fun ω ↦ A.allPayBid (A.θ i ω)) volume)
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+      (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType =
+        A.lowestTypeUtility spec.isUnitIntervalAllocation β)
+    (_ : A.lowestTypeUtility spec.isUnitIntervalAllocation β = 0) (c B_ed : ℝ),
+    A.bundledProfit spec β c - A.allPayBenchmarkProfit - A.editionsOnlyBenchmarkProfit spec c B_ed =
+      A.expectedEditionValue spec β - c * A.expectedAggregateBid β - (spec.price - c) * B_ed :=
+  @MathEconLib.Auction.bundling_revenue_gain
+
+-- Algebraic profit formula: maximum and uniqueness over all real prices.
+example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ,
+    MathEconLib.AllPurchase.sellerProfitInterior φbar α c M n p ≤
+      MathEconLib.AllPurchase.sellerProfitInterior φbar α c M n
+        (MathEconLib.AllPurchase.optimalPriceInterior φbar c α M) :=
+  @MathEconLib.AllPurchase.sellerProfitInterior_le_at_optimal
+
+example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ,
+    (MathEconLib.AllPurchase.sellerProfitInterior φbar α c M n p =
+      MathEconLib.AllPurchase.sellerProfitInterior φbar α c M n
+        (MathEconLib.AllPurchase.optimalPriceInterior φbar c α M)) ↔
+      p = MathEconLib.AllPurchase.optimalPriceInterior φbar c α M :=
+  @MathEconLib.AllPurchase.sellerProfitInterior_eq_at_optimal_iff
+
+-- Edition-welfare bound and moment identity over supplied real parameters.
+example : ∀ φbar c α : ℝ, 0 < α → ∀ B : ℝ,
+    MathEconLib.AllPurchase.editionWelfare φbar c α B ≤
+      MathEconLib.AllPurchase.firstBestEditionSurplus φbar c α :=
+  @MathEconLib.AllPurchase.editionWelfare_le_firstBest
+
+example : ∀ φbar c α EB EB2 : ℝ,
+    MathEconLib.AllPurchase.editionWelfare φbar c α EB -
+      MathEconLib.AllPurchase.bundledEditionWelfareMoments φbar c α EB EB2 = α * (EB2 - EB ^ 2) :=
+  @MathEconLib.AllPurchase.editionWelfare_mean_sub_bundled
+
+-- Auction welfare bridge needs aggregate quantity and its square to be integrable.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    Integrable (A.toAuction.aggregateBid β) volume →
+      Integrable (fun ω ↦ (A.toAuction.aggregateBid β ω) ^ 2) volume →
+        A.bundledEditionWelfare β c =
+          A.toAuction.expectedEditionValue A.spec β - c * A.toAuction.expectedAggregateBid β :=
+  @MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq
+
 -- Algebraic welfare-gap identity over supplied values, motivated by Proposition 6.13.
 -- Equilibrium interpretation and nonnegativity of the two gaps require additional results.
 example : ∀ φbar c α B_ed WC : ℝ,
@@ -333,3 +451,30 @@ example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w}
     [∀ i : ι, Nonempty (A i)] [Finite O],
     ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a :=
   @MathEconLib.GameTheory.Game.exists_isNashEquilibrium_of_finite
+
+-- Pure existence preserves independent player, action, outcome, and ambient-vector universes.
+universe uE
+
+example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w}
+    (G : MathEconLib.GameTheory.Game A O) (P : MathEconLib.GameTheory.PayoffStructure O ι)
+    [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
+    [TopologicalSpace O] [G.Continuous] [P.Continuous] [Finite ι] [DecidableEq ι]
+    {E : ι → Type uE} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)]
+    [∀ i, TopologicalSpace (E i)] [∀ i, IsTopologicalAddGroup (E i)]
+    [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)] [∀ i, LocallyConvexSpace ℝ (E i)]
+    {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (_ : ∀ i, Convex ℝ (k i))
+    (_ : ∀ a i, QuasiconcaveOn ℝ (k i) (Subtype.val.extend
+      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm) 0)),
+    ∃ a, G.IsNashEquilibrium P a :=
+  @MathEconLib.GameTheory.Game.exists_isNashEquilibrium_of_quasiconcaveOn.{u, v, w, uE}
+
+-- Compact mixed existence retains the expected-payoff continuity hypothesis.
+example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w}
+    (G : MathEconLib.GameTheory.Game A O) (P : MathEconLib.GameTheory.PayoffStructure O ι)
+    [Fintype ι] [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
+    [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)]
+    [∀ i, Nonempty (A i)] [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
+    [∀ i, BorelSpace (A i)] [BorelSpace O] [G.Continuous] [P.Continuous]
+    [P.toExpected.Continuous],
+    ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a :=
+  @MathEconLib.GameTheory.Game.exists_isNashEquilibrium_of_isCompact.{u, v, w}
