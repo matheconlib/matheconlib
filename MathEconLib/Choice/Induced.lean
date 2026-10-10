@@ -83,6 +83,31 @@ def ofBundleOrder
         ∀ c, bundle c ⊆ Y → pref.le c b :=
   Iff.rfl
 
+/-- Greatest feasible indices encode both feasibility and preference maximality.
+The locally installed order is the supplied preference order, not set inclusion. -/
+theorem isGreatest_feasibleBundle_iff
+    (pref : LinearOrder β) (bundle : β ↪ Set α)
+    {Y : Set α} {b : β} :
+    letI := pref
+    IsGreatest {c : β | bundle c ⊆ Y} b ↔
+      bundle b ⊆ Y ∧ ∀ c, bundle c ⊆ Y → pref.le c b :=
+  Iff.rfl
+
+/-- Membership in preference-induced choice is witnessed by a greatest feasible
+index. If no such index exists, the choice is empty. -/
+theorem mem_ofBundleOrder_iff_exists_isGreatest
+    (pref : LinearOrder β) (bundle : β ↪ Set α)
+    {Y : Set α} {x : α} :
+    letI := pref
+    x ∈ ofBundleOrder pref bundle Y ↔
+      ∃ b, IsGreatest {c : β | bundle c ⊆ Y} b ∧ x ∈ bundle b := by
+  letI := pref
+  constructor
+  · rintro ⟨b, hb, hx, hmax⟩
+    exact ⟨b, ⟨hb, hmax⟩, hx⟩
+  · rintro ⟨b, ⟨hb, hmax⟩, hx⟩
+    exact ⟨b, hb, hx, hmax⟩
+
 /-- If a greatest feasible bundle exists, it is exactly the chosen set. -/
 theorem ofBundleOrder_eq_of_max
     (pref : LinearOrder β) (bundle : β ↪ Set α)
@@ -100,6 +125,14 @@ theorem ofBundleOrder_eq_of_max
   · intro hx
     exact ⟨b, hb, hx, hmax⟩
 
+/-- A standard greatest-element certificate identifies the chosen bundle. -/
+theorem ofBundleOrder_eq_of_isGreatest
+    (pref : LinearOrder β) (bundle : β ↪ Set α)
+    {Y : Set α} {b : β}
+    (hb : letI := pref; IsGreatest {c : β | bundle c ⊆ Y} b) :
+    ofBundleOrder pref bundle Y = bundle b :=
+  ofBundleOrder_eq_of_max pref bundle hb.1 hb.2
+
 /-- A finite menu has only finitely many represented feasible bundles.
 If at least one is feasible, a greatest one exists. -/
 theorem exists_greatest_bundle_of_finite
@@ -113,6 +146,16 @@ theorem exists_greatest_bundle_of_finite
     hY.finite_subsets.preimage_embedding bundle
   exact Set.exists_max_image
     {b : β | bundle b ⊆ Y} id hfinite hne
+
+/-- A nonempty family of feasible represented bundles on a finite menu has a
+greatest index under the supplied preference order. -/
+theorem exists_isGreatest_bundle_of_finite
+    (pref : LinearOrder β) (bundle : β ↪ Set α)
+    {Y : Set α} (hY : Y.Finite)
+    (hne : ∃ b, bundle b ⊆ Y) :
+    letI := pref
+    ∃ b, IsGreatest {c : β | bundle c ⊆ Y} b :=
+  exists_greatest_bundle_of_finite pref bundle hY hne
 
 /-- IRC at a finite menu, for an arbitrary represented family of bundles.
 
