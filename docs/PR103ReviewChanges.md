@@ -44,6 +44,10 @@ were added alongside the new public APIs.
 | [Dan suggestion 2: locality proof elaboration](https://github.com/AxiomMath/auctionlib/pull/103#issuecomment-6085033992) | [92cd6ad](https://github.com/AxiomMath/auctionlib/commit/92cd6ad6dd4348d55266d525db3ba2e2f5c9ee2a) | fix(matching): make locality proof congruences explicit |
 | [Dan suggestion 1: stable outcome accessor elaboration](https://github.com/AxiomMath/auctionlib/pull/103#issuecomment-6085033992) | [1f3d813](https://github.com/AxiomMath/auctionlib/commit/1f3d8132f33bbe2320972da11fb56d8ab786285c) | fix(matching): restore stable outcome field notation |
 
+The subsequent [checklist commit](https://github.com/AxiomMath/auctionlib/commit/5e7cf3ce95aa5899f11da3c9f6c66fcc8d02a317)
+records the completed build and these follow-ups. The later published-survey
+citation update is described under Citation disposition below.
+
 The final three fixes address concrete Lean errors found while compiling the
 complete series: an explicit pigeonhole import, typed locality congruences, and
 stable-outcome accessor wrappers. They retain the theorem statements and
@@ -65,11 +69,20 @@ was preserved. Its tree was identical to the preceding import fix.
 
 ## Citation disposition
 
-The challenged 2010 definitions and the dated 2016 manuscripts were checked.
-The exact numbered 2025 survey statements remain unverified because full text
-was inaccessible. Source references now use the checked editions; see
-[MatchingReferences.md](MatchingReferences.md). This substitution does not claim
-that the inaccessible survey-number comparison has been completed.
+The supplied published 2025 chapter has now been checked directly. The exact
+survey definition, lemma and theorem locators are recorded in
+[MatchingReferences.md](MatchingReferences.md), including the distinction
+between its many-to-one and many-to-many results. The chapter supplies published
+references for the completion definitions and example previously mapped to the
+2016 Hidden Substitutes manuscript. The map also flags the apparent printed
+wording error in Theorem 3.3 and preserves the finite-domain and IRC qualifications.
+
+HK2010's published definitions and Litvakov's published Russian hull formula
+have been checked. Exact published-article locators for Hatfield–Kominers (2017),
+Zhang (2016) and the Monjardet–Raderanirina (2004) background reference remain
+listed for follow-up. Manuscript numbering is not being relabeled as published
+numbering. This citation follow-up updates Markdown only; the validated Lean
+source remains unchanged.
 
 ## Validation
 
