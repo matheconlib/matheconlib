@@ -53,7 +53,7 @@ Chapter 5, Handbook of the Economics of Matching 2 (2025), 409–487,
 DOI 10.1016/bs.hesmat.2025.10.005. See p. 413 and footnote 10 for the
 standing IRC assumption; Definition 2.1 and the following rejection-function
 discussion, p. 414, for substitutability; Definition 2.2, p. 415, for
-aggregate demand; and footnote 16, p. 414, for path independence. Unit demand
+the law of aggregate demand; and footnote 16, p. 414, for path independence. Unit demand
 is discussed on p. 413. The chapter's domains are finite, whereas the
 definitions here have the scope stated above.
 
@@ -123,7 +123,7 @@ theorem FiniteValued.of_le {D : ChoiceFunction α}
     (hD : D.FiniteValued) (hCD : C ≤ D) : C.FiniteValued :=
   fun Y => (hD Y).subset (hCD Y)
 
-/-- Apply finite-menu aggregate demand with an explicit finite larger menu. -/
+/-- Apply the law of aggregate demand with an explicitly finite larger menu. -/
 theorem SizeMonotone.ncard_le_of_finite (hC : C.SizeMonotone)
     {Y Z : Set α} (hZ : Z.Finite) (hYZ : Y ⊆ Z) :
     (C Y).ncard ≤ (C Z).ncard :=
@@ -135,7 +135,7 @@ theorem SizeMonotone.ncard_le [Finite α] (hC : C.SizeMonotone)
     (C Y).ncard ≤ (C Z).ncard :=
   hC (Set.toFinite Z) hYZ
 
-/-- On a finite type, finite-menu aggregate demand is the usual
+/-- On a finite type, the law of aggregate demand is the usual
 unrestricted natural-cardinality inequality. -/
 theorem sizeMonotone_iff_ncard [Finite α] :
     C.SizeMonotone ↔
@@ -180,9 +180,9 @@ theorem substitutable_iff_chernoff :
       (hch (Set.insert_subset_insert hYZ)
         ⟨hxZ, Set.mem_insert _ _⟩)
 
-/-- Substitutability and aggregate demand imply IRC whenever the original
-menu is finite. Substitutability gives `C Y ⊆ C Z`, while aggregate demand
-gives the reverse cardinality inequality. -/
+/-- Substitutability and the law of aggregate demand imply IRC whenever the
+original menu is finite. Substitutability gives `C Y ⊆ C Z`, while the law of
+aggregate demand gives the reverse cardinality inequality. -/
 theorem Substitutable.consistent_on_finite_menu
     (hsub : C.Substitutable) (hload : C.SizeMonotone)
     {Y Z : Set α} (hY : Y.Finite) (hCY : C Y ⊆ Z) (hZY : Z ⊆ Y) :

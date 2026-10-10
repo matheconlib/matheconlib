@@ -397,7 +397,7 @@ theorem consistent_ofOptionLinearOrder [Finite α]
     (ofOptionLinearOrder pref).Consistent :=
   consistent_ofBundleOrder pref optionBundle
 
-/-- Aggregate demand is monotone on finite menus. -/
+/-- The law of aggregate demand holds on finite menus. -/
 theorem sizeMonotone_ofOptionLinearOrder
     (pref : LinearOrder (Option α)) :
     (ofOptionLinearOrder pref).SizeMonotone := by

@@ -164,14 +164,14 @@ theorem exists_forall_insert_insert_consistent_not_substitutable :
     consistent_infiniteOrEmpty ℕ,
     not_substitutable_infiniteOrEmpty⟩
 
-/-! ### Why aggregate demand is restricted to finite menus -/
+/-! ### Why the law of aggregate demand is restricted to finite menus -/
 
 /-- The choice function accepting every available alternative. -/
 def acceptAll (α : Type*) : ChoiceFunction α where
   toFun Y := Y
   choose_subset _ := fun _ hx => hx
 
-/-- Accepting all alternatives satisfies aggregate demand on finite menus,
+/-- Accepting all alternatives satisfies the law of aggregate demand on finite menus,
 even when the universe of alternatives is infinite. -/
 theorem sizeMonotone_acceptAll (α : Type*) :
     (acceptAll α).SizeMonotone := by

@@ -97,14 +97,14 @@ The raw fixed-point lattice requires substitutability alone. Its stable-outcome
 interpretation and the full correspondence use substitutability and set-form
 IRC, without finiteness. Individual lemmas can need less:
 `outcomeOf_stateOf_of_stable` needs neither, and `indRational_outcomeOf`
-needs IRC but not substitutability. No aggregate-demand assumption is needed
+needs IRC but not substitutability. The law of aggregate demand is not needed
 for the lattice or stable existence. Nor does the lattice statement say that
 ambient unions and intersections of fixed points are always fixed points.
 In the survey's terminology, Lean's `p ≤ q` means that `q` is seller-superior
 to `p`.
 
 The public `ruralHospitals` theorem assumes a finite contract type,
-substitutability and aggregate demand; it derives consistency. It asserts
+substitutability and the law of aggregate demand; it derives consistency. It asserts
 invariance of each agent's contract count, not equality of partner sets.
 The stronger intermediate counting lemma only requires the compared outcomes
 to be finite, but is not an unrestricted infinite-market rural hospitals
@@ -191,7 +191,7 @@ The supplied published article was checked directly.
 | `stateOf`, `outcomeOf`, correspondence, uniqueness and `stableEquivFixedPoints` | Lemma 1, p. 87; proof pp. 91–92 |
 | Fixed-point lattice and stable existence | Theorem 1, p. 87; proof p. 92; see the order qualification below |
 | Optimal/pessimal endpoints and opposition of interests | Paragraph immediately following Theorem 1, p. 87 |
-| `SizeMonotone` | §4.2, unnumbered aggregate-demand definition, p. 88 |
+| `SizeMonotone` | §4.2, unnumbered definition of the law of aggregate demand, p. 88 |
 | `ruralHospitals` and agent contract-count invariance | Theorem 4, Appendix B, p. 95; discussion §4.2, p. 88 |
 
 The published operator matches Lean with doctors as sellers and hospitals as
@@ -218,7 +218,7 @@ from primitive preferences to that order. The survey's Theorem 3.2 is the
 closer reference for the choice-order statement. Proposition 2 also compares
 an additional many-to-one stability notion not formalized here; Lean proves
 its stable/pairwise-stable portion without IRC or finiteness. Theorem 4
-concerns contract counts under substitutability and aggregate demand;
+concerns contract counts under substitutability and the law of aggregate demand;
 Lean's public counting theorem has the finite-contract scope described above.
 
 The Lean docstrings now use the published key `HKContractDesign2017`.

@@ -10,8 +10,8 @@ The preference relations and acceptability conditions are defined first, then
 choice on partner pairs is obtained by mapping the general optional-partner
 choice function along the corresponding partner embedding.
 
-Unit demand, substitutability, and finite-menu aggregate demand hold without
-population finiteness. IRC is proved for finite partner types. On an infinite
+Unit demand, substitutability, and the law of aggregate demand on finite menus
+hold without population finiteness. IRC is proved for finite partner types. On an infinite
 menu without a greatest acceptable option, the generic choice is empty, so no
 global IRC claim is made on arbitrary partner types. Finite menu maxima give
 the realization used by the proposal algorithms.

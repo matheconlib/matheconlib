@@ -6,7 +6,8 @@ import MathEconLib.ForMathlib.Order.FixedPointLattice
 
 Under substitutability and IRC, the fixed-point order corresponds to unanimous
 seller choice and reverse unanimous buyer choice. This yields both
-side-optimality results without finiteness, unit demand, or aggregate demand.
+side-optimality results without finiteness, unit demand, or the law of
+aggregate demand.
 The complete lattice is carried by the operator's fixed points;
 `stableEquivFixedPoints` identifies this carrier with stable contract sets.
 

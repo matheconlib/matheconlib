@@ -18,8 +18,8 @@ so that the extremal outcome used for comparison is also finite.
 HKContractDesign2017: John William Hatfield and Scott Duke Kominers,
 *Contract design and stability in many-to-many matching*, Games and Economic
 Behavior **101** (2017), 78–97. Theorem 4, Appendix B (p. 95), gives
-contract-count invariance under substitutability and aggregate demand;
-§4.2 (p. 88) discusses the result and defines aggregate demand.
+contract-count invariance under substitutability and the law of aggregate demand;
+§4.2 (p. 88) discusses the result and defines the law of aggregate demand.
 https://doi.org/10.1016/j.geb.2016.01.002
 
 The article uses preference-induced choices. Here the public theorem assumes
@@ -56,7 +56,7 @@ theorem ncard_eq_sum_sellerSide {A : Set X} (hA : A.Finite) (T : Finset S)
   hA.ncard_eq_sum_ncard_fiber M.seller T hT
 
 /-- The counting core: `|A| = Σ_b |A_b| = Σ_s |A_s|` squeezes the two
-one-sided law-of-aggregate-demand inequalities into equalities. -/
+one-sided inequalities from the law of aggregate demand into equalities. -/
 theorem ncard_sides_eq_of_chosen (hload : M.SizeMonotone) {A A₀ : Set X}
     (hAfin : A.Finite) (hA₀fin : A₀.Finite)
     (hA : M.IndRational A) (hA₀ : M.IndRational A₀)

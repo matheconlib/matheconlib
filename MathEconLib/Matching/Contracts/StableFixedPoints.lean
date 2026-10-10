@@ -552,7 +552,7 @@ theorem exists_stable (hsub : M.Substitutable) (hcons : M.Consistent) :
     ∃ A : Set X, M.Stable A :=
   ⟨M.sellerOptimal hsub hcons, M.stable_sellerOptimal hsub hcons⟩
 
-/-- On finite contract types, aggregate demand supplies the IRC hypothesis. -/
+/-- On finite contract types, the law of aggregate demand supplies the IRC hypothesis. -/
 theorem exists_stable_of_sizeMonotone [Finite X]
     (hsub : M.Substitutable) (hload : M.SizeMonotone) :
     ∃ A : Set X, M.Stable A :=

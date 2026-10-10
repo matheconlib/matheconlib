@@ -143,7 +143,7 @@ finite menus. -/
 def SizeMonotone : Prop :=
   (∀ b, (M.choiceB b).SizeMonotone) ∧ ∀ s, (M.choiceS s).SizeMonotone
 
-/-- In a finite contract market, substitutability and aggregate demand
+/-- In a finite contract market, substitutability and the law of aggregate demand
 already imply IRC on both sides. No finiteness of the agent types is needed. -/
 theorem consistent_of_substitutable_sizeMonotone [Finite X]
     (hsub : M.Substitutable) (hload : M.SizeMonotone) : M.Consistent :=
