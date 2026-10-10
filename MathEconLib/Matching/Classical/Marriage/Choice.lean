@@ -155,9 +155,8 @@ theorem local_toMarket : mkt.toMarket.Local := by
       ext m
       change ((m, w) ∈ Y ∧ w = w) ↔ (m, w) ∈ Y
       exact and_iff_left rfl
-    change _ '' _ ((partnerEmbeddingW w) ⁻¹' (mkt.toMarket.buyerSide w Y)) =
-      _ '' _ ((partnerEmbeddingW w) ⁻¹' Y)
-    rw [hmenu]
+    exact congrArg (fun A : Set M =>
+      (partnerEmbeddingW w) '' (ChoiceFunction.ofLinearOrder (mkt.prefW w)) A) hmenu
   · intro m Y
     change (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m)
         (mkt.toMarket.sellerSide m Y) =
@@ -167,9 +166,8 @@ theorem local_toMarket : mkt.toMarket.Local := by
       ext w
       change ((m, w) ∈ Y ∧ m = m) ↔ (m, w) ∈ Y
       exact and_iff_left rfl
-    change _ '' _ ((partnerEmbeddingM m) ⁻¹' (mkt.toMarket.sellerSide m Y)) =
-      _ '' _ ((partnerEmbeddingM m) ⁻¹' Y)
-    rw [hmenu]
+    exact congrArg (fun A : Set W =>
+      (partnerEmbeddingM m) '' (ChoiceFunction.ofLinearOrder (mkt.prefM m)) A) hmenu
 
 theorem consistent_toMarket [Finite M] [Finite W] : mkt.toMarket.Consistent :=
   ⟨mkt.consistent_inducedChoiceW, mkt.consistent_inducedChoiceM⟩
