@@ -78,11 +78,25 @@ references for the completion definitions and example previously mapped to the
 wording error in Theorem 3.3 and preserves the finite-domain and IRC qualifications.
 
 HK2010's published definitions and Litvakov's published Russian hull formula
-have been checked. Exact published-article locators for Hatfield–Kominers (2017),
-Zhang (2016) and the Monjardet–Raderanirina (2004) background reference remain
-listed for follow-up. Manuscript numbering is not being relabeled as published
-numbering. This citation follow-up updates Markdown only; the validated Lean
-source remains unchanged.
+have been checked. The three subsequently supplied published articles have
+also been checked directly: Hatfield–Kominers (2017), Zhang (2016) and
+Monjardet–Raderanirina (2004). The reference map records their exact locators
+and the scope of each comparison. No further PDFs are needed for this set of
+checks; Litvakov's English translation is optional for English pagination.
+
+Hatfield–Kominers' published Theorem 4, p. 95, supplies the unambiguous
+many-to-many rural-hospitals reference. The paper's Theorem 1 preference-order
+lattice statement is distinguished from Lean's choice-order formulation.
+Zhang's Lemma 2, Proposition 2 and §5 repair proof are all on p. 233; his paper explicitly
+does not establish an IRC completion. The map separates that bare completion
+result from Lean's IRC and finite-valued strengthenings and repair schedule
+results. Monjardet–Raderanirina is cited for finite choice-lattice background,
+with Litvakov retained as the direct hull-formula reference.
+
+The published `HKContractDesign2017` locators were checked independently;
+the earlier `HKContractDesign2016` key in Lean docstrings still identifies the
+manuscript. These citation follow-ups update Markdown only; the validated
+Lean source remains unchanged.
 
 ## Validation
 

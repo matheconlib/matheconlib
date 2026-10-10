@@ -115,9 +115,10 @@ later general trading networks.
 matching with contracts,” although it is in §3.2 and the immediately preceding
 paragraph explicitly generalizes the result to many-to-many. This wording was
 visually checked in the published PDF and appears to be a typographical
-carry-over. Cite §3.2 together with Theorem 3.3 and retain this caveat until
-checked against the original published article; do not silently change the
-printed hypothesis.
+carry-over. The original published Hatfield–Kominers (2017), Theorem 4,
+Appendix B, p. 95, has now been checked and explicitly gives the many-to-many
+result. Use that unambiguous reference alongside §3.2 and Theorem 3.3;
+do not silently change the survey's printed hypothesis.
 
 ### Replacing the earlier completion reference
 
@@ -169,20 +170,142 @@ The locator belongs to the Russian original; English pagination has not been
 checked. This verifies the formula attribution, not every historical
 infinite-domain claim or Lean's separate IRC/completion theorems.
 
-## Published articles still needed for exact locator checks
+## Hatfield–Kominers (2017): HKContractDesign2017
 
-| Published reference | What remains to check |
+John William Hatfield and Scott Duke Kominers, *Contract design and stability
+in many-to-many matching*, Games and Economic Behavior **101** (2017), 78–97.
+[Published article](https://doi.org/10.1016/j.geb.2016.01.002).
+Use the journal year 2017, despite the article's online publication in 2016.
+The supplied published article was checked directly.
+
+| Lean declaration or construction | Checked published locator |
 | --- | --- |
-| John William Hatfield and Scott Duke Kominers, *Contract design and stability in many-to-many matching*, Games and Economic Behavior **101** (2017), 78–97. [DOI](https://doi.org/10.1016/j.geb.2016.01.002) | Highest priority: published definition/proposition/lemma numbers for stability, the fixed-point correspondence and the lattice, and the original rural hospitals statement. Earlier source comments use the February 2016 manuscript key `HKContractDesign2016`; its page and theorem numbers have not been transferred to the published article. |
-| Jun Zhang, *On sufficient conditions for the existence of stable matchings with contracts*, Economics Letters **145** (2016), 230–234. [DOI](https://doi.org/10.1016/j.econlet.2016.06.029) | Check the published Lemma 2, Proposition 2 and §5 against the unilateral-to-completion and repair citations. The survey verifies the broad attribution, not those individual locators. |
-| Bernard Monjardet and Vololonirina Raderanirina, *Lattices of choice functions and consensus problems*, Social Choice and Welfare **23** (2004), 349–382. [DOI](https://doi.org/10.1007/s00355-003-0251-9) | Lower priority: check the precise choice-lattice/closure discussion behind the existing background citation. No numbered theorem from this paper is presently claimed in the source. |
+| `Market`, incidence maps and supported choices | §2, p. 80 |
+| `Substitutable.not_mem_insert_insert` | Definition 1, p. 81 |
+| `rejected`; monotone-rejection characterization | §2, p. 80; paragraph following Definition 1, p. 81 |
+| `IndRational`, `Blocks`, `Stable` | Definition 2, p. 81 |
+| `PairwiseStable` | Unnumbered paragraph following Definition 2, p. 81 |
+| Stability/pairwise-stability equivalence | Proposition 2, p. 81; proof and Lemma 2, Appendix A, p. 91 |
+| `Consistent` | Footnote 8, p. 80; Definition 6 and footnote 49, Appendix A, p. 91 |
+| `toSellers`, `toBuyers`, `daFun` | §4, displayed operator, p. 86 |
+| `stateOf`, `outcomeOf`, correspondence, uniqueness and `stableEquivFixedPoints` | Lemma 1, p. 87; proof pp. 91–92 |
+| Fixed-point lattice and stable existence | Theorem 1, p. 87; proof p. 92; see the order qualification below |
+| Optimal/pessimal endpoints and opposition of interests | Paragraph immediately following Theorem 1, p. 87 |
+| `SizeMonotone` | §4.2, unnumbered aggregate-demand definition, p. 88 |
+| `ruralHospitals` and agent contract-count invariance | Theorem 4, Appendix B, p. 95; discussion §4.2, p. 88 |
 
-Published full text is already available for HK2010, the 2025 survey and
-Litvakov's Russian original. The English translation of Litvakov is optional
-if an English-page locator is preferred. Published metadata has been checked
-for the three articles in the table, but their published full-text locators
-remain pending. Earlier manuscript locators are not presented as published
-ones.
+The published operator matches Lean with doctors as sellers and hospitals as
+buyers: its state `(Xᴰ, Xᴴ)` is `(Xs, Xb)`, with the first coordinate ordered
+by inclusion and the second by reverse inclusion. Its aggregate side-choice
+test agrees with Lean's endpoint-choice test because choices are supported
+on the agent's own contracts. The definition on p. 86 is the reference for
+the operator; some coordinate indices in the proof on p. 92 are inconsistent
+with that definition.
+
+The article uses choices induced by strict preferences. IRC is consequently
+implicit in its model and explicitly used in the proof of Lemma 1;
+substitutability is assumed in the paragraph introducing that lemma on p. 86.
+Definition 6 states single-deletion IRC. Lean uses set-form IRC and proves
+the choice-function correspondence for arbitrary agent and contract types.
+Page 80 explicitly makes the doctor and hospital sets finite, but introduces
+the general contract universe simply as a set; finite contract terms appear
+in its concrete product example. These passages do not by themselves justify
+an unrestricted infinite-market counting claim.
+
+Theorem 1 orders stable outcomes by unanimous doctor **preference**. Lean
+proves the choice/Blair-order lattice and does not formalize a general bridge
+from primitive preferences to that order. The survey's Theorem 3.2 is the
+closer reference for the choice-order statement. Proposition 2 also compares
+an additional many-to-one stability notion not formalized here; Lean proves
+its stable/pairwise-stable portion without IRC or finiteness. Theorem 4
+concerns contract counts under substitutability and aggregate demand;
+Lean's public counting theorem has the finite-contract scope described above.
+
+Earlier Lean docstrings retain the manuscript key `HKContractDesign2016`.
+The independently checked published replacements are Definition 2 and
+Proposition 2 on p. 81, and Lemma 1 and Theorem 1 on p. 87. The numbers happen
+to agree; the manuscript page locators do not. This Markdown map uses the new
+published key `HKContractDesign2017` without redefining the old key.
+
+## Zhang (2016)
+
+Jun Zhang, *On sufficient conditions for the existence of stable matchings
+with contracts*, Economics Letters **145** (2016), 230–234.
+[Published article](https://doi.org/10.1016/j.econlet.2016.06.029).
+The supplied published article was checked directly.
+
+| Lean declaration or construction | Checked published locator and relationship |
+| --- | --- |
+| `Consistent` | Definition 2, p. 231, states single-deletion IRC; Lean uses set-form IRC |
+| `IsCompletionOf`; `SubstitutablyCompletable` | Definition 6, p. 232; neither displayed definition includes IRC |
+| `UnilaterallySubstitutable` | Definition 7, p. 233; the same single-addition condition after renaming the added and rejected contracts |
+| `UnilaterallySubstitutable.exists_chosen_counterparty_of_finite_choice` | Extends Lemma 2, p. 233, from a one-addition comparison to arbitrary nested menus |
+| `UnilaterallySubstitutable.substitutablyCompletable` | Proposition 2, p. 233: unilateral substitutes and IRC imply bare substitutable completability in the paper's finite, unitary-choice setting |
+| `substitutablyCompletable_of_finiteValued`; `substituteHull_isCompletionOf` | Strengthen the finite-domain implication of Proposition 2 and identify a canonical completion |
+| `hasConsistentSubstitutableCompletion` and its finite-valued and buyerwise forms | Additional Lean results: the completion also satisfies IRC |
+| `substituteRepair` | Accumulating update in the proof of Proposition 2, §5, p. 233 |
+| Repair convergence to the hull, schedule independence and terminal IRC | Additional Lean results for that accumulating repair interpretation |
+
+The paper's §2, p. 231, assumes finite firms, workers and contracts, and
+unitary firm choices. Lean makes counterparty feasibility explicit, needs
+no finite counterparty type, and replaces finite contracts by finite chosen
+sets in its finite-valued extension. Set-form IRC agrees with single-deletion
+IRC in the paper's finite domain, but is stronger on infinite menus.
+Lean's nested-menu counterpart of Lemma 2 requires finite and feasible choice
+from the upper menu; it is not a verbatim formalization of the displayed
+one-addition lemma.
+
+**IRC qualification.** The final paragraphs of §§5 and 6, both on p. 233,
+explicitly say that Zhang's constructed completion may fail IRC and leave
+the existence of an IRC completion open. Proposition 2 therefore supports
+the bare completion conclusion only. Lean's hull IRC theorem, the resulting
+consistent completions, its enlargement-qualified converses and equivalences,
+and leastness among enlarging completions are separate formalized results.
+Definition 6 does not require pointwise enlargement. This comparison does
+not make a claim about novelty or the subsequent literature.
+
+For smaller `Y ⊆ Z`, Zhang's elementary accumulating update translates to
+`C Y ∪ (Y ∩ C Z)`. His proof processes menu cardinalities in descending
+order. Lean formalizes a repair relation and proves schedule independence
+and convergence to the hull for that relation; the paper does not state
+those general schedule or endpoint results. IRC is a property of the final
+hull under the stated hypotheses, not a claimed invariant of every repair.
+
+## Monjardet–Raderanirina (2004)
+
+Bernard Monjardet and Vololonirina Raderanirina, *Lattices of choice functions
+and consensus problems*, Social Choice and Welfare **23** (2004), 349–382.
+[Published article](https://doi.org/10.1007/s00355-003-0251-9).
+The supplied published article was checked directly.
+
+| Choice-theoretic background | Checked published locator |
+| --- | --- |
+| Finite underlying set | §2, pp. 351–352; §3.1, p. 355 |
+| Choice functions and pointwise inclusion | Definitions 10 and 11, p. 355 |
+| Boolean lattice of all choice functions under pointwise union/intersection | Proposition 1, p. 356 |
+| Heredity, equivalent to set-form substitutability | §3.2, unnumbered definition, p. 356 |
+| Distributive sublattice of hereditary choices | Proposition 2, p. 356 |
+| Hereditary generators and their union representation | Definition 13 and proof of Proposition 3, p. 357 |
+| Outcast/Nash axiom, equivalent to set-form IRC | §4.1, unnumbered definition, p. 364 |
+| Path independence iff heredity and outcast | Unnumbered statements on pp. 350 and 380 |
+
+The proof of Proposition 3 represents a **hereditary** choice function as a
+union of generators indexed by its choices on all menus. Applying that
+expression to an arbitrary choice function yields the substitute-hull
+formula, but this arbitrary-input construction is an inference from the
+paper's ingredients, not its displayed theorem. Litvakov remains the direct
+formula attribution. Monjardet–Raderanirina supplies finite lattice background,
+not an attribution for Lean's arbitrary-type closure operator, hull IRC
+preservation or completion theorems.
+
+## Full-text audit status
+
+The requested published locators have now been checked for HK2010, the 2025
+survey, Hatfield–Kominers (2017), Zhang (2016), Monjardet–Raderanirina (2004)
+and Litvakov's Russian original. No further PDFs are needed for these checks.
+The English translation of Litvakov remains optional if an English-page
+locator is preferred. The background entries below identify published
+versions without claiming a full-text theorem audit of those additional works.
 
 ## Other published background references
 
@@ -197,9 +320,13 @@ statements or require additional PDFs for the citation corrections above.
 | Charles R. Plott (1973), *Path Independence, Rationality, and Social Choice* | Econometrica **41**(6), 1075–1091. [DOI](https://doi.org/10.2307/1914037) |
 | Orhan Aygün and Tayfun Sönmez (2013), *Matching with Contracts: Comment* | American Economic Review **103**(5), 2050–2051. [DOI](https://doi.org/10.1257/aer.103.5.2050) |
 | Ahmet Alkan and David Gale (2003), *Stable schedule matching under revealed preference* | Journal of Economic Theory **112**(2), 289–306. [DOI](https://doi.org/10.1016/S0022-0531(03)00096-6) |
+| Sangram Vilasrao Kadam (2017), *Unilateral substitutability implies substitutable completability in many-to-one matching with contracts* | Games and Economic Behavior **102**, 56–68. [DOI](https://doi.org/10.1016/j.geb.2016.10.002) |
 
 Plott's article is in issue 6; the survey bibliography's issue 1 is incorrect.
 The Aizerman–Malishevski volume, issue and pages were cross-checked against the
 published chapter and bibliographic references; the complete IEEE metadata
 page was inaccessible. These background entries are distinct from the
-full-text statement checks above.
+full-text statement checks above. Kadam's published metadata and
+preference-based completion attribution were checked against the
+[publisher abstract](https://www.sciencedirect.com/science/article/pii/S0899825616301130);
+no numbered-statement or proof audit is claimed for that background citation.
