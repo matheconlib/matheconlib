@@ -2,11 +2,12 @@ import MathEconLib.Matching.Classical.Marriage.Optimality
 import MathEconLib.Matching.Contracts.Iteration
 
 /-!
-# Generalized deferred acceptance, projected to marriage markets
+# Fixed-point convergence in marriage markets
 
-Top and bottom iteration specialize to man- and woman-proposing generalized
-DA. Finite convergence identifies their outcomes with the matching extrema.
-The classical DA algorithm and its executable refinement are in
+Top and bottom iteration of the contracts deferred-acceptance operator
+specialize to marriage markets. Finite convergence identifies their outcomes
+with the man- and woman-optimal stable matchings. The classical
+deferred-acceptance algorithm and its executable refinement are in
 `Classical.DeferredAcceptance` and `Classical.DeferredAcceptanceFinite`.
 -/
 

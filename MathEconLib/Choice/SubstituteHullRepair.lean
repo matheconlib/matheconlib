@@ -6,10 +6,10 @@ import Mathlib.Data.Fintype.Powerset
 import Mathlib.Logic.Relation
 
 /-!
-# Accumulating repairs converge to the substitute hull
+# Accumulating repairs: terminal rules and finite termination
 
 The elementary choice-rule repair adds `Y ∩ C Z` to the choice from `Y`,
-where `Y ⊆ Z`, retaining every previously chosen contract. A strict repair
+where `Y ⊆ Z`, retaining every previously chosen alternative. A strict repair
 must change the rule. Every finite sequence of repairs starting from `C`
 stays between `C` and `C.substituteHull`; a terminal rule is substitutable
 and therefore equals the hull. On a finite alternative type no infinite

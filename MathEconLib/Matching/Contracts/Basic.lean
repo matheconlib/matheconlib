@@ -1,7 +1,7 @@
 /-
 Matching with contracts, Layer 1: two-sided markets and stability.
 -/
-import MathEconLib.Choice.Basic
+import MathEconLib.Choice.Conditions.Individual
 
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Set.Insert

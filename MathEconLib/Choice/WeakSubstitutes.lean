@@ -1,7 +1,7 @@
 /-
 Matching with contracts: counterparty-relative choice conditions.
 -/
-import MathEconLib.Choice.Basic
+import MathEconLib.Choice.Conditions.Individual
 import MathEconLib.Choice.Induced
 
 /-!

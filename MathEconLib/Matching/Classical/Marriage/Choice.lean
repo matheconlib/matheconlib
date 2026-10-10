@@ -6,7 +6,7 @@ import Mathlib.Data.Finset.Max
 /-!
 # Optional-partner choice as a contracts instance
 
-The contracts model is defined on arbitrary partner types by transporting
+The contracts model is defined on arbitrary partner types by mapping
 `ChoiceFunction.ofLinearOrder` along each agent's partner embedding. Unit demand,
 substitutability, and finite-menu aggregate demand follow from the general choice
 layer without population finiteness. IRC is proved for finite partner types.
@@ -42,11 +42,11 @@ def partnerEmbeddingW (w : W) : M ↪ M × W where
   toFun := fun m => (m, w)
   inj' := fun _ _ h => congrArg Prod.fst h
 
-/-- Optional-partner choice transported to man `m`'s contracts. -/
+/-- Optional-partner choice mapped to man `m`'s contracts. -/
 def inducedChoiceM (m : M) : ChoiceFunction (M × W) :=
   (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m)
 
-/-- Optional-partner choice transported to woman `w`'s contracts. -/
+/-- Optional-partner choice mapped to woman `w`'s contracts. -/
 def inducedChoiceW (w : W) : ChoiceFunction (M × W) :=
   (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w)
 
@@ -143,7 +143,7 @@ def toMarket : Market W M (M × W) where
     mkt.toMarket.choiceS m = mkt.inducedChoiceM m := rfl
 
 /-- Structural optional-partner choice is local on arbitrary partner types.
-This uses the transported menu, without finiteness or an IRC hypothesis. -/
+This uses the menu mapped along the partner embedding, without finiteness or an IRC hypothesis. -/
 theorem local_toMarket : mkt.toMarket.Local := by
   constructor
   · intro w Y

@@ -289,7 +289,7 @@ theorem consistent_ofFeasibleBundleOrder
 
 end CounterpartyFeasibility
 
-/-! ## Unrestricted preferences over sets -/
+/-! ## Linear preferences over all subsets -/
 
 /-- Choice induced by a linear preference order over all sets.
 

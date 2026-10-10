@@ -1,3 +1,4 @@
+import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
 import MathEconLibTest.Choice.PublicImport

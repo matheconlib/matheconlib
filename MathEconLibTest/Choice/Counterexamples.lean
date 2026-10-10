@@ -1,7 +1,7 @@
 /-
 Matching with contracts: counterexamples for the choice layer.
 -/
-import MathEconLib.Choice.Basic
+import MathEconLib.Choice.Conditions.Individual
 
 /-!
 # Choice-layer counterexamples

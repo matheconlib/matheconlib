@@ -26,6 +26,7 @@ import MathEconLib.BidderProblem.TypeDeviationIC
 import MathEconLib.BidderProblem.UniversalIC
 import MathEconLib.Choice
 import MathEconLib.Choice.Basic
+import MathEconLib.Choice.Conditions.Individual
 import MathEconLib.Choice.FiniteOption
 import MathEconLib.Choice.Induced
 import MathEconLib.Choice.Map

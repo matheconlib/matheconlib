@@ -5,7 +5,7 @@ import MathEconLib.Matching.Contracts.Basic
 import MathEconLib.Choice.UnilateralSubstitutabilityImpliesSubstitutableCompletability
 
 /-!
-# A matching with contract markets under weakened substitutability conditions
+# Buyer weak substitutes and completion hypotheses
 
 Buyers are the hospitals/branches and sellers the unit-demand doctors/cadets
 in Hatfield–Kojima (2010). The completion framework follows

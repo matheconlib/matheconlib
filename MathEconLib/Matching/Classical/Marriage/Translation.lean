@@ -352,7 +352,7 @@ theorem stable_matchingOfStable {A : Set (M × W)}
   apply mkt.graphOf_injective
   exact mkt.graphOf_matchingOfStable _
 
-/-! ## Gale–Shapley existence -/
+/-! ## Stable matching existence via contracts -/
 
 /-- Existence of a stable marriage matching. -/
 theorem exists_stableMatching :

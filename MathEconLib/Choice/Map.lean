@@ -1,13 +1,12 @@
-import MathEconLib.Choice.Basic
+import MathEconLib.Choice.Conditions.Individual
 import Mathlib.Order.Hom.Basic
 
 /-!
-# Transport of choice functions
+# Mapping choice functions along embeddings
 
-An embedding transports a choice function to a larger type of alternatives,
-ignoring alternatives outside its range. Transport composes, reflects equality
-and pointwise inclusion, and preserves the regularity properties used by the
-market and classical layers. No preference orders or finite populations are
+An embedding maps a choice function to another type of alternatives,
+ignoring alternatives outside its range. Mapping composes, reflects equality
+and pointwise inclusion, and preserves the optional conditions used below. No preference orders or finite populations are
 needed here; the law of aggregate demand keeps its finite-menu hypothesis.
 -/
 
@@ -19,9 +18,9 @@ namespace ChoiceFunction
 
 variable {α : Type u} {β : Type v} {γ : Type w}
 
-/-! ## Transport along embeddings -/
+/-! ## Mapping along embeddings -/
 
-/-- Transport a choice function along an embedding. Alternatives outside the
+/-- Map a choice function along an embedding. Alternatives outside the
 range of the embedding are ignored. -/
 def map (C : ChoiceFunction α) (e : α ↪ β) : ChoiceFunction β where
   toFun Y := e '' C (e ⁻¹' Y)
@@ -60,7 +59,7 @@ def map (C : ChoiceFunction α) (e : α ↪ β) : ChoiceFunction β where
   · intro hx
     exact ⟨x, hx, rfl⟩
 
-/-- Transporting twice is transport along the composite embedding. -/
+/-- Mapping twice is mapping along the composite embedding. -/
 @[simp] theorem map_map (C : ChoiceFunction α) (e : α ↪ β) (f : β ↪ γ) :
     (C.map e).map f = C.map (e.trans f) := by
   ext Y z
@@ -70,7 +69,7 @@ def map (C : ChoiceFunction α) (e : α ↪ β) : ChoiceFunction β where
   · rintro ⟨x, hx, rfl⟩
     exact ⟨e x, ⟨x, hx, rfl⟩, rfl⟩
 
-/-- Embedding transport preserves and reflects pointwise enlargement. -/
+/-- Mapping along an embedding preserves and reflects pointwise enlargement. -/
 theorem map_le_map_iff (e : α ↪ β) {C D : ChoiceFunction α} :
     C.map e ≤ D.map e ↔ C ≤ D := by
   constructor
@@ -92,7 +91,7 @@ theorem map_injective (e : α ↪ β) :
   · exact (map_le_map_iff e).mp (le_of_eq h)
   · exact (map_le_map_iff e).mp (le_of_eq h.symm)
 
-/-- Transport along an embedding as an order embedding of choice functions.
+/-- Mapping along an embedding as an order embedding of choice functions.
 The order is pointwise inclusion, so this bundles both preservation and
 reflection of pointwise enlargement. -/
 def mapOrderEmbedding (e : α ↪ β) : ChoiceFunction α ↪o ChoiceFunction β where

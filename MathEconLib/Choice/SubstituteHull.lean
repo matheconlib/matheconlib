@@ -1,12 +1,12 @@
 /-
 The least substitutable enlargement of a choice function.
 -/
-import MathEconLib.Choice.Basic
+import MathEconLib.Choice.Conditions.Individual
 import Mathlib.Order.Bounds.Basic
 import Mathlib.Order.Closure
 
 /-!
-# The substitute hull
+# The least substitutable enlargement
 
 `ChoiceFunction.substituteHull` retains an available alternative whenever
 the original choice selects it from some larger menu. This is the classical

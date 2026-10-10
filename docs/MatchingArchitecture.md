@@ -10,7 +10,7 @@ on matching.
 | Layer | Responsibility |
 | --- | --- |
 | `MathEconLib.ForMathlib.Data` and `.Order` submodules | Generic graph, fiber-counting, fixed-point and iteration mathematics |
-| `MathEconLib.Choice` | Abstract choices, induced preferences, transport, hulls, repairs and completion |
+| `MathEconLib.Choice` | Abstract choices, optional conditions, preference-induced choice, mapping, hulls, repairs and completion |
 | `MathEconLib.Matching.Contracts` submodules | Market data, stability, order, counting and generalized iteration |
 | `MathEconLib.Matching.Classical` submodules | Marriage translation, classical algorithms and executable refinement |
 | `MathEconLibTest.Choice` and `.Matching` | Counterexamples, dependency checks and public API clients |
@@ -22,12 +22,26 @@ namespaces. Economic declarations use `MathEconLib.Choice` or
 
 ## Choice interfaces
 
+`Choice.Basic` contains the choice-function structure, pointwise inclusion
+order and rejection primitives. The seven optional conditions and their
+general relationships live in `Choice.Conditions.Individual`. Import this
+module when using consistency, substitutability, the law of aggregate demand,
+unit demand, finite-valuedness, path independence or Chernoff's condition.
+Existing declaration names are unchanged; importing the public `Choice` root
+still exposes them all.
+
+This development was built with reference to matching with contracts, but
+these definitions and results apply to general choice functions. Matching
+markets and preference orders are additional structures, not part of the
+definition of a choice function. The conditions involving a map from
+alternatives to partners are a separate extension; even those need no market.
+
 `ChoiceFunction.substituteHullClosure` packages the existing explicit hull as
 a closure operator on choice functions ordered by pointwise inclusion. Its
 closed elements are exactly the substitutable rules. IRC preservation and
 completion remain separate economic theorems.
 
-`ChoiceFunction.mapOrderEmbedding` packages transport along an embedding.
+`ChoiceFunction.mapOrderEmbedding` packages mapping along an embedding.
 The existing pointwise map and its economic property-preservation lemmas
 remain public.
 
@@ -37,6 +51,48 @@ choice on arbitrary sets remains independent of finite enumeration. The new
 `IsGreatest` interfaces include feasibility and use the explicitly supplied
 preference order. Cardinal utilities are not needed. A menu without a greatest
 represented feasible bundle retains the existing empty fallback.
+
+## Staged module organization
+
+The first stage separates `Choice.Basic` from
+`Choice.Conditions.Individual` and corrects scope descriptions. The following
+stages reorganize existing declarations without changing their mathematical
+assumptions. The destinations below are the agreed plan, not claims that the
+later moves have already occurred.
+
+| Stage | Destination | Contents |
+| --- | --- | --- |
+| 2 | `Choice.Conditions.WithPartners.Basic` | Freshness, unilateral/bilateral substitutability, completion, substitutable completability, and consistent completion definitions |
+| 2 | `Choice.Conditions.WithPartners.Relationships` | Contraction, substitute-hull characterizations and implications between conditions |
+| 2 | `Choice.Conditions.WithPartners.Preferences` | Completion results for preference-induced choices |
+| 2 | `Choice.Induced.FeasibleBundles` | Preferences over bundles with at most one alternative per partner |
+| 3 | `Matching.Classical.Marriage.Preferences` | Market preference data, acceptability, induced choice functions and finite maximization |
+| 3 | `Matching.Classical.Marriage.Basic` | Matching, individual rationality, blocking, stability and optimality specifications |
+| 3 | `Matching.Classical.Marriage.ToContracts` | Embedding the marriage model into contracts, graph/reconstruction and the preference dictionary |
+| 3 | `Matching.Classical.Marriage.Existence` | The actual stable-matching existence theorem |
+| 3 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
+| 4 | Marriage algorithm modules and public names | Put marriage-specific algorithms and stable order in the marriage folder; make operation names and specialization names consistent |
+
+Both condition families concern one choice function. `Individual` needs only
+its choices and menus; `WithPartners` additionally uses a map assigning each
+alternative to a partner. The latter name does not introduce a new market
+structure. Its `Basic` module includes the completion definitions, so readers
+can find the definitions before the implication theorems in `Relationships`.
+
+Marriage preferences and their induced choices belong together. The embedding
+into the contracts model belongs in `ToContracts`, with the explicit constructor
+name `toContractsMarket`; this avoids suggesting a newly induced choice
+correspondence. `Existence` should hold the existence theorem, while
+`FixedPointConvergence` describes the content currently in `GeneralizedDA`.
+
+Use `map` for the choice-function operation along an embedding, and reserve
+“transport” for transferring structure along an equivalence. A specialization
+should retain its general operation's name or expose an explicit bridge lemma.
+Public-name cleanup also includes `ofOptionLinearOrder` for the optional-partner
+constructor, `galeShapleyRoundBound` for the uniform round bound, and
+`DeferredAcceptanceComputable` for the executable refinement. None of these
+organizational steps removes finiteness assumptions or supplies a new market
+existence reduction under weak substitutability.
 
 ## Stability and locality
 

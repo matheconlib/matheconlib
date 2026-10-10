@@ -110,6 +110,30 @@ updates comments and docstrings in eleven Lean files and reconciles this
 record and the reference map. It changes no imports, declarations, theorem
 statements or proofs.
 
+## Choice and matching organization: first stage
+
+The follow-up naming and scope review separates optional conditions from
+the choice-function primitives. `Choice.Basic` now contains only the structure,
+coercion/extensionality, pointwise order and rejection API.
+`Choice.Conditions.Individual` contains the seven optional predicates and all
+their existing general relationships. Declaration names, statements and proof
+bodies are preserved. Clients that need these predicates import the conditions
+module explicitly; the public roots continue to expose the complete API.
+
+Headers now describe general choice theory and its current matching motivation
+separately. Mapping along an embedding is called mapping consistently, the
+set-preference section explicitly specifies linear preferences, and repair
+termination is distinguished from the characterization of terminal rules.
+Marriage existence is attributed to the contracts proof, while the generalized
+iteration header describes fixed-point convergence. The buyer weak-substitutes
+module is labeled as hypotheses and implications, not an existence theorem.
+
+A dedicated `Choice.Basic` import client checks that the primitive module neither
+defines the optional conditions nor imports additional choice modules or matching.
+The refined names and later stages are recorded in
+[MatchingArchitecture.md](MatchingArchitecture.md). This first stage does not
+yet perform those later file or public-name moves.
+
 ## Validation
 
 The complete revised source at
