@@ -17,23 +17,19 @@ namespace MathEconLibTest.Choice
 
 open MathEconLib.Choice
 
-#check ChoiceFunction
-#check ChoiceFunction.Substitutable
-#check ChoiceFunction.Consistent
-
 example {α : Type*} (C : ChoiceFunction α) :
     ChoiceFunction.substituteHullClosure C = C.substituteHull := rfl
 
 example {α : Type*} (C : ChoiceFunction α) :
     ChoiceFunction.substituteHullClosure.IsClosed C ↔ C.Substitutable := Iff.rfl
 
+example {α β : Type*} (e : α ↪ β) :
+    ChoiceFunction α ↪o ChoiceFunction β := ChoiceFunction.mapOrderEmbedding e
+
 example {α : Type*} [DecidableEq α] (pref : LinearOrder (Option α)) (A : Finset α) :
     letI := pref
     IsGreatest (ChoiceFunction.optionMenu A : Set (Option α))
       (ChoiceFunction.bestOption pref A) :=
   ChoiceFunction.isGreatest_bestOption pref A
-
-example {α β : Type*} (e : α ↪ β) :
-    ChoiceFunction α ↪o ChoiceFunction β := ChoiceFunction.mapOrderEmbedding e
 
 end MathEconLibTest.Choice
