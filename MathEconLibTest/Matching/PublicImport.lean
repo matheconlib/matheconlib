@@ -1,8 +1,9 @@
 import MathEconLib
 
 /-!
-Client checks through the full public root, including both executable
-algorithms and their optimal matching endpoints.
+Client checks through the full public root. These exercise the raw fixed-point
+lattice, its IRC-dependent economic interpretation, structural locality, and
+the agreement of both executable algorithms with their optimal endpoints.
 -/
 
 namespace MathEconLibTest.Matching
@@ -13,7 +14,6 @@ open MathEconLib.Choice MathEconLib.Matching
 #check MathEconLib.Choice.ChoiceFunction
 #check MathEconLib.Matching.Market
 #check MathEconLib.Matching.MarriageMarket
-
 #check MathEconLib.Matching.Market.FixedPointStates.state
 #check MathEconLib.Matching.Market.StableOutcomes.state
 
@@ -31,6 +31,9 @@ example (hsub : mkt.Substitutable) (hcons : mkt.Consistent)
     (A : mkt.StableOutcomes hsub hcons) : mkt.Stable A.outcome :=
   Market.StableOutcomes.stable hcons A
 
+example (hcons : mkt.Consistent) : mkt.Local :=
+  Market.Consistent.local mkt hcons
+
 example (hsub : mkt.Substitutable) (hcons : mkt.Consistent) :
     mkt.Stable (mkt.sellerOptimal hsub hcons) :=
   mkt.stable_sellerOptimal hsub hcons
@@ -44,6 +47,9 @@ end Contracts
 section Marriage
 
 variable {M W : Type*} (mkt : MarriageMarket M W)
+
+-- Locality requires no finite population or consistency assumption.
+example : mkt.toMarket.Local := mkt.local_toMarket
 
 variable [Fintype M] [Fintype W] [DecidableEq M] [DecidableEq W]
 

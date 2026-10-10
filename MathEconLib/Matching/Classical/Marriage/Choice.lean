@@ -142,6 +142,35 @@ def toMarket : Market W M (M × W) where
 @[simp] theorem toMarket_choiceS (m : M) :
     mkt.toMarket.choiceS m = mkt.inducedChoiceM m := rfl
 
+/-- Structural optional-partner choice is local on arbitrary partner types.
+This uses the transported menu, without finiteness or an IRC hypothesis. -/
+theorem local_toMarket : mkt.toMarket.Local := by
+  constructor
+  · intro w Y
+    change (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w)
+        (mkt.toMarket.buyerSide w Y) =
+      (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w) Y
+    have hmenu : (partnerEmbeddingW w) ⁻¹' (mkt.toMarket.buyerSide w Y) =
+        (partnerEmbeddingW w) ⁻¹' Y := by
+      ext m
+      change ((m, w) ∈ Y ∧ w = w) ↔ (m, w) ∈ Y
+      exact and_iff_left rfl
+    change _ '' _ ((partnerEmbeddingW w) ⁻¹' (mkt.toMarket.buyerSide w Y)) =
+      _ '' _ ((partnerEmbeddingW w) ⁻¹' Y)
+    rw [hmenu]
+  · intro m Y
+    change (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m)
+        (mkt.toMarket.sellerSide m Y) =
+      (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m) Y
+    have hmenu : (partnerEmbeddingM m) ⁻¹' (mkt.toMarket.sellerSide m Y) =
+        (partnerEmbeddingM m) ⁻¹' Y := by
+      ext w
+      change ((m, w) ∈ Y ∧ m = m) ↔ (m, w) ∈ Y
+      exact and_iff_left rfl
+    change _ '' _ ((partnerEmbeddingM m) ⁻¹' (mkt.toMarket.sellerSide m Y)) =
+      _ '' _ ((partnerEmbeddingM m) ⁻¹' Y)
+    rw [hmenu]
+
 theorem consistent_toMarket [Finite M] [Finite W] : mkt.toMarket.Consistent :=
   ⟨mkt.consistent_inducedChoiceW, mkt.consistent_inducedChoiceM⟩
 

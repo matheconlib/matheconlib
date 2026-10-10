@@ -26,6 +26,7 @@ The definitions impose no unit-demand or unitarity hypotheses.
 
 * `Market B S X` — the carrier.
 * `Market.buyerSide`, `Market.sellerSide` — an agent's contracts within a set.
+* `Market.Local` — absence of menu externalities, independently of IRC.
 * `Market.Consistent`, `Market.Substitutable`, `Market.SizeMonotone` —
   hypothesis bundles quantifying the choice-layer predicates over all agents.
 * `Market.IndRational`, `Market.Blocks`, `Market.Stable`,
@@ -108,6 +109,12 @@ lemma choiceS_subset_sellerSide (s : S) (Y : Set X) :
 
 /-! ### Hypothesis bundles -/
 
+/-- Each agent's choice depends only on the contracts involving that agent.
+Support alone does not imply this absence of menu externalities. -/
+def Local : Prop :=
+  (∀ b Y, M.choiceB b (M.buyerSide b Y) = M.choiceB b Y) ∧
+    ∀ s Y, M.choiceS s (M.sellerSide s Y) = M.choiceS s Y
+
 /-- Every agent's choice function satisfies the IRC condition. -/
 def Consistent : Prop :=
   (∀ b, (M.choiceB b).Consistent) ∧ ∀ s, (M.choiceS s).Consistent
@@ -143,6 +150,11 @@ theorem choiceB_buyerSide {b : B} (h : (M.choiceB b).Consistent) (Y : Set X) :
 theorem choiceS_sellerSide {s : S} (h : (M.choiceS s).Consistent) (Y : Set X) :
     M.choiceS s (M.sellerSide s Y) = M.choiceS s Y :=
   h (M.choiceS_subset_sellerSide s Y) (M.sellerSide_subset s Y)
+
+/-- IRC and support imply locality, without finiteness or substitutability. -/
+theorem Consistent.local (h : M.Consistent) : M.Local :=
+  ⟨fun b Y => M.choiceB_buyerSide (h.1 b) Y,
+    fun s Y => M.choiceS_sellerSide (h.2 s) Y⟩
 
 /-! ### Stability (survey Definitions 2.3 and 2.4) -/
 
