@@ -57,16 +57,16 @@ issue to coordinate an upstream contribution.
 Keep one canonical development. Move reusable parts of an example into the core
 when another application needs them. Core code must not import examples or tests.
 
-## Examples for main results
+## Applying main results
 
-For a new or materially changed theorem highlighted as a main result in the
-README or website, include a Lean example that compiles, constructs a concrete
-model, proves that all the theorem's assumptions hold for that model, and uses
-the named theorem to derive a meaningful conclusion. An existing example can
-meet this requirement. Checking only the theorem's type (a "signature pin")
-does not.
+For a new or materially changed theorem presented as a main result in the
+README or website, include a checked theorem application: a Lean development
+that compiles, constructs a concrete model, proves all the theorem's assumptions
+for that model, and applies the named theorem to derive a meaningful conclusion.
+An existing development can qualify. Checking only the theorem's type
+(a "signature pin") does not.
 
-Additional examples for older main results remain post-launch work under
+Additional applications of older main results remain post-launch work under
 [#47](https://github.com/AxiomMath/auctionlib/issues/47).
 
 ## Citing sources
