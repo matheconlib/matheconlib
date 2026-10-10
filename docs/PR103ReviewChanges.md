@@ -148,7 +148,7 @@ map. The two former weak-substitutes/completion modules were replaced by these
 more discoverable modules. Public declaration names and proof bodies are unchanged.
 Imports, references and public roots were updated, and a dedicated import client
 checks that the completion definitions are available without preference or market
-modules. The old long compatibility namespace remains until public-name cleanup.
+modules. The old long compatibility namespace is retained for existing callers.
 
 ## Marriage modeling and existence: third stage
 
@@ -166,6 +166,27 @@ and marriage `StableOrder` now sits inside the marriage folder. All moved
 declaration names, theorem statements, proof bodies, universe and finiteness
 scopes are preserved. Algorithm file moves and public-name cleanup remain the
 fourth stage.
+
+## Consistent public names and algorithm locations: fourth stage
+
+The optional-partner constructor is now `ofOptionLinearOrder`, and the marriage
+embedding is `toContractsMarket`, with their associated lemmas renamed consistently.
+The contracts operator and order homomorphism spell out deferred acceptance.
+The uniform iteration budget is `galeShapleyRoundBound`; the stable-matching
+maps to fixed points are `fixedPointEquiv` and `fixedPointOrderIso`.
+
+The proposal algorithm, its fixed-point correctness route and executable
+refinement now live under `Marriage` as `DeferredAcceptance`,
+`DeferredAcceptanceFixedPoints` and `DeferredAcceptanceComputable`. Its umbrella
+exports all three, and narrow internal imports avoid an umbrella cycle.
+Algorithm alternate-proof suffixes consistently use `_via_fixedPoints`.
+Mapping, reconstruction, side reversal and genuine lattice transport are
+called by their respective operations. Existing endpoint aliases remain
+explicitly documented; they are not presented as executable algorithms.
+
+An inverse-renaming comparison verifies that all existing Lean source bodies
+are unchanged apart from the intended identifiers, comments, file moves and
+umbrella imports. Full Lean builds remain the gate for each published stage.
 
 ## Validation
 

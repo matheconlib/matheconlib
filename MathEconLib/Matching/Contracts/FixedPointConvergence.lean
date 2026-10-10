@@ -33,30 +33,30 @@ outcomes, respectively.
 Both convergence statements specialize the order-theoretic iteration lemmas.
 They assert an existential stopping time. The classical simultaneous proposal
 process and its executable finite refinement are developed separately in
-`Classical/DeferredAcceptance` and `Classical/DeferredAcceptanceFinite`. -/
+`Classical/Marriage/DeferredAcceptance` and `Classical/Marriage/DeferredAcceptanceComputable`. -/
 
 /-- Generalized seller-proposing deferred acceptance reaches the greatest
 fixed point in finitely many steps. IRC is needed to interpret its outcome
 as a seller-optimal stable outcome. -/
-theorem exists_iterate_daFun_top (hsub : M.Substitutable) [Finite X] :
-    ∃ n, M.daFun^[n] (Set.univ, toDual (∅ : Set X)) =
-      OrderHom.gfp (M.daHom hsub) := by
+theorem exists_iterate_deferredAcceptanceOperator_top (hsub : M.Substitutable) [Finite X] :
+    ∃ n, M.deferredAcceptanceOperator^[n] (Set.univ, toDual (∅ : Set X)) =
+      OrderHom.gfp (M.deferredAcceptanceOrderHom hsub) := by
   classical
   letI := Fintype.ofFinite X
-  obtain ⟨n, hn⟩ := OrderHom.exists_iterate_top_eq_gfp (M.daHom hsub)
+  obtain ⟨n, hn⟩ := OrderHom.exists_iterate_top_eq_gfp (M.deferredAcceptanceOrderHom hsub)
   refine ⟨n, ?_⟩
-  -- `⊤ = (univ, toDual ∅)` and `⇑(M.daHom hsub) = M.daFun` are definitional.
+  -- `⊤ = (univ, toDual ∅)` and `⇑(M.deferredAcceptanceOrderHom hsub) = M.deferredAcceptanceOperator` are definitional.
   have htop : ((Set.univ, toDual (∅ : Set X)) : Set X × (Set X)ᵒᵈ) = ⊤ := rfl
   rw [htop]
   exact hn
 
 /-- Generalized buyer-proposing deferred acceptance reaches the least fixed point. -/
-theorem exists_iterate_daFun_bot (hsub : M.Substitutable) [Finite X] :
-    ∃ n, M.daFun^[n] (∅, toDual (Set.univ : Set X)) =
-      OrderHom.lfp (M.daHom hsub) := by
+theorem exists_iterate_deferredAcceptanceOperator_bot (hsub : M.Substitutable) [Finite X] :
+    ∃ n, M.deferredAcceptanceOperator^[n] (∅, toDual (Set.univ : Set X)) =
+      OrderHom.lfp (M.deferredAcceptanceOrderHom hsub) := by
   classical
   letI := Fintype.ofFinite X
-  obtain ⟨n, hn⟩ := OrderHom.exists_iterate_bot_eq_lfp (M.daHom hsub)
+  obtain ⟨n, hn⟩ := OrderHom.exists_iterate_bot_eq_lfp (M.deferredAcceptanceOrderHom hsub)
   refine ⟨n, ?_⟩
   have hbot : ((∅, toDual (Set.univ : Set X)) : Set X × (Set X)ᵒᵈ) = ⊥ := rfl
   rw [hbot]
@@ -66,32 +66,32 @@ theorem exists_iterate_daFun_bot (hsub : M.Substitutable) [Finite X] :
 The underlying fixed-point convergence theorem needs no IRC assumption. -/
 theorem exists_iterate_outcomeOf_eq_sellerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) [Finite X] :
-    ∃ n, M.outcomeOf (M.daFun^[n] (Set.univ, toDual (∅ : Set X)))
+    ∃ n, M.outcomeOf (M.deferredAcceptanceOperator^[n] (Set.univ, toDual (∅ : Set X)))
       = M.sellerOptimal hsub hcons := by
-  obtain ⟨n, hn⟩ := M.exists_iterate_daFun_top hsub
+  obtain ⟨n, hn⟩ := M.exists_iterate_deferredAcceptanceOperator_top hsub
   exact ⟨n, congrArg M.outcomeOf hn⟩
 
 theorem exists_iterate_outcomeOf_eq_buyerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) [Finite X] :
-    ∃ n, M.outcomeOf (M.daFun^[n] (∅, toDual (Set.univ : Set X)))
+    ∃ n, M.outcomeOf (M.deferredAcceptanceOperator^[n] (∅, toDual (Set.univ : Set X)))
       = M.buyerOptimal hsub hcons := by
-  obtain ⟨n, hn⟩ := M.exists_iterate_daFun_bot hsub
+  obtain ⟨n, hn⟩ := M.exists_iterate_deferredAcceptanceOperator_bot hsub
   exact ⟨n, congrArg M.outcomeOf hn⟩
 
 /-- Lattice form: iteration from `⊤` reaches the state of
 `sellerOptimalOutcome`, the top element of the fixed-point lattice. -/
-theorem exists_iterate_daFun_top_eq_state (hsub : M.Substitutable)
+theorem exists_iterate_deferredAcceptanceOperator_top_eq_state (hsub : M.Substitutable)
     (hcons : M.Consistent) [Finite X] :
-    ∃ n, M.daFun^[n] (Set.univ, toDual (∅ : Set X)) =
+    ∃ n, M.deferredAcceptanceOperator^[n] (Set.univ, toDual (∅ : Set X)) =
       (M.sellerOptimalOutcome hsub hcons).state := by
-  obtain ⟨n, hn⟩ := M.exists_iterate_daFun_top hsub
+  obtain ⟨n, hn⟩ := M.exists_iterate_deferredAcceptanceOperator_top hsub
   exact ⟨n, hn.trans (M.state_sellerOptimalOutcome hsub hcons).symm⟩
 
-theorem exists_iterate_daFun_bot_eq_state (hsub : M.Substitutable)
+theorem exists_iterate_deferredAcceptanceOperator_bot_eq_state (hsub : M.Substitutable)
     (hcons : M.Consistent) [Finite X] :
-    ∃ n, M.daFun^[n] (∅, toDual (Set.univ : Set X)) =
+    ∃ n, M.deferredAcceptanceOperator^[n] (∅, toDual (Set.univ : Set X)) =
       (M.buyerOptimalOutcome hsub hcons).state := by
-  obtain ⟨n, hn⟩ := M.exists_iterate_daFun_bot hsub
+  obtain ⟨n, hn⟩ := M.exists_iterate_deferredAcceptanceOperator_bot hsub
   exact ⟨n, hn.trans (M.state_buyerOptimalOutcome hsub hcons).symm⟩
 
 end Market

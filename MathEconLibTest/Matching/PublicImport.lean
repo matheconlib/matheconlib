@@ -49,7 +49,7 @@ section Marriage
 variable {M W : Type*} (mkt : MarriageMarket M W)
 
 -- Locality requires no finite population or consistency assumption.
-example : mkt.toMarket.Local := mkt.local_toMarket
+example : mkt.toContractsMarket.Local := mkt.local_toContractsMarket
 
 variable [Fintype M] [Fintype W] [DecidableEq M] [DecidableEq W]
 
@@ -60,10 +60,10 @@ example : mkt.womanGaleShapleyComputable = mkt.womanOptimalMatching :=
   mkt.womanGaleShapleyComputable_eq_womanOptimalMatching
 
 example : mkt.IsStableMatching mkt.galeShapleyComputable :=
-  mkt.stable_galeShapleyComputable_via_contracts
+  mkt.stable_galeShapleyComputable_via_fixedPoints
 
 example : mkt.IsStableMatching mkt.womanGaleShapleyComputable :=
-  mkt.stable_womanGaleShapleyComputable_via_contracts
+  mkt.stable_womanGaleShapleyComputable_via_fixedPoints
 
 end Marriage
 

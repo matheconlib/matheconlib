@@ -11,8 +11,8 @@ on matching.
 | --- | --- |
 | `MathEconLib.ForMathlib.Data` and `.Order` submodules | Generic graph, fiber-counting, fixed-point and iteration mathematics |
 | `MathEconLib.Choice` | Abstract choices, optional conditions, preference-induced choice, mapping, hulls, repairs and completion |
-| `MathEconLib.Matching.Contracts` submodules | Market data, stability, order, counting and generalized iteration |
-| `MathEconLib.Matching.Classical` submodules | Marriage translation, classical algorithms and executable refinement |
+| `MathEconLib.Matching.Contracts` submodules | Market data, stability, order, counting and fixed-point convergence |
+| `MathEconLib.Matching.Classical` submodules | Marriage preferences, contracts embedding, proposal algorithms and executable refinement |
 | `MathEconLibTest.Choice` and `.Matching` | Counterexamples, dependency checks and public API clients |
 
 The `Contracts` and `Classical` entries denote module families, not separate
@@ -52,14 +52,14 @@ choice on arbitrary sets remains independent of finite enumeration. The new
 preference order. Cardinal utilities are not needed. A menu without a greatest
 represented feasible bundle retains the existing empty fallback.
 
-## Staged module organization
+## Module organization
 
 The first stage separates `Choice.Basic` from
 `Choice.Conditions.Individual` and corrects scope descriptions. The second
 stage implements the partner-dependent extension below. The third stage
 reorganizes marriage preferences, contracts embedding, existence and fixed-point
-modules. Stage 4 remains planned. These stages preserve the mathematical
-assumptions.
+modules. The fourth aligns public names and puts marriage algorithms in the
+marriage folder. All four stages preserve the mathematical assumptions.
 
 | Stage | Destination | Contents |
 | --- | --- | --- |
@@ -72,7 +72,7 @@ assumptions.
 | 3 | `Matching.Classical.Marriage.ToContracts` | Embedding the marriage model into contracts, graph/reconstruction and the preference dictionary |
 | 3 | `Matching.Classical.Marriage.Existence` | The actual stable-matching existence theorem |
 | 3 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
-| 4 | Marriage algorithm modules and public names | Put marriage-specific algorithms and stable order in the marriage folder; make operation names and specialization names consistent |
+| 4 | `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
 
 Both condition families concern one choice function. `Individual` needs only
 its choices and menus; `WithPartners` additionally uses a map assigning each
@@ -81,7 +81,7 @@ structure. Its `Basic` module includes the completion definitions, so readers
 can find the definitions before the implication theorems in `Relationships`.
 
 Marriage preferences and their induced choices belong together. The embedding
-into the contracts model belongs in `ToContracts`, with the explicit constructor
+into the contracts model lives in `ToContracts`, with the explicit constructor
 name `toContractsMarket`; this avoids suggesting a newly induced choice
 correspondence. `Existence` holds the existence theorem, while `FixedPointConvergence` holds
 the iteration results previously in `GeneralizedDA`. The embedding module
@@ -91,9 +91,10 @@ theory. Marriage `Preferences` and `Basic` remain independent of Contracts.
 Use `map` for the choice-function operation along an embedding, and reserve
 “transport” for transferring structure along an equivalence. A specialization
 should retain its general operation's name or expose an explicit bridge lemma.
-Public-name cleanup also includes `ofOptionLinearOrder` for the optional-partner
-constructor, `galeShapleyRoundBound` for the uniform round bound, and
-`DeferredAcceptanceComputable` for the executable refinement. None of these
+Public names use `ofOptionLinearOrder` for the optional-partner constructor,
+`galeShapleyRoundBound` for the uniform round bound, and explicit
+`deferredAcceptanceOperator`/`deferredAcceptanceOrderHom` names.
+`DeferredAcceptanceComputable` contains the executable refinement. None of these
 organizational steps removes finiteness assumptions or supplies a new market
 existence reduction under weak substitutability.
 
@@ -113,8 +114,32 @@ stability guarantees.
 `Market.Local` expresses absence of menu externalities separately from support.
 `Market.Consistent.local` derives it from IRC. The base `Market` remains
 support-only, so existing results without IRC retain their scope.
-`MarriageMarket.local_toMarket` proves locality directly for arbitrary partner
+`MarriageMarket.local_toContractsMarket` proves locality directly for arbitrary partner
 types, independently of finiteness or global IRC.
+
+## Public-name migration
+
+The associated constructor/operator lemma families follow these same names.
+The stage changes identifiers and file locations; it does not strengthen or
+weaken their mathematical hypotheses.
+
+| Previous name | Current name |
+| --- | --- |
+| `ChoiceFunction.ofLinearOrder` | `ChoiceFunction.ofOptionLinearOrder` |
+| `MarriageMarket.toMarket` | `MarriageMarket.toContractsMarket` |
+| `Market.daFun` | `Market.deferredAcceptanceOperator` |
+| `Market.daHom` | `Market.deferredAcceptanceOrderHom` |
+| `MarriageMarket.gsStoppingTime` | `MarriageMarket.galeShapleyRoundBound` |
+| `MarriageMarket.gs_stoppingTime_terminal` | `MarriageMarket.galeShapleyRoundBound_terminal` |
+| `MarriageMarket.StableMatching.contractsEquiv` | `MarriageMarket.StableMatching.fixedPointEquiv` |
+| `MarriageMarket.StableMatching.contractsOrderIso` | `MarriageMarket.StableMatching.fixedPointOrderIso` |
+
+The proposal-algorithm correctness lemmas use `_via_fixedPoints` for the
+fixed-point proof route. The separate economic-order translation theorem keeps
+`_via_contracts`, which describes that theorem's proof route accurately.
+The endpoint aliases `deferredAcceptance` and `womanProposingDeferredAcceptance`
+remain documented aliases of the canonical optimal matchings; the actual
+proposal algorithms are `galeShapley` and `galeShapleyComputable`.
 
 ## Canonical theorem names
 

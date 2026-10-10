@@ -29,16 +29,16 @@ variable {A : Type*} {X : Type*}
 
 /-- Singleton-or-empty preferences admit the identity completion,
 for every counterparty map. -/
-theorem hasConsistentSubstitutableCompletion_ofLinearOrder
+theorem hasConsistentSubstitutableCompletion_ofOptionLinearOrder
     [Finite X]
     (counterparty : X → A)
     (pref : LinearOrder (Option X)) :
     ChoiceFunction.HasConsistentSubstitutableCompletion
-      counterparty (ofLinearOrder pref) := by
-  refine ⟨ofLinearOrder pref, ?_, ?_, ?_⟩
-  · exact isCompletionOf_refl counterparty (ofLinearOrder pref)
-  · exact substitutable_ofLinearOrder pref
-  · exact consistent_ofLinearOrder pref
+      counterparty (ofOptionLinearOrder pref) := by
+  refine ⟨ofOptionLinearOrder pref, ?_, ?_, ?_⟩
+  · exact isCompletionOf_refl counterparty (ofOptionLinearOrder pref)
+  · exact substitutable_ofOptionLinearOrder pref
+  · exact consistent_ofOptionLinearOrder pref
 
 /-- The singleton restriction of set preferences admits the identity
 completion, for every counterparty map. -/

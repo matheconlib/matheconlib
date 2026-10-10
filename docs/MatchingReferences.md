@@ -79,7 +79,7 @@ claims.
 | `Stable.pairwiseStable` | Theorem 3.1, first bullet, p. 440; many-to-one version: Theorem 2.1, first bullet, p. 417 |
 | `PairwiseStable.stable_of_substitutable`; stability equivalence | Theorem 3.1, second bullet, p. 440; many-to-one version: Theorem 2.1, second bullet, p. 417 |
 | `SellerChosen`, `BuyerChosen` | §2.3.1, unnumbered definitions, p. 420 |
-| `toSellers`, `toBuyers`, `daFun` | §2.3.1.1, displayed generalized deferred acceptance operator, p. 421 |
+| `toSellers`, `toBuyers`, `deferredAcceptanceOperator` | §2.3.1.1, displayed generalized deferred acceptance operator, p. 421 |
 | `stateOf`, `outcomeOf`, fixed-point/stability correspondence and `stableEquivFixedPoints` | Lemma 2.1, p. 424, proof pp. 422–424; many-to-many extension discussed in §3.2, p. 440 |
 | `exists_stable`, `StableOutcomes`, and optimal/pessimal endpoints | Theorem 3.2, p. 440; many-to-one version: Theorem 2.2, p. 420, proof pp. 421–425 |
 | `FixedPointStates`, monotonicity and extremal fixed points | Tarski's fixed-point theorem in §2.2, p. 419; application on p. 425 |
@@ -187,7 +187,7 @@ The supplied published article was checked directly.
 | `PairwiseStable` | Unnumbered paragraph following Definition 2, p. 81 |
 | Stability/pairwise-stability equivalence | Proposition 2, p. 81; proof and Lemma 2, Appendix A, p. 91 |
 | `Consistent` | Footnote 8, p. 80; Definition 6 and footnote 49, Appendix A, p. 91 |
-| `toSellers`, `toBuyers`, `daFun` | §4, displayed operator, p. 86 |
+| `toSellers`, `toBuyers`, `deferredAcceptanceOperator` | §4, displayed operator, p. 86 |
 | `stateOf`, `outcomeOf`, correspondence, uniqueness and `stableEquivFixedPoints` | Lemma 1, p. 87; proof pp. 91–92 |
 | Fixed-point lattice and stable existence | Theorem 1, p. 87; proof p. 92; see the order qualification below |
 | Optimal/pessimal endpoints and opposition of interests | Paragraph immediately following Theorem 1, p. 87 |

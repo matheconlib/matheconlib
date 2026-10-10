@@ -8,7 +8,7 @@ Top and bottom iteration of the contracts deferred-acceptance operator
 specialize to marriage markets. Finite convergence identifies their outcomes
 with the man- and woman-optimal stable matchings. The classical
 deferred-acceptance algorithm and its executable refinement are in
-`Classical.DeferredAcceptance` and `Classical.DeferredAcceptanceFinite`.
+`Classical.Marriage.DeferredAcceptance` and `Classical.Marriage.DeferredAcceptanceComputable`.
 -/
 
 namespace MathEconLib.Matching
@@ -47,16 +47,16 @@ abbrev manProposingInitialState (mkt : MarriageMarket M W) :
 /-- The state after `n` iterations of the generalized man-proposing operator. -/
 noncomputable def deferredAcceptanceState (n : ℕ) :
     Set (M × W) × (Set (M × W))ᵒᵈ :=
-  mkt.toMarket.daFun^[n] mkt.manProposingInitialState
+  mkt.toContractsMarket.deferredAcceptanceOperator^[n] mkt.manProposingInitialState
 
 /-- The outcome carried by the state after `n` rounds. -/
 noncomputable def deferredAcceptanceOutcome (n : ℕ) : Set (M × W) :=
-  mkt.toMarket.outcomeOf (mkt.deferredAcceptanceState n)
+  mkt.toContractsMarket.outcomeOf (mkt.deferredAcceptanceState n)
 
 /-- The man-optimal endpoint specification for generalized deferred acceptance.
 `exists_deferredAcceptanceOutcome_eq_graph` proves that the generalized state
 iteration eventually carries this matching. The classical proposal algorithm
-`galeShapley` and its agreement theorem are in `Classical.DeferredAcceptance`;
+`galeShapley` and its agreement theorem are in `Classical.Marriage.DeferredAcceptance`;
 this definition itself is the optimal endpoint, not an iteration procedure. -/
 noncomputable def deferredAcceptance : M ≃. W :=
   mkt.manOptimalMatching
@@ -79,11 +79,11 @@ state carrying the man-optimal outcome. -/
 theorem exists_deferredAcceptanceState_eq_terminal :
     ∃ n,
       mkt.deferredAcceptanceState n =
-        (mkt.toMarket.sellerOptimalOutcome
-          mkt.substitutable_toMarket mkt.consistent_toMarket).state := by
+        (mkt.toContractsMarket.sellerOptimalOutcome
+          mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket).state := by
   simpa [deferredAcceptanceState, manProposingInitialState] using
-    mkt.toMarket.exists_iterate_daFun_top_eq_state
-      mkt.substitutable_toMarket mkt.consistent_toMarket
+    mkt.toContractsMarket.exists_iterate_deferredAcceptanceOperator_top_eq_state
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
 
 /-- Outcome-level termination of deferred acceptance. -/
 theorem exists_deferredAcceptanceOutcome_eq_graph :
@@ -91,19 +91,19 @@ theorem exists_deferredAcceptanceOutcome_eq_graph :
       mkt.deferredAcceptanceOutcome n =
         mkt.graphOf mkt.deferredAcceptance := by
   obtain ⟨n, hn⟩ :=
-    mkt.toMarket.exists_iterate_outcomeOf_eq_sellerOptimal
-      mkt.substitutable_toMarket mkt.consistent_toMarket
+    mkt.toContractsMarket.exists_iterate_outcomeOf_eq_sellerOptimal
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
   refine ⟨n, ?_⟩
   simpa [deferredAcceptanceOutcome, deferredAcceptanceState,
     manProposingInitialState, deferredAcceptance,
     graphOf_manOptimalMatching] using hn
 
-/-- Some finite generalized DA iterate carries the stable man-optimal matching. -/
+/-- Some finite contracts deferred-acceptance iterate carries the stable man-optimal matching. -/
 theorem exists_deferredAcceptanceOutcome_stable :
     ∃ n,
       mkt.deferredAcceptanceOutcome n =
           mkt.graphOf mkt.deferredAcceptance ∧
-        mkt.toMarket.Stable (mkt.deferredAcceptanceOutcome n) := by
+        mkt.toContractsMarket.Stable (mkt.deferredAcceptanceOutcome n) := by
   obtain ⟨n, hn⟩ := mkt.exists_deferredAcceptanceOutcome_eq_graph
   refine ⟨n, hn, ?_⟩
   rw [hn]
@@ -114,7 +114,7 @@ theorem exists_deferredAcceptanceOutcome_stable :
 
 These are set-valued iterates of the contracts operator, with an
 existential convergence theorem. The classical proposal implementation is
-provided separately in `Classical.DeferredAcceptance`.
+provided separately in `Classical.Marriage.DeferredAcceptance`.
 -/
 
 set_option linter.unusedVariables false in
@@ -123,20 +123,20 @@ abbrev womanProposingInitialState (mkt : MarriageMarket M W) :
     Set (M × W) × (Set (M × W))ᵒᵈ :=
   (∅, toDual (Set.univ : Set (M × W)))
 
-/-- The `n`th generalized DA state starting from the buyer-proposing end. -/
+/-- The `n`th contracts deferred-acceptance state starting from the buyer-proposing end. -/
 noncomputable def womanProposingDeferredAcceptanceState (n : ℕ) :
     Set (M × W) × (Set (M × W))ᵒᵈ :=
-  mkt.toMarket.daFun^[n] mkt.womanProposingInitialState
+  mkt.toContractsMarket.deferredAcceptanceOperator^[n] mkt.womanProposingInitialState
 
 /-- The contracts carried by the `n`th woman-proposing generalized state. -/
 noncomputable def womanProposingDeferredAcceptanceOutcome (n : ℕ) : Set (M × W) :=
-  mkt.toMarket.outcomeOf (mkt.womanProposingDeferredAcceptanceState n)
+  mkt.toContractsMarket.outcomeOf (mkt.womanProposingDeferredAcceptanceState n)
 
 /-- The woman-optimal endpoint specification for generalized deferred acceptance.
 `exists_womanProposingDeferredAcceptanceOutcome_eq_graph` proves that the
 generalized state iteration eventually carries this matching. The classical
 proposal algorithm `womanGaleShapley` and its agreement theorem are in
-`Classical.DeferredAcceptance`; this definition specifies the optimal endpoint. -/
+`Classical.Marriage.DeferredAcceptance`; this definition specifies the optimal endpoint. -/
 noncomputable def womanProposingDeferredAcceptance : M ≃. W :=
   mkt.womanOptimalMatching
 
@@ -159,17 +159,17 @@ theorem womanProposingDeferredAcceptance_manPessimal
 
 theorem exists_womanProposingDeferredAcceptanceState_eq_terminal :
     ∃ n, mkt.womanProposingDeferredAcceptanceState n =
-      (mkt.toMarket.buyerOptimalOutcome
-        mkt.substitutable_toMarket mkt.consistent_toMarket).state := by
+      (mkt.toContractsMarket.buyerOptimalOutcome
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket).state := by
   simpa [womanProposingDeferredAcceptanceState, womanProposingInitialState] using
-    mkt.toMarket.exists_iterate_daFun_bot_eq_state
-      mkt.substitutable_toMarket mkt.consistent_toMarket
+    mkt.toContractsMarket.exists_iterate_deferredAcceptanceOperator_bot_eq_state
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
 
 theorem exists_womanProposingDeferredAcceptanceOutcome_eq_graph :
     ∃ n, mkt.womanProposingDeferredAcceptanceOutcome n =
       mkt.graphOf mkt.womanOptimalMatching := by
-  obtain ⟨n, hn⟩ := mkt.toMarket.exists_iterate_outcomeOf_eq_buyerOptimal
-    mkt.substitutable_toMarket mkt.consistent_toMarket
+  obtain ⟨n, hn⟩ := mkt.toContractsMarket.exists_iterate_outcomeOf_eq_buyerOptimal
+    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
   refine ⟨n, ?_⟩
   simpa [womanProposingDeferredAcceptanceOutcome, womanProposingDeferredAcceptanceState,
     womanProposingInitialState, graphOf_womanOptimalMatching] using hn
@@ -178,7 +178,7 @@ theorem exists_womanProposingDeferredAcceptanceOutcome_eq_graph :
 theorem exists_womanProposingDeferredAcceptanceOutcome_stable :
     ∃ n, mkt.womanProposingDeferredAcceptanceOutcome n =
           mkt.graphOf mkt.womanOptimalMatching ∧
-      mkt.toMarket.Stable (mkt.womanProposingDeferredAcceptanceOutcome n) ∧
+      mkt.toContractsMarket.Stable (mkt.womanProposingDeferredAcceptanceOutcome n) ∧
       mkt.IsWomanOptimal mkt.womanOptimalMatching ∧
       mkt.IsManPessimal mkt.womanOptimalMatching := by
   obtain ⟨n, hn⟩ := mkt.exists_womanProposingDeferredAcceptanceOutcome_eq_graph

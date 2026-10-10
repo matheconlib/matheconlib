@@ -80,18 +80,18 @@ theorem antitone_toBuyers (hsub : ∀ s, (M.choiceS s).Substitutable) :
   intro Y Z hYZ x hx
   exact (hsub (M.seller x)).mem_insert_of_subset hYZ hx
 
-def daFun : Set X × (Set X)ᵒᵈ → Set X × (Set X)ᵒᵈ :=
+def deferredAcceptanceOperator : Set X × (Set X)ᵒᵈ → Set X × (Set X)ᵒᵈ :=
   fun p => (M.toSellers (ofDual p.2), toDual (M.toBuyers p.1))
 
 /-- Substitutability of all agents makes the operator monotone: the two
 antitone half-lemmas plus `OrderDual` bookkeeping (which is definitional). -/
-theorem monotone_daFun (hsub : M.Substitutable) : Monotone M.daFun := by
+theorem monotone_deferredAcceptanceOperator (hsub : M.Substitutable) : Monotone M.deferredAcceptanceOperator := by
   intro p q h
   exact ⟨M.antitone_toSellers hsub.1 h.2, M.antitone_toBuyers hsub.2 h.1⟩
 
-def daHom (hsub : M.Substitutable) :
+def deferredAcceptanceOrderHom (hsub : M.Substitutable) :
     Set X × (Set X)ᵒᵈ →o Set X × (Set X)ᵒᵈ :=
-  ⟨M.daFun, M.monotone_daFun hsub⟩
+  ⟨M.deferredAcceptanceOperator, M.monotone_deferredAcceptanceOperator hsub⟩
 
 def outcomeOf (_M : Market B S X) (p : Set X × (Set X)ᵒᵈ) : Set X :=
   p.1 ∩ ofDual p.2
@@ -101,7 +101,7 @@ def outcomeOf (_M : Market B S X) (p : Set X × (Set X)ᵒᵈ) : Set X :=
 For stable `A`, `M.outcomeOf (M.stateOf A) = A` without choice regularity.
 Under substitutability and IRC, `stateOf` and `outcomeOf` are inverse maps
 between stable outcomes and deferred-acceptance fixed points. -/
-def stateOf (A : Set X) : Set X × (Set X)ᵒᵈ := M.daFun (A, toDual A)
+def stateOf (A : Set X) : Set X × (Set X)ᵒᵈ := M.deferredAcceptanceOperator (A, toDual A)
 
 @[simp] lemma stateOf_fst (A : Set X) : (M.stateOf A).1 = M.toSellers A := rfl
 
@@ -163,7 +163,7 @@ theorem isFixedPt_stateOf_of_indRational_of_accepts
     (hIR : M.IndRational A)
     (hno : ∀ y, y ∈ M.choiceB (M.buyer y) (insert y A) →
       y ∈ M.choiceS (M.seller y) (insert y A) → y ∈ A) :
-    IsFixedPt M.daFun (M.stateOf A) := by
+    IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) := by
   have hAs : A ⊆ M.toSellers A := M.subset_toSellers_of_indRational hIR
   have hAb : A ⊆ M.toBuyers A := M.subset_toBuyers_of_indRational hIR
   have hB : ∀ b, M.choiceB b (M.toBuyers A) = M.choiceB b A := by
@@ -291,17 +291,17 @@ theorem toBuyers_eq_of_stable (hsub : M.Substitutable) (hcons : M.Consistent)
 /-! ### Elementary consequences of being a fixed point -/
 
 theorem toSellers_eq_of_isFixedPt {p : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.daFun p) : M.toSellers (ofDual p.2) = p.1 :=
+    (hp : IsFixedPt M.deferredAcceptanceOperator p) : M.toSellers (ofDual p.2) = p.1 :=
   congrArg Prod.fst hp
 
 theorem toBuyers_eq_of_isFixedPt {p : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.daFun p) : M.toBuyers p.1 = ofDual p.2 :=
+    (hp : IsFixedPt M.deferredAcceptanceOperator p) : M.toBuyers p.1 = ofDual p.2 :=
   congrArg (fun q => ofDual q.2) hp
 
 /-- At a fixed point, what a buyer chooses from the buyer-available set is
 already part of the outcome.  (No substitutability, no IRC.) -/
 theorem choiceB_subset_outcomeOf {p : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.daFun p) (b : B) :
+    (hp : IsFixedPt M.deferredAcceptanceOperator p) (b : B) :
     M.choiceB b (ofDual p.2) ⊆ M.outcomeOf p := by
   intro y hy
   have hyXb : y ∈ (ofDual p.2 : Set X) := (M.choiceB b).choose_subset _ hy
@@ -315,7 +315,7 @@ theorem choiceB_subset_outcomeOf {p : Set X × (Set X)ᵒᵈ}
   exact hys
 
 theorem choiceS_subset_outcomeOf {p : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.daFun p) (s : S) :
+    (hp : IsFixedPt M.deferredAcceptanceOperator p) (s : S) :
     M.choiceS s p.1 ⊆ M.outcomeOf p := by
   intro y hy
   have hyXs : y ∈ p.1 := (M.choiceS s).choose_subset _ hy
@@ -331,13 +331,13 @@ theorem choiceS_subset_outcomeOf {p : Set X × (Set X)ᵒᵈ}
 /-- Pure-IRC sandwich: any menu between the outcome and the buyer-available
 set induces the same buyer choice. -/
 theorem choiceB_eq_of_isFixedPt_sandwich (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) (b : B) {V : Set X}
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) (b : B) {V : Set X}
     (h1 : M.outcomeOf p ⊆ V) (h2 : V ⊆ (ofDual p.2 : Set X)) :
     M.choiceB b V = M.choiceB b (ofDual p.2) :=
   hcons.1 b ((M.choiceB_subset_outcomeOf hp b).trans h1) h2
 
 theorem choiceS_eq_of_isFixedPt_sandwich (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) (s : S) {V : Set X}
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) (s : S) {V : Set X}
     (h1 : M.outcomeOf p ⊆ V) (h2 : V ⊆ p.1) :
     M.choiceS s V = M.choiceS s p.1 :=
   hcons.2 s ((M.choiceS_subset_outcomeOf hp s).trans h1) h2
@@ -345,7 +345,7 @@ theorem choiceS_eq_of_isFixedPt_sandwich (hcons : M.Consistent)
 /-- Path independence at a fixed point: menus differing only in contracts
 from the buyer-available set induce the same buyer choice. -/
 theorem choiceB_eq_of_isFixedPt (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) (b : B) {U V : Set X}
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) (b : B) {U V : Set X}
     (hAU : M.outcomeOf p ⊆ U) (hUV : U ⊆ V) (hXbV : (ofDual p.2 : Set X) ⊆ V)
     (hVU : ∀ y ∈ V, y ∉ U → y ∈ (ofDual p.2 : Set X)) :
     M.choiceB b V = M.choiceB b U := by
@@ -361,7 +361,7 @@ theorem choiceB_eq_of_isFixedPt (hsub : M.Substitutable) (hcons : M.Consistent)
     ((M.choiceB_subset_outcomeOf hp b).trans hAU)
 
 theorem choiceS_eq_of_isFixedPt (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) (s : S) {U V : Set X}
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) (s : S) {U V : Set X}
     (hAU : M.outcomeOf p ⊆ U) (hUV : U ⊆ V) (hXsV : p.1 ⊆ V)
     (hVU : ∀ y ∈ V, y ∉ U → y ∈ p.1) :
     M.choiceS s V = M.choiceS s U := by
@@ -381,7 +381,7 @@ theorem choiceS_eq_of_isFixedPt (hsub : M.Substitutable) (hcons : M.Consistent)
 /-- IRC alone makes the outcome of a fixed point individually rational.
 Substitutability is needed for nonblocking, not for this conclusion. -/
 theorem indRational_outcomeOf (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) :
     M.IndRational (M.outcomeOf p) := by
   have hAs : M.outcomeOf p ⊆ p.1 := fun x hx => hx.1
   have hAb : M.outcomeOf p ⊆ (ofDual p.2 : Set X) := fun x hx => hx.2
@@ -415,7 +415,7 @@ theorem indRational_outcomeOf (hcons : M.Consistent)
 the choices from the two menus; path independence preserves that identity when
 one contract is added. -/
 theorem toSellers_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) :
     M.toSellers (M.outcomeOf p) = p.1 := by
   rw [← M.toSellers_eq_of_isFixedPt hp]
   ext x
@@ -431,7 +431,7 @@ theorem toSellers_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
 
 /-- Recompute the buyer-available coordinate from the outcome. -/
 theorem toBuyers_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) :
     M.toBuyers (M.outcomeOf p) = (ofDual p.2 : Set X) := by
   rw [← M.toBuyers_eq_of_isFixedPt hp]
   ext x
@@ -448,7 +448,7 @@ theorem toBuyers_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
 /-- The fixed-point round trip is a choice-theoretic result, established
 before stability and used to prove nonblocking. -/
 theorem stateOf_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) :
     M.stateOf (M.outcomeOf p) = p := by
   apply Prod.ext
   · exact M.toSellers_outcomeOf hsub hcons hp
@@ -458,13 +458,13 @@ theorem stateOf_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
 not an additional hypothesis. -/
 theorem eq_of_isFixedPt_of_outcomeOf_eq_state (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} {p : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.daFun p) (hout : M.outcomeOf p = A) :
+    (hp : IsFixedPt M.deferredAcceptanceOperator p) (hout : M.outcomeOf p = A) :
     p = M.stateOf A :=
   (M.stateOf_outcomeOf hsub hcons hp).symm.trans (congrArg M.stateOf hout)
 
 /-- The outcome map is injective on deferred-acceptance fixed points. -/
 theorem outcomeOf_injOn_fixedPoints (hsub : M.Substitutable) (hcons : M.Consistent) :
-    Set.InjOn M.outcomeOf {p | IsFixedPt M.daFun p} := by
+    Set.InjOn M.outcomeOf {p | IsFixedPt M.deferredAcceptanceOperator p} := by
   intro p hp q hq hpq
   rw [← M.stateOf_outcomeOf hsub hcons hp, ← M.stateOf_outcomeOf hsub hcons hq]
   exact congrArg M.stateOf hpq
@@ -473,7 +473,7 @@ theorem outcomeOf_injOn_fixedPoints (hsub : M.Substitutable) (hcons : M.Consiste
 The state round trip makes singleton nonblocking an immediate consequence of
 membership in both coordinates. -/
 theorem stable_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.daFun p) :
+    {p : Set X × (Set X)ᵒᵈ} (hp : IsFixedPt M.deferredAcceptanceOperator p) :
     M.Stable (M.outcomeOf p) := by
   apply PairwiseStable.stable_of_substitutable M hsub
   refine ⟨M.indRational_outcomeOf hcons hp, ?_⟩
@@ -486,9 +486,9 @@ theorem stable_outcomeOf (hsub : M.Substitutable) (hcons : M.Consistent)
 /-- HKContractDesign2017, Lemma 1 (p. 87), second half (existence), specializing
 the direct canonical-state certificate to the singleton-acceptance test
 supplied by stability. -/
-theorem isFixedPt_daFun_of_stable (hsub : M.Substitutable)
+theorem isFixedPt_deferredAcceptanceOperator_of_stable (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
-    IsFixedPt M.daFun (M.daFun (A, toDual A)) :=
+    IsFixedPt M.deferredAcceptanceOperator (M.deferredAcceptanceOperator (A, toDual A)) :=
   M.isFixedPt_stateOf_of_indRational_of_accepts hsub hcons hA.1
     (fun _ hyB hyS => M.not_blocking_singleton hA hyB hyS)
 
@@ -502,49 +502,49 @@ theorem outcomeOf_stateOf_of_stable {A : Set X} (hA : M.Stable A) :
 
 /-! #### The HKContractDesign2017, Lemma 1 (p. 87) round trips, in `stateOf` form
 
-These interfaces use `stateOf A` in place of `daFun (A, toDual A)`.
+These interfaces use `stateOf A` in place of `deferredAcceptanceOperator (A, toDual A)`.
 `outcomeOf_stateOf_of_stable` above omits the regularity hypotheses
 in the outcome round trip. -/
 
 theorem isFixedPt_stateOf (hsub : M.Substitutable) (hcons : M.Consistent)
-    {A : Set X} (hA : M.Stable A) : IsFixedPt M.daFun (M.stateOf A) :=
-  M.isFixedPt_daFun_of_stable hsub hcons hA
+    {A : Set X} (hA : M.Stable A) : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) :=
+  M.isFixedPt_deferredAcceptanceOperator_of_stable hsub hcons hA
 
 /-! ### Existence and the two extremal states -/
 
 /-- The seller-optimal stable contract set, under substitutability and IRC. -/
 noncomputable def sellerOptimal (hsub : M.Substitutable)
     (_hcons : M.Consistent) : Set X :=
-  M.outcomeOf (OrderHom.gfp (M.daHom hsub))
+  M.outcomeOf (OrderHom.gfp (M.deferredAcceptanceOrderHom hsub))
 
 /-- The buyer-optimal stable contract set, under substitutability and IRC. -/
 noncomputable def buyerOptimal (hsub : M.Substitutable)
     (_hcons : M.Consistent) : Set X :=
-  M.outcomeOf (OrderHom.lfp (M.daHom hsub))
+  M.outcomeOf (OrderHom.lfp (M.deferredAcceptanceOrderHom hsub))
 
-theorem isFixedPt_gfp_daHom (hsub : M.Substitutable) :
-    IsFixedPt M.daFun (OrderHom.gfp (M.daHom hsub)) :=
-  (M.daHom hsub).isGreatest_gfp.1
+theorem isFixedPt_gfp_deferredAcceptanceOrderHom (hsub : M.Substitutable) :
+    IsFixedPt M.deferredAcceptanceOperator (OrderHom.gfp (M.deferredAcceptanceOrderHom hsub)) :=
+  (M.deferredAcceptanceOrderHom hsub).isGreatest_gfp.1
 
-theorem le_gfp_daHom (hsub : M.Substitutable) {q : Set X × (Set X)ᵒᵈ}
-    (hq : IsFixedPt M.daFun q) : q ≤ OrderHom.gfp (M.daHom hsub) :=
-  (M.daHom hsub).isGreatest_gfp.2 hq
+theorem le_gfp_deferredAcceptanceOrderHom (hsub : M.Substitutable) {q : Set X × (Set X)ᵒᵈ}
+    (hq : IsFixedPt M.deferredAcceptanceOperator q) : q ≤ OrderHom.gfp (M.deferredAcceptanceOrderHom hsub) :=
+  (M.deferredAcceptanceOrderHom hsub).isGreatest_gfp.2 hq
 
-theorem isFixedPt_lfp_daHom (hsub : M.Substitutable) :
-    IsFixedPt M.daFun (OrderHom.lfp (M.daHom hsub)) :=
-  (M.daHom hsub).isLeast_lfp.1
+theorem isFixedPt_lfp_deferredAcceptanceOrderHom (hsub : M.Substitutable) :
+    IsFixedPt M.deferredAcceptanceOperator (OrderHom.lfp (M.deferredAcceptanceOrderHom hsub)) :=
+  (M.deferredAcceptanceOrderHom hsub).isLeast_lfp.1
 
-theorem lfp_le_daHom (hsub : M.Substitutable) {q : Set X × (Set X)ᵒᵈ}
-    (hq : IsFixedPt M.daFun q) : OrderHom.lfp (M.daHom hsub) ≤ q :=
-  (M.daHom hsub).isLeast_lfp.2 hq
+theorem lfp_le_deferredAcceptanceOrderHom (hsub : M.Substitutable) {q : Set X × (Set X)ᵒᵈ}
+    (hq : IsFixedPt M.deferredAcceptanceOperator q) : OrderHom.lfp (M.deferredAcceptanceOrderHom hsub) ≤ q :=
+  (M.deferredAcceptanceOrderHom hsub).isLeast_lfp.2 hq
 
 theorem stable_sellerOptimal (hsub : M.Substitutable) (hcons : M.Consistent) :
     M.Stable (M.sellerOptimal hsub hcons) :=
-  M.stable_outcomeOf hsub hcons (M.isFixedPt_gfp_daHom hsub)
+  M.stable_outcomeOf hsub hcons (M.isFixedPt_gfp_deferredAcceptanceOrderHom hsub)
 
 theorem stable_buyerOptimal (hsub : M.Substitutable) (hcons : M.Consistent) :
     M.Stable (M.buyerOptimal hsub hcons) :=
-  M.stable_outcomeOf hsub hcons (M.isFixedPt_lfp_daHom hsub)
+  M.stable_outcomeOf hsub hcons (M.isFixedPt_lfp_deferredAcceptanceOrderHom hsub)
 
 /-- Stable existence as in HKContractDesign2017, Theorem 1 (p. 87), with
 explicit substitutability and set-form IRC on arbitrary contract types. -/

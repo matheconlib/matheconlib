@@ -113,19 +113,19 @@ def partnerEmbeddingW (w : W) : M ↪ M × W where
 
 /-- Optional-partner choice mapped to man `m`'s contracts. -/
 def inducedChoiceM (m : M) : ChoiceFunction (M × W) :=
-  (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m)
+  (ChoiceFunction.ofOptionLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m)
 
 /-- Optional-partner choice mapped to woman `w`'s contracts. -/
 def inducedChoiceW (w : W) : ChoiceFunction (M × W) :=
-  (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w)
+  (ChoiceFunction.ofOptionLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w)
 
-theorem inducedChoiceM_eq_map_ofLinearOrder (m : M) :
+theorem inducedChoiceM_eq_map_ofOptionLinearOrder (m : M) :
     mkt.inducedChoiceM m =
-      (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m) := rfl
+      (ChoiceFunction.ofOptionLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m) := rfl
 
-theorem inducedChoiceW_eq_map_ofLinearOrder (w : W) :
+theorem inducedChoiceW_eq_map_ofOptionLinearOrder (w : W) :
     mkt.inducedChoiceW w =
-      (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w) := rfl
+      (ChoiceFunction.ofOptionLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w) := rfl
 
 /-- Chosen contracts belong to the man making the choice. -/
 theorem fst_eq_of_mem_inducedChoiceM {m : M} {p : M × W} {Y : Set (M × W)}
@@ -145,7 +145,7 @@ theorem mem_inducedChoiceM_iff {m : M} {w : W} {Y : Set (M × W)} :
       (m, w) ∈ Y ∧ mkt.leM m none (some w) ∧
         ∀ w', (m, w') ∈ Y → mkt.leM m (some w') (some w) :=
   (ChoiceFunction.mem_map _ (partnerEmbeddingM m) (x := w) (Y := Y)).trans
-    (ChoiceFunction.mem_ofLinearOrder _)
+    (ChoiceFunction.mem_ofOptionLinearOrder _)
 
 /-- The symmetric order-theoretic choice specification. -/
 theorem mem_inducedChoiceW_iff {m : M} {w : W} {Y : Set (M × W)} :
@@ -153,39 +153,39 @@ theorem mem_inducedChoiceW_iff {m : M} {w : W} {Y : Set (M × W)} :
       (m, w) ∈ Y ∧ mkt.leW w none (some m) ∧
         ∀ m', (m', w) ∈ Y → mkt.leW w (some m') (some m) :=
   (ChoiceFunction.mem_map _ (partnerEmbeddingW w) (x := m) (Y := Y)).trans
-    (ChoiceFunction.mem_ofLinearOrder _)
+    (ChoiceFunction.mem_ofOptionLinearOrder _)
 
 theorem unitDemand_inducedChoiceM (m : M) :
     (mkt.inducedChoiceM m).UnitDemand :=
-  (ChoiceFunction.unitDemand_ofLinearOrder _).map _
+  (ChoiceFunction.unitDemand_ofOptionLinearOrder _).map _
 
 theorem unitDemand_inducedChoiceW (w : W) :
     (mkt.inducedChoiceW w).UnitDemand :=
-  (ChoiceFunction.unitDemand_ofLinearOrder _).map _
+  (ChoiceFunction.unitDemand_ofOptionLinearOrder _).map _
 
 theorem substitutable_inducedChoiceM (m : M) :
     (mkt.inducedChoiceM m).Substitutable :=
-  (ChoiceFunction.substitutable_ofLinearOrder _).map _
+  (ChoiceFunction.substitutable_ofOptionLinearOrder _).map _
 
 theorem substitutable_inducedChoiceW (w : W) :
     (mkt.inducedChoiceW w).Substitutable :=
-  (ChoiceFunction.substitutable_ofLinearOrder _).map _
+  (ChoiceFunction.substitutable_ofOptionLinearOrder _).map _
 
 theorem sizeMonotone_inducedChoiceM (m : M) :
     (mkt.inducedChoiceM m).SizeMonotone :=
-  (ChoiceFunction.sizeMonotone_ofLinearOrder _).map _
+  (ChoiceFunction.sizeMonotone_ofOptionLinearOrder _).map _
 
 theorem sizeMonotone_inducedChoiceW (w : W) :
     (mkt.inducedChoiceW w).SizeMonotone :=
-  (ChoiceFunction.sizeMonotone_ofLinearOrder _).map _
+  (ChoiceFunction.sizeMonotone_ofOptionLinearOrder _).map _
 
 theorem consistent_inducedChoiceM [Finite W] (m : M) :
     (mkt.inducedChoiceM m).Consistent :=
-  (ChoiceFunction.consistent_ofLinearOrder _).map _
+  (ChoiceFunction.consistent_ofOptionLinearOrder _).map _
 
 theorem consistent_inducedChoiceW [Finite M] (w : W) :
     (mkt.inducedChoiceW w).Consistent :=
-  (ChoiceFunction.consistent_ofLinearOrder _).map _
+  (ChoiceFunction.consistent_ofOptionLinearOrder _).map _
 
 /-! ## Finite maximum realization
 

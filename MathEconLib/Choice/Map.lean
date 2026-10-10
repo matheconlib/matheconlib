@@ -6,8 +6,9 @@ import Mathlib.Order.Hom.Basic
 
 An embedding maps a choice function to another type of alternatives,
 ignoring alternatives outside its range. Mapping composes, reflects equality
-and pointwise inclusion, and preserves the optional conditions used below. No preference orders or finite populations are
-needed here; the law of aggregate demand keeps its finite-menu hypothesis.
+and pointwise inclusion, and preserves the optional conditions used below.
+No preference orders or finite populations are needed here; the law of
+aggregate demand keeps its finite-menu hypothesis.
 -/
 
 namespace MathEconLib.Choice

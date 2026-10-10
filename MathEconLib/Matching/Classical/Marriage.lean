@@ -1,3 +1,6 @@
+import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
+import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
+import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
 import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 import MathEconLib.Matching.Classical.Marriage.LoneWolf
 import MathEconLib.Matching.Classical.Marriage.StableOrder
@@ -14,9 +17,9 @@ installed on bare `PEquiv`.
 The components separate basic economic definitions and direct classical facts,
 preferences and their induced choice, the embedding into contracts, stable
 existence, the symmetric extrema, fixed-point convergence, lone wolf results,
-and the stable-matching lattice.
-`Classical.DeferredAcceptance` adds
-the direct proposal algorithm and its comparison with the contracts fixed-point limit;
-`Classical.DeferredAcceptanceFinite` supplies executable algorithms.
+and the stable-matching lattice. `Marriage.DeferredAcceptance` develops the
+direct proposal algorithm; `Marriage.DeferredAcceptanceFixedPoints` relates
+its terminal outputs to the contracts fixed points; and
+`Marriage.DeferredAcceptanceComputable` supplies executable algorithms.
 -/
 

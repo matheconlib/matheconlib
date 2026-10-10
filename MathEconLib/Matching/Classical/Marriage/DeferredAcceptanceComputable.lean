@@ -1,4 +1,4 @@
-import MathEconLib.Matching.Classical.DeferredAcceptanceCorrespondence
+import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
 import MathEconLib.Choice.FiniteOption
 
 /-!
@@ -258,7 +258,7 @@ def galeShapleyComputable : M ≃. W :=
       change IsFixedPt mkt.gsStep
         (mkt.gsRejectedFinset (Fintype.card (M × W)) : Set (M × W))
       rw [coe_gsRejectedFinset]
-      exact mkt.gs_stoppingTime_terminal }
+      exact mkt.galeShapleyRoundBound_terminal }
 
 /-- Executable and semantic Gale–Shapley produce the same partial equivalence. -/
 theorem galeShapleyComputable_eq_galeShapley :
@@ -267,9 +267,9 @@ theorem galeShapleyComputable_eq_galeShapley :
   intro m
   change mkt.bestMFinset m
       (Finset.univ \ mkt.gsRejectedFinset (Fintype.card (M × W))) =
-    mkt.bestM m (mkt.gsRejected mkt.gsStoppingTime)ᶜ
+    mkt.bestM m (mkt.gsRejected mkt.galeShapleyRoundBound)ᶜ
   simp only [bestMFinset_eq_bestM, coe_univ_sdiff, coe_gsRejectedFinset,
-    gsStoppingTime]
+    galeShapleyRoundBound]
 
 /-- The executable algorithm computes the generalized man-optimal endpoint. -/
 theorem galeShapleyComputable_eq_manOptimalMatching :
@@ -321,7 +321,7 @@ theorem galeShapleyFinset_eq_graphOf_galeShapley :
       mkt.graphOf mkt.galeShapley := by
   rw [coe_galeShapleyFinset]
   exact (mkt.graphOf_gsMatchingAt_eq_held
-    (mkt.gsRejected mkt.gsStoppingTime) mkt.gs_stoppingTime_terminal).symm
+    (mkt.gsRejected mkt.galeShapleyRoundBound) mkt.galeShapleyRoundBound_terminal).symm
 
 theorem galeShapleyFinset_eq_graphOf_galeShapleyComputable :
     (mkt.galeShapleyFinset : Set (M × W)) =
@@ -336,7 +336,7 @@ theorem galeShapleyFinset_eq_graphOf_manOptimalMatching :
   rw [mkt.galeShapleyFinset_eq_graphOf_galeShapley,
     mkt.galeShapley_eq_manOptimalMatching]
 
-/-- Executable woman-proposing Gale–Shapley, transported from the market with
+/-- Executable woman-proposing Gale–Shapley, obtained from the market with
 the two sides exchanged. -/
 def womanGaleShapleyComputable : M ≃. W :=
   mkt.symm.galeShapleyComputable.symm
@@ -407,35 +407,35 @@ theorem womanGaleShapleyComputable_eq_womanProposingDeferredAcceptance_via_fixed
   mkt.womanGaleShapleyComputable_eq_womanGaleShapley.trans
     mkt.womanGaleShapley_eq_womanProposingDeferredAcceptance_via_fixedPoints
 
-theorem stable_galeShapleyComputable_via_contracts :
+theorem stable_galeShapleyComputable_via_fixedPoints :
     mkt.IsStableMatching mkt.galeShapleyComputable := by
   rw [mkt.galeShapleyComputable_eq_galeShapley]
-  exact mkt.stable_galeShapley_via_contracts
+  exact mkt.stable_galeShapley_via_fixedPoints
 
-theorem isManOptimal_galeShapleyComputable_via_contracts :
+theorem isManOptimal_galeShapleyComputable_via_fixedPoints :
     mkt.IsManOptimal mkt.galeShapleyComputable := by
   rw [mkt.galeShapleyComputable_eq_galeShapley]
-  exact mkt.isManOptimal_galeShapley_via_contracts
+  exact mkt.isManOptimal_galeShapley_via_fixedPoints
 
-theorem isWomanPessimal_galeShapleyComputable_via_contracts :
+theorem isWomanPessimal_galeShapleyComputable_via_fixedPoints :
     mkt.IsWomanPessimal mkt.galeShapleyComputable := by
   rw [mkt.galeShapleyComputable_eq_galeShapley]
-  exact mkt.isWomanPessimal_galeShapley_via_contracts
+  exact mkt.isWomanPessimal_galeShapley_via_fixedPoints
 
-theorem stable_womanGaleShapleyComputable_via_contracts :
+theorem stable_womanGaleShapleyComputable_via_fixedPoints :
     mkt.IsStableMatching mkt.womanGaleShapleyComputable := by
   rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
-  exact mkt.stable_womanGaleShapley_via_contracts
+  exact mkt.stable_womanGaleShapley_via_fixedPoints
 
-theorem isWomanOptimal_womanGaleShapleyComputable_via_contracts :
+theorem isWomanOptimal_womanGaleShapleyComputable_via_fixedPoints :
     mkt.IsWomanOptimal mkt.womanGaleShapleyComputable := by
   rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
-  exact mkt.isWomanOptimal_womanGaleShapley_via_contracts
+  exact mkt.isWomanOptimal_womanGaleShapley_via_fixedPoints
 
-theorem isManPessimal_womanGaleShapleyComputable_via_contracts :
+theorem isManPessimal_womanGaleShapleyComputable_via_fixedPoints :
     mkt.IsManPessimal mkt.womanGaleShapleyComputable := by
   rw [mkt.womanGaleShapleyComputable_eq_womanGaleShapley]
-  exact mkt.isManPessimal_womanGaleShapley_via_contracts
+  exact mkt.isManPessimal_womanGaleShapley_via_fixedPoints
 
 end MarriageMarket
 

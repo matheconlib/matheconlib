@@ -19,7 +19,7 @@ side-optimal stable matching then identifies the classical output with the
 corresponding generalized deferred-acceptance endpoint. The two algorithms need
 not have the same intermediate states or number of rounds.
 
-`Classical.DeferredAcceptanceCorrespondence` supplies a second correspondence
+`Marriage.DeferredAcceptanceFixedPoints` supplies a second correctness proof
 through a canonical fixed-point certificate and inherits correctness from the
 contracts theory without using the direct endpoint correctness theorems here.
 
@@ -323,26 +323,26 @@ theorem gsMatchingAt_eq_manOptimalMatching (n : ℕ)
 /-- A uniform bound on simultaneous rejection updates: each nonstationary
 update adds a previously unrejected pair. This is a fuel bound for the state
 iteration, not a running-time bound or a count of individual proposals. -/
-def gsStoppingTime (_mkt : MarriageMarket M W) : ℕ := Fintype.card (M × W)
+def galeShapleyRoundBound (_mkt : MarriageMarket M W) : ℕ := Fintype.card (M × W)
 
-theorem gs_stoppingTime_terminal :
-    IsFixedPt mkt.gsStep (mkt.gsRejected mkt.gsStoppingTime) := by
+theorem galeShapleyRoundBound_terminal :
+    IsFixedPt mkt.gsStep (mkt.gsRejected mkt.galeShapleyRoundBound) := by
   exact Function.isFixedPt_iterate_card_of_inflationary mkt.gsStep mkt.gs_subset_step
 
 /-- The output of the classical man-proposing Gale–Shapley algorithm. -/
 noncomputable def galeShapley : M ≃. W :=
-  mkt.gsMatchingAt (mkt.gsRejected mkt.gsStoppingTime) mkt.gs_stoppingTime_terminal
+  mkt.gsMatchingAt (mkt.gsRejected mkt.galeShapleyRoundBound) mkt.galeShapleyRoundBound_terminal
 
 theorem stable_galeShapley : mkt.IsStableMatching mkt.galeShapley :=
-  mkt.stable_gsMatchingAt mkt.gsStoppingTime mkt.gs_stoppingTime_terminal
+  mkt.stable_gsMatchingAt mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
 
 theorem galeShapley_manOptimal {ν : M ≃. W}
     (hν : mkt.IsStableMatching ν) (m : M) :
     mkt.leM m (ν m) (mkt.galeShapley m) :=
-  mkt.gsMatchingAt_manOptimal mkt.gsStoppingTime mkt.gs_stoppingTime_terminal hν m
+  mkt.gsMatchingAt_manOptimal mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal hν m
 
 theorem isManOptimal_galeShapley : mkt.IsManOptimal mkt.galeShapley :=
-  mkt.isManOptimal_gsMatchingAt mkt.gsStoppingTime mkt.gs_stoppingTime_terminal
+  mkt.isManOptimal_gsMatchingAt mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
 
 /-- Opposition of interests gives the receiving side's intrinsic extremal property. -/
 theorem isWomanPessimal_galeShapley : mkt.IsWomanPessimal mkt.galeShapley :=
@@ -356,17 +356,17 @@ theorem galeShapley_womanPessimal {ν : M ≃. W}
 /-- The classical and contracts proofs compute the same man-optimal matching. -/
 theorem galeShapley_eq_manOptimalMatching :
     mkt.galeShapley = mkt.manOptimalMatching :=
-  mkt.gsMatchingAt_eq_manOptimalMatching mkt.gsStoppingTime mkt.gs_stoppingTime_terminal
+  mkt.gsMatchingAt_eq_manOptimalMatching mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
 
-/-- At the uniform stopping bound, the proposal graph is the contracts
+/-- At the uniform round bound, the proposal graph is the contracts
 seller-optimal outcome. This is an equality of terminal outcomes; it does not
 assert that the classical and generalized iterations coincide round by round. -/
 theorem gs_terminal_proposals_eq_sellerOptimal :
-    mkt.gsProposals (mkt.gsRejected mkt.gsStoppingTime) =
-      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket := by
-  calc mkt.gsProposals (mkt.gsRejected mkt.gsStoppingTime)
+    mkt.gsProposals (mkt.gsRejected mkt.galeShapleyRoundBound) =
+      mkt.toContractsMarket.sellerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket := by
+  calc mkt.gsProposals (mkt.gsRejected mkt.galeShapleyRoundBound)
       = mkt.graphOf mkt.galeShapley :=
-          (mkt.graphOf_gsMatchingAt _ mkt.gs_stoppingTime_terminal).symm
+          (mkt.graphOf_gsMatchingAt _ mkt.galeShapleyRoundBound_terminal).symm
     _ = mkt.graphOf mkt.manOptimalMatching :=
       congrArg mkt.graphOf mkt.galeShapley_eq_manOptimalMatching
     _ = _ := mkt.graphOf_manOptimalMatching
@@ -385,7 +385,7 @@ theorem exists_generalized_round_eq_galeShapley :
   exact mkt.exists_deferredAcceptanceOutcome_eq_graph
 
 /-- Woman-proposing Gale–Shapley is the same proposal algorithm with the two
-sides exchanged, then transported back to an `M ≃. W` matching. -/
+sides exchanged, then reversed to an `M ≃. W` matching. -/
 noncomputable def womanGaleShapley : M ≃. W :=
   mkt.symm.galeShapley.symm
 

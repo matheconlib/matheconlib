@@ -1,8 +1,8 @@
-import MathEconLib.Matching.Classical.DeferredAcceptance
-import MathEconLib.Matching.Classical.DeferredAcceptanceCorrespondence
-import MathEconLib.Matching.Classical.DeferredAcceptanceFinite
 import MathEconLib.Matching.Classical.Marriage
 import MathEconLib.Matching.Classical.Marriage.Basic
+import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
+import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
+import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
 import MathEconLib.Matching.Classical.Marriage.Existence
 import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 import MathEconLib.Matching.Classical.Marriage.LoneWolf

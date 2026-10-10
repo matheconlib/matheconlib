@@ -24,9 +24,9 @@ variable [Fintype M] [Fintype W]
 /-- Existence of a stable marriage matching. -/
 theorem exists_stableMatching :
     ∃ μ : M ≃. W, mkt.IsStableMatching μ := by
-  let hsub := mkt.substitutable_toMarket
-  let hcons := mkt.consistent_toMarket
-  obtain ⟨A, hA⟩ := mkt.toMarket.exists_stable hsub hcons
+  let hsub := mkt.substitutable_toContractsMarket
+  let hcons := mkt.consistent_toContractsMarket
+  obtain ⟨A, hA⟩ := mkt.toContractsMarket.exists_stable hsub hcons
   exact ⟨mkt.matchingOfStable hA, mkt.stable_matchingOfStable hA⟩
 
 end MarriageMarket

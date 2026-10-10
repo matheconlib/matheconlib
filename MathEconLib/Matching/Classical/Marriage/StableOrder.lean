@@ -60,7 +60,7 @@ variable [Fintype M] [Fintype W]
 
 /-- The stability translation, packaged as an equivalence of carriers. -/
 noncomputable def graphEquiv :
-    mkt.StableMatching ≃ {A : Set (M × W) // mkt.toMarket.Stable A} where
+    mkt.StableMatching ≃ {A : Set (M × W) // mkt.toContractsMarket.Stable A} where
   toFun μ := ⟨mkt.graphOf μ.matching,
     (mkt.isStableMatching_iff_stable_graphOf μ.matching).mp μ.isStable⟩
   invFun A := ⟨mkt.matchingOfStable A.2, mkt.stable_matchingOfStable A.2⟩
@@ -71,16 +71,16 @@ noncomputable def graphEquiv :
 
 /-- Stable classical matchings and the general fixed-point lattice have
 the same carrier through the graph and fixed-point correspondences. -/
-noncomputable def contractsEquiv :
+noncomputable def fixedPointEquiv :
     mkt.StableMatching ≃
-      mkt.toMarket.StableOutcomes mkt.substitutable_toMarket mkt.consistent_toMarket :=
+      mkt.toContractsMarket.StableOutcomes mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
   (graphEquiv mkt).trans
-    (mkt.toMarket.stableEquivFixedPoints
-      mkt.substitutable_toMarket mkt.consistent_toMarket)
+    (mkt.toContractsMarket.stableEquivFixedPoints
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket)
 
 /-- The classical lattice is an instance of the general contracts lattice. -/
 noncomputable instance : CompleteLattice mkt.StableMatching := by
-  let e := contractsEquiv mkt
+  let e := fixedPointEquiv mkt
   letI : PartialOrder mkt.StableMatching :=
     { le := fun μ ν => e μ ≤ e ν
       le_refl := fun _ => le_rfl
@@ -104,34 +104,34 @@ noncomputable instance : CompleteLattice mkt.StableMatching := by
     exact hμ hν
 
 /-- The carrier equivalence preserves the transported lattice order. -/
-noncomputable def contractsOrderIso :
+noncomputable def fixedPointOrderIso :
     mkt.StableMatching ≃o
-      mkt.toMarket.StableOutcomes mkt.substitutable_toMarket mkt.consistent_toMarket where
-  toEquiv := contractsEquiv mkt
+      mkt.toContractsMarket.StableOutcomes mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket where
+  toEquiv := fixedPointEquiv mkt
   map_rel_iff' := Iff.rfl
 
-@[simp] theorem outcome_contractsEquiv (μ : mkt.StableMatching) :
-    (contractsEquiv mkt μ).outcome = mkt.graphOf μ.matching := by
-  change (mkt.toMarket.ofStable mkt.substitutable_toMarket mkt.consistent_toMarket
+@[simp] theorem outcome_fixedPointEquiv (μ : mkt.StableMatching) :
+    (fixedPointEquiv mkt μ).outcome = mkt.graphOf μ.matching := by
+  change (mkt.toContractsMarket.ofStable mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
     ((mkt.isStableMatching_iff_stable_graphOf μ.matching).mp μ.isStable)).outcome = _
-  exact mkt.toMarket.outcome_ofStable
-    mkt.substitutable_toMarket mkt.consistent_toMarket _
+  exact mkt.toContractsMarket.outcome_ofStable
+    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket _
 
 /-- Increasing in the lattice means weak improvement for every man. -/
 theorem le_iff_menWeaklyPrefer {μ ν : mkt.StableMatching} :
     μ ≤ ν ↔ mkt.MenWeaklyPrefer ν.matching μ.matching := by
-  change contractsEquiv mkt μ ≤ contractsEquiv mkt ν ↔ _
-  rw [Market.StableOutcomes.le_iff_sellerChosen mkt.consistent_toMarket,
-    outcome_contractsEquiv, outcome_contractsEquiv]
+  change fixedPointEquiv mkt μ ≤ fixedPointEquiv mkt ν ↔ _
+  rw [Market.StableOutcomes.le_iff_sellerChosen mkt.consistent_toContractsMarket,
+    outcome_fixedPointEquiv, outcome_fixedPointEquiv]
   exact mkt.sellerChosen_graphOf_iff_menWeaklyPrefer_of_individuallyRationalM
     ν.isStable.1.1
 
 /-- Increasing in the lattice means weak deterioration for every woman. -/
 theorem le_iff_womenWeaklyPrefer {μ ν : mkt.StableMatching} :
     μ ≤ ν ↔ mkt.WomenWeaklyPrefer μ.matching ν.matching := by
-  change contractsEquiv mkt μ ≤ contractsEquiv mkt ν ↔ _
-  rw [Market.StableOutcomes.le_iff_buyerChosen mkt.consistent_toMarket,
-    outcome_contractsEquiv, outcome_contractsEquiv]
+  change fixedPointEquiv mkt μ ≤ fixedPointEquiv mkt ν ↔ _
+  rw [Market.StableOutcomes.le_iff_buyerChosen mkt.consistent_toContractsMarket,
+    outcome_fixedPointEquiv, outcome_fixedPointEquiv]
   exact mkt.buyerChosen_graphOf_iff_womenWeaklyPrefer_of_individuallyRationalW
     μ.isStable.1.2
 

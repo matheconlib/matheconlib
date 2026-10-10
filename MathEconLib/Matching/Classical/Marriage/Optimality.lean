@@ -30,44 +30,44 @@ theorem menWeaklyPrefer_iff_womenWeaklyPrefer_via_contracts {μ ν : M ≃. W}
     mkt.MenWeaklyPrefer μ ν ↔ mkt.WomenWeaklyPrefer ν μ := by
   rw [← mkt.sellerChosen_graphOf_iff_menWeaklyPrefer_of_individuallyRationalM hμ.1.1,
     ← mkt.buyerChosen_graphOf_iff_womenWeaklyPrefer_of_individuallyRationalW hν.1.2]
-  exact mkt.toMarket.sellerChosen_iff_buyerChosen
-    mkt.substitutable_toMarket mkt.consistent_toMarket
+  exact mkt.toContractsMarket.sellerChosen_iff_buyerChosen
+    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
     ((mkt.isStableMatching_iff_stable_graphOf ν).mp hν)
     ((mkt.isStableMatching_iff_stable_graphOf μ).mp hμ)
 
-/-- The man-optimal contracts outcome, transported to a classical matching. -/
+/-- The classical matching reconstructed from the man-optimal contracts outcome. -/
 noncomputable def manOptimalMatching : M ≃. W :=
   mkt.matchingOfStable
-    (mkt.toMarket.stable_sellerOptimal
-      mkt.substitutable_toMarket
-      mkt.consistent_toMarket)
+    (mkt.toContractsMarket.stable_sellerOptimal
+      mkt.substitutable_toContractsMarket
+      mkt.consistent_toContractsMarket)
 
 @[simp] theorem graphOf_manOptimalMatching :
     mkt.graphOf mkt.manOptimalMatching =
-      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket :=
+      mkt.toContractsMarket.sellerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
   mkt.graphOf_matchingOfStable
-    (mkt.toMarket.stable_sellerOptimal
-      mkt.substitutable_toMarket
-      mkt.consistent_toMarket)
+    (mkt.toContractsMarket.stable_sellerOptimal
+      mkt.substitutable_toContractsMarket
+      mkt.consistent_toContractsMarket)
 
 theorem stable_manOptimalMatching :
     mkt.IsStableMatching mkt.manOptimalMatching :=
   mkt.stable_matchingOfStable
-    (mkt.toMarket.stable_sellerOptimal
-      mkt.substitutable_toMarket
-      mkt.consistent_toMarket)
+    (mkt.toContractsMarket.stable_sellerOptimal
+      mkt.substitutable_toContractsMarket
+      mkt.consistent_toContractsMarket)
 
 theorem le_manOptimalMatching
     {ν : M ≃. W} (hν : mkt.IsStableMatching ν) (m : M) :
     mkt.leM m (ν m) (mkt.manOptimalMatching m) := by
   have hchosen :
-      mkt.toMarket.SellerChosen
+      mkt.toContractsMarket.SellerChosen
         (mkt.graphOf mkt.manOptimalMatching)
         (mkt.graphOf ν) := by
     rw [mkt.graphOf_manOptimalMatching]
-    exact mkt.toMarket.sellerChosen_sellerOptimal
-      mkt.substitutable_toMarket
-      mkt.consistent_toMarket
+    exact mkt.toContractsMarket.sellerChosen_sellerOptimal
+      mkt.substitutable_toContractsMarket
+      mkt.consistent_toContractsMarket
       ((mkt.isStableMatching_iff_stable_graphOf ν).mp hν)
   exact mkt.menWeaklyPrefer_of_sellerChosen_graphOf hchosen m
 
@@ -82,15 +82,15 @@ theorem exists_manOptimal_stableMatching :
 
 /-! ### Symmetric extrema and their intrinsic characterizations -/
 
-/-- The woman-optimal contracts outcome, transported to a classical matching. -/
+/-- The classical matching reconstructed from the woman-optimal contracts outcome. -/
 noncomputable def womanOptimalMatching : M ≃. W :=
   mkt.matchingOfStable
-    (mkt.toMarket.stable_buyerOptimal
-      mkt.substitutable_toMarket mkt.consistent_toMarket)
+    (mkt.toContractsMarket.stable_buyerOptimal
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket)
 
 @[simp] theorem graphOf_womanOptimalMatching :
     mkt.graphOf mkt.womanOptimalMatching =
-      mkt.toMarket.buyerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket :=
+      mkt.toContractsMarket.buyerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
   mkt.graphOf_matchingOfStable _
 
 theorem stable_womanOptimalMatching :
@@ -101,11 +101,11 @@ theorem le_womanOptimalMatching
     {ν : M ≃. W} (hν : mkt.IsStableMatching ν) (w : W) :
     mkt.leW w (ν.symm w) (mkt.womanOptimalMatching.symm w) := by
   have hchosen :
-      mkt.toMarket.BuyerChosen
+      mkt.toContractsMarket.BuyerChosen
         (mkt.graphOf mkt.womanOptimalMatching) (mkt.graphOf ν) := by
     rw [mkt.graphOf_womanOptimalMatching]
-    exact mkt.toMarket.buyerChosen_buyerOptimal
-      mkt.substitutable_toMarket mkt.consistent_toMarket
+    exact mkt.toContractsMarket.buyerChosen_buyerOptimal
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
       ((mkt.isStableMatching_iff_stable_graphOf ν).mp hν)
   exact mkt.womenWeaklyPrefer_of_buyerChosen_graphOf hchosen w
 
@@ -115,11 +115,11 @@ theorem womanOptimalMatching_le
     {ν : M ≃. W} (hν : mkt.IsStableMatching ν) (m : M) :
     mkt.leM m (mkt.womanOptimalMatching m) (ν m) := by
   have hchosen :
-      mkt.toMarket.SellerChosen
+      mkt.toContractsMarket.SellerChosen
         (mkt.graphOf ν) (mkt.graphOf mkt.womanOptimalMatching) := by
     rw [mkt.graphOf_womanOptimalMatching]
-    exact mkt.toMarket.sellerChosen_buyerOptimal
-      mkt.substitutable_toMarket mkt.consistent_toMarket
+    exact mkt.toContractsMarket.sellerChosen_buyerOptimal
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
       ((mkt.isStableMatching_iff_stable_graphOf ν).mp hν)
   exact mkt.menWeaklyPrefer_of_sellerChosen_graphOf hchosen m
 
@@ -128,11 +128,11 @@ theorem manOptimalMatching_le
     {ν : M ≃. W} (hν : mkt.IsStableMatching ν) (w : W) :
     mkt.leW w (mkt.manOptimalMatching.symm w) (ν.symm w) := by
   have hchosen :
-      mkt.toMarket.BuyerChosen
+      mkt.toContractsMarket.BuyerChosen
         (mkt.graphOf ν) (mkt.graphOf mkt.manOptimalMatching) := by
     rw [mkt.graphOf_manOptimalMatching]
-    exact mkt.toMarket.buyerChosen_sellerOptimal
-      mkt.substitutable_toMarket mkt.consistent_toMarket
+    exact mkt.toContractsMarket.buyerChosen_sellerOptimal
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
       ((mkt.isStableMatching_iff_stable_graphOf ν).mp hν)
   exact mkt.womenWeaklyPrefer_of_buyerChosen_graphOf hchosen w
 
