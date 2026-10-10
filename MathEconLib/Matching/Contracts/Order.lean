@@ -343,10 +343,34 @@ variable {M}
 
 namespace StableOutcomes
 
--- State access and the subtype order are valid on the raw carrier as well.
-export FixedPointStates (state isFixedPt outcome le_iff_state_le state_injective)
-
 variable {hsub : M.Substitutable}
+
+section Accessors
+
+variable {hcons : M.Consistent}
+
+-- Field notation needs a parameter whose declared type is `StableOutcomes`.
+-- Keep these wrappers while retaining the separate, IRC-free raw accessors.
+/-- The state of a stable-outcome lattice element. -/
+def state (A : M.StableOutcomes hsub hcons) : Set X × (Set X)ᵒᵈ :=
+  FixedPointStates.state A
+
+theorem isFixedPt (A : M.StableOutcomes hsub hcons) : IsFixedPt M.daFun A.state :=
+  FixedPointStates.isFixedPt A
+
+/-- The contract set carried by a stable-outcome lattice element. -/
+def outcome (A : M.StableOutcomes hsub hcons) : Set X :=
+  FixedPointStates.outcome A
+
+/-- The inherited lattice order is the subtype order on states. -/
+@[simp] theorem le_iff_state_le {A A' : M.StableOutcomes hsub hcons} :
+    A ≤ A' ↔ A.state ≤ A'.state := Iff.rfl
+
+theorem state_injective :
+    Function.Injective (fun A : M.StableOutcomes hsub hcons => A.state) :=
+  fun _ _ h => Subtype.ext h
+
+end Accessors
 
 /-- Individual rationality uses only IRC once the state is known to be fixed. -/
 theorem indRational (hcons : M.Consistent) (A : M.StableOutcomes hsub hcons) :
