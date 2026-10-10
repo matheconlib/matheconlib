@@ -19,6 +19,3 @@ the direct proposal algorithm and its comparison with generalized DA;
 `Classical.DeferredAcceptanceFinite` supplies executable algorithms.
 -/
 
-namespace MathEconLib.Matching
-
-end MathEconLib.Matching
