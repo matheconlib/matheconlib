@@ -8,6 +8,10 @@ which covers the toolchain, the editor loop, and how to read the library's
 core files. Small, well-scoped additions to `ForMathlib/` can be suitable first
 contributions; the folder also contains substantial results.
 
+For a small documentation task, start with
+[documenting the BidderProblem umbrella (#118)](https://github.com/AxiomMath/auctionlib/issues/118).
+The issue gives the starting file, expected result, and build check.
+
 ## Design first for core layers
 
 The project-wide framework for choosing abstractions, theorem scope,
@@ -52,6 +56,14 @@ issue to coordinate an upstream contribution.
 
 Keep one canonical development. Move reusable parts of an example into the core
 when another application needs them. Core code must not import examples or tests.
+
+## Headline theorem witnesses
+
+A new or materially changed headline theorem requires a compiled client that
+constructs a concrete model, establishes its joint assumptions, and applies the
+named theorem to a meaningful conclusion. Existing clients can qualify; a
+signature pin alone does not. Expanding the historical witness set remains
+post-launch work under [#47](https://github.com/AxiomMath/auctionlib/issues/47).
 
 ## Citing sources
 
