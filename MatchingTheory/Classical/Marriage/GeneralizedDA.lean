@@ -50,8 +50,11 @@ noncomputable def deferredAcceptanceState (n : ℕ) :
 noncomputable def deferredAcceptanceOutcome (n : ℕ) : Set (M × W) :=
   mkt.toMarket.outcomeOf (mkt.deferredAcceptanceState n)
 
-/-- The generalized DA endpoint. The classical proposal algorithm and its
-agreement theorem are provided in `Classical.DeferredAcceptance`. -/
+/-- The man-optimal endpoint specification for generalized deferred acceptance.
+`exists_deferredAcceptanceOutcome_eq_graph` proves that the generalized state
+iteration eventually carries this matching. The classical proposal algorithm
+`galeShapley` and its agreement theorem are in `Classical.DeferredAcceptance`;
+this definition itself is the optimal endpoint, not an iteration procedure. -/
 noncomputable def deferredAcceptance : M ≃. W :=
   mkt.manOptimalMatching
 
@@ -92,7 +95,7 @@ theorem exists_deferredAcceptanceOutcome_eq_graph :
     manProposingInitialState, deferredAcceptance,
     graphOf_manOptimalMatching] using hn
 
-/-- Deferred acceptance computes a stable matching. -/
+/-- Some finite generalized DA iterate carries the stable man-optimal matching. -/
 theorem exists_deferredAcceptanceOutcome_stable :
     ∃ n,
       mkt.deferredAcceptanceOutcome n =
@@ -126,9 +129,11 @@ noncomputable def womanProposingDeferredAcceptanceState (n : ℕ) :
 noncomputable def womanProposingDeferredAcceptanceOutcome (n : ℕ) : Set (M × W) :=
   mkt.toMarket.outcomeOf (mkt.womanProposingDeferredAcceptanceState n)
 
-/-- The woman-proposing generalized DA endpoint, parallel to
-`deferredAcceptance`. This is the endpoint specification; the classical
-proposal algorithm is provided in `Classical.DeferredAcceptance`. -/
+/-- The woman-optimal endpoint specification for generalized deferred acceptance.
+`exists_womanProposingDeferredAcceptanceOutcome_eq_graph` proves that the
+generalized state iteration eventually carries this matching. The classical
+proposal algorithm `womanGaleShapley` and its agreement theorem are in
+`Classical.DeferredAcceptance`; this definition specifies the optimal endpoint. -/
 noncomputable def womanProposingDeferredAcceptance : M ≃. W :=
   mkt.womanOptimalMatching
 
