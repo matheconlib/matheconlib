@@ -3,6 +3,7 @@ The least substitutable enlargement of a choice function.
 -/
 import MathEconLib.Choice.Basic
 import Mathlib.Order.Bounds.Basic
+import Mathlib.Order.Closure
 
 /-!
 # The substitute hull
@@ -13,8 +14,9 @@ hereditary upper approximation (Litvakov, 1985, Theorem 5, row H), here
 defined on the full power set.
 
 The hull is the minimal substitutable pointwise enlargement of any choice
-function. It is monotone and idempotent, and its fixed points are exactly
-the substitutable choice functions. It also preserves consistency (IRC),
+function. `substituteHullClosure` bundles it as a closure operator whose
+closed elements are exactly the substitutable choice functions. It also
+preserves consistency (IRC),
 so an IRC choice function has a minimal path-independent enlargement.
 
 All results in this module hold for arbitrary types. Neither finiteness nor
@@ -77,12 +79,24 @@ theorem substituteHull_le {C D : ChoiceFunction α}
   rcases hx with ⟨hxY, Z, hYZ, hxZ⟩
   exact (substitutable_iff_chernoff.mp hD) hYZ ⟨hCD Z hxZ, hxY⟩
 
+/-- The substitute hull as a closure operator on choice functions ordered
+by pointwise inclusion. Its closedness predicate is substitutability. -/
+def substituteHullClosure : ClosureOperator (ChoiceFunction α) :=
+  ClosureOperator.ofPred substituteHull Substitutable le_substituteHull
+    substituteHull_substitutable (fun _ _ hCD hD => substituteHull_le hD hCD)
+
+@[simp] theorem substituteHullClosure_apply (C : ChoiceFunction α) :
+    substituteHullClosure C = C.substituteHull := rfl
+
+@[simp] theorem substituteHullClosure_isClosed (C : ChoiceFunction α) :
+    substituteHullClosure.IsClosed C ↔ C.Substitutable := Iff.rfl
+
 /-- For a substitutable upper bound, bounding the hull is equivalent to
 bounding the original choice function. -/
 theorem substituteHull_le_iff {C D : ChoiceFunction α}
     (hD : D.Substitutable) :
     C.substituteHull ≤ D ↔ C ≤ D :=
-  ⟨fun h => le_trans (le_substituteHull C) h, substituteHull_le hD⟩
+  (show substituteHullClosure.IsClosed D from hD).closure_le_iff
 
 /-- The hull is the least substitutable pointwise enlargement. -/
 theorem isLeast_substituteHull (C : ChoiceFunction α) :
@@ -93,29 +107,19 @@ theorem isLeast_substituteHull (C : ChoiceFunction α) :
 
 /-- The hull operator is monotone for pointwise inclusion. -/
 theorem monotone_substituteHull :
-    Monotone (substituteHull : ChoiceFunction α → ChoiceFunction α) := by
-  intro C D hCD
-  exact substituteHull_le (substituteHull_substitutable D)
-    (le_trans hCD (le_substituteHull D))
+    Monotone (substituteHull : ChoiceFunction α → ChoiceFunction α) :=
+  substituteHullClosure.monotone
 
 /-- A second application of the hull adds nothing. -/
 @[simp] theorem substituteHull_idem (C : ChoiceFunction α) :
     C.substituteHull.substituteHull = C.substituteHull :=
-  le_antisymm
-    (substituteHull_le (substituteHull_substitutable C) le_rfl)
-    (le_substituteHull C.substituteHull)
+  substituteHullClosure.idempotent C
 
 /-- The fixed points of the hull are exactly the substitutable choice
 functions. -/
 theorem substituteHull_eq_self_iff (C : ChoiceFunction α) :
-    C.substituteHull = C ↔ C.Substitutable := by
-  constructor
-  · intro h
-    have hsub := substituteHull_substitutable C
-    rw [h] at hsub
-    exact hsub
-  · intro hsub
-    exact le_antisymm (substituteHull_le hsub le_rfl) (le_substituteHull C)
+    C.substituteHull = C ↔ C.Substitutable :=
+  substituteHullClosure.isClosed_iff.symm
 
 /-- The substitute hull preserves IRC, without finiteness assumptions.
 

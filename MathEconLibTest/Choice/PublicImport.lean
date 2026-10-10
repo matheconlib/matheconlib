@@ -21,4 +21,10 @@ open MathEconLib.Choice
 #check ChoiceFunction.Substitutable
 #check ChoiceFunction.Consistent
 
+example {α : Type*} (C : ChoiceFunction α) :
+    ChoiceFunction.substituteHullClosure C = C.substituteHull := rfl
+
+example {α : Type*} (C : ChoiceFunction α) :
+    ChoiceFunction.substituteHullClosure.IsClosed C ↔ C.Substitutable := Iff.rfl
+
 end MathEconLibTest.Choice
