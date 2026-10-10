@@ -6,6 +6,9 @@ Authoring rules live in CONTRIBUTING.md; this file is the other side of the
 table. A case index at the end maps each rule to the PRs where it happened.
 Project-wide design principles live in [`DESIGN.md`](../DESIGN.md); this file
 describes how review applies them.
+When reviewing an economic model family or instance, use the
+[economic model design principles](../DESIGN.md#design-principles-for-economic-models)
+alongside the review order below.
 
 ## What review is for
 
@@ -43,12 +46,22 @@ docstring is treated as a pre-merge blocker.
 5. Witnesses. Headline hypotheses and advertised features are certified by an
    instance or end-to-end example that actually exercises them; constructing
    only the input certifies nothing. Reuse existing examples and cross-check an
-   independent formula when available.
+   independent formula when available. Check the
+   [placement rules](../CONTRIBUTING.md#examples-and-tests): reusable definitions,
+   results, constructions, and instances belong with the core API; worked
+   demonstrations belong in examples; API and regression checks belong in tests.
+   Example-local definitions and instances may stay with their demonstration.
+   Tests should import a worked example rather than duplicate it, and core code
+   must not import examples or tests.
 6. Machines first, then you. Do not relitigate what CI checks. When CI did
    not run (stacked PRs skip it), do the missing run yourself and say so in
    the review.
 7. Docs and attribution. Docstrings and README claims are checked against
-   the actual declarations; ported files carry correct author lines and a
+   the actual declarations. Check the
+   [citation guidance](../CONTRIBUTING.md#citing-sources): paper- or book-based
+   work names its author, year, title, and DOI or stable link, with theorem or
+   section numbers when available and adaptations stated. Standard toy examples
+   need no invented citation. Ported files carry correct author lines and a
    provenance note.
 
 ## How to write the review
