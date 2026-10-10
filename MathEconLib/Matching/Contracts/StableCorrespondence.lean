@@ -495,10 +495,14 @@ theorem isFixedPt_stateOf (hsub : M.Substitutable) (hcons : M.Consistent)
 
 /-! ### Theorem 2.2 / 3.2: existence and the two extremal states -/
 
-noncomputable def sellerOptimal (hsub : M.Substitutable) : Set X :=
+/-- The seller-optimal stable contract set, under substitutability and IRC. -/
+noncomputable def sellerOptimal (hsub : M.Substitutable)
+    (_hcons : M.Consistent) : Set X :=
   M.outcomeOf (OrderHom.gfp (M.daHom hsub))
 
-noncomputable def buyerOptimal (hsub : M.Substitutable) : Set X :=
+/-- The buyer-optimal stable contract set, under substitutability and IRC. -/
+noncomputable def buyerOptimal (hsub : M.Substitutable)
+    (_hcons : M.Consistent) : Set X :=
   M.outcomeOf (OrderHom.lfp (M.daHom hsub))
 
 theorem isFixedPt_gfp_daHom (hsub : M.Substitutable) :
@@ -518,17 +522,17 @@ theorem lfp_le_daHom (hsub : M.Substitutable) {q : Set X × (Set X)ᵒᵈ}
   (M.daHom hsub).isLeast_lfp.2 hq
 
 theorem stable_sellerOptimal (hsub : M.Substitutable) (hcons : M.Consistent) :
-    M.Stable (M.sellerOptimal hsub) :=
+    M.Stable (M.sellerOptimal hsub hcons) :=
   M.stable_outcomeOf hsub hcons (M.isFixedPt_gfp_daHom hsub)
 
 theorem stable_buyerOptimal (hsub : M.Substitutable) (hcons : M.Consistent) :
-    M.Stable (M.buyerOptimal hsub) :=
+    M.Stable (M.buyerOptimal hsub hcons) :=
   M.stable_outcomeOf hsub hcons (M.isFixedPt_lfp_daHom hsub)
 
 /-- Existence of stable outcomes (Hatfield–Milgrom/Fleiner). -/
 theorem exists_stable (hsub : M.Substitutable) (hcons : M.Consistent) :
     ∃ A : Set X, M.Stable A :=
-  ⟨M.sellerOptimal hsub, M.stable_sellerOptimal hsub hcons⟩
+  ⟨M.sellerOptimal hsub hcons, M.stable_sellerOptimal hsub hcons⟩
 
 /-- On finite contract types, aggregate demand supplies the IRC hypothesis. -/
 theorem exists_stable_of_sizeMonotone [Finite X]

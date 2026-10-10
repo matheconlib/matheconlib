@@ -44,7 +44,7 @@ noncomputable def manOptimalMatching : M ≃. W :=
 
 @[simp] theorem graphOf_manOptimalMatching :
     mkt.graphOf mkt.manOptimalMatching =
-      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket :=
+      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket :=
   mkt.graphOf_matchingOfStable
     (mkt.toMarket.stable_sellerOptimal
       mkt.substitutable_toMarket
@@ -90,7 +90,7 @@ noncomputable def womanOptimalMatching : M ≃. W :=
 
 @[simp] theorem graphOf_womanOptimalMatching :
     mkt.graphOf mkt.womanOptimalMatching =
-      mkt.toMarket.buyerOptimal mkt.substitutable_toMarket :=
+      mkt.toMarket.buyerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket :=
   mkt.graphOf_matchingOfStable _
 
 theorem stable_womanOptimalMatching :

@@ -14,6 +14,33 @@ open MathEconLib.Choice MathEconLib.Matching
 #check MathEconLib.Matching.Market
 #check MathEconLib.Matching.MarriageMarket
 
+#check MathEconLib.Matching.Market.FixedPointStates.state
+#check MathEconLib.Matching.Market.StableOutcomes.state
+
+section Contracts
+
+variable {B S X : Type*} (mkt : Market B S X)
+
+example (hsub : mkt.Substitutable) : CompleteLattice (mkt.FixedPointStates hsub) :=
+  inferInstance
+
+example (hsub : mkt.Substitutable) (hcons : mkt.Consistent) :
+    CompleteLattice (mkt.StableOutcomes hsub hcons) := inferInstance
+
+example (hsub : mkt.Substitutable) (hcons : mkt.Consistent)
+    (A : mkt.StableOutcomes hsub hcons) : mkt.Stable A.outcome :=
+  Market.StableOutcomes.stable hcons A
+
+example (hsub : mkt.Substitutable) (hcons : mkt.Consistent) :
+    mkt.Stable (mkt.sellerOptimal hsub hcons) :=
+  mkt.stable_sellerOptimal hsub hcons
+
+example (hsub : mkt.Substitutable) (hcons : mkt.Consistent) :
+    mkt.Stable (mkt.buyerOptimal hsub hcons) :=
+  mkt.stable_buyerOptimal hsub hcons
+
+end Contracts
+
 section Marriage
 
 variable {M W : Type*} (mkt : MarriageMarket M W)

@@ -62,37 +62,37 @@ theorem exists_iterate_daFun_bot (hsub : M.Substitutable) [Finite X] :
   rw [hbot]
   exact hn
 
-/-- Outcome-level convergence to the named `sellerOptimal` endpoint.
-Its stability and optimality follow when IRC is also imposed. -/
+/-- Outcome-level convergence to the seller-optimal stable endpoint.
+The underlying fixed-point convergence theorem needs no IRC assumption. -/
 theorem exists_iterate_outcomeOf_eq_sellerOptimal (hsub : M.Substitutable)
-    [Finite X] :
+    (hcons : M.Consistent) [Finite X] :
     ∃ n, M.outcomeOf (M.daFun^[n] (Set.univ, toDual (∅ : Set X)))
-      = M.sellerOptimal hsub := by
+      = M.sellerOptimal hsub hcons := by
   obtain ⟨n, hn⟩ := M.exists_iterate_daFun_top hsub
   exact ⟨n, congrArg M.outcomeOf hn⟩
 
 theorem exists_iterate_outcomeOf_eq_buyerOptimal (hsub : M.Substitutable)
-    [Finite X] :
+    (hcons : M.Consistent) [Finite X] :
     ∃ n, M.outcomeOf (M.daFun^[n] (∅, toDual (Set.univ : Set X)))
-      = M.buyerOptimal hsub := by
+      = M.buyerOptimal hsub hcons := by
   obtain ⟨n, hn⟩ := M.exists_iterate_daFun_bot hsub
   exact ⟨n, congrArg M.outcomeOf hn⟩
 
 /-- Lattice form: iteration from `⊤` reaches the state of
 `sellerOptimalOutcome`, the top element of the fixed-point lattice. -/
 theorem exists_iterate_daFun_top_eq_state (hsub : M.Substitutable)
-    [Finite X] :
+    (hcons : M.Consistent) [Finite X] :
     ∃ n, M.daFun^[n] (Set.univ, toDual (∅ : Set X)) =
-      (M.sellerOptimalOutcome hsub).state := by
+      (M.sellerOptimalOutcome hsub hcons).state := by
   obtain ⟨n, hn⟩ := M.exists_iterate_daFun_top hsub
-  exact ⟨n, hn.trans (M.state_sellerOptimalOutcome hsub).symm⟩
+  exact ⟨n, hn.trans (M.state_sellerOptimalOutcome hsub hcons).symm⟩
 
 theorem exists_iterate_daFun_bot_eq_state (hsub : M.Substitutable)
-    [Finite X] :
+    (hcons : M.Consistent) [Finite X] :
     ∃ n, M.daFun^[n] (∅, toDual (Set.univ : Set X)) =
-      (M.buyerOptimalOutcome hsub).state := by
+      (M.buyerOptimalOutcome hsub hcons).state := by
   obtain ⟨n, hn⟩ := M.exists_iterate_daFun_bot hsub
-  exact ⟨n, hn.trans (M.state_buyerOptimalOutcome hsub).symm⟩
+  exact ⟨n, hn.trans (M.state_buyerOptimalOutcome hsub hcons).symm⟩
 
 end Market
 

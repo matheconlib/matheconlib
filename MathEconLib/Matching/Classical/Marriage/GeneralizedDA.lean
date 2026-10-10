@@ -79,10 +79,10 @@ theorem exists_deferredAcceptanceState_eq_terminal :
     ∃ n,
       mkt.deferredAcceptanceState n =
         (mkt.toMarket.sellerOptimalOutcome
-          mkt.substitutable_toMarket).state := by
+          mkt.substitutable_toMarket mkt.consistent_toMarket).state := by
   simpa [deferredAcceptanceState, manProposingInitialState] using
     mkt.toMarket.exists_iterate_daFun_top_eq_state
-      mkt.substitutable_toMarket
+      mkt.substitutable_toMarket mkt.consistent_toMarket
 
 /-- Outcome-level termination of deferred acceptance. -/
 theorem exists_deferredAcceptanceOutcome_eq_graph :
@@ -91,7 +91,7 @@ theorem exists_deferredAcceptanceOutcome_eq_graph :
         mkt.graphOf mkt.deferredAcceptance := by
   obtain ⟨n, hn⟩ :=
     mkt.toMarket.exists_iterate_outcomeOf_eq_sellerOptimal
-      mkt.substitutable_toMarket
+      mkt.substitutable_toMarket mkt.consistent_toMarket
   refine ⟨n, ?_⟩
   simpa [deferredAcceptanceOutcome, deferredAcceptanceState,
     manProposingInitialState, deferredAcceptance,
@@ -158,15 +158,17 @@ theorem womanProposingDeferredAcceptance_manPessimal
 
 theorem exists_womanProposingDeferredAcceptanceState_eq_terminal :
     ∃ n, mkt.womanProposingDeferredAcceptanceState n =
-      (mkt.toMarket.buyerOptimalOutcome mkt.substitutable_toMarket).state := by
+      (mkt.toMarket.buyerOptimalOutcome
+        mkt.substitutable_toMarket mkt.consistent_toMarket).state := by
   simpa [womanProposingDeferredAcceptanceState, womanProposingInitialState] using
-    mkt.toMarket.exists_iterate_daFun_bot_eq_state mkt.substitutable_toMarket
+    mkt.toMarket.exists_iterate_daFun_bot_eq_state
+      mkt.substitutable_toMarket mkt.consistent_toMarket
 
 theorem exists_womanProposingDeferredAcceptanceOutcome_eq_graph :
     ∃ n, mkt.womanProposingDeferredAcceptanceOutcome n =
       mkt.graphOf mkt.womanOptimalMatching := by
   obtain ⟨n, hn⟩ := mkt.toMarket.exists_iterate_outcomeOf_eq_buyerOptimal
-    mkt.substitutable_toMarket
+    mkt.substitutable_toMarket mkt.consistent_toMarket
   refine ⟨n, ?_⟩
   simpa [womanProposingDeferredAcceptanceOutcome, womanProposingDeferredAcceptanceState,
     womanProposingInitialState, graphOf_womanOptimalMatching] using hn

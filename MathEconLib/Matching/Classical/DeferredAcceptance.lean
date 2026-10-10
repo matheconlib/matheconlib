@@ -363,7 +363,7 @@ seller-optimal outcome. This is an equality of terminal outcomes; it does not
 assert that the classical and generalized iterations coincide round by round. -/
 theorem gs_terminal_proposals_eq_sellerOptimal :
     mkt.gsProposals (mkt.gsRejected mkt.gsStoppingTime) =
-      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket := by
+      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket := by
   calc mkt.gsProposals (mkt.gsRejected mkt.gsStoppingTime)
       = mkt.graphOf mkt.galeShapley :=
           (mkt.graphOf_gsMatchingAt _ mkt.gs_stoppingTime_terminal).symm

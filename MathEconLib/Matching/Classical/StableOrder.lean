@@ -72,7 +72,8 @@ noncomputable def graphEquiv :
 /-- Stable classical matchings and the general fixed-point lattice have
 the same carrier through the graph and fixed-point correspondences. -/
 noncomputable def contractsEquiv :
-    mkt.StableMatching ≃ mkt.toMarket.StableOutcomes mkt.substitutable_toMarket :=
+    mkt.StableMatching ≃
+      mkt.toMarket.StableOutcomes mkt.substitutable_toMarket mkt.consistent_toMarket :=
   (graphEquiv mkt).trans
     (mkt.toMarket.stableEquivFixedPoints
       mkt.substitutable_toMarket mkt.consistent_toMarket)
@@ -104,7 +105,8 @@ noncomputable instance : CompleteLattice mkt.StableMatching := by
 
 /-- The carrier equivalence preserves the transported lattice order. -/
 noncomputable def contractsOrderIso :
-    mkt.StableMatching ≃o mkt.toMarket.StableOutcomes mkt.substitutable_toMarket where
+    mkt.StableMatching ≃o
+      mkt.toMarket.StableOutcomes mkt.substitutable_toMarket mkt.consistent_toMarket where
   toEquiv := contractsEquiv mkt
   map_rel_iff' := Iff.rfl
 

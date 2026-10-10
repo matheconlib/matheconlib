@@ -243,7 +243,7 @@ now instances of the dictionary at `q := gfp`, not separate arguments. -/
 
 theorem sellerChosen_sellerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
-    M.SellerChosen (M.sellerOptimal hsub) A := by
+    M.SellerChosen (M.sellerOptimal hsub hcons) A := by
   have hp : IsFixedPt M.daFun (M.stateOf A) := M.isFixedPt_stateOf hsub hcons hA
   have h := M.sellerChosen_outcomeOf_of_le_of_consistent hcons
     (M.isFixedPt_gfp_daHom hsub) (M.le_gfp_daHom hsub hp)
@@ -254,7 +254,7 @@ theorem sellerChosen_sellerOptimal (hsub : M.Substitutable)
 buyer-chosen over it. -/
 theorem buyerChosen_sellerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
-    M.BuyerChosen A (M.sellerOptimal hsub) := by
+    M.BuyerChosen A (M.sellerOptimal hsub hcons) := by
   have hp : IsFixedPt M.daFun (M.stateOf A) := M.isFixedPt_stateOf hsub hcons hA
   have h := M.buyerChosen_outcomeOf_of_le_of_consistent hcons hp
     (M.le_gfp_daHom hsub hp)
@@ -263,7 +263,7 @@ theorem buyerChosen_sellerOptimal (hsub : M.Substitutable)
 
 theorem buyerChosen_buyerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
-    M.BuyerChosen (M.buyerOptimal hsub) A := by
+    M.BuyerChosen (M.buyerOptimal hsub hcons) A := by
   have hq : IsFixedPt M.daFun (M.stateOf A) := M.isFixedPt_stateOf hsub hcons hA
   have h := M.buyerChosen_outcomeOf_of_le_of_consistent hcons
     (M.isFixedPt_lfp_daHom hsub) (M.lfp_le_daHom hsub hq)
@@ -272,7 +272,7 @@ theorem buyerChosen_buyerOptimal (hsub : M.Substitutable)
 
 theorem sellerChosen_buyerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
-    M.SellerChosen A (M.buyerOptimal hsub) := by
+    M.SellerChosen A (M.buyerOptimal hsub hcons) := by
   have hq : IsFixedPt M.daFun (M.stateOf A) := M.isFixedPt_stateOf hsub hcons hA
   have h := M.sellerChosen_outcomeOf_of_le_of_consistent hcons hq
     (M.lfp_le_daHom hsub hq)
@@ -281,24 +281,60 @@ theorem sellerChosen_buyerOptimal (hsub : M.Substitutable)
 
 /-! ### The lattice of fixed points and its stable-outcome interpretation
 
-Using fixed points as the carrier inherits mathlib's `CompleteLattice`
-instance directly. `StableOutcomes hsub` exists with substitutability alone;
-its interpretation as stable outcomes, and injectivity of `outcome`, require
-IRC. All economic statements below expose that additional hypothesis.
+`FixedPointStates hsub` inherits mathlib's `CompleteLattice` instance without
+IRC. The economic interface `StableOutcomes hsub hcons` also requests IRC,
+which ensures that every carried outcome is stable and uniquely determines
+its state. This is a reducible abbreviation of the same carrier, so its proof
+parameter is an API convention, not a distinct type-level restriction.
 
 The lattice operations need not agree with ambient componentwise operations.
 The API uses the order characterization rather than unfolding those operations.
 -/
 
 /-- The Knaster–Tarski lattice of deferred-acceptance fixed points.
-Its stable-outcome interpretation requires IRC. This abbreviation inherits
-the `CompleteLattice` instance on `fixedPoints` directly. -/
-abbrev StableOutcomes (M : Market B S X) (hsub : M.Substitutable) : Type w :=
+No IRC assumption is needed for this order-theoretic carrier. -/
+abbrev FixedPointStates (M : Market B S X) (hsub : M.Substitutable) : Type w :=
   fixedPoints (M.daHom hsub)
+
+/-- The stable-outcome interface to the fixed-point lattice.
+IRC gives the economic interpretation. The carrier and its complete lattice
+are definitionally those of `FixedPointStates`; the extra proof parameter
+records the assumptions expected at this interface. -/
+abbrev StableOutcomes (M : Market B S X) (hsub : M.Substitutable)
+    (_hcons : M.Consistent) : Type w :=
+  M.FixedPointStates hsub
+
+section FixedPointStatesAPI
+
+variable {M}
+
+namespace FixedPointStates
+
+variable {hsub : M.Substitutable}
+
+/-- The state of a fixed-point lattice element. -/
+def state (A : M.FixedPointStates hsub) : Set X × (Set X)ᵒᵈ := A.1
+
+theorem isFixedPt (A : M.FixedPointStates hsub) : IsFixedPt M.daFun A.state := A.2
+
+/-- The contract set carried by a fixed point; its stability requires IRC. -/
+def outcome (A : M.FixedPointStates hsub) : Set X := M.outcomeOf A.state
+
+/-- The inherited lattice order is the subtype order on states. -/
+@[simp] theorem le_iff_state_le {A A' : M.FixedPointStates hsub} :
+    A ≤ A' ↔ A.state ≤ A'.state := Iff.rfl
+
+theorem state_injective :
+    Function.Injective (fun A : M.FixedPointStates hsub => A.state) :=
+  fun _ _ h => Subtype.ext h
+
+end FixedPointStates
+
+end FixedPointStatesAPI
 
 /-- Package a stable outcome as a lattice element. -/
 def ofStable (hsub : M.Substitutable) (hcons : M.Consistent) {A : Set X}
-    (hA : M.Stable A) : M.StableOutcomes hsub :=
+    (hA : M.Stable A) : M.StableOutcomes hsub hcons :=
   ⟨M.stateOf A, M.isFixedPt_stateOf hsub hcons hA⟩
 
 section StableOutcomesAPI
@@ -307,51 +343,38 @@ variable {M}
 
 namespace StableOutcomes
 
+-- State access and the subtype order are valid on the raw carrier as well.
+export FixedPointStates (state isFixedPt outcome le_iff_state_le state_injective)
+
 variable {hsub : M.Substitutable}
 
-/-- The state of a lattice element. -/
-def state (A : M.StableOutcomes hsub) : Set X × (Set X)ᵒᵈ := A.1
-
-theorem isFixedPt (A : M.StableOutcomes hsub) : IsFixedPt M.daFun A.state := A.2
-
-/-- The outcome of a lattice element. -/
-def outcome (A : M.StableOutcomes hsub) : Set X := M.outcomeOf A.state
-
 /-- Individual rationality uses only IRC once the state is known to be fixed. -/
-theorem indRational (A : M.StableOutcomes hsub) (hcons : M.Consistent) :
+theorem indRational (hcons : M.Consistent) (A : M.StableOutcomes hsub hcons) :
     M.IndRational A.outcome :=
   M.indRational_outcomeOf hcons A.isFixedPt
 
-theorem stable (A : M.StableOutcomes hsub) (hcons : M.Consistent) :
+theorem stable (hcons : M.Consistent) (A : M.StableOutcomes hsub hcons) :
     M.Stable A.outcome :=
   M.stable_outcomeOf hsub hcons A.isFixedPt
 
-theorem state_eq_stateOf (A : M.StableOutcomes hsub) (hcons : M.Consistent) :
+theorem state_eq_stateOf (hcons : M.Consistent) (A : M.StableOutcomes hsub hcons) :
     A.state = M.stateOf A.outcome :=
   (M.stateOf_outcomeOf hsub hcons A.isFixedPt).symm
 
-/-- The inherited lattice order is the subtype order on states. -/
-@[simp] theorem le_iff_state_le {A A' : M.StableOutcomes hsub} :
-    A ≤ A' ↔ A.state ≤ A'.state := Iff.rfl
-
-theorem state_injective :
-    Function.Injective (fun A : M.StableOutcomes hsub => A.state) :=
-  fun _ _ h => Subtype.ext h
-
 theorem outcome_injective (hcons : M.Consistent) :
-    Function.Injective (fun A : M.StableOutcomes hsub => A.outcome) := by
+    Function.Injective (fun A : M.StableOutcomes hsub hcons => A.outcome) := by
   intro A A' hout
   exact Subtype.ext (M.outcomeOf_injOn_fixedPoints hsub hcons A.isFixedPt A'.isFixedPt hout)
 
 /-- The order dictionary on the lattice: `≤` is unanimous seller choice. -/
 theorem le_iff_sellerChosen (hcons : M.Consistent)
-    {A A' : M.StableOutcomes hsub} :
+    {A A' : M.StableOutcomes hsub hcons} :
     A ≤ A' ↔ M.SellerChosen A'.outcome A.outcome :=
   M.le_iff_sellerChosen_outcomeOf hsub hcons A.isFixedPt A'.isFixedPt
 
 /-- …and the reverse of unanimous buyer choice. -/
 theorem le_iff_buyerChosen (hcons : M.Consistent)
-    {A A' : M.StableOutcomes hsub} :
+    {A A' : M.StableOutcomes hsub hcons} :
     A ≤ A' ↔ M.BuyerChosen A.outcome A'.outcome :=
   M.le_iff_buyerChosen_outcomeOf hsub hcons A.isFixedPt A'.isFixedPt
 
@@ -364,9 +387,9 @@ This is an `Equiv`; no preference-order instance is installed on the subtype
 of stable contract sets. The order dictionary is supplied separately. -/
 def stableEquivFixedPoints (hsub : M.Substitutable)
     (hcons : M.Consistent) :
-    {A : Set X // M.Stable A} ≃ M.StableOutcomes hsub where
+    {A : Set X // M.Stable A} ≃ M.StableOutcomes hsub hcons where
   toFun A := M.ofStable hsub hcons A.2
-  invFun p := ⟨p.outcome, p.stable hcons⟩
+  invFun p := ⟨p.outcome, StableOutcomes.stable hcons p⟩
   left_inv A := Subtype.ext (M.outcomeOf_stateOf_of_stable A.2)
   right_inv p := Subtype.ext (M.stateOf_outcomeOf hsub hcons p.isFixedPt)
 
@@ -377,57 +400,57 @@ def stableEquivFixedPoints (hsub : M.Substitutable)
 
 /-! #### Orientation
 
-With IRC, `⊤` is seller-optimal and buyer-pessimal, while `⊥` is buyer-optimal
-and seller-pessimal. This orientation follows from placing `OrderDual` on the
-buyer-available coordinate. The named extrema expose that convention to
-downstream results. -/
+`⊤` is seller-optimal and buyer-pessimal, while `⊥` is buyer-optimal and
+seller-pessimal. This orientation follows from placing `OrderDual` on the
+buyer-available coordinate. The named extrema request IRC to expose their
+economic interpretation to downstream results. -/
 
-/-- The top fixed point, interpreted under IRC as the seller-optimal stable outcome. -/
-abbrev sellerOptimalOutcome (M : Market B S X) (hsub : M.Substitutable) :
-    M.StableOutcomes hsub := ⊤
+/-- The seller-optimal stable outcome, carried by the greatest fixed point. -/
+abbrev sellerOptimalOutcome (M : Market B S X) (hsub : M.Substitutable)
+    (hcons : M.Consistent) : M.StableOutcomes hsub hcons := ⊤
 
-/-- The bottom fixed point, interpreted under IRC as the buyer-optimal stable outcome. -/
-abbrev buyerOptimalOutcome (M : Market B S X) (hsub : M.Substitutable) :
-    M.StableOutcomes hsub := ⊥
+/-- The buyer-optimal stable outcome, carried by the least fixed point. -/
+abbrev buyerOptimalOutcome (M : Market B S X) (hsub : M.Substitutable)
+    (hcons : M.Consistent) : M.StableOutcomes hsub hcons := ⊥
 
 /-- The top fixed point is the greatest fixed point of the DA operator. -/
-theorem state_sellerOptimalOutcome (hsub : M.Substitutable) :
-    (M.sellerOptimalOutcome hsub).state = OrderHom.gfp (M.daHom hsub) :=
+theorem state_sellerOptimalOutcome (hsub : M.Substitutable) (hcons : M.Consistent) :
+    (M.sellerOptimalOutcome hsub hcons).state = OrderHom.gfp (M.daHom hsub) :=
   (M.daHom hsub).fixedPoints_val_top
 
 /-- The bottom fixed point is the least fixed point of the DA operator. -/
-theorem state_buyerOptimalOutcome (hsub : M.Substitutable) :
-    (M.buyerOptimalOutcome hsub).state = OrderHom.lfp (M.daHom hsub) :=
+theorem state_buyerOptimalOutcome (hsub : M.Substitutable) (hcons : M.Consistent) :
+    (M.buyerOptimalOutcome hsub hcons).state = OrderHom.lfp (M.daHom hsub) :=
   (M.daHom hsub).fixedPoints_val_bot
 
-theorem outcome_sellerOptimalOutcome (hsub : M.Substitutable) :
-    (M.sellerOptimalOutcome hsub).outcome = M.sellerOptimal hsub :=
-  congrArg M.outcomeOf (M.state_sellerOptimalOutcome hsub)
+theorem outcome_sellerOptimalOutcome (hsub : M.Substitutable) (hcons : M.Consistent) :
+    (M.sellerOptimalOutcome hsub hcons).outcome = M.sellerOptimal hsub hcons :=
+  congrArg M.outcomeOf (M.state_sellerOptimalOutcome hsub hcons)
 
-theorem outcome_buyerOptimalOutcome (hsub : M.Substitutable) :
-    (M.buyerOptimalOutcome hsub).outcome = M.buyerOptimal hsub :=
-  congrArg M.outcomeOf (M.state_buyerOptimalOutcome hsub)
+theorem outcome_buyerOptimalOutcome (hsub : M.Substitutable) (hcons : M.Consistent) :
+    (M.buyerOptimalOutcome hsub hcons).outcome = M.buyerOptimal hsub hcons :=
+  congrArg M.outcomeOf (M.state_buyerOptimalOutcome hsub hcons)
 
 /-- Seller-optimality, lattice form. -/
 theorem sellerChosen_sellerOptimalOutcome (hsub : M.Substitutable)
-    (hcons : M.Consistent) (A : M.StableOutcomes hsub) :
-    M.SellerChosen (M.sellerOptimalOutcome hsub).outcome A.outcome :=
+    (hcons : M.Consistent) (A : M.StableOutcomes hsub hcons) :
+    M.SellerChosen (M.sellerOptimalOutcome hsub hcons).outcome A.outcome :=
   (StableOutcomes.le_iff_sellerChosen hcons).mp le_top
 
 /-- Buyer-pessimality, lattice form. -/
 theorem buyerChosen_sellerOptimalOutcome (hsub : M.Substitutable)
-    (hcons : M.Consistent) (A : M.StableOutcomes hsub) :
-    M.BuyerChosen A.outcome (M.sellerOptimalOutcome hsub).outcome :=
+    (hcons : M.Consistent) (A : M.StableOutcomes hsub hcons) :
+    M.BuyerChosen A.outcome (M.sellerOptimalOutcome hsub hcons).outcome :=
   (StableOutcomes.le_iff_buyerChosen hcons).mp le_top
 
 theorem buyerChosen_buyerOptimalOutcome (hsub : M.Substitutable)
-    (hcons : M.Consistent) (A : M.StableOutcomes hsub) :
-    M.BuyerChosen (M.buyerOptimalOutcome hsub).outcome A.outcome :=
+    (hcons : M.Consistent) (A : M.StableOutcomes hsub hcons) :
+    M.BuyerChosen (M.buyerOptimalOutcome hsub hcons).outcome A.outcome :=
   (StableOutcomes.le_iff_buyerChosen hcons).mp bot_le
 
 theorem sellerChosen_buyerOptimalOutcome (hsub : M.Substitutable)
-    (hcons : M.Consistent) (A : M.StableOutcomes hsub) :
-    M.SellerChosen A.outcome (M.buyerOptimalOutcome hsub).outcome :=
+    (hcons : M.Consistent) (A : M.StableOutcomes hsub hcons) :
+    M.SellerChosen A.outcome (M.buyerOptimalOutcome hsub hcons).outcome :=
   (StableOutcomes.le_iff_sellerChosen hcons).mp bot_le
 
 /-! ### Ambient and fixed-point lattice operations
@@ -454,14 +477,14 @@ theorem daFun_inf_le (hsub : M.Substitutable) {p q : Set X × (Set X)ᵒᵈ}
 
 /-- If the componentwise join is fixed, it agrees with the fixed-point join. -/
 theorem state_sup_of_isFixedPt {hsub : M.Substitutable}
-    {A A' : M.StableOutcomes hsub}
+    {A A' : M.FixedPointStates hsub}
     (h : IsFixedPt M.daFun (A.state ⊔ A'.state)) :
     (A ⊔ A').state = A.state ⊔ A'.state :=
   (M.daHom hsub).fixedPoints_val_sup_of_isFixedPt (p := A) (q := A') h
 
 /-- If the componentwise meet is fixed, it agrees with the fixed-point meet. -/
 theorem state_inf_of_isFixedPt {hsub : M.Substitutable}
-    {A A' : M.StableOutcomes hsub}
+    {A A' : M.FixedPointStates hsub}
     (h : IsFixedPt M.daFun (A.state ⊓ A'.state)) :
     (A ⊓ A').state = A.state ⊓ A'.state :=
   (M.daHom hsub).fixedPoints_val_inf_of_isFixedPt (p := A) (q := A') h

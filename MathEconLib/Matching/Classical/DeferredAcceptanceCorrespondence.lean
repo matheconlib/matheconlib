@@ -111,7 +111,7 @@ theorem stateOf_graphOf_gsMatchingAt_eq_gfp (n : ℕ)
   rw [mkt.outcomeOf_stateOf_graphOf_gsMatchingAt n hn]
   change mkt.toMarket.SellerChosen
     (mkt.graphOf (mkt.gsMatchingAt (mkt.gsRejected n) hn))
-    (mkt.toMarket.sellerOptimal mkt.substitutable_toMarket)
+    (mkt.toMarket.sellerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket)
   rw [← mkt.graphOf_manOptimalMatching]
   apply mkt.sellerChosen_graphOf_of_individuallyRationalM
     (mkt.individuallyRational_gsMatchingAt (mkt.gsRejected n) hn).1
@@ -123,7 +123,7 @@ theorem stateOf_graphOf_gsMatchingAt_eq_gfp (n : ℕ)
 theorem graphOf_gsMatchingAt_eq_sellerOptimal_via_fixedPoints (n : ℕ)
     (hn : IsFixedPt mkt.gsStep (mkt.gsRejected n)) :
     mkt.graphOf (mkt.gsMatchingAt (mkt.gsRejected n) hn) =
-      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket := by
+      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket := by
   calc
     mkt.graphOf (mkt.gsMatchingAt (mkt.gsRejected n) hn) =
         mkt.toMarket.outcomeOf
@@ -136,7 +136,7 @@ theorem graphOf_gsMatchingAt_eq_sellerOptimal_via_fixedPoints (n : ℕ)
 
 theorem graphOf_galeShapley_eq_sellerOptimal_via_fixedPoints :
     mkt.graphOf mkt.galeShapley =
-      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket :=
+      mkt.toMarket.sellerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket :=
   mkt.graphOf_gsMatchingAt_eq_sellerOptimal_via_fixedPoints
     mkt.gsStoppingTime mkt.gs_stoppingTime_terminal
 
@@ -164,7 +164,7 @@ theorem womanGaleShapley_eq_womanProposingDeferredAcceptance_via_fixedPoints :
 
 theorem graphOf_womanGaleShapley_eq_buyerOptimal_via_fixedPoints :
     mkt.graphOf mkt.womanGaleShapley =
-      mkt.toMarket.buyerOptimal mkt.substitutable_toMarket := by
+      mkt.toMarket.buyerOptimal mkt.substitutable_toMarket mkt.consistent_toMarket := by
   rw [mkt.womanGaleShapley_eq_womanProposingDeferredAcceptance_via_fixedPoints]
   exact mkt.graphOf_womanOptimalMatching
 
