@@ -1,18 +1,23 @@
-import MathEconLib.Matching.Classical.Marriage.Choice
-import MathEconLib.Matching.Contracts.StableCorrespondence
+import MathEconLib.Matching.Classical.Marriage.Basic
+import MathEconLib.Matching.Contracts.Basic
 
 /-!
-# Classical and contracts stability
+# Embedding marriage markets in the contracts model
 
-Partial matching graphs identify classical individual rationality and stability
-with their contracts counterparts. Individually rational outcomes recover
-partial matchings. The choice/preference dictionary records exactly the needed
-side-specific rationality hypothesis, and stable matching existence follows
-from the general contracts theorem.
+The contracts are partner pairs: women are buyers and men are sellers.
+The choice functions from `Marriage.Preferences` define the contracts market
+without finiteness assumptions. Partial-matching graphs identify classical
+individual rationality and stability with their contracts counterparts, and
+individually rational outcomes recover partial matchings.
+
+The choice/preference dictionary records exactly the needed side-specific
+rationality hypothesis. Stable-matching existence via the contracts theorem
+is proved separately in `Marriage.Existence`.
 -/
 
 namespace MathEconLib.Matching
 
+open MathEconLib.Choice
 open Function OrderDual
 
 universe u v
@@ -21,6 +26,67 @@ namespace MarriageMarket
 
 variable {M : Type u} {W : Type v}
 variable (mkt : MarriageMarket M W)
+
+/-! ## The induced contracts market -/
+
+/-- The structural contracts market, without finiteness assumptions.
+Women are buyers and men are sellers. -/
+def toMarket : Market W M (M × W) where
+  buyer := Prod.snd
+  seller := Prod.fst
+  choiceB := mkt.inducedChoiceW
+  choiceS := mkt.inducedChoiceM
+  buyer_eq_of_mem := fun _ _ _ hp => mkt.snd_eq_of_mem_inducedChoiceW hp
+  seller_eq_of_mem := fun _ _ _ hp => mkt.fst_eq_of_mem_inducedChoiceM hp
+
+@[simp] theorem toMarket_buyer (p : M × W) :
+    mkt.toMarket.buyer p = p.2 := rfl
+
+@[simp] theorem toMarket_seller (p : M × W) :
+    mkt.toMarket.seller p = p.1 := rfl
+
+@[simp] theorem toMarket_choiceB (w : W) :
+    mkt.toMarket.choiceB w = mkt.inducedChoiceW w := rfl
+
+@[simp] theorem toMarket_choiceS (m : M) :
+    mkt.toMarket.choiceS m = mkt.inducedChoiceM m := rfl
+
+/-- Structural optional-partner choice is local on arbitrary partner types.
+This uses the menu mapped along the partner embedding, without finiteness or an IRC hypothesis. -/
+theorem local_toMarket : mkt.toMarket.Local := by
+  constructor
+  · intro w Y
+    change (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w)
+        (mkt.toMarket.buyerSide w Y) =
+      (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w) Y
+    have hmenu : (partnerEmbeddingW w) ⁻¹' (mkt.toMarket.buyerSide w Y) =
+        (partnerEmbeddingW w) ⁻¹' Y := by
+      ext m
+      change ((m, w) ∈ Y ∧ w = w) ↔ (m, w) ∈ Y
+      exact and_iff_left rfl
+    exact congrArg (fun A : Set M =>
+      (partnerEmbeddingW w) '' (ChoiceFunction.ofLinearOrder (mkt.prefW w)) A) hmenu
+  · intro m Y
+    change (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m)
+        (mkt.toMarket.sellerSide m Y) =
+      (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m) Y
+    have hmenu : (partnerEmbeddingM m) ⁻¹' (mkt.toMarket.sellerSide m Y) =
+        (partnerEmbeddingM m) ⁻¹' Y := by
+      ext w
+      change ((m, w) ∈ Y ∧ m = m) ↔ (m, w) ∈ Y
+      exact and_iff_left rfl
+    exact congrArg (fun A : Set W =>
+      (partnerEmbeddingM m) '' (ChoiceFunction.ofLinearOrder (mkt.prefM m)) A) hmenu
+
+theorem consistent_toMarket [Finite M] [Finite W] : mkt.toMarket.Consistent :=
+  ⟨mkt.consistent_inducedChoiceW, mkt.consistent_inducedChoiceM⟩
+
+theorem substitutable_toMarket : mkt.toMarket.Substitutable :=
+  ⟨mkt.substitutable_inducedChoiceW, mkt.substitutable_inducedChoiceM⟩
+
+theorem sizeMonotone_toMarket : mkt.toMarket.SizeMonotone :=
+  ⟨mkt.sizeMonotone_inducedChoiceW, mkt.sizeMonotone_inducedChoiceM⟩
+
 variable [Fintype M] [Fintype W]
 
 /-! ## Individual rationality translation -/
@@ -351,16 +417,6 @@ theorem stable_matchingOfStable {A : Set (M × W)}
     mkt.matchingOfStable ((mkt.isStableMatching_iff_stable_graphOf μ).mp hμ) = μ := by
   apply mkt.graphOf_injective
   exact mkt.graphOf_matchingOfStable _
-
-/-! ## Stable matching existence via contracts -/
-
-/-- Existence of a stable marriage matching. -/
-theorem exists_stableMatching :
-    ∃ μ : M ≃. W, mkt.IsStableMatching μ := by
-  let hsub := mkt.substitutable_toMarket
-  let hcons := mkt.consistent_toMarket
-  obtain ⟨A, hA⟩ := mkt.toMarket.exists_stable hsub hcons
-  exact ⟨mkt.matchingOfStable hA, mkt.stable_matchingOfStable hA⟩
 
 /-! ## Choice and pointwise preferences
 

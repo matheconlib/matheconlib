@@ -1,11 +1,11 @@
-import MathEconLib.Matching.Contracts.Order
+import MathEconLib.Matching.Contracts.StableOrder
 import MathEconLib.ForMathlib.Order.IterateFixedPoint
 import Mathlib.Data.Fintype.Powerset
 
 /-!
-# Finite deferred-acceptance iteration
+# Fixed-point convergence in contracts markets
 
-Specialize finite-lattice convergence to the generalized DA operator.
+Specialize finite-lattice convergence to the contracts deferred-acceptance operator.
 Finiteness belongs to the convergence theorems, not to the market definition.
 -/
 

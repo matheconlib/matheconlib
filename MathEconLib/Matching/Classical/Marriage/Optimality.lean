@@ -1,5 +1,5 @@
-import MathEconLib.Matching.Classical.Marriage.Translation
-import MathEconLib.Matching.Contracts.Order
+import MathEconLib.Matching.Classical.Marriage.Existence
+import MathEconLib.Matching.Contracts.StableOrder
 
 /-!
 # Both sides' optimal and pessimal stable matchings

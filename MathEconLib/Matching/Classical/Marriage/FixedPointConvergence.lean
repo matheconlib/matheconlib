@@ -1,5 +1,5 @@
 import MathEconLib.Matching.Classical.Marriage.Optimality
-import MathEconLib.Matching.Contracts.Iteration
+import MathEconLib.Matching.Contracts.FixedPointConvergence
 
 /-!
 # Fixed-point convergence in marriage markets

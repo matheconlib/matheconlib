@@ -1,6 +1,6 @@
-import MathEconLib.Matching.Classical.Marriage.GeneralizedDA
+import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 import MathEconLib.Matching.Classical.Marriage.LoneWolf
-import MathEconLib.Matching.Classical.StableOrder
+import MathEconLib.Matching.Classical.Marriage.StableOrder
 
 /-!
 # The classical marriage market
@@ -12,10 +12,11 @@ with `none` representing the outside option. No global preference order is
 installed on bare `PEquiv`.
 
 The components separate basic economic definitions and direct classical facts,
-generic induced choice, contracts translation, the symmetric extrema,
-generalized DA convergence, lone wolf results, and the stable-matching lattice.
+preferences and their induced choice, the embedding into contracts, stable
+existence, the symmetric extrema, fixed-point convergence, lone wolf results,
+and the stable-matching lattice.
 `Classical.DeferredAcceptance` adds
-the direct proposal algorithm and its comparison with generalized DA;
+the direct proposal algorithm and its comparison with the contracts fixed-point limit;
 `Classical.DeferredAcceptanceFinite` supplies executable algorithms.
 -/
 

@@ -56,9 +56,10 @@ represented feasible bundle retains the existing empty fallback.
 
 The first stage separates `Choice.Basic` from
 `Choice.Conditions.Individual` and corrects scope descriptions. The second
-stage implements the partner-dependent extension below. Stages 3 and 4 remain
-planned. These stages reorganize existing declarations without changing their
-mathematical assumptions.
+stage implements the partner-dependent extension below. The third stage
+reorganizes marriage preferences, contracts embedding, existence and fixed-point
+modules. Stage 4 remains planned. These stages preserve the mathematical
+assumptions.
 
 | Stage | Destination | Contents |
 | --- | --- | --- |
@@ -82,8 +83,10 @@ can find the definitions before the implication theorems in `Relationships`.
 Marriage preferences and their induced choices belong together. The embedding
 into the contracts model belongs in `ToContracts`, with the explicit constructor
 name `toContractsMarket`; this avoids suggesting a newly induced choice
-correspondence. `Existence` should hold the existence theorem, while
-`FixedPointConvergence` describes the content currently in `GeneralizedDA`.
+correspondence. `Existence` holds the existence theorem, while `FixedPointConvergence` holds
+the iteration results previously in `GeneralizedDA`. The embedding module
+depends only on the basic contracts model; existence introduces fixed-point
+theory. Marriage `Preferences` and `Basic` remain independent of Contracts.
 
 Use `map` for the choice-function operation along an embedding, and reserve
 “transport” for transferring structure along an equivalence. A specialization

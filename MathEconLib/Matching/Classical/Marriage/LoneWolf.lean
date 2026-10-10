@@ -1,4 +1,4 @@
-import MathEconLib.Matching.Classical.Marriage.Translation
+import MathEconLib.Matching.Classical.Marriage.ToContracts
 import MathEconLib.Matching.Contracts.RuralHospitals
 
 /-!

@@ -1,16 +1,18 @@
+import MathEconLib.Matching.Classical.Marriage.Preferences
 import MathEconLib.ForMathlib.Data.PartialMatching
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Fintype.Defs
 import Mathlib.Order.Basic
 
 /-!
-# Marriage markets, matchings, and preferences
+# Marriage matchings, stability, and optimality specifications
 
-Men are sellers and women are buyers in the contracts interpretation. This
-module itself is independent of that interpretation: it defines data-level
-preferences over partners and the outside option, classical stability, the
-four independent optimal/pessimal specifications, side exchange, graph
-representations, and the direct blocking-pair proof of opposition of interests.
+Starting from the preference data in `Marriage.Preferences`, this module
+defines classical stability, the four independent optimal/pessimal
+specifications, side exchange, graph representations, and the direct
+blocking-pair proof of opposition of interests. It is independent of the
+matching-with-contracts model.
+
 The order on bare `PEquiv` is its extension order; unanimous preference is
 expressed by `MenWeaklyPrefer` and `WomenWeaklyPrefer`.
 -/
@@ -21,77 +23,10 @@ open Function OrderDual
 
 universe u v
 
-variable {M : Type u} {W : Type v}
-
-/-- A classical marriage market. Each agent has a linear order over possible
-partners together with the outside option `none`; larger options are preferred. -/
-structure MarriageMarket (M : Type u) (W : Type v) where
-  /-- Man `m`'s preference over women-or-single. -/
-  prefM : M → LinearOrder (Option W)
-  /-- Woman `w`'s preference over men-or-single. -/
-  prefW : W → LinearOrder (Option M)
-
 namespace MarriageMarket
 
+variable {M : Type u} {W : Type v}
 variable (mkt : MarriageMarket M W)
-
-/-- Exchange the two sides of the marriage market. The first side of
-`mkt.symm` consists of the original women. -/
-def symm : MarriageMarket W M where
-  prefM := mkt.prefW
-  prefW := mkt.prefM
-
-@[simp] theorem symm_symm : mkt.symm.symm = mkt := by
-  cases mkt
-  rfl
-
-/-! ## Preference relations as data -/
-
-/-- Strict preference of man `m`. -/
-def ltM (m : M) (y z : Option W) : Prop :=
-  letI := mkt.prefM m
-  y < z
-
-/-- Weak preference of man `m`. -/
-def leM (m : M) (y z : Option W) : Prop :=
-  letI := mkt.prefM m
-  y ≤ z
-
-/-- Strict preference of woman `w`. -/
-def ltW (w : W) (y z : Option M) : Prop :=
-  letI := mkt.prefW w
-  y < z
-
-/-- Weak preference of woman `w`. -/
-def leW (w : W) (y z : Option M) : Prop :=
-  letI := mkt.prefW w
-  y ≤ z
-
-/-- `w` is acceptable to `m`. -/
-def AcceptableM (m : M) (w : W) : Prop :=
-  mkt.ltM m none (some w)
-
-/-- `m` is acceptable to `w`. -/
-def AcceptableW (w : W) (m : M) : Prop :=
-  mkt.ltW w none (some m)
-
-@[simp] theorem ltM_symm (w : W) (y z : Option M) :
-    mkt.symm.ltM w y z ↔ mkt.ltW w y z := Iff.rfl
-
-@[simp] theorem leM_symm (w : W) (y z : Option M) :
-    mkt.symm.leM w y z ↔ mkt.leW w y z := Iff.rfl
-
-@[simp] theorem ltW_symm (m : M) (y z : Option W) :
-    mkt.symm.ltW m y z ↔ mkt.ltM m y z := Iff.rfl
-
-@[simp] theorem leW_symm (m : M) (y z : Option W) :
-    mkt.symm.leW m y z ↔ mkt.leM m y z := Iff.rfl
-
-@[simp] theorem acceptableM_symm (w : W) (m : M) :
-    mkt.symm.AcceptableM w m ↔ mkt.AcceptableW w m := Iff.rfl
-
-@[simp] theorem acceptableW_symm (m : M) (w : W) :
-    mkt.symm.AcceptableW m w ↔ mkt.AcceptableM m w := Iff.rfl
 
 /-! ## Classical matchings and stability -/
 

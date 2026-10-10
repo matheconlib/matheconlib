@@ -1,4 +1,4 @@
-import MathEconLib.Matching.Contracts.StableCorrespondence
+import MathEconLib.Matching.Contracts.StableFixedPoints
 import MathEconLib.ForMathlib.Order.FixedPointLattice
 
 /-!
@@ -423,7 +423,7 @@ end StableOutcomes
 end StableOutcomesAPI
 
 /-- The fixed-point correspondence, packaged as an equivalence with the
-lattice carrier (HKContractDesign2017, Lemma 1, p. 87; see `StableCorrespondence`).
+lattice carrier (HKContractDesign2017, Lemma 1, p. 87; see `StableFixedPoints`).
 This is an `Equiv`; no preference-order instance is installed on the subtype
 of stable contract sets. The order dictionary is supplied separately. -/
 def stableEquivFixedPoints (hsub : M.Substitutable)

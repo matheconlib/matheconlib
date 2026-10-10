@@ -1,4 +1,4 @@
-import MathEconLib.Matching.Contracts.Order
+import MathEconLib.Matching.Contracts.StableOrder
 import MathEconLib.ForMathlib.Data.SetFiber
 
 /-!

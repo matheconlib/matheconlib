@@ -150,6 +150,23 @@ Imports, references and public roots were updated, and a dedicated import client
 checks that the completion definitions are available without preference or market
 modules. The old long compatibility namespace remains until public-name cleanup.
 
+## Marriage modeling and existence: third stage
+
+`Marriage.Preferences` combines market preference data, acceptability, induced
+choice functions and finite maximization. `Marriage.Basic` keeps matching,
+individual rationality, blocking, stability and optimality specifications.
+Both remain independent of Contracts. `Marriage.ToContracts` contains the
+embedding, graph/reconstruction and preference dictionary and depends only
+on `Contracts.Basic`; `Marriage.Existence` introduces the fixed-point-based
+stable-matching existence proof.
+
+The general and marriage convergence files are both named `FixedPointConvergence`.
+Contracts `StableFixedPoints` and `StableOrder` describe their respective contents,
+and marriage `StableOrder` now sits inside the marriage folder. All moved
+declaration names, theorem statements, proof bodies, universe and finiteness
+scopes are preserved. Algorithm file moves and public-name cleanup remain the
+fourth stage.
+
 ## Validation
 
 The complete revised source at

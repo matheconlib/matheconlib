@@ -1,34 +1,103 @@
-import MathEconLib.Matching.Classical.Marriage.Basic
 import MathEconLib.Choice.Induced
-import MathEconLib.Matching.Contracts.Basic
 import Mathlib.Data.Finset.Max
 
 /-!
-# Optional-partner choice as a contracts instance
+# Marriage preferences and their induced choice functions
 
-The contracts model is defined on arbitrary partner types by mapping
-`ChoiceFunction.ofLinearOrder` along each agent's partner embedding. Unit demand,
-substitutability, and finite-menu aggregate demand follow from the general choice
-layer without population finiteness. IRC is proved for finite partner types.
+Each agent has a linear order over possible partners and the outside option
+`none`. Larger options are preferred; `none` need not be least preferred.
+The preference relations and acceptability conditions are defined first, then
+choice on partner pairs is obtained by mapping the general optional-partner
+choice function along the corresponding partner embedding.
 
-Finite menu maxima provide the algorithm-facing realization, proved equal to
-the structural choice; `none` is always available but need not be least preferred.
-On an infinite menu without a greatest acceptable option, the generic choice is
-empty, so no global IRC claim is made on arbitrary partner types.
+Unit demand, substitutability, and finite-menu aggregate demand hold without
+population finiteness. IRC is proved for finite partner types. On an infinite
+menu without a greatest acceptable option, the generic choice is empty, so no
+global IRC claim is made on arbitrary partner types. Finite menu maxima give
+the realization used by the proposal algorithms.
+
+This module does not depend on the matching-with-contracts model. The
+embedding into that model is in `Marriage.ToContracts`.
 -/
 
 namespace MathEconLib.Matching
 
 open MathEconLib.Choice
-
 open Function OrderDual
 
 universe u v
 
+variable {M : Type u} {W : Type v}
+
+/-- A classical marriage market. Each agent has a linear order over possible
+partners together with the outside option `none`; larger options are preferred. -/
+structure MarriageMarket (M : Type u) (W : Type v) where
+  /-- Man `m`'s preference over women-or-single. -/
+  prefM : M → LinearOrder (Option W)
+  /-- Woman `w`'s preference over men-or-single. -/
+  prefW : W → LinearOrder (Option M)
+
 namespace MarriageMarket
 
-variable {M : Type u} {W : Type v}
 variable (mkt : MarriageMarket M W)
+
+/-- Exchange the two sides of the marriage market. The first side of
+`mkt.symm` consists of the original women. -/
+def symm : MarriageMarket W M where
+  prefM := mkt.prefW
+  prefW := mkt.prefM
+
+@[simp] theorem symm_symm : mkt.symm.symm = mkt := by
+  cases mkt
+  rfl
+
+/-! ## Preference relations as data -/
+
+/-- Strict preference of man `m`. -/
+def ltM (m : M) (y z : Option W) : Prop :=
+  letI := mkt.prefM m
+  y < z
+
+/-- Weak preference of man `m`. -/
+def leM (m : M) (y z : Option W) : Prop :=
+  letI := mkt.prefM m
+  y ≤ z
+
+/-- Strict preference of woman `w`. -/
+def ltW (w : W) (y z : Option M) : Prop :=
+  letI := mkt.prefW w
+  y < z
+
+/-- Weak preference of woman `w`. -/
+def leW (w : W) (y z : Option M) : Prop :=
+  letI := mkt.prefW w
+  y ≤ z
+
+/-- `w` is acceptable to `m`. -/
+def AcceptableM (m : M) (w : W) : Prop :=
+  mkt.ltM m none (some w)
+
+/-- `m` is acceptable to `w`. -/
+def AcceptableW (w : W) (m : M) : Prop :=
+  mkt.ltW w none (some m)
+
+@[simp] theorem ltM_symm (w : W) (y z : Option M) :
+    mkt.symm.ltM w y z ↔ mkt.ltW w y z := Iff.rfl
+
+@[simp] theorem leM_symm (w : W) (y z : Option M) :
+    mkt.symm.leM w y z ↔ mkt.leW w y z := Iff.rfl
+
+@[simp] theorem ltW_symm (m : M) (y z : Option W) :
+    mkt.symm.ltW m y z ↔ mkt.ltM m y z := Iff.rfl
+
+@[simp] theorem leW_symm (m : M) (y z : Option W) :
+    mkt.symm.leW m y z ↔ mkt.leM m y z := Iff.rfl
+
+@[simp] theorem acceptableM_symm (w : W) (m : M) :
+    mkt.symm.AcceptableM w m ↔ mkt.AcceptableW w m := Iff.rfl
+
+@[simp] theorem acceptableW_symm (m : M) (w : W) :
+    mkt.symm.AcceptableW m w ↔ mkt.AcceptableM m w := Iff.rfl
 
 /-! ## Structural choice on arbitrary partner types -/
 
@@ -118,71 +187,11 @@ theorem consistent_inducedChoiceW [Finite M] (w : W) :
     (mkt.inducedChoiceW w).Consistent :=
   (ChoiceFunction.consistent_ofLinearOrder _).map _
 
-/-! ## The induced contracts market -/
-
-/-- The structural contracts market, without finiteness assumptions.
-Women are buyers and men are sellers. -/
-def toMarket : Market W M (M × W) where
-  buyer := Prod.snd
-  seller := Prod.fst
-  choiceB := mkt.inducedChoiceW
-  choiceS := mkt.inducedChoiceM
-  buyer_eq_of_mem := fun _ _ _ hp => mkt.snd_eq_of_mem_inducedChoiceW hp
-  seller_eq_of_mem := fun _ _ _ hp => mkt.fst_eq_of_mem_inducedChoiceM hp
-
-@[simp] theorem toMarket_buyer (p : M × W) :
-    mkt.toMarket.buyer p = p.2 := rfl
-
-@[simp] theorem toMarket_seller (p : M × W) :
-    mkt.toMarket.seller p = p.1 := rfl
-
-@[simp] theorem toMarket_choiceB (w : W) :
-    mkt.toMarket.choiceB w = mkt.inducedChoiceW w := rfl
-
-@[simp] theorem toMarket_choiceS (m : M) :
-    mkt.toMarket.choiceS m = mkt.inducedChoiceM m := rfl
-
-/-- Structural optional-partner choice is local on arbitrary partner types.
-This uses the menu mapped along the partner embedding, without finiteness or an IRC hypothesis. -/
-theorem local_toMarket : mkt.toMarket.Local := by
-  constructor
-  · intro w Y
-    change (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w)
-        (mkt.toMarket.buyerSide w Y) =
-      (ChoiceFunction.ofLinearOrder (mkt.prefW w)).map (partnerEmbeddingW w) Y
-    have hmenu : (partnerEmbeddingW w) ⁻¹' (mkt.toMarket.buyerSide w Y) =
-        (partnerEmbeddingW w) ⁻¹' Y := by
-      ext m
-      change ((m, w) ∈ Y ∧ w = w) ↔ (m, w) ∈ Y
-      exact and_iff_left rfl
-    exact congrArg (fun A : Set M =>
-      (partnerEmbeddingW w) '' (ChoiceFunction.ofLinearOrder (mkt.prefW w)) A) hmenu
-  · intro m Y
-    change (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m)
-        (mkt.toMarket.sellerSide m Y) =
-      (ChoiceFunction.ofLinearOrder (mkt.prefM m)).map (partnerEmbeddingM m) Y
-    have hmenu : (partnerEmbeddingM m) ⁻¹' (mkt.toMarket.sellerSide m Y) =
-        (partnerEmbeddingM m) ⁻¹' Y := by
-      ext w
-      change ((m, w) ∈ Y ∧ m = m) ↔ (m, w) ∈ Y
-      exact and_iff_left rfl
-    exact congrArg (fun A : Set W =>
-      (partnerEmbeddingM m) '' (ChoiceFunction.ofLinearOrder (mkt.prefM m)) A) hmenu
-
-theorem consistent_toMarket [Finite M] [Finite W] : mkt.toMarket.Consistent :=
-  ⟨mkt.consistent_inducedChoiceW, mkt.consistent_inducedChoiceM⟩
-
-theorem substitutable_toMarket : mkt.toMarket.Substitutable :=
-  ⟨mkt.substitutable_inducedChoiceW, mkt.substitutable_inducedChoiceM⟩
-
-theorem sizeMonotone_toMarket : mkt.toMarket.SizeMonotone :=
-  ⟨mkt.sizeMonotone_inducedChoiceW, mkt.sizeMonotone_inducedChoiceM⟩
-
 /-! ## Finite maximum realization
 
 The internal menu consists of `none` together with the available partners.
 These finite maxima support the proposal algorithms; they do not enter the
-structural definitions of choice or the contracts market. -/
+structural definition of choice. -/
 
 section InducedChoice
 

@@ -1,4 +1,4 @@
-import MathEconLib.Matching.Classical.Marriage
+import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 import MathEconLib.ForMathlib.Order.IterateFiniteSet
 
 /-!

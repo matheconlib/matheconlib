@@ -14,8 +14,8 @@ buyer-optimal stable outcome.
 Under substitutability and set-form IRC, `stateOf` and `outcomeOf` identify
 stable outcomes with fixed points. Knaster–Tarski then gives existence.
 These results require neither finiteness nor unit demand nor the law of
-aggregate demand. The order dictionary and lattice API are in `Order`;
-counting and finite convergence are in `RuralHospitals` and `Iteration`.
+aggregate demand. The order dictionary and lattice API are in `StableOrder`;
+counting and finite convergence are in `RuralHospitals` and `FixedPointConvergence`.
 
 This operator uses contract-wise acceptance from `insert x Y`; it is not
 merely the complement of the rejection set. The distinction matters for the
