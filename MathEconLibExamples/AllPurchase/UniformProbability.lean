@@ -54,7 +54,7 @@ private theorem map_clamp : Measure.map clamp (law : Measure ℝ) = law := by
   rw [Measure.map_congr heq, Measure.map_id]
 
 /-- Bidder `i`'s value, with pointwise support in `[0, 2]`. -/
-def value (i : Fin 2) (ω : Ω) : ℝ := clamp (ω i)
+def value (i : Fin 2) (ω : Ω) : ℝ := max 0 (min 2 (ω i))
 
 /-- Each value is measurable. -/
 theorem measurable_value (i : Fin 2) : Measurable (value i) :=
@@ -119,7 +119,7 @@ theorem integrable_value_sq (i : Fin 2) : Integrable (fun ω => value i ω ^ 2) 
   intro ω
   rw [Real.norm_eq_abs, abs_of_nonneg (sq_nonneg _)]
   have h := value_mem i ω
-  nlinarith
+  nlinarith [h.1, h.2, mul_nonneg h.1 (sub_nonneg.mpr h.2)]
 
 /-- Expectations of measurable functions reduce to one elementary interval integral. -/
 theorem integral_comp_value (i : Fin 2) {f : ℝ → ℝ} (hf : Measurable f) :
@@ -136,13 +136,16 @@ theorem integral_comp_value (i : Fin 2) {f : ℝ → ℝ} (hf : Measurable f) :
 
 /-- Each bidder's expected value is one. -/
 theorem integral_value (i : Fin 2) : (∫ ω, value i ω ∂ℙ) = 1 := by
-  have h := integral_comp_value i (f := fun x : ℝ => x) measurable_id
-  norm_num [intervalIntegral.integral_id] at h
+  have h := integral_comp_value i (f := fun x : ℝ => x ^ 1)
+    (measurable_id.pow measurable_const)
+  rw [intervalIntegral.integral_pow] at h
+  norm_num at h
   exact h
 
 /-- The second moment of the uniform law is `4 / 3`. -/
 theorem integral_value_sq (i : Fin 2) : (∫ ω, value i ω ^ 2 ∂ℙ) = 4 / 3 := by
-  rw [integral_comp_value i (measurable_id.pow measurable_const), intervalIntegral.integral_pow]
+  rw [integral_comp_value i (f := fun x : ℝ => x ^ 2)
+    (measurable_id.pow measurable_const), intervalIntegral.integral_pow]
   norm_num
 
 end

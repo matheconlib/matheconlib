@@ -260,6 +260,7 @@ theorem interior_regime_strategy_eq_allPayBid
     exact pow_eq_zero_iff two_ne_zero |>.mp hsq
   have hroot : -(A.K_linear β) / (2 * A.α_coeff) ≤ β v := by
     have := hβ_mono.monotoneOn hlo_mem hv hv.1
+    rw [neg_div]
     linarith
   have hAP_nn : 0 ≤ P.allPayBid v := by
     rw [hAP v hv, ← hsquare v hv]
@@ -298,6 +299,7 @@ theorem integrable_sqrt_allPayBid_of_interior (j : Fin n) :
       0 hIC hK_neg hU_eq (A.θ j ω) hmem
     have hdiv : β (A.θ j ω) + A.K_linear β / (2 * A.α_coeff) =
         sqrt (A.toAuction.allPayBid (A.θ j ω)) / sqrt A.α_coeff := by
+      rw [neg_div] at h
       linarith
     simpa only [mul_comm] using ((eq_div_iff hs_ne).mp hdiv).symm
   rw [hfun]
