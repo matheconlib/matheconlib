@@ -413,16 +413,16 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
           A.toAuction.expectedEditionValue A.spec β - c * A.toAuction.expectedAggregateBid β :=
   @MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq
 
--- Algebraic welfare-gap identity over supplied values, motivated by Proposition 6.13.
--- Equilibrium interpretation and nonnegativity of the two gaps require additional results.
+-- Reusable algebraic welfare-gap identity over supplied values.
+-- The economic statement and the signs of the two gaps are pinned or proved separately.
 example : ∀ φbar c α B_ed WC : ℝ,
     MathEconLib.AllPurchase.firstBestEditionSurplus φbar c α - WC
       = MathEconLib.AllPurchase.cournotLoss φbar c α B_ed +
         MathEconLib.AllPurchase.contestLoss φbar c α B_ed WC :=
   @MathEconLib.AllPurchase.welfare_decomposition
 
--- Auction-level welfare decomposition uses actual expected edition welfare and the Cournot
--- benchmark. Square integrability is the only strategy assumption.
+-- Proposition 6.13: actual expected edition welfare decomposes at the auction's Cournot
+-- benchmark. Square integrability is the only strategy assumption; gap signs are separate.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
     MemLp (A.toAuction.aggregateBid β) 2 volume →
