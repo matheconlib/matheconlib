@@ -13,17 +13,13 @@ Project-owned Lean declarations live under the `MathEconLib` namespace; see
 the [public-name mapping](docs/NamespaceMigration.md) for migration guidance.
 Shorter names below abbreviate declarations under that namespace.
 
-## Worked Examples (under review)
-
-These examples are on their PR branches and have not yet merged into `main`.
+## Worked Examples
 
 - [Becker-inspired crime choice](https://github.com/AxiomMath/auctionlib/blob/codex/becker-crime-example/MathEconLibExamples/SingleParameter/BeckerCrime.lean)
   ([PR #95 — under review](https://github.com/AxiomMath/auctionlib/pull/95)):
   risk-neutral binary choice, cutoff and deterrence results, and aggregate crime
   under a fixed type distribution.
-- [Matching pennies](https://github.com/AxiomMath/auctionlib/blob/examples/matching-pennies/MathEconLibExamples/GameTheory/MatchingPennies.lean)
-  ([PR #96 — under review](https://github.com/AxiomMath/auctionlib/pull/96)):
-  no pure Nash equilibrium and a unique mixed equilibrium with uniform randomization.
+- [Matching pennies](MathEconLibExamples/GameTheory/MatchingPennies.lean): no pure Nash equilibrium and a unique mixed equilibrium with uniform randomization.
 
 ## Mathematical Reference
 
