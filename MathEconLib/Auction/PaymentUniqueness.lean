@@ -22,7 +22,10 @@ bounds used by the normalization; the underlying payment-equivalence theorem is 
 
 `expected_payment_determined_by_allocation` transports integrability from the second auction
 and proves equality of the two expected interim payments. This avoids interpreting a totalized
-Bochner integral of a nonintegrable payment as an economic expectation.
+outer Bochner integral of a nonintegrable interim payment as an economic expectation.
+The interim quantities themselves retain `Auction.p`'s convention for integration against
+opponents' types. Integrability of the underlying realized payments remains a separate
+model-specific obligation, as described in `Auction.Basic`.
 -/
 
 @[expose] public section

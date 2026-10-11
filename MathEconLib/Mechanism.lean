@@ -5,8 +5,8 @@ Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
 -/
 module
 
-public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
+public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 
 /-!

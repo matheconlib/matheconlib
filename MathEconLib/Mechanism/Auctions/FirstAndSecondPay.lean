@@ -41,7 +41,6 @@ zero. They do not assert that the auction has no Bayesian equilibrium or fails i
 
 -- `Set` only: opening `Finset` too would make `univ`/`mem_univ` ambiguous.
 open Set
-open scoped Classical
 
 namespace MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 
@@ -236,11 +235,6 @@ section Paying
 
 variable {b : Fin n → ℝ}
 
-/-- Some bidder bids weakly highest. This alone does *not* produce an `IsWinner`:
-at a tie for the highest bid a maximiser exists but no winner does. -/
-private theorem exists_forall_le [Nonempty (Fin n)] (f : Fin n → ℝ) : ∃ i, ∀ j, f j ≤ f i :=
-  Finite.exists_max f
-
 /-- Injectivity upgrades a maximiser to a winner. -/
 theorem NoTies.isWinner_of_forall_le (hb : NoTies b) {i : Fin n} (h : ∀ j, b j ≤ b i) :
     IsWinner b i :=
@@ -249,7 +243,7 @@ theorem NoTies.isWinner_of_forall_le (hb : NoTies b) {i : Fin n} (h : ∀ j, b j
 /-- **Existence of a winner.** `NoTies` is essential: for `b = fun _ => 1` with
 `2 ≤ n` a maximiser exists but no bidder is a winner. -/
 theorem NoTies.exists_isWinner [Nonempty (Fin n)] (hb : NoTies b) : ∃ i, IsWinner b i := by
-  obtain ⟨i, hi⟩ := exists_forall_le b
+  obtain ⟨i, hi⟩ := Finite.exists_max b
   exact ⟨i, hb.isWinner_of_forall_le hi⟩
 
 theorem NoTies.existsUnique_isWinner [Nonempty (Fin n)] (hb : NoTies b) :
@@ -378,9 +372,11 @@ end Paying
 exactly when they are a strict winner or have exactly one strictly higher bidder. Negative bids
 are allowed and correspond to subsidies when paid. -/
 noncomputable def firstAndSecondPay (n : ℕ) :
-    Mechanism (Fin n) (fun _ => ℝ) (Fin n → ℝ) where
-  outcome b i := {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}.indicator 1 b
-  transfer i b := -(if IsWinner b i ∨ IsRunnerUp b i then b i else 0)
+    Mechanism (Fin n) (fun _ => ℝ) (Fin n → ℝ) := by
+  classical
+  exact {
+    outcome := fun b i => {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}.indicator 1 b
+    transfer := fun i b => -(if IsWinner b i ∨ IsRunnerUp b i then b i else 0) }
 
 /-- The canonical implementation realizes the first-and-second-pay specification. -/
 theorem firstAndSecondPay_spec : IsFirstAndSecondPay (firstAndSecondPay n) where
@@ -426,10 +422,13 @@ own bid. Shading to `0` keeps them a runner-up, so they still win nothing — bu
 now pay nothing, strictly improving their quasi-linear payoff from `-v` to `0`.
 
 `not_isDSIC` below expresses this failure using the library's incentive predicate. -/
-theorem lt_payoff_of_shade (M : Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ)) (hM : IsFirstAndSecondPay M)
+theorem lt_payoff_of_shade (M : Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ))
+    (hM : IsFirstAndSecondPay M)
     (hv0 : 0 < v) (hv1 : v < 1) :
-    v * M.outcome ![1, v] 1 - M.payment 1 ![1, v] < v * M.outcome ![1, 0] 1 - M.payment 1 ![1, 0] := by
-  obtain ⟨hx, ht⟩ := allocation_eq_zero_and_payment_eq_of_isRunnerUp M hM (isRunnerUp_one_of_lt_one hv1)
+    v * M.outcome ![1, v] 1 - M.payment 1 ![1, v] <
+      v * M.outcome ![1, 0] 1 - M.payment 1 ![1, 0] := by
+  obtain ⟨hx, ht⟩ :=
+    allocation_eq_zero_and_payment_eq_of_isRunnerUp M hM (isRunnerUp_one_of_lt_one hv1)
   obtain ⟨hx0, ht0⟩ :=
     allocation_eq_zero_and_payment_eq_of_isRunnerUp M hM (isRunnerUp_one_of_lt_one (v := 0) one_pos)
   have e1 : (![(1 : ℝ), v] : Fin 2 → ℝ) 1 = v := by simp
@@ -442,7 +441,8 @@ This is an ex-post statement, with outside utility normalized to zero. -/
 theorem payoff_neg (M : Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ)) (hM : IsFirstAndSecondPay M)
     (hv0 : 0 < v) (hv1 : v < 1) :
     v * M.outcome ![1, v] 1 - M.payment 1 ![1, v] < 0 := by
-  obtain ⟨hx, ht⟩ := allocation_eq_zero_and_payment_eq_of_isRunnerUp M hM (isRunnerUp_one_of_lt_one hv1)
+  obtain ⟨hx, ht⟩ :=
+    allocation_eq_zero_and_payment_eq_of_isRunnerUp M hM (isRunnerUp_one_of_lt_one hv1)
   have e1 : (![(1 : ℝ), v] : Fin 2 → ℝ) 1 = v := by simp
   rw [hx, ht, e1]
   linarith
@@ -470,7 +470,7 @@ theorem not_isExPostIR (M : Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ))
   have hneg := payoff_neg M hM (v := (1 / 2 : ℝ)) (by norm_num) (by norm_num)
   have hnonneg := h 1 ![1, (1 / 2 : ℝ)]
   change 0 ≤ (1 / 2 : ℝ) * M.outcome ![1, 1 / 2] 1 + M.transfer 1 ![1, 1 / 2] at hnonneg
-  simp only [Mechanism.payment, neg_neg, sub_neg_eq_add] at hneg
+  simp only [Mechanism.payment, sub_neg_eq_add] at hneg
   exact (not_le_of_gt hneg) hnonneg
 
 end TwoBidders

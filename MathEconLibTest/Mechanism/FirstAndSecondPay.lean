@@ -1,5 +1,3 @@
-module
-
 import MathEconLib.Mechanism
 
 /-!
@@ -40,22 +38,22 @@ example : (firstAndSecondPay 3).payment 1 ![5, 3, 3] = 3 ∧
     (firstAndSecondPay 3).payment 2 ![5, 3, 3] = 3 := by
   constructor
   · exact payment_of_isRunnerUp _ firstAndSecondPay_spec
-      (by norm_num [IsRunnerUp, Fin.forall_fin_succ, Fin.exists_fin_succ])
+      (by norm_num [IsRunnerUp, Fin.forall_fin_succ, Fin.exists_fin_succ, Matrix.cons_val_two])
   · exact payment_of_isRunnerUp _ firstAndSecondPay_spec
-      (by norm_num [IsRunnerUp, Fin.forall_fin_succ, Fin.exists_fin_succ])
+      (by norm_num [IsRunnerUp, Fin.forall_fin_succ, Fin.exists_fin_succ, Matrix.cons_val_two])
 
 -- At a top tie, no bidder wins or pays under this particular total rule.
 example (i : Fin 3) : (firstAndSecondPay 3).outcome ![5, 5, 3] i = 0 ∧
     (firstAndSecondPay 3).payment i ![5, 5, 3] = 0 := by
   fin_cases i <;>
     norm_num [firstAndSecondPay, Mechanism.payment, IsWinner, IsRunnerUp,
-      Set.indicator_apply, Fin.forall_fin_succ, Fin.exists_fin_succ]
+      Set.indicator_apply, Fin.forall_fin_succ, Fin.exists_fin_succ, Matrix.cons_val_two]
 
 -- With a single bidder, that bidder wins and pays their bid; no runner-up is asserted.
 example : (firstAndSecondPay 1).outcome ![2] 0 = 1 ∧
     (firstAndSecondPay 1).payment 0 ![2] = 2 := by
   norm_num [firstAndSecondPay, Mechanism.payment, IsWinner, IsRunnerUp,
-    Set.indicator_apply, Fin.forall_fin_succ, Fin.exists_fin_succ]
+    Set.indicator_apply, Fin.forall_fin_succ, Fin.exists_fin_succ, Matrix.cons_val_two]
 
 #print axioms firstAndSecondPay_spec
 #print axioms sum_allocation_le_one

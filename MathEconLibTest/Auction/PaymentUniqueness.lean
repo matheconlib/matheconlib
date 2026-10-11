@@ -1,5 +1,3 @@
-module
-
 import MathEconLib.Auction
 
 /-! # Normalized payment API through the auction umbrella -/
