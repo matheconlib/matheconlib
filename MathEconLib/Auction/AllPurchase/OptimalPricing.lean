@@ -8,8 +8,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 /-!
 # Interior quantity and pricing in all-purchase auctions
 
-Motivated by Propositions 6.8 and 6.12 (§6.7.2) in Scott's notes. For real parameters
-`φbar`, `α`, `c`, and `M`, and `n : ℕ`, define
+For real parameters `φbar`, `α`, `c`, and `M`, and `n : ℕ`, define
 `Q(p) = n(φbar − p)/(α(n+1)) + 2nM/((n+1)√α)`,
 `Π(p) = (p − c) · Q(p)`, and `p* = (φbar + c + 2√α·M)/2`.
 
@@ -25,6 +24,9 @@ formula are derived from these assumptions.
 The optimal value is an upper bound for the profit of each such auction, with equality
 exactly when its posted price is `p*`. This does not construct an auction equilibrium at
 another price or compare interior and boundary regimes.
+
+This is part of MathEconLib's all-purchase analysis, whose economic-theory research write-up is
+pending. See `docs/AuctionReferences.md` for provenance and citation guidance.
 
 ## Main results
 

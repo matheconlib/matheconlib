@@ -9,8 +9,7 @@ public import MathEconLib.ForMathlib.AbsolutelyContinuous
 Given `n` values `v 0, v 1, …, v (n-1)`, the k-th order statistic (0-indexed)
 is the `(k+1)`-smallest value. This file develops the theory from deterministic
 definitions through to the probabilistic CDF/density formulas for i.i.d. random
-variables (Section 4 of the reference), and culminates in the revenue equivalence
-identity used in auction theory (Section 5.3).
+variables, and culminates in the expected second-highest identity used in auction theory.
 
 ## Main definitions
 
@@ -26,9 +25,9 @@ identity used in auction theory (Section 5.3).
 
 * `OrderStatisticsSetup.prob_count_eq`: binomial probability that exactly `l` of `n` i.i.d.
   variables fall below `x`.
-* `OrderStatisticsSetup.cdf_val` (Theorem 4.2): CDF of the k-th order statistic,
+* `OrderStatisticsSetup.cdf_val`: CDF of the k-th order statistic,
   `cdf(X_{(k+1)}) = Σ_{l=k+1}^{n} C(n,l) F(x)^l (1-F(x))^{n-l}`.
-* `OrderStatisticsSetup.pdf_val` (Corollary 4.3): density of the k-th order statistic,
+* `OrderStatisticsSetup.pdf_val`: density of the k-th order statistic,
   `n!/(k!(n-1-k)!) · F(x)^k · (1-F(x))^{n-1-k} · f(x)`.
 * `OrderStatisticsSetup.identDistrib_val`: if two setups have identically distributed
   base variables, then their k-th order statistics are identically distributed.
@@ -43,7 +42,16 @@ identity used in auction theory (Section 5.3).
 * `OrderStatisticsSetup.integral_cdf_pow`: integration by parts for `∫ₐˢ F(ψ)^m dψ`.
 * `OrderStatisticsSetup.expected_second_highest`: for `n ≥ 2` i.i.d. random variables,
   `E[X_{(n-1)}] = n · E[s · F(s)^{n-1} - ∫ₐˢ F(ψ)^{n-1} dψ]`.
-  This is the key identity underlying the Revenue Equivalence Theorem (Theorem 5.3).
+  This is the identity relating the common expected payment to expected auction revenue.
+
+## References
+
+Vijay Krishna (2010), *Auction Theory*, 2nd ed., Academic Press, §2.4,
+equations (2.6)–(2.7), pp. 18–19, gives the expected second-highest revenue calculation.
+`OrderStatisticsSetup.expected_second_highest` expresses that calculation in
+integration-by-parts form. The general order-statistic CDF and density results are
+proved directly in this file; this citation is specifically for the second-highest identity.
+See the [auction reference map](../../docs/AuctionReferences.md).
 
 -/
 
@@ -65,7 +73,7 @@ variable {α : Type*} [LinearOrder α] {n : ℕ}
 In particular, `orderStatistics v 0` is the minimum and
 `orderStatistics v ⟨n-1, _⟩` is the maximum.
 
-This corresponds to `X_{(k+1)}` in the 1-indexed convention of the reference. -/
+This corresponds to `X_{(k+1)}` in the usual 1-indexed ascending convention. -/
 noncomputable def orderStatistics (v : Fin n → α) (k : Fin n) : α :=
   Finset.univ.val.map v |>.sort (· ≤ ·) |>.get ⟨k, by simp⟩
 
@@ -633,6 +641,9 @@ theorem expected_val (k : Fin n) (i₀ : Fin n) (a b : ℝ) (hab : a ≤ b)
 
 where the expectation on the left is over `s = X₀`, and `X_{(n-1)}` is the
 second-highest order statistic (0-indexed as `n-2`).
+
+This is an integration-by-parts form of the revenue calculation in Krishna (2010),
+§2.4, equations (2.6)–(2.7), pp. 18–19.
 -/
 theorem expected_second_highest [Nat.AtLeastTwo n]
     (i₀ : Fin n) (a b : ℝ) (hab : a ≤ b)

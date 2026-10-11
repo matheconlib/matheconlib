@@ -22,6 +22,12 @@ The action type remains arbitrary throughout. Thus these results apply to
 bids, reports, contract choices, and other screening problems whose utility is
 affine in the one-dimensional type. They do not cover genuinely nonseparable
 type-action utility.
+
+## Reference
+
+Roger B. Myerson (1981), "Optimal Auction Design," §4, Lemma 2, pp. 63–64.
+The library isolates the one-agent incentive-compatibility content and its analytic
+consequences; see `docs/AuctionReferences.md` for the source map and scope.
 -/
 
 namespace MathEconLib

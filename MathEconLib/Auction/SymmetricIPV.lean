@@ -28,6 +28,15 @@ bidder values. The second-highest type is the order statistic with zero-based in
 * `Auction.q_strat_eq_cdf_pow`: the winning probability against opponents using a common weakly
   increasing strategy is `F(v₀)^(n-1)`, where `v₀` is the bid threshold.
 
+## References
+
+Vijay Krishna (2010), *Auction Theory*, 2nd ed., Academic Press, §2.2, p. 13, gives
+`G = F^(N−1)` for the highest of a bidder's opponents' values. This is the calculation
+formalized by `Auction.q_eq_pow`. The explicit threshold formulation for a weakly increasing
+strategy in `Auction.q_strat_eq_cdf_pow` is an extension in this development, using the
+library's strict-highest-bid allocation rule.
+See the [auction reference map](../../docs/AuctionReferences.md).
+
 ## Tags
 
 auctions, independent private values, winning probability, order statistics
@@ -100,7 +109,8 @@ variable (A : Auction Ω n)
 
 /-- Under strict-highest-bid allocation and independent, identically distributed, atomless types,
 bidder `i` wins with probability `F(s)^(n-1)` when bidding `s` against truthful opponents, where
-`F` is the common type CDF. -/
+`F` is the common type CDF. This is the highest-opponent-value formula in Krishna (2010),
+§2.2, p. 13. -/
 lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A]
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     (i : Fin n) (s : ℝ) :
@@ -197,7 +207,8 @@ private lemma measure_sigma_lt_eq
 /-- Under strict-highest-bid allocation and independent, identically distributed, bounded, atomless
 types, bidder `i` wins with bid `b` against opponents using a measurable, weakly increasing
 strategy `σ` with probability `F(v₀)^(n-1)`, where `F` is the common type CDF and `v₀` is the bid
-threshold. -/
+threshold. This threshold generalization is proved here; it is not a numbered result from
+the cited textbook passage. -/
 lemma q_strat_eq_cdf_pow
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i)) {σ : ℝ → ℝ}
     (hσ_mono : MonotoneOn σ (Icc A.lowestType A.highestType))

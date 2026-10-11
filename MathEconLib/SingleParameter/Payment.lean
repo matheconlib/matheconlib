@@ -16,6 +16,12 @@ It separates three logically distinct facts:
 
 These results use only the induced allocation and utility. They do not depend
 on the concrete type of action chosen by the agent.
+
+## Reference
+
+Roger B. Myerson (1981), "Optimal Auction Design," §4, Lemma 2, pp. 63–64.
+The library isolates the one-agent incentive-compatibility content and its analytic
+consequences; see `docs/AuctionReferences.md` for the source map and scope.
 -/
 
 namespace MathEconLib

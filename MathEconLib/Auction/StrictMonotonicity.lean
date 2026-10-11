@@ -4,10 +4,14 @@ public import MathEconLib.Auction.SymmetricIPV
 public import MathEconLib.BidderProblem.UniversalIC
 
 /-!
-# Strict Monotonicity of Equilibrium Strategy (Lemma 6.2)
+# Strict monotonicity of the equilibrium strategy
 
 In a symmetric IPV auction with positive density, strict-highest-bid allocation, and universal IC
 over nonnegative bids, the equilibrium strategy is strictly monotone on the type interval.
+
+Strict monotonicity is derived here from the stated regularity and incentive assumptions.
+The [auction reference map](../../docs/AuctionReferences.md) distinguishes this result from
+textbook calculations that assume an increasing strategy.
 
 ## Hypotheses
 
@@ -155,7 +159,7 @@ private lemma F_pow_strict_mono
 
 /-! ### Main theorem -/
 
-/-- **Lemma 6.2 — Strict monotonicity.** In a symmetric IPV auction with positive density and
+/-- **Strict monotonicity.** In a symmetric IPV auction with positive density and
 strict-highest-bid allocation, if the `BidderProblem` constructed via `toBidderProblem` is regular
 and satisfies universal IC over nonnegative bids, then the equilibrium strategy is strictly
 monotone on the type interval. -/

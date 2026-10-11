@@ -16,9 +16,9 @@ For a weight function `f : α → ℝ`, a function `g : α → ℝ`, and a finit
 The definition itself is independent of affiliation.  The comparison
 theorems in this file use affiliation to compare two finite conditioning
 events related by the lattice order.  `MonotoneCondExp.lean` applies the
-general result to signal slices for finite Lemma 7.3, and
-`WinnersCurse.lean` applies it to winning and own-signal slices for finite
-Proposition 7.4.
+general result to signal slices to prove monotonicity of finite conditional expectations, and
+`WinnersCurse.lean` applies it to winning and own-signal slices to prove the finite
+winner's-curse inequality.
 -/
 
 namespace MathEconLib
@@ -90,8 +90,8 @@ positive.  Its proof applies the four-functions theorem
 The lattice hypotheses then place the resulting infima back in `A` and the
 suprema back in `B`.
 
-This theorem is the common Ahlswede–Daykin step used by the finite versions
-of Lemma 7.3 and Proposition 7.4. -/
+This theorem is the common Ahlswede–Daykin step used by the finite monotone
+conditional-expectation and winner's-curse theorems. -/
 theorem sum_mul_sum_le_of_affiliated {n : ℕ}
     {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n → ℝ)}
     (hf : Affiliated f) (hpos : ∀ x ∈ S, 0 < f x)

@@ -16,6 +16,9 @@ interior regime has `K < 0` and `U(lowestType) = K²/(4α)`. Sign and lower-boun
 the corresponding quadratic root. These formulas also apply to induced bidder problems in
 all-purchase auctions with linear scarcity and identical type distributions.
 
+This is part of MathEconLib's all-purchase analysis, whose economic-theory research write-up is
+pending. See `docs/AuctionReferences.md` for provenance and citation guidance.
+
 ## Main definitions
 
 * `AllPurchase.strategyBoundary`: the boundary-regime purchase formula.

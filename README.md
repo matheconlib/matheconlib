@@ -27,7 +27,12 @@ These examples are on their PR branches and have not yet merged into `main`.
 
 ## Mathematical Reference
 
-The auction-theory development is guided by an evolving overview provided by Scott Kominers, [*Auction Theory -- introduction and sketch of potential formalization objectives*](https://www.overleaf.com/project/698329a7c6b8506c1361f68b). The overview includes both completed and prospective objectives; this README describes the material currently implemented in Lean.
+The primary textbook reference for standard auction results is Vijay Krishna,
+*Auction Theory*, 2nd edition (Academic Press, 2010). The
+[auction reference map](docs/AuctionReferences.md) gives verified chapter, section, and
+result references, explains their relationship to the Lean statements, and records
+the provenance of the all-purchase analysis. The Lean statements specify the precise
+assumptions and scope of each formalized result.
 
 The extension from auctions to posted pricing and other single-parameter
 problems is described in
@@ -181,6 +186,13 @@ Interim quantities use Mathlib’s totalized Bochner integral, which equals zero
 ### All-Purchase Auctions (`Auction/AllPurchase/`)
 
 The all-purchase development specializes the general framework to auctions in which every bidder purchases editions while the highest bid receives the allocation.
+
+Scott Duke Kominers observed this format in NFT sales and developed the economic analysis
+formalized here. He identified [this sale announcement by @tiffatronn](https://x.com/tiffatronn/status/1928904850022265170)
+as an example of the format. An economic theory research write-up is pending; the
+[Lean development](MathEconLib/Auction/AllPurchase/) is the current reference for the analysis.
+The sale announcement supplies provenance for the motivating format; the formal model and
+its assumptions are specified in Lean.
 
 | File | Contents |
 |------|----------|
