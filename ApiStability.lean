@@ -393,6 +393,40 @@ example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ
       p = MathEconLib.AllPurchase.optimalPriceInterior φbar c α M :=
   @MathEconLib.AllPurchase.sellerProfitInterior_eq_at_optimal_iff
 
+-- The interior formula is identified with actual profit at the supplied auction's posted price.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
+    [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ j, Integrable (fun ω => β (A.θ j ω)) volume)
+    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).HasTypeDeviationIC)
+    (_ : A.K_linear β < 0)
+    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
+      (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType =
+        (A.K_linear β) ^ 2 / (4 * A.α_coeff)) (c : ℝ),
+    A.toAuction.bundledProfit A.spec β c =
+      MathEconLib.AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
+        A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
+  @MathEconLib.LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior
+
+-- The price-independent moment and actual expected aggregate quantity use the same hypotheses.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
+    [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ j, Integrable (fun ω => β (A.θ j ω)) volume)
+    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).HasTypeDeviationIC)
+    (_ : A.K_linear β < 0)
+    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
+      (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType =
+        (A.K_linear β) ^ 2 / (4 * A.α_coeff)),
+    A.toAuction.expectedAggregateBid β =
+      MathEconLib.AllPurchase.interiorMeanQuantity A.φ_bar A.α_coeff
+        A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
+  @MathEconLib.LinearScarcityAuction.expectedAggregateBid_eq_interiorMeanQuantity
+
 -- Edition-welfare bound and moment identity over supplied real parameters.
 example : ∀ φbar c α : ℝ, 0 < α → ∀ B : ℝ,
     MathEconLib.AllPurchase.editionWelfare φbar c α B ≤
