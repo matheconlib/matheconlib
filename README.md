@@ -198,7 +198,7 @@ strategy with integrable purchases, type-deviation incentive compatibility, and 
 lowest-type utility. Its moment uses the distribution-based all-pay bid. The resulting quadratic
 profit bound is attained exactly when the posted price equals the candidate interior price;
 this does not prove equilibrium existence at other prices or compare other regimes.
-[A complete two-bidder uniform example](MathEconLibExamples/AllPurchase/UniformTwoBidder.lean)
+[A complete uniform example with 2 bidders](MathEconLibExamples/AllPurchase/UniformTwoBidder.lean)
 checks all assumptions, including deviations to every real bid, and obtains profit `8/3` at price `2`.
 The welfare decomposition uses actual expected edition welfare for any square-integrable
 aggregate purchase quantity. The editions-only Cournot profile is a feasible best response
@@ -206,6 +206,12 @@ when the posted price does not exceed the scarcity intercept. Its welfare gap is
 the contest gap needs additional quantity conditions. Welfare here excludes the contest prize.
 [A concrete Cournot application](MathEconLibExamples/AllPurchase/Welfare.lean) constructs the
 auction, applies the decomposition, and obtains the welfare gap `25/36`.
+The uniform example also applies the decomposition to the privately optimal prize-aware strategy
+`β(v) = 1/6 + v/2`. Expected aggregate purchases are `4/3`, with variance `1/6`, and expected edition
+welfare is `37/18`. The first-best edition-welfare gap is `7/36 = 25/36 - 1/2`: in this example,
+the prize raises edition welfare by `1/2` relative to the editions-only Cournot benchmark.
+The contest gap is therefore negative; nonnegativity requires additional assumptions. The prize
+raises expected aggregate purchases, although types below `1/3` purchase less than `1/3`.
 
 ### Affiliation (`Auction/Affiliation/`)
 

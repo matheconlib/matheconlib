@@ -9,9 +9,9 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 
 /-!
-# Two independent uniform values
+# Independent uniform values for 2 bidders
 
-This probability space supplies the concrete two-bidder all-purchase example.
+This probability space supplies the concrete all-purchase example with 2 bidders.
 Each coordinate has the uniform law on `[0, 2]`. Clamping the coordinate to
 that interval changes it only on a null set and makes the declared type bounds
 hold at every state, as required by `Auction.HasBoundedTypes`.
@@ -72,13 +72,13 @@ theorem map_value (i : Fin 2) : Measure.map (value i) ℙ = (law : Measure ℝ) 
     (measurePreserving_eval (fun _ : Fin 2 => (law : Measure ℝ)) i).map_eq,
     map_clamp]
 
-/-- The two values are independent. -/
+/-- The 2 values are independent. -/
 theorem independent_values : iIndepFun value ℙ := by
   change iIndepFun (fun (i : Fin 2) (ω : Fin 2 → ℝ) => clamp (ω i))
     (Measure.pi fun _ : Fin 2 => (law : Measure ℝ))
   exact iIndepFun_pi (fun _ : Fin 2 => measurable_clamp.aemeasurable)
 
-/-- The two values are identically distributed. -/
+/-- The 2 values are identically distributed. -/
 theorem identical_values (i j : Fin 2) : IdentDistrib (value i) (value j) ℙ ℙ where
   aemeasurable_fst := (measurable_value i).aemeasurable
   aemeasurable_snd := (measurable_value j).aemeasurable
@@ -121,7 +121,7 @@ theorem integrable_value_sq (i : Fin 2) : Integrable (fun ω => value i ω ^ 2) 
   have h := value_mem i ω
   nlinarith [h.1, h.2, mul_nonneg h.1 (sub_nonneg.mpr h.2)]
 
-/-- Expectations of measurable functions reduce to one elementary interval integral. -/
+/-- Expectations of measurable functions reduce to an elementary interval integral. -/
 theorem integral_comp_value (i : Fin 2) {f : ℝ → ℝ} (hf : Measurable f) :
     (∫ ω, f (value i ω) ∂ℙ) = (1 / 2 : ℝ) * ∫ x in (0 : ℝ)..2, f x := by
   calc
@@ -134,7 +134,7 @@ theorem integral_comp_value (i : Fin 2) {f : ℝ → ℝ} (hf : Measurable f) :
         ← intervalIntegral.integral_of_le (show (0 : ℝ) ≤ 2 by norm_num)]
       norm_num [Real.volume_Icc]
 
-/-- Each bidder's expected value is one. -/
+/-- Each bidder's expected value is `1`. -/
 theorem integral_value (i : Fin 2) : (∫ ω, value i ω ∂ℙ) = 1 := by
   have h := integral_comp_value i (f := fun x : ℝ => x ^ 1)
     (measurable_id.pow measurable_const)
