@@ -4,10 +4,10 @@ import Lean
 /-!
 Compile-time checks for the intended public namespace.
 
-The environment check covers declarations from the imported `MathEconLib` modules, including
-future modules added to the generated root import. Lean's internal and reserved generated names
-are excluded, and `ForMathlib` declarations retain their Mathlib-style names. The explicit checks
-below also pin representative public names.
+The environment check covers declarations from the imported `MathEconLib` modules, including future
+modules added to the generated root import. Lean's internal and reserved generated names are
+excluded, and `ForMathlib` declarations retain their Mathlib-style names. The explicit checks below
+also pin representative public names.
 -/
 
 open Lean Elab Command in
@@ -33,7 +33,8 @@ run_cmd do
 #check MathEconLib.ValueDistribution
 #check MathEconLib.ValueDistribution.uniformInterval
 #check MathEconLib.ValueDistribution.uniformOptimalPrice
-#check MathEconLib.GameTheory.Game
+#check MathEconLib.GameTheory.StrategicGame
+#check MathEconLib.GameTheory.OutcomeGame
 #check MathEconLib.AllPurchase.welfare_decomposition
 #check MathEconLib.LinearScarcityAuction
 #check MathEconLib.QuadraticCostProblem

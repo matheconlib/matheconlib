@@ -36,7 +36,8 @@ import MathEconLib
 
 #check MathEconLib.Auction
 #check MathEconLib.BidderProblem.integral_rep
-#check MathEconLib.GameTheory.Game
+#check MathEconLib.GameTheory.StrategicGame
+#check MathEconLib.GameTheory.OutcomeGame
 ```
 
 Within a file, `open MathEconLib` permits shorter references such as
