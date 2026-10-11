@@ -3,11 +3,11 @@ module
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
 
 /-!
-# A two-bidder all-purchase auction
+# An all-purchase auction with 2 bidders
 
-These examples use a posted unit price of two and scarcity value `3 - B` at total purchases `B`.
+These examples use a posted unit price of `2` and scarcity value `3 - B` at total purchases `B`.
 The unique highest purchaser receives the prize, and a tie leaves it unallocated. The probability
-space and the two bidders' values remain parameters, so the deterministic welfare example and the
+space and the 2 bidders' values remain parameters, so the deterministic welfare example and the
 uniform equilibrium example use exactly the same mechanism.
 -/
 
@@ -20,7 +20,7 @@ open MathEconLib.Mechanism.Auctions
 
 namespace MathEconLib.Examples.AllPurchase
 
-/-- The shared price-two mechanism with scarcity value `3 - B`. -/
+/-- The shared mechanism with price `2` with scarcity value `3 - B`. -/
 def rules : Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ) where
   outcome b i := {r | ∀ j ≠ i, r j < r i}.indicator 1 b
   transfer i b := -((2 - (3 - ∑ j, b j)) * b i)
