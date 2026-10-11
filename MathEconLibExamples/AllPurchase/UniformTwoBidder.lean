@@ -55,6 +55,7 @@ instance : Auction.HasDensity model.toAuction where
 def strategy (v : ℝ) : ℝ := 1 / 6 + v / 2
 
 theorem strategy_measurable : Measurable strategy := by
+  unfold strategy
   fun_prop
 
 theorem strategy_strictMono : StrictMono strategy := by
@@ -75,7 +76,7 @@ theorem mean_strategy (i : Fin 2) :
     𝔼[fun ω => strategy (model.θ i ω)] = (2 : ℝ) / 3 := by
   change (∫ ω, (1 / 6 : ℝ) + value i ω / 2 ∂ℙ) = 2 / 3
   rw [integral_add (integrable_const _) ((integrable_value i).div_const 2),
-    integral_div, integral_value]
+    integral_div 2 (value i), integral_value]
   norm_num
 
 theorem meanPurchase_eq : model.meanPurchase strategy = (2 : ℝ) / 3 :=
@@ -138,7 +139,8 @@ private theorem winning_probability_below (i : Fin 2) (b : ℝ) (hb : b ≤ 1 / 
     dsimp [strategy] at hlt
     linarith [hv.1]
   have hthreshold : bidThreshold strategy 0 2 b = 0 := by
-    simp [bidThreshold, hset]
+    rw [bidThreshold, hset]
+    simp
   rw [model.toAuction.q_strat_eq_cdf_pow model.spec.usesStrictHighestBidAllocation
     strategy_strictMonoOn.monotoneOn strategy_measurable i b]
   change model.commonCDF (bidThreshold strategy 0 2 b) ^ (2 - 1) = 0
@@ -187,7 +189,8 @@ theorem allPayBid_eq (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
     model.allPayBid v = v ^ 2 / 4 := by
   have h := model.toAuction.allPayBid_uniform 2 (by norm_num) rfl commonCDF_eq v hv
   norm_num at h
-  convert h using 1 <;> ring
+  convert h using 1
+  ring
 
 theorem sqrt_allPayBid_eq (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
     Real.sqrt (model.allPayBid v) = v / 2 := by
@@ -202,7 +205,7 @@ theorem expectedSqrtAllPayBid_eq : model.toAuction.expectedSqrtAllPayBid = 1 / 2
         ∫ ω, value 0 ω / 2 ∂ℙ := by
       apply integral_congr_ae
       exact ae_of_all _ fun ω => sqrt_allPayBid_eq (value 0 ω) (value_mem 0 ω)
-    _ = 1 / 2 := by rw [integral_div, integral_value]; norm_num
+    _ = 1 / 2 := by rw [integral_div, integral_value]
 
 /-- Applying the interior quantity theorem gives expected aggregate purchases `4/3`. -/
 theorem expectedAggregateBid_eq : model.expectedAggregateBid strategy = 4 / 3 := by
