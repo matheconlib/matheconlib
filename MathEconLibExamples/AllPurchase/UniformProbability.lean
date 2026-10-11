@@ -138,14 +138,14 @@ theorem integral_comp_value (i : Fin 2) {f : ℝ → ℝ} (hf : Measurable f) :
 theorem integral_value (i : Fin 2) : (∫ ω, value i ω ∂ℙ) = 1 := by
   have h := integral_comp_value i (f := fun x : ℝ => x ^ 1)
     (measurable_id.pow measurable_const)
-  rw [intervalIntegral.integral_pow] at h
+  rw [_root_.integral_pow] at h
   norm_num at h
   exact h
 
 /-- The second moment of the uniform law is `4 / 3`. -/
 theorem integral_value_sq (i : Fin 2) : (∫ ω, value i ω ^ 2 ∂ℙ) = 4 / 3 := by
   rw [integral_comp_value i (f := fun x : ℝ => x ^ 2)
-    (measurable_id.pow measurable_const), intervalIntegral.integral_pow]
+    (measurable_id.pow measurable_const), _root_.integral_pow]
   norm_num
 
 end

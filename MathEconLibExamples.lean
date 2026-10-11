@@ -4,6 +4,12 @@ import MathEconLibExamples.AllPurchase.Welfare
 import MathEconLibExamples.AllPurchase.UniformProbability
 import MathEconLibExamples.AllPurchase.UniformTwoBidder
 
+#print axioms MathEconLib.LinearScarcityAuction.welfare_decomposition
+#print axioms MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
+#print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_best_response
+#print axioms MathEconLib.LinearScarcityAuction.bundledEditionWelfare_le_firstBest
+#print axioms MathEconLib.Examples.AllPurchase.Welfare.welfare_gap
+
 #print axioms MathEconLib.LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior
 #print axioms MathEconLib.LinearScarcityAuction.bundledProfit_le_interior_optimum
 #print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.bundledProfit_eq
