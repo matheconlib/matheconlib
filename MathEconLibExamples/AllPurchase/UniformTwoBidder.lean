@@ -106,7 +106,7 @@ theorem winning_probability (i : Fin 2) (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
     model.spec.usesStrictHighestBidAllocation strategy_strictMonoOn strategy_measurable i hv]
   norm_num [commonCDF_eq v hv]
 
-/-- Expected net payment after edition resale value is `b² - b/3`; gross expenditure is `2b`. -/
+/-- Expected net payment after edition value is `b² - b/3`; gross expenditure is `2b`. -/
 theorem interim_payment (i : Fin 2) (b : ℝ) :
     model.p_strat strategy i b = b ^ 2 - b / 3 := by
   rw [model.p_strat_eq_quadratic strategy strategy_measurable strategy_integrable i b, K_eq]
