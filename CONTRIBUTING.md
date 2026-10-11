@@ -77,9 +77,10 @@ Use the author–year format shown below as the default, with complete reference
 Detailed formatting guidance is tracked in
 [style conventions (#109)](https://github.com/AxiomMath/auctionlib/issues/109).
 
-For work based on a paper or book, give the author, year, title, and DOI or stable
-link in the module documentation. Include the theorem or section number when
-available, and explain any adaptations or differences in scope. For example:
+For work based on a paper or book, give the author, year, and title in the module
+documentation, and include a DOI or stable link when available. Include the theorem
+or section number when available, and explain any adaptations or differences in
+scope. For example:
 
 ```lean
 /-!
