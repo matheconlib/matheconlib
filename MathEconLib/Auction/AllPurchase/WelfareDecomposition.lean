@@ -284,7 +284,7 @@ theorem bundledEditionWelfare_eq_integral (β : ℝ → ℝ) (c : ℝ)
     A.bundledEditionWelfare β c =
       𝔼[fun ω => A.toAuction.aggregateBid β ω *
         A.spec.φ (A.toAuction.aggregateBid β ω) - c * A.toAuction.aggregateBid β ω] := by
-  have hB_int := hB.integrable (by norm_num : (1 : ℝ≥0∞) ≤ 2)
+  have hB_int := hB.integrable (by norm_num)
   have hB2_int := hB.integrable_sq
   have hedition_int : Integrable
       (fun ω => A.toAuction.aggregateBid β ω * A.spec.φ (A.toAuction.aggregateBid β ω)) ℙ := by
@@ -330,6 +330,7 @@ theorem editionWelfare_mean_sub_bundled_eq_variance (β : ℝ → ℝ) (c : ℝ)
   rw [variance_eq_sub hB]
   unfold AllPurchase.editionWelfare bundledEditionWelfare expectedAggregateBidSq
     Auction.expectedAggregateBid
+  simp only [Pi.pow_apply]
   ring
 
 /-- Expected edition welfare does not exceed edition welfare evaluated at mean purchases. -/
