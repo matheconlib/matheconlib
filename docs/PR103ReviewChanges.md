@@ -255,6 +255,17 @@ using `hZ.subset (C.choose_subset Z)`. For the finite-contract completion
 replacement, supply `finiteValued_of_finite C`. The stronger canonical results
 and the substantive finite-domain completability corollaries are unchanged.
 
+## Intended applications of preference-completion corollaries
+
+The matching-preferences module now identifies the intended many-to-one
+applications, including cadet–branch matching from the #38 roadmap. Its five
+completion corollaries currently have no market application in the repository.
+The comments distinguish the hypotheses supplied by finite preference
+maximization and feasible bundles from the unilateral-substitutability assumption
+that remains to be proved for a concrete choice model. The many-to-one market
+specialization and completion-to-stability reduction remain deferred.
+This follow-up changes documentation only.
+
 ## Validation
 
 The complete revised source at

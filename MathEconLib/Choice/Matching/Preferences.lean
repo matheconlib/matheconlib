@@ -25,6 +25,18 @@ a completion through the substitute hull. These finite-alternative results
 obtain IRC from preference maximization; they construct a completed choice
 function, not a completed linear preference order. The general hull
 relationships are in `MathEconLib.Choice.Matching.Relationships`.
+
+## Intended applications
+
+The five completion corollaries are helpers for the planned many-to-one
+matching-with-contracts applications, including cadet–branch matching, in
+https://github.com/AxiomMath/auctionlib/issues/38. They are not yet used by a
+formalized many-to-one market application. For bundle preferences, unilateral
+substitutability remains an explicit hypothesis; finite preference maximization
+supplies IRC, and the feasible-bundle representation supplies at most one
+contract per partner. The many-to-one market specialization and the reduction
+from suitable completions to stable-market outcomes remain future work.
+
 -/
 
 /-! ## Feasible bundles and induced choice -/
@@ -162,7 +174,7 @@ theorem hasConsistentSubstitutableCompletion_ofSingletonSetLinearOrder
   · exact substitutable_ofSingletonSetLinearOrder pref
   · exact consistent_ofSingletonSetLinearOrder pref
 
-/-! ## Preference-induced choice -/
+/-! ## Completions for represented bundles -/
 
 /-- The unilateral-substitutability completion implication for preferences
 over represented many-to-one-feasible bundles.
@@ -184,7 +196,7 @@ theorem hasConsistentSubstitutableCompletion_ofBundleOrder
   · exact consistent_ofBundleOrder pref bundle
   · exact injOn_ofBundleOrder pref bundle hbundle
 
-/-! ## Preference-induced completions
+/-! ### Feasible-bundle and set preferences
 
 These corollaries use the finite unilateral-substitutability completion
 theorem in `MathEconLib.Choice.Matching.Relationships`.
