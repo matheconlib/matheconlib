@@ -1,4 +1,4 @@
-import MathEconLib.Choice.Conditions.General
+import MathEconLib.Choice.Conditions
 import Mathlib.Order.Hom.Basic
 
 /-!

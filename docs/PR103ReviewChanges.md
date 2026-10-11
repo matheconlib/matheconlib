@@ -190,11 +190,11 @@ umbrella imports. Full Lean builds remain the gate for each published stage.
 
 ## Choice conditions by topic: follow-up organization
 
-The current layout replaces the earlier `Conditions.Individual` and
+This intermediate layout replaced the earlier `Conditions.Individual` and
 `Conditions.WithPartners` paths with `Conditions.General` and
 `Conditions.Matching`, each with topic modules. The historical stage descriptions
-above record the intermediate layout; [MatchingArchitecture.md](MatchingArchitecture.md)
-records the current imports.
+above record earlier layouts; [MatchingArchitecture.md](MatchingArchitecture.md)
+records the current imports, including the consolidation below.
 
 Substitutability, irrelevance of rejected alternatives, the law of aggregate
 demand, unit demand, finite-valuedness and path independence are defined once
@@ -210,6 +210,26 @@ Namespaces, declaration names, binders, theorem statements and proofs are
 preserved. The existing condition-import client now checks the topical imports
 and their independence from preference constructors and the matching-market
 layer. Public roots and dependent imports follow the new paths.
+
+## Condensed choice organization
+
+Following the follow-up review, the choice development now has ten substantive
+files beneath `Choice/`. `Conditions.lean` collects general predicates and their
+relationships under topic headings. The six import-only matching mirrors and
+the intermediate condition umbrellas are removed. Matching terminology is
+explained with the canonical definitions.
+
+The four substantive matching modules sit directly under `Choice/Matching`.
+`Matching.Preferences` combines the feasible-bundle constructors with the
+preference-completion corollaries. General `Choice.Induced` remains independent
+of this extension. `SubstituteHull` contains both the hull construction and
+accumulating repairs, with separate sections for arbitrary-type endpoint
+results and finite termination. Public declaration names, statements, binder
+scopes, attributes and proof bodies are preserved by the reorganization.
+
+Imports, documentation and public roots use the compact layout. The condition
+import client continues to check that completion definitions require neither
+preference constructors nor a matching market.
 
 ## Validation
 

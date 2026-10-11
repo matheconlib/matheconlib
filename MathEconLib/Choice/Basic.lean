@@ -12,7 +12,7 @@ The current development is motivated by matching with contracts, but the
 choice-function structure and its elementary operations apply to general
 choice theory. Optional conditions such as consistency, substitutability,
 and path independence are defined in
-`MathEconLib.Choice.Conditions.General`.
+`MathEconLib.Choice.Conditions`.
 
 ## Main definitions
 

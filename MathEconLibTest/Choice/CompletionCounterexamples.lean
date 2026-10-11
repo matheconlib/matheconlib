@@ -1,8 +1,8 @@
 /-
 Matching with contracts: completion need not enlarge choices.
 -/
-import MathEconLib.Choice.Conditions.Matching.Completion
-import MathEconLib.Choice.Conditions.Matching.WeakSubstitutability
+import MathEconLib.Choice.Matching.Completion
+import MathEconLib.Choice.Matching.WeakSubstitutability
 import MathEconLib.Choice.SubstituteHull
 import MathEconLibTest.Choice.Counterexamples
 import Mathlib.Tactic.Tauto

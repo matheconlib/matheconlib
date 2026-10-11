@@ -1,4 +1,4 @@
-import MathEconLib.Choice.Conditions.Matching.Substitutability
+import MathEconLib.Choice.Conditions
 
 /-!
 # Weak substitutability for matching choice
@@ -23,9 +23,9 @@ contract. For unilateral substitutability, finiteness alone does not imply
 chosen contract per partner, and finite chosen sets.
 
 The definitions of completion and substitutable completability are in
-`MathEconLib.Choice.Conditions.Matching.Completion`. Relationships between
+`MathEconLib.Choice.Matching.Completion`. Relationships between
 weak substitutability, completion, and the substitute hull are in
-`MathEconLib.Choice.Conditions.Matching.Relationships`.
+`MathEconLib.Choice.Matching.Relationships`.
 -/
 
 namespace MathEconLib.Choice

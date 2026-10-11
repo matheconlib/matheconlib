@@ -1,14 +1,14 @@
-import MathEconLib.Choice.Conditions.Matching.Completion
-import MathEconLib.Choice.Conditions.Matching.WeakSubstitutability
+import MathEconLib.Choice.Matching.Completion
+import MathEconLib.Choice.Matching.WeakSubstitutability
 import MathEconLib.Choice.SubstituteHull
 
 /-!
 # Relationships between matching choice conditions
 
 The definitions of weak substitutability are in
-`MathEconLib.Choice.Conditions.Matching.WeakSubstitutability`; completion and
+`MathEconLib.Choice.Matching.WeakSubstitutability`; completion and
 substitutable completability are in
-`MathEconLib.Choice.Conditions.Matching.Completion`.
+`MathEconLib.Choice.Matching.Completion`.
 This module relates those conditions to the general substitute hull. The
 partner map is arbitrary; no matching market is required.
 
@@ -31,7 +31,7 @@ unestablished. Here the generic substitute-hull results supply IRC as well.
 Kadam (2017) proves the preference-based implication by constructing a
 preference completion; no completed linear preference order is constructed
 here. Corollaries for preference-induced choices are in
-`MathEconLib.Choice.Conditions.Matching.Preferences`.
+`MathEconLib.Choice.Matching.Preferences`.
 
 The general hull construction and its minimality and IRC properties live
 in `MathEconLib.Choice.SubstituteHull`. Completion alone is not pointwise

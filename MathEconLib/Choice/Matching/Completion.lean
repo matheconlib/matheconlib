@@ -1,5 +1,4 @@
-import MathEconLib.Choice.Conditions.Matching.IrrelevanceOfRejectedContracts
-import MathEconLib.Choice.Conditions.Matching.Substitutability
+import MathEconLib.Choice.Conditions
 
 /-!
 # Completion and substitutable completability
@@ -26,10 +25,10 @@ survey's standing IRC convention.
 A completion need not enlarge the original choices pointwise. The result
 `IsCompletionOf.unilaterallySubstitutable_of_le` and the hull
 characterization in
-`MathEconLib.Choice.Conditions.Matching.Relationships`
+`MathEconLib.Choice.Matching.Relationships`
 therefore state the extra pointwise inclusion separately. Consequences for
 preference-induced choice are in
-`MathEconLib.Choice.Conditions.Matching.Preferences`.
+`MathEconLib.Choice.Matching.Preferences`.
 -/
 
 namespace MathEconLib.Choice

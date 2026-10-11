@@ -1,7 +1,7 @@
 /-
 Matching with contracts: counterexamples for the choice layer.
 -/
-import MathEconLib.Choice.Conditions.General
+import MathEconLib.Choice.Conditions
 
 /-!
 # Choice-layer counterexamples
@@ -16,7 +16,7 @@ these design choices:
   single-contract form is too weak to drive the finiteness-free fixed-point
   development), and
 * retaining the literature's single-contract shape for the weakened
-  conditions (`MathEconLib.Choice.Conditions.Matching.WeakSubstitutability`), while exposing the
+  conditions (`MathEconLib.Choice.Matching.WeakSubstitutability`), while exposing the
   hypotheses needed to extend their consequences beyond finite markets.
 
 The completion theorem now permits arbitrary contract types when choice is
