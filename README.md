@@ -13,17 +13,13 @@ Project-owned Lean declarations live under the `MathEconLib` namespace; see
 the [public-name mapping](docs/NamespaceMigration.md) for migration guidance.
 Shorter names below abbreviate declarations under that namespace.
 
-## Worked Examples (under review)
-
-These examples are on their PR branches and have not yet merged into `main`.
+## Worked Examples
 
 - [Becker-inspired crime choice](https://github.com/AxiomMath/auctionlib/blob/codex/becker-crime-example/MathEconLibExamples/SingleParameter/BeckerCrime.lean)
   ([PR #95 — under review](https://github.com/AxiomMath/auctionlib/pull/95)):
   risk-neutral binary choice, cutoff and deterrence results, and aggregate crime
   under a fixed type distribution.
-- [Matching pennies](https://github.com/AxiomMath/auctionlib/blob/examples/matching-pennies/MathEconLibExamples/GameTheory/MatchingPennies.lean)
-  ([PR #96 — under review](https://github.com/AxiomMath/auctionlib/pull/96)):
-  no pure Nash equilibrium and a unique mixed equilibrium with uniform randomization.
+- [Matching pennies](MathEconLibExamples/GameTheory/MatchingPennies.lean): no pure Nash equilibrium and a unique mixed equilibrium with uniform randomization.
 
 ## Mathematical Reference
 
@@ -218,8 +214,46 @@ The continuous conditional-expectation and winner's-curse results, together with
 
 | File | Contents |
 |------|----------|
-| [`GameTheory/Basic.lean`](MathEconLib/GameTheory/Basic.lean) | Normal-form games, payoff structures, dominant strategies, pure/strict/strong Nash equilibria, mixed games, and expected payoff |
-| [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) | Pure Nash existence under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed Nash existence for finite games and compact metrizable action spaces under the stated continuity assumptions |
+| [`GameTheory/Equilibrium/Problem.lean`](MathEconLib/GameTheory/Equilibrium/Problem.lean) | Shared admissible-deviation equilibrium and forward/backward transport |
+| [`GameTheory/Strategic/Basic.lean`](MathEconLib/GameTheory/Strategic/Basic.lean) | Payoff-based games, dominance, and pure/strict/strong Nash equilibria |
+| [`GameTheory/Strategic/Outcome.lean`](MathEconLib/GameTheory/Strategic/Outcome.lean) | Outcome games, payoff structures, probability-measure mixing, and expected utility |
+| [`GameTheory/Strategic/Mixed.lean`](MathEconLib/GameTheory/Strategic/Mixed.lean) | Independent probability-measure mixed strategies and mixed Nash equilibrium |
+| [`GameTheory/Strategic/Mixed/Finite.lean`](MathEconLib/GameTheory/Strategic/Mixed/Finite.lean) | Finite probability weights, finite-sum payoffs, and agreement with probability-measure mixing |
+| [`GameTheory/Strategic/Existence.lean`](MathEconLib/GameTheory/Strategic/Existence.lean) | Pure Nash existence for quasiconcave payoffs on compact convex action spaces and mixed Nash existence |
+| [`GameTheory/Strategic/Bayesian/Finite.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Finite.lean) | Finite-type pure BNE, null-type conventions, and expanded-game Nash |
+| [`GameTheory/Strategic/Bayesian/FiniteMeasurable.lean`](MathEconLib/GameTheory/Strategic/Bayesian/FiniteMeasurable.lean) | Finite and measurable equilibrium agreement |
+| [`GameTheory/Strategic/Bayesian/Measurable/PureBNE.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Measurable/PureBNE.lean) | Measurable whole-strategy deviations and integrable ex-ante BNE |
+| [`GameTheory/Strategic/Bayesian/Measurable/InterimConverse.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Measurable/InterimConverse.lean) | Explicit conditional beliefs and the guarded interim/ex-ante equivalence |
+
+`StrategicGame I A V`, `EquilibriumProblem S I V`, and `PayoffStructure I O V` take an explicit
+payoff type. Pure Nash requires every unilateral deviation's payoff to be at most the incumbent
+payoff. With partially ordered payoffs, this is stronger than absence of strict improvement;
+the two agree under a linear order. Finite expected payoffs use real modules, and integral payoffs
+use complete real normed spaces. Pure quasiconcave existence allows linearly ordered payoff spaces
+with a closed order relation. Mixed-equilibrium existence and the measurable interim equilibrium
+implications (`isBNE_of_ae_interim` and the theorems in `InterimConverse`) remain specialized to real
+payoffs.
+
+`MixedStrategy`, `mixedExtension`, and `IsMixedNash` use probability measures. The finite
+computational interface is in `GameTheory/Strategic/Mixed/Finite.lean`, with `FiniteMixedStrategy`,
+`finiteExpectedPayoff`, `finiteMixedExtension`, and `IsFiniteMixedNash`. It needs no measurable
+structure on finite actions and evaluates payoffs by finite sums. Finite priors and finite mixed
+actions share `FinDist`, a probability-oriented alias of Mathlib's real simplex. Both mixed
+representation bridges follow from `StrategicGame.isNash_iff_of_actionEquiv` and payoff agreement.
+The raw `mixedExtension` uses the totalized Bochner integral. `IsMixedNash` requires integrable
+incumbent payoffs and compares unilateral deviations with integrable deviator payoffs. When all
+unilateral payoffs are integrable, it agrees with Nash equilibrium of the raw mixed extension;
+finite discrete games and bounded measurable payoffs in second countable payoff spaces satisfy
+this condition. For bounded measurable games, `StrategicGame.Bounded` supplies the
+integrability hypotheses of `isMixedNash_iff_isNash`.
+
+The Bayesian game carrier takes players, types, actions, and payoff values as explicit parameters.
+Priors are supplied separately. Finite BNE constrains positive-probability types, and the finite
+Bayesian equivalences hold for partially ordered real modules whose order respects addition and
+nonnegative scaling. Measurable BNE includes incumbent integrability and, for real payoffs, has an
+almost-everywhere interim characterization under the stated measurability and
+conditional-integrability assumptions. Pointwise auction IC and induced mechanism games remain
+separate integration work.
 
 ### Key Theorems
 
@@ -238,7 +272,7 @@ The linked Lean statements specify each result's definitions and hypotheses.
 | Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1` | [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) |
 | Expected-edition-welfare decomposition and variance penalty under square-integrable purchases; feasible Cournot best responses and conditional contest-gap nonnegativity | [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) |
 | Winner's-curse inequality on finite sublattices with affiliated positive weights, monotone nonnegative values, and a nonempty winning event | [`Auction/Affiliation/WinnersCurse.lean`](MathEconLib/Auction/Affiliation/WinnersCurse.lean) |
-| Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with the stated expected-payoff continuity | [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) |
+| Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with continuous payoffs | [`GameTheory/Strategic/Existence.lean`](MathEconLib/GameTheory/Strategic/Existence.lean) |
 
 ### Auxiliary
 
@@ -254,8 +288,12 @@ The linked Lean statements specify each result's definitions and hypotheses.
 ```bash
 lake exe cache get                           # fetch prebuilt Mathlib oleans (do this first)
 bash scripts/update-imports.sh               # regenerate and verify library and test imports
-lake build                                    # build library, API pins, and compatibility tests
+lake build                                    # build library, API pins, tests, and examples
+lake build MathEconLibExamples                 # build the mathematical economics examples
 ```
+
+`MathEconLibExamples/GameTheory/MatchingPennies.lean` constructs matching pennies, proves that
+uniform randomization is its unique mixed Nash equilibrium, and rules out pure Nash equilibria.
 
 Run `lake exe cache get` before the first build, and again after any change that
 bumps the Mathlib revision or after `lake clean`; without it Lean compiles
