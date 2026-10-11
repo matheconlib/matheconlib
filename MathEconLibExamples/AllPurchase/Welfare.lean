@@ -7,8 +7,8 @@ public import MathEconLib.Auction.AllPurchase
 # A concrete welfare decomposition
 
 The 2 buyers each purchase `1/3` edition at price `2`, with scarcity value `3 - B` and production
-cost `0`. The editions-only Cournot quantity is `2/3`; its welfare is `14/9`, while first-best welfare
-is `9/4`. This example constructs the auction, proves square integrability, applies the economic
+cost `0`. The editions-only Cournot quantity is `2/3`; its welfare is `14/9`, while first-best
+welfare is `9/4`. This example constructs the auction, proves square integrability, applies the economic
 decomposition, and certifies the Cournot profile's best-response property. The deterministic
 purchase profile is an editions-only equilibrium; no claim of contest equilibrium is made.
 -/
@@ -68,7 +68,8 @@ theorem expected_welfare : model.bundledEditionWelfare purchase 0 = (14 : ℝ) /
   change (∫ _ : Unit, (2 : ℝ) / 3 * (3 - 2 / 3) - 0 * (2 / 3)) = 14 / 9
   norm_num
 
-/-- The named economic theorem yields the welfare gap `25/36`, comprising Cournot loss and contest loss `0` in this deterministic benchmark. -/
+/-- The named economic theorem yields the welfare gap `25/36`, comprising Cournot loss
+and contest loss `0` in this deterministic benchmark. -/
 theorem welfare_gap :
     MathEconLib.AllPurchase.firstBestEditionSurplus model.φ_bar 0 model.α_coeff -
         𝔼[fun ω => model.toAuction.aggregateBid purchase ω *
