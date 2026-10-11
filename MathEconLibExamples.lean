@@ -1,1 +1,7 @@
 import MathEconLibExamples.AllPurchase.Basic
+import MathEconLibExamples.AllPurchase.Welfare
+
+#print axioms MathEconLib.LinearScarcityAuction.welfare_decomposition
+#print axioms MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
+#print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_best_response
+#print axioms MathEconLib.Examples.AllPurchase.Welfare.welfare_gap

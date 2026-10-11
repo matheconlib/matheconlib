@@ -13,11 +13,17 @@ production cost, and `α` is the dilution coefficient. The quantity and surplus 
 defined for arbitrary real parameters. When `α > 0`, they give the optimizer and maximum over all
 real quantities; the optimizer is nonnegative exactly when `φbar ≥ c`.
 
-The welfare decomposition splits the gap from the surplus benchmark at a supplied intermediate
-quantity. The moment identity relates welfare at a supplied mean to a supplied second moment. When
-these are moments of a square-integrable quantity and `α ≥ 0`, the difference is the nonnegative
-variance penalty `α · Var(B)`. For a linear-scarcity auction, integrability of total quantity and
-its square identifies the moment expression with expected edition value net of production cost.
+The algebraic helper splits a supplied welfare gap at a supplied intermediate quantity. The
+auction-level decomposition instead uses the auction's editions-only Cournot quantity and actual
+expected edition welfare. A separate best-response certificate verifies that the Cournot profile
+is feasible when `p ≤ φ̄`. No equilibrium assumption on bundled purchases is needed for the
+decomposition itself.
+
+For square-integrable aggregate purchases, the difference between welfare at the mean and
+expected welfare is exactly the nonnegative penalty `α · Var(B)`. The Cournot gap is nonnegative.
+The contest gap is nonnegative when editions-only purchases already exceed the efficient quantity
+and the contest weakly raises mean purchases; it can be negative without these conditions. All
+welfare quantities here concern editions, excluding the contest prize's value.
 
 ## Main definitions
 
@@ -26,6 +32,7 @@ its square identifies the moment expression with expected edition value net of p
 * `cournotLoss` and `contestLoss`: welfare gaps at supplied quantity and welfare benchmarks.
 * `bundledEditionWelfareMoments`: the welfare expression in two supplied moments.
 * `LinearScarcityAuction.bundledEditionWelfare`: the auction's edition-welfare moment expression.
+* `LinearScarcityAuction.cournotPurchaseLinear`: symmetric editions-only purchases per bidder.
 
 ## Main statements
 
@@ -33,8 +40,15 @@ its square identifies the moment expression with expected edition value net of p
   benchmark when `α ≠ 0`.
 * `editionWelfare_le_firstBest`: the surplus benchmark bounds welfare at every real quantity when
   `α > 0`.
-* `welfare_decomposition`: the algebraic decomposition into Cournot and contest welfare gaps.
-* `editionWelfare_mean_sub_bundled`: the algebraic identity underlying the variance penalty.
+* `AllPurchase.welfare_decomposition`: the algebraic welfare-gap helper, retained for reuse.
+* `LinearScarcityAuction.welfare_decomposition`: the decomposition of actual expected edition
+  welfare using the auction's Cournot benchmark.
+* `LinearScarcityAuction.cournotPurchaseLinear_best_response`: feasibility and optimality against
+  nonnegative unilateral deviations in the editions-only game.
+* `LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance`: the variance penalty for
+  actual square-integrable purchases.
+* `LinearScarcityAuction.contestLoss_nonneg_of_mean_ge`: a sufficient quantity condition for a
+  nonnegative contest welfare gap.
 * `LinearScarcityAuction.bundledEditionWelfare_eq`: the auction's moment expression equals
   `𝔼[B·φ(B)] − c·𝔼[B]` under integrability assumptions.
 
@@ -242,7 +256,7 @@ theorem cournotQuantityLinear_eq_total :
 nonnegative unilateral deviation. Each buyer receives `x · (φ(total) − p)`; the contest prize
 is absent. The deviation inequality follows by completing the square, rather than merely
 checking a first-order condition. -/
-theorem cournotPurchaseLinear_best_response (hp : A.spec.price ≤ A.φ_bar) :
+theorem cournotPurchaseLinear_best_response [NeZero n] (hp : A.spec.price ≤ A.φ_bar) :
     0 ≤ A.cournotPurchaseLinear ∧
       ∀ x : ℝ, 0 ≤ x →
         x * (A.spec.φ (x + ((n : ℝ) - 1) * A.cournotPurchaseLinear) - A.spec.price) ≤
@@ -326,6 +340,13 @@ theorem bundledEditionWelfare_le_mean (β : ℝ → ℝ) (c : ℝ)
   have h := A.editionWelfare_mean_sub_bundled_eq_variance β c hB
   have hnonneg := mul_nonneg A.α_pos.le (variance_nonneg (A.toAuction.aggregateBid β) ℙ)
   linarith
+
+/-- Actual expected edition welfare is bounded by the first-best surplus. -/
+theorem bundledEditionWelfare_le_firstBest (β : ℝ → ℝ) (c : ℝ)
+    (hB : MemLp (A.toAuction.aggregateBid β) 2 ℙ) :
+    A.bundledEditionWelfare β c ≤ AllPurchase.firstBestEditionSurplus A.φ_bar c A.α_coeff :=
+  (A.bundledEditionWelfare_le_mean β c hB).trans
+    (AllPurchase.editionWelfare_le_firstBest A.φ_bar c A.α_coeff A.α_pos _)
 
 /-- The auction's Cournot welfare gap is nonnegative. Feasibility of its first-best and Cournot
 quantities additionally requires `c ≤ φ_bar` and `price ≤ φ_bar`, respectively. -/

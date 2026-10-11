@@ -68,3 +68,7 @@ def auction {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure �
   scarcity_is_linear := by funext b; simp [spec]
 
 end MathEconLib.Examples.AllPurchase
+
+end
+
+end

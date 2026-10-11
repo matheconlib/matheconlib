@@ -421,6 +421,28 @@ example : ∀ φbar c α B_ed WC : ℝ,
         MathEconLib.AllPurchase.contestLoss φbar c α B_ed WC :=
   @MathEconLib.AllPurchase.welfare_decomposition
 
+-- Auction-level welfare decomposition uses actual expected edition welfare and the Cournot
+-- benchmark. Square integrability is the only strategy assumption.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    MemLp (A.toAuction.aggregateBid β) 2 volume →
+      MathEconLib.AllPurchase.firstBestEditionSurplus A.φ_bar c A.α_coeff -
+          (∫ ω, A.toAuction.aggregateBid β ω * A.spec.φ (A.toAuction.aggregateBid β ω) -
+            c * A.toAuction.aggregateBid β ω) =
+        MathEconLib.AllPurchase.cournotLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear +
+          MathEconLib.AllPurchase.contestLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear
+            (A.bundledEditionWelfare β c) :=
+  @MathEconLib.LinearScarcityAuction.welfare_decomposition
+
+-- The welfare penalty is the variance of the actual aggregate purchases.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    MemLp (A.toAuction.aggregateBid β) 2 volume →
+      MathEconLib.AllPurchase.editionWelfare A.φ_bar c A.α_coeff
+          (A.toAuction.expectedAggregateBid β) - A.bundledEditionWelfare β c =
+        A.α_coeff * variance (A.toAuction.aggregateBid β) volume :=
+  @MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
+
 -- Uniform all-pay bid (§9.6.3): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.Auction Ω n)
