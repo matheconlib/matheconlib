@@ -24,7 +24,7 @@ giving each player expected payoff zero.
 
 ## Main statements
 
-* `matchingPennies_exists_mixedNash`: Mixed equilibrium exists by the finite-game Nash theorem.
+* `matchingPennies_exists_mixedNash`: Matching pennies admits a mixed Nash equilibrium.
 * `matchingPennies_uniform_is_mixed_nash`: Uniform randomization is a mixed Nash equilibrium.
 * `matchingPennies_mixed_nash_unique`: Every mixed Nash equilibrium is the uniform profile.
 * `matchingPennies_no_pure_nash`: No pure Nash equilibrium exists.
@@ -77,8 +77,7 @@ example : matchingPennies.payoff p1 ![heads, heads] = -1 := by trivial
 example : matchingPennies.payoff p1 ![heads, tails] = 1 := by trivial
 
 /-- The action distribution assigning probability one half to heads and tails. -/
-def uniformAction : FinDist (Fin 2) :=
-  ⟨fun _ => 1 / 2, by constructor <;> norm_num [Fin.sum_univ_two]⟩
+abbrev uniformAction : FinDist (Fin 2) := FinDist.uniform
 
 /-- The profile where both players independently randomize uniformly over their two actions. -/
 def uniformProfile : Fin 2 → FinDist (Fin 2) :=
@@ -88,9 +87,6 @@ def uniformProfile : Fin 2 → FinDist (Fin 2) :=
 values favor heads, negative values favor tails, and zero means uniform randomization. -/
 def headsBias (σ : Fin 2 → FinDist (Fin 2)) (player : Fin 2) : ℝ :=
   (σ player) heads - (σ player) tails
-
-/-- Each action has probability one half under uniform randomization. -/
-@[simp] lemma uniformAction_apply (a : Fin 2) : uniformAction a = 1 / 2 := rfl
 
 /-!
 ## Intermediate results
@@ -121,19 +117,18 @@ lemma expectedPayoff_p1_closed (σ : Fin 2 → FinDist (Fin 2)) :
   simp [Fin.prod_univ_two, headsBias, p0, p1, heads, tails]
   ring
 
-/-- Player 0's payoff after a pure deviation is the deviating action's heads bias times
-player 1's heads bias. -/
+/-- Player 0's payoff after a pure deviation is the deviating action's heads bias times player 1's
+heads bias. -/
 lemma dev_p0_payoff (σ : Fin 2 → FinDist (Fin 2)) (a : Fin 2) :
     matchingPennies.finiteExpectedPayoff p0 (Function.update σ p0 (FinDist.pure a))
       = ((FinDist.pure a) heads - (FinDist.pure a) tails) * headsBias σ p1 := by
-  simp [expectedPayoff_p0_closed, headsBias, p0, p1, Function.update]
+  simp [expectedPayoff_p0_closed, headsBias, p0, p1]
 
 /-- Player 1's payoff after a pure deviation is the negative product of the two heads biases. -/
 lemma dev_p1_payoff (σ : Fin 2 → FinDist (Fin 2)) (a : Fin 2) :
     matchingPennies.finiteExpectedPayoff p1 (Function.update σ p1 (FinDist.pure a))
       = -(headsBias σ p0 * ((FinDist.pure a) heads - (FinDist.pure a) tails)) := by
-  simp [expectedPayoff_p1_closed, headsBias, p0, p1, Function.update]
-
+  simp [expectedPayoff_p1_closed, headsBias, p0, p1]
 
 /-!
 ## Main results
@@ -149,14 +144,13 @@ theorem matchingPennies_exists_mixedNash :
   -- from the `StrategicGame` and so does not need to be proved again.
   matchingPennies.exists_isFiniteMixedNash
 
-/-- The uniform profile is a mixed Nash equilibrium against every simplex-valued deviation. -/
+/-- The uniform profile is a mixed Nash equilibrium against every mixed deviation. -/
 theorem matchingPennies_uniform_is_mixed_nash :
     matchingPennies.IsFiniteMixedNash uniformProfile := by
   rw [StrategicGame.isFiniteMixedNash_iff]
   intro i τ
   fin_cases i <;>
-    simp [expectedPayoff_p0_closed, expectedPayoff_p1_closed, headsBias, uniformProfile,
-      p0, p1, Function.update]
+    simp [expectedPayoff_p0_closed, expectedPayoff_p1_closed, headsBias, uniformProfile, p0, p1]
 
 /-- Every mixed Nash equilibrium of matching pennies is the uniform profile. -/
 theorem matchingPennies_mixed_nash_unique
@@ -186,7 +180,8 @@ theorem matchingPennies_mixed_nash_unique
   -- After normalization, all four action probabilities must equal one half.
   have : ∀ i x, σ i x = 1 / 2 := by
     simp only [Fin.forall_fin_two]
-    refine ⟨⟨?_, ?_⟩, ⟨?_, ?_⟩⟩ <;> linarith
+    repeat' constructor
+    all_goals linarith
   -- Agreement on every action probability identifies σ as the uniform profile.
   ext i x
   simpa [uniformProfile, uniformAction] using this i x
@@ -196,7 +191,7 @@ theorem matchingPennies_no_pure_nash :
     ¬ ∃ s : Fin 2 → Fin 2, matchingPennies.IsNash s := by
   rw [(finTwoArrowEquiv (Fin 2)).exists_congr_left]
   norm_num [Prod.exists, Fin.exists_fin_two, StrategicGame.isNash_iff,
-    Fin.forall_fin_two, finTwoArrowEquiv, p0, p1, Function.update]
+    Fin.forall_fin_two, finTwoArrowEquiv, p0, p1]
 
 end MathEconLibExamples.GameTheory.MatchingPennies
 

@@ -5,14 +5,13 @@ Authors: Daniel Lyng
 -/
 module
 
-public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.SingleParameter.PostedPrice
-import Mathlib.Logic.Equiv.Prod
+public import MathEconLibExamples.GameTheory.MatchingPennies
 
 /-!
 # Dominance, matching pennies, the prisoners' dilemma, and posted pricing
 
-Matching pennies has no pure Nash equilibrium and has a fair-coin mixed equilibrium. In the
+The uniform equilibrium of matching pennies also holds for independent probability measures. In the
 prisoners' dilemma, mutual defection is strict Nash while mutual cooperation is not Nash. The
 outcome-distribution representation gives the same expected utilities and mixed equilibria.
 Additional games compare strict dominance at every opponent profile with the strict part of the
@@ -22,20 +21,20 @@ one-player Nash equilibrium by universal incentive compatibility over both purch
 
 ## Main definitions
 
-* `matchingPennies`: A two-player zero-sum game of matching or opposing actions.
 * `prisonersDilemma`: A two-player game in which defection is strictly dominant.
 * `tiedDominanceGame`: A game with ties at some opponent profiles.
 * `emptyOpponentGame`: A game in which one player has no available action.
-* `fairCoin`: Uniform randomization over Boolean actions.
+* `outcomeExample`: Matching pennies represented by a scalar agreement outcome.
+* `utilities`: Opposite utilities for the scalar agreement outcome.
 * `postedPriceGame`: A buyer's payoff from either purchase decision at a fixed price and type.
 
 ## Main statements
 
-* `matchingPennies_not_isNash` and `matchingPennies_isFiniteMixedNash_fairCoin`.
 * `prisonersDilemma_isStrictlyDominant_defect`, `prisonersDilemma_isStrictNash_defect`, and
   `prisonersDilemma_not_isNash_cooperate`.
 * `tiedDominanceGame_isStrictOrderDominant` and `tiedDominanceGame_not_isStrictlyDominant`.
 * `tiedDominanceGame_not_isStrictNash`: Dominance in the strict preorder permits payoff ties.
+* `outcomeExample_ofOutcome`: Evaluating the scalar outcome recovers matching pennies.
 * `postedPriceGame_isNash`: The posted-price threshold strategy is Nash for every type in the
   stated interval.
 
@@ -48,12 +47,9 @@ dominance, matching pennies, prisoners dilemma, posted price, nash equilibrium
 
 open MathEconLib MathEconLib.GameTheory MathEconLib.Probability MeasureTheory
 
-namespace MathEconLibTest.GameTheory
+open MathEconLibExamples.GameTheory.MatchingPennies
 
-/-- Player `true` receives one when actions agree and negative one otherwise; player `false`
-receives the opposite payoff. -/
-def matchingPennies : StrategicGame Bool (fun _ ↦ Bool) ℝ where
-  payoff i a := if (a false = a true) = (i = true) then 1 else -1
+namespace MathEconLibTest.GameTheory
 
 /-- Every matching-pennies payoff is measurable on the finite profile space. -/
 instance : matchingPennies.Measurable := ⟨fun _ ↦ measurable_of_countable _⟩
@@ -66,23 +62,14 @@ instance : matchingPennies.Bounded where
 example : matchingPennies.payoffStructure.Bounded := inferInstance
 
 /-- Matching-pennies payoffs are integrable under every independent action law. -/
-example (i : Bool) (σ : StrategicGame.MixedStrategy (fun _ : Bool ↦ Bool)) :
-    Integrable (matchingPennies.payoff i) (Measure.pi (fun j ↦ (σ j : Measure Bool))) :=
+example (i : Fin 2) (σ : StrategicGame.MixedStrategy (fun _ : Fin 2 ↦ Fin 2)) :
+    Integrable (matchingPennies.payoff i) (Measure.pi (fun j ↦ (σ j : Measure (Fin 2)))) :=
   matchingPennies.integrable_payoff_of_bounded i σ
 
 /-- Matching pennies has the same mixed Nash equilibria as its integral extension. -/
-example (σ : StrategicGame.MixedStrategy (fun _ : Bool ↦ Bool)) :
+example (σ : StrategicGame.MixedStrategy (fun _ : Fin 2 ↦ Fin 2)) :
     matchingPennies.IsMixedNash σ ↔ matchingPennies.mixedExtension.IsNash σ :=
   matchingPennies.isMixedNash_iff_isNash σ
-
-/-- Matching pennies has no pure Nash equilibrium. -/
-theorem matchingPennies_not_isNash (a : Bool → Bool) : ¬ matchingPennies.IsNash a := by
-  rw [StrategicGame.isNash_iff]
-  intro h
-  have hfalse := h false (!(a false))
-  have htrue := h true (!(a true))
-  cases hf : a false <;> cases ht : a true <;>
-    simp [matchingPennies, hf, ht, Function.update] at hfalse htrue <;> linarith
 
 /-- Defection is `true`; mutual defection pays one, mutual cooperation pays two, and unilateral
 defection pays three to the defector and zero to the cooperator. -/
@@ -171,75 +158,69 @@ example :
     (s := false) (s' := true) false).1 (h false Bool.false_ne_true)).2
   exact (a true).elim
 
-/-- Uniform randomization over two actions. -/
-def fairCoin : FinDist Bool := ⟨fun _ ↦ 1 / 2, by constructor <;> norm_num⟩
-
-/-- Each Boolean action has probability one half under the fair coin. -/
-@[simp] lemma fairCoin_apply (b : Bool) : fairCoin b = 1 / 2 := rfl
-
-/-- A sum over Boolean action profiles has four terms, one for each pair of actions. -/
-private lemma sum_bool_profiles (f : (Bool → Bool) → ℝ) :
-    ∑ a, f a = f (fun _ ↦ false) + f (fun b ↦ b) +
-      f (fun b ↦ !b) + f (fun _ ↦ true) := by
-  rw [← (Equiv.boolArrowEquivProd Bool).symm.sum_comp]
-  simp [Fintype.sum_prod_type, Equiv.boolArrowEquivProd]
-  ring
-
-/-- Expected matching-pennies payoff is the probability of agreement minus disagreement for player
-`true`, and its negative for player `false`. -/
-private lemma matchingPennies_payoff (i : Bool) (σ : Bool → stdSimplex ℝ Bool) :
-    matchingPennies.finiteExpectedPayoff i σ =
-      (if i then 1 else -1) *
-      (σ false false * σ true false + σ false true * σ true true -
-        σ false false * σ true true - σ false true * σ true false) := by
-  rw [StrategicGame.finiteExpectedPayoff_eq_sum]
-  rw [sum_bool_profiles]
-  cases i <;> simp [matchingPennies] <;> ring
-
-/-- Fair randomization is a mixed Nash equilibrium against all simplex deviations. -/
-theorem matchingPennies_isFiniteMixedNash_fairCoin :
-    matchingPennies.IsFiniteMixedNash (fun _ ↦ fairCoin) := by
-  rw [StrategicGame.isFiniteMixedNash_iff]
-  intro i τ
-  rw [matchingPennies_payoff, matchingPennies_payoff]
-  cases i <;> simp [Function.update]
-
 /-- The prisoners' dilemma admits a finite mixed Nash equilibrium. -/
 example : ∃ σ, prisonersDilemma.IsFiniteMixedNash σ := prisonersDilemma.exists_isFiniteMixedNash
 
 /-- Fair independent probability measures form a mixed Nash equilibrium of matching pennies. -/
 example : matchingPennies.IsMixedNash
-    (StrategicGame.toProbability (fun _ ↦ fairCoin)) :=
+    (StrategicGame.toProbability uniformProfile) :=
   (StrategicGame.isFiniteMixedNash_iff_isMixedNash _ _).1
-    matchingPennies_isFiniteMixedNash_fairCoin
+    matchingPennies_uniform_is_mixed_nash
 
 /-- The outcome is one when the actions agree and negative one otherwise, valued in `ℝ`. -/
-def outcomeExample : OutcomeGame Bool (fun _ ↦ Bool) ℝ where
-  outcome a := if a false = a true then 1 else -1
+def outcomeExample : OutcomeGame (Fin 2) (fun _ ↦ Fin 2) ℝ where
+  outcome a := if a p0 = a p1 then 1 else -1
 
 /-- The outcome map is measurable on the finite action-profile space. -/
 instance : outcomeExample.Measurable := ⟨measurable_of_countable _⟩
 
 /-- The two players assign opposite utility to the scalar outcome. -/
-def utilities : PayoffStructure Bool ℝ ℝ where
-  payoff i x := if i then x else -x
+def utilities : PayoffStructure (Fin 2) ℝ ℝ where
+  payoff i x := if i = p0 then x else -x
 
 /-- Both players' utilities are measurable in the scalar outcome. -/
-instance : utilities.Measurable := ⟨fun i ↦ by cases i <;> dsimp [utilities] <;> fun_prop⟩
+instance : utilities.Measurable := ⟨fun i ↦ by dsimp [utilities]; split_ifs <;> fun_prop⟩
 
-/-- Simplex and outcome-distribution representations give the same expected utility. -/
-example (i : Bool) (σ : Bool → stdSimplex ℝ Bool) :
-    (StrategicGame.ofOutcome outcomeExample utilities).finiteExpectedPayoff i σ =
+/-- Evaluating the scalar agreement outcome gives the matching-pennies game. -/
+lemma outcomeExample_ofOutcome :
+    StrategicGame.ofOutcome outcomeExample utilities = matchingPennies := by
+  unfold StrategicGame.ofOutcome matchingPennies
+  congr 1
+  funext i a
+  dsimp [outcomeExample, utilities]
+  split_ifs <;> norm_num
+
+/-- Finite weights and outcome distributions give the same expected payoff in matching pennies. -/
+example (i : Fin 2) (σ : Fin 2 → FinDist (Fin 2)) :
+    matchingPennies.finiteExpectedPayoff i σ =
       (StrategicGame.ofOutcome outcomeExample.mixed utilities.expected).payoff i
-        (StrategicGame.toProbability σ) :=
-  StrategicGame.finiteExpectedPayoff_eq_ofOutcome_mixed_payoff _ _ _ _
+        (StrategicGame.toProbability σ) := by
+  simpa only [outcomeExample_ofOutcome] using
+    StrategicGame.finiteExpectedPayoff_eq_ofOutcome_mixed_payoff outcomeExample utilities i σ
 
-/-- Simplex and outcome-distribution representations give the same mixed Nash equilibria. -/
-example (σ : Bool → stdSimplex ℝ Bool) :
-    (StrategicGame.ofOutcome outcomeExample utilities).IsFiniteMixedNash σ ↔
+/-- Finite weights and outcome distributions give the same equilibria in matching pennies. -/
+example (σ : Fin 2 → FinDist (Fin 2)) :
+    matchingPennies.IsFiniteMixedNash σ ↔
       (StrategicGame.ofOutcome outcomeExample.mixed utilities.expected).IsNash
-        (StrategicGame.toProbability σ) :=
-  StrategicGame.isFiniteMixedNash_iff_ofOutcome_mixed_isNash _ _ _
+        (StrategicGame.toProbability σ) := by
+  simpa only [outcomeExample_ofOutcome] using
+    StrategicGame.isFiniteMixedNash_iff_ofOutcome_mixed_isNash outcomeExample utilities σ
+
+/-- Finite weights and probability measures give the same equilibria in matching pennies. -/
+example (σ : Fin 2 → FinDist (Fin 2)) :
+    matchingPennies.IsFiniteMixedNash σ ↔
+      matchingPennies.IsMixedNash (StrategicGame.toProbability σ) :=
+  StrategicGame.isFiniteMixedNash_iff_isMixedNash _ _
+
+/-- Converting finite weights to probability measures and back preserves the profile. -/
+example (σ : Fin 2 → FinDist (Fin 2)) :
+    StrategicGame.toSimplex (StrategicGame.toProbability σ) = σ :=
+  StrategicGame.toSimplex_toProbability σ
+
+/-- Converting probability measures to finite weights and back preserves the profile. -/
+example (σ : StrategicGame.MixedStrategy (fun _ : Fin 2 ↦ Fin 2)) :
+    StrategicGame.toProbability (StrategicGame.toSimplex σ) = σ :=
+  StrategicGame.toProbability_toSimplex σ
 
 /-! ## Posted-price choice -/
 
