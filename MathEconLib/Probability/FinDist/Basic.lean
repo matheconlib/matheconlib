@@ -188,6 +188,11 @@ noncomputable def uniform [Nonempty α] : FinDist α := stdSimplex.barycenter
 lemma uniform_pmf [Nonempty α] (a : α) :
     (FinDist.uniform (α := α)).pmf a = (Fintype.card α : ℝ)⁻¹ := rfl
 
+/-- The uniform distribution assigns each outcome the reciprocal of the number of outcomes. -/
+@[simp] lemma uniform_apply [Nonempty α] (a : α) :
+    (FinDist.uniform (α := α)) a = (Fintype.card α : ℝ)⁻¹ :=
+  uniform_pmf a
+
 /-! ### Mixtures -/
 
 /-- The convex combination assigning weights `t` and `1 - t` to two distributions. -/
