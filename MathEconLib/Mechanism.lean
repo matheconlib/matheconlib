@@ -6,11 +6,12 @@ Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
 module
 
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
+public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 
 /-!
 # Mechanisms
 
 Outcome and signed-transfer rules, quasilinear environments, incentive and welfare properties, and
-all-purchase auction specifications.
+all-purchase and first-and-second-pay auction specifications.
 -/

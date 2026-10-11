@@ -14,6 +14,7 @@ import MathEconLib.Auction.AllPurchase.UniformDistribution
 import MathEconLib.Auction.AllPurchase.WelfareDecomposition
 import MathEconLib.Auction.Basic
 import MathEconLib.Auction.IdenticalTypes
+import MathEconLib.Auction.PaymentUniqueness
 import MathEconLib.Auction.RevenueEquivalence
 import MathEconLib.Auction.StrictMonotonicity
 import MathEconLib.Auction.SymmetricIPV
@@ -38,6 +39,7 @@ import MathEconLib.GameTheory.NashExistence
 import MathEconLib.Mechanism
 import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 import MathEconLib.Mechanism.Auctions.Allocation
+import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 import MathEconLib.Mechanism.Core.Comap
 import MathEconLib.Mechanism.Core.Environment
 import MathEconLib.Mechanism.Core.Mechanism
