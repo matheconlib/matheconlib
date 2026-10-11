@@ -148,7 +148,8 @@ map. The two former weak-substitutes/completion modules were replaced by these
 more discoverable modules. Public declaration names and proof bodies are unchanged.
 Imports, references and public roots were updated, and a dedicated import client
 checks that the completion definitions are available without preference or market
-modules. The old long compatibility namespace is retained for existing callers.
+modules. The old long compatibility namespace was retained at this stage; the follow-up
+cleanup below removes it after checking that it has no in-repository callers.
 
 ## Marriage modeling and existence: third stage
 
@@ -230,6 +231,29 @@ scopes, attributes and proof bodies are preserved by the reorganization.
 Imports, documentation and public roots use the compact layout. The condition
 import client continues to check that completion definitions require neither
 preference constructors nor a matching market.
+
+## Removal of unused completion compatibility names
+
+The namespace `ChoiceFunction.UnilateralSubstitutabilityImpliesSubstitutableCompletability`
+had seven compatibility declarations and no uses outside its own block in the
+repository, including tests and API pins. These names are removed to expose one
+canonical interface. This is a deliberate public-name removal; the mathematical
+results remain available under the following names in `ChoiceFunction`.
+
+| Removed name in the compatibility namespace | Canonical replacement |
+| --- | --- |
+| `hull` | `substituteHull` |
+| `mem_hull` | `mem_substituteHull` |
+| `subset_hull` | `subset_substituteHull` |
+| `hull_substitutable` | `substituteHull_substitutable` |
+| `hull_consistent` | `substituteHull_consistent` |
+| `exists_chosen_counterparty` | `UnilaterallySubstitutable.exists_chosen_counterparty_of_finite_choice` |
+| `hull_isCompletionOf` | `UnilaterallySubstitutable.substituteHull_isCompletionOf` |
+
+For the contraction replacement, derive finiteness of `C Z` from finite `Z`
+using `hZ.subset (C.choose_subset Z)`. For the finite-contract completion
+replacement, supply `finiteValued_of_finite C`. The stronger canonical results
+and the substantive finite-domain completability corollaries are unchanged.
 
 ## Validation
 

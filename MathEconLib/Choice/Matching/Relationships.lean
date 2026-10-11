@@ -341,61 +341,6 @@ theorem UnilaterallySubstitutable.substitutablyCompletable
   hUS.substitutablyCompletable_of_finiteValued
     hIRC hfeasible (finiteValued_of_finite C)
 
-/-! ## Compatibility names
-
-The hull is now a general choice-theoretic construction. These names keep
-existing uses of the original completion namespace valid.
--/
-
-namespace UnilateralSubstitutabilityImpliesSubstitutableCompletability
-
-/-- Compatibility abbreviation for the general substitute hull. -/
-abbrev hull (C : ChoiceFunction X) : ChoiceFunction X := C.substituteHull
-
-@[simp] theorem mem_hull (C : ChoiceFunction X) {Y : Set X} {x : X} :
-    x ∈ hull C Y ↔ x ∈ Y ∧ ∃ Z, Y ⊆ Z ∧ x ∈ C Z :=
-  Iff.rfl
-
-/-- Compatibility name for pointwise enlargement by the hull. -/
-theorem subset_hull (C : ChoiceFunction X) (Y : Set X) :
-    C Y ⊆ hull C Y :=
-  le_substituteHull C Y
-
-/-- Compatibility name for substitutability of the hull. -/
-theorem hull_substitutable (C : ChoiceFunction X) :
-    (hull C).Substitutable :=
-  substituteHull_substitutable C
-
-/-- Compatibility name for IRC preservation by the hull. -/
-theorem hull_consistent {C : ChoiceFunction X} (hIRC : C.Consistent) :
-    (hull C).Consistent :=
-  substituteHull_consistent hIRC
-
-/-- The original finite-menu contraction statement, derived from the
-stronger theorem requiring only a finite choice from the upper menu. -/
-theorem exists_chosen_counterparty
-    {counterparty : X → A} {C : ChoiceFunction X}
-    (hUS : C.UnilaterallySubstitutable counterparty)
-    (hIRC : C.Consistent)
-    {Y Z : Set X} {x : X}
-    (hZ : Z.Finite)
-    (hfeasible : Set.InjOn counterparty (C Z))
-    (hYZ : Y ⊆ Z) (hxY : x ∈ Y) (hxZ : x ∈ C Z) :
-    ∃ y ∈ C Y, counterparty y = counterparty x :=
-  hUS.exists_chosen_counterparty_of_finite_choice hIRC
-    (hZ.subset (C.choose_subset Z)) hfeasible hYZ hxY hxZ
-
-/-- Compatibility name for the finite-contract hull completion theorem. -/
-theorem hull_isCompletionOf [Finite X]
-    {counterparty : X → A} {C : ChoiceFunction X}
-    (hUS : C.UnilaterallySubstitutable counterparty)
-    (hIRC : C.Consistent)
-    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y)) :
-    C.IsCompletionOf counterparty (hull C) :=
-  hUS.substituteHull_isCompletionOf hIRC hfeasible (finiteValued_of_finite C)
-
-end UnilateralSubstitutabilityImpliesSubstitutableCompletability
-
 end ChoiceFunction
 
 end MathEconLib.Choice

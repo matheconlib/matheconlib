@@ -29,8 +29,10 @@ unit demand, finite-valuedness, path independence and Chernoff's condition.
 Matching terminology is explained beside the canonical definitions: for example,
 irrelevance of rejected alternatives becomes irrelevance of rejected contracts
 when the alternatives are contracts.
-Existing declaration names are unchanged; importing the public `Choice` root
-still exposes them all.
+Canonical declaration names are unchanged; importing the public `Choice` root
+exposes the complete development. The unused historical completion namespace
+has been removed; its replacement map is recorded in
+[PR103ReviewChanges.md](PR103ReviewChanges.md).
 
 This development was built with reference to matching with contracts, but
 these definitions and results apply to general choice functions. Matching
