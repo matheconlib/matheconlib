@@ -1,4 +1,0 @@
-import AuctionlibTest.Pricing.Compatibility
-import AuctionlibTest.SingleParameter.Compatibility
-import AuctionlibTest.ValueDistribution.Compatibility
-import AuctionlibTest.ValueDistribution.Examples
