@@ -50,6 +50,13 @@ example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type 
     (E.utilityGame M θ).payoff i a = E.utility M i θ a :=
   @QuasilinearEnvironment.utilityGame_payoff
 
+/-- Dominant-strategy incentives make each truthful report dominant at every true profile. -/
+example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO} [DecidableEq I]
+    (E : QuasilinearEnvironment I Θ O) (M : DirectMechanism I Θ O),
+    DirectMechanism.IsDSIC E M → ∀ (θ : Profile Θ) (i : I),
+      GameTheory.StrategicGame.Strategy.IsDominant (G := E.utilityGame M θ) (θ i) :=
+  @DirectMechanism.IsDSIC.isDominant
+
 /-- Dominant-strategy incentives agree with dominance in the game at every true profile. -/
 example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO} [DecidableEq I]
     (E : QuasilinearEnvironment I Θ O) (M : DirectMechanism I Θ O),

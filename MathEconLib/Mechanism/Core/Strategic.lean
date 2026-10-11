@@ -23,11 +23,12 @@ profile is then a Nash equilibrium at every true type profile.
 
 ## Main definitions
 
-* `QuasilinearEnvironment.utilityGame`: The strategic game in which agents choose mechanism
-  actions and receive their utilities at a fixed true type profile.
+* `QuasilinearEnvironment.utilityGame`: The strategic game in which agents choose mechanism actions
+  and receive their utilities at a fixed true type profile.
 
 ## Main statements
 
+* `DirectMechanism.IsDSIC.isDominant`: Incentive compatibility makes every truthful report dominant.
 * `DirectMechanism.isDSIC_iff_isDominant`: Truthful reporting is dominant in every utility game
   when the direct mechanism is dominant-strategy incentive compatible.
 * `DirectMechanism.IsDSIC.isNash`: Truthful reporting is a Nash equilibrium of every utility game
@@ -66,17 +67,23 @@ namespace DirectMechanism
 
 variable [DecidableEq I] (E : QuasilinearEnvironment I Θ O) (M : DirectMechanism I Θ O)
 
+/-- In a dominant-strategy incentive-compatible direct mechanism, each agent's truthful report is
+weakly dominant in the utility game at every true type profile. -/
+lemma IsDSIC.isDominant (h : IsDSIC E M) (θ : Profile Θ) (i : I) :
+    GameTheory.StrategicGame.Strategy.IsDominant (G := E.utilityGame M θ) (θ i) := by
+  intro s
+  rw [GameTheory.StrategicGame.Strategy.le_iff']
+  intro r
+  simpa only [QuasilinearEnvironment.utilityGame_payoff, Function.update_idem] using
+    h i θ (Function.update r i s)
+
 /-- A direct mechanism is dominant-strategy incentive compatible when every agent's truthful report
 is weakly dominant in the utility game at every true type profile. -/
 theorem isDSIC_iff_isDominant :
     IsDSIC E M ↔ ∀ θ i,
       GameTheory.StrategicGame.Strategy.IsDominant (G := E.utilityGame M θ) (θ i) := by
   constructor
-  · intro h θ i s
-    rw [GameTheory.StrategicGame.Strategy.le_iff']
-    intro r
-    simpa only [QuasilinearEnvironment.utilityGame_payoff, Function.update_idem] using
-      h i θ (Function.update r i s)
+  · exact IsDSIC.isDominant E M
   · intro h i θ r
     have hdominant := GameTheory.StrategicGame.Strategy.le_iff'.1 (h θ i (r i)) r
     simpa only [QuasilinearEnvironment.utilityGame_payoff, Function.update_eq_self] using
@@ -86,7 +93,7 @@ theorem isDSIC_iff_isDominant :
 equilibrium of the utility game at every true type profile. -/
 theorem IsDSIC.isNash (h : IsDSIC E M) (θ : Profile Θ) :
     (E.utilityGame M θ).IsNash θ :=
-  GameTheory.StrategicGame.isNash_of_isDominant ((isDSIC_iff_isDominant E M).1 h θ)
+  GameTheory.StrategicGame.isNash_of_isDominant (h.isDominant E M θ)
 
 end DirectMechanism
 
