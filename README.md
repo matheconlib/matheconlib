@@ -147,7 +147,7 @@ Checked examples in [`MathEconLibTest/Mechanism/Core.lean`](MathEconLibTest/Mech
 
 [`MathEconLibTest/Mechanism/PostedPriceGames.lean`](MathEconLibTest/Mechanism/PostedPriceGames.lean) applies the existing posted-price DSIC proof to derive truthful dominance and Nash equilibrium, checks purchase payoffs, and verifies agreement with the induced Bayesian game at fixed types.
 
-[`MathEconLibTest/Mechanism/Games.lean`](MathEconLibTest/Mechanism/Games.lean) pins the induced-game contracts. The utility game keeps the full true profile fixed while reports vary. DSIC requires truthful reports to be dominant against all opponents' reports; truthful Nash equilibrium alone compares against truthful opponents.
+[`MathEconLibTest/Mechanism/Games.lean`](MathEconLibTest/Mechanism/Games.lean) pins the induced-game contracts. The utility game keeps the full true profile fixed while reports vary. DSIC requires truthful reports to be dominant against all opponents' reports; truthful Nash equilibrium alone compares against truthful opponents. Under private values, truthful Nash equilibrium at every true type profile implies DSIC; with interdependent values it can fail, as checked in [`MathEconLibTest/Mechanism/TruthfulNash.lean`](MathEconLibTest/Mechanism/TruthfulNash.lean).
 
 `M.inducedBayesianGame E` evaluates `E.utility M` at each action and true type profile. Its `toStrategicGame θ` is exactly `E.utilityGame M θ`. Inducing either game commutes with `Mechanism.comap`, including action maps that restrict the available reports or identify several actions. These constructions do not require a prior or private-values assumption.
 
