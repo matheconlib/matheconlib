@@ -1,11 +1,11 @@
-import MathEconLib.Choice.Conditions.WithPartners.Relationships
+import MathEconLib.Choice.Conditions.Matching.Relationships
 import MathEconLib.Choice.Induced.FeasibleBundles
 
 /-!
 # Completions of preference-induced choice
 
 These corollaries connect preference-induced choice with the conditions in
-`MathEconLib.Choice.Conditions.WithPartners.Basic`. A map identifies the
+`MathEconLib.Choice.Conditions.Matching.Completion`. A map identifies the
 matching partner of each alternative, without requiring a market.
 
 Singleton-or-empty preferences admit the identity completion. For choices
@@ -16,7 +16,7 @@ function, not a completed linear preference order.
 
 Partner-feasible bundle constructors are defined in
 `MathEconLib.Choice.Induced.FeasibleBundles`; the general hull relationships
-are in `MathEconLib.Choice.Conditions.WithPartners.Relationships`.
+are in `MathEconLib.Choice.Conditions.Matching.Relationships`.
 -/
 
 namespace MathEconLib.Choice
@@ -79,7 +79,7 @@ theorem hasConsistentSubstitutableCompletion_ofBundleOrder
 /-! ## Preference-induced completions
 
 These corollaries use the finite unilateral-substitutability completion
-theorem in `MathEconLib.Choice.Conditions.WithPartners.Relationships`.
+theorem in `MathEconLib.Choice.Conditions.Matching.Relationships`.
 
 The original choice is induced by preferences. The completion witness
 is the substitute hull; no completed linear preference order is

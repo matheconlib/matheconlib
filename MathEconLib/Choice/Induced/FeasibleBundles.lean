@@ -17,8 +17,8 @@ maximization supplies consistency on finite alternative types.
 
 The binder `counterparty` denotes the matching-partner map. Conditions and
 completion results using this additional data are developed separately in
-`MathEconLib.Choice.Conditions.WithPartners.Basic` and
-`MathEconLib.Choice.Conditions.WithPartners.Preferences`.
+`MathEconLib.Choice.Conditions.Matching.Completion` and
+`MathEconLib.Choice.Conditions.Matching.Preferences`.
 -/
 
 namespace MathEconLib.Choice

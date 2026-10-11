@@ -3,7 +3,7 @@
 The public roots are `MathEconLib.Choice` and `MathEconLib.Matching`.
 Both are exported by `MathEconLib`. Independent clients can import only
 choice theory; its compile-time client check rejects a transitive dependency
-on matching.
+on the matching-market layer (`MathEconLib.Matching`).
 
 ## Layers
 
@@ -23,10 +23,11 @@ namespaces. Economic declarations use `MathEconLib.Choice` or
 ## Choice interfaces
 
 `Choice.Basic` contains the choice-function structure, pointwise inclusion
-order and rejection primitives. The seven optional conditions and their
-general relationships live in `Choice.Conditions.Individual`. Import this
-module when using consistency, substitutability, the law of aggregate demand,
-unit demand, finite-valuedness, path independence or Chernoff's condition.
+order and rejection primitives. Optional conditions have canonical definitions in the topic modules under
+`Choice.Conditions.General`, with implications between conditions in
+`General.Relationships`. The `General` umbrella exposes consistency,
+substitutability, the law of aggregate demand, unit demand, finite-valuedness,
+path independence and Chernoff's condition.
 Existing declaration names are unchanged; importing the public `Choice` root
 still exposes them all.
 
@@ -54,31 +55,53 @@ represented feasible bundle retains the existing empty fallback.
 
 ## Module organization
 
-The first stage separates `Choice.Basic` from
-`Choice.Conditions.Individual` and corrects scope descriptions. The second
-stage implements the partner-dependent extension below. The third stage
-reorganizes marriage preferences, contracts embedding, existence and fixed-point
-modules. The fourth aligns public names and puts marriage algorithms in the
-marriage folder. All four stages preserve the mathematical assumptions.
+`Choice.Conditions.General` and `Choice.Conditions.Matching` are documented
+umbrellas. Topic modules let a reader find a condition directly or import just
+its definitions and elementary facts. Definitions that make sense for arbitrary
+alternatives are maintained once in `General`; their `Matching` entry points
+import those same declarations and explain the contracts interpretation.
 
-| Stage | Destination | Contents |
-| --- | --- | --- |
-| 2 | `Choice.Conditions.WithPartners.Basic` | Freshness, unilateral/bilateral substitutability, completion, substitutable completability, and consistent completion definitions |
-| 2 | `Choice.Conditions.WithPartners.Relationships` | Contraction, substitute-hull characterizations and implications between conditions |
-| 2 | `Choice.Conditions.WithPartners.Preferences` | Completion results for preference-induced choices |
-| 2 | `Choice.Induced.FeasibleBundles` | Preferences over bundles with at most one alternative per partner |
-| 3 | `Matching.Classical.Marriage.Preferences` | Market preference data, acceptability, induced choice functions and finite maximization |
-| 3 | `Matching.Classical.Marriage.Basic` | Matching, individual rationality, blocking, stability and optimality specifications |
-| 3 | `Matching.Classical.Marriage.ToContracts` | Embedding the marriage model into contracts, graph/reconstruction and the preference dictionary |
-| 3 | `Matching.Classical.Marriage.Existence` | The actual stable-matching existence theorem |
-| 3 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
-| 4 | `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
+| Topic under `Choice.Conditions` | Canonical contents |
+| --- | --- |
+| `General.Substitutability` / `Matching.Substitutability` | Substitutability, Chernoff's condition, and their characterizations |
+| `General.IrrelevanceOfRejectedAlternatives` / `Matching.IrrelevanceOfRejectedContracts` | The shared consistency predicate and idempotence |
+| `General.LawOfAggregateDemand` / `Matching.LawOfAggregateDemand` | The law of aggregate demand on finite menus and its cardinality lemmas |
+| `General.UnitDemand` / `Matching.UnitDemand` | At most one chosen alternative or contract |
+| `General.FiniteValued` / `Matching.FiniteValued` | Finite chosen sets, including on infinite menus |
+| `General.PathIndependence` / `Matching.PathIndependence` | Path independence and its elementary union lemmas |
+| `General.Relationships` | Implications and equivalences between the general conditions |
+| `Matching.WeakSubstitutability` | Freshness, unilateral/bilateral substitutability, and the implication chain from substitutability |
+| `Matching.Completion` | Completion, substitutable completability, the joint IRC-completion condition, and elementary facts |
+| `Matching.Relationships` | Contraction, substitute-hull characterizations, and implications connecting weak substitutability with completion |
+| `Matching.Preferences` | Completion results for preference-induced choices |
 
-Both condition families concern one choice function. `Individual` needs only
-its choices and menus; `WithPartners` additionally uses a map assigning each
-alternative to a partner. The latter name does not introduce a new market
-structure. Its `Basic` module includes the completion definitions, so readers
-can find the definitions before the implication theorems in `Relationships`.
+The general topic modules use only choices and menus. Weak substitutability
+and completion additionally use a map assigning each contract to its partner;
+no matching market is required. `Matching` here identifies the motivating
+interpretation inside choice theory, not a dependency on
+`MathEconLib.Matching`. The matching topic entry points do not introduce duplicate
+predicates or aliases. Their public declarations still live in
+`MathEconLib.Choice.ChoiceFunction`.
+
+`Completion` contains the basic definitions of substitutable completability,
+so it is the starting point for that concept. Cross-condition implications
+belong in `Relationships`, while preference-based applications belong in
+`Preferences`. Bare substitutable completability and having one completion
+that satisfies both substitutability and IRC remain separate predicates.
+
+| Other module | Contents |
+| --- | --- |
+| `Choice.Induced.FeasibleBundles` | Preferences over bundles with at most one alternative per partner |
+| `Matching.Classical.Marriage.Preferences` | Market preference data, acceptability, induced choice functions and finite maximization |
+| `Matching.Classical.Marriage.Basic` | Matching, individual rationality, blocking, stability and optimality specifications |
+| `Matching.Classical.Marriage.ToContracts` | Embedding the marriage model into contracts, graph/reconstruction and the preference dictionary |
+| `Matching.Classical.Marriage.Existence` | The stable-matching existence theorem |
+| `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
+| `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
+
+The topic organization replaces the earlier `Conditions.Individual` and
+`Conditions.WithPartners` paths. Imports and documentation follow the new paths;
+declaration names, assumptions and proofs are unchanged.
 
 Marriage preferences and their induced choices belong together. The embedding
 into the contracts model lives in `ToContracts`, with the explicit constructor

@@ -1,11 +1,14 @@
-import MathEconLib.Choice.Conditions.WithPartners.Basic
+import MathEconLib.Choice.Conditions.Matching.Completion
+import MathEconLib.Choice.Conditions.Matching.WeakSubstitutability
 import MathEconLib.Choice.SubstituteHull
 
 /-!
-# Relationships between choice conditions involving matching partners
+# Relationships between matching choice conditions
 
-The definitions of weak substitutability, completion, and substitutable
-completability are in `MathEconLib.Choice.Conditions.WithPartners.Basic`.
+The definitions of weak substitutability are in
+`MathEconLib.Choice.Conditions.Matching.WeakSubstitutability`; completion and
+substitutable completability are in
+`MathEconLib.Choice.Conditions.Matching.Completion`.
 This module relates those conditions to the general substitute hull. The
 partner map is arbitrary; no matching market is required.
 
@@ -28,7 +31,7 @@ unestablished. Here the generic substitute-hull results supply IRC as well.
 Kadam (2017) proves the preference-based implication by constructing a
 preference completion; no completed linear preference order is constructed
 here. Corollaries for preference-induced choices are in
-`MathEconLib.Choice.Conditions.WithPartners.Preferences`.
+`MathEconLib.Choice.Conditions.Matching.Preferences`.
 
 The general hull construction and its minimality and IRC properties live
 in `MathEconLib.Choice.SubstituteHull`. Completion alone is not pointwise
@@ -50,6 +53,32 @@ namespace MathEconLib.Choice
 namespace ChoiceFunction
 
 variable {A : Type*} {X : Type*}
+
+/-! ## Enlarging completions imply unilateral substitutability -/
+
+/-- For feasible IRC choice, a substitutable completion which enlarges
+choices implies unilateral substitutability. No finiteness assumption is
+needed in this direction; arbitrary completions need not satisfy the
+pointwise inclusion hypothesis. -/
+theorem IsCompletionOf.unilaterallySubstitutable_of_le
+    {counterparty : X → A} {C D : ChoiceFunction X}
+    (hcomp : C.IsCompletionOf counterparty D)
+    (hD : D.Substitutable) (hCD : C ≤ D) (hIRC : C.Consistent)
+    (hfeasible : ∀ Y, Set.InjOn counterparty (C Y)) :
+    C.UnilaterallySubstitutable counterparty := by
+  intro x z Y hfresh hxnot hxlarge
+  have hsmall : insert x Y ⊆ insert x (insert z Y) := by
+    intro y hy
+    rcases hy with hxy | hyY
+    · exact Or.inl hxy
+    · exact Or.inr (Or.inr hyY)
+  obtain ⟨y, hy, hsame⟩ :=
+    hcomp.exists_chosen_counterparty_of_le hD hCD hIRC
+      (hfeasible (insert x Y)) hsmall (Set.mem_insert x Y) hxlarge
+  rcases C.choose_subset (insert x Y) hy with hxy | hyY
+  · rw [hxy] at hy
+    exact hxnot hy
+  · exact hfresh y hyY hsame
 
 /-! ## Iterating unilateral substitutability over finitely many additions -/
 

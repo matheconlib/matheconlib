@@ -1,7 +1,7 @@
 import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
-import MathEconLibTest.Choice.PartnerConditionsImport
+import MathEconLibTest.Choice.MatchingConditionsImport
 import MathEconLibTest.Choice.PublicImport
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.PublicImport

@@ -188,6 +188,29 @@ An inverse-renaming comparison verifies that all existing Lean source bodies
 are unchanged apart from the intended identifiers, comments, file moves and
 umbrella imports. Full Lean builds remain the gate for each published stage.
 
+## Choice conditions by topic: follow-up organization
+
+The current layout replaces the earlier `Conditions.Individual` and
+`Conditions.WithPartners` paths with `Conditions.General` and
+`Conditions.Matching`, each with topic modules. The historical stage descriptions
+above record the intermediate layout; [MatchingArchitecture.md](MatchingArchitecture.md)
+records the current imports.
+
+Substitutability, irrelevance of rejected alternatives, the law of aggregate
+demand, unit demand, finite-valuedness and path independence are defined once
+under `General`. Matching topic entry points reuse those declarations, with
+`IrrelevanceOfRejectedContracts` providing the contracts terminology. Additional
+`Matching.WeakSubstitutability` and `Matching.Completion` modules contain the
+conditions that use a map from contracts to partners. `Completion` includes
+substitutable-completability definitions as well as elementary facts.
+
+Each family's `Relationships` module collects cross-condition results;
+`Matching.Preferences` contains the preference-induced completion corollaries.
+Namespaces, declaration names, binders, theorem statements and proofs are
+preserved. The existing condition-import client now checks the topical imports
+and their independence from preference constructors and the matching-market
+layer. Public roots and dependent imports follow the new paths.
+
 ## Validation
 
 The complete revised source at
