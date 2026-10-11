@@ -35,7 +35,7 @@ pending. See `docs/AuctionReferences.md` for provenance and citation guidance.
 ## Main statements
 
 * `Auction.expectedNetPayment_eq`: expected net payments are all-pay revenue less baseline utility.
-* `Auction.revenue_decomposition`: the 3-term gross-revenue identity.
+* `Auction.revenue_decomposition`: the three-term gross-revenue identity.
 * `Auction.bundling_revenue_gain`: the profit difference when lowest-type utility is 0.
 * `LinearScarcityAuction.bundling_revenue_gain_of_isBoundaryRegime`: the profit comparison at the
   linear-scarcity benchmark quantity.
@@ -98,7 +98,7 @@ noncomputable def lowestTypeUtility
     (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i)) (β : ℝ → ℝ) : ℝ :=
   (A.toBidderProblem halloc β 0).U (A.toBidderProblem halloc β 0).lowestType
 
-/-! ### Seller's 3 mechanism options -/
+/-! ### Seller's three mechanism options -/
 
 /-- All-pay-only benchmark profit `Π_A = n · 𝔼[b^{AP}(V)]`: the sum of the `n` bidders' expected
 all-pay benchmark bids. -/

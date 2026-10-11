@@ -210,7 +210,7 @@ strategy with integrable purchases, type-deviation incentive compatibility, and 
 lowest-type utility. Its moment uses the distribution-based all-pay bid. The resulting quadratic
 profit bound is attained exactly when the posted price equals the candidate interior price;
 this does not prove equilibrium existence at other prices or compare other regimes.
-[A complete uniform example with 2 bidders](MathEconLibExamples/AllPurchase/UniformTwoBidder.lean)
+[A complete uniform example with two bidders](MathEconLibExamples/AllPurchase/UniformTwoBidder.lean)
 checks all assumptions, including deviations to every real bid, and obtains profit `8/3` at price `2`.
 The welfare decomposition uses actual expected edition welfare for any square-integrable
 aggregate purchase quantity. The editions-only Cournot profile is a feasible best response

@@ -6,9 +6,9 @@ public import MathEconLibExamples.AllPurchase.Basic
 public import MathEconLibExamples.AllPurchase.UniformProbability
 
 /-!
-# An interior equilibrium with 2 uniform bidders
+# An interior equilibrium with two uniform bidders
 
-2 bidders have independent uniform values on `[0, 2]`. The posted edition price is `2`,
+Two bidders have independent uniform values on `[0, 2]`. The posted edition price is `2`,
 scarcity value at total purchases `B` is `3 - B`, and the unique highest purchaser receives the
 prize. The strategy `β(v) = 1/6 + v/2` is optimal against every real-valued unilateral bid, not
 only bids in the strategy's range. A bid `b` gives interim utility
@@ -268,7 +268,7 @@ theorem prize_aware_best_response (i : Fin 2) (v : ℝ) (hv : v ∈ Icc (0 : ℝ
   change v * model.q_strat strategy i b - model.p_strat strategy i b ≤ _ at h
   rwa [interim_payment] at h
 
-/-- Total equilibrium purchases are an affine function of the 2 independent values. -/
+/-- Total equilibrium purchases are an affine function of the two independent values. -/
 theorem aggregate_formula :
     model.aggregateBid strategy =
       fun ω => (1 / 3 : ℝ) + (1 / 2 : ℝ) * (value 0 ω + value 1 ω) := by

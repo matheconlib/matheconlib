@@ -6,7 +6,7 @@ public import MathEconLib.Auction.AllPurchase
 /-!
 # A concrete welfare decomposition
 
-The 2 buyers each purchase `1/3` edition at price `2`, with scarcity value `3 - B` and production
+The two buyers each purchase `1/3` edition at price `2`, with scarcity value `3 - B` and production
 cost `0`. The editions-only Cournot quantity is `2/3`; its welfare is `14/9`, while first-best
 welfare is `9/4`. This example constructs the auction, proves square integrability, applies the
 decomposition, and certifies the Cournot profile's best-response property. The deterministic

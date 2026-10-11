@@ -9,9 +9,9 @@ import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.NormNum
 
 /-!
-# Independent uniform values for 2 bidders
+# Independent uniform values for two bidders
 
-This probability space supplies the concrete all-purchase example with 2 bidders.
+This probability space supplies the concrete all-purchase example with two bidders.
 Each coordinate has the uniform law on `[0, 2]`. Clamping the coordinate to
 that interval changes it only on a null set and makes the declared type bounds
 hold at every state, as required by `Auction.HasBoundedTypes`.
@@ -72,13 +72,13 @@ theorem map_value (i : Fin 2) : Measure.map (value i) ℙ = (law : Measure ℝ) 
     (measurePreserving_eval (fun _ : Fin 2 => (law : Measure ℝ)) i).map_eq,
     map_clamp]
 
-/-- The 2 values are independent. -/
+/-- The two values are independent. -/
 theorem independent_values : iIndepFun value ℙ := by
   change iIndepFun (fun (i : Fin 2) (ω : Fin 2 → ℝ) => clamp (ω i))
     (Measure.pi fun _ : Fin 2 => (law : Measure ℝ))
   exact iIndepFun_pi (fun _ : Fin 2 => measurable_clamp.aemeasurable)
 
-/-- The 2 values are identically distributed. -/
+/-- The two values are identically distributed. -/
 theorem identical_values (i j : Fin 2) : IdentDistrib (value i) (value j) ℙ ℙ where
   aemeasurable_fst := (measurable_value i).aemeasurable
   aemeasurable_snd := (measurable_value j).aemeasurable
