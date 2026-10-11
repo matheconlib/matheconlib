@@ -83,7 +83,8 @@ theorem meanPurchase_eq : model.meanPurchase strategy = (2 : ℝ) / 3 :=
 
 theorem K_eq : model.K_linear strategy = -(1 : ℝ) / 3 := by
   rw [LinearScarcityAuction.K_linear, meanPurchase_eq]
-  norm_num [model, auction, spec]
+  change (2 : ℝ) - 3 + 1 * (2 - 1) * (2 / 3) = -(1 : ℝ) / 3
+  norm_num
 
 theorem commonCDF_eq (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
     model.commonCDF v = v / 2 :=
@@ -178,7 +179,8 @@ theorem interior_utility :
     (problem 0).U (problem 0).lowestType =
       model.K_linear strategy ^ 2 / (4 * model.α_coeff) := by
   rw [lowest_utility, K_eq]
-  norm_num [model, auction]
+  change (1 : ℝ) / 36 = (-(1 : ℝ) / 3) ^ 2 / (4 * 1)
+  norm_num
 
 /-- The common all-pay benchmark bid is `v²/4`. -/
 theorem allPayBid_eq (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
@@ -207,7 +209,9 @@ theorem expectedAggregateBid_eq : model.expectedAggregateBid strategy = 4 / 3 :=
   have h := model.expectedAggregateBid_eq_interiorMeanQuantity strategy strategy_measurable
     strategy_strictMonoOn strategy_integrable (typeDeviationIC 0) K_neg interior_utility
   rw [expectedSqrtAllPayBid_eq] at h
-  norm_num [model, auction, spec, MathEconLib.AllPurchase.interiorMeanQuantity] at h ⊢
+  change model.expectedAggregateBid strategy =
+    MathEconLib.AllPurchase.interiorMeanQuantity 3 1 (1 / 2) 2 2 at h
+  norm_num [MathEconLib.AllPurchase.interiorMeanQuantity] at h
   exact h
 
 /-- Applying the auction-to-profit bridge gives profit `8/3` at zero production cost. -/
@@ -215,8 +219,10 @@ theorem bundledProfit_eq : model.bundledProfit model.spec strategy 0 = 8 / 3 := 
   have h := model.bundledProfit_eq_sellerProfitInterior strategy strategy_measurable
     strategy_strictMonoOn strategy_integrable (typeDeviationIC 0) K_neg interior_utility 0
   rw [expectedSqrtAllPayBid_eq] at h
-  norm_num [model, auction, spec, MathEconLib.AllPurchase.sellerProfitInterior,
-    MathEconLib.AllPurchase.interiorMeanQuantity] at h ⊢
+  change model.bundledProfit model.spec strategy 0 =
+    MathEconLib.AllPurchase.sellerProfitInterior 3 1 0 (1 / 2) 2 2 at h
+  norm_num [MathEconLib.AllPurchase.sellerProfitInterior,
+    MathEconLib.AllPurchase.interiorMeanQuantity] at h
   exact h
 
 /-- The actual posted price is the candidate price of the interior pricing theorem. -/
@@ -224,7 +230,8 @@ theorem postedPrice_eq_optimal :
     model.spec.price = MathEconLib.AllPurchase.optimalPriceInterior
       model.φ_bar 0 model.α_coeff model.toAuction.expectedSqrtAllPayBid := by
   rw [expectedSqrtAllPayBid_eq]
-  norm_num [model, auction, spec, MathEconLib.AllPurchase.optimalPriceInterior]
+  change (2 : ℝ) = MathEconLib.AllPurchase.optimalPriceInterior 3 0 1 (1 / 2)
+  norm_num [MathEconLib.AllPurchase.optimalPriceInterior]
 
 /-- The concrete equilibrium realizes the interior profit bound. -/
 theorem bundledProfit_eq_interior_optimum :
