@@ -63,3 +63,30 @@ No compatibility aliases for the former global economics names are provided.
 This is a pre-public-launch API migration: downstream code should add the
 `MathEconLib.` prefix or explicitly `open MathEconLib`. The mathematical
 statements of the pinned theorems have not otherwise changed in this migration.
+
+## Choice and matching
+
+The matching development follows the same convention. Topic imports are
+`MathEconLib.Choice` and `MathEconLib.Matching`; the full root exports both.
+Choice and generic support do not depend on matching.
+
+| Earlier name | Public name |
+| --- | --- |
+| `ChoiceFunction`, `ChoiceFunction.*` | `MathEconLib.Choice.ChoiceFunction`, `MathEconLib.Choice.ChoiceFunction.*` |
+| `Market`, `Market.*` | `MathEconLib.Matching.Market`, `MathEconLib.Matching.Market.*` |
+| `MarriageMarket`, `MarriageMarket.*` | `MathEconLib.Matching.MarriageMarket`, `MathEconLib.Matching.MarriageMarket.*` |
+
+Generic fixed-point, iteration, partial-matching graph, and finite-fiber results
+are imported from `MathEconLib.ForMathlib.Order` and
+`MathEconLib.ForMathlib.Data` submodules, while retaining natural namespaces
+such as `OrderHom`, `PEquiv`, and `Set.Finite`. Counterexample constructions
+are in `MathEconLibTest.Choice`, checked by the test root and excluded from
+the production root. Public correspondence results remain in the library.
+
+The simultaneous review revision also strengthens the economic interface:
+`Market.StableOutcomes`, `sellerOptimal`, `buyerOptimal`, and their lattice
+endpoints now request an IRC proof. `Market.FixedPointStates` retains the
+raw lattice under substitutability alone. The stable-outcome abbreviation is
+reducible: its proof parameter documents the interface assumptions rather
+than defining a distinct proof-carrying type. See `MatchingArchitecture.md`
+for the migration details and the canonical replacement theorem names.
