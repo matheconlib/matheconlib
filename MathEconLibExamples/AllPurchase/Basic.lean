@@ -3,11 +3,11 @@ module
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
 
 /-!
-# An all-purchase auction with 2 bidders
+# An all-purchase auction with two bidders
 
 These examples use a posted unit price of `2` and scarcity value `3 - B` at total purchases `B`.
 The unique highest purchaser receives the prize, and a tie leaves it unallocated. The probability
-space and the 2 bidders' values remain parameters, so the deterministic welfare example and the
+space and the two bidders' values remain parameters, so the deterministic welfare example and the
 uniform equilibrium example use exactly the same mechanism.
 -/
 
