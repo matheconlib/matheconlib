@@ -34,7 +34,7 @@ problems is described in
 The project-wide principles guiding library design are recorded in
 [`DESIGN.md`](DESIGN.md).
 
-The library has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
+The auction development has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
 
 ```
 MathEconLib.Mechanism I A O  — outcome rule + signed transfers over dependent action profiles
@@ -208,6 +208,38 @@ progress in [#46](https://github.com/matheconlib/matheconlib/issues/46).
 
 The continuous conditional-expectation and winner's-curse results, together with later applications such as the Linkage Principle, are not yet formalized.
 
+### Choice and Matching (`Choice/`, `Matching/`)
+
+The public entry points are [`MathEconLib.Choice`](MathEconLib/Choice.lean)
+and [`MathEconLib.Matching`](MathEconLib/Matching.lean), both exported by
+`MathEconLib`. Choice functions can be used independently of matching markets.
+
+| Module or family | Contents |
+|------|----------|
+| [`Choice/Basic.lean`](MathEconLib/Choice/Basic.lean), [`Conditions.lean`](MathEconLib/Choice/Conditions.lean) | Choice functions, inclusion, rejection, substitutability, IRC, and related conditions |
+| [`Choice/Induced.lean`](MathEconLib/Choice/Induced.lean), [`Map.lean`](MathEconLib/Choice/Map.lean), [`FiniteOption.lean`](MathEconLib/Choice/FiniteOption.lean) | Preference-induced choice, mapping along embeddings, and finite selection |
+| [`Choice/SubstituteHull.lean`](MathEconLib/Choice/SubstituteHull.lean) | Substitute-hull closure and accumulating repairs; termination on finite alternative types |
+| [`Choice/Matching/`](MathEconLib/Choice/Matching/) | Partner-dependent weak substitutability, completion conditions, and qualified completion results |
+| [`Matching/Contracts/`](MathEconLib/Matching/Contracts/) | Contract markets, stability, fixed-point correspondence, choice-order lattice, finite convergence, and contract counting |
+| [`Matching/Classical/Marriage.lean`](MathEconLib/Matching/Classical/Marriage.lean) | Marriage preferences, contracts embedding, stable matching, and finite Gale–Shapley algorithms with an executable refinement |
+
+Stable-outcome existence and the choice-order lattice use substitutability and
+IRC (irrelevance of rejected contracts). Under substitutability and the law of
+aggregate demand, the finite-contract rural-hospitals theorem equates each
+agent's contract count across stable outcomes. The finite marriage development
+proves both proposing sides' Gale–Shapley algorithms agree with their optimal
+stable matchings, with a rejection-round bound of `Fintype.card (M × W)`.
+
+**Planned applications:** the [preference-based completion corollaries](MathEconLib/Choice/Matching/Preferences.lean)
+are implemented. Their many-to-one market applications, including cadet–branch
+matching, and the reduction from suitable completions to stable-market outcomes
+remain future work.
+Bare substitutable completability does not assert IRC of the completion.
+
+See the [architecture and scope notes](docs/MatchingArchitecture.md) and
+[checked reference map](docs/MatchingReferences.md) for assumptions and source
+comparisons.
+
 ### Game Theory (`GameTheory/`)
 
 | File | Contents |
@@ -311,6 +343,7 @@ The mathematical overview is intentionally broader than the current library. Cur
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
 - [x] All-purchase equilibrium characterization, explicit solutions, and revenue decomposition
 - [x] Quadratic-profit maximization and edition-welfare benchmark and moment identities
+- [x] General choice functions, substitute hulls and qualified completions; matching-with-contracts results and finite marriage algorithms under their stated assumptions
 - [x] Normal-form game foundations and pure/mixed Nash existence under the stated action-space and payoff assumptions
 - [x] Affiliation definitions, log-supermodularity, finite monotone conditional expectations, and the finite winner's-curse inequality
 
