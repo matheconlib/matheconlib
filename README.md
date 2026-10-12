@@ -164,6 +164,9 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 
 Interim quantities use Mathlib’s totalized Bochner integral, which equals zero when its integrand is not integrable. Arbitrary strategies need not be measurable. Measurable strategies together with `IsUnitIntervalAllocation` ensure allocation integrability, including truthful reporting; payment integrability requires separate hypotheses.
 
+`Auction.expectedRevenue` integrates the sum of interim payments
+`p i (θ i ω)` over the type environment.
+
 | File | Contents |
 |------|----------|
 | [`Auction/Basic.lean`](MathEconLib/Auction/Basic.lean) | `Auction`, interim quantities `q`/`p`/`U` and `q_strat`/`p_strat`, IR notions, `BIC`, `toBidderProblem`, `payment_formula`, and `payment_equivalence` |
@@ -171,7 +174,7 @@ Interim quantities use Mathlib’s totalized Bochner integral, which equals zero
 | [`Auction/ValueDistribution.lean`](MathEconLib/Auction/ValueDistribution.lean) | Additive pushforward bridge from each bidder's type random variable to a real-valued value distribution |
 | [`Auction/IdenticalTypes.lean`](MathEconLib/Auction/IdenticalTypes.lean) | Expectation identities requiring identical type distributions |
 | [`Auction/SymmetricIPV.lean`](MathEconLib/Auction/SymmetricIPV.lean) | `bidThreshold`, `q_eq_pow`, `q_strat_eq_cdf_pow`, and the bridge to order statistics |
-| [`Auction/RevenueEquivalence.lean`](MathEconLib/Auction/RevenueEquivalence.lean) | `payment_formula_efficient`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
+| [`Auction/RevenueEquivalence.lean`](MathEconLib/Auction/RevenueEquivalence.lean) | `payment_formula_strictHighestBid`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
 | [`Auction/StrictMonotonicity.lean`](MathEconLib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, strict monotonicity of an equilibrium strategy, and `no_ties` |
 
 ### All-Purchase Auctions (`Auction/AllPurchase/`)
