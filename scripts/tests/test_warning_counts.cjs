@@ -10,6 +10,7 @@ function report(overrides = {}) {
   return {
     version: 1, pr_number: 42, run_id: 123, run_attempt: 1,
     base_sha: 'a'.repeat(40), head_sha: 'b'.repeat(40),
+    last_run_at: '2026-10-11T14:37:42-04:00',
     base: { status: 'success', counts: { 'MathEconLib/Basic.lean': 2, 'MathEconLib/Removed.lean': 1 } },
     head: { status: 'success', counts: { 'MathEconLib/Basic.lean': 1, 'MathEconLib/Added.lean': 3 } },
     ...overrides,
@@ -67,7 +68,8 @@ test('counts project diagnostic headers, including tests, examples, cached logs,
 
 test('renders a signed total delta and added, deleted, and changed files', () => {
   const markdown = renderReport(report());
-  assert.match(markdown, /⚠️: \*\*3 → 4/);
+  assert.match(markdown, /Base: `aaaaaaaa` · PR: `bbbbbbbb` · Last run: 2026-10-11 18:37 UTC/);
+  assert.match(markdown, /⚠️ Warnings increased: \*\*3 → 4/);
   assert.match(markdown, /3 → 4 warnings \(\+1\)/);
   assert.match(markdown, /MathEconLib\/Added\.lean` \| 0 \| 3 \| \+3/);
   assert.match(markdown, /MathEconLib\/Removed\.lean` \| 1 \| 0 \| -1/);
@@ -76,11 +78,11 @@ test('renders a signed total delta and added, deleted, and changed files', () =>
 
 test('reports warning reductions and unchanged or empty counts', () => {
   const reduction = renderReport(report({ head: { status: 'success', counts: {} } }));
-  assert.match(reduction, /✅: \*\*3 → 0/);
+  assert.match(reduction, /✅ OK: \*\*3 → 0/);
   assert.match(reduction, /3 → 0 warnings \(-3\)/);
   const empty = { status: 'success', counts: {} };
   const markdown = renderReport(report({ base: empty, head: empty }));
-  assert.match(markdown, /✅: \*\*0 → 0/);
+  assert.match(markdown, /✅ OK: \*\*0 → 0/);
   assert.match(markdown, /0 → 0 warnings \(0\)/);
   assert.match(markdown, /No warning-count changes by file/);
 });
@@ -88,7 +90,7 @@ test('reports warning reductions and unchanged or empty counts', () => {
 test('shows offsetting file changes even when the total is unchanged', () => {
   const counts = { 'MathEconLib/New.lean': 3 };
   const markdown = renderReport(report({ head: { status: 'success', counts } }));
-  assert.match(markdown, /✅: \*\*3 → 3/);
+  assert.match(markdown, /✅ OK: \*\*3 → 3/);
   assert.match(markdown, /3 → 3 warnings \(0\)/);
   assert.match(markdown, /MathEconLib\/New\.lean` \| 0 \| 3 \| \+3/);
 });
@@ -103,7 +105,7 @@ test('reports separate library, test, and example deltas with API pins counted a
       'MathEconLib.lean': 2, 'MathEconLibTest.lean': 3, 'ApiStability.lean': 1,
     } },
   }));
-  assert.match(markdown, /✅: \*\*7 → 6 warnings \(-1\)/);
+  assert.match(markdown, /✅ OK: \*\*7 → 6 warnings \(-1\)/);
   assert.match(markdown, /\| Library \| 3 \| 2 \| -1 \|/);
   assert.match(markdown, /\| Tests \| 3 \| 4 \| \+1 \|/);
   assert.match(markdown, /\| Examples \| 1 \| 0 \| -1 \|/);
@@ -114,7 +116,7 @@ test('test and example warnings contribute to the overall increase status', () =
     const markdown = renderReport(report({
       head: { status: 'success', counts: { ...report().base.counts, [file]: 1 } },
     }));
-    assert.match(markdown, /⚠️: \*\*3 → 4 warnings \(\+1\)/);
+    assert.match(markdown, /⚠️ Warnings increased: \*\*3 → 4 warnings \(\+1\)/);
   }
 });
 
@@ -201,7 +203,8 @@ function publisher(t, { data = savedSnapshot(), baseline = trunkSnapshot(), comm
   const context = {
     serverUrl: 'https://github.com', repo: { owner: 'owner', repo: 'library' },
     payload: { workflow_run: { id: 123, run_attempt: 1, event: 'pull_request',
-      head_sha: 'b'.repeat(40), head_repository: { full_name: 'contributor/library' }, ...runChanges } },
+      head_sha: 'b'.repeat(40), head_repository: { full_name: 'contributor/library' },
+      updated_at: '2026-10-11T18:45:27Z', ...runChanges } },
   };
   const github = {
     rest: {
@@ -224,6 +227,7 @@ test('creates a fork PR comment with a link to the build run', async t => {
   assert.deepEqual(calls.map(([method]) => method), ['get', 'list', 'create']);
   const comment = calls.at(-1)[1];
   assert.equal(comment.issue_number, 42);
+  assert.match(comment.body, /Last run: 2026-10-11 18:45 UTC/);
   assert.match(comment.body, /3 → 4 warnings \(\+1\)/);
   assert.match(comment.body, /https:\/\/github.com\/owner\/library\/actions\/runs\/123/);
 });

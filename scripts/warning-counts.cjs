@@ -172,13 +172,15 @@ ${renderFileChanges(base, head)}`;
 
 function renderReport(input) {
   const report = validateReport(input);
+  const lastRun = new Date(report.last_run_at || Date.now())
+    .toISOString().slice(0, 16).replace('T', ' ');
   const mergeNote = report.build_sha && report.build_sha !== report.head_sha
     ? `\n\nPR counts come from CI's merge build \`${report.build_sha.slice(0, 8)}\`.` : '';
 
   return `${MARKER}
 ### Warning counts
 
-Base: \`${report.base_sha.slice(0, 12)}\` · PR: \`${report.head_sha.slice(0, 8)}\`
+Base: \`${report.base_sha.slice(0, 8)}\` · PR: \`${report.head_sha.slice(0, 8)}\` · Last run: ${lastRun} UTC
 
 ${renderComparison(report)}${mergeNote}
 
@@ -206,6 +208,7 @@ async function postComment({ github, context, core, current, baseline, run }) {
   const report = {
     version: 1, pr_number: current.pr_number, run_id: current.run_id, run_attempt: current.run_attempt,
     base_sha: current.base_sha, head_sha: current.pr_head_sha, build_sha: current.build_sha,
+    last_run_at: run.updated_at || run.run_started_at || run.created_at,
     base: baseline?.build || { status: 'unavailable' }, head: current.build,
     reason: baseline ? undefined : 'No saved successful trunk build was found for this exact base commit. The baseline may still be building or its artifact may have expired.',
   };
