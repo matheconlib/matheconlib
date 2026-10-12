@@ -223,8 +223,9 @@ This condition implies envelope incentive compatibility.
 
 ### 2.3 Universal incentive compatibility
 
-Universal incentive compatibility requires type `v` to prefer its strategy
-action to every feasible action `a`:
+Universal incentive compatibility requires the strategy action `σ(v)` to be
+feasible for every type in the interval and to give at least as much utility
+as every feasible action `a`:
 
 \[
 \pi(v,a) \le \pi(v,\sigma(v)).
@@ -233,7 +234,7 @@ action to every feasible action `a`:
 This condition implies type-deviation incentive compatibility because
 `σ(v')` is one of the feasible actions.
 
-The intended implication chain is
+The implication chain is
 
 \[
 \text{Universal IC}
@@ -309,8 +310,8 @@ The formal results are divided by their mathematical role:
 
 The payment-uniqueness theorem may compare problems with different action
 types. This allows, for example, a direct-report mechanism and a posted-price
-choice problem to share a payment conclusion when they induce the same
-allocation and lowest-type utility.
+choice problem to share a payment conclusion when they have the same type
+interval, induced allocation, and lowest-type utility.
 
 ## 4. Public Lean API map
 
