@@ -1,6 +1,6 @@
 # MathEconLib
 
-A Lean 4 formalization of fundamental theorems in economic theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4).
+MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.
 
 ## Getting Started
 
