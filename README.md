@@ -15,8 +15,8 @@ Shorter names below abbreviate declarations under that namespace.
 
 ## Worked Examples
 
-- [Becker-inspired crime choice](https://github.com/AxiomMath/auctionlib/blob/codex/becker-crime-example/MathEconLibExamples/SingleParameter/BeckerCrime.lean)
-  ([PR #95 — under review](https://github.com/AxiomMath/auctionlib/pull/95)):
+- [Becker-inspired crime choice](https://github.com/matheconlib/matheconlib/blob/codex/becker-crime-example/MathEconLibExamples/SingleParameter/BeckerCrime.lean)
+  ([PR #95 — under review](https://github.com/matheconlib/matheconlib/pull/95)):
   risk-neutral binary choice, cutoff and deterrence results, and aggregate crime
   under a fixed type distribution.
 - [Matching pennies](MathEconLibExamples/GameTheory/MatchingPennies.lean): no pure Nash equilibrium and a unique mixed equilibrium with uniform randomization.
@@ -194,7 +194,7 @@ and actual seller profit remains work in progress. The welfare file proves
 benchmark bounds, algebraic gap identities, and an expected edition-welfare
 formula when aggregate quantity and its square are integrable. The
 equilibrium-based Cournot and contest-loss decomposition remains work in
-progress in [#46](https://github.com/AxiomMath/auctionlib/issues/46).
+progress in [#46](https://github.com/matheconlib/matheconlib/issues/46).
 
 ### Affiliation (`Auction/Affiliation/`)
 
@@ -316,8 +316,8 @@ The mathematical overview is intentionally broader than the current library. Cur
 
 Further work includes:
 
-- [ ] Auction-level derivation of the interior-regime profit formula ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
-- [ ] Equilibrium-based welfare decomposition and separately justified loss-nonnegativity results ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
+- [ ] Auction-level derivation of the interior-regime profit formula ([#46](https://github.com/matheconlib/matheconlib/issues/46))
+- [ ] Equilibrium-based welfare decomposition and separately justified loss-nonnegativity results ([#46](https://github.com/matheconlib/matheconlib/issues/46))
 - [ ] Full Riley--Zeckhauser comparison between posted prices and general selling rules
 - [ ] Posted-price comparative statics beyond the uniform family
 - [ ] Continuous affiliation results, including the continuous winner's-curse inequality, and later applications such as the Linkage Principle

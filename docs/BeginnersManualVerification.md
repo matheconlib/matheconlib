@@ -1,11 +1,11 @@
 # Beginner walkthrough — 8 October 2026
 
-Preparatory verification for [launch checklist #78](https://github.com/AxiomMath/auctionlib/issues/78).
+Preparatory verification for [launch checklist #78](https://github.com/matheconlib/matheconlib/issues/78).
 Repeat the release checks against the final public repository and release commit.
 
 ## Revision and environment
 
-- Source revision: [`c816d6fc40f04b157bf1222b2b90e4264a2aec7f`](https://github.com/AxiomMath/auctionlib/commit/c816d6fc40f04b157bf1222b2b90e4264a2aec7f),
+- Source revision: [`c816d6fc40f04b157bf1222b2b90e4264a2aec7f`](https://github.com/matheconlib/matheconlib/commit/c816d6fc40f04b157bf1222b2b90e4264a2aec7f),
   current `main` when the walkthrough began.
 - Lean: `4.28.0`, commit `7e01a1bf5c70fc6167d49c345d3bf80596e9a79b`;
   Lake: `5.0.0-src+7e01a1b`; platform: macOS, Apple silicon.
@@ -20,11 +20,13 @@ Repeat the release checks against the final public repository and release commit
 
 ## Reproduce the build
 
-Authenticate Git for the internal repository, then run:
+Authenticate Git for the private repository, then run. These commands use the
+post-transfer URL; the recorded results below remain the 8 October verification
+of the source revision above.
 
 ```bash
-git clone --branch main --single-branch https://github.com/AxiomMath/auctionlib.git
-cd auctionlib
+git clone --branch main --single-branch https://github.com/matheconlib/matheconlib.git
+cd matheconlib
 git checkout --detach c816d6fc40f04b157bf1222b2b90e4264a2aec7f
 git rev-parse HEAD
 lean --version
