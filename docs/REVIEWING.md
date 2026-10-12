@@ -59,8 +59,9 @@ docstring is treated as a pre-merge blocker.
 7. Docs and attribution. Docstrings and README claims are checked against
    the actual declarations. Check the
    [citation guidance](../CONTRIBUTING.md#citing-sources): paper- or book-based
-   work names its author, year, title, and DOI or stable link, with theorem or
-   section numbers when available and adaptations stated. Standard toy examples
+   work names its author, year, and title, and includes a DOI or stable link when
+   available, with theorem or section numbers when available and adaptations
+   stated. Standard toy examples
    need no invented citation. Ported files carry correct author lines and a
    provenance note.
 
