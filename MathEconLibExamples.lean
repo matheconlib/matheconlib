@@ -1,19 +1,32 @@
-import MathEconLibExamples.AllPurchase.Basic
-import MathEconLibExamples.AllPurchase.Welfare
+/-
+Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Released under license as described in the file LICENSE.
+Authors: Daniel Lyng
+-/
+module
 
-import MathEconLibExamples.AllPurchase.UniformProbability
-import MathEconLibExamples.AllPurchase.UniformTwoBidder
+public import MathEconLibExamples.AllPurchase.Basic
+public import MathEconLibExamples.AllPurchase.UniformProbability
+public import MathEconLibExamples.AllPurchase.UniformTwoBidder
+public import MathEconLibExamples.AllPurchase.Welfare
+public import MathEconLibExamples.GameTheory.MatchingPennies
 
-#print axioms MathEconLib.LinearScarcityAuction.welfare_decomposition
-#print axioms MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
-#print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_best_response
-#print axioms MathEconLib.LinearScarcityAuction.bundledEditionWelfare_le_firstBest
-#print axioms MathEconLib.Examples.AllPurchase.Welfare.welfare_gap
+/-!
+# Mathematical economics examples
 
-#print axioms MathEconLib.LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior
-#print axioms MathEconLib.LinearScarcityAuction.bundledProfit_le_interior_optimum
-#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.bundledProfit_eq
-#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.universalIC
-#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.prize_aware_best_response
-#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.welfare_gap
-#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.variance_penalty
+Concrete economic models illustrate the library's definitions, equilibrium results, and welfare
+comparisons.
+
+## Main statements
+
+* Matching pennies has a unique mixed Nash equilibrium: Both players randomize uniformly.
+* Matching pennies has no pure Nash equilibrium.
+* The all-purchase Cournot example applies the welfare decomposition and obtains a gap of `25/36`.
+
+* The uniform all-purchase equilibrium attains profit `8/3` at price `2` and has an edition-welfare
+  gap of `7/36` when buyers account for the prize.
+
+## Tags
+
+mathematical economics, examples, game theory, nash equilibrium, auctions, welfare
+-/
