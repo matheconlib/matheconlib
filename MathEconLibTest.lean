@@ -1,3 +1,4 @@
+import MathEconLibTest.AllPurchase.WelfareAxioms
 import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples

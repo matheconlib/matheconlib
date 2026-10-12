@@ -186,15 +186,17 @@ The all-purchase development specializes the general framework to auctions in wh
 | [`Auction/AllPurchase/RevenueDecomposition.lean`](MathEconLib/Auction/AllPurchase/RevenueDecomposition.lean) | Seller gross-revenue decomposition and, under zero lowest-type utility, a bundled-versus-standalone profit-difference identity |
 | [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) | Unique unconstrained maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1`, plus an algebraic interior-regime condition |
 | [`Auction/AllPurchase/UniformDistribution.lean`](MathEconLib/Auction/AllPurchase/UniformDistribution.lean) | Closed form for the all-pay benchmark bid under a uniform type distribution |
-| [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) | Edition-welfare benchmarks and an upper bound for `α > 0`, algebraic welfare-gap and moment identities, and an expected edition-welfare formula under integrability assumptions |
+| [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) | Actual expected-edition-welfare decomposition under square integrability, a feasible Cournot best-response certificate, variance penalty, and separately justified welfare-gap signs |
 
 The pricing file proves maximization and uniqueness for a specified quadratic
 profit formula. Connecting that formula to an auction's equilibrium quantity
-and actual seller profit remains work in progress. The welfare file proves
-benchmark bounds, algebraic gap identities, and an expected edition-welfare
-formula when aggregate quantity and its square are integrable. The
-equilibrium-based Cournot and contest-loss decomposition remains work in
-progress in [#46](https://github.com/AxiomMath/auctionlib/issues/46).
+and actual seller profit remains work in progress in [#46](https://github.com/AxiomMath/auctionlib/issues/46).
+The welfare decomposition uses actual expected edition welfare for any square-integrable
+aggregate purchase quantity. The editions-only Cournot profile is a feasible best response
+when the posted price does not exceed the scarcity intercept. Its welfare gap is nonnegative;
+the contest gap needs additional quantity conditions. Welfare here excludes the contest prize.
+[A concrete Cournot application](MathEconLibExamples/AllPurchase/Welfare.lean) constructs the
+auction, applies the decomposition, and obtains the welfare gap `25/36`.
 
 ### Affiliation (`Auction/Affiliation/`)
 
@@ -268,7 +270,7 @@ The linked Lean statements specify each result's definitions and hypotheses.
 | Strict monotonicity on the type interval with at least two bidders, strict-highest-bid allocation, the stated type assumptions, positive density, a measurable regular strategy, nonnegative lowest type, and universal IC over nonnegative bids | [`Auction/StrictMonotonicity.lean`](MathEconLib/Auction/StrictMonotonicity.lean) |
 | All-purchase revenue decomposition under the stated type, strategy, IC, and integrability assumptions; zero lowest-type utility gives a bundled-versus-standalone profit-difference identity | [`Auction/AllPurchase/RevenueDecomposition.lean`](MathEconLib/Auction/AllPurchase/RevenueDecomposition.lean) |
 | Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1` | [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) |
-| Edition-welfare bound for `α > 0`, algebraic welfare-gap identities, and an expected edition-welfare formula when aggregate quantity and its square are integrable | [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) |
+| Expected-edition-welfare decomposition and variance penalty under square-integrable purchases; feasible Cournot best responses and conditional contest-gap nonnegativity | [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) |
 | Winner's-curse inequality on finite sublattices with affiliated positive weights, monotone nonnegative values, and a nonempty winning event | [`Auction/Affiliation/WinnersCurse.lean`](MathEconLib/Auction/Affiliation/WinnersCurse.lean) |
 | Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with continuous payoffs | [`GameTheory/Strategic/Existence.lean`](MathEconLib/GameTheory/Strategic/Existence.lean) |
 
@@ -310,14 +312,14 @@ The mathematical overview is intentionally broader than the current library. Cur
 - [x] General `Mechanism` + `Auction` + `BidderProblem` framework
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
 - [x] All-purchase equilibrium characterization, explicit solutions, and revenue decomposition
-- [x] Quadratic-profit maximization and edition-welfare benchmark and moment identities
+- [x] Quadratic-profit maximization
+- [x] Expected-edition-welfare decomposition, Cournot best responses, and variance penalty
 - [x] Normal-form game foundations and pure/mixed Nash existence under the stated action-space and payoff assumptions
 - [x] Affiliation definitions, log-supermodularity, finite monotone conditional expectations, and the finite winner's-curse inequality
 
 Further work includes:
 
 - [ ] Auction-level derivation of the interior-regime profit formula ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
-- [ ] Equilibrium-based welfare decomposition and separately justified loss-nonnegativity results ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
 - [ ] Full Riley--Zeckhauser comparison between posted prices and general selling rules
 - [ ] Posted-price comparative statics beyond the uniform family
 - [ ] Continuous affiliation results, including the continuous winner's-curse inequality, and later applications such as the Linkage Principle

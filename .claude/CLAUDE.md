@@ -40,11 +40,10 @@ Structures for parametric families:
   - [x] Corollary 6.11 — bundled vs standalone revenue comparison
   - [x] Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1`
     (motivated by Proposition 6.12)
-  - [x] Algebraic welfare-gap and moment identities (motivated by Proposition 6.13)
+  - [x] Actual expected-edition-welfare decomposition and variance penalty, with algebraic helpers
   - [ ] Identify the pricing formulas with auction equilibrium quantity and actual seller profit
     ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
-  - [ ] Equilibrium-based Cournot and contest welfare decomposition, with separately justified
-    loss nonnegativity ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
+  - [x] Feasible Cournot best responses and separately justified Cournot/contest gap signs
 - [ ] formalize game theoretic concepts in section 3
 - [x] delete old framework files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/` using old structures)
 

@@ -413,13 +413,35 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
           A.toAuction.expectedEditionValue A.spec β - c * A.toAuction.expectedAggregateBid β :=
   @MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq
 
--- Algebraic welfare-gap identity over supplied values, motivated by Proposition 6.13.
--- Equilibrium interpretation and nonnegativity of the two gaps require additional results.
+-- Reusable algebraic welfare-gap identity over supplied values.
+-- The economic statement and the signs of the two gaps are pinned or proved separately.
 example : ∀ φbar c α B_ed WC : ℝ,
     MathEconLib.AllPurchase.firstBestEditionSurplus φbar c α - WC
       = MathEconLib.AllPurchase.cournotLoss φbar c α B_ed +
         MathEconLib.AllPurchase.contestLoss φbar c α B_ed WC :=
   @MathEconLib.AllPurchase.welfare_decomposition
+
+-- Proposition 6.13: actual expected edition welfare decomposes at the auction's Cournot
+-- benchmark. Square integrability is the only strategy assumption; gap signs are separate.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    MemLp (A.toAuction.aggregateBid β) 2 volume →
+      MathEconLib.AllPurchase.firstBestEditionSurplus A.φ_bar c A.α_coeff -
+          (∫ ω, A.toAuction.aggregateBid β ω * A.spec.φ (A.toAuction.aggregateBid β ω) -
+            c * A.toAuction.aggregateBid β ω) =
+        MathEconLib.AllPurchase.cournotLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear +
+          MathEconLib.AllPurchase.contestLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear
+            (A.bundledEditionWelfare β c) :=
+  @MathEconLib.LinearScarcityAuction.welfare_decomposition
+
+-- The welfare penalty is the variance of the actual aggregate purchases.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    MemLp (A.toAuction.aggregateBid β) 2 volume →
+      MathEconLib.AllPurchase.editionWelfare A.φ_bar c A.α_coeff
+          (A.toAuction.expectedAggregateBid β) - A.bundledEditionWelfare β c =
+        A.α_coeff * variance (A.toAuction.aggregateBid β) volume :=
+  @MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
 
 -- Uniform all-pay bid (§9.6.3): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
