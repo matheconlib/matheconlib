@@ -16,10 +16,10 @@ automatically available.
 
 ## Note on strict monotonicity
 
-Strict monotonicity of the equilibrium strategy (Lemma 6.2) requires
+Strict monotonicity of the equilibrium strategy requires
 distributional structure (CDF, density, number of bidders) beyond what
-`BidderProblem` captures.  This is proved at the `Auction` level, which has
-access to the probability space and type distribution.
+`BidderProblem` captures. This is proved by `Auction.strictMonotonicity` at the
+auction level, which has access to the probability space and type distribution.
 -/
 
 namespace MathEconLib

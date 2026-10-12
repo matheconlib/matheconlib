@@ -3,16 +3,16 @@ module
 public import MathEconLib.Auction.Affiliation.Basic
 public import Mathlib
 
-/-! # Affiliation as log-supermodularity (Section 7)
+/-! # Affiliation as log-supermodularity
 
 This file records the standard logarithmic reformulation of the affiliation
-inequality of **Def 7.2**: for a strictly positive density
+inequality: for a strictly positive density
 `f : (Fin n → ℝ) → ℝ`, affiliation is equivalent to *log-supermodularity*
 of `f` with respect to the pointwise lattice structure on `Fin n → ℝ`,
 
 `log (f x) + log (f y) ≤ log (f (x ⊔ y)) + log (f (x ⊓ y))`.
 
-This is the notes' remark that affiliation is exactly the MTP₂
+For strictly positive densities, affiliation is exactly the MTP₂
 (multivariate totally positive of order 2) / log-supermodularity condition:
 `log f` is supermodular, so "raising some coordinates never decreases the
 marginal impact of raising others". The equivalence is a direct consequence
@@ -26,7 +26,7 @@ namespace MathEconLib
 
 namespace Auction.Affiliation
 
-/-- **Def 7.2, logarithmic form** (MTP₂ / log-supermodularity). For a strictly
+/-- **Logarithmic characterization of affiliation** (MTP₂ / log-supermodularity). For a strictly
 positive density `f`, affiliation is equivalent to supermodularity of `log ∘ f`
 with respect to the pointwise lattice operations on `Fin n → ℝ`:
 

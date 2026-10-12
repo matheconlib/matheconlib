@@ -3,23 +3,23 @@ module
 public import MathEconLib.Auction.Basic
 public import Mathlib
 
-/-! # Affiliation (Section 7)
+/-! # Affiliation
 
-This file formalizes the definitional layer of Section 7 on affiliation, the
-positive-dependence condition of Milgrom–Weber.
+This file defines affiliation, the positive-dependence condition of Milgrom–Weber,
+and its relation to independent signals.
 
 It contains three things:
 
-* **Def 7.2** — the `Affiliated` predicate on a joint density `f : (Fin n → ℝ) → ℝ`:
+* The `Affiliated` predicate on a joint density `f : (Fin n → ℝ) → ℝ`:
   for all signal profiles `x` and `y`,
   `f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y`, where `⊔`/`⊓` are the pointwise
   (componentwise max/min) lattice operations on `Fin n → ℝ`.
-* **Remark 6** — the independence knife-edge: if `f` factors as a product of its
+* Equality for product densities: if `f` factors as a product of its
   per-coordinate factors, then the affiliation inequality holds with equality
   everywhere (`factors_affiliation_eq`), and hence `f` is affiliated
   (`factors_affiliated`). Independence is the boundary (knife-edge) case of the
   affiliation cone.
-* **Def 7.1** — the signal/value environment `SignalValueEnv`, carrying the signal
+* The signal/value environment `SignalValueEnv`, carrying the signal
   bounds, the bidders' value functions, and their regularity (nonnegativity,
   continuity, monotonicity, and strict monotonicity in the bidder's own signal),
   together with the `IsPrivateValues` predicate isolating the private-values case.
@@ -33,24 +33,24 @@ open Finset
 
 namespace Auction.Affiliation
 
-/-! ### Def 7.2 — the affiliation predicate -/
+/-! ### The affiliation predicate -/
 
-/-- **Def 7.2** (affiliation). A joint density `f : (Fin n → ℝ) → ℝ` is *affiliated*
+/-- A joint density `f : (Fin n → ℝ) → ℝ` is *affiliated*
 when, for every pair of signal profiles `x` and `y`,
 `f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y`.
 
 Here `⊔` and `⊓` are the pointwise lattice operations on `Fin n → ℝ` from
 Mathlib's `Pi.lattice`, so `(x ⊔ y) i = max (x i) (y i)` and
-`(x ⊓ y) i = min (x i) (y i)`, matching the notes' componentwise `∨`/`∧`.
+`(x ⊓ y) i = min (x i) (y i)`.
 
 The predicate is purely the algebraic inequality (positivity-free); that `f` is a
 genuine density is carried separately by the downstream analytic layer. -/
 def Affiliated {n : ℕ} (f : (Fin n → ℝ) → ℝ) : Prop :=
   ∀ x y : Fin n → ℝ, f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y
 
-/-! ### Remark 6 — the independence knife-edge -/
+/-! ### Equality for product densities -/
 
-/-- The factorization predicate used in Remark 6: `f` is the product of its
+/-- The factorization predicate: `f` is the product of its
 per-coordinate factors `g i`, i.e. `f x = ∏ i, g i (x i)` for every profile `x`.
 This encodes (mutual) independence of the signals. -/
 def Factors {n : ℕ} (f : (Fin n → ℝ) → ℝ) (g : Fin n → ℝ → ℝ) : Prop :=
@@ -65,13 +65,13 @@ theorem mul_sup_inf_eq (h : ℝ → ℝ) (a b : ℝ) :
   · rw [sup_of_le_right hab, inf_of_le_left hab, mul_comm]
   · rw [sup_of_le_left hab, inf_of_le_right hab]
 
-/-- **Remark 6** (equality form, the knife-edge proper). If `f` factors as a product
-of its per-coordinate factors, then the affiliation inequality of Def 7.2 holds
+/-- If `f` factors as a product
+of its per-coordinate factors, then the affiliation inequality holds
 with *equality* everywhere:
 `f (x ⊔ y) * f (x ⊓ y) = f x * f y` for all `x`, `y`.
 
-This is "Theorem 7.2 holds with equality": independence sits on the boundary of the
-affiliation cone. No positivity is needed. -/
+For a product density, independence makes the affiliation inequality an equality.
+No positivity is needed for this algebraic identity. -/
 theorem factors_affiliation_eq {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin n → ℝ → ℝ}
     (hf : Factors f g) :
     ∀ x y : Fin n → ℝ, f (x ⊔ y) * f (x ⊓ y) = f x * f y := by
@@ -81,23 +81,23 @@ theorem factors_affiliation_eq {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin 
   rw [Pi.sup_apply, Pi.inf_apply]
   exact mul_sup_inf_eq (g i) (x i) (y i)
 
-/-- **Remark 6** (corollary). A density that factors as a product of its
-per-coordinate factors is affiliated: the `≥` of Def 7.2 follows from the
-equality of `factors_affiliation_eq` via `ge_of_eq`. The IPV environment of
-Section 2 is thus the independent special (boundary) case of affiliation. -/
+/-- A density that factors as a product of its
+per-coordinate factors is affiliated: the affiliation inequality follows from the
+equality of `factors_affiliation_eq` via `ge_of_eq`. Independent private values
+therefore give an independent special case of affiliation. -/
 theorem factors_affiliated {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin n → ℝ → ℝ}
     (hf : Factors f g) : Affiliated f := by
   intro x y
   exact ge_of_eq (factors_affiliation_eq hf x y)
 
-/-! ### Def 7.1 — the signal/value environment -/
+/-! ### The signal/value environment -/
 
-/-- **Def 7.1** (signal/value environment). An `n`-bidder model in which a signal
+/-- An `n`-bidder signal/value model in which a signal
 profile is `X : Fin n → ℝ` (coordinate `i` is bidder `i`'s own signal `Xᵢ`,
 the others being the rivals' signals `X₋ᵢ`), and `v i X` is bidder `i`'s value
 given the full profile `X`.
 
-The fields record the regularity of the value functions from the notes:
+The fields record the regularity of the value functions:
 nonnegativity (`v_nonneg`), continuity (`v_continuous`), monotonicity in the
 product/pointwise order (`v_mono`, "nondecreasing"), and strict monotonicity in the
 bidder's own signal with the rivals held fixed (`v_strictMono_own`). -/
@@ -126,7 +126,7 @@ structure SignalValueEnv (n : ℕ) where
   /-- Values are strictly increasing in the bidder's own signal, rivals held fixed. -/
   v_strictMono_own : ∀ i (X : Fin n → ℝ), StrictMono (fun t => v i (Function.update X i t))
 
-/-- **Remark 5** (private-values special case). Bidder `i`'s value depends only on
+/-- The private-values special case: bidder `i`'s value depends only on
 its own signal `Xᵢ`: whenever two profiles agree in coordinate `i`, the values
 agree. Equivalently, `v i` factors through coordinate `i`. -/
 def IsPrivateValues {n : ℕ} (E : SignalValueEnv n) : Prop :=
@@ -137,23 +137,23 @@ the own signal is `X i` definitionally). -/
 def SignalValueEnv.value {n : ℕ} (E : SignalValueEnv n) (i : Fin n) (X : Fin n → ℝ) : ℝ :=
   E.v i X
 
-/- **Symmetric model** (future work). The notes' symmetric variant posits a single
+/- **Symmetric model** (future work). A symmetric variant would posit a single
 value map `u` with `v i (Xᵢ, X₋ᵢ) = u (Xᵢ, X₋ᵢ)` and `u` symmetric in the rival
 coordinates. A faithful Lean rendering carries a permutation-invariance hypothesis
 restricted to permutations fixing `i` (or models the rivals as a `Multiset ℝ`);
-this is left to the analytic layer and not required by the Def 7.1 / Def 7.2 /
-Remark 6 scope formalized here. -/
+this is left to the analytic layer and is not required for the affiliation and
+independence results formalized here. -/
 
-/-! ### Welding Def 7.1 to Def 7.2 / Remark 6 -/
+/-! ### Affiliation and independence in the signal/value environment -/
 
-/-- The environment's signals are affiliated when their joint density is `Affiliated` (Def 7.2). -/
+/-- The environment's signals are affiliated when their joint density is `Affiliated`. -/
 def HasAffiliatedSignals {n : ℕ} (E : SignalValueEnv n) : Prop := Affiliated E.f
 
 /-- The environment's signals are independent when the joint density factors as a product of
-per-coordinate marginals (the hypothesis of Remark 6). -/
+per-coordinate marginals. -/
 def HasIndependentSignals {n : ℕ} (E : SignalValueEnv n) : Prop := ∃ g, Factors E.f g
 
-/-- Remark 6, environment form. Independent signals are affiliated: the independent signal
+/-- Independent signals are affiliated: the independent signal
 structure sits on the boundary of the affiliation cone (`factors_affiliated`). -/
 theorem HasIndependentSignals.hasAffiliatedSignals {n : ℕ} {E : SignalValueEnv n}
     (h : HasIndependentSignals E) : HasAffiliatedSignals E := by

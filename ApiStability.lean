@@ -139,17 +139,17 @@ end MechanismCore
 
 /-! ## MathEconLib.BidderProblem — envelope theorem and Myerson lemmas -/
 
--- Envelope theorem, integral representation: U(v) = U(low) + ∫ q (Theorem 5.1)
+-- Envelope theorem, integral representation: U(v) = U(low) + ∫ q
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     ∀ v ∈ B.typeInterval, B.U v = B.U B.lowestType + ∫ (w : ℝ) in B.lowestType..v, B.q w :=
   @MathEconLib.BidderProblem.integral_rep
 
--- Envelope theorem: interim utility is 1-Lipschitz on the type interval (Theorem 5.1)
+-- Envelope theorem: interim utility is 1-Lipschitz on the type interval
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     LipschitzOnWith 1 B.U B.typeInterval :=
   @MathEconLib.BidderProblem.lipschitz
 
--- Envelope theorem: interim winning probability is monotone (Theorem 5.1)
+-- Envelope theorem: interim winning probability is monotone
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC], MonotoneOn B.q B.typeInterval :=
   @MathEconLib.BidderProblem.q_monotoneOn
 
@@ -158,14 +158,14 @@ example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     ∀ᵐ s ∂volume.restrict B.typeInterval, HasDerivAt B.U (B.q s) s :=
   @MathEconLib.BidderProblem.aeDifferentiable
 
--- Myerson payment identity: cost(strategy(s)) = s·q(s) − U(low) − ∫ q (Lemma 5.2)
+-- Myerson payment identity: cost(strategy(s)) = s·q(s) − U(low) − ∫ q
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasTypeDeviationIC],
     ∀ s ∈ B.typeInterval,
       B.cost (B.strategy s)
         = s * B.q s - B.U B.lowestType - ∫ (ψ : ℝ) in B.lowestType..s, B.q ψ :=
   @MathEconLib.BidderProblem.payment_identity
 
--- Myerson payment uniqueness: same q and U(low) force the same payments (Lemma 5.2)
+-- Myerson payment uniqueness: same q and U(low) force the same payments
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasTypeDeviationIC],
     ∀ (B₂ : MathEconLib.BidderProblem) [B₂.HasTypeDeviationIC],
       B.lowestType = B₂.lowestType → B.highestType = B₂.highestType → B.q = B₂.q →
@@ -215,7 +215,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
         ∀ {s : ℝ}, s ∈ A.interval i → A.p i s = A₂.p j s :=
   @MathEconLib.Auction.payment_equivalence
 
--- Revenue Equivalence Theorem for symmetric IPV auctions (Theorem 6.4)
+-- Revenue Equivalence Theorem for symmetric IPV auctions (Krishna 2010, Proposition 3.1)
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : MathEconLib.Auction Ω n) [A.IsSymmetricIPV]
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
@@ -251,22 +251,22 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @MathEconLib.Auction.total_revenue
 
-/-! ## Affiliation (§7) -/
+/-! ## Affiliation -/
 
 section Affiliation
 
--- Def 7.2 (affiliation) — definition pin: the exact unfolding of `Affiliated`
+-- Affiliation definition pin: the exact unfolding of `Affiliated`
 example {n : ℕ} (f : (Fin n → ℝ) → ℝ) :
     MathEconLib.Auction.Affiliation.Affiliated f
       ↔ ∀ x y : Fin n → ℝ, f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y :=
   Iff.rfl
 
--- Remark 6: independent (factorized) densities are affiliated
+-- Independent (factorized) densities are affiliated
 example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin n → ℝ → ℝ},
     MathEconLib.Auction.Affiliation.Factors f g → MathEconLib.Auction.Affiliation.Affiliated f :=
   @MathEconLib.Auction.Affiliation.factors_affiliated
 
--- Affiliation ⇔ log-supermodularity for positive densities (Remark 5)
+-- Affiliation ⇔ log-supermodularity for positive densities
 example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ},
     (∀ x : Fin n → ℝ, 0 < f x) →
       (MathEconLib.Auction.Affiliation.Affiliated f ↔
@@ -274,7 +274,7 @@ example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ},
           Real.log (f x) + Real.log (f y) ≤ Real.log (f (x ⊔ y)) + Real.log (f (x ⊓ y))) :=
   @MathEconLib.Auction.Affiliation.affiliated_iff_logSupermodular
 
--- FKG-style four-sum inequality for affiliated densities (§7, key lemma)
+-- FKG-style four-sum inequality for affiliated densities
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →
@@ -285,7 +285,7 @@ example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n �
                 (∑ x ∈ B, g x * f x) * ∑ x ∈ A, f x :=
   @MathEconLib.Auction.Affiliation.sum_mul_sum_le_of_affiliated
 
--- Conditional expectations increase along the sup/inf ordering of events (§7)
+-- Conditional expectations increase along the sup/inf ordering of events
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →
@@ -296,7 +296,7 @@ example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n �
                 MathEconLib.Auction.Affiliation.condExpOn f g B :=
   @MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated
 
--- Lemma 7.3: the sliced conditional expectation is monotone in the conditioning signal
+-- The sliced conditional expectation is monotone in the conditioning signal
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →
@@ -305,7 +305,7 @@ example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S : Finset (Fin n → �
             ↑(Finset.image (fun x => x i) S) :=
   @MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated
 
--- Winner's curse: conditioning on winning lowers the conditional expectation (§7)
+-- Winner's curse: conditioning on winning lowers the conditional expectation
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →
@@ -393,6 +393,40 @@ example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ
       p = MathEconLib.AllPurchase.optimalPriceInterior φbar c α M :=
   @MathEconLib.AllPurchase.sellerProfitInterior_eq_at_optimal_iff
 
+-- The interior formula is identified with actual profit at the supplied auction's posted price.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
+    [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ j, Integrable (fun ω => β (A.θ j ω)) volume)
+    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).HasTypeDeviationIC)
+    (_ : A.K_linear β < 0)
+    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
+      (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType =
+        (A.K_linear β) ^ 2 / (4 * A.α_coeff)) (c : ℝ),
+    A.toAuction.bundledProfit A.spec β c =
+      MathEconLib.AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
+        A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
+  @MathEconLib.LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior
+
+-- The price-independent moment and actual expected aggregate quantity use the same hypotheses.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
+    [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ j, Integrable (fun ω => β (A.θ j ω)) volume)
+    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).HasTypeDeviationIC)
+    (_ : A.K_linear β < 0)
+    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
+      (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType =
+        (A.K_linear β) ^ 2 / (4 * A.α_coeff)),
+    A.toAuction.expectedAggregateBid β =
+      MathEconLib.AllPurchase.interiorMeanQuantity A.φ_bar A.α_coeff
+        A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
+  @MathEconLib.LinearScarcityAuction.expectedAggregateBid_eq_interiorMeanQuantity
+
 -- Edition-welfare bound and moment identity over supplied real parameters.
 example : ∀ φbar c α : ℝ, 0 < α → ∀ B : ℝ,
     MathEconLib.AllPurchase.editionWelfare φbar c α B ≤
@@ -421,7 +455,7 @@ example : ∀ φbar c α B_ed WC : ℝ,
         MathEconLib.AllPurchase.contestLoss φbar c α B_ed WC :=
   @MathEconLib.AllPurchase.welfare_decomposition
 
--- Proposition 6.13: actual expected edition welfare decomposes at the auction's Cournot
+-- Actual expected edition welfare decomposes at the auction's Cournot
 -- benchmark. Square integrability is the only strategy assumption; gap signs are separate.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
@@ -443,7 +477,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
         A.α_coeff * variance (A.toAuction.aggregateBid β) volume :=
   @MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
 
--- Uniform all-pay bid (§9.6.3): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
+-- Uniform all-pay bid (Krishna 2010, Example 3.1, rescaled): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.Auction Ω n)
     [A.HasIdenticalTypes] (vbar : ℝ),

@@ -15,6 +15,14 @@ and scarcity function; `IsAllPurchase` states that such parameters exist. The al
 enters the all-purchase net-payment identity, which expresses equilibrium net expenditure as
 `C(β(v)) = allPayBid(v) - U(lowestType)`.
 
+## Sources and provenance
+
+Scott Duke Kominers observed this all-purchase format in NFT sales; see the
+[sale provenance](https://x.com/tiffatronn/status/1928904850022265170).
+The economic-theory research write-up is pending. For now, cite the MathEconLib Lean development
+for the formalized all-purchase analysis. The standard all-pay benchmark has separate textbook
+sources, recorded alongside the all-purchase provenance in `docs/AuctionReferences.md`.
+
 ## Main definitions
 
 * `Auction.allPayBid`: the all-pay payment expression

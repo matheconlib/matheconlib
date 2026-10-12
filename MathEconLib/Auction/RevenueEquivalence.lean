@@ -10,6 +10,19 @@ the expected total revenue equals `𝔼[S₂]` (expected second-highest type).
 
 More generally, two BIC mechanisms with zero lowest-type utility and the same `q` yield the same
 expected revenue, without any efficiency assumption.
+
+## References
+
+Vijay Krishna (2010), *Auction Theory*, 2nd ed., Academic Press:
+
+* §3.1, Proposition 3.1, p. 28: revenue equivalence for symmetric increasing equilibria
+  of standard auctions. `Auction.revenue_equivalence` expresses the sufficient common-allocation
+  condition directly through the interim functions `q`; this formulation also allows
+  common allocation rules that are not efficient.
+* §2.4, equations (2.6)–(2.7), pp. 18–19: expected revenue as the expected second-highest
+  value, corresponding to `Auction.total_revenue`.
+
+See the [auction reference map](../../docs/AuctionReferences.md) for the scope of these matches.
 -/
 
 namespace MathEconLib
@@ -41,7 +54,9 @@ lemma payment_formula_strictHighestBid
 /-- **Revenue Equivalence Theorem.**
 
 Two BIC symmetric IPV auctions with zero lowest-type utility, the same `q`, same type bounds, and
-identically distributed types yield the same expected total revenue. -/
+identically distributed types yield the same expected total revenue. Krishna (2010), §3.1,
+Proposition 3.1, p. 28, gives the standard-auction specialization; the statement here uses
+equality of the interim allocation functions directly. -/
 theorem revenue_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.IsSymmetricIPV]
@@ -77,7 +92,8 @@ theorem revenue_equivalence
         ((ident i).comp (p_meas i)).integral_eq
 
 /-- Under strict-highest-bid allocation, BIC, and zero lowest-type utility, the expected total
-revenue equals `𝔼[S₂]`, the expected second-highest order statistic. -/
+revenue equals `𝔼[S₂]`, the expected second-highest order statistic. See Krishna (2010), §2.4,
+equations (2.6)–(2.7), pp. 18–19, for the corresponding revenue calculation. -/
 lemma total_revenue
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     [A.BIC] [A.HasZeroLowestTypeUtility] :

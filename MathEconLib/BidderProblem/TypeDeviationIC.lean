@@ -7,8 +7,9 @@ public import MathEconLib.SingleParameter.Payment
 # Type-Deviation IC (Level 1)
 
 `HasTypeDeviationIC` is the middle IC level: type `v` weakly prefers `strategy(v)`
-to mimicking any other type's equilibrium bid.  This is equivalent to Myerson's DSIC
-with `q = winProb ∘ strategy` and `t = cost ∘ strategy`.
+to mimicking any other type's equilibrium bid. This is the single-agent IC condition
+for the induced allocation `q = winProb ∘ strategy` and payment `t = cost ∘ strategy`.
+When these are interim auction quantities, this does not assert ex post dominant-strategy IC.
 
 ## Instance chain
 
@@ -24,6 +25,12 @@ envelope theorem results are automatically available.
 
 The public bidder statements are unchanged. Their general analytic content is
 provided by `SingleParameterProblem.Payment`.
+
+## Reference
+
+Roger B. Myerson (1981), "Optimal Auction Design," §4, Lemma 2, pp. 63–64.
+The library isolates the one-agent incentive-compatibility content and its analytic
+consequences; see `docs/AuctionReferences.md` for the source map and scope.
 -/
 
 namespace MathEconLib
@@ -37,7 +44,7 @@ namespace BidderProblem
 variable (B : BidderProblem)
 
 /-- **Type-deviation IC** (Level 1): type `v` weakly prefers `strategy(v)` to
-mimicking any other type's equilibrium bid.  Equivalent to Myerson's DSIC. -/
+mimicking any other type's equilibrium bid. This is the induced one-agent IC condition. -/
 class HasTypeDeviationIC (B : BidderProblem) : Prop where
   typeDeviationIC : ∀ v ∈ B.typeInterval, ∀ v' ∈ B.typeInterval,
     B.payoff v (B.strategy v') ≤ B.payoff v (B.strategy v)
@@ -119,7 +126,7 @@ lemma allPayBid_lowestType [HasTypeDeviationIC B] :
     B.allPayBid B.lowestType = B.lowestType * B.q B.lowestType := by
   simp [allPayBid]
 
-/-- **Net-payment identity** (= Proposition 6.4 in the all-purchase setting):
+/-- **Net-payment identity**, including its all-purchase specialization:
 `cost(strategy(v)) = allPayBid(v) - U(lowestType)`.
 
 This is a restatement of `payment_identity`. -/

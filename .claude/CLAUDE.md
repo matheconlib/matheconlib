@@ -1,11 +1,16 @@
-This is Lean4 project (lean-4.28.0) to formalize theorems in auction theory. The main mathematical reference are located `documents/` folder.
+This is a Lean 4 project (lean-4.28.0) formalizing theorems in auction theory.
+Use Vijay Krishna, *Auction Theory*, 2nd edition (Academic Press, 2010), as the primary
+textbook reference for standard results where applicable. `docs/AuctionReferences.md`
+maps verified references to the Lean development and records all-purchase provenance.
+Cite named Lean results for statements not matched to a verified external reference;
+do not use section or proposition numbers from the evolving development notes.
 
 ## Architecture
 
-Three-layer design following the mathematical reference (Section 2-3):
+Three-layer design:
 
 1. **Mechanism** (`Mechanism/Core/`): `MathEconLib.Mechanism I A O` stores an outcome rule and signed transfers (positive to the agent). Carriers are explicit; payment is negative transfer. Environments and deterministic solution predicates are prior-free.
-2. **Auction** (`Auction/`): mechanism + probabilistic environment (`θ`, `θmin`, `θmax`) on probability space `(Ω, ℙ)` (Section 3a+3b)
+2. **Auction** (`Auction/`): mechanism + probabilistic environment (`θ`, `θmin`, `θmax`) on probability space `(Ω, ℙ)`
 3. **BidderProblem** (`BidderProblem/`): per-bidder interim view (`winProb`, `cost`, `strategy`) with IC typeclass chain
 
 Flow: `Auction → toBidderProblem halloc → BidderProblem` (BIC → HasTypeDeviationIC → HasEnvelopeIC → envelope theorem). Allocation bounds are an explicit `IsUnitIntervalAllocation` proof.
@@ -26,25 +31,25 @@ Structures for parametric families:
 
 ## Task status
 
-- [x] formalize ‹The Envelope Theorem› in section 5.1
-- [x] formalize ‹Myerson's Lemma› in section 5.2
-- [x] formalize ‹Revenue Equivalence Theorem› in section 5.3
-- [x] formalize ‹All-Purchase Auction› equilibrium characterization (chapter 6)
-  - [x] Lemma 6.1 — weak monotonicity
-  - [x] Lemma 6.2 — strict monotonicity
-  - [x] Lemma 6.3 — envelope / integral representation
-  - [x] Proposition 6.4 — net payment identity
-- [x] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
-- [ ] formalize ‹All-Purchase Auction› economic analysis (section 6.7)
-  - [x] Proposition 6.10 — revenue decomposition
-  - [x] Corollary 6.11 — bundled vs standalone revenue comparison
+- [x] formalize the envelope theorem
+- [x] formalize Myerson's lemma
+- [x] formalize revenue equivalence (Krishna 2010, Proposition 3.1)
+- [x] formalize ‹All-Purchase Auction› equilibrium characterization
+  - [x] Weak monotonicity
+  - [x] Strict monotonicity
+  - [x] Envelope / integral representation
+  - [x] Net payment identity
+- [x] formalize ‹All-Purchase Auction› baseline demand & explicit solutions
+- [x] formalize the scoped ‹All-Purchase Auction› economic bridges in #46
+  - [x] Revenue decomposition
+  - [x] Bundled vs standalone revenue comparison
   - [x] Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1`
-    (motivated by Proposition 6.12)
   - [x] Actual expected-edition-welfare decomposition and variance penalty, with algebraic helpers
-  - [ ] Identify the pricing formulas with auction equilibrium quantity and actual seller profit
+  - [x] Identify the pricing formulas with auction equilibrium quantity and actual seller profit
     ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
   - [x] Feasible Cournot best responses and separately justified Cournot/contest gap signs
-- [ ] formalize game theoretic concepts in section 3
+  - Cross-price equilibrium existence and comparisons across regimes remain separate work.
+- [ ] formalize game theoretic concepts
 - [x] delete old framework files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/` using old structures)
 
 ## Useful Lean commands

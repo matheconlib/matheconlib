@@ -2,10 +2,9 @@ module
 
 public import MathEconLib.Auction.Affiliation.MonotoneCondExp
 
-/-! # Proposition 7.4 — Winner's curse (finite case)
+/-! # Winner's curse (finite case)
 
-This file proves the finite-support version of **Proposition 7.4
-(Winner's curse)** from Section 7.
+This file proves a winner's-curse inequality for finite signal distributions.
 
 Fix a bidder `i` and a realized own signal `t`.  Inside a finite support
 `S : Finset (Fin n → ℝ)`, compare the following two sets of signal profiles:
@@ -32,9 +31,8 @@ averages have positive denominators.  The proof shows that the winning slice
 is lattice-lower than the own-signal slice and applies
 `condExpOn_le_condExpOn_of_affiliated_of_nonneg` from
 `FiniteCondExp.lean`.  The own-signal conditional expectation is
-`condExpSlice` from `MonotoneCondExp.lean`.  The proposition's additional
-claim that the inequality is generically strict is outside this first finite
-scope.
+`condExpSlice` from `MonotoneCondExp.lean`. Only the weak inequality is proved;
+conditions for strict inequality are outside this finite result.
 -/
 
 namespace MathEconLib
@@ -166,9 +164,9 @@ theorem sum_mul_sum_le_winningSlice_of_affiliated {n : ℕ}
     (fun _ ha _ hb => sup_mem_ownSignalSlice hsub ha hb)
     (fun _ ha _ hb => inf_mem_winningSlice hsub ha hb)
 
-/-! ### Proposition 7.4 — the normalized finite winner's-curse inequality -/
+/-! ### The normalized finite winner's-curse inequality -/
 
-/-- **Proposition 7.4 (Winner's curse), finite case.** Let `f` be an
+/-- **Winner's curse, finite case.** Let `f` be an
 affiliated density that is positive on the finite sublattice `S`, and let `g`
 be a nondecreasing nonnegative value function.  Conditional on bidder `i`
 having signal `t`, additionally learning that bidder `i` wins weakly lowers
@@ -224,16 +222,15 @@ theorem condExpWinningSlice_le_condExpSlice_of_affiliated {n : ℕ}
 
 /-! ### Signal/value environment form -/
 
-/-- **Proposition 7.4 (Winner's curse), finite environment form.** In a
+/-- **Winner's curse, finite environment form.** In a
 `SignalValueEnv` with affiliated signals, bidder `i`'s expected value
 conditional on having signal `t` and winning is at most the expected value
 conditional only on having signal `t`.
 
 This is the preceding finite theorem with `g = E.v i`.  The environment fields
 `v_mono` and `v_nonneg` supply exactly the monotonicity and nonnegativity
-assumptions needed there.  Although Proposition 7.4 is stated for a
-pure-common-value environment, this inequality uses only these two properties
-of bidder `i`'s value, so the formal statement applies to the more general
+assumptions needed there. No pure-common-value hypothesis is needed: this inequality uses
+only these two properties of bidder `i`'s value, so the formal statement applies to the
 interdependent-value environment represented by `SignalValueEnv`.
 
 The additional hypothesis that `E.f` is strictly positive on `S` strengthens

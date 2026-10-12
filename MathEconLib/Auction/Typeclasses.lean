@@ -5,7 +5,21 @@ public import Mathlib.Probability.Independence.Basic
 public import Mathlib.Probability.IdentDistrib
 public import Mathlib.Probability.CDF
 
-/-! # Auction Environment Typeclasses (Section 3a) -/
+/-!
+# Auction environment typeclasses
+
+Independent and identically distributed private values, bounded types, densities, and
+atomlessness are separate assumptions. `IsSymmetricIPV` collects them when a result uses
+the full bundle; other results can request only the assumptions they need.
+
+## References
+
+Vijay Krishna (2010), *Auction Theory*, 2nd ed., Academic Press, §2.1, pp. 11–12,
+introduces the symmetric independent-private-values model. The classes here separate
+its distributional assumptions and use general declared type bounds; the textbook also
+allows unbounded support, whereas `HasBoundedTypes` specifies finite endpoints.
+See the [auction reference map](../../docs/AuctionReferences.md).
+-/
 
 namespace MathEconLib
 

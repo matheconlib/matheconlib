@@ -4,16 +4,26 @@ public import MathEconLib.Auction.AllPurchase.Basic
 public import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 
 /-!
-# Uniform distribution closed form for the all-pay bid (§9.6.3)
+# Uniform distribution closed form for the all-pay benchmark
 
 When types are uniform on `[0, v̄]`, the common CDF is `F(v) = v / v̄`, and the
 standard all-pay bid function collapses to the closed form
 
 `b^{AP}(v) = (n − 1)/n · vⁿ / v̄ⁿ⁻¹`.
 
-This is the lead-in identity of §9.6.3 on which the uniform equilibrium
-(Proposition 9.9) and its moments are built.  The CDF behaviour `F(v) = v/v̄`
-on `[0, v̄]` is taken as a hypothesis, which characterises the uniform law.
+The CDF behaviour `F(v) = v/v̄` on `[0, v̄]` is taken as a hypothesis, which characterises the
+uniform law. This evaluates the standard all-pay benchmark; an all-purchase equilibrium also
+requires the separate incentive and net-payment conditions developed in this chapter.
+
+## References
+
+Vijay Krishna (2010), *Auction Theory*, 2nd edition, Academic Press, Example 3.1 and §3.2.1,
+pp. 29–30. [Publisher](https://www.sciencedirect.com/book/9780123745071/auction-theory).
+The all-pay formula on p. 30 gives the benchmark in `Auction.allPayBid` by integration by parts;
+this module evaluates it for the uniform law on `[0, v̄]`.
+
+The all-purchase analysis has separate provenance and a pending economic-theory research write-up.
+See `docs/AuctionReferences.md` for the source map and citation guidance.
 -/
 
 namespace MathEconLib
@@ -29,7 +39,7 @@ namespace Auction
 
 variable (A : Auction Ω n) [HasIdenticalTypes A]
 
-/-- **Uniform all-pay bid (§9.6.3).** If the common CDF is `F(v) = v / v̄` on
+/-- **Uniform all-pay benchmark.** If the common CDF is `F(v) = v / v̄` on
 `[0, v̄]` and the lowest type is `0`, then on `[0, v̄]`
 `b^{AP}(v) = (n − 1)/n · vⁿ / v̄ⁿ⁻¹`. -/
 theorem allPayBid_uniform

@@ -25,6 +25,13 @@ function `φ` is continuous and strictly decreasing. A positive posted unit pric
 transfer is the negative of this net payment. Purchases and resale values are not constrained to be
 nonnegative here.
 
+## Sources and provenance
+
+This formalizes the all-purchase format Scott Duke Kominers observed in NFT sales; see the
+[sale provenance](https://x.com/tiffatronn/status/1928904850022265170).
+The economic-theory research write-up is pending; the current reference is the MathEconLib Lean
+development. See `docs/AuctionReferences.md` for the source map and citation guidance.
+
 ## Main definitions
 
 * `AllPurchaseSpec`: a positive posted price and a continuous, strictly decreasing resale-value

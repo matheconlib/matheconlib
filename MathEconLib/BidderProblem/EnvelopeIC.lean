@@ -24,6 +24,12 @@ Consequently, existing auction code can continue to use:
 
 Their statements have not changed. The proofs now reuse the action-parametric
 single-parameter results.
+
+## Reference
+
+Roger B. Myerson (1981), "Optimal Auction Design," §4, Lemma 2, pp. 63–64.
+The library isolates the one-agent incentive-compatibility content and its analytic
+consequences; see `docs/AuctionReferences.md` for the source map and scope.
 -/
 
 namespace MathEconLib
