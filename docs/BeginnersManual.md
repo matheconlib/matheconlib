@@ -103,13 +103,12 @@ This is why you must **open the project folder, not a lone file**: outside the f
 If you do not already have a checkout, clone it first:
 
 ```bash
-git clone https://github.com/AxiomMath/auctionlib.git
-cd auctionlib
+git clone https://github.com/matheconlib/matheconlib.git
+cd matheconlib
 ```
 
-The repository currently requires team access. Until it is public, authenticate
-Git with an account that has access, or use GitHub's SSH clone URL. Use the
-current repository URL shown on GitHub after the planned transfer.
+The repository is private until public launch. Authenticate Git with an
+account that has access, or use the SSH clone URL shown on GitHub.
 
 **File → Open Folder**, and select the repository root (the folder containing `lakefile.toml`). Not the folder above it, not a single file inside it. VS Code will ask whether you trust the authors; say yes, or nothing will run.
 

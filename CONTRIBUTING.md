@@ -9,7 +9,7 @@ core files. Small, well-scoped additions to `ForMathlib/` can be suitable first
 contributions; the folder also contains substantial results.
 
 For a small documentation task, start with
-[documenting the BidderProblem umbrella (#118)](https://github.com/AxiomMath/auctionlib/issues/118).
+[documenting the BidderProblem umbrella (#118)](https://github.com/matheconlib/matheconlib/issues/118).
 The issue gives the starting file, expected result, and build check.
 
 ## Design first for core layers
@@ -69,13 +69,13 @@ An existing development can qualify. Checking only the theorem's type
 (a "signature pin") does not.
 
 Additional applications of older main results remain post-launch work under
-[#47](https://github.com/AxiomMath/auctionlib/issues/47).
+[#47](https://github.com/matheconlib/matheconlib/issues/47).
 
 ## Citing sources
 
 Use the author–year format shown below as the default, with complete references.
 Detailed formatting guidance is tracked in
-[style conventions (#109)](https://github.com/AxiomMath/auctionlib/issues/109).
+[style conventions (#109)](https://github.com/matheconlib/matheconlib/issues/109).
 
 For work based on a paper or book, give the author, year, and title in the module
 documentation, and include a DOI or stable link when available. Include the theorem
