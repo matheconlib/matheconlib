@@ -74,8 +74,6 @@ Additional applications of older main results remain post-launch work under
 ## Citing sources
 
 Use the author–year format shown below as the default, with complete references.
-Detailed formatting guidance is tracked in
-[style conventions (#109)](https://github.com/AxiomMath/auctionlib/issues/109).
 
 For work based on a paper or book, give the author, year, and title in the module
 documentation, and include a DOI or stable link when available. Include the theorem
@@ -100,6 +98,9 @@ Gary S. Becker (1968), *Crime and Punishment: An Economic Approach*,
 
 Standard textbook examples do not need to be cited. Sources without a DOI can use
 a stable link. For ported Lean code, record its source and preserve author credit.
+
+## Style 
+Before submitting your contribution, please ensure it complies with the project [style guidelines](STYLE.md)
 
 ## Public API
 
