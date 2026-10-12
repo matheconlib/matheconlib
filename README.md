@@ -1,6 +1,6 @@
 # MathEconLib
 
-A Lean 4 formalization of fundamental theorems in auction theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4).
+A Lean 4 formalization of fundamental theorems in economic theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4).
 
 ## Getting Started
 
