@@ -1,19 +1,13 @@
-name: Deploy MathEconLib website
+name: Deploy MathEconLib PR 108 preview
 
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - "website/**"
-      - ".github/workflows/deploy_website.yaml"
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: matheconlib-website
+  group: matheconlib-pr108-preview
   cancel-in-progress: true
 
 jobs:
@@ -41,6 +35,10 @@ jobs:
       - name: Build the website
         run: npm run build
 
+      - name: Keep the review preview out of search indexes
+        run: |
+          printf '/*\n  X-Robots-Tag: noindex, nofollow\n' > _site/_headers
+
       - name: Deploy to Cloudflare Workers
         uses: cloudflare/wrangler-action@v3
         with:
@@ -48,4 +46,4 @@ jobs:
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: 4.130.0
           workingDirectory: website
-          command: deploy
+          command: deploy --name matheconlib-pr108 --message "PR 108 preview at 31bad5b"
