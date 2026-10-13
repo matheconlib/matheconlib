@@ -6,6 +6,16 @@ MathEconLib is an effort to build a shared formal foundation for economics in [L
 
 New to Lean 4, or to this library? [*Lean 4 and `MathEconLib` — A Beginner's Manual*](docs/BeginnersManual.md) goes from installing the toolchain to reading [`BidderProblem/Basic.lean`](MathEconLib/BidderProblem/Basic.lean) line by line, with runnable exercises throughout. The manual does not require prior knowledge of Lean or economics.
 
+### Quickstart
+To install lean, see the [Lean website](https://lean-lang.org/install/). Once you have set up a project, add MathEconLib as a dependency in your `lakefile.toml`:
+
+```toml
+[[require]]
+name = "matheconlib"
+git = "https://github.com/matheconlib/matheconlib"
+rev = "main"
+```
+
 ## Contents
 
 | Module | Highlights |
