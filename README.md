@@ -36,20 +36,20 @@ rev = "main"
 
 ## Contributing
 
-`MathEconLib` welcomes your contributions. Before opening a PR, please familiarize yourself with the project design principles in [`DESIGN.md`](DESIGN.md) and the guidelines in [`CONTRIBUTING.md`](CONTRIBUTING.md). If you're looking to contribute, please see issues tagged [good first issue](https://github.com/matheconlib/matheconlib/issues?q=is%3Aissue+state%3Aopen+label%3A%22good+first+issue%22).
+`MathEconLib` welcomes your contributions. Before opening a pull request, please familiarize yourself with the project design principles in [`DESIGN.md`](DESIGN.md) and the guidelines in [`CONTRIBUTING.md`](CONTRIBUTING.md). If you're looking to contribute, please see in particular the issues tagged "[good first issue](https://github.com/matheconlib/matheconlib/issues?q=is%3Aissue+state%3Aopen+label%3A%22good+first+issue%22)"
 
 Changes to the library API should be preceded by a design issue on GitHub and maintainer approval. 
 
 ## Worked Examples
 
 A suite of worked examples is in [`MathEconLibExamples`](MathEconLibExamples/), including:
-- [Becker-inspired crime choice](https://github.com/matheconlib/matheconlib/blob/codex/becker-crime-example/MathEconLibExamples/SingleParameter/BeckerCrime.lean)
+- [A Becker-inspired model of crime decisions](https://github.com/matheconlib/matheconlib/blob/codex/becker-crime-example/MathEconLibExamples/SingleParameter/BeckerCrime.lean)
   ([PR #95 — under review](https://github.com/matheconlib/matheconlib/pull/95)):
   risk-neutral binary choice, cutoff and deterrence results, and aggregate crime
   under a fixed type distribution.
 - [Matching pennies](MathEconLibExamples/GameTheory/MatchingPennies.lean): no pure Nash equilibrium and a unique mixed equilibrium with uniform randomization.
 
-Have you built something with `MathEconLib`? We'd love to hear about it! Please reach out to [`contact@mathecon.dev`](mailto:contact@mathecon.dev) to get in touch.
+Have you built something using `MathEconLib`? We'd love to hear about it! Please reach out to [`contact@mathecon.dev`](mailto:contact@mathecon.dev) to get in touch.
 
 ## Building
 
