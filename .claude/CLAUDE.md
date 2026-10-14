@@ -35,11 +35,16 @@ Structures for parametric families:
   - [x] Lemma 6.3 — envelope / integral representation
   - [x] Proposition 6.4 — net payment identity
 - [x] formalize ‹All-Purchase Auction› baseline demand & explicit solutions (chapter 6)
-- [x] formalize ‹All-Purchase Auction› economic analysis (section 6.7)
+- [ ] formalize ‹All-Purchase Auction› economic analysis (section 6.7)
   - [x] Proposition 6.10 — revenue decomposition
   - [x] Corollary 6.11 — bundled vs standalone revenue comparison
-  - [x] Proposition 6.12 — optimal pricing (interior regime)
-  - [x] Proposition 6.13 — welfare decomposition (Cournot + contest losses)
+  - [x] Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1`
+    (motivated by Proposition 6.12)
+  - [x] Algebraic welfare-gap and moment identities (motivated by Proposition 6.13)
+  - [ ] Identify the pricing formulas with auction equilibrium quantity and actual seller profit
+    ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
+  - [ ] Equilibrium-based Cournot and contest welfare decomposition, with separately justified
+    loss nonnegativity ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
 - [ ] formalize game theoretic concepts in section 3
 - [x] delete old framework files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/` using old structures)
 

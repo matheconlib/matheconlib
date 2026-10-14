@@ -49,3 +49,20 @@ later without changing the website source.
 
 The working project name and shared metadata are kept in
 `src/_data/site.json`, so the site can be renamed without editing every page.
+
+## 404 artwork
+
+The 404 page displays three abstract compositions, `ps`, `gb`, and `ka`.
+The inline SVG partials in `src/_includes/404/` are the canonical artwork.
+Edit these partials directly; there are no separate image files or generation step.
+
+Each composition consists of SVG units that wrap without splitting. All pieces
+share 15px squares, shrinking together only when the longest unit would exceed
+the available width. Horizontal gaps are one square wide, row gaps are half a
+square, and compositions are separated by 24px. Rendering requires no JavaScript
+or image requests.
+
+`art.njk` sets the composition order and `--longest-unit` (the maximum number of
+squares in a unit). Each SVG declares its own `--unit-cells` and matching
+`viewBox`. Keep these values consistent when editing. Layout styles live in
+`art.css.njk`.

@@ -153,6 +153,11 @@ example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC], MonotoneOn B.q B.typeInterval :=
   @MathEconLib.BidderProblem.q_monotoneOn
 
+-- Envelope theorem: interim utility has derivative q almost everywhere on the type interval.
+example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
+    ∀ᵐ s ∂volume.restrict B.typeInterval, HasDerivAt B.U (B.q s) s :=
+  @MathEconLib.BidderProblem.aeDifferentiable
+
 -- Myerson payment identity: cost(strategy(s)) = s·q(s) − U(low) − ∫ q (Lemma 5.2)
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasTypeDeviationIC],
     ∀ s ∈ B.typeInterval,
@@ -178,6 +183,26 @@ example : ∀ (B : MathEconLib.BidderProblem),
   @MathEconLib.BidderProblem.typeDeviationIC_of_monotone_q
 
 /-! ## MathEconLib.Auction — payment and revenue equivalence -/
+
+-- Truthful opponents give winning probability F(s)^(n−1) under strict-highest-bid allocation.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
+    [A.HasIndependentTypes] [A.HasIdenticalTypes] [A.HasAtomlessTypes]
+    (_ : UsesStrictHighestBidAllocation A.rules (fun o i ↦ o i)) (i : Fin n) (s : ℝ),
+    A.q i s = A.commonCDF s ^ (n - 1) :=
+  @MathEconLib.Auction.q_eq_pow
+
+-- Strict monotonicity retains density, regularity, and universal IC over nonnegative bids.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n) [A.HasIdenticalTypes]
+    [A.HasPosDensity] [n.AtLeastTwo] [A.HasIndependentTypes] [A.HasBoundedTypes]
+    [A.HasAtomlessTypes] (halloc : IsUnitIntervalAllocation A.rules (fun o i ↦ o i))
+    (_ : UsesStrictHighestBidAllocation A.rules (fun o i ↦ o i))
+    {σ : ℝ → ℝ} (_ : Measurable σ) (i : Fin n) (_ : 0 ≤ A.lowestType)
+    (_ : (A.toBidderProblem halloc σ i).IsRegular)
+    (_ : (A.toBidderProblem halloc σ i).HasUniversalIC (Set.Ici 0)),
+    StrictMonoOn σ (Set.Icc A.lowestType A.highestType) :=
+  @MathEconLib.Auction.strictMonotonicity
 
 -- Payment equivalence: two BIC auctions with matching q and boundary utility pay alike
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
@@ -295,7 +320,101 @@ end Affiliation
 
 /-! ## All-purchase auctions -/
 
--- Proposition 6.13 (welfare decomposition): W* − W^C = L_Cournot + L_Contest
+-- Revenue decomposition keeps every IC, integrability, and boundary-utility hypothesis.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
+    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (_ : ∀ i, Integrable (fun ω ↦ A.rules.payment i (fun j ↦ β (A.θ j ω))) volume)
+    (_ : Integrable (fun ω ↦ A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) volume)
+    (_ : Measurable A.allPayBid)
+    (_ : ∀ i, Integrable (fun ω ↦ A.allPayBid (A.θ i ω)) volume)
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+      (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType =
+        A.lowestTypeUtility spec.isUnitIntervalAllocation β),
+    A.sellerGrossRevenue spec β =
+      n * A.expectedAllPayBid - n * A.lowestTypeUtility spec.isUnitIntervalAllocation β +
+        A.expectedEditionValue spec β :=
+  @MathEconLib.Auction.revenue_decomposition
+
+-- Boundary form additionally requires zero lowest-type utility.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
+    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (_ : ∀ i, Integrable (fun ω ↦ A.rules.payment i (fun j ↦ β (A.θ j ω))) volume)
+    (_ : Integrable (fun ω ↦ A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) volume)
+    (_ : Measurable A.allPayBid)
+    (_ : ∀ i, Integrable (fun ω ↦ A.allPayBid (A.θ i ω)) volume)
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+      (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType =
+        A.lowestTypeUtility spec.isUnitIntervalAllocation β)
+    (_ : A.lowestTypeUtility spec.isUnitIntervalAllocation β = 0),
+    A.sellerGrossRevenue spec β = n * A.expectedAllPayBid + A.expectedEditionValue spec β :=
+  @MathEconLib.Auction.revenue_decomposition_boundary
+
+-- Bundling gain is a profit-difference identity, with no positivity conclusion.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
+    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : Measurable β)
+    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (_ : ∀ i, Integrable (fun ω ↦ A.rules.payment i (fun j ↦ β (A.θ j ω))) volume)
+    (_ : Integrable (fun ω ↦ A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)) volume)
+    (_ : Measurable A.allPayBid)
+    (_ : ∀ i, Integrable (fun ω ↦ A.allPayBid (A.θ i ω)) volume)
+    (_ : ∀ i, (A.toBidderProblem spec.isUnitIntervalAllocation β i).U
+      (A.toBidderProblem spec.isUnitIntervalAllocation β i).lowestType =
+        A.lowestTypeUtility spec.isUnitIntervalAllocation β)
+    (_ : A.lowestTypeUtility spec.isUnitIntervalAllocation β = 0) (c B_ed : ℝ),
+    A.bundledProfit spec β c - A.allPayBenchmarkProfit - A.editionsOnlyBenchmarkProfit spec c B_ed =
+      A.expectedEditionValue spec β - c * A.expectedAggregateBid β - (spec.price - c) * B_ed :=
+  @MathEconLib.Auction.bundling_revenue_gain
+
+-- Algebraic profit formula: maximum and uniqueness over all real prices.
+example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ,
+    MathEconLib.AllPurchase.sellerProfitInterior φbar α c M n p ≤
+      MathEconLib.AllPurchase.sellerProfitInterior φbar α c M n
+        (MathEconLib.AllPurchase.optimalPriceInterior φbar c α M) :=
+  @MathEconLib.AllPurchase.sellerProfitInterior_le_at_optimal
+
+example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ,
+    (MathEconLib.AllPurchase.sellerProfitInterior φbar α c M n p =
+      MathEconLib.AllPurchase.sellerProfitInterior φbar α c M n
+        (MathEconLib.AllPurchase.optimalPriceInterior φbar c α M)) ↔
+      p = MathEconLib.AllPurchase.optimalPriceInterior φbar c α M :=
+  @MathEconLib.AllPurchase.sellerProfitInterior_eq_at_optimal_iff
+
+-- Edition-welfare bound and moment identity over supplied real parameters.
+example : ∀ φbar c α : ℝ, 0 < α → ∀ B : ℝ,
+    MathEconLib.AllPurchase.editionWelfare φbar c α B ≤
+      MathEconLib.AllPurchase.firstBestEditionSurplus φbar c α :=
+  @MathEconLib.AllPurchase.editionWelfare_le_firstBest
+
+example : ∀ φbar c α EB EB2 : ℝ,
+    MathEconLib.AllPurchase.editionWelfare φbar c α EB -
+      MathEconLib.AllPurchase.bundledEditionWelfareMoments φbar c α EB EB2 = α * (EB2 - EB ^ 2) :=
+  @MathEconLib.AllPurchase.editionWelfare_mean_sub_bundled
+
+-- Auction welfare bridge needs aggregate quantity and its square to be integrable.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    Integrable (A.toAuction.aggregateBid β) volume →
+      Integrable (fun ω ↦ (A.toAuction.aggregateBid β ω) ^ 2) volume →
+        A.bundledEditionWelfare β c =
+          A.toAuction.expectedEditionValue A.spec β - c * A.toAuction.expectedAggregateBid β :=
+  @MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq
+
+-- Algebraic welfare-gap identity over supplied values, motivated by Proposition 6.13.
+-- Equilibrium interpretation and nonnegativity of the two gaps require additional results.
 example : ∀ φbar c α B_ed WC : ℝ,
     MathEconLib.AllPurchase.firstBestEditionSurplus φbar c α - WC
       = MathEconLib.AllPurchase.cournotLoss φbar c α B_ed +
@@ -314,21 +433,211 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 
 /-! ## Game theory -/
 
--- Nash equilibrium — definition pin: the exact unfolding of `IsNashEquilibrium`
-example {ι : Type u} {A : ι → Type v} {O : Type w} [DecidableEq ι]
-    (G : MathEconLib.GameTheory.Game A O) (P : MathEconLib.GameTheory.PayoffStructure O ι)
-    (a : (i : ι) → A i) :
-    G.IsNashEquilibrium P a
-      ↔ ∀ (i : ι) (s : A i),
-          P.payoff i (G.outcome (Function.update a i s)) ≤ P.payoff i (G.outcome a) :=
+open MathEconLib.GameTheory
+
+/-- At Nash equilibrium, each unilateral deviation has payoff at most the prescribed payoff. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w} [LE V] [DecidableEq ι]
+    (G : StrategicGame ι A V) (a : (i : ι) → A i) :
+    G.IsNash a ↔ ∀ (i : ι) (s : A i), G.payoff i (Function.update a i s) ≤ G.payoff i a :=
+  G.isNash_iff a
+
+/-- Dominance in the strict preorder places every distinct strategy strictly below the incumbent. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w} [Preorder V]
+    (G : StrategicGame ι A V) (i : ι) (s : G.Strategy i) :
+    s.IsStrictOrderDominant ↔ ∀ s' ≠ s, s' < s :=
   Iff.rfl
 
--- Nash existence: every finite game has a mixed-strategy Nash equilibrium
+/-- Strict dominance requires a strict payoff improvement at every opponent profile. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w} [LT V] [DecidableEq ι]
+    (G : StrategicGame ι A V) (i : ι) (s : G.Strategy i) :
+    s.IsStrictlyDominant ↔ ∀ s' ≠ s, ∀ a : (j : ι) → A j,
+      G.payoff i (Function.update a i s') < G.payoff i (Function.update a i s) :=
+  Iff.rfl
+
+/-- Dominance in the strict preorder implies weak dominance. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [Preorder V]
+    {G : StrategicGame ι A V} {i : ι} {s : G.Strategy i},
+    s.IsStrictOrderDominant → s.IsDominant :=
+  @StrategicGame.Strategy.IsStrictOrderDominant.isDominant
+
+/-- Pointwise strict dominance implies weak dominance. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [Preorder V] [DecidableEq ι]
+    {G : StrategicGame ι A V} {i : ι} {s : G.Strategy i},
+    s.IsStrictlyDominant → s.IsDominant :=
+  @StrategicGame.Strategy.IsStrictlyDominant.isDominant
+
+/-- Pointwise strict dominance implies dominance in the strict preorder when the profile space is
+nonempty. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [Preorder V] [DecidableEq ι]
+    [Nonempty ((j : ι) → A j)] {G : StrategicGame ι A V} {i : ι} {s : G.Strategy i},
+    s.IsStrictlyDominant → s.IsStrictOrderDominant :=
+  @StrategicGame.Strategy.IsStrictlyDominant.isStrictOrderDominant
+
+/-- Strictly dominant strategy profiles are strict Nash equilibria. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {V : Type w} [LT V] [DecidableEq ι]
+    {G : StrategicGame ι A V} {a : (i : ι) → A i},
+    (∀ i, StrategicGame.Strategy.IsStrictlyDominant (G := G) (a i)) → G.IsStrictNash a :=
+  @StrategicGame.isStrictNash_of_isStrictlyDominant
+
+/-- The raw mixed extension evaluates payoffs by the totalized independent-product integral. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype ι] (G : StrategicGame ι A V) (i : ι) (σ : StrategicGame.MixedStrategy A) :
+    G.mixedExtension.payoff i σ =
+      ∫ a, G.payoff i a ∂Measure.pi (fun j ↦ (σ j : Measure (A j))) :=
+  rfl
+
+/-- Mixed Nash includes incumbent integrability and compares only integrable unilateral payoffs. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype ι] [DecidableEq ι] [LE V] (G : StrategicGame ι A V)
+    (σ : StrategicGame.MixedStrategy A) :
+    G.IsMixedNash σ ↔
+      (∀ i, Integrable (G.payoff i) (Measure.pi (fun j ↦ (σ j : Measure (A j))))) ∧
+      ∀ i τ, Integrable (G.payoff i)
+        (Measure.pi (fun j ↦ (Function.update σ i τ j : Measure (A j)))) →
+        G.mixedExtension.payoff i (Function.update σ i τ) ≤ G.mixedExtension.payoff i σ :=
+  G.isMixedNash_iff σ
+
+/-- With integrable unilateral payoffs, mixed Nash agrees with Nash in the integral extension. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype ι] [DecidableEq ι] [LE V] (G : StrategicGame ι A V)
+    (σ : StrategicGame.MixedStrategy A)
+    (hint : ∀ i τ, Integrable (G.payoff i)
+      (Measure.pi (fun j ↦ (Function.update σ i τ j : Measure (A j))))) :
+    G.IsMixedNash σ ↔ G.mixedExtension.IsNash σ :=
+  G.isMixedNash_iff_isNash_of_integrable σ hint
+
+/-- Bounded measurable payoffs preserve agreement with Nash in the raw integral extension. -/
+example {ι : Type u} {A : ι → Type v} [∀ i, MeasurableSpace (A i)]
+    [Fintype ι] [DecidableEq ι] (G : StrategicGame ι A ℝ) [G.Measurable]
+    (σ : StrategicGame.MixedStrategy A) (hbound : ∀ i, ∃ C, ∀ a, ‖G.payoff i a‖ ≤ C) :
+    G.IsMixedNash σ ↔ G.mixedExtension.IsNash σ :=
+  G.isMixedNash_iff_isNash_of_bdd σ hbound
+
+/-- Strategic boundedness means each player's payoff range is bounded. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w} [Bornology V]
+    (G : StrategicGame ι A V) [G.Bounded] (i : ι) :
+    Bornology.IsBounded (Set.range (G.payoff i)) :=
+  G.isBounded_payoff_range i
+
+/-- Bounded measurable games have integrable payoffs under every independent action law. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V]
+    [MeasurableSpace V] [BorelSpace V] [SecondCountableTopology V] [Fintype ι]
+    (G : StrategicGame ι A V) [G.Measurable] [G.Bounded]
+    (i : ι) (σ : StrategicGame.MixedStrategy A) :
+    Integrable (G.payoff i) (Measure.pi (fun j ↦ (σ j : Measure (A j)))) :=
+  G.integrable_payoff_of_bounded i σ
+
+/-- Bounded measurable games identify mixed and integral-extension Nash equilibria. -/
+example {ι : Type u} {A : ι → Type v} {V : Type w}
+    [∀ i, MeasurableSpace (A i)] [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [MeasurableSpace V] [BorelSpace V] [SecondCountableTopology V]
+    [Fintype ι] [DecidableEq ι] [LE V] (G : StrategicGame ι A V) [G.Measurable] [G.Bounded]
+    (σ : StrategicGame.MixedStrategy A) :
+    G.IsMixedNash σ ↔ G.mixedExtension.IsNash σ :=
+  G.isMixedNash_iff_isNash σ
+
+/-- Finite games with nonempty action spaces admit mixed Nash equilibria. -/
+example : ∀ {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A ℝ)
+    [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, Nonempty (A i)],
+    ∃ σ, G.IsFiniteMixedNash σ := @StrategicGame.exists_isFiniteMixedNash
+
+/-- Finite discrete measurable action spaces admit probability-measure mixed equilibria. -/
+example : ∀ {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A ℝ)
+    [Fintype ι] [DecidableEq ι] [∀ i, Finite (A i)] [∀ i, Nonempty (A i)]
+    [∀ i, MeasurableSpace (A i)] [∀ i, DiscreteMeasurableSpace (A i)],
+    ∃ σ, G.IsMixedNash σ := @StrategicGame.exists_isMixedNash_of_finite
+
+/-- Finite outcome games with nonempty finite action spaces admit mixed Nash equilibria. -/
 example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w}
-    (G : MathEconLib.GameTheory.Game A O) (P : MathEconLib.GameTheory.PayoffStructure O ι)
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O ℝ)
     [(i : ι) → MeasurableSpace (A i)] [MeasurableSpace O]
     [∀ i : ι, DiscreteMeasurableSpace (A i)] [DiscreteMeasurableSpace O]
     [G.Measurable] [Fintype ι] [DecidableEq ι] [(i : ι) → Finite (A i)]
     [∀ i : ι, Nonempty (A i)] [Finite O],
-    ∃ a, G.toMixed.IsNashEquilibrium P.toExpected a :=
-  @MathEconLib.GameTheory.Game.exists_isNashEquilibrium_of_finite
+    ∃ a, (StrategicGame.ofOutcome G.mixed P.expected).IsNash a :=
+  @OutcomeGame.exists_isNash_of_finite
+
+/-- Continuous games on compact convex subsets of locally convex spaces admit pure Nash equilibria
+when each payoff is quasiconcave in the player's own action. The payoff extension outside the
+represented action set takes the incumbent profile's payoff. -/
+example {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A ℝ)
+    [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
+    [G.Continuous] [Finite ι] [DecidableEq ι]
+    {E : ι → Type w} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)]
+    [∀ i, TopologicalSpace (E i)] [∀ i, IsTopologicalAddGroup (E i)]
+    [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)] [∀ i, LocallyConvexSpace ℝ (E i)]
+    {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (hs : ∀ i, Convex ℝ (k i))
+    (h : ∀ a i, QuasiconcaveOn ℝ (k i) <| Subtype.val.extend
+      ((fun s ↦ G.payoff i (Function.update a i s)) ∘ (e i).symm)
+      (fun _ ↦ G.payoff i a)) :
+    ∃ a, G.IsNash a := G.exists_isNash_of_quasiconcaveOn e hs h
+
+/-- Compact convex games admit pure Nash equilibria under quasiconcavity of the zero-filled payoff
+extension. -/
+example {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A ℝ)
+    [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
+    [G.Continuous] [Finite ι] [DecidableEq ι]
+    {E : ι → Type w} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)]
+    [∀ i, TopologicalSpace (E i)] [∀ i, IsTopologicalAddGroup (E i)]
+    [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)] [∀ i, LocallyConvexSpace ℝ (E i)]
+    {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (hs : ∀ i, Convex ℝ (k i))
+    (h : ∀ a i, QuasiconcaveOn ℝ (k i) <| Subtype.val.extend
+      ((fun s ↦ G.payoff i (Function.update a i s)) ∘ (e i).symm) 0) :
+    ∃ a, G.IsNash a := by
+  apply G.exists_isNash_of_quasiconcaveOn e hs
+  intro a i
+  exact (quasiconcaveOn_subtype_val_extend_iff _ 0 (fun _ ↦ G.payoff i a)).mp (h a i)
+
+/-- Continuous games with nonempty compact metrizable action spaces admit mixed equilibria. -/
+example {ι : Type u} {A : ι → Type v} (G : StrategicGame ι A ℝ)
+    [Fintype ι] [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)]
+    [∀ i, TopologicalSpace.MetrizableSpace (A i)] [∀ i, Nonempty (A i)]
+    [∀ i, MeasurableSpace (A i)] [∀ i, BorelSpace (A i)] [G.Continuous] :
+    ∃ σ, G.IsMixedNash σ := G.exists_isMixedNash_of_isCompact
+
+/-- Simplex and outcome-distribution representations give the same mixed Nash equilibria for
+arbitrary measurable outcome spaces. -/
+example {ι : Type u} {A : ι → Type v} {O : Type w}
+    [Fintype ι] [DecidableEq ι] [∀ i, Fintype (A i)] [∀ i, MeasurableSpace (A i)]
+    [∀ i, DiscreteMeasurableSpace (A i)] [MeasurableSpace O]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O ℝ) [G.Measurable] [P.Measurable]
+    (σ : StrategicGame.FiniteMixedStrategy A) :
+    (StrategicGame.ofOutcome G P).IsFiniteMixedNash σ ↔
+      (StrategicGame.ofOutcome G.mixed P.expected).IsNash (StrategicGame.toProbability σ) :=
+  StrategicGame.isFiniteMixedNash_iff_ofOutcome_mixed_isNash G P σ
+
+-- Pure existence preserves independent player, action, outcome, and ambient-vector universes.
+universe uE uV
+
+/-- Continuous outcome games on compact convex action sets with linearly ordered payoffs admit
+pure Nash equilibria under quasiconcavity of the incumbent-payoff extension. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w} {V : Type uV}
+    [LinearOrder V] [TopologicalSpace V] [OrderClosedTopology V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
+    [∀ i, TopologicalSpace (A i)] [∀ i, CompactSpace (A i)] [∀ i, Nonempty (A i)]
+    [TopologicalSpace O] [G.Continuous] [P.Continuous] [Finite ι] [DecidableEq ι]
+    {E : ι → Type uE} [∀ i, AddCommGroup (E i)] [∀ i, Module ℝ (E i)]
+    [∀ i, TopologicalSpace (E i)] [∀ i, IsTopologicalAddGroup (E i)]
+    [∀ i, ContinuousSMul ℝ (E i)] [∀ i, T2Space (E i)] [∀ i, LocallyConvexSpace ℝ (E i)]
+    {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i) (_ : ∀ i, Convex ℝ (k i))
+    (_ : ∀ a i, QuasiconcaveOn ℝ (k i) (Subtype.val.extend
+      ((fun s ↦ P.payoff i (G.outcome (Function.update a i s))) ∘ (e i).symm)
+      (fun _ ↦ P.payoff i (G.outcome a)))),
+    ∃ a, (StrategicGame.ofOutcome G P).IsNash a :=
+  @OutcomeGame.exists_isNash_of_quasiconcaveOn
+
+-- Compact mixed existence retains the expected-payoff continuity hypothesis.
+/-- Continuous expected payoffs and compact metrizable action spaces admit mixed Nash equilibria. -/
+example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w}
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O ℝ)
+    [Fintype ι] [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [TopologicalSpace O]
+    [∀ i, CompactSpace (A i)] [∀ i, TopologicalSpace.MetrizableSpace (A i)]
+    [∀ i, Nonempty (A i)] [∀ i, MeasurableSpace (A i)] [MeasurableSpace O]
+    [∀ i, BorelSpace (A i)] [BorelSpace O] [G.Continuous] [P.Continuous]
+    [P.expected.Continuous],
+    ∃ a, (StrategicGame.ofOutcome G.mixed P.expected).IsNash a :=
+  @OutcomeGame.exists_isNash_of_isCompact

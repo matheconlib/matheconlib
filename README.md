@@ -1,6 +1,6 @@
 # MathEconLib
 
-A Lean 4 formalization of fundamental theorems in auction theory, built on [Mathlib](https://github.com/leanprover-community/mathlib4).
+MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.
 
 ## Getting Started
 
@@ -12,6 +12,14 @@ with runnable exercises throughout. It assumes no Lean and no auction theory.
 Project-owned Lean declarations live under the `MathEconLib` namespace; see
 the [public-name mapping](docs/NamespaceMigration.md) for migration guidance.
 Shorter names below abbreviate declarations under that namespace.
+
+## Worked Examples
+
+- [Becker-inspired crime choice](https://github.com/matheconlib/matheconlib/blob/codex/becker-crime-example/MathEconLibExamples/SingleParameter/BeckerCrime.lean)
+  ([PR #95 — under review](https://github.com/matheconlib/matheconlib/pull/95)):
+  risk-neutral binary choice, cutoff and deterrence results, and aggregate crime
+  under a fixed type distribution.
+- [Matching pennies](MathEconLibExamples/GameTheory/MatchingPennies.lean): no pure Nash equilibrium and a unique mixed equilibrium with uniform randomization.
 
 ## Mathematical Reference
 
@@ -26,7 +34,7 @@ problems is described in
 The project-wide principles guiding library design are recorded in
 [`DESIGN.md`](DESIGN.md).
 
-The library has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
+The auction development has three main layers, separating the rules of a mechanism from its probabilistic environment and the resulting interim optimization problem:
 
 ```
 MathEconLib.Mechanism I A O  — outcome rule + signed transfers over dependent action profiles
@@ -156,6 +164,9 @@ $$\texttt{HasUniversalIC} \Rightarrow \texttt{HasTypeDeviationIC} \Rightarrow \t
 
 Interim quantities use Mathlib’s totalized Bochner integral, which equals zero when its integrand is not integrable. Arbitrary strategies need not be measurable. Measurable strategies together with `IsUnitIntervalAllocation` ensure allocation integrability, including truthful reporting; payment integrability requires separate hypotheses.
 
+`Auction.expectedRevenue` integrates the sum of interim payments
+`p i (θ i ω)` over the type environment.
+
 | File | Contents |
 |------|----------|
 | [`Auction/Basic.lean`](MathEconLib/Auction/Basic.lean) | `Auction`, interim quantities `q`/`p`/`U` and `q_strat`/`p_strat`, IR notions, `BIC`, `toBidderProblem`, `payment_formula`, and `payment_equivalence` |
@@ -163,7 +174,7 @@ Interim quantities use Mathlib’s totalized Bochner integral, which equals zero
 | [`Auction/ValueDistribution.lean`](MathEconLib/Auction/ValueDistribution.lean) | Additive pushforward bridge from each bidder's type random variable to a real-valued value distribution |
 | [`Auction/IdenticalTypes.lean`](MathEconLib/Auction/IdenticalTypes.lean) | Expectation identities requiring identical type distributions |
 | [`Auction/SymmetricIPV.lean`](MathEconLib/Auction/SymmetricIPV.lean) | `bidThreshold`, `q_eq_pow`, `q_strat_eq_cdf_pow`, and the bridge to order statistics |
-| [`Auction/RevenueEquivalence.lean`](MathEconLib/Auction/RevenueEquivalence.lean) | `payment_formula_efficient`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
+| [`Auction/RevenueEquivalence.lean`](MathEconLib/Auction/RevenueEquivalence.lean) | `payment_formula_strictHighestBid`, `total_revenue` (= $\mathbb{E}[S_2]$), `revenue_equivalence` |
 | [`Auction/StrictMonotonicity.lean`](MathEconLib/Auction/StrictMonotonicity.lean) | `HasPosDensity`, strict monotonicity of an equilibrium strategy, and `no_ties` |
 
 ### All-Purchase Auctions (`Auction/AllPurchase/`)
@@ -186,7 +197,7 @@ and actual seller profit remains work in progress. The welfare file proves
 benchmark bounds, algebraic gap identities, and an expected edition-welfare
 formula when aggregate quantity and its square are integrable. The
 equilibrium-based Cournot and contest-loss decomposition remains work in
-progress in [#46](https://github.com/AxiomMath/auctionlib/issues/46).
+progress in [#46](https://github.com/matheconlib/matheconlib/issues/46).
 
 ### Affiliation (`Auction/Affiliation/`)
 
@@ -200,12 +211,82 @@ progress in [#46](https://github.com/AxiomMath/auctionlib/issues/46).
 
 The continuous conditional-expectation and winner's-curse results, together with later applications such as the Linkage Principle, are not yet formalized.
 
+### Choice and Matching (`Choice/`, `Matching/`)
+
+The public entry points are [`MathEconLib.Choice`](MathEconLib/Choice.lean)
+and [`MathEconLib.Matching`](MathEconLib/Matching.lean), both exported by
+`MathEconLib`. Choice functions can be used independently of matching markets.
+
+| Module or family | Contents |
+|------|----------|
+| [`Choice/Basic.lean`](MathEconLib/Choice/Basic.lean), [`Conditions.lean`](MathEconLib/Choice/Conditions.lean) | Choice functions, inclusion, rejection, substitutability, IRC, and related conditions |
+| [`Choice/Induced.lean`](MathEconLib/Choice/Induced.lean), [`Map.lean`](MathEconLib/Choice/Map.lean), [`FiniteOption.lean`](MathEconLib/Choice/FiniteOption.lean) | Preference-induced choice, mapping along embeddings, and finite selection |
+| [`Choice/SubstituteHull.lean`](MathEconLib/Choice/SubstituteHull.lean) | Substitute-hull closure and accumulating repairs; termination on finite alternative types |
+| [`Choice/Matching/`](MathEconLib/Choice/Matching/) | Partner-dependent weak substitutability, completion conditions, and qualified completion results |
+| [`Matching/Contracts/`](MathEconLib/Matching/Contracts/) | Contract markets, stability, fixed-point correspondence, choice-order lattice, finite convergence, and contract counting |
+| [`Matching/Classical/Marriage.lean`](MathEconLib/Matching/Classical/Marriage.lean) | Marriage preferences, contracts embedding, stable matching, and finite Gale–Shapley algorithms with an executable refinement |
+
+Stable-outcome existence and the choice-order lattice use substitutability and
+IRC (irrelevance of rejected contracts). Under substitutability and the law of
+aggregate demand, the finite-contract rural-hospitals theorem equates each
+agent's contract count across stable outcomes. The finite marriage development
+proves both proposing sides' Gale–Shapley algorithms agree with their optimal
+stable matchings, with a rejection-round bound of `Fintype.card (M × W)`.
+
+**Planned applications:** the [preference-based completion corollaries](MathEconLib/Choice/Matching/Preferences.lean)
+are implemented. Their many-to-one market applications, including cadet–branch
+matching, and the reduction from suitable completions to stable-market outcomes
+remain future work.
+Bare substitutable completability does not assert IRC of the completion.
+
+See the [architecture and scope notes](docs/MatchingArchitecture.md) and
+[checked reference map](docs/MatchingReferences.md) for assumptions and source
+comparisons.
+
 ### Game Theory (`GameTheory/`)
 
 | File | Contents |
 |------|----------|
-| [`GameTheory/Basic.lean`](MathEconLib/GameTheory/Basic.lean) | Normal-form games, payoff structures, dominant strategies, pure/strict/strong Nash equilibria, mixed games, and expected payoff |
-| [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) | Pure Nash existence under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed Nash existence for finite games and compact metrizable action spaces under the stated continuity assumptions |
+| [`GameTheory/Equilibrium/Problem.lean`](MathEconLib/GameTheory/Equilibrium/Problem.lean) | Shared admissible-deviation equilibrium and forward/backward transport |
+| [`GameTheory/Strategic/Basic.lean`](MathEconLib/GameTheory/Strategic/Basic.lean) | Payoff-based games, dominance, and pure/strict/strong Nash equilibria |
+| [`GameTheory/Strategic/Outcome.lean`](MathEconLib/GameTheory/Strategic/Outcome.lean) | Outcome games, payoff structures, probability-measure mixing, and expected utility |
+| [`GameTheory/Strategic/Mixed.lean`](MathEconLib/GameTheory/Strategic/Mixed.lean) | Independent probability-measure mixed strategies and mixed Nash equilibrium |
+| [`GameTheory/Strategic/Mixed/Finite.lean`](MathEconLib/GameTheory/Strategic/Mixed/Finite.lean) | Finite probability weights, finite-sum payoffs, and agreement with probability-measure mixing |
+| [`GameTheory/Strategic/Existence.lean`](MathEconLib/GameTheory/Strategic/Existence.lean) | Pure Nash existence for quasiconcave payoffs on compact convex action spaces and mixed Nash existence |
+| [`GameTheory/Strategic/Bayesian/Finite.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Finite.lean) | Finite-type pure BNE, null-type conventions, and expanded-game Nash |
+| [`GameTheory/Strategic/Bayesian/FiniteMeasurable.lean`](MathEconLib/GameTheory/Strategic/Bayesian/FiniteMeasurable.lean) | Finite and measurable equilibrium agreement |
+| [`GameTheory/Strategic/Bayesian/Measurable/PureBNE.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Measurable/PureBNE.lean) | Measurable whole-strategy deviations and integrable ex-ante BNE |
+| [`GameTheory/Strategic/Bayesian/Measurable/InterimConverse.lean`](MathEconLib/GameTheory/Strategic/Bayesian/Measurable/InterimConverse.lean) | Explicit conditional beliefs and the guarded interim/ex-ante equivalence |
+
+`StrategicGame I A V`, `EquilibriumProblem S I V`, and `PayoffStructure I O V` take an explicit
+payoff type. Pure Nash requires every unilateral deviation's payoff to be at most the incumbent
+payoff. With partially ordered payoffs, this is stronger than absence of strict improvement;
+the two agree under a linear order. Finite expected payoffs use real modules, and integral payoffs
+use complete real normed spaces. Pure quasiconcave existence allows linearly ordered payoff spaces
+with a closed order relation. Mixed-equilibrium existence and the measurable interim equilibrium
+implications (`isBNE_of_ae_interim` and the theorems in `InterimConverse`) remain specialized to real
+payoffs.
+
+`MixedStrategy`, `mixedExtension`, and `IsMixedNash` use probability measures. The finite
+computational interface is in `GameTheory/Strategic/Mixed/Finite.lean`, with `FiniteMixedStrategy`,
+`finiteExpectedPayoff`, `finiteMixedExtension`, and `IsFiniteMixedNash`. It needs no measurable
+structure on finite actions and evaluates payoffs by finite sums. Finite priors and finite mixed
+actions share `FinDist`, a probability-oriented alias of Mathlib's real simplex. Both mixed
+representation bridges follow from `StrategicGame.isNash_iff_of_actionEquiv` and payoff agreement.
+The raw `mixedExtension` uses the totalized Bochner integral. `IsMixedNash` requires integrable
+incumbent payoffs and compares unilateral deviations with integrable deviator payoffs. When all
+unilateral payoffs are integrable, it agrees with Nash equilibrium of the raw mixed extension;
+finite discrete games and bounded measurable payoffs in second countable payoff spaces satisfy
+this condition. For bounded measurable games, `StrategicGame.Bounded` supplies the
+integrability hypotheses of `isMixedNash_iff_isNash`.
+
+The Bayesian game carrier takes players, types, actions, and payoff values as explicit parameters.
+Priors are supplied separately. Finite BNE constrains positive-probability types, and the finite
+Bayesian equivalences hold for partially ordered real modules whose order respects addition and
+nonnegative scaling. Measurable BNE includes incumbent integrability and, for real payoffs, has an
+almost-everywhere interim characterization under the stated measurability and
+conditional-integrability assumptions. Pointwise auction IC and induced mechanism games remain
+separate integration work.
 
 ### Key Theorems
 
@@ -224,7 +305,7 @@ The linked Lean statements specify each result's definitions and hypotheses.
 | Unique maximizer of the defined quadratic profit formula for `α > 0` and `n ≥ 1` | [`Auction/AllPurchase/OptimalPricing.lean`](MathEconLib/Auction/AllPurchase/OptimalPricing.lean) |
 | Edition-welfare bound for `α > 0`, algebraic welfare-gap identities, and an expected edition-welfare formula when aggregate quantity and its square are integrable | [`Auction/AllPurchase/WelfareDecomposition.lean`](MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean) |
 | Winner's-curse inequality on finite sublattices with affiliated positive weights, monotone nonnegative values, and a nonempty winning event | [`Auction/Affiliation/WinnersCurse.lean`](MathEconLib/Auction/Affiliation/WinnersCurse.lean) |
-| Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with the stated expected-payoff continuity | [`GameTheory/NashExistence.lean`](MathEconLib/GameTheory/NashExistence.lean) |
+| Pure Nash existence for finite-player games under compact/convex action-space and continuous/quasiconcave payoff assumptions; mixed existence for finite games and compact metrizable games with continuous payoffs | [`GameTheory/Strategic/Existence.lean`](MathEconLib/GameTheory/Strategic/Existence.lean) |
 
 ### Auxiliary
 
@@ -240,8 +321,12 @@ The linked Lean statements specify each result's definitions and hypotheses.
 ```bash
 lake exe cache get                           # fetch prebuilt Mathlib oleans (do this first)
 bash scripts/update-imports.sh               # regenerate and verify library and test imports
-lake build                                    # build library, API pins, and compatibility tests
+lake build                                    # build library, API pins, tests, and examples
+lake build MathEconLibExamples                 # build the mathematical economics examples
 ```
+
+`MathEconLibExamples/GameTheory/MatchingPennies.lean` constructs matching pennies, proves that
+uniform randomization is its unique mixed Nash equilibrium, and rules out pure Nash equilibria.
 
 Run `lake exe cache get` before the first build, and again after any change that
 bumps the Mathlib revision or after `lake clean`; without it Lean compiles
@@ -261,13 +346,14 @@ The mathematical overview is intentionally broader than the current library. Cur
 - [x] Envelope theorem, Myerson's lemma, and revenue equivalence
 - [x] All-purchase equilibrium characterization, explicit solutions, and revenue decomposition
 - [x] Quadratic-profit maximization and edition-welfare benchmark and moment identities
+- [x] General choice functions, substitute hulls and qualified completions; matching-with-contracts results and finite marriage algorithms under their stated assumptions
 - [x] Normal-form game foundations and pure/mixed Nash existence under the stated action-space and payoff assumptions
 - [x] Affiliation definitions, log-supermodularity, finite monotone conditional expectations, and the finite winner's-curse inequality
 
 Further work includes:
 
-- [ ] Auction-level derivation of the interior-regime profit formula ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
-- [ ] Equilibrium-based welfare decomposition and separately justified loss-nonnegativity results ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
+- [ ] Auction-level derivation of the interior-regime profit formula ([#46](https://github.com/matheconlib/matheconlib/issues/46))
+- [ ] Equilibrium-based welfare decomposition and separately justified loss-nonnegativity results ([#46](https://github.com/matheconlib/matheconlib/issues/46))
 - [ ] Full Riley--Zeckhauser comparison between posted prices and general selling rules
 - [ ] Posted-price comparative statics beyond the uniform family
 - [ ] Continuous affiliation results, including the continuous winner's-curse inequality, and later applications such as the Linkage Principle

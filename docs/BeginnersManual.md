@@ -15,6 +15,9 @@ Its runnable snippets are collected in
 which `lake build` compiles, so a snippet that stops working turns the build
 red rather than quietly rotting in the prose.
 
+The [8 October 2026 walkthrough record](BeginnersManualVerification.md) records
+the tested revision, fresh-checkout build, exercise checks, and environment limits.
+
 ## Preface
 
 ### Who this manual is for
@@ -100,37 +103,36 @@ This is why you must **open the project folder, not a lone file**: outside the f
 If you do not already have a checkout, clone it first:
 
 ```bash
-git clone https://github.com/AxiomMath/auctionlib.git
-cd auctionlib
+git clone https://github.com/matheconlib/matheconlib.git
+cd matheconlib
 ```
 
-The repository currently requires team access. Until it is public, authenticate
-Git with an account that has access, or use GitHub's SSH clone URL. Use the
-current repository URL shown on GitHub after the planned transfer.
+The repository is private until public launch. Authenticate Git with an
+account that has access, or use the SSH clone URL shown on GitHub.
 
 **File → Open Folder**, and select the repository root (the folder containing `lakefile.toml`). Not the folder above it, not a single file inside it. VS Code will ask whether you trust the authors; say yes, or nothing will run.
 
 Then, in a terminal (**⌃`** opens one inside VS Code, already in the right folder):
 
 ```bash
-lake exe cache get   # download Mathlib already compiled. ALWAYS do this first,
-                     # or Lean will build Mathlib from source, which takes hours
+lake exe cache get   # fetch dependencies and restore precompiled Mathlib artifacts
 bash scripts/update-imports.sh  # regenerate and verify library and test imports
 lake build           # build the project
 ```
 
-The cache command downloads dependencies, the import helper updates the two
-root import files, and `lake build` checks the library and tests, including
-`MathEconLibTest/Manual/HandsOn.lean`. Run them in that order. On an unchanged
+The cache command first fetches the pinned dependency sources and builds a small
+cache utility, then restores precompiled Mathlib artifacts. The import helper
+updates the two root import files, and `lake build` checks the library and tests,
+including `MathEconLibTest/Manual/HandsOn.lean`. Run them in that order. On an unchanged
 checkout, the import helper should leave no diff.
 
 `lake build` compiles Lean source into `.olean` files, which are the compiled form Lean loads when one file imports another. MathEconLib has dozens of source files; Mathlib, which it imports, has thousands. Compiling Mathlib from source on a laptop takes hours.
 
-To avoid this, the Mathlib project publishes prebuilt `.olean` files for every commit (about 8,000 files, which unpack to some 5 GB). `lake exe cache get` downloads the set matching your pinned version, so nothing has to be compiled from source.
+To avoid compiling Mathlib's proofs locally, `lake exe cache get` restores the prebuilt artifacts matching your pinned version. Cache and import-generation tools may still need a small local build.
 
-So the first run takes roughly half an hour, nearly all of it network. After that, builds are fast: `lake` tracks which files changed and rebuilds only those and whatever depends on them. Editing one file in `MathEconLib/` and rebuilding is usually seconds.
+The first setup can take several minutes or longer, depending on the network and any locally cached downloads. The cache command does not compile MathEconLib: the first `lake build` still checks the project's own source and tests. Later builds are incremental: `lake` tracks which files changed and rebuilds only those and whatever depends on them.
 
-Two things that will send you back to `cache get`: pulling changes that bump the Mathlib revision, and running `lake clean`. In both cases the cached oleans no longer match, and Lean will start compiling from source unless you fetch the new set first. If a build ever begins printing thousands of `Building Mathlib.…` lines, stop it and run `lake exe cache get`.
+Run `lake exe cache get` again after a Lean or Mathlib version change, or after removing build artifacts with `lake clean`. A version change needs matching artifacts; cleaning removes the existing ones. If a build begins compiling thousands of Mathlib files, stop it and restore the cache first.
 
 ### Anatomy of the window
 
@@ -198,7 +200,7 @@ If you cannot remember an abbreviation, **hover the mouse over the symbol** anyw
 | Red squiggle | A real error. Hover it, or read the InfoView |
 | `unknown identifier` on a Mathlib name | Your file is outside the project, so Mathlib is not in scope |
 | Everything suddenly unknown | `Lean 4: Restart Server` from the Command Palette |
-| First build running for many minutes | Expected. You are downloading Mathlib. Roughly half an hour, once |
+| First setup running for many minutes | Dependency sources or cached artifacts may still be downloading. Check which command is running: `lake exe cache get` fetches the cache; `lake build` checks the project |
 
 
 
@@ -234,7 +236,9 @@ That transition, from a goal present to a goal discharged, is the loop you will 
 
 Now break it on purpose. Change `4` to `5` and watch the red squiggle appear. Hover it. Change it back.
 
-Finally, confirm you can reach the library itself:
+Finally, confirm you can reach the library itself. Add the new `import` line
+beside `import Mathlib` at the top of your scratch file: imports must precede all
+other commands. Then add the `open` and `#check` lines below:
 
 ```lean
 import MathEconLib.BidderProblem.Basic
@@ -527,7 +531,7 @@ Lean answers `fun x ↦ 1 / 2 : ℝ → ℝ`. Two things to notice. The type is 
 
 That last pattern is exactly how `winProb := fun _ => 1 / 2` works in Part 3: a bidder whose chance of winning is one half no matter what they bid.
 
-> **`=>` or `↦`?** Both are accepted and mean the same thing. `MathEconLib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Basic.lean` almost entirely `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
+> **`=>` or `↦`?** Both are accepted and mean the same thing. `MathEconLib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Strategic/Basic.lean` predominantly `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
 
 ### 2.3 Symbols you will meet
 
@@ -1208,11 +1212,11 @@ None of that is about auctions, and none of it has appeared so far in this manua
 
 The matching `end` at the bottom of the file closes that section.
 
-The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/NashExistence.lean`](../MathEconLib/GameTheory/NashExistence.lean), which uses both:
+The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/Strategic/Existence.lean`](../MathEconLib/GameTheory/Strategic/Existence.lean), which uses both:
 
 ```lean
-public import MathEconLib.GameTheory.Basic
-public import Mathlib.Analysis.Convex.Quasiconvex
+public import MathEconLib.ForMathlib.Quasiconvex
+public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 
 import MathEconLib.ForMathlib.Kakutani
 import Mathlib.MeasureTheory.Measure.Prokhorov
@@ -1226,7 +1230,7 @@ Two practical notes. First, none of this applies to the scratch files you have b
 
 ### ✍️ Hands-on 4.0 — see the two kinds of import
 
-Open [`GameTheory/NashExistence.lean`](../MathEconLib/GameTheory/NashExistence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
+Open [`GameTheory/Strategic/Existence.lean`](../MathEconLib/GameTheory/Strategic/Existence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
 
 Now scroll to the bottom of [`BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean). The bare `end` closes the `@[expose] public section`; `end MathEconLib` closes the project namespace. Everything in the public section is available to importers under `MathEconLib`.
 
@@ -1891,7 +1895,7 @@ noncomputable def clamped : BidderProblem where
   strategy      := id
 ```
 
-**2.** You should see `⊢ False` at the `winProb_range` field. Lean simplified `(2 : ℝ) ∈ Icc 0 1` down to an impossibility.
+**2.** The original `winProb_range` proof now gives a type mismatch: it proves bounds on `min 1 (max 0 x)`, while the new field needs bounds on `2`. Replace that proof with `by intro x; norm_num [Set.mem_Icc]` to see `⊢ False`: the required upper bound `2 ≤ 1` is impossible.
 
 **3.** `example (B : BidderProblem) (v : ℝ) : B.q v ≤ 1 := (B.q_range v).2`
 
@@ -2029,6 +2033,6 @@ The rest of the library:
 | `Mechanism/` | allocation and payment rules |
 | `Auction/` | auctions with a probabilistic environment; revenue equivalence, symmetric private values, affiliation, all-purchase auctions |
 | `BidderProblem/` | the single-bidder view and the IC hierarchy |
-| `GameTheory/` | existence of Nash equilibria for continuous games |
+| `GameTheory/` | strategic games, Nash existence, and finite/measurable Bayesian equilibrium |
 | `ForMathlib/` | general mathematics and potential Mathlib contributions — Kakutani and Schauder fixed points, measure-theoretic lemmas |
 | `Statistics/` | order statistics |
