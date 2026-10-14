@@ -26,9 +26,6 @@
     --rule: #E9ECEA;
     --rule-strong: #A9B4AF;
     --code-bg: #F7F8F7;
-    --todo: #A2632A;
-    --note-bg: #FFFCF6;
-    --note-rule: #EAD8B6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -41,9 +38,6 @@
       --rule: #26302C;
       --rule-strong: #3E4B46;
       --code-bg: #1A211E;
-      --todo: #D9A059;
-      --note-bg: #2A2318;
-      --note-rule: #5A4A2A;
     }
   }
   :root[data-theme="dark"] {
@@ -56,9 +50,6 @@
     --rule: #26302C;
     --rule-strong: #3E4B46;
     --code-bg: #1A211E;
-    --todo: #D9A059;
-    --note-bg: #2A2318;
-    --note-rule: #5A4A2A;
   }
 
   * { box-sizing: border-box; }
@@ -104,16 +95,6 @@
   nav.top a { font-size: 0.92rem; color: var(--muted); border: 0; }
   nav.top a:hover { color: var(--accent); }
 
-  .draft {
-    margin: 1rem 0 1.8rem;
-    padding: 0.7rem 1rem;
-    background: var(--note-bg);
-    border: 1px solid var(--note-rule);
-    border-radius: 3px;
-    font-size: 0.9rem;
-  }
-  .draft strong { font-weight: 600; }
-
   h1 {
     font-family: "IBM Plex Serif", Georgia, serif;
     font-weight: 600; font-size: 3rem; line-height: 1.05;
@@ -154,8 +135,6 @@
   .people .handle:hover { color: var(--accent); }
   @media (max-width: 34rem) { .people { columns: 1; } }
 
-  .placeholder { color: var(--todo); font-style: italic; }
-
   footer {
     margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
     font-size: 0.88rem; color: var(--muted);
@@ -178,7 +157,7 @@
         <li><a href="#docs">Docs</a></li>
         <li><a href="#contribute">Contribute</a></li>
         <li><a href="#people">People</a></li>
-        <li><a href="https://github.com/AxiomMath/auctionlib">GitHub</a></li>
+        <li><a href="{{ site.repository }}">GitHub</a></li>
       </ul>
     </nav>
   </header>
@@ -192,7 +171,7 @@
     <p>Reusable definitions and theorems support many economic models. Lean tracks the assumptions each proof uses.</p>
     <p>MathEconLib builds on <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a> and encourages upstream contributions of broadly reusable mathematical results.</p>
     <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics.</p>
-    <p>We welcome researchers to use AI to help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem. Contributions receive human review for consistency with our <a href="https://github.com/AxiomMath/auctionlib/blob/main/DESIGN.md">design principles</a>.</p>
+    <p>We welcome researchers to use AI to help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem. Contributions receive human review for consistency with our <a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/DESIGN.md">design principles</a>.</p>
 
     <h2 id="vision">Long-term scope</h2>
     <p>MathEconLib is intended to cover all mathematical areas of economics, including:</p>
@@ -207,21 +186,21 @@
 
     <h2 id="docs">Documentation</h2>
     <dl class="docs">
-      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/docs/BeginnersManual.md">Lean 4 and MathEconLib: A Beginner's Manual</a></dt>
-      <dd>From installing the toolchain to reading the bidder-problem file line by line, with runnable exercises. Assumes no Lean and no auction theory.</dd>
-      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/docs/PricingArchitecture.md">Pricing Foundations: Mathematical Model and Architecture</a></dt>
+      <dt><a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/docs/BeginnersManual.md">Lean 4 and MathEconLib: A Beginner's Manual</a></dt>
+      <dd>From installing the toolchain to reading the bidder-problem file line by line, with runnable exercises. Assumes no prior knowledge of Lean.</dd>
+      <dt><a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/docs/PricingArchitecture.md">Pricing Foundations: Mathematical Model and Architecture</a></dt>
       <dd>How the auction layers extend to posted pricing and other single-parameter problems.</dd>
-      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">MathEconLib README</a></dt>
+      <dt><a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/README.md">MathEconLib README</a></dt>
       <dd>File-by-file index of definitions and theorems, with build instructions.</dd>
     </dl>
 
     <h2 id="contribute">Contributing</h2>
     <p>Research questions and new models are welcome in design issues. New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Small, well-scoped additions to the <code>ForMathlib</code> folder can be suitable first contributions.</p>
     <p>Changes to the foundational layers start with a design issue: sketch the definitions and main statements and get agreement on the shape before writing proofs. Every pull request must build cleanly, contain no <code>sorry</code>, <code>admit</code>, or <code>native_decide</code>, and add no axioms beyond the standard three.</p>
-    <p>Lean contributors should read <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for the build, API, and review requirements. New contributors can work through the beginner's manual, improve documentation, or discuss a small task in <a href="https://github.com/AxiomMath/auctionlib/issues">GitHub Issues</a>. PRs touching the core layers require a maintainer review before merge.</p>
-    <p>For a first contribution, try <a href="https://github.com/AxiomMath/auctionlib/issues/118">documenting the BidderProblem umbrella</a>, a small documentation task with a starting file and build instructions.</p>
+    <p>Lean contributors should read <a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/CONTRIBUTING.md">CONTRIBUTING.md</a> for the build, API, and review requirements. New contributors can work through the beginner's manual, improve documentation, or discuss a small task in <a href="{{ site.issues }}">GitHub Issues</a>. PRs touching the core layers require a maintainer review before merge.</p>
+    <p>For a first contribution, try <a href="{{ site.issues }}/118">documenting the BidderProblem umbrella</a>, a small documentation task with a starting file and build instructions.</p>
     <h3>Propose a focused research project</h3>
-    <p>Email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a> or, with repository access, open a design issue. Describe the economic question and relevant literature, the intended definitions and assumptions, the main statement or example to formalize, and the existing library components you expect to reuse. Identify any changes to foundational definitions so the team can agree on the design before proofs are written.</p>
+    <p>Email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a> or open a design issue. Describe the economic question and relevant literature, the intended definitions and assumptions, the main statement or example to formalize, and the existing library components you expect to reuse. Identify any changes to foundational definitions so the team can agree on the design before proofs are written.</p>
 
     <h2 id="people">People</h2>
     <h3>Core contributors</h3>
@@ -247,8 +226,8 @@
   <footer>
     <span>MathEconLib</span>
     <span>Updated 14 October 2026</span>
-    <span>License: <a href="https://github.com/matheconlib/matheconlib/issues/43">pending</a></span>
-    <a href="https://github.com/AxiomMath/auctionlib/tree/main/website">Site source</a>
+    <span>License: <a href="{{ site.issues }}/43">pending</a></span>
+    <a href="{{ site.repository }}/tree/{{ site.sourceBranch }}/website">Site source</a>
     | QED
   </footer>
 </div>

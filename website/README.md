@@ -24,7 +24,7 @@ npm run build
 
 The generated static files are written to `website/_site/`. For a GitHub Pages
 project URL, set `PATH_PREFIX` to the repository path when building, for example
-`PATH_PREFIX=/auctionlib/ npm run build`. A custom domain or Cloudflare Workers
+`PATH_PREFIX=/matheconlib/ npm run build`. A custom domain or Cloudflare Workers
 deployment uses the default `/` prefix.
 
 ## Cloudflare Workers deployment
