@@ -65,7 +65,7 @@ Browse the [source tree](MathEconLib/) for individual modules and their statemen
 
 - **Game theory: [matching pennies](MathEconLibExamples/GameTheory/MatchingPennies.lean).** A worked example with no pure Nash equilibrium and a unique mixed equilibrium in which both players randomize uniformly.
 - **Pricing: [posted prices with uniform buyer values](MathEconLib/ValueDistribution/UniformPricing.lean).** Optimal pricing within the value-support interval and comparative statics, with [concrete checked applications](MathEconLibTest/ValueDistribution/Examples.lean), including the optimal price of `1/2` for uniform values on `[0, 1]` and zero seller continuation value.
-- **Price theory: [a Becker-inspired model of crime](https://github.com/matheconlib/matheconlib/pull/95) (pending PR #95).** A stylized risk-neutral choice model treats the expected sanction as a price, deriving a cutoff rule, individual deterrence results, and aggregate crime under a fixed distribution of net gains.
+- **Price theory: [a Becker-inspired model of crime](MathEconLibExamples/SingleParameter/BeckerCrime.lean).** A stylized risk-neutral choice model treats the expected sanction as a price, deriving a cutoff rule, individual deterrence results, and aggregate crime under a fixed distribution of net gains.
 
 Worked demonstrations live in [`MathEconLibExamples/`](MathEconLibExamples/); reusable developments live in the core library, with API and regression checks in [`MathEconLibTest/`](MathEconLibTest/).
 
