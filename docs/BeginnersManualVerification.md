@@ -20,9 +20,9 @@ Repeat the release checks against the final public repository and release commit
 
 ## Reproduce the build
 
-Authenticate Git for the private repository, then run. These commands use the
-post-transfer URL; the recorded results below remain the 8 October verification
-of the source revision above.
+The repository is now public; cloning over HTTPS does not require GitHub
+credentials. These commands use the post-transfer URL; the recorded results
+below remain the 8 October verification of the source revision above.
 
 ```bash
 git clone --branch main --single-branch https://github.com/matheconlib/matheconlib.git
