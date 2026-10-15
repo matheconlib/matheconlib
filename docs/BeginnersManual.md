@@ -107,8 +107,7 @@ git clone https://github.com/matheconlib/matheconlib.git
 cd matheconlib
 ```
 
-The repository is private until public launch. Authenticate Git with an
-account that has access, or use the SSH clone URL shown on GitHub.
+The repository is public. Cloning over HTTPS does not require GitHub credentials.
 
 **File → Open Folder**, and select the repository root (the folder containing `lakefile.toml`). Not the folder above it, not a single file inside it. VS Code will ask whether you trust the authors; say yes, or nothing will run.
 
@@ -203,6 +202,25 @@ If you cannot remember an abbreviation, **hover the mouse over the symbol** anyw
 | First setup running for many minutes | Dependency sources or cached artifacts may still be downloading. Check which command is running: `lake exe cache get` fetches the cache; `lake build` checks the project |
 
 
+
+#### Recovering an interrupted Mathlib download
+
+If `lake exe cache get` fails with a network error while cloning Mathlib,
+check the connection before retrying. When `.lake/packages/mathlib` is absent,
+you can fetch just the pinned release instead of its full Git history:
+
+```bash
+git -c http.version=HTTP/1.1 clone --depth 1 --branch v4.28.0 \
+  https://github.com/leanprover-community/mathlib4 .lake/packages/mathlib
+git -C .lake/packages/mathlib rev-parse HEAD
+```
+
+This command targets the current `v4.28.0` dependency. Before continuing, the
+printed commit must match the `mathlib` entry's `rev` in `lake-manifest.json`
+(currently `8f9d9cff6bd728b17a24e163c9402775d9e6a365`). For a different checkout,
+use its matching release. Leave `lean-toolchain` and `lake-manifest.json` unchanged.
+Then rerun `lake exe cache get`. After it succeeds, continue with import regeneration
+and `lake build`.
 
 ### ✍️ Hands-on 0 — your first file, and the loop
 
