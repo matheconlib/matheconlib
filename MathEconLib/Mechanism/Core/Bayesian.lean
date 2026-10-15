@@ -27,7 +27,7 @@ actions of the corresponding induced games.
 
 ## Main statements
 
-* `Mechanism.inducedBayesianGame_toStrategicGame`: The strategic game at fixed true types is
+* `Mechanism.inducedBayesianGame_strategicGameAt`: The strategic game at fixed true types is
   `QuasilinearEnvironment.utilityGame`.
 * `Mechanism.inducedBayesianGame_comap`: Mechanism action translation commutes with inducing a
   Bayesian game.
@@ -41,29 +41,27 @@ mechanism design, bayesian games, strategic games, quasilinear utility, action m
 
 @[expose] public section
 
-universe uI uΘ uA uB uO
+open MathEconLib.GameTheory
+
+universe uI uT uA uB uO
 
 namespace MathEconLib.Mechanism
 
-variable {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {B : I → Type uB}
+variable {I : Type uI} {T : I → Type uT} {A : I → Type uA} {B : I → Type uB}
   {O : Type uO}
 
 section InducedBayesianGame
 
-variable (M : Mechanism I A O) (E : QuasilinearEnvironment I Θ O)
+variable (M : Mechanism I A O) (E : QuasilinearEnvironment I T O)
 
 /-- The game in which agents choose actions in mechanism `M` and receive their quasilinear
 utilities at the full true type profile. Each agent's signed transfer is added to its value. -/
-def inducedBayesianGame : GameTheory.BayesianGame I Θ A ℝ where
+@[simps] def inducedBayesianGame : BayesianGame I T A ℝ where
   payoff i a θ := E.utility M i θ a
 
-/-- The induced Bayesian payoff equals mechanism utility evaluated at the true types. -/
-@[simp] lemma inducedBayesianGame_payoff (i : I) (a : Profile A) (θ : Profile Θ) :
-    (M.inducedBayesianGame E).payoff i a θ = E.utility M i θ a := rfl
-
 /-- At fixed true types, the induced Bayesian game is the mechanism's utility game. -/
-@[simp] lemma inducedBayesianGame_toStrategicGame (θ : Profile Θ) :
-    (M.inducedBayesianGame E).toStrategicGame θ = E.utilityGame M θ := rfl
+@[simp] lemma inducedBayesianGame_strategicGameAt (θ : Profile T) :
+    (M.inducedBayesianGame E).strategicGameAt θ = E.utilityGame M θ := rfl
 
 /-- Translating mechanism actions commutes with inducing its Bayesian game. -/
 @[simp] lemma inducedBayesianGame_comap (κ : ∀ i, B i → A i) :
@@ -74,8 +72,8 @@ end InducedBayesianGame
 namespace QuasilinearEnvironment
 
 /-- Translating mechanism actions commutes with inducing its game at fixed true types. -/
-@[simp] lemma utilityGame_comap (E : QuasilinearEnvironment I Θ O) (M : Mechanism I A O)
-    (κ : ∀ i, B i → A i) (θ : Profile Θ) :
+@[simp] lemma utilityGame_comap (E : QuasilinearEnvironment I T O) (M : Mechanism I A O)
+    (κ : ∀ i, B i → A i) (θ : Profile T) :
     E.utilityGame (M.comap κ) θ = (E.utilityGame M θ).comapActions κ := rfl
 
 end QuasilinearEnvironment

@@ -8,101 +8,54 @@ module
 public import MathEconLib.Mechanism
 
 /-!
-# Strategic and Bayesian games induced by mechanisms
+# Mechanism games under action translation
 
-Dominant-strategy incentives agree with dominance in the strategic game at each true type profile
-and give a truthful Nash equilibrium. The induced Bayesian game evaluates the same utility at each
-realized type profile. Fixing the true types gives the utility game. Action translation commutes
-with both induced-game constructions.
+Translating a mechanism's actions and then fixing the types in its induced Bayesian game gives
+utilities at the translated actions. For a direct mechanism satisfying dominant-strategy incentive
+compatibility, every action profile translating to truthful reports is a Nash equilibrium of this
+game.
 
 ## Main statements
 
-* Dominant-strategy incentives agree with strategic-game dominance and imply truthful Nash
-  equilibrium.
-* Induced Bayesian payoffs agree with mechanism utility and their fixed-type strategic view.
-* Arbitrary action translations commute with both induced-game constructions.
+* Fixed-type payoffs after action translation agree with the original mechanism's utilities.
+* Dominant-strategy incentives give Nash equilibrium after translating mechanism actions and fixing
+  the true types.
 
 ## Tags
 
-mechanism design, dominance, nash equilibrium, bayesian games, action translation
+mechanism design, nash equilibrium, bayesian games, action translation
 -/
 
 @[expose] public section
 
-open MathEconLib.Mechanism
+open MathEconLib.GameTheory MathEconLib.Mechanism
 
-universe uI uΘ uA uB uO
+universe uI uT uA uB uO
 
 namespace MathEconLib.Tests.MechanismGames
 
-/-! ## Strategic utility games and truthful dominance -/
+variable {I : Type uI} {T : I → Type uT} {A : I → Type uA} {B : I → Type uB}
+  {O : Type uO}
 
-/-- A quasilinear mechanism determines a strategic game at any full true type profile. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO},
-    QuasilinearEnvironment I Θ O → Mechanism I A O → Profile Θ →
-      GameTheory.StrategicGame I A ℝ :=
-  @QuasilinearEnvironment.utilityGame
+-- The umbrella import must expose the simp lemmas across all three constructions, with the
+-- player, type, action, and outcome carriers in independent universes.
+/-- Fixed-type payoffs after action translation are the original mechanism's utilities. -/
+example (E : QuasilinearEnvironment I T O) (M : Mechanism I A O)
+    (κ : ∀ i, B i → A i) (θ : Profile T) (i : I) (b : Profile B) :
+    (((M.comap κ).inducedBayesianGame E).strategicGameAt θ).payoff i b =
+      E.utility M i θ (fun j ↦ κ j (b j)) := by
+  simp
 
-/-- Utility-game payoffs agree with utility evaluated at fixed true types and chosen actions. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO}
-    (E : QuasilinearEnvironment I Θ O) (M : Mechanism I A O) (θ : Profile Θ)
-    (i : I) (a : Profile A),
-    (E.utilityGame M θ).payoff i a = E.utility M i θ a :=
-  @QuasilinearEnvironment.utilityGame_payoff
-
-/-- Dominant-strategy incentives make each truthful report dominant at every true profile. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO} [DecidableEq I]
-    (E : QuasilinearEnvironment I Θ O) (M : DirectMechanism I Θ O),
-    DirectMechanism.IsDSIC E M → ∀ (θ : Profile Θ) (i : I),
-      GameTheory.StrategicGame.Strategy.IsDominant (G := E.utilityGame M θ) (θ i) :=
-  @DirectMechanism.IsDSIC.isDominant
-
-/-- Dominant-strategy incentives agree with dominance in the game at every true profile. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO} [DecidableEq I]
-    (E : QuasilinearEnvironment I Θ O) (M : DirectMechanism I Θ O),
-    DirectMechanism.IsDSIC E M ↔ ∀ θ i,
-      GameTheory.StrategicGame.Strategy.IsDominant (G := E.utilityGame M θ) (i := i) (θ i) :=
-  @DirectMechanism.isDSIC_iff_isDominant
-
-/-- A DSIC direct mechanism gives truthful Nash equilibrium at every true profile. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {O : Type uO} [DecidableEq I]
-    (E : QuasilinearEnvironment I Θ O) (M : DirectMechanism I Θ O),
-    DirectMechanism.IsDSIC E M → ∀ θ, (E.utilityGame M θ).IsNash θ :=
-  @DirectMechanism.IsDSIC.isNash
-
-/-! ## Induced Bayesian games and action translation -/
-
-/-- A mechanism and quasilinear environment determine a Bayesian game with real utility payoffs. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO},
-    Mechanism I A O → QuasilinearEnvironment I Θ O → GameTheory.BayesianGame I Θ A ℝ :=
-  @Mechanism.inducedBayesianGame
-
-/-- Induced payoffs use the full true profile and the mechanism's signed transfers. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO}
-    (M : Mechanism I A O) (E : QuasilinearEnvironment I Θ O) (i : I)
-    (a : Profile A) (θ : Profile Θ),
-    (M.inducedBayesianGame E).payoff i a θ = E.utility M i θ a :=
-  @Mechanism.inducedBayesianGame_payoff
-
-/-- Fixing true types gives the mechanism's strategic utility game. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO}
-    (M : Mechanism I A O) (E : QuasilinearEnvironment I Θ O) (θ : Profile Θ),
-    (M.inducedBayesianGame E).toStrategicGame θ = E.utilityGame M θ :=
-  @Mechanism.inducedBayesianGame_toStrategicGame
-
-/-- Translating mechanism actions translates the induced Bayesian game. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {B : I → Type uB}
-    {O : Type uO} (M : Mechanism I A O) (E : QuasilinearEnvironment I Θ O)
-    (κ : ∀ i, B i → A i),
-    (M.comap κ).inducedBayesianGame E = (M.inducedBayesianGame E).comapActions κ :=
-  @Mechanism.inducedBayesianGame_comap
-
-/-- Translating mechanism actions also translates each fixed-type strategic utility game. -/
-example : ∀ {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {B : I → Type uB}
-    {O : Type uO} (E : QuasilinearEnvironment I Θ O) (M : Mechanism I A O)
-    (κ : ∀ i, B i → A i) (θ : Profile Θ),
-    E.utilityGame (M.comap κ) θ = (E.utilityGame M θ).comapActions κ :=
-  @QuasilinearEnvironment.utilityGame_comap
+-- This combines DSIC, mechanism action translation, fixed-type agreement, and strategic Nash
+-- pullback. Neither injectivity nor surjectivity of the action maps is required.
+/-- A profile translating to truthful reports is Nash under dominant-strategy incentives. -/
+example [DecidableEq I] (E : QuasilinearEnvironment I T O) (M : DirectMechanism I T O)
+    (h : DirectMechanism.IsDSIC E M) (κ : ∀ i, B i → T i) (θ : Profile T)
+    (b : Profile B) (hb : ∀ i, κ i (b i) = θ i) :
+    (((M.comap κ).inducedBayesianGame E).strategicGameAt θ).IsNash b := by
+  rw [Mechanism.inducedBayesianGame_strategicGameAt, QuasilinearEnvironment.utilityGame_comap]
+  apply StrategicGame.IsNash.comapActions
+  simpa only [hb] using h.isNash E M θ
 
 end MathEconLib.Tests.MechanismGames
 

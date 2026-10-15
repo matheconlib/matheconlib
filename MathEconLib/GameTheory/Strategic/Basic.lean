@@ -23,9 +23,9 @@ payoffs are incomparable. Their usual characterizations by the absence of strict
 deviations require a linear order.
 
 Action maps give a strategic game on new action spaces by evaluating payoffs at the translated
-actions. Identity maps preserve the game; successive action translations compose pointwise.
-Every unilateral deviation translates to a unilateral deviation, so a profile is a Nash equilibrium
-in the translated game whenever its image is a Nash equilibrium in the original game.
+actions. Identity maps preserve the game; successive action translations compose pointwise. Every
+unilateral deviation translates to a unilateral deviation, so a profile is a Nash equilibrium in
+the translated game whenever its image is a Nash equilibrium in the original game.
 
 ## Main definitions
 
@@ -73,14 +73,9 @@ namespace StrategicGame
 
 /-- The strategic game in which each player's action is translated by `κ` before the original
 game's payoffs are evaluated. -/
-def comapActions {B : ι → Type*} (G : StrategicGame ι A V)
+@[simps] def comapActions {B : ι → Type*} (G : StrategicGame ι A V)
     (κ : ∀ i, B i → A i) : StrategicGame ι B V where
   payoff i b := G.payoff i (fun j ↦ κ j (b j))
-
-/-- Payoffs in the translated game are the original payoffs at translated actions. -/
-@[simp] lemma comapActions_payoff {B : ι → Type*} (G : StrategicGame ι A V)
-    (κ : ∀ i, B i → A i) (i : ι) (b : ∀ i, B i) :
-    (G.comapActions κ).payoff i b = G.payoff i (fun j ↦ κ j (b j)) := rfl
 
 /-- Translating actions by the identity preserves the game. -/
 @[simp] lemma comapActions_id (G : StrategicGame ι A V) :

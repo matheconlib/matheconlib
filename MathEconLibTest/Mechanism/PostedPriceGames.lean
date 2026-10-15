@@ -32,7 +32,7 @@ posted price, mechanism design, dominance, nash equilibrium, bayesian games
 
 @[expose] public section
 
-open MathEconLib.Mechanism
+open MathEconLib.GameTheory MathEconLib.Mechanism
 
 namespace MathEconLib.Tests.Mechanism
 
@@ -40,7 +40,7 @@ namespace MathEconLib.Tests.Mechanism
 
 /-- The posted-price buyer's truthful report is weakly dominant at every true type. -/
 lemma postedPrice_truthful_isDominant (θ : Unit → Bool) (i : Unit) :
-    GameTheory.StrategicGame.Strategy.IsDominant
+    StrategicGame.Strategy.IsDominant
       (G := postedPriceEnvironment.utilityGame postedPriceMechanism θ) (i := i) (θ i) :=
   DirectMechanism.IsDSIC.isDominant
     postedPriceEnvironment postedPriceMechanism postedPrice_isDSIC θ i
@@ -68,14 +68,14 @@ lemma postedPrice_induced_payoff_low_misreport :
 
 /-- Fixing the buyer's true type in the Bayesian game recovers the posted-price utility game. -/
 lemma postedPrice_fixedType_agreement (θ : Unit → Bool) :
-    (postedPriceMechanism.inducedBayesianGame postedPriceEnvironment).toStrategicGame θ =
+    (postedPriceMechanism.inducedBayesianGame postedPriceEnvironment).strategicGameAt θ =
       postedPriceEnvironment.utilityGame postedPriceMechanism θ :=
-  Mechanism.inducedBayesianGame_toStrategicGame postedPriceMechanism postedPriceEnvironment θ
+  Mechanism.inducedBayesianGame_strategicGameAt postedPriceMechanism postedPriceEnvironment θ
 
 /-- Truthful reporting is Nash in the fixed-type view of the posted-price Bayesian game. -/
 lemma postedPrice_fixedType_truthful_isNash (θ : Unit → Bool) :
-    ((postedPriceMechanism.inducedBayesianGame postedPriceEnvironment).toStrategicGame
-      θ).IsNash θ := by
+    ((postedPriceMechanism.inducedBayesianGame postedPriceEnvironment).strategicGameAt θ).IsNash
+      θ := by
   rw [postedPrice_fixedType_agreement]
   exact postedPrice_truthful_isNash θ
 

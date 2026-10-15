@@ -48,7 +48,7 @@ lemma optimalMap_neither_injective_nor_surjective :
 
 /-- Choosing one is Nash in the quadratic game at every fixed true type. -/
 lemma quadratic_optimal_isNash (θ : Unit → ℝ) :
-    (game.toStrategicGame θ).IsNash (fun _ ↦ 1) := by
+    (game.strategicGameAt θ).IsNash (fun _ ↦ 1) := by
   rw [StrategicGame.isNash_iff]
   intro i a
   cases i
@@ -58,13 +58,13 @@ lemma quadratic_optimal_isNash (θ : Unit → ℝ) :
 /-- Nash equilibrium pulls back through the constant optimal map without injectivity or
 surjectivity. -/
 lemma quadratic_translated_isNash (θ : Unit → ℝ) :
-    ((game.toStrategicGame θ).comapActions (fun i ↦ (optimalMap i).1)).IsNash (fun _ ↦ 0) := by
+    ((game.strategicGameAt θ).comapActions (fun i ↦ (optimalMap i).1)).IsNash (fun _ ↦ 0) := by
   apply StrategicGame.IsNash.comapActions
   simpa only [optimalMap] using quadratic_optimal_isNash θ
 
 /-- Restricting every action to zero makes all available deviations payoff-equivalent. -/
 lemma quadratic_restricted_isNash (θ : Unit → ℝ) :
-    ((game.toStrategicGame θ).comapActions (fun i ↦ (restrictedMap i).1)).IsNash
+    ((game.strategicGameAt θ).comapActions (fun i ↦ (restrictedMap i).1)).IsNash
       (fun _ ↦ 0) := by
   rw [StrategicGame.isNash_iff]
   intro i a
@@ -73,10 +73,10 @@ lemma quadratic_restricted_isNash (θ : Unit → ℝ) :
 
 /-- The image of the restricted equilibrium is not Nash because moving to one improves payoff. -/
 lemma quadratic_restricted_image_not_isNash (θ : Unit → ℝ) :
-    ¬ (game.toStrategicGame θ).IsNash (fun i ↦ (restrictedMap i).1 0) := by
+    ¬ (game.strategicGameAt θ).IsNash (fun i ↦ (restrictedMap i).1 0) := by
   intro h
   have hdeviation := (StrategicGame.isNash_iff _ _).1 h () 1
-  norm_num [BayesianGame.toStrategicGame_payoff, game, restrictedMap] at hdeviation
+  norm_num [BayesianGame.strategicGameAt_payoff, game, restrictedMap] at hdeviation
 
 end MathEconLibTest.GameTheory.Transport
 
