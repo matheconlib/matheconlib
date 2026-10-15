@@ -26,6 +26,8 @@ jobs:
         run: python3 scripts/tests/test_update_imports.py
       - name: Test warning reporting helper
         run: node --test scripts/tests/test_warning_counts.cjs
+      - name: Test documentation helpers
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*docs.py'
       - name: Cache project build artifacts
         uses: actions/cache@v5
         with:
@@ -102,3 +104,50 @@ jobs:
           if-no-files-found: error
           overwrite: true
           retention-days: 90
+      - name: Identify documentation cache
+        id: doc-cache
+        run: |
+          python3 -c 'import sys; sys.path.insert(0, "scripts"); import build_docs; print("revision=" + build_docs.DOCGEN_REV)' >> "$GITHUB_OUTPUT"
+      - name: Restore dependency documentation cache
+        id: restore-doc-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: ${{ runner.temp }}/doc-cache
+          key: docs-dependencies-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ steps.doc-cache.outputs.revision }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: docs-dependencies-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain', 'lake-manifest.json') }}-${{ steps.doc-cache.outputs.revision }}-
+      - name: Build and export API documentation
+        env:
+          DOCGEN_SRC: github
+        run: python3 scripts/build_docs.py --output-dir "$RUNNER_TEMP/doc-artifacts" --cache-dir "$RUNNER_TEMP/doc-cache"
+      - name: Save dependency documentation cache
+        uses: actions/cache/save@v5
+        with:
+          path: ${{ runner.temp }}/doc-cache
+          key: ${{ steps.restore-doc-cache.outputs.cache-primary-key }}
+      - name: Upload API documentation
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-docs
+          path: ${{ runner.temp }}/doc-artifacts/doc
+          if-no-files-found: error
+      - name: Upload documentation database and provenance
+        uses: actions/upload-artifact@v7
+        with:
+          name: api-docs-database
+          path: |
+            ${{ runner.temp }}/doc-artifacts/api-docs.db.gz
+            ${{ runner.temp }}/doc-artifacts/metadata.json
+            ${{ runner.temp }}/doc-artifacts/lake-manifest.json
+          compression-level: 0
+          if-no-files-found: error
+      - name: Publish documentation database to R2
+        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+        env:
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+          R2_ENDPOINT_URL: ${{ vars.R2_ENDPOINT_URL }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: bash scripts/upload-docs.sh "$RUNNER_TEMP/doc-artifacts"
+      - name: Remove temporary documentation outputs
+        if: always()
+        run: rm -rf "$RUNNER_TEMP/doc-artifacts" "$RUNNER_TEMP/doc-cache"
