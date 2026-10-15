@@ -1,7 +1,7 @@
 name = "matheconlib"
 version = "0.1.0"
 keywords = ["math"]
-defaultTargets = ["MathEconLib", "ApiStability", "MathEconLibTest"]
+defaultTargets = ["MathEconLib", "ApiStability", "MathEconLibTest", "MathEconLibExamples"]
 
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
@@ -24,3 +24,6 @@ name = "ApiStability"
 
 [[lean_lib]]
 name = "MathEconLibTest"
+
+[[lean_lib]]
+name = "MathEconLibExamples"
