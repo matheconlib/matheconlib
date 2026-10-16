@@ -26,6 +26,8 @@ jobs:
           # can commit back to it. Fork PRs and pushes: default checkout, which for
           # a PR is the merge ref - i.e. the contributor's code merged onto main.
           ref: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) && github.event.pull_request.head.ref || '' }}
+      - name: Check copyright headers
+        run: bash scripts/check-headers.sh
       - name: Test import regeneration helper
         run: python3 scripts/tests/test_update_imports.py
       - name: Cache project build artifacts

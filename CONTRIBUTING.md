@@ -101,6 +101,18 @@ Gary S. Becker (1968), *Crime and Punishment: An Economic Approach*,
 Standard textbook examples do not need to be cited. Sources without a DOI can use
 a stable link. For ported Lean code, record its source and preserve author credit.
 
+## Copyright headers
+
+Every Lean file starts with the Mathlib-style header below; CI checks it. Add your name to the copyright and `Authors` lines of a file you contribute to substantially.
+
+```lean
+/-
+Copyright (c) 2026 Your Name. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Your Name
+-/
+```
+
 ## Public API
 
 The statements, names, hypotheses, and binder names of existing public declarations

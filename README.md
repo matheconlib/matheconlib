@@ -76,3 +76,7 @@ Contributions of definitions, proofs, worked applications, and documentation are
 Browse [open issues](https://github.com/matheconlib/matheconlib/issues) for ongoing work, or look for a [good first issue](https://github.com/matheconlib/matheconlib/issues?q=is%3Aissue+state%3Aopen+label%3A%22good+first+issue%22).
 
 Have you built something using MathEconLib, or would you like to get involved? Reach out at [contact@mathecon.dev](mailto:contact@mathecon.dev).
+
+## License
+
+MathEconLib is released under the [Apache License 2.0](LICENSE).

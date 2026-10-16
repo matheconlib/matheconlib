@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng
+-/
 module
 
 public import MathEconLib.Auction.Typeclasses

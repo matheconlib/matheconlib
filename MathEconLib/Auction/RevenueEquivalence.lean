@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Jujian Zhang, Ruiz Chen, Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jujian Zhang, Ruiz Chen, Scott Duke Kominers
+-/
 module
 
 public import MathEconLib.Auction.SymmetricIPV

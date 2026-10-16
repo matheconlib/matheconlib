@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Ben Eltschig. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Ben Eltschig
+-/
 module
 
 public import Mathlib.Analysis.Normed.Module.Basic
