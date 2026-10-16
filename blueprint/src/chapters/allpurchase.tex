@@ -1,6 +1,6 @@
 \chapter{All-purchase auctions}
 
-In an all-purchase auction every bidder buys editions of a good at a posted unit price $p$, each edition carries a scarcity value $\varphi(B)$ that decreases in total purchases $B$, and the strictly highest purchaser also wins a prize. This chapter formalizes the all-pay bid function, the reduction of a bidder's interim problem to a quadratic net-cost problem under linear scarcity, explicit equilibrium purchase formulas, the revenue decomposition (Proposition 6.10) with its bundling corollary (Corollary 6.11), welfare identities, and an algebraic pricing formula.
+In an all-purchase auction every bidder buys editions of a good at a posted unit price $p$, each edition carries a scarcity value $\varphi(B)$ that decreases in total purchases $B$, and the strictly highest purchaser also wins a prize. This chapter formalizes the all-pay bid function, the reduction of a bidder's interim problem to a quadratic net-cost problem under linear scarcity, explicit equilibrium purchase formulas, the revenue decomposition (Theorem~\ref{thm:MathEconLib.Auction.revenue_decomposition}) with its bundling consequence (Theorem~\ref{thm:MathEconLib.Auction.bundling_revenue_gain}), welfare identities, and an algebraic pricing formula.
 
 \section{The all-pay bid function}
 
@@ -241,7 +241,7 @@ For each bidder, the expected payment is $\mathbb E[p_{\mathrm{strat}}(\beta,i,\
 \lean{MathEconLib.Auction.revenue_decomposition}
 \leanok
 \uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
-(Proposition 6.10.) Under the hypotheses of Lemma~\ref{thm:MathEconLib.Auction.expectedNetPayment_eq} and integrability of $B\varphi(B)$ for aggregate purchases $B = \sum_j \beta(\theta_j)$, gross revenue satisfies
+Under the hypotheses of Lemma~\ref{thm:MathEconLib.Auction.expectedNetPayment_eq} and integrability of $B\varphi(B)$ for aggregate purchases $B = \sum_j \beta(\theta_j)$, gross revenue satisfies
 \[
   p\,\mathbb E[B] = n\,\mathbb E[b^{AP}(\theta_0)] - n\,U_0 + \mathbb E[B\,\varphi(B)].
 \]
@@ -268,7 +268,7 @@ Set $U_0 = 0$ in the revenue decomposition.
 \lean{MathEconLib.Auction.bundling_revenue_gain}
 \leanok
 \uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec}
-(Corollary 6.11, as an identity.) Under the hypotheses of Theorem~\ref{thm:MathEconLib.Auction.revenue_decomposition_boundary}, for every unit cost $c$ and supplied editions-only quantity $B_{ed}$, with $\Pi_C = (p-c)\,\mathbb E[B]$, $\Pi_A = n\,\mathbb E[b^{AP}(\theta_0)]$ and $\Pi_B = (p-c)B_{ed}$,
+(Bundling revenue gain, as an identity.) Under the hypotheses of Theorem~\ref{thm:MathEconLib.Auction.revenue_decomposition_boundary}, for every unit cost $c$ and supplied editions-only quantity $B_{ed}$, with $\Pi_C = (p-c)\,\mathbb E[B]$, $\Pi_A = n\,\mathbb E[b^{AP}(\theta_0)]$ and $\Pi_B = (p-c)B_{ed}$,
 \[
   \Pi_C - \Pi_A - \Pi_B = \mathbb E[B\varphi(B)] - c\,\mathbb E[B] - (p-c)B_{ed}.
 \]

@@ -1,13 +1,13 @@
 \chapter{Affiliation}
 
-This chapter formalizes the affiliated signal model of Section 7: the affiliation inequality for a joint signal density, the signal/value environment, and the fact that independent signals are the equality case of affiliation. It then proves finite versions of monotone conditional expectations (Lemma 7.3) and the weak winner's curse (Proposition 7.4), where conditioning sets are finite sublattices of $\mathbb{R}^n$ and the key tool is the Ahlswede--Daykin four functions theorem.
+This chapter formalizes the affiliated signal model: the affiliation inequality for a joint signal density, the signal/value environment, and the fact that independent signals are the equality case of affiliation. It then proves finite versions of monotone conditional expectations (Theorem~\ref{thm:MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated}) and the weak winner's curse (Theorem~\ref{thm:MathEconLib.Auction.Affiliation.condExpWinningSlice_le_condExpSlice_of_affiliated}), where conditioning sets are finite sublattices of $\mathbb{R}^n$ and the key tool is the Ahlswede--Daykin four functions theorem.
 
 \section{Affiliated densities}
 
 \begin{definition}\label{def:MathEconLib.Auction.Affiliation.Affiliated}
 \lean{MathEconLib.Auction.Affiliation.Affiliated}
 \leanok
-(Def 7.2.) A function $f : \mathbb{R}^n \to \mathbb{R}$ (a joint signal density, with coordinates indexed by $\mathrm{Fin}\,n$) is \emph{affiliated} if
+A function $f : \mathbb{R}^n \to \mathbb{R}$ (a joint signal density, with coordinates indexed by $\mathrm{Fin}\,n$) is \emph{affiliated} if
 \[
   f(x \vee y)\, f(x \wedge y) \ge f(x)\, f(y) \quad \text{for all } x, y \in \mathbb{R}^n,
 \]
@@ -66,7 +66,7 @@ For each pair $x, y$, rewrite sums of logarithms as logarithms of products and u
 \begin{definition}\label{def:MathEconLib.Auction.Affiliation.SignalValueEnv}
 \lean{MathEconLib.Auction.Affiliation.SignalValueEnv}
 \leanok
-(Def 7.1.) An $n$-bidder signal/value environment consists of signal bounds $\underline{x} \le \bar{x}$, a joint signal density $f : \mathbb{R}^n \to \mathbb{R}$ with $f \ge 0$ that vanishes whenever some coordinate lies outside $[\underline{x}, \bar{x}]$, and value functions $v_i : \mathbb{R}^n \to \mathbb{R}$ for each bidder $i$. Each $v_i$ is nonnegative, continuous, monotone in the componentwise order, and strictly increasing in bidder $i$'s own signal when the other coordinates are held fixed.
+An $n$-bidder signal/value environment consists of signal bounds $\underline{x} \le \bar{x}$, a joint signal density $f : \mathbb{R}^n \to \mathbb{R}$ with $f \ge 0$ that vanishes whenever some coordinate lies outside $[\underline{x}, \bar{x}]$, and value functions $v_i : \mathbb{R}^n \to \mathbb{R}$ for each bidder $i$. Each $v_i$ is nonnegative, continuous, monotone in the componentwise order, and strictly increasing in bidder $i$'s own signal when the other coordinates are held fixed.
 \end{definition}
 
 \begin{definition}\label{def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
@@ -117,7 +117,7 @@ Apply the environment form of Remark 6 to the independence half of IPV; the priv
 \end{proof}
 
 \begin{theorem}\label{thm:open.symmetric_signal_value_model}
-The symmetric variant of Def 7.1: a single value map $u$ with $v_i(X_i, X_{-i}) = u(X_i, X_{-i})$, where $u$ is symmetric in the rival coordinates (invariance under permutations that fix $i$, or rivals modeled as a multiset). The repository records this as future work in \texttt{MathEconLib/Auction/Affiliation/Basic.lean} (``Symmetric model (future work)'').
+The symmetric variant of Definition~\ref{def:MathEconLib.Auction.Affiliation.SignalValueEnv}: a single value map $u$ with $v_i(X_i, X_{-i}) = u(X_i, X_{-i})$, where $u$ is symmetric in the rival coordinates (invariance under permutations that fix $i$, or rivals modeled as a multiset). The repository records this as future work in \texttt{MathEconLib/Auction/Affiliation/Basic.lean} (``Symmetric model (future work)'').
 \end{theorem}
 
 \section{Finite conditional expectations}
@@ -186,7 +186,7 @@ For $f, g : \mathbb{R}^n \to \mathbb{R}$, a finite set $S \subseteq \mathbb{R}^n
 \lean{MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.Affiliated, def:MathEconLib.Auction.Affiliation.condExpSlice}
-(Lemma 7.3, finite case.) Let $f : \mathbb{R}^n \to \mathbb{R}$ be affiliated, $S \subseteq \mathbb{R}^n$ a finite set closed under componentwise $\vee$ and $\wedge$ with $f > 0$ on $S$, and $g : \mathbb{R}^n \to \mathbb{R}$ monotone. Then for every bidder $i$, the map $t \mapsto E_f[g(X) \mid X_i = t]$ is nondecreasing on the set of realized heights $\{x_i : x \in S\}$.
+(Monotone conditional expectations, finite case.) Let $f : \mathbb{R}^n \to \mathbb{R}$ be affiliated, $S \subseteq \mathbb{R}^n$ a finite set closed under componentwise $\vee$ and $\wedge$ with $f > 0$ on $S$, and $g : \mathbb{R}^n \to \mathbb{R}$ monotone. Then for every bidder $i$, the map $t \mapsto E_f[g(X) \mid X_i = t]$ is nondecreasing on the set of realized heights $\{x_i : x \in S\}$.
 \end{theorem}
 
 \begin{proof}
@@ -195,12 +195,12 @@ For $f, g : \mathbb{R}^n \to \mathbb{R}$, a finite set $S \subseteq \mathbb{R}^n
 For realized heights $t \le t'$, take $A$ and $B$ to be the slices at $t$ and $t'$. Both are nonempty, and for $a \in A$, $b \in B$ the $i$-th coordinates of $a \vee b$ and $a \wedge b$ are $t'$ and $t$, so the comparison theorem applies.
 \end{proof}
 
-\begin{theorem}\label{thm:open.lemma_7_3_continuous}
-(Lemma 7.3, continuous case.) For an affiliated joint density on a continuum of signals (rather than a finite sublattice support) and $g$ nondecreasing, $t \mapsto E[g(X) \mid X_i = t]$ is nondecreasing. The intended route is affiliation, then monotone likelihood ratio, then first-order stochastic dominance, then monotone conditional expectations. The repository records this as future work in \texttt{MathEconLib/Auction/Affiliation/MonotoneCondExp.lean}.
+\begin{theorem}\label{thm:open.monotone_condexp_continuous}
+(Continuous case of Theorem~\ref{thm:MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated}.) For an affiliated joint density on a continuum of signals (rather than a finite sublattice support) and $g$ nondecreasing, $t \mapsto E[g(X) \mid X_i = t]$ is nondecreasing. The intended route is affiliation, then monotone likelihood ratio, then first-order stochastic dominance, then monotone conditional expectations. The repository records this as future work in \texttt{MathEconLib/Auction/Affiliation/MonotoneCondExp.lean}.
 \end{theorem}
 
 \begin{theorem}\label{thm:open.linkage_principle}
-(Thm 7.5 and Thm 7.7; Thm 7.7 is the linkage principle.) The Section 7 results Thm 7.5 and Thm 7.7, which build on Lemma 7.3. The repository names them as downstream results in \texttt{MathEconLib/Auction/Affiliation/MonotoneCondExp.lean}, where the continuous case of Lemma 7.3 is left as future work, and no declaration for either exists.
+(Linkage principle.) The downstream results on affiliated auctions, including the linkage principle, which build on the continuous case of monotone conditional expectations (Theorem~\ref{thm:open.monotone_condexp_continuous}). The repository names them as downstream results in \texttt{MathEconLib/Auction/Affiliation/MonotoneCondExp.lean}, and no declaration for them exists yet.
 \end{theorem}
 
 \section{The winner's curse}
@@ -234,7 +234,7 @@ Both points lie in $S$ by closure. Their $i$-th coordinates equal $t$, and every
 \lean{MathEconLib.Auction.Affiliation.condExpWinningSlice_le_condExpSlice_of_affiliated}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.Affiliated, def:MathEconLib.Auction.Affiliation.condExpWinningSlice, def:MathEconLib.Auction.Affiliation.condExpSlice}
-(Proposition 7.4, winner's curse, finite case.) Let $f$ be affiliated, $S \subseteq \mathbb{R}^n$ a finite set closed under componentwise $\vee$ and $\wedge$ with $f > 0$ on $S$, and $g : \mathbb{R}^n \to \mathbb{R}$ monotone with $g \ge 0$ on $S$. Fix a bidder $i$ and $t \in \mathbb{R}$ such that the winning slice is nonempty. Then
+(Winner's curse, finite case.) Let $f$ be affiliated, $S \subseteq \mathbb{R}^n$ a finite set closed under componentwise $\vee$ and $\wedge$ with $f > 0$ on $S$, and $g : \mathbb{R}^n \to \mathbb{R}$ monotone with $g \ge 0$ on $S$. Fix a bidder $i$ and $t \in \mathbb{R}$ such that the winning slice is nonempty. Then
 \[
   E_f[g(X) \mid X_i = t,\ X_i = \max_j X_j] \le E_f[g(X) \mid X_i = t].
 \]
@@ -250,7 +250,7 @@ Take $A$ to be the winning slice and $B$ the own-signal slice. $B$ contains $A$,
 \lean{MathEconLib.Auction.Affiliation.SignalValueEnv.condExpWinningSlice_le_condExpSlice}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals, def:MathEconLib.Auction.Affiliation.condExpWinningSlice, def:MathEconLib.Auction.Affiliation.condExpSlice}
-(Proposition 7.4, environment form.) Let $E$ be a signal/value environment with affiliated signals, and let $S \subseteq \mathbb{R}^n$ be a finite set closed under componentwise $\vee$ and $\wedge$ with $E.f > 0$ on $S$. For a bidder $i$ and $t \in \mathbb{R}$ such that the winning slice is nonempty,
+(Winner's curse, environment form.) Let $E$ be a signal/value environment with affiliated signals, and let $S \subseteq \mathbb{R}^n$ be a finite set closed under componentwise $\vee$ and $\wedge$ with $E.f > 0$ on $S$. For a bidder $i$ and $t \in \mathbb{R}$ such that the winning slice is nonempty,
 \[
   E_{E.f}[v_i(X) \mid X_i = t,\ X_i = \max_j X_j] \le E_{E.f}[v_i(X) \mid X_i = t].
 \]
@@ -264,5 +264,5 @@ Apply the finite winner's curse with $g = v_i$, using only that $v_i$ is monoton
 \end{proof}
 
 \begin{theorem}\label{thm:open.winners_curse_strict}
-(Proposition 7.4, strictness.) The winner's curse inequality $E[g(X) \mid X_i = t,\ X_i = \max_j X_j] \le E[g(X) \mid X_i = t]$ is generically strict. Only the weak finite inequality is formalized; the repository records the strictness claim as outside its first finite scope in \texttt{MathEconLib/Auction/Affiliation/WinnersCurse.lean}.
+(Winner's curse, strictness.) The winner's curse inequality $E[g(X) \mid X_i = t,\ X_i = \max_j X_j] \le E[g(X) \mid X_i = t]$ is generically strict. Only the weak finite inequality is formalized; the repository records the strictness claim as outside its first finite scope in \texttt{MathEconLib/Auction/Affiliation/WinnersCurse.lean}.
 \end{theorem}
