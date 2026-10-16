@@ -14,7 +14,7 @@ Motivated by Propositions 6.8 and 6.12 (§6.7.2) in Scott's notes. For real para
 For `α > 0` and `n ≥ 1`, `p*` uniquely maximizes the defined `Π` over all real prices.
 Identifying `Q` and `Π` with auction equilibrium quantity and seller profit, and
 `M` with `𝔼[√(b^{AP}(V))]`, remains unproved. Auction feasibility and economic
-global optimality remain open in [#46](https://github.com/AxiomMath/auctionlib/issues/46).
+global optimality remain open in [#46](https://github.com/matheconlib/matheconlib/issues/46).
 
 ## Main results
 
