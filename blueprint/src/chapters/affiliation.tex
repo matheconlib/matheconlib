@@ -1,0 +1,268 @@
+\chapter{Affiliation}
+
+This chapter formalizes the affiliated signal model of Section 7: the affiliation inequality for a joint signal density, the signal/value environment, and the fact that independent signals are the equality case of affiliation. It then proves finite versions of monotone conditional expectations (Lemma 7.3) and the weak winner's curse (Proposition 7.4), where conditioning sets are finite sublattices of $\mathbb{R}^n$ and the key tool is the Ahlswede--Daykin four functions theorem.
+
+\section{Affiliated densities}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.Affiliated}
+\lean{MathEconLib.Auction.Affiliation.Affiliated}
+\leanok
+(Def 7.2.) A function $f : \mathbb{R}^n \to \mathbb{R}$ (a joint signal density, with coordinates indexed by $\mathrm{Fin}\,n$) is \emph{affiliated} if
+\[
+  f(x \vee y)\, f(x \wedge y) \ge f(x)\, f(y) \quad \text{for all } x, y \in \mathbb{R}^n,
+\]
+where $\vee$ and $\wedge$ are the componentwise maximum and minimum. The predicate does not include positivity or integrability of $f$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.Factors}
+\lean{MathEconLib.Auction.Affiliation.Factors}
+\leanok
+Let $f : \mathbb{R}^n \to \mathbb{R}$ and $g_i : \mathbb{R} \to \mathbb{R}$ for $i < n$. Then $f$ \emph{factors through} $(g_i)$ if $f(x) = \prod_{i} g_i(x_i)$ for every profile $x$. This encodes mutual independence of the signals.
+\end{definition}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.factors_affiliation_eq}
+\lean{MathEconLib.Auction.Affiliation.factors_affiliation_eq, MathEconLib.Auction.Affiliation.mul_sup_inf_eq}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.Factors}
+(Remark 6, equality form.) If $f$ factors through $(g_i)$, then $f(x \vee y)\, f(x \wedge y) = f(x)\, f(y)$ for all $x, y \in \mathbb{R}^n$. No positivity is assumed.
+\end{theorem}
+
+\begin{proof}
+\leanok
+Expand all four values as products and combine them coordinatewise. For each coordinate it suffices that $h(a \vee b)\, h(a \wedge b) = h(a)\, h(b)$ for any $h : \mathbb{R} \to \mathbb{R}$ and $a, b \in \mathbb{R}$, which follows by a case split on $a \le b$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.factors_affiliated}
+\lean{MathEconLib.Auction.Affiliation.factors_affiliated}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.Affiliated, def:MathEconLib.Auction.Affiliation.Factors}
+(Remark 6.) If $f : \mathbb{R}^n \to \mathbb{R}$ factors as $f(x) = \prod_i g_i(x_i)$, then $f$ is affiliated. Independence is the boundary (equality) case of affiliation.
+\end{theorem}
+
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.Affiliation.factors_affiliation_eq}
+The affiliation inequality holds with equality by the previous theorem.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.affiliated_iff_logSupermodular}
+\lean{MathEconLib.Auction.Affiliation.affiliated_iff_logSupermodular}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.Affiliated}
+Let $f : \mathbb{R}^n \to \mathbb{R}$ satisfy $f(x) > 0$ for every $x$. Then $f$ is affiliated if and only if $\log f$ is supermodular for the componentwise lattice order:
+\[
+  \log f(x) + \log f(y) \le \log f(x \vee y) + \log f(x \wedge y) \quad \text{for all } x, y
+\]
+(the MTP$_2$ form).
+\end{theorem}
+
+\begin{proof}
+\leanok
+For each pair $x, y$, rewrite sums of logarithms as logarithms of products and use that $\log$ is strictly increasing on $(0, \infty)$; positivity of $f$ licenses both steps.
+\end{proof}
+
+\section{Signal/value environments}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.SignalValueEnv}
+\lean{MathEconLib.Auction.Affiliation.SignalValueEnv}
+\leanok
+(Def 7.1.) An $n$-bidder signal/value environment consists of signal bounds $\underline{x} \le \bar{x}$, a joint signal density $f : \mathbb{R}^n \to \mathbb{R}$ with $f \ge 0$ that vanishes whenever some coordinate lies outside $[\underline{x}, \bar{x}]$, and value functions $v_i : \mathbb{R}^n \to \mathbb{R}$ for each bidder $i$. Each $v_i$ is nonnegative, continuous, monotone in the componentwise order, and strictly increasing in bidder $i$'s own signal when the other coordinates are held fixed.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
+\lean{MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.Affiliated}
+An environment $E$ has \emph{affiliated signals} if its joint signal density $E.f$ is affiliated.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.HasIndependentSignals}
+\lean{MathEconLib.Auction.Affiliation.HasIndependentSignals}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.Factors}
+An environment $E$ has \emph{independent signals} if there exist $g_i : \mathbb{R} \to \mathbb{R}$ with $E.f(x) = \prod_i g_i(x_i)$ for all profiles $x$.
+\end{definition}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.HasIndependentSignals.hasAffiliatedSignals}
+\lean{MathEconLib.Auction.Affiliation.HasIndependentSignals.hasAffiliatedSignals}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.HasIndependentSignals, def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
+(Remark 6, environment form.) If an environment $E$ has independent signals, then it has affiliated signals.
+\end{theorem}
+
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.Affiliation.factors_affiliated}
+Take the factorization witness and apply the factorization theorem.
+\end{proof}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.IsIPV}
+\lean{MathEconLib.Auction.Affiliation.IsIPV, MathEconLib.Auction.Affiliation.IsPrivateValues}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.HasIndependentSignals}
+An environment $E$ has \emph{private values} (Remark 5) if for every bidder $i$ and profiles $X, X'$ with $X_i = X'_i$ we have $v_i(X) = v_i(X')$. It is \emph{independent private values} (IPV) if it has private values and independent signals.
+\end{definition}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.IsIPV.hasAffiliatedSignals}
+\lean{MathEconLib.Auction.Affiliation.IsIPV.hasAffiliatedSignals}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.IsIPV, def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
+Every IPV environment has affiliated signals.
+\end{theorem}
+
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.Affiliation.HasIndependentSignals.hasAffiliatedSignals}
+Apply the environment form of Remark 6 to the independence half of IPV; the private-values half plays no role.
+\end{proof}
+
+\begin{theorem}\label{thm:open.symmetric_signal_value_model}
+The symmetric variant of Def 7.1: a single value map $u$ with $v_i(X_i, X_{-i}) = u(X_i, X_{-i})$, where $u$ is symmetric in the rival coordinates (invariance under permutations that fix $i$, or rivals modeled as a multiset). The repository records this as future work in \texttt{MathEconLib/Auction/Affiliation/Basic.lean} (``Symmetric model (future work)'').
+\end{theorem}
+
+\section{Finite conditional expectations}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.condExpOn}
+\lean{MathEconLib.Auction.Affiliation.condExpOn}
+\leanok
+For a type $\alpha$, weights $f : \alpha \to \mathbb{R}$ (possibly unnormalized), a function $g : \alpha \to \mathbb{R}$ and a finite set $A \subseteq \alpha$, the finite conditional expectation is
+\[
+  \mathrm{condExpOn}(f, g, A) = \frac{\sum_{x \in A} g(x) f(x)}{\sum_{x \in A} f(x)}.
+\]
+When the denominator is $0$ the value is $0$, following Lean's convention for division by zero.
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.Affiliation.sum_mul_sum_le_of_affiliated}
+\lean{MathEconLib.Auction.Affiliation.sum_mul_sum_le_of_affiliated}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.Affiliated}
+Let $f : \mathbb{R}^n \to \mathbb{R}$ be affiliated, let $S \subseteq \mathbb{R}^n$ be finite and closed under componentwise $\vee$ and $\wedge$ with $f > 0$ on $S$, and let $g : \mathbb{R}^n \to \mathbb{R}$ be monotone with $g \ge 0$ on $S$. Let $A, B \subseteq S$ satisfy $a \vee b \in B$ and $a \wedge b \in A$ for all $a \in A$, $b \in B$. Then
+\[
+  \Bigl(\sum_{x \in A} g(x) f(x)\Bigr)\Bigl(\sum_{x \in B} f(x)\Bigr) \le \Bigl(\sum_{x \in B} g(x) f(x)\Bigr)\Bigl(\sum_{x \in A} f(x)\Bigr).
+\]
+\end{lemma}
+
+\begin{proof}
+\leanok
+Extend $g f$ and $f$ by zero outside $S$; both extensions are nonnegative because $f > 0$ and $g \ge 0$ on $S$. Affiliation, monotonicity and nonnegativity of $g$ give the pointwise four functions hypothesis $(gf)(a)\, f(b) \le f(a \wedge b)\, (gf)(a \vee b)$, and Mathlib's Ahlswede--Daykin four functions theorem applied to $A$ and $B$ yields the inequality, using the closure assumptions to bound the sums over $A \wedge B$ and $A \vee B$ by the sums over $A$ and $B$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated_of_nonneg}
+\lean{MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated_of_nonneg, MathEconLib.Auction.Affiliation.sum_pos_on_of_pos}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.Affiliated, def:MathEconLib.Auction.Affiliation.condExpOn}
+Under the hypotheses of Lemma~\ref{thm:MathEconLib.Auction.Affiliation.sum_mul_sum_le_of_affiliated} (in particular $g \ge 0$ on $S$), suppose also that $A$ and $B$ are nonempty. Then $\mathrm{condExpOn}(f, g, A) \le \mathrm{condExpOn}(f, g, B)$.
+\end{theorem}
+
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.Affiliation.sum_mul_sum_le_of_affiliated}
+Nonemptiness and $f > 0$ on $S$ make both denominators positive, so the cross-multiplied inequality of the lemma can be divided through.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated}
+\lean{MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated, MathEconLib.Auction.Affiliation.condExpOn_add_const}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.Affiliated, def:MathEconLib.Auction.Affiliation.condExpOn}
+Let $f$ be affiliated, $S \subseteq \mathbb{R}^n$ a finite set closed under componentwise $\vee$ and $\wedge$ with $f > 0$ on $S$, and $g : \mathbb{R}^n \to \mathbb{R}$ monotone, with no sign assumption on $g$. Let $A, B \subseteq S$ be nonempty with $a \vee b \in B$ and $a \wedge b \in A$ for all $a \in A$, $b \in B$. Then $\mathrm{condExpOn}(f, g, A) \le \mathrm{condExpOn}(f, g, B)$.
+\end{theorem}
+
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated_of_nonneg}
+Shift $g$ by $-\min_S g$ to make it nonnegative on $S$ and apply the nonnegative case. Adding a constant $c$ to $g$ adds $c$ to the conditional expectation on any set of nonzero mass, so the shift cancels.
+\end{proof}
+
+\section{Monotone conditional expectations}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.condExpSlice}
+\lean{MathEconLib.Auction.Affiliation.condExpSlice}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.condExpOn}
+For $f, g : \mathbb{R}^n \to \mathbb{R}$, a finite set $S \subseteq \mathbb{R}^n$, a bidder $i$ and $t \in \mathbb{R}$, let $\mathrm{condExpSlice}(f, g, S, i, t) = \mathrm{condExpOn}(f, g, \{x \in S : x_i = t\})$. This is the discrete conditional expectation $E_f[g(X) \mid X_i = t]$.
+\end{definition}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated}
+\lean{MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.Affiliated, def:MathEconLib.Auction.Affiliation.condExpSlice}
+(Lemma 7.3, finite case.) Let $f : \mathbb{R}^n \to \mathbb{R}$ be affiliated, $S \subseteq \mathbb{R}^n$ a finite set closed under componentwise $\vee$ and $\wedge$ with $f > 0$ on $S$, and $g : \mathbb{R}^n \to \mathbb{R}$ monotone. Then for every bidder $i$, the map $t \mapsto E_f[g(X) \mid X_i = t]$ is nondecreasing on the set of realized heights $\{x_i : x \in S\}$.
+\end{theorem}
+
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated}
+For realized heights $t \le t'$, take $A$ and $B$ to be the slices at $t$ and $t'$. Both are nonempty, and for $a \in A$, $b \in B$ the $i$-th coordinates of $a \vee b$ and $a \wedge b$ are $t'$ and $t$, so the comparison theorem applies.
+\end{proof}
+
+\begin{theorem}\label{thm:open.lemma_7_3_continuous}
+(Lemma 7.3, continuous case.) For an affiliated joint density on a continuum of signals (rather than a finite sublattice support) and $g$ nondecreasing, $t \mapsto E[g(X) \mid X_i = t]$ is nondecreasing. The intended route is affiliation, then monotone likelihood ratio, then first-order stochastic dominance, then monotone conditional expectations. The repository records this as future work in \texttt{MathEconLib/Auction/Affiliation/MonotoneCondExp.lean}.
+\end{theorem}
+
+\begin{theorem}\label{thm:open.linkage_principle}
+(Thm 7.5 and Thm 7.7; Thm 7.7 is the linkage principle.) The Section 7 results Thm 7.5 and Thm 7.7, which build on Lemma 7.3. The repository names them as downstream results in \texttt{MathEconLib/Auction/Affiliation/MonotoneCondExp.lean}, where the continuous case of Lemma 7.3 is left as future work, and no declaration for either exists.
+\end{theorem}
+
+\section{The winner's curse}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.winningSlice}
+\lean{MathEconLib.Auction.Affiliation.winningSlice, MathEconLib.Auction.Affiliation.ownSignalSlice}
+\leanok
+For a finite $S \subseteq \mathbb{R}^n$, a bidder $i$ and $t \in \mathbb{R}$, the \emph{own-signal slice} is $\{x \in S : x_i = t\}$ and the \emph{winning slice} is $\{x \in S : x_i = t \text{ and } x_j \le t \text{ for all } j\}$, the profiles where bidder $i$'s signal $t$ is a weak maximum. Ties count as wins.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.condExpWinningSlice}
+\lean{MathEconLib.Auction.Affiliation.condExpWinningSlice}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.condExpOn, def:MathEconLib.Auction.Affiliation.winningSlice}
+Let $\mathrm{condExpWinningSlice}(f, g, S, i, t) = \mathrm{condExpOn}(f, g, \mathrm{winningSlice}(S, i, t))$. This is the discrete conditional expectation $E_f[g(X) \mid X_i = t,\ X_i = \max_j X_j]$.
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.Affiliation.inf_mem_winningSlice}
+\lean{MathEconLib.Auction.Affiliation.inf_mem_winningSlice, MathEconLib.Auction.Affiliation.sup_mem_ownSignalSlice}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.winningSlice}
+Let $S \subseteq \mathbb{R}^n$ be finite and closed under componentwise $\vee$ and $\wedge$. If $a$ lies in the winning slice and $b$ in the own-signal slice of $(S, i, t)$, then $a \wedge b$ lies in the winning slice and $a \vee b$ lies in the own-signal slice.
+\end{lemma}
+
+\begin{proof}
+\leanok
+Both points lie in $S$ by closure. Their $i$-th coordinates equal $t$, and every coordinate of $a \wedge b$ is at most the corresponding coordinate of $a$, hence at most $t$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.condExpWinningSlice_le_condExpSlice_of_affiliated}
+\lean{MathEconLib.Auction.Affiliation.condExpWinningSlice_le_condExpSlice_of_affiliated}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.Affiliated, def:MathEconLib.Auction.Affiliation.condExpWinningSlice, def:MathEconLib.Auction.Affiliation.condExpSlice}
+(Proposition 7.4, winner's curse, finite case.) Let $f$ be affiliated, $S \subseteq \mathbb{R}^n$ a finite set closed under componentwise $\vee$ and $\wedge$ with $f > 0$ on $S$, and $g : \mathbb{R}^n \to \mathbb{R}$ monotone with $g \ge 0$ on $S$. Fix a bidder $i$ and $t \in \mathbb{R}$ such that the winning slice is nonempty. Then
+\[
+  E_f[g(X) \mid X_i = t,\ X_i = \max_j X_j] \le E_f[g(X) \mid X_i = t].
+\]
+\end{theorem}
+
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated_of_nonneg, thm:MathEconLib.Auction.Affiliation.inf_mem_winningSlice}
+Take $A$ to be the winning slice and $B$ the own-signal slice. $B$ contains $A$, so it is nonempty, and the previous lemma supplies the closure conditions of the nonnegative comparison theorem.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.SignalValueEnv.condExpWinningSlice_le_condExpSlice}
+\lean{MathEconLib.Auction.Affiliation.SignalValueEnv.condExpWinningSlice_le_condExpSlice}
+\leanok
+\uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals, def:MathEconLib.Auction.Affiliation.condExpWinningSlice, def:MathEconLib.Auction.Affiliation.condExpSlice}
+(Proposition 7.4, environment form.) Let $E$ be a signal/value environment with affiliated signals, and let $S \subseteq \mathbb{R}^n$ be a finite set closed under componentwise $\vee$ and $\wedge$ with $E.f > 0$ on $S$. For a bidder $i$ and $t \in \mathbb{R}$ such that the winning slice is nonempty,
+\[
+  E_{E.f}[v_i(X) \mid X_i = t,\ X_i = \max_j X_j] \le E_{E.f}[v_i(X) \mid X_i = t].
+\]
+This holds for general interdependent values, not only pure common values.
+\end{theorem}
+
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.Affiliation.condExpWinningSlice_le_condExpSlice_of_affiliated}
+Apply the finite winner's curse with $g = v_i$, using only that $v_i$ is monotone and nonnegative.
+\end{proof}
+
+\begin{theorem}\label{thm:open.winners_curse_strict}
+(Proposition 7.4, strictness.) The winner's curse inequality $E[g(X) \mid X_i = t,\ X_i = \max_j X_j] \le E[g(X) \mid X_i = t]$ is generically strict. Only the weak finite inequality is formalized; the repository records the strictness claim as outside its first finite scope in \texttt{MathEconLib/Auction/Affiliation/WinnersCurse.lean}.
+\end{theorem}
