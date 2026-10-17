@@ -34,9 +34,18 @@ def sellerChoice (s : Bool) : ChoiceFunction Contract where
     | b => exact hx.2.1
     | c => exact hx.2
 
+@[simp] theorem mem_sellerChoice_a {s : Bool} {Y : Set Contract} :
+    a ∈ sellerChoice s Y ↔ s = false ∧ a ∈ Y := Iff.rfl
+
+@[simp] theorem mem_sellerChoice_b {s : Bool} {Y : Set Contract} :
+    b ∈ sellerChoice s Y ↔ s = false ∧ b ∈ Y ∧ a ∉ Y := Iff.rfl
+
+@[simp] theorem mem_sellerChoice_c {s : Bool} {Y : Set Contract} :
+    c ∈ sellerChoice s Y ↔ s = true ∧ c ∈ Y := Iff.rfl
+
 theorem sellerChoice_unitDemand (s : Bool) : (sellerChoice s).UnitDemand := by
   intro Y x hx y hy
-  cases x <;> cases y <;> simp_all [sellerChoice]
+  cases x <;> cases y <;> simp_all
 
 theorem sellerChoice_consistent (s : Bool) : (sellerChoice s).Consistent := by
   intro Y Z hCY hZY
@@ -46,10 +55,10 @@ theorem sellerChoice_consistent (s : Bool) : (sellerChoice s).Consistent := by
   have hza := @hZY a
   have hzb := @hZY b
   have hzc := @hZY c
-  simp only [sellerChoice] at ha hb hc
+  simp only [mem_sellerChoice_a, mem_sellerChoice_b, mem_sellerChoice_c] at ha hb hc
   clear hCY hZY
   ext x
-  cases x <;> simp only [sellerChoice] <;> tauto
+  cases x <;> simp only [mem_sellerChoice_a, mem_sellerChoice_b, mem_sellerChoice_c] <;> tauto
 
 def market : Market Unit Bool Contract where
   buyer := fun _ => ()
@@ -109,11 +118,11 @@ theorem stable_completed_ac :
     ext x
     cases s <;> cases x <;>
       simp [N, market, Market.withBuyerCompletions, Market.sellerSide,
-        sellerChoice, counterparty]
+        counterparty]
   · intro z
     rw [N.blocks_singleton_iff]
     cases z <;>
-      simp [N, market, Market.withBuyerCompletions, sellerChoice, counterparty]
+      simp [N, market, Market.withBuyerCompletions, counterparty]
 
 /-- Transfer the explicit two-seller outcome to the non-substitutable market. -/
 theorem stable_ac : market.Stable {a, c} :=
