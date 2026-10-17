@@ -64,7 +64,7 @@ utilities at the full true type profile. Each agent's signed transfer is added t
     (M.inducedBayesianGame E).strategicGameAt θ = E.utilityGame M θ := rfl
 
 /-- Translating mechanism actions commutes with inducing its Bayesian game. -/
-@[simp] lemma inducedBayesianGame_comap (κ : ∀ i, B i → A i) :
+@[simp] lemma inducedBayesianGame_comap (κ : (i : I) → B i → A i) :
     (M.comap κ).inducedBayesianGame E = (M.inducedBayesianGame E).comapActions κ := rfl
 
 end InducedBayesianGame
@@ -73,7 +73,7 @@ namespace QuasilinearEnvironment
 
 /-- Translating mechanism actions commutes with inducing its game at fixed true types. -/
 @[simp] lemma utilityGame_comap (E : QuasilinearEnvironment I T O) (M : Mechanism I A O)
-    (κ : ∀ i, B i → A i) (θ : Profile T) :
+    (κ : (i : I) → B i → A i) (θ : Profile T) :
     E.utilityGame (M.comap κ) θ = (E.utilityGame M θ).comapActions κ := rfl
 
 end QuasilinearEnvironment

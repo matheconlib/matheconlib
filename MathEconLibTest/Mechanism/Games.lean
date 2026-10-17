@@ -41,7 +41,7 @@ variable {I : Type uI} {T : I → Type uT} {A : I → Type uA} {B : I → Type u
 -- player, type, action, and outcome carriers in independent universes.
 /-- Fixed-type payoffs after action translation are the original mechanism's utilities. -/
 example (E : QuasilinearEnvironment I T O) (M : Mechanism I A O)
-    (κ : ∀ i, B i → A i) (θ : Profile T) (i : I) (b : Profile B) :
+    (κ : (i : I) → B i → A i) (θ : Profile T) (i : I) (b : Profile B) :
     (((M.comap κ).inducedBayesianGame E).strategicGameAt θ).payoff i b =
       E.utility M i θ (fun j ↦ κ j (b j)) := by
   simp
@@ -50,7 +50,7 @@ example (E : QuasilinearEnvironment I T O) (M : Mechanism I A O)
 -- pullback. Neither injectivity nor surjectivity of the action maps is required.
 /-- A profile translating to truthful reports is Nash under dominant-strategy incentives. -/
 example [DecidableEq I] (E : QuasilinearEnvironment I T O) (M : DirectMechanism I T O)
-    (h : DirectMechanism.IsDSIC E M) (κ : ∀ i, B i → T i) (θ : Profile T)
+    (h : DirectMechanism.IsDSIC E M) (κ : (i : I) → B i → T i) (θ : Profile T)
     (b : Profile B) (hb : ∀ i, κ i (b i) = θ i) :
     (((M.comap κ).inducedBayesianGame E).strategicGameAt θ).IsNash b := by
   rw [Mechanism.inducedBayesianGame_strategicGameAt, QuasilinearEnvironment.utilityGame_comap]

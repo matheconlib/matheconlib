@@ -74,7 +74,7 @@ namespace StrategicGame
 /-- The strategic game in which each player's action is translated by `κ` before the original
 game's payoffs are evaluated. -/
 @[simps] def comapActions {B : ι → Type*} (G : StrategicGame ι A V)
-    (κ : ∀ i, B i → A i) : StrategicGame ι B V where
+    (κ : (i : ι) → B i → A i) : StrategicGame ι B V where
   payoff i b := G.payoff i (fun j ↦ κ j (b j))
 
 /-- Translating actions by the identity preserves the game. -/
@@ -83,7 +83,7 @@ game's payoffs are evaluated. -/
 
 /-- Successive action translations agree with their composition. -/
 lemma comapActions_comp {B : ι → Type*} {C : ι → Type*} (G : StrategicGame ι A V)
-    (κ : ∀ i, B i → A i) (τ : ∀ i, C i → B i) :
+    (κ : (i : ι) → B i → A i) (τ : (i : ι) → C i → B i) :
     (G.comapActions κ).comapActions τ = G.comapActions (fun i ↦ κ i ∘ τ i) := rfl
 
 /-- The equilibrium problem in which a player may replace only their own action. -/
@@ -94,7 +94,7 @@ def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) : EquilibriumProblem
 /-- Action translation maps unilateral deviations to unilateral deviations and preserves each
 player's payoff. -/
 def comapActionsComorphism [DecidableEq ι] {B : ι → Type*} (G : StrategicGame ι A V)
-    (κ : ∀ i, B i → A i) :
+    (κ : (i : ι) → B i → A i) :
     GameComorphism (G.comapActions κ).nashProblem G.nashProblem where
   toFun b := fun i ↦ κ i (b i)
   deviatorMap := id
@@ -110,7 +110,7 @@ def IsNash [LE V] [DecidableEq ι] (G : StrategicGame ι A V) (a : ∀ i, A i) :
 /-- A profile is a Nash equilibrium in the game with translated actions if its image is a Nash
 equilibrium in the original game. The action maps need not be injective or surjective. -/
 theorem IsNash.comapActions [LE V] [DecidableEq ι] {B : ι → Type*}
-    {G : StrategicGame ι A V} (κ : ∀ i, B i → A i) {b : ∀ i, B i}
+    {G : StrategicGame ι A V} (κ : (i : ι) → B i → A i) {b : (i : ι) → B i}
     (h : G.IsNash (fun i ↦ κ i (b i))) : (G.comapActions κ).IsNash b :=
   (G.comapActionsComorphism κ).pullback h
 
