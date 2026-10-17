@@ -56,7 +56,7 @@ def market : Market Unit Bool Contract where
   seller := counterparty
   choiceB := fun _ => original
   choiceS := sellerChoice
-  buyer_eq_of_mem := by intros; rfl
+  buyer_eq_of_mem := by intros; exact Subsingleton.elim _ _
   seller_eq_of_mem := by
     intro s Y x hx
     cases x <;> exact hx.1.symm
@@ -91,10 +91,56 @@ example {A : Set Contract}
     (fun _ => isCompletionOf) (fun _ => completed_substitutable)
     market_unitDemand market_consistent (fun _ => completed_consistent) hA
 
+/-- The completed market selects both sellers at their preferred available
+contracts. This is a concrete certificate, not only an existence assertion. -/
+theorem stable_completed_ac :
+    (market.withBuyerCompletions (fun _ => completed)
+      (fun _ => isCompletionOf) (fun _ => completed_substitutable)).Stable {a, c} := by
+  let N := market.withBuyerCompletions (fun _ => completed)
+    (fun _ => isCompletionOf) (fun _ => completed_substitutable)
+  apply Market.PairwiseStable.stable_of_substitutable N
+    ⟨fun _ => completed_substitutable,
+      fun s => (sellerChoice_unitDemand s).substitutable (sellerChoice_consistent s)⟩
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · intro b
+    ext x
+    cases x <;> simp [N, market, Market.withBuyerCompletions, Market.buyerSide]
+  · intro s
+    ext x
+    cases s <;> cases x <;>
+      simp [N, market, Market.withBuyerCompletions, Market.sellerSide,
+        sellerChoice, counterparty]
+  · intro z
+    rw [N.blocks_singleton_iff]
+    cases z <;>
+      simp [N, market, Market.withBuyerCompletions, sellerChoice, counterparty]
+
+/-- Transfer the explicit two-seller outcome to the non-substitutable market. -/
+theorem stable_ac : market.Stable {a, c} :=
+  market.stable_of_withBuyerCompletions (fun _ => completed)
+    (fun _ => isCompletionOf) (fun _ => completed_substitutable)
+    market_unitDemand market_consistent (fun _ => completed_consistent) stable_completed_ac
+
+/-- A client can construct markets directly from sellers' strict preferences. -/
+example {B S X : Type*} [Finite X] (buyer : X → B) (seller : X → S)
+    (C : B → ChoiceFunction X)
+    (hsupport : ∀ ⦃b Y x⦄, x ∈ C b Y → buyer x = b)
+    (pref : ∀ s, LinearOrder (Option {x : X // seller x = s}))
+    (hIRC : ∀ b, (C b).Consistent)
+    (hcomp : ∀ b, (C b).HasConsistentSubstitutableCompletion seller) :
+    ∃ A, (Market.ofSellerPreferences buyer seller C hsupport pref).Stable A ∧
+      Set.InjOn seller A := by
+  apply Market.exists_stable_of_buyerCompletions
+    (Market.ofSellerPreferences buyer seller C hsupport pref)
+  · exact Market.sellersUnitDemand_ofSellerPreferences buyer seller C hsupport pref
+  · exact ⟨hIRC, Market.consistent_choiceS_ofSellerPreferences buyer seller C hsupport pref⟩
+  · exact hcomp
+
 #print axioms Market.stable_of_withBuyerCompletions
 #print axioms Market.exists_stable_of_buyerCompletions
 #print axioms Market.exists_stable_of_buyersUnilaterallySubstitutable_of_finiteValued
 #print axioms Market.exists_stable_of_buyersUnilaterallySubstitutable
 #print axioms exists_stable
+#print axioms stable_ac
 
 end MathEconLibTest.Matching.Completion
