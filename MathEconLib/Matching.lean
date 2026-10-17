@@ -16,6 +16,8 @@ import MathEconLib.Matching.Classical.Marriage.Preferences
 import MathEconLib.Matching.Classical.Marriage.StableOrder
 import MathEconLib.Matching.Classical.Marriage.ToContracts
 import MathEconLib.Matching.Contracts.Basic
+import MathEconLib.Matching.Contracts.Completion
+import MathEconLib.Matching.Contracts.ManyToOne
 import MathEconLib.Matching.Contracts.FixedPointConvergence
 import MathEconLib.Matching.Contracts.RuralHospitals
 import MathEconLib.Matching.Contracts.StableFixedPoints
