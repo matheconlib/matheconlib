@@ -42,9 +42,9 @@ Structures for parametric families:
     (motivated by Proposition 6.12)
   - [x] Algebraic welfare-gap and moment identities (motivated by Proposition 6.13)
   - [ ] Identify the pricing formulas with auction equilibrium quantity and actual seller profit
-    ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
+    ([#46](https://github.com/matheconlib/matheconlib/issues/46))
   - [ ] Equilibrium-based Cournot and contest welfare decomposition, with separately justified
-    loss nonnegativity ([#46](https://github.com/AxiomMath/auctionlib/issues/46))
+    loss nonnegativity ([#46](https://github.com/matheconlib/matheconlib/issues/46))
 - [ ] formalize game theoretic concepts in section 3
 - [x] delete old framework files (`Envelope/`, `AllPurchase/`, `RevenueEquivalence/` using old structures)
 

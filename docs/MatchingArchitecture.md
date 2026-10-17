@@ -90,7 +90,7 @@ combines the feasible-bundle representation with its completion corollaries.
 
 The five preference-completion corollaries are helpers for the planned
 many-to-one applications, including cadet–branch matching in the
-[#38 roadmap](https://github.com/AxiomMath/auctionlib/issues/38). They do not
+[#38 roadmap](https://github.com/matheconlib/matheconlib/issues/38). They do not
 currently feed a formalized many-to-one market application. Unilateral
 substitutability remains a hypothesis for the bundle results; finite preference
 maximization supplies IRC. The market specialization and completion-to-stability
