@@ -1,4 +1,4 @@
-# <a href="https://mathecon.dev"><img src="website/src/assets/favicon-mexists.svg" alt="MathEconLib M∃ logo" width="40" height="40" align="middle"></a> MathEconLib
+# <a href="https://mathecon.dev"><img src="website/src/assets/favicon-mexists.svg" alt="MathEconLib M∃ logo" width="48" height="48" align="absmiddle"></a> MathEconLib
 
 MathEconLib is an effort to build a shared formal foundation for economics in [Lean 4](https://lean-lang.org/), with the long-term scope of microeconomic theory, macroeconomic theory, and econometrics. Current development focuses on microeconomic theory and its mathematical foundations, building on [Mathlib](https://github.com/leanprover-community/mathlib4).
 
