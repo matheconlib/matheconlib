@@ -32,9 +32,9 @@ feasibility, and finite-valued buyer choice. Neither the contract type nor the
 agent types need be finite for this implication. Its finite-contract
 specialization is also provided below.
 
-These are hypotheses and choice-level implications for a future market
-reduction; they do not yet assert existence under weak substitutability.
-Sellers' unit demand and regularity belong in that reduction theorem.
+These are hypotheses and choice-level implications. The market reduction in
+`Contracts/Completion.lean` combines them with seller unit demand and IRC to
+obtain stable outcomes in the original market.
 
 ## References
 

@@ -35,12 +35,13 @@ relationships are in `MathEconLib.Choice.Matching.Relationships`.
 
 The five completion corollaries are helpers for the planned many-to-one
 matching-with-contracts applications, including cadet–branch matching, in
-https://github.com/matheconlib/matheconlib/issues/38. They are not yet used by a
-formalized many-to-one market application. For bundle preferences, unilateral
+https://github.com/matheconlib/matheconlib/issues/38. The market-level reduction is in
+`MathEconLib.Matching.Contracts.Completion`. For bundle preferences, unilateral
 substitutability remains an explicit hypothesis; finite preference maximization
 supplies IRC, and the feasible-bundle representation supplies at most one
-contract per partner. The many-to-one market specialization and the reduction
-from suitable completions to stable-market outcomes remain future work.
+contract per partner. The many-to-one preference constructor is in
+`MathEconLib.Matching.Contracts.ManyToOne`; the market reduction requires
+IRC of the original choices and the chosen substitutable completions.
 
 -/
 
