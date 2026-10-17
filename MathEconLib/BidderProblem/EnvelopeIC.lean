@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill, Jujian Zhang, Scott Duke Kominers, Ruiz Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill, Jujian Zhang, Scott Duke Kominers, Ruiz Chen
+-/
 module
 
 public import MathEconLib.BidderProblem.Basic

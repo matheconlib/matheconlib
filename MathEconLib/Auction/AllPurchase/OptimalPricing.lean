@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Ruiz Chen, Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Ruiz Chen, Bo Cowgill
+-/
 module
 
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
