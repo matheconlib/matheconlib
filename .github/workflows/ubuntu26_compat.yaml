@@ -1,0 +1,82 @@
+name: Ubuntu 26.04 compatibility probe
+
+on:
+  push:
+    branches: [codex/ubuntu-26-compat]
+
+permissions:
+  contents: read
+
+jobs:
+  lean:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Verify runner version
+        run: |
+          cat /etc/os-release
+          grep -qx 'VERSION_ID="26.04"' /etc/os-release
+      - name: Check copyright headers
+        run: bash scripts/check-headers.sh
+      - name: Test import regeneration helper
+        run: python3 scripts/tests/test_update_imports.py
+      - name: Restore existing project cache without writing it
+        id: project-cache
+        uses: actions/cache/restore@v5
+        with:
+          path: .lake/build
+          key: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
+      - name: Set up Lean and Mathlib
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: true
+          mk_all-check: false
+      - name: Check import lists
+        run: bash scripts/update-imports.sh --check
+      - name: Build with the restored cache if available
+        run: lake build
+      - name: Rebuild project sources on the new runner
+        if: steps.project-cache.outputs.cache-matched-key != ''
+        run: |
+          # Remove only this disposable runner's project output, retaining Mathlib's cache.
+          rm -rf .lake/build
+          lake build
+      - name: Verify tracked sources were not changed
+        run: git diff --exit-code
+
+  website:
+    runs-on: ubuntu-26.04
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Verify runner version
+        run: |
+          cat /etc/os-release
+          grep -qx 'VERSION_ID="26.04"' /etc/os-release
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+      - name: Build the website
+        run: npm run build
+      - name: Check deployment packaging locally
+        run: npx wrangler deploy --dry-run --outdir /tmp/matheconlib-ubuntu26-package
+      - name: Verify tracked sources were not changed
+        run: git diff --exit-code
