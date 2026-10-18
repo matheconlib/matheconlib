@@ -53,8 +53,8 @@ The library is organized around shared definitions and results that economic mod
 
 | Area | Selected topics |
 | --- | --- |
-| Game theory | [Strategic and Bayesian games](MathEconLib/GameTheory/), pure and mixed Nash equilibria |
-| Mechanism design and auctions | [Mechanisms](MathEconLib/Mechanism/), [incentive compatibility and payment identities](MathEconLib/BidderProblem/), [revenue equivalence and auction formats](MathEconLib/Auction/) |
+| Game theory | [Strategic and Bayesian games](MathEconLib/GameTheory/), pure and mixed Nash equilibria, [Nash equilibrium under action translation](MathEconLib/GameTheory/Strategic/Basic.lean) |
+| Mechanism design and auctions | [Mechanisms](MathEconLib/Mechanism/), [induced strategic](MathEconLib/Mechanism/Core/Strategic.lean) and [Bayesian games](MathEconLib/Mechanism/Core/Bayesian.lean), [incentive compatibility and payment identities](MathEconLib/BidderProblem/), [revenue equivalence and auction formats](MathEconLib/Auction/) |
 | Choice and matching | [Choice functions and substitutability](MathEconLib/Choice/), [matching with contracts and stable outcomes](MathEconLib/Matching/) |
 | Pricing | [Single-parameter choice](MathEconLib/SingleParameter/), [value distributions, posted-price optimality, and comparative statics](MathEconLib/ValueDistribution/) |
 | Mathematical foundations | [Probability](MathEconLib/Probability/), [order statistics](MathEconLib/Statistics/), and supporting [analysis, order, and fixed-point results](MathEconLib/ForMathlib/) |
@@ -64,6 +64,7 @@ Browse the [source tree](MathEconLib/) for individual modules and their statemen
 ## Selected examples and applications
 
 - **Game theory: [matching pennies](MathEconLibExamples/GameTheory/MatchingPennies.lean).** A worked example with no pure Nash equilibrium and a unique mixed equilibrium in which both players randomize uniformly.
+- **Mechanism design: [posted-price games](MathEconLibTest/Mechanism/PostedPriceGames.lean).** Checked examples derive truthful dominance and Nash equilibrium from DSIC, calculate purchase payoffs, and verify agreement with the induced Bayesian game at fixed true types. A separate [interdependent-values example](MathEconLibTest/Mechanism/TruthfulNash.lean) shows that truthful Nash equilibrium at every true type profile need not imply DSIC.
 - **Pricing: [posted prices with uniform buyer values](MathEconLib/ValueDistribution/UniformPricing.lean).** Optimal pricing within the value-support interval and comparative statics, with [concrete checked applications](MathEconLibTest/ValueDistribution/Examples.lean), including the optimal price of `1/2` for uniform values on `[0, 1]` and zero seller continuation value.
 - **Price theory: [a Becker-inspired model of crime](MathEconLibExamples/SingleParameter/BeckerCrime.lean).** A stylized risk-neutral choice model treats the expected sanction as a price, deriving a cutoff rule, individual deterrence results, and aggregate crime under a fixed distribution of net gains.
 

@@ -5,7 +5,6 @@ Authors: Daniel Lyng
 -/
 module
 
-public import MathEconLib.Mechanism.Core.Comap
 public import MathEconLib.Mechanism.Core.Environment
 public import Mathlib.Order.Filter.Extr
 
@@ -47,22 +46,22 @@ mechanism design, incentive compatibility, individual rationality, efficiency, b
 
 @[expose] public section
 
-universe uI uΘ uA uO
+universe uI uT uA uO
 
 namespace MathEconLib.Mechanism
 
-variable {I : Type uI} {Θ : I → Type uΘ} {A : I → Type uA} {O : Type uO}
+variable {I : Type uI} {T : I → Type uT} {A : I → Type uA} {O : Type uO}
 
 namespace DirectMechanism
 
-variable (E : QuasilinearEnvironment I Θ O) (M : DirectMechanism I Θ O)
+variable (E : QuasilinearEnvironment I T O) (M : DirectMechanism I T O)
 
 /-- Dominant-strategy incentive compatibility of the reporting mechanism `M` under valuations `E`.
 For every agent and full true type profile `θ`, reporting `θ i` gives at least as much utility as
 any own report, at any fixed profile of the other agents' reports. The entire true profile `θ` is
 held fixed in the comparison, allowing values to depend on other agents' types. -/
 def IsDSIC [DecidableEq I] : Prop :=
-  ∀ i (θ r : Profile Θ),
+  ∀ i (θ r : Profile T),
     E.utility M i θ r ≤ E.utility M i θ (Function.update r i (θ i))
 
 /-- Ex-post individual rationality of the reporting mechanism `M` under valuations `E`. At every
