@@ -108,7 +108,7 @@ theorem orderStatistics_le_iff (v : Fin n → α) (k : Fin n) (x : α) :
     simpa [show Finset.univ.val.map v = (L : Multiset α) from (Multiset.sort_eq _ _).symm,
         Multiset.coe_countP, List.countP_eq_length_filter] using
         Multiset.countP_map v Finset.univ.val (· ≤ x) |>.symm]
-  show L.get ⟨k, by omega⟩ ≤ x ↔ k.val + 1 ≤ (L.filter (· ≤ x)).length
+  change L.get ⟨k, by omega⟩ ≤ x ↔ k.val + 1 ≤ (L.filter (· ≤ x)).length
   constructor
   · intro hle
     have h_take_sat : ∀ a ∈ L.take (k.val + 1), a ≤ x := by
@@ -255,11 +255,11 @@ theorem expected_val_eq_sub_integral_cdf (k : Fin n) {a b : ℝ} (hab : a ≤ b)
   have val_int' : Integrable (fun ω => b - S.val k ω) ℙ := (integrable_const b).sub val_int
   have val_nonneg : 0 ≤ᵐ[ℙ] fun ω => b - S.val k ω := by
     filter_upwards [val_bdd] with ω ⟨_, hb⟩
-    show 0 ≤ b - S.val k ω
+    change 0 ≤ b - S.val k ω
     linarith
   have val_bdd : (fun ω => b - S.val k ω) ≤ᵐ[ℙ] fun _ => b - a := by
     filter_upwards [val_bdd] with ω ⟨ha, _⟩
-    show b - S.val k ω ≤ b - a
+    change b - S.val k ω ≤ b - a
     linarith
   have eq1 := val_int'.integral_eq_integral_Ioc_meas_le val_nonneg val_bdd
   have eq2 t : Measure.real ℙ {ω : Ω | t ≤ b - S.val k ω} =
@@ -364,7 +364,7 @@ theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
       Measure.real ℙ (E T) = F ^ l * (1 - F) ^ (n - l) := by
     intro T hT
     have hT_card := (Finset.mem_powersetCard.mp hT).2
-    show Measure.real ℙ
+    change Measure.real ℙ
         ((⋂ i ∈ T, {ω : Ω | S.X i ω ≤ x}) ∩ (⋂ i ∉ T, {ω : Ω | ¬ S.X i ω ≤ x})) = _
     rw [S.prob_iInter_inter_iInter_eq i₀ T x, hT_card]
   delta Measure.real at h_each
@@ -438,7 +438,7 @@ theorem hasDerivAt_binomial_tail_sum (k : Fin n) (p : ℝ) :
         linarith [Nat.choose_succ_right_eq n l]
     have h_exp1 : n - 1 - (l - 1) = n - l := by omega
     have h_exp2 : n - 1 - l = n - l - 1 := by omega
-    show n.choose l * (l * p ^ (l - 1) * (1 - p) ^ (n - l) +
+    change n.choose l * (l * p ^ (l - 1) * (1 - p) ^ (n - l) +
         p ^ l * ((n - l : ℕ) * (1 - p) ^ (n - l - 1) * (-1))) =
       n * ((n - 1).choose (l - 1) * p ^ (l - 1) * (1 - p) ^ (n - 1 - (l - 1)) -
              (n - 1).choose l * p ^ l * (1 - p) ^ (n - 1 - l))
@@ -536,7 +536,7 @@ theorem pdf_val (i₀ : Fin n) (k : Fin n) :
       (mul_nonneg (Nat.cast_nonneg' _) (Nat.cast_nonneg' _)))
       (pow_nonneg (cdf_nonneg _ _) _))
       (pow_nonneg (sub_nonneg.mpr (cdf_le_one _ _)) _)
-  show (Measure.map (S.val k) ℙ).rnDeriv volume x =
+  change (Measure.map (S.val k) ℙ).rnDeriv volume x =
     ENNReal.ofReal (n ! / (k ! * (n - 1 - k.val) !) *
       cdf (Measure.map (S.X i₀) ℙ) x ^ k.val *
       (1 - cdf (Measure.map (S.X i₀) ℙ) x) ^ (n - 1 - k.val)) *

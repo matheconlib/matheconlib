@@ -127,14 +127,14 @@ theorem not_blocking_singleton {A : Set X} (hA : M.Stable A) {y : X}
 theorem subset_toSellers_of_indRational {A : Set X} (h : M.IndRational A) :
     A ⊆ M.toSellers A := by
   intro x hx
-  show x ∈ M.choiceB (M.buyer x) (insert x A)
+  change x ∈ M.choiceB (M.buyer x) (insert x A)
   rw [Set.insert_eq_of_mem hx, h.1 (M.buyer x)]
   exact ⟨hx, rfl⟩
 
 theorem subset_toBuyers_of_indRational {A : Set X} (h : M.IndRational A) :
     A ⊆ M.toBuyers A := by
   intro x hx
-  show x ∈ M.choiceS (M.seller x) (insert x A)
+  change x ∈ M.choiceS (M.seller x) (insert x A)
   rw [Set.insert_eq_of_mem hx, h.2 (M.seller x)]
   exact ⟨hx, rfl⟩
 
@@ -153,7 +153,7 @@ theorem outcomeOf_stateOf_of_indRational_of_accepts {A : Set X}
     (hno : ∀ y, y ∈ M.choiceB (M.buyer y) (insert y A) →
       y ∈ M.choiceS (M.seller y) (insert y A) → y ∈ A) :
     M.outcomeOf (M.stateOf A) = A := by
-  show M.toSellers A ∩ M.toBuyers A = A
+  change M.toSellers A ∩ M.toBuyers A = A
   apply Set.Subset.antisymm
   · rintro y ⟨hyB, hyS⟩
     exact hno y hyB hyS
@@ -274,7 +274,7 @@ theorem toSellers_eq_of_stable (hsub : M.Substitutable) (hcons : M.Consistent)
     rcases Set.mem_insert_iff.mp hy with rfl | hy2
     · exact absurd (Set.mem_insert _ _) hy'
     · exact hW hy2
-  show x ∈ M.choiceB (M.buyer x) (insert x W) ↔
+  change x ∈ M.choiceB (M.buyer x) (insert x W) ↔
     x ∈ M.choiceB (M.buyer x) (insert x A)
   rw [heq]
 
@@ -290,7 +290,7 @@ theorem toBuyers_eq_of_stable (hsub : M.Substitutable) (hcons : M.Consistent)
     rcases Set.mem_insert_iff.mp hy with rfl | hy2
     · exact absurd (Set.mem_insert _ _) hy'
     · exact hW hy2
-  show x ∈ M.choiceS (M.seller x) (insert x W) ↔
+  change x ∈ M.choiceS (M.seller x) (insert x W) ↔
     x ∈ M.choiceS (M.seller x) (insert x A)
   rw [heq]
 
@@ -313,7 +313,7 @@ theorem choiceB_subset_outcomeOf {p : Set X × (Set X)ᵒᵈ}
   have hyXb : y ∈ (ofDual p.2 : Set X) := (M.choiceB b).choose_subset _ hy
   have hby : M.buyer y = b := M.buyer_eq_of_mem hy
   have hys : y ∈ M.toSellers (ofDual p.2 : Set X) := by
-    show y ∈ M.choiceB (M.buyer y) (insert y (ofDual p.2 : Set X))
+    change y ∈ M.choiceB (M.buyer y) (insert y (ofDual p.2 : Set X))
     rw [Set.insert_eq_of_mem hyXb, hby]
     exact hy
   refine ⟨?_, hyXb⟩
@@ -327,7 +327,7 @@ theorem choiceS_subset_outcomeOf {p : Set X × (Set X)ᵒᵈ}
   have hyXs : y ∈ p.1 := (M.choiceS s).choose_subset _ hy
   have hsy : M.seller y = s := M.seller_eq_of_mem hy
   have hyb : y ∈ M.toBuyers p.1 := by
-    show y ∈ M.choiceS (M.seller y) (insert y p.1)
+    change y ∈ M.choiceS (M.seller y) (insert y p.1)
     rw [Set.insert_eq_of_mem hyXs, hsy]
     exact hy
   refine ⟨hyXs, ?_⟩

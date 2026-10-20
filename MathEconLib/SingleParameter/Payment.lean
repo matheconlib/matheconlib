@@ -90,7 +90,7 @@ theorem typeDeviationIC_of_monotone_q
         x * P.q x - P.U P.lowestType - ∫ w in P.lowestType..x, P.q w) :
     HasTypeDeviationIC P where
   typeDeviationIC x hx x' hx' := by
-    show x * P.q x' - P.payment (P.strategy x') ≤
+    change x * P.q x' - P.payment (P.strategy x') ≤
       x * P.q x - P.payment (P.strategy x)
     have hbounds : P.lowestType ≤ P.highestType := le_trans hx.1 hx.2
     have hlow : P.lowestType ∈ P.typeInterval := ⟨le_refl _, hbounds⟩

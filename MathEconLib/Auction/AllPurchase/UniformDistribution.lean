@@ -58,7 +58,7 @@ theorem allPayBid_uniform
     apply integral_congr
     intro t ht
     rw [uIcc_of_le hv0] at ht
-    show A.commonCDF t ^ (n - 1) = (t / vbar) ^ (n - 1)
+    change A.commonCDF t ^ (n - 1) = (t / vbar) ^ (n - 1)
     rw [hcdf t ⟨ht.1, le_trans ht.2 hvle⟩]
   unfold Auction.allPayBid
   rw [hlow, hcdf v hv, hcong]
