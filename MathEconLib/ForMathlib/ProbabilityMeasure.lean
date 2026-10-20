@@ -93,8 +93,8 @@ noncomputable def ProbabilityMeasure.equivStdSimplex {α : Type*} [MeasurableSpa
   left_inv μ := by
     refine ProbabilityMeasure.toMeasure_injective <| Measure.ext_of_singleton fun a ↦ ?_
     classical
-    simp [Set.indicator]
-    exact μ.ennreal_coeFn_eq_coeFn_toMeasure _
+    simpa [Set.indicator, -ennreal_coeFn_eq_coeFn_toMeasure] using
+      μ.ennreal_coeFn_eq_coeFn_toMeasure {a}
   right_inv x := by
     ext a
     classical
