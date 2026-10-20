@@ -275,7 +275,7 @@ theorem expected_val_eq_sub_integral_cdf (k : Fin n) {a b : ℝ} (hab : a ≤ b)
   linarith
 
 /-- For a fixed subset `T ⊆ Fin n`, the probability that exactly `T`'s indices
-satisfy `X_i ω ≤ x` (and the rest satisfy `X_i ω > x`) equals `F(x)^|T| · (1 - F(x))^{n - |T|}`.-/
+satisfy `X_i ω ≤ x` (and the rest satisfy `X_i ω > x`) equals `F(x)^|T| · (1 - F(x))^{n - |T|}`. -/
 theorem prob_iInter_inter_iInter_eq (i₀ : Fin n) (T : Finset (Fin n)) (x : ℝ) :
     Measure.real ℙ
       ((⋂ i ∈ T, {ω : Ω | S.X i ω ≤ x}) ∩ (⋂ i ∉ T, {ω : Ω | ¬ S.X i ω ≤ x})) =
@@ -317,7 +317,7 @@ theorem prob_iInter_inter_iInter_eq (i₀ : Fin n) (T : Finset (Fin n)) (x : ℝ
   simpa [Finset.card_sdiff] using by ring
 
 /-- Binomial probability formula: for `n` i.i.d. random variables, the probability that
-exactly `l` of them fall in `Set.Iic x` equals `C(n,l) · F(x)^l · (1-F(x))^{n-l}`.-/
+exactly `l` of them fall in `Set.Iic x` equals `C(n,l) · F(x)^l · (1-F(x))^{n-l}`. -/
 theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
     Measure.real ℙ {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} =
       (n.choose l : ℝ) * cdf (Measure.map (S.X i₀) ℙ) x ^ l *
@@ -374,7 +374,7 @@ theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
 For `n` i.i.d. random variables with common CDF `F`, the CDF of the `(k+1)`-smallest
 (0-indexed `k`) is:
   `P(X_{(k+1)} ≤ x) = ∑_{l=k+1}^{n} C(n,l) · F(x)^l · (1 − F(x))^{n−l}`
-where `F = cdf (Measure.map (X₀) ℙ)`-/
+where `F = cdf (Measure.map (X₀) ℙ)` -/
 theorem cdf_val (i₀ : Fin n) (k : Fin n) (x : ℝ) :
     cdf (Measure.map (S.val k) ℙ) x =
     ∑ l ∈ Finset.Icc (k.val + 1) n,
@@ -401,7 +401,7 @@ theorem cdf_val (i₀ : Fin n) (k : Fin n) (x : ℝ) :
   exact Finset.sum_congr rfl (fun l _ => S.prob_count_eq i₀ l x)
 
 /-- The derivative of the binomial tail sum `B(p) = Σ_{l=k+1}^{n} C(n,l) p^l (1-p)^{n-l}`
-telescopes to `B'(p) = n!/(k!(n-1-k)!) · p^k · (1-p)^{n-1-k}`.-/
+telescopes to `B'(p) = n!/(k!(n-1-k)!) · p^k · (1-p)^{n-1-k}`. -/
 theorem hasDerivAt_binomial_tail_sum (k : Fin n) (p : ℝ) :
     HasDerivAt
       (fun q : ℝ => ∑ l ∈ Finset.Icc (k.val + 1) n, n.choose l * q ^ l * (1 - q) ^ (n - l))
@@ -501,7 +501,7 @@ theorem identDistrib_val
 /--
 If the common distribution has density `f` w.r.t. Lebesgue measure, then the
 `(k+1)`-smallest order statistic has density:
-  `f_{X_{(k+1)}}(x) = n! / (k! · (n-1-k)!) · F(x)^k · (1-F(x))^{n-1-k} · f(x)`-/
+  `f_{X_{(k+1)}}(x) = n! / (k! · (n-1-k)!) · F(x)^k · (1-F(x))^{n-1-k} · f(x)` -/
 theorem pdf_val (i₀ : Fin n) (k : Fin n) :
     pdf (S.val k) ℙ volume =ᵐ[volume] fun x =>
     ENNReal.ofReal (n ! / (k ! * (n - 1 - k.val) !) *
