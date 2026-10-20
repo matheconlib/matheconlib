@@ -445,7 +445,6 @@ theorem hasDerivAt_binomial_tail_sum (k : Fin n) (p : ℝ) :
     linear_combination
       h_id1r * (p ^ (l - 1) * (1 - p) ^ (n - l)) -
       h_id2r * (p ^ l * (1 - p) ^ (n - l - 1))
-
   have eq2 := HasDerivAt.fun_sum eq1
   suffices ∑ l ∈ Finset.Icc (k.val + 1) n, n * (g (l - 1) - g l) =
       n ! / (k.val ! * (n - 1 - k.val) !) *

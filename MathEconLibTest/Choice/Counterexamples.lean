@@ -122,30 +122,23 @@ theorem not_substitutable_infiniteOrEmpty :
     ¬ (infiniteOrEmpty ℕ).Substitutable := by
   classical
   intro hsub
-
   let Z : Set ℕ := {n | n ≠ 0}
-
   have hsmallFin : (insert 0 (∅ : Set ℕ)).Finite :=
     Set.finite_empty.insert 0
-
   have h0small :
       0 ∉ infiniteOrEmpty ℕ (insert 0 (∅ : Set ℕ)) := by
     rw [infiniteOrEmpty_of_finite hsmallFin]
     simp
-
   have hZuniv : insert 0 Z = Set.univ := by
     ext n
     by_cases hn : n = 0 <;> simp [Z, hn]
-
   have hunivInf : (Set.univ : Set ℕ).Infinite :=
     Set.infinite_univ
-
   have h0large :
       0 ∈ infiniteOrEmpty ℕ (insert 0 Z) := by
     rw [hZuniv]
     rw [infiniteOrEmpty_of_infinite hunivInf]
     simp
-
   have h0rejected :
       0 ∉ infiniteOrEmpty ℕ (insert 0 Z) :=
     hsub
@@ -154,7 +147,6 @@ theorem not_substitutable_infiniteOrEmpty :
       (Z := Z)
       (Set.empty_subset Z)
       h0small
-
   exact h0rejected h0large
 
 /-- Packaging the separation: the single-new-alternative form together with
