@@ -77,7 +77,6 @@ theorem sellerChosen_outcomeOf_of_le_of_consistent (hcons : M.Consistent)
     (Set.subset_union_left : M.outcomeOf q ⊆ M.outcomeOf q ∪ M.outcomeOf p)
     (Set.union_subset hoq hop)
   have e2 := M.choiceS_eq_of_isFixedPt_sandwich hcons hq s (subset_refl _) hoq
-  change M.choiceS s (M.outcomeOf q ∪ M.outcomeOf p) = M.sellerSide s (M.outcomeOf q)
   rw [e1, ← e2]
   exact (M.indRational_outcomeOf hcons hq).2 s
 
@@ -93,7 +92,6 @@ theorem buyerChosen_outcomeOf_of_le_of_consistent (hcons : M.Consistent)
     (Set.subset_union_left : M.outcomeOf p ⊆ M.outcomeOf p ∪ M.outcomeOf q)
     (Set.union_subset hop hoq)
   have e2 := M.choiceB_eq_of_isFixedPt_sandwich hcons hp b (subset_refl _) hop
-  change M.choiceB b (M.outcomeOf p ∪ M.outcomeOf q) = M.buyerSide b (M.outcomeOf p)
   rw [e1, ← e2]
   exact (M.indRational_outcomeOf hcons hp).1 b
 
@@ -144,7 +142,6 @@ theorem buyerChosen_of_sellerChosen {A A' : Set X} (hA : M.Stable A)
     have hyS : y ∈ M.choiceS (M.seller y) (insert y A) :=
       hchS hins' ⟨hyS0, Set.mem_insert _ _⟩
     exact hyA (M.not_blocking_singleton hA hyB hyS)
-  change M.choiceB b (A ∪ A') = M.buyerSide b A
   rw [← hcons.1 b key (fun x hx => Or.inl hx), hA.1.1 b]
 
 /-- Opposition of interests, buyer ⇒ seller. -/
@@ -172,7 +169,6 @@ theorem sellerChosen_of_buyerChosen {A A' : Set X} (hA' : M.Stable A')
     have hyB : y ∈ M.choiceB (M.buyer y) (insert y A') :=
       hchB hins' ⟨hyB0, Set.mem_insert _ _⟩
     exact hyA' (M.not_blocking_singleton hA' hyB hyS)
-  change M.choiceS s (A' ∪ A) = M.sellerSide s A'
   rw [← hcons.2 s key (fun x hx => Or.inl hx), hA'.1.2 s]
 
 /-- Unanimous seller choice identifies the choices from `A' ∪ A` and `A'`.
@@ -226,8 +222,7 @@ theorem le_of_sellerChosen_outcomeOf {p q : Set X × (Set X)ᵒᵈ}
   · rw [← M.toSellers_outcomeOf hsub hcons hp,
       ← M.toSellers_outcomeOf hsub hcons hq]
     exact h1
-  · change (ofDual q.2 : Set X) ⊆ (ofDual p.2 : Set X)
-    rw [← M.toBuyers_outcomeOf hsub hcons hp,
+  · rw [← OrderDual.ofDual_le_ofDual, ← M.toBuyers_outcomeOf hsub hcons hp,
       ← M.toBuyers_outcomeOf hsub hcons hq]
     exact h2
 

@@ -127,15 +127,13 @@ theorem not_blocking_singleton {A : Set X} (hA : M.Stable A) {y : X}
 theorem subset_toSellers_of_indRational {A : Set X} (h : M.IndRational A) :
     A ⊆ M.toSellers A := by
   intro x hx
-  change x ∈ M.choiceB (M.buyer x) (insert x A)
-  rw [Set.insert_eq_of_mem hx, h.1 (M.buyer x)]
+  rw [mem_toSellers, Set.insert_eq_of_mem hx, h.1 (M.buyer x)]
   exact ⟨hx, rfl⟩
 
 theorem subset_toBuyers_of_indRational {A : Set X} (h : M.IndRational A) :
     A ⊆ M.toBuyers A := by
   intro x hx
-  change x ∈ M.choiceS (M.seller x) (insert x A)
-  rw [Set.insert_eq_of_mem hx, h.2 (M.seller x)]
+  rw [mem_toBuyers, Set.insert_eq_of_mem hx, h.2 (M.seller x)]
   exact ⟨hx, rfl⟩
 
 /-! ### Certifying a canonical state directly
@@ -153,7 +151,7 @@ theorem outcomeOf_stateOf_of_indRational_of_accepts {A : Set X}
     (hno : ∀ y, y ∈ M.choiceB (M.buyer y) (insert y A) →
       y ∈ M.choiceS (M.seller y) (insert y A) → y ∈ A) :
     M.outcomeOf (M.stateOf A) = A := by
-  change M.toSellers A ∩ M.toBuyers A = A
+  rw [outcomeOf, stateOf_fst, stateOf_snd]
   apply Set.Subset.antisymm
   · rintro y ⟨hyB, hyS⟩
     exact hno y hyB hyS
@@ -274,9 +272,7 @@ theorem toSellers_eq_of_stable (hsub : M.Substitutable) (hcons : M.Consistent)
     rcases Set.mem_insert_iff.mp hy with rfl | hy2
     · exact absurd (Set.mem_insert _ _) hy'
     · exact hW hy2
-  change x ∈ M.choiceB (M.buyer x) (insert x W) ↔
-    x ∈ M.choiceB (M.buyer x) (insert x A)
-  rw [heq]
+  rw [mem_toSellers, mem_toSellers, heq]
 
 theorem toBuyers_eq_of_stable (hsub : M.Substitutable) (hcons : M.Consistent)
     {A W : Set X} (hA : M.Stable A) (hAW : A ⊆ W) (hW : W ⊆ M.toSellers A) :
@@ -290,9 +286,7 @@ theorem toBuyers_eq_of_stable (hsub : M.Substitutable) (hcons : M.Consistent)
     rcases Set.mem_insert_iff.mp hy with rfl | hy2
     · exact absurd (Set.mem_insert _ _) hy'
     · exact hW hy2
-  change x ∈ M.choiceS (M.seller x) (insert x W) ↔
-    x ∈ M.choiceS (M.seller x) (insert x A)
-  rw [heq]
+  rw [mem_toBuyers, mem_toBuyers, heq]
 
 /-! ### Elementary consequences of being a fixed point -/
 
@@ -313,8 +307,7 @@ theorem choiceB_subset_outcomeOf {p : Set X × (Set X)ᵒᵈ}
   have hyXb : y ∈ (ofDual p.2 : Set X) := (M.choiceB b).choose_subset _ hy
   have hby : M.buyer y = b := M.buyer_eq_of_mem hy
   have hys : y ∈ M.toSellers (ofDual p.2 : Set X) := by
-    change y ∈ M.choiceB (M.buyer y) (insert y (ofDual p.2 : Set X))
-    rw [Set.insert_eq_of_mem hyXb, hby]
+    rw [mem_toSellers, Set.insert_eq_of_mem hyXb, hby]
     exact hy
   refine ⟨?_, hyXb⟩
   rw [← M.toSellers_eq_of_isFixedPt hp]
@@ -327,8 +320,7 @@ theorem choiceS_subset_outcomeOf {p : Set X × (Set X)ᵒᵈ}
   have hyXs : y ∈ p.1 := (M.choiceS s).choose_subset _ hy
   have hsy : M.seller y = s := M.seller_eq_of_mem hy
   have hyb : y ∈ M.toBuyers p.1 := by
-    change y ∈ M.choiceS (M.seller y) (insert y p.1)
-    rw [Set.insert_eq_of_mem hyXs, hsy]
+    rw [mem_toBuyers, Set.insert_eq_of_mem hyXs, hsy]
     exact hy
   refine ⟨hyXs, ?_⟩
   rw [← M.toBuyers_eq_of_isFixedPt hp]
