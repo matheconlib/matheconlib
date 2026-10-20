@@ -33,7 +33,7 @@ relationships are in `MathEconLib.Choice.Matching.Relationships`.
 
 ## Intended applications
 
-The five completion corollaries are helpers for the planned many-to-one
+The five completion corollaries are helpers for planned many-to-one
 matching-with-contracts applications, including cadet–branch matching, in
 https://github.com/matheconlib/matheconlib/issues/38. The market-level reduction is in
 `MathEconLib.Matching.Contracts.Completion`. For bundle preferences, unilateral
@@ -95,8 +95,8 @@ def feasibleBundleEmbedding (counterparty : α → A) :
 /-- Choice induced by preferences over counterparty-feasible bundles.
 
 A represented bundle is available at a menu when it is contained in
-that menu. If no greatest available bundle exists, the choice is empty,
-as in `ofBundleOrder`. -/
+that menu. If no greatest available bundle exists, then the choice is
+empty, as in `ofBundleOrder`. -/
 def ofFeasibleBundleOrder
     (counterparty : α → A)
     (pref : LinearOrder (FeasibleBundle counterparty)) :
