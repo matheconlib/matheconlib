@@ -70,7 +70,8 @@ theorem eq_none_iff_of_stable {μ ν : M ≃. W}
     (hμ : mkt.IsStableMatching μ) (hν : mkt.IsStableMatching ν) (m : M) :
     μ m = none ↔ ν m = none := by
   have hcard := mkt.toContractsMarket.ncard_sellerSide_eq_of_stable
-    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket mkt.sizeMonotone_toContractsMarket
+    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
+    mkt.sizeMonotone_toContractsMarket
     ((mkt.isStableMatching_iff_stable_graphOf μ).mp hμ)
     ((mkt.isStableMatching_iff_stable_graphOf ν).mp hν) m
   rw [← mkt.ncard_sellerSide_graphOf_eq_zero_iff μ m,

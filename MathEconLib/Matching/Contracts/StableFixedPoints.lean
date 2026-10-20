@@ -90,7 +90,8 @@ def deferredAcceptanceOperator : Set X × (Set X)ᵒᵈ → Set X × (Set X)ᵒ�
 
 /-- Substitutability of all agents makes the operator monotone: the two
 antitone half-lemmas plus `OrderDual` bookkeeping (which is definitional). -/
-theorem monotone_deferredAcceptanceOperator (hsub : M.Substitutable) : Monotone M.deferredAcceptanceOperator := by
+theorem monotone_deferredAcceptanceOperator (hsub : M.Substitutable) :
+    Monotone M.deferredAcceptanceOperator := by
   intro p q h
   exact ⟨M.antitone_toSellers hsub.1 h.2, M.antitone_toBuyers hsub.2 h.1⟩
 
@@ -532,7 +533,8 @@ theorem isFixedPt_gfp_deferredAcceptanceOrderHom (hsub : M.Substitutable) :
   (M.deferredAcceptanceOrderHom hsub).isGreatest_gfp.1
 
 theorem le_gfp_deferredAcceptanceOrderHom (hsub : M.Substitutable) {q : Set X × (Set X)ᵒᵈ}
-    (hq : IsFixedPt M.deferredAcceptanceOperator q) : q ≤ OrderHom.gfp (M.deferredAcceptanceOrderHom hsub) :=
+    (hq : IsFixedPt M.deferredAcceptanceOperator q) :
+    q ≤ OrderHom.gfp (M.deferredAcceptanceOrderHom hsub) :=
   (M.deferredAcceptanceOrderHom hsub).isGreatest_gfp.2 hq
 
 theorem isFixedPt_lfp_deferredAcceptanceOrderHom (hsub : M.Substitutable) :
@@ -540,7 +542,8 @@ theorem isFixedPt_lfp_deferredAcceptanceOrderHom (hsub : M.Substitutable) :
   (M.deferredAcceptanceOrderHom hsub).isLeast_lfp.1
 
 theorem lfp_le_deferredAcceptanceOrderHom (hsub : M.Substitutable) {q : Set X × (Set X)ᵒᵈ}
-    (hq : IsFixedPt M.deferredAcceptanceOperator q) : OrderHom.lfp (M.deferredAcceptanceOrderHom hsub) ≤ q :=
+    (hq : IsFixedPt M.deferredAcceptanceOperator q) :
+    OrderHom.lfp (M.deferredAcceptanceOrderHom hsub) ≤ q :=
   (M.deferredAcceptanceOrderHom hsub).isLeast_lfp.2 hq
 
 theorem stable_sellerOptimal (hsub : M.Substitutable) (hcons : M.Consistent) :
