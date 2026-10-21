@@ -10,25 +10,35 @@ import MathEconLib.Matching.Contracts.StableFixedPoints
 /-!
 # Stable outcomes from substitutable completions
 
-Replace buyer choices by one jointly substitutable and IRC completion per
-buyer, leaving seller choices and contract assignments unchanged. Support of
+To show the existence of stable outcomes under IRC–substitutable completability, we
+replace each buyer choice function by a substitutable completion satisfying the IRC
+condition, leaving seller choices and contract assignments unchanged. Support of
 the completed choices follows from the existing choice-level support theorem.
-Completions may choose several contracts with one seller off equilibrium.
-Seller unit demand nevertheless makes every individually rational outcome
-feasible, so original and completed choices agree at that outcome.
 
-For nonblocking, use the menu of all contracts sellers would accept alongside
-the outcome. Completed buyers choose exactly their outcome contracts from
-this menu. Their choices are therefore feasible, so the original buyers agree
-there too. Original IRC then rules out every original blocking set. This
+Completions in principle may choose infeasible sets containing multiple contracts
+with a given seller; seller unit demand nevertheless makes every individually
+rational outcome feasible, so original and completed choices agree at any
+individually rational outcome.
+
+For nonblockingness, we use the menu of all contracts sellers would accept
+alongside a putative stable outcome. Substitutable completed buyer choice
+functions choose exactly their outcome contracts from this menu—as by
+substitutability, any other chosen contract would form a singleton block of
+the completed market, and IRC of the completions then pins the choice down to
+the outcome. Their choices are therefore feasible, so the original buyer
+choice functions agree there too. IRC of the original choice functions then
+rules out every blocking set under the original choice functions. (This
 argument does not assume pointwise enlargement of choices or equality of the
-two stable sets.
+two stable sets.)
 
 The transfer and completion-based existence results allow arbitrary contract
 and agent types under explicit set-form IRC. The unilateral-substitutability
-corollary uses finite-valued buyer choices; a finite-contract version follows.
-No law of aggregate demand is required. Outcome independence and comparison
-with cumulative offers remain separate results in issues #138–139.
+corollary uses finite-valued buyer choices; a finite–contract set version
+follows. No law of aggregate demand hypothesis is required (although it will
+be necessary for rural hospitals and strategy-proofness results).
+
+Outcome-independence and comparison with cumulative offer outcomes remain separate
+results in issues #138–139.
 
 ## References
 
@@ -37,7 +47,7 @@ with contracts*, Handbook of the Economics of Matching 2, 409–487,
 §6.1, Theorems 6.1–6.2, pp. 471–472.
 https://doi.org/10.1016/bs.hesmat.2025.10.005.
 The source assumes IRC throughout. Here original IRC and IRC of the same
-completion that satisfies substitutability are explicit hypotheses.
+substitutable completion are explicit hypotheses.
 -/
 
 namespace MathEconLib.Matching
@@ -65,8 +75,9 @@ variable (D : B → ChoiceFunction X)
     (hcomp : ∀ b, (M.choiceB b).IsCompletionOf M.seller (D b))
     (hsub : ∀ b, (D b).Substitutable)
 
-/-- Original and completed individual rationality coincide on feasible outcomes.
-No IRC or substitutability of original choices is used. -/
+/-- Market-level individual rationality under original and completed choice
+functions coincides on feasible outcomes.
+No IRC or substitutability hypotheses are used. -/
 theorem indRational_withBuyerCompletions_iff {A : Set X}
     (hA : M.ManyToOneFeasible A) :
     (M.withBuyerCompletions D hcomp hsub).IndRational A ↔ M.IndRational A := by
@@ -76,7 +87,7 @@ theorem indRational_withBuyerCompletions_iff {A : Set X}
     ∀ s, M.choiceS s A = M.sellerSide s A) ↔ _
   simp only [heq, IndRational]
 
-/-- Every stable completed outcome is stable in the original market.
+/-- Every stable outcome in the completed market is stable in the original market.
 The original buyers need IRC, but need not be substitutable. -/
 theorem stable_of_withBuyerCompletions
     (hunit : M.SellersUnitDemand) (hcons : M.Consistent)
@@ -124,7 +135,8 @@ theorem stable_of_withBuyerCompletions
 
 omit D hcomp hsub in
 /-- Consistent choices with unit-demand sellers admit a feasible stable outcome
-whenever each buyer has one substitutable completion satisfying IRC. -/
+whenever each buyer's choice function has a substitutable completion satisfying
+IRC. -/
 theorem exists_stable_of_buyerCompletions
     (hunit : M.SellersUnitDemand) (hcons : M.Consistent)
     (hcomp : M.BuyersHaveConsistentSubstitutableCompletions) :
@@ -138,8 +150,9 @@ theorem exists_stable_of_buyerCompletions
     hA.manyToOneFeasible N hunit⟩
 
 omit D hcomp hsub in
-/-- Finite-valued unilateral substitutes on the accepting side give stable
-existence. Agent and contract types may be infinite. -/
+/-- Finite-valued unilateral substitutability on the accepting side gives stable
+outcomes under IRC and unit-demand sellers. Agent and contract types may be
+infinite. -/
 theorem exists_stable_of_buyersUnilaterallySubstitutable_of_finiteValued
     (hunit : M.SellersUnitDemand) (hcons : M.Consistent)
     (hfeas : M.BuyersCounterpartyFeasible)
@@ -151,7 +164,7 @@ theorem exists_stable_of_buyersUnilaterallySubstitutable_of_finiteValued
       hUS hcons.1 hfeas hfinite)
 
 omit D hcomp hsub in
-/-- Finite-contract specialization of stable existence under unilateral
+/-- Finite-contract specialization of stable outcome existence under unilateral
 substitutability and IRC. No law of aggregate demand is assumed. -/
 theorem exists_stable_of_buyersUnilaterallySubstitutable [Finite X]
     (hunit : M.SellersUnitDemand) (hcons : M.Consistent)
