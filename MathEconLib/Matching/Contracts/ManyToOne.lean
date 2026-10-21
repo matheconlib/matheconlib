@@ -12,15 +12,16 @@ import MathEconLib.Choice.Map
 
 Sellers are the unit-demand proposers (doctors); buyers are the accepting
 institutions (hospitals). We specialize the existing `Market` rather than
-introduce another stability notion. `SellersUnitDemand` and
-`BuyersCounterpartyFeasible` record the two choice restrictions separately.
-An outcome is feasible when its seller map is injective.
+introducing another stability concept. An outcome is feasible when its seller
+map is injective. `SellersUnitDemand` and `BuyersCounterpartyFeasible` record
+the two associated choice restrictions separately.
+
 
 `ofSellerPreferences` constructs a market from strict preferences over each
 seller's own contracts and the outside option, and supported buyer choices.
-It does not assume substitutability or feasibility of buyer choices, so it
-also represents completed markets. IRC of the induced seller choices is
-proved for finite contract types; unit demand holds without finiteness.
+It does not assume (seller-)feasibility of buyer choices, so it also represents
+completed markets. IRC of the induced seller choices is proved for finite
+contract types; unit demand is well-defined without finiteness hypotheses.
 
 ## References
 
@@ -41,7 +42,7 @@ variable {B S X : Type*} (M : Market B S X)
 def SellersUnitDemand : Prop := ∀ s, (M.choiceS s).UnitDemand
 
 /-- A buyer chooses at most one contract with each seller. This restriction
-applies to original many-to-one choices, not necessarily their completions. -/
+applies to many-to-one choice functions, not necessarily their completions. -/
 def BuyersCounterpartyFeasible : Prop :=
   ∀ b Y, Set.InjOn M.seller (M.choiceB b Y)
 
