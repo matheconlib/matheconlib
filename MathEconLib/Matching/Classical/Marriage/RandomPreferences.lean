@@ -12,8 +12,7 @@ import MathEconLib.ForMathlib.Uniform
 
 The deterministic `RankPreferences` layer encodes strict complete rankings of the other
 population. Smaller ranks are preferred. The adapter to `MarriageMarket` reverses this order
-and puts every partner above
-remaining unmatched. The two population sizes are separate parameters.
+and puts every partner above remaining unmatched. The two population sizes are separate parameters.
 
 `uniformProfile` is Mathlib's uniform PMF on the full finite profile space.
 `uniformProfile_apply_eq_prod` identifies its joint masses with the product of uniform

@@ -17,12 +17,14 @@ import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.RandomPreferences
+import MathEconLibTest.Matching.RankPreferences
 import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
 import MathEconLibTest.Mechanism.TruthfulNash
 import MathEconLibTest.Namespace
 import MathEconLibTest.Pricing.Compatibility
+import MathEconLibTest.Probability.Uniform
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples

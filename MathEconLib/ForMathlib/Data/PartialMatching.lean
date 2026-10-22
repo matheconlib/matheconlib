@@ -18,8 +18,7 @@ or decidability assumptions are involved in the graph constructions. The finite-
 lemma below shows that a partial equivalence covering the right side also covers a no-larger
 left side.
 
-The existing `PEquiv` is the only matching structure: these are constructors
-and graph lemmas for it. Its existing order remains the extension order.
+The existing `PEquiv` is the only matching structure. Its order remains the extension order.
 -/
 
 universe u v
