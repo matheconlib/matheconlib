@@ -30,6 +30,8 @@ jobs:
         run: bash scripts/check-headers.sh
       - name: Test import regeneration helper
         run: python3 scripts/tests/test_update_imports.py
+      - name: Test warning reporting helper
+        run: node --test scripts/tests/test_warning_counts.cjs
       - name: Cache project build artifacts
         uses: actions/cache@v5
         with:
@@ -62,7 +64,11 @@ jobs:
             exit 1
           fi
       - name: Build library, API pins, and namespace tests
-        run: lake build
+        id: lean_build
+        run: |
+          mkdir -p "$RUNNER_TEMP/library-warnings"
+          set -o pipefail
+          lake --rehash --no-ansi build 2>&1 | tee "$RUNNER_TEMP/library-warnings/build.log"
       - name: Commit verified import lists (same-repo PRs only)
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
@@ -72,3 +78,20 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "Run mk_all: update imports"
           git push
+      # Record after the convenience commit so counts follow the verified code
+      # even when CI has advanced the PR head by committing regenerated imports.
+      - name: Record library warning counts
+        if: always() && !cancelled()
+        env:
+          BUILD_OUTCOME: ${{ steps.lean_build.outcome }}
+          REPORT_DIRECTORY: ${{ runner.temp }}/library-warnings
+        run: node scripts/warning-counts.cjs
+      - name: Save library warning counts
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: library-warning-counts
+          path: ${{ runner.temp }}/library-warnings/snapshot.json
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90
