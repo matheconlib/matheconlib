@@ -193,5 +193,26 @@ theorem expectedAverageProposerRank_eq_sum (n : ℕ) :
   intro p _
   ring
 
+/-- The empty-population average is zero under the documented division convention. -/
+@[simp] theorem expectedAverageProposerRank_zero : expectedAverageProposerRank 0 = 0 := by
+  rw [expectedAverageProposerRank_eq_sum]
+  simp
+
+set_option maxRecDepth 4096 in
+/-- Exact finite evaluation of the existing executable DA on all sixteen two-by-two profiles.
+Eight profiles have total proposer rank two and eight have total proposer rank three.
+The kernel checks this finite calculation; no external computation supplies the proof. -/
+theorem sum_totalProposerRank_two :
+    (∑ p : RankProfile 2 2,
+      p.totalProposerRank p.toMarriageMarket.galeShapleyComputable) = 40 := by
+  decide +kernel
+
+/-- Under independent uniform complete strict rankings in the two-by-two marriage market,
+the existing executable proposer DA has expected average one-based proposer rank `5/4`.
+This is a finite ordinal-rank benchmark, not a cardinal welfare or asymptotic claim. -/
+theorem expectedAverageProposerRank_two : expectedAverageProposerRank 2 = 5 / 4 := by
+  rw [expectedAverageProposerRank_eq_sum, ← Nat.cast_sum, sum_totalProposerRank_two, card]
+  norm_num
+
 end RankProfile
 end MathEconLib.Matching.MarriageMarket
