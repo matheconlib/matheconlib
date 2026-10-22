@@ -17,6 +17,27 @@ Rank profiles encode strict complete rankings of the other population. Smaller r
 preferred. The adapter to `MarriageMarket` reverses this order and puts every partner above
 remaining unmatched. The two population sizes are separate parameters.
 
+`uniformProfile` is Mathlib's uniform PMF on the full finite profile space.
+`uniformProfile_apply_eq_prod` identifies its joint masses with the product of uniform
+individual-ranking masses. No executable random-number generator is asserted.
+
+For balanced populations, `isSome_galeShapleyComputable` and its receiver-side version show
+that the existing executable proposer DA matches everyone. `expectedAverageProposerRank_two`
+proves its expected average one-based proposer rank is `5/4` in the two-by-two model.
+The calculation is checked by Lean's kernel over all sixteen profiles.
+
+The rank adapter specializes the existing optional-partner orders; it introduces no second
+preference foundation. This is the overlap with the preference-port scoping work in issue #161.
+The generic balanced-market completeness lemma is in `Marriage.Basic`, independent of rank
+profiles and probability. Ranks remain ordinal positions; no utility representation is required.
+
+This implements the first finite benchmark in issue #166. Proposal-count bounds, balanced-market
+asymptotics, stable-matching counts, and the Ashlagi–Kanoria–Leshno imbalance results remain later
+work. In particular, assigning an outside-option rank does not define the matched-agent averages
+needed for those imbalance results.
+
+## Provenance
+
 The profile representation is adapted from `StableMarriage.Profile` in
 `FormalConjecturesForMathlib/Combinatorics/StableMarriage.lean`, formal-conjectures PR #4955,
 revision `db05d685417a9c711d7438ea966e42ff605f0413`:
@@ -25,6 +46,19 @@ The original code is copyright 2026 The Formal Conjectures Authors and licensed 
 Here its single population-size parameter is generalized to two. Stability and deferred acceptance
 are supplied by the existing matching library; no conjecture or alternative stability predicate
 is imported.
+
+## References
+
+* L. B. Wilson (1972), *An analysis of the stable marriage assignment algorithm*, BIT 12,
+  569–575. https://doi.org/10.1007/BF01932966. The general proposal bound is not formalized here.
+* Itai Ashlagi, Yash Kanoria, and Jacob D. Leshno (2017), *Unbalanced Random Matching Markets:
+  The Stark Effect of Competition*, Journal of Political Economy 125(1), 69–98.
+  https://doi.org/10.1086/689869. The independent uniform preference model agrees with Section II.A;
+  the asymptotic theorems are outside this module's scope.
+
+The `5/4` benchmark is a direct finite calculation, not an attribution of that statement to either
+paper. Related tracking: https://github.com/matheconlib/matheconlib/issues/166 and
+https://github.com/matheconlib/matheconlib/issues/161.
 -/
 
 namespace MathEconLib.Matching.MarriageMarket
