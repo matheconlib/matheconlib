@@ -11,9 +11,12 @@ import Lean
 open Lean Elab Command in
 run_cmd do
   for entry in (← getEnv).header.modules do
-    if entry.module == `MathEconLib.ForMathlib.Uniform ||
-        (`MathEconLib.Matching.Classical.Marriage.DeferredAcceptance).isPrefixOf entry.module ||
-        entry.module == `MathEconLib.Matching.Classical.Marriage.RankPreferencesDA then
+    if entry.module == `MathEconLib.ForMathlib.Uniform then
+      logError m!"General profile laws import uniform-law helpers through {entry.module}."
+    if (`MathEconLib.Matching).isPrefixOf entry.module &&
+        entry.module != `MathEconLib.Matching.Classical.Marriage.Preferences &&
+        entry.module != `MathEconLib.Matching.Classical.Marriage.RankPreferences &&
+        entry.module != `MathEconLib.Matching.Classical.Marriage.RandomPreferences then
       logError m!"General profile laws import a specialization through {entry.module}."
 
 namespace MathEconLibTest.Matching.RandomPreferences

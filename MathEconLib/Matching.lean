@@ -15,8 +15,8 @@ import MathEconLib.Matching.Classical.Marriage.Optimality
 import MathEconLib.Matching.Classical.Marriage.Preferences
 import MathEconLib.Matching.Classical.Marriage.RandomPreferences
 import MathEconLib.Matching.Classical.Marriage.RandomPreferencesUniform
-import MathEconLib.Matching.Classical.Marriage.RankPreferencesDA
 import MathEconLib.Matching.Classical.Marriage.RankPreferences
+import MathEconLib.Matching.Classical.Marriage.RankPreferencesDA
 import MathEconLib.Matching.Classical.Marriage.StableOrder
 import MathEconLib.Matching.Classical.Marriage.ToContracts
 import MathEconLib.Matching.Contracts.Basic
