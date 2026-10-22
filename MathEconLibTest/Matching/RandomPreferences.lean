@@ -3,10 +3,12 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib
+import MathEconLib.Matching
+import MathEconLib.Probability.FinDist.Measure
 
 /-!
-Public-import checks for random-preference marriage markets. These exercise the actual DA,
+Client checks through the matching umbrella for random-preference marriage markets.
+The separate finite-distribution import supports only the final expectation bridge. These exercise the actual DA,
 empty and one-agent boundaries, and the direction and population size of ordinal ranks.
 -/
 
