@@ -165,6 +165,24 @@ any linter suppression narrow and justified.
 CI's warning-count comparison is informational; an increase does not fail CI.
 All verification requirements above still apply.
 
+## Lean and Mathlib upgrades
+
+The pins on `main` define the supported Lean/Mathlib combination. Upgrade work
+is voluntary, with no fixed schedule or maximum version lag.
+
+1. Open a focused PR stating the current and proposed versions and the reason
+   for upgrading. Use the Lean version required by the chosen Mathlib revision.
+   Keep `lean-toolchain`, the Mathlib requirement in `lakefile.toml`, and Lake's
+   generated `lake-manifest.json` consistent.
+2. Include the proof, import, and setup-documentation adaptations needed for the
+   migration. Keep unrelated refactors and new features separate. Changes to
+   public statements still follow the [API stability policy](#api-stability-pins).
+3. Follow the [verification bar](#verification-bar) from a fresh checkout of the
+   proposed revision, restoring its matching Mathlib cache and building all default
+   targets. Record the tested commit and results in the PR, review any new warnings
+   under the [warning policy](#build-warnings), and confirm applicable CI passes on
+   the latest revision before merging.
+
 ## API stability pins
 
 `ApiStability.lean` at the repository root pins the exact statements of the

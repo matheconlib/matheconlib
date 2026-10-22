@@ -1,7 +1,7 @@
 # References for matching with contracts
 
 This map records the primary-source comparisons completed for PR #103 on
-10 October 2026. References prefer published versions. Page numbers are printed
+10 October 2026, with the implemented completion reduction added for PR #174. References prefer published versions. Page numbers are printed
 page numbers, not PDF page indices. Choice declarations belong to
 `MathEconLib.Choice.ChoiceFunction`; market declarations belong to
 `MathEconLib.Matching.Market`. Names below omit these prefixes where clear.
@@ -60,9 +60,27 @@ Completion does not mean pointwise enlargement. The completion formula
 immediately before Definition 6.1 does not separately impose IRC; the chapter's
 standing convention must still be accounted for. Lean therefore keeps bare substitutable
 completability separate from the existence of one completion satisfying both
-substitutability and IRC. The contracts development currently supplies those
-hypotheses and choice-level implications, not the market-existence reduction
-of Theorem 6.1.
+substitutability and IRC. `Matching.Contracts.Completion` now implements
+the market-existence reduction associated with Theorem 6.1:
+`exists_stable_of_buyerCompletions` assumes seller unit demand,
+original-market IRC and one jointly substitutable and IRC completion per
+buyer. The construction `withBuyerCompletions` preserves the incidence maps
+and seller choices; `stable_of_withBuyerCompletions` transfers every
+stable completed outcome to the original market. Individual rationality
+agrees on feasible outcomes, but equality of stable sets is not asserted.
+
+Unlike the survey's finite setting, these transfer and existence results allow
+arbitrary agent and contract types under explicit set-form IRC. The
+unilateral-substitutes existence corollaries additionally assume buyer
+counterparty feasibility and finite-valued buyer choices, with a
+finite-contract specialization. Neither pointwise enlargement nor the law of
+aggregate demand is assumed. Completion independence and agreement with
+cumulative offers remain follow-up work under #138–139.
+
+The matching regression in `MathEconLibTest/Matching/Completion.lean` adds
+two unit-demand sellers to the three-contract buyer-choice example and
+transfers the concrete stable outcome `{a, c}`. This is a separate test
+market, not a formalization of the survey's full Example 6.1 market.
 
 The survey discusses unilateral and bilateral substitutability on p. 470 but
 does not give numbered definitions of them. Use the checked HK2010 locators

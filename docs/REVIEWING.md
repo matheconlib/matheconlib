@@ -59,7 +59,9 @@ docstring is treated as a pre-merge blocker.
 6. Machines first, then you. Do not relitigate what CI checks. When CI did
    not run (stacked PRs skip it), do the missing run yourself and say so in
    the review. Check the [warning comparison](../CONTRIBUTING.md#build-warnings)
-   and review justifications for new warnings or linter suppressions.
+   and review justifications for new warnings or linter suppressions. For Lean/Mathlib
+   upgrades, check the [upgrade policy](../CONTRIBUTING.md#lean-and-mathlib-upgrades)
+   and the recorded migration results.
 7. Docs and attribution. Docstrings and README claims are checked against
    the actual declarations. Check the
    [citation guidance](../CONTRIBUTING.md#citing-sources): paper- or book-based
