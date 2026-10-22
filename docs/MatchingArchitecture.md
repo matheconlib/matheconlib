@@ -11,7 +11,7 @@ on the matching-market layer (`MathEconLib.Matching`).
 | --- | --- |
 | `MathEconLib.ForMathlib.Data` and `.Order` submodules | Generic graph, fiber-counting, fixed-point and iteration mathematics |
 | `MathEconLib.Choice` | Abstract choices, optional conditions, preference-induced choice, mapping, hulls, repairs and completion |
-| `MathEconLib.Matching.Contracts` submodules | Market data, stability, order, counting and fixed-point convergence |
+| `MathEconLib.Matching.Contracts` submodules | Market data, stability, order, counting, fixed-point convergence and many-to-one completion reduction |
 | `MathEconLib.Matching.Classical` submodules | Marriage preferences, contracts embedding, proposal algorithms and executable refinement |
 | `MathEconLibTest.Choice` and `.Matching` | Counterexamples, dependency checks and public API clients |
 
@@ -88,13 +88,12 @@ Bare substitutable completability and having one completion that satisfies
 both substitutability and IRC remain separate predicates. `Preferences`
 combines the feasible-bundle representation with its completion corollaries.
 
-The five preference-completion corollaries are helpers for the planned
-many-to-one applications, including cadet–branch matching in the
-[#38 roadmap](https://github.com/matheconlib/matheconlib/issues/38). They do not
-currently feed a formalized many-to-one market application. Unilateral
-substitutability remains a hypothesis for the bundle results; finite preference
-maximization supplies IRC. The market specialization and completion-to-stability
-reduction are deferred. The current results produce choice-function completions.
+The five preference-completion corollaries produce choice-function completions
+that can be supplied to the many-to-one market reduction in
+`Matching.Contracts.Completion`. Unilateral substitutability remains a
+hypothesis for the bundle results; finite preference maximization supplies IRC.
+Specific applications such as cadet–branch matching remain on the
+[#38 roadmap](https://github.com/matheconlib/matheconlib/issues/38).
 
 `SubstituteHull` develops the construction and its repair characterization in
 one file. Hull and terminal-endpoint results allow arbitrary alternative types;
@@ -103,6 +102,8 @@ The section headings separate these scopes without introducing another module.
 
 | Matching-market module | Contents |
 | --- | --- |
+| `Matching.Contracts.ManyToOne` | Seller unit demand, buyer counterparty feasibility, outcome feasibility and construction from seller preferences |
+| `Matching.Contracts.Completion` | Completed markets, stability transfer, stable existence and unilateral-substitutes corollaries |
 | `Matching.Classical.Marriage.Preferences` | Market preference data, acceptability, induced choice functions and finite maximization |
 | `Matching.Classical.Marriage.Basic` | Matching, individual rationality, blocking, stability and optimality specifications |
 | `Matching.Classical.Marriage.ToContracts` | Embedding the marriage model into contracts, graph/reconstruction and the preference dictionary |
@@ -125,8 +126,39 @@ Public names use `ofOptionLinearOrder` for the optional-partner constructor,
 `galeShapleyRoundBound` for the uniform round bound, and explicit
 `deferredAcceptanceOperator`/`deferredAcceptanceOrderHom` names.
 `DeferredAcceptanceComputable` contains the executable refinement. None of these
-organizational steps removes finiteness assumptions or supplies a new market
-existence reduction under weak substitutability.
+organizational steps removes finiteness assumptions. The many-to-one completion
+reduction below is a separate mathematical extension.
+
+## Many-to-one completion reduction
+
+`Matching.Contracts.ManyToOne` specializes the existing `Market` and
+`Stable` definitions. Sellers are unit-demand proposers; buyers are accepting
+institutions. `SellersUnitDemand`, `BuyersCounterpartyFeasible` and
+`ManyToOneFeasible` state separate restrictions. The constructor
+`ofSellerPreferences` uses strict orders over each seller's own contracts
+and the outside option. Its seller choices are unit demand on arbitrary types;
+the IRC theorem assumes finite contracts.
+
+`Matching.Contracts.Completion` constructs `withBuyerCompletions` using
+the existing support-preservation theorem. Individual rationality agrees
+between the original and completed markets on feasible outcomes.
+`stable_of_withBuyerCompletions` transfers every stable completed outcome
+to the original market under seller unit demand, original-market IRC, and
+substitutability and IRC of the specified buyer completions.
+`exists_stable_of_buyerCompletions` obtains a feasible stable outcome
+when each buyer has one completion satisfying both conditions.
+
+These results allow arbitrary agent and contract types under set-form IRC.
+They require neither pointwise enlargement nor the law of aggregate demand,
+and do not assert equality of the two markets' stable sets.
+The unilateral-substitutes corollaries additionally assume buyer counterparty
+feasibility and finite-valued buyer choices; a finite-contract specialization
+is also provided. The public-API regression client
+`MathEconLibTest/Matching/Completion.lean` applies the general reduction to
+a non-unilaterally-substitutable buyer and transfers a concrete stable outcome.
+Completion independence and agreement with cumulative offers remain follow-up
+work in [#138](https://github.com/matheconlib/matheconlib/issues/138) and
+[#139](https://github.com/matheconlib/matheconlib/issues/139).
 
 ## Stability and locality
 
