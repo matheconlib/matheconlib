@@ -7,6 +7,7 @@ import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.ConditionalBeliefs
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
+import MathEconLibTest.GameTheory.MatchingPennies
 import MathEconLibTest.GameTheory.MeasurableBayesian
 import MathEconLibTest.GameTheory.OrderedPayoffs
 import MathEconLibTest.GameTheory.Strategic
