@@ -27,6 +27,9 @@ separate `MathEconLibTest` library so compile-time checks are not part of the
 production `MathEconLib` import graph.
 -/
 
+-- This module only contains `example`s, which are never public.
+set_option linter.privateModule false
+
 open MathEconLib
 
 open Set MeasureTheory

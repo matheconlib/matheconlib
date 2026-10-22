@@ -62,16 +62,15 @@ theorem absolutelyContinuousOnInterval_cdf {μ : Measure ℝ} [IsProbabilityMeas
   set g : ℝ → ℝ := fun t => (μ.rnDeriv volume t).toReal
   have hg_int : IntervalIntegrable g volume a s :=
     intervalIntegrable_iff.mpr integrable_toReal_rnDeriv.integrableOn
-  have h_eq : (fun x => F x) = fun x => ∫ t in a..x, g t := by
+  have h_eq : (F : ℝ → ℝ) = fun x => ∫ t in a..x, g t := by
     have hFm : F.measure = μ := measure_cdf μ
     ext x
     by_cases hax : a ≤ x
     · have h1 : ∫ t in Set.Ioc a x, g t ∂volume = F x := by
         trans μ.real (Set.Ioc a x)
         · exact setIntegral_toReal_rnDeriv habs _
-        · show (μ (Set.Ioc a x)).toReal = F x
-          rw [← hFm, F.measure_Ioc, ENNReal.toReal_ofReal (sub_nonneg.mpr (F.mono hax)), ha,
-            sub_zero]
+        · rw [measureReal_def, ← hFm, F.measure_Ioc,
+            ENNReal.toReal_ofReal (sub_nonneg.mpr (F.mono hax)), ha, sub_zero]
       rw [intervalIntegral.integral_of_le hax, h1]
     · push_neg at hax
       have hFx : F x = 0 := by
@@ -80,11 +79,9 @@ theorem absolutelyContinuousOnInterval_cdf {μ : Measure ℝ} [IsProbabilityMeas
       have h1 : ∫ t in Set.Ioc x a, g t ∂volume = 0 := by
         trans μ.real (Set.Ioc x a)
         · exact setIntegral_toReal_rnDeriv habs _
-        · show (μ (Set.Ioc x a)).toReal = 0
-          rw [← hFm, F.measure_Ioc, ha, hFx, sub_zero,
+        · rw [measureReal_def, ← hFm, F.measure_Ioc, ha, hFx, sub_zero,
               ENNReal.ofReal_zero, ENNReal.toReal_zero]
       rw [hFx, intervalIntegral.integral_symm, intervalIntegral.integral_of_le hax.le,
           h1, neg_zero]
-  show AbsolutelyContinuousOnInterval (fun x => F x) a s
   rw [h_eq]
   exact hg_int.absolutelyContinuousOnInterval_intervalIntegral Set.left_mem_uIcc

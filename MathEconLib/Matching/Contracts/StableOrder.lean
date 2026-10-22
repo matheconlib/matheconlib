@@ -77,7 +77,6 @@ theorem sellerChosen_outcomeOf_of_le_of_consistent (hcons : M.Consistent)
     (Set.subset_union_left : M.outcomeOf q ⊆ M.outcomeOf q ∪ M.outcomeOf p)
     (Set.union_subset hoq hop)
   have e2 := M.choiceS_eq_of_isFixedPt_sandwich hcons hq s (subset_refl _) hoq
-  show M.choiceS s (M.outcomeOf q ∪ M.outcomeOf p) = M.sellerSide s (M.outcomeOf q)
   rw [e1, ← e2]
   exact (M.indRational_outcomeOf hcons hq).2 s
 
@@ -93,7 +92,6 @@ theorem buyerChosen_outcomeOf_of_le_of_consistent (hcons : M.Consistent)
     (Set.subset_union_left : M.outcomeOf p ⊆ M.outcomeOf p ∪ M.outcomeOf q)
     (Set.union_subset hop hoq)
   have e2 := M.choiceB_eq_of_isFixedPt_sandwich hcons hp b (subset_refl _) hop
-  show M.choiceB b (M.outcomeOf p ∪ M.outcomeOf q) = M.buyerSide b (M.outcomeOf p)
   rw [e1, ← e2]
   exact (M.indRational_outcomeOf hcons hp).1 b
 
@@ -144,7 +142,6 @@ theorem buyerChosen_of_sellerChosen {A A' : Set X} (hA : M.Stable A)
     have hyS : y ∈ M.choiceS (M.seller y) (insert y A) :=
       hchS hins' ⟨hyS0, Set.mem_insert _ _⟩
     exact hyA (M.not_blocking_singleton hA hyB hyS)
-  show M.choiceB b (A ∪ A') = M.buyerSide b A
   rw [← hcons.1 b key (fun x hx => Or.inl hx), hA.1.1 b]
 
 /-- Opposition of interests, buyer ⇒ seller. -/
@@ -172,7 +169,6 @@ theorem sellerChosen_of_buyerChosen {A A' : Set X} (hA' : M.Stable A')
     have hyB : y ∈ M.choiceB (M.buyer y) (insert y A') :=
       hchB hins' ⟨hyB0, Set.mem_insert _ _⟩
     exact hyA' (M.not_blocking_singleton hA' hyB hyS)
-  show M.choiceS s (A' ∪ A) = M.sellerSide s A'
   rw [← hcons.2 s key (fun x hx => Or.inl hx), hA'.1.2 s]
 
 /-- Unanimous seller choice identifies the choices from `A' ∪ A` and `A'`.
@@ -226,15 +222,15 @@ theorem le_of_sellerChosen_outcomeOf {p q : Set X × (Set X)ᵒᵈ}
   · rw [← M.toSellers_outcomeOf hsub hcons hp,
       ← M.toSellers_outcomeOf hsub hcons hq]
     exact h1
-  · show (ofDual q.2 : Set X) ⊆ (ofDual p.2 : Set X)
-    rw [← M.toBuyers_outcomeOf hsub hcons hp,
+  · rw [← OrderDual.ofDual_le_ofDual, ← M.toBuyers_outcomeOf hsub hcons hp,
       ← M.toBuyers_outcomeOf hsub hcons hq]
     exact h2
 
 /-- **The order dictionary, seller form.**  The lattice order *is* unanimous
 seller choice. -/
 theorem le_iff_sellerChosen_outcomeOf {p q : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.deferredAcceptanceOperator p) (hq : IsFixedPt M.deferredAcceptanceOperator q) :
+    (hp : IsFixedPt M.deferredAcceptanceOperator p)
+    (hq : IsFixedPt M.deferredAcceptanceOperator q) :
     p ≤ q ↔ M.SellerChosen (M.outcomeOf q) (M.outcomeOf p) :=
   ⟨M.sellerChosen_outcomeOf_of_le_of_consistent hcons hq,
    M.le_of_sellerChosen_outcomeOf hsub hcons hp hq⟩
@@ -242,7 +238,8 @@ theorem le_iff_sellerChosen_outcomeOf {p q : Set X × (Set X)ᵒᵈ}
 /-- **The order dictionary, buyer form.**  The same order is the *reverse* of
 unanimous buyer choice. -/
 theorem le_iff_buyerChosen_outcomeOf {p q : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.deferredAcceptanceOperator p) (hq : IsFixedPt M.deferredAcceptanceOperator q) :
+    (hp : IsFixedPt M.deferredAcceptanceOperator p)
+    (hq : IsFixedPt M.deferredAcceptanceOperator q) :
     p ≤ q ↔ M.BuyerChosen (M.outcomeOf p) (M.outcomeOf q) :=
   ⟨M.buyerChosen_outcomeOf_of_le_of_consistent hcons hp,
    fun h => M.le_of_sellerChosen_outcomeOf hsub hcons hp hq
@@ -266,7 +263,8 @@ now instances of the dictionary at `q := gfp`, not separate arguments. -/
 theorem sellerChosen_sellerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
     M.SellerChosen (M.sellerOptimal hsub hcons) A := by
-  have hp : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) := M.isFixedPt_stateOf hsub hcons hA
+  have hp : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) :=
+    M.isFixedPt_stateOf hsub hcons hA
   have h := M.sellerChosen_outcomeOf_of_le_of_consistent hcons
     (M.isFixedPt_gfp_deferredAcceptanceOrderHom hsub) (M.le_gfp_deferredAcceptanceOrderHom hsub hp)
   rw [M.outcomeOf_stateOf_of_stable hA] at h
@@ -277,7 +275,8 @@ buyer-chosen over it. -/
 theorem buyerChosen_sellerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
     M.BuyerChosen A (M.sellerOptimal hsub hcons) := by
-  have hp : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) := M.isFixedPt_stateOf hsub hcons hA
+  have hp : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) :=
+    M.isFixedPt_stateOf hsub hcons hA
   have h := M.buyerChosen_outcomeOf_of_le_of_consistent hcons hp
     (M.le_gfp_deferredAcceptanceOrderHom hsub hp)
   rw [M.outcomeOf_stateOf_of_stable hA] at h
@@ -286,7 +285,8 @@ theorem buyerChosen_sellerOptimal (hsub : M.Substitutable)
 theorem buyerChosen_buyerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
     M.BuyerChosen (M.buyerOptimal hsub hcons) A := by
-  have hq : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) := M.isFixedPt_stateOf hsub hcons hA
+  have hq : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) :=
+    M.isFixedPt_stateOf hsub hcons hA
   have h := M.buyerChosen_outcomeOf_of_le_of_consistent hcons
     (M.isFixedPt_lfp_deferredAcceptanceOrderHom hsub) (M.lfp_le_deferredAcceptanceOrderHom hsub hq)
   rw [M.outcomeOf_stateOf_of_stable hA] at h
@@ -295,7 +295,8 @@ theorem buyerChosen_buyerOptimal (hsub : M.Substitutable)
 theorem sellerChosen_buyerOptimal (hsub : M.Substitutable)
     (hcons : M.Consistent) {A : Set X} (hA : M.Stable A) :
     M.SellerChosen A (M.buyerOptimal hsub hcons) := by
-  have hq : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) := M.isFixedPt_stateOf hsub hcons hA
+  have hq : IsFixedPt M.deferredAcceptanceOperator (M.stateOf A) :=
+    M.isFixedPt_stateOf hsub hcons hA
   have h := M.sellerChosen_outcomeOf_of_le_of_consistent hcons hq
     (M.lfp_le_deferredAcceptanceOrderHom hsub hq)
   rw [M.outcomeOf_stateOf_of_stable hA] at h
@@ -337,7 +338,8 @@ variable {hsub : M.Substitutable}
 /-- The state of a fixed-point lattice element. -/
 def state (A : M.FixedPointStates hsub) : Set X × (Set X)ᵒᵈ := A.1
 
-theorem isFixedPt (A : M.FixedPointStates hsub) : IsFixedPt M.deferredAcceptanceOperator A.state := A.2
+theorem isFixedPt (A : M.FixedPointStates hsub) :
+    IsFixedPt M.deferredAcceptanceOperator A.state := A.2
 
 /-- The contract set carried by a fixed point; its stability requires IRC. -/
 def outcome (A : M.FixedPointStates hsub) : Set X := M.outcomeOf A.state
@@ -377,7 +379,8 @@ variable {hcons : M.Consistent}
 def state (A : M.StableOutcomes hsub hcons) : Set X × (Set X)ᵒᵈ :=
   FixedPointStates.state A
 
-theorem isFixedPt (A : M.StableOutcomes hsub hcons) : IsFixedPt M.deferredAcceptanceOperator A.state :=
+theorem isFixedPt (A : M.StableOutcomes hsub hcons) :
+    IsFixedPt M.deferredAcceptanceOperator A.state :=
   FixedPointStates.isFixedPt A
 
 /-- The contract set carried by a stable-outcome lattice element. -/
@@ -512,13 +515,15 @@ alone does not establish a counterexample in a market with two stable outcomes.
 
 /-- The componentwise join of two fixed points is a post-fixed point. -/
 theorem le_deferredAcceptanceOperator_sup (hsub : M.Substitutable) {p q : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.deferredAcceptanceOperator p) (hq : IsFixedPt M.deferredAcceptanceOperator q) :
+    (hp : IsFixedPt M.deferredAcceptanceOperator p)
+    (hq : IsFixedPt M.deferredAcceptanceOperator q) :
     p ⊔ q ≤ M.deferredAcceptanceOperator (p ⊔ q) :=
   (M.deferredAcceptanceOrderHom hsub).le_map_sup_fixedPoints ⟨p, hp⟩ ⟨q, hq⟩
 
 /-- The componentwise meet of two fixed points is a pre-fixed point. -/
 theorem deferredAcceptanceOperator_inf_le (hsub : M.Substitutable) {p q : Set X × (Set X)ᵒᵈ}
-    (hp : IsFixedPt M.deferredAcceptanceOperator p) (hq : IsFixedPt M.deferredAcceptanceOperator q) :
+    (hp : IsFixedPt M.deferredAcceptanceOperator p)
+    (hq : IsFixedPt M.deferredAcceptanceOperator q) :
     M.deferredAcceptanceOperator (p ⊓ q) ≤ p ⊓ q :=
   (M.deferredAcceptanceOrderHom hsub).map_inf_fixedPoints_le ⟨p, hp⟩ ⟨q, hq⟩
 

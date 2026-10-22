@@ -92,11 +92,11 @@ theorem substitutable_toContractsMarket : mkt.toContractsMarket.Substitutable :=
 theorem sizeMonotone_toContractsMarket : mkt.toContractsMarket.SizeMonotone :=
   ⟨mkt.sizeMonotone_inducedChoiceW, mkt.sizeMonotone_inducedChoiceM⟩
 
-variable [Fintype M] [Fintype W]
+variable [Finite M] [Finite W]
 
 /-! ## Individual rationality translation -/
 
-omit [Fintype M] in
+omit [Finite M] in
 /-- A man's individual rationality implies that he chooses his entire
 side of the matching graph. -/
 theorem choiceM_graphOf_eq_side
@@ -104,6 +104,7 @@ theorem choiceM_graphOf_eq_side
     (hIR : mkt.IndividuallyRationalForM μ m) :
     mkt.toContractsMarket.choiceS m (mkt.graphOf μ) =
       mkt.toContractsMarket.sellerSide m (mkt.graphOf μ) := by
+  letI := Fintype.ofFinite W
   ext p
   rcases p with ⟨m', w⟩
   constructor
@@ -123,7 +124,7 @@ theorem choiceM_graphOf_eq_side
       have hww' : w' = w := mkt.graphOf_rightUnique μ hw' hpY
       exact le_of_eq (congrArg Option.some hww')
 
-omit [Fintype W] in
+omit [Finite W] in
 /-- A woman's individual rationality implies that she chooses her entire
 side of the matching graph. -/
 theorem choiceW_graphOf_eq_side
@@ -131,6 +132,7 @@ theorem choiceW_graphOf_eq_side
     (hIR : mkt.IndividuallyRationalForW μ w) :
     mkt.toContractsMarket.choiceB w (mkt.graphOf μ) =
       mkt.toContractsMarket.buyerSide w (mkt.graphOf μ) := by
+  letI := Fintype.ofFinite M
   ext p
   rcases p with ⟨m, w'⟩
   constructor
@@ -156,7 +158,7 @@ theorem individuallyRational_graphOf
   ⟨fun w => mkt.choiceW_graphOf_eq_side (hIR.2 w),
     fun m => mkt.choiceM_graphOf_eq_side (hIR.1 m)⟩
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem individuallyRational_of_graphOf
     {μ : M ≃. W}
     (hIR : mkt.toContractsMarket.IndRational (mkt.graphOf μ)) :
@@ -205,7 +207,7 @@ theorem individuallyRational_iff_indRational_graphOf (μ : M ≃. W) :
 
 /-! ## Singleton acceptance and blocking pairs -/
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 /-- An individually rational man accepts a new contract precisely when
 his side of the blocking condition holds. -/
 theorem mem_choiceM_insert_graphOf_iff
@@ -239,7 +241,7 @@ theorem mem_choiceM_insert_graphOf_iff
         rw [hμ] at h
         exact h
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 /-- An individually rational woman accepts a new contract precisely when
 her side of the blocking condition holds. -/
 theorem mem_choiceW_insert_graphOf_iff
@@ -273,7 +275,7 @@ theorem mem_choiceW_insert_graphOf_iff
         rw [hμ] at h
         exact h
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem blocks_singleton_graphOf_iff
     {μ : M ≃. W} (hIR : mkt.IndividuallyRational μ)
     {m : M} {w : W} :
@@ -329,7 +331,7 @@ theorem isStableMatching_iff_stable_graphOf (μ : M ≃. W) :
 
 /-! ## Recovering a partial matching from a stable outcome -/
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem seller_fiber_subsingleton {A : Set (M × W)}
     (hA : mkt.toContractsMarket.IndRational A) (m : M) :
     {w | (m, w) ∈ A}.Subsingleton := by
@@ -344,7 +346,7 @@ theorem seller_fiber_subsingleton {A : Set (M × W)}
     mkt.unitDemand_inducedChoiceM m A h1 h2
   exact congrArg Prod.snd hp
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem buyer_fiber_subsingleton {A : Set (M × W)}
     (hA : mkt.toContractsMarket.IndRational A) (w : W) :
     {m | (m, w) ∈ A}.Subsingleton := by
@@ -372,14 +374,14 @@ noncomputable def partnerWOf
     (mkt : MarriageMarket M W) (A : Set (M × W)) (w : W) : Option M :=
   PEquiv.relationValue (fun w m => (m, w) ∈ A) w
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem partnerMOf_eq_some_iff {A : Set (M × W)}
     (hsub : ∀ m, {w | (m, w) ∈ A}.Subsingleton)
     {m : M} {w : W} :
     mkt.partnerMOf A m = some w ↔ (m, w) ∈ A :=
   PEquiv.relationValue_eq_some_iff (hsub m)
 
-omit [Fintype W] [Fintype M] in
+omit [Finite W] [Finite M] in
 theorem partnerWOf_eq_some_iff {A : Set (M × W)}
     (hsub : ∀ w, {m | (m, w) ∈ A}.Subsingleton)
     {m : M} {w : W} :
@@ -398,13 +400,13 @@ noncomputable def matchingOfStable {A : Set (M × W)}
     (hA : mkt.toContractsMarket.Stable A) : M ≃. W :=
   mkt.matchingOfIndRational hA.1
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 @[simp] theorem graphOf_matchingOfIndRational {A : Set (M × W)}
     (hA : mkt.toContractsMarket.IndRational A) :
     mkt.graphOf (mkt.matchingOfIndRational hA) = A :=
   PEquiv.graph_ofRelation _ _ _
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 @[simp] theorem graphOf_matchingOfStable {A : Set (M × W)}
     (hA : mkt.toContractsMarket.Stable A) :
     mkt.graphOf (mkt.matchingOfStable hA) = A :=
@@ -429,26 +431,26 @@ The exact dictionary includes only individual rationality on the choosing
 side. The forward preference implication has no rationality hypothesis:
 choosing the graph already certifies acceptance of its assignments. -/
 
-omit [Fintype M] in
+omit [Finite M] [Finite W] in
 /-- An assignment belongs to every menu containing its matching graph. -/
-theorem assignment_mem_menuM {μ : M ≃. W} {Y : Set (M × W)}
+theorem assignment_mem_menuM [Fintype W] {μ : M ≃. W} {Y : Set (M × W)}
     (hY : mkt.graphOf μ ⊆ Y) (m : M) : μ m ∈ mkt.menuM m Y := by
   cases hμ : μ m with
   | none => exact mkt.none_mem_menuM m Y
   | some w => exact mkt.some_mem_menuM.mpr (hY (mkt.mem_graphOf.mpr hμ))
 
-omit [Fintype W] in
+omit [Finite M] [Finite W] in
 /-- The symmetric assignment-membership statement for women. -/
-theorem assignment_mem_menuW {μ : M ≃. W} {Y : Set (M × W)}
+theorem assignment_mem_menuW [Fintype M] {μ : M ≃. W} {Y : Set (M × W)}
     (hY : mkt.graphOf μ ⊆ Y) (w : W) : μ.symm w ∈ mkt.menuW w Y := by
   cases hμ : μ.symm w with
   | none => exact mkt.none_mem_menuW w Y
   | some m => exact mkt.some_mem_menuW.mpr (hY (mkt.mem_graphOf_symm.mpr hμ))
 
-omit [Fintype M] in
+omit [Finite M] [Finite W] in
 /-- Choosing exactly a man's assignment identifies his best option, including
 when his assignment is the outside option. -/
-theorem bestM_eq_of_choiceM_eq_side {μ : M ≃. W} {Y : Set (M × W)} {m : M}
+theorem bestM_eq_of_choiceM_eq_side [Fintype W] {μ : M ≃. W} {Y : Set (M × W)} {m : M}
     (hchoice : mkt.inducedChoiceM m Y = mkt.toContractsMarket.sellerSide m (mkt.graphOf μ)) :
     mkt.bestM m Y = μ m := by
   cases hbest : mkt.bestM m Y with
@@ -468,9 +470,9 @@ theorem bestM_eq_of_choiceM_eq_side {μ : M ≃. W} {Y : Set (M × W)} {m : M}
       rw [hchoice] at hc
       exact (mkt.mem_graphOf.mp hc.1).symm
 
-omit [Fintype W] in
+omit [Finite M] [Finite W] in
 /-- The symmetric identification of a woman's best option. -/
-theorem bestW_eq_of_choiceW_eq_side {μ : M ≃. W} {Y : Set (M × W)} {w : W}
+theorem bestW_eq_of_choiceW_eq_side [Fintype M] {μ : M ≃. W} {Y : Set (M × W)} {w : W}
     (hchoice : mkt.inducedChoiceW w Y = mkt.toContractsMarket.buyerSide w (mkt.graphOf μ)) :
     mkt.bestW w Y = μ.symm w := by
   cases hbest : mkt.bestW w Y with
@@ -490,11 +492,12 @@ theorem bestW_eq_of_choiceW_eq_side {μ : M ≃. W} {Y : Set (M × W)} {w : W}
       rw [hchoice] at hc
       exact (mkt.mem_graphOf_symm.mp hc.1).symm
 
-omit [Fintype M] in
+omit [Finite M] in
 /-- Seller unanimity implies unanimous men's preference, without an IR assumption. -/
 theorem menWeaklyPrefer_of_sellerChosen_graphOf {μ ν : M ≃. W}
     (hchosen : mkt.toContractsMarket.SellerChosen (mkt.graphOf μ) (mkt.graphOf ν)) :
     mkt.MenWeaklyPrefer μ ν := by
+  letI := Fintype.ofFinite W
   intro m
   have hbest := mkt.bestM_eq_of_choiceM_eq_side (hchosen m)
   simpa only [hbest] using mkt.le_bestM_of_mem
@@ -502,11 +505,12 @@ theorem menWeaklyPrefer_of_sellerChosen_graphOf {μ ν : M ≃. W}
       (Y := mkt.graphOf μ ∪ mkt.graphOf ν)
       Set.subset_union_right m)
 
-omit [Fintype W] in
+omit [Finite W] in
 /-- Buyer unanimity implies unanimous women's preference, without an IR assumption. -/
 theorem womenWeaklyPrefer_of_buyerChosen_graphOf {μ ν : M ≃. W}
     (hchosen : mkt.toContractsMarket.BuyerChosen (mkt.graphOf μ) (mkt.graphOf ν)) :
     mkt.WomenWeaklyPrefer μ ν := by
+  letI := Fintype.ofFinite M
   intro w
   have hbest := mkt.bestW_eq_of_choiceW_eq_side (hchosen w)
   simpa only [hbest] using mkt.le_bestW_of_mem
@@ -514,7 +518,7 @@ theorem womenWeaklyPrefer_of_buyerChosen_graphOf {μ ν : M ≃. W}
       (Y := mkt.graphOf μ ∪ mkt.graphOf ν)
       Set.subset_union_right w)
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 /-- Seller unanimity certifies men's individual rationality
 for the chosen matching. -/
 theorem individuallyRationalM_of_sellerChosen_graphOf {μ ν : M ≃. W}
@@ -535,7 +539,7 @@ theorem individuallyRationalM_of_sellerChosen_graphOf {μ ν : M ≃. W}
         exact ⟨mkt.mem_graphOf.mpr hμ, rfl⟩
       exact (mkt.mem_inducedChoiceM_iff.mp hwChoice).2.1
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 /-- Buyer unanimity certifies women's individual rationality
 for the chosen matching. -/
 theorem individuallyRationalW_of_buyerChosen_graphOf {μ ν : M ≃. W}
@@ -556,7 +560,7 @@ theorem individuallyRationalW_of_buyerChosen_graphOf {μ ν : M ≃. W}
         exact ⟨mkt.mem_graphOf_symm.mpr hμ, rfl⟩
       exact (mkt.mem_inducedChoiceW_iff.mp hwChoice).2.1
 
-omit [Fintype M] in
+omit [Finite M] in
 /-- Compatibility form of the hypothesis-free forward dictionary. -/
 theorem leM_of_sellerChosen_graphOf {μ ν : M ≃. W}
     (_hμ : mkt.IndividuallyRational μ) (_hν : mkt.IndividuallyRational ν)
@@ -564,7 +568,7 @@ theorem leM_of_sellerChosen_graphOf {μ ν : M ≃. W}
     mkt.leM m (ν m) (μ m) :=
   mkt.menWeaklyPrefer_of_sellerChosen_graphOf hchosen m
 
-omit [Fintype W] in
+omit [Finite W] in
 /-- Compatibility form of the hypothesis-free symmetric dictionary. -/
 theorem leW_of_buyerChosen_graphOf {μ ν : M ≃. W}
     (_hμ : mkt.IndividuallyRational μ) (_hν : mkt.IndividuallyRational ν)
@@ -572,11 +576,12 @@ theorem leW_of_buyerChosen_graphOf {μ ν : M ≃. W}
     mkt.leW w (ν.symm w) (μ.symm w) :=
   mkt.womenWeaklyPrefer_of_buyerChosen_graphOf hchosen w
 
-omit [Fintype M] in
+omit [Finite M] in
 /-- Unanimous classical preferences recover the seller-choice relation. -/
 theorem sellerChosen_graphOf_of_individuallyRationalM {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRationalM μ) (h : mkt.MenWeaklyPrefer μ ν) :
     mkt.toContractsMarket.SellerChosen (mkt.graphOf μ) (mkt.graphOf ν) := by
+  letI := Fintype.ofFinite W
   intro m
   letI := mkt.prefM m
   ext p
@@ -606,11 +611,12 @@ theorem sellerChosen_graphOf_of_individuallyRationalM {μ ν : M ≃. W}
       · exact le_of_eq ((mkt.mem_graphOf.mp hw').symm.trans hμm)
       · simpa only [mkt.mem_graphOf.mp hw', hμm] using h m
 
-omit [Fintype W] in
+omit [Finite W] in
 /-- Unanimous classical preferences recover the buyer-choice relation. -/
 theorem buyerChosen_graphOf_of_individuallyRationalW {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRationalW μ) (h : mkt.WomenWeaklyPrefer μ ν) :
     mkt.toContractsMarket.BuyerChosen (mkt.graphOf μ) (mkt.graphOf ν) := by
+  letI := Fintype.ofFinite M
   intro w
   letI := mkt.prefW w
   ext p
@@ -640,7 +646,7 @@ theorem buyerChosen_graphOf_of_individuallyRationalW {μ ν : M ≃. W}
       · exact le_of_eq ((mkt.mem_graphOf_symm.mp hm').symm.trans hμw)
       · simpa only [mkt.mem_graphOf_symm.mp hm', hμw] using h w
 
-omit [Fintype M] in
+omit [Finite M] in
 /-- Exact seller dictionary, with the necessary IR condition made explicit. -/
 theorem sellerChosen_graphOf_iff_individuallyRationalM_and_menWeaklyPrefer {μ ν : M ≃. W} :
     mkt.toContractsMarket.SellerChosen (mkt.graphOf μ) (mkt.graphOf ν) ↔
@@ -649,7 +655,7 @@ theorem sellerChosen_graphOf_iff_individuallyRationalM_and_menWeaklyPrefer {μ �
       mkt.menWeaklyPrefer_of_sellerChosen_graphOf h⟩,
     fun h => mkt.sellerChosen_graphOf_of_individuallyRationalM h.1 h.2⟩
 
-omit [Fintype W] in
+omit [Finite W] in
 /-- Exact buyer dictionary, with the necessary IR condition made explicit. -/
 theorem buyerChosen_graphOf_iff_individuallyRationalW_and_womenWeaklyPrefer {μ ν : M ≃. W} :
     mkt.toContractsMarket.BuyerChosen (mkt.graphOf μ) (mkt.graphOf ν) ↔
@@ -658,7 +664,7 @@ theorem buyerChosen_graphOf_iff_individuallyRationalW_and_womenWeaklyPrefer {μ 
       mkt.womenWeaklyPrefer_of_buyerChosen_graphOf h⟩,
     fun h => mkt.buyerChosen_graphOf_of_individuallyRationalW h.1 h.2⟩
 
-omit [Fintype M] in
+omit [Finite M] in
 /-- Only the chosen matching's men's IR is needed for this order dictionary. -/
 theorem sellerChosen_graphOf_iff_menWeaklyPrefer_of_individuallyRationalM {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRationalM μ) :
@@ -667,7 +673,7 @@ theorem sellerChosen_graphOf_iff_menWeaklyPrefer_of_individuallyRationalM {μ ν
   ⟨mkt.menWeaklyPrefer_of_sellerChosen_graphOf,
     mkt.sellerChosen_graphOf_of_individuallyRationalM hμ⟩
 
-omit [Fintype W] in
+omit [Finite W] in
 /-- Only the chosen matching's women's IR is needed for this order dictionary. -/
 theorem buyerChosen_graphOf_iff_womenWeaklyPrefer_of_individuallyRationalW {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRationalW μ) :
@@ -676,21 +682,21 @@ theorem buyerChosen_graphOf_iff_womenWeaklyPrefer_of_individuallyRationalW {μ �
   ⟨mkt.womenWeaklyPrefer_of_buyerChosen_graphOf,
     mkt.buyerChosen_graphOf_of_individuallyRationalW hμ⟩
 
-omit [Fintype M] in
+omit [Finite M] in
 /-- Convenient compatibility specialization using full individual rationality. -/
 theorem sellerChosen_graphOf_of_menWeaklyPrefer {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRational μ) (h : mkt.MenWeaklyPrefer μ ν) :
     mkt.toContractsMarket.SellerChosen (mkt.graphOf μ) (mkt.graphOf ν) :=
   mkt.sellerChosen_graphOf_of_individuallyRationalM hμ.1 h
 
-omit [Fintype W] in
+omit [Finite W] in
 /-- Convenient compatibility specialization using full individual rationality. -/
 theorem buyerChosen_graphOf_of_womenWeaklyPrefer {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRational μ) (h : mkt.WomenWeaklyPrefer μ ν) :
     mkt.toContractsMarket.BuyerChosen (mkt.graphOf μ) (mkt.graphOf ν) :=
   mkt.buyerChosen_graphOf_of_individuallyRationalW hμ.2 h
 
-omit [Fintype M] in
+omit [Finite M] in
 /-- Compatibility dictionary for individually rational matchings. -/
 theorem sellerChosen_graphOf_iff_menWeaklyPrefer {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRational μ) (_hν : mkt.IndividuallyRational ν) :
@@ -698,7 +704,7 @@ theorem sellerChosen_graphOf_iff_menWeaklyPrefer {μ ν : M ≃. W}
       mkt.MenWeaklyPrefer μ ν :=
   mkt.sellerChosen_graphOf_iff_menWeaklyPrefer_of_individuallyRationalM hμ.1
 
-omit [Fintype W] in
+omit [Finite W] in
 /-- Compatibility dictionary for individually rational matchings. -/
 theorem buyerChosen_graphOf_iff_womenWeaklyPrefer {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRational μ) (_hν : mkt.IndividuallyRational ν) :

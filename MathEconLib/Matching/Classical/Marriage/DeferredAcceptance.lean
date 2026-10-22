@@ -361,14 +361,16 @@ theorem galeShapley_womanPessimal {ν : M ≃. W}
 /-- The classical and contracts proofs compute the same man-optimal matching. -/
 theorem galeShapley_eq_manOptimalMatching :
     mkt.galeShapley = mkt.manOptimalMatching :=
-  mkt.gsMatchingAt_eq_manOptimalMatching mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
+  mkt.gsMatchingAt_eq_manOptimalMatching
+    mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
 
 /-- At the uniform round bound, the proposal graph is the contracts
 seller-optimal outcome. This is an equality of terminal outcomes; it does not
 assert that the classical and generalized iterations coincide round by round. -/
 theorem gs_terminal_proposals_eq_sellerOptimal :
     mkt.gsProposals (mkt.gsRejected mkt.galeShapleyRoundBound) =
-      mkt.toContractsMarket.sellerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket := by
+      mkt.toContractsMarket.sellerOptimal
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket := by
   calc mkt.gsProposals (mkt.gsRejected mkt.galeShapleyRoundBound)
       = mkt.graphOf mkt.galeShapley :=
           (mkt.graphOf_gsMatchingAt _ mkt.galeShapleyRoundBound_terminal).symm

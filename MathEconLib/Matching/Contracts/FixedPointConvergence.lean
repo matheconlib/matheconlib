@@ -50,7 +50,8 @@ theorem exists_iterate_deferredAcceptanceOperator_top (hsub : M.Substitutable) [
   letI := Fintype.ofFinite X
   obtain ⟨n, hn⟩ := OrderHom.exists_iterate_top_eq_gfp (M.deferredAcceptanceOrderHom hsub)
   refine ⟨n, ?_⟩
-  -- `⊤ = (univ, toDual ∅)` and `⇑(M.deferredAcceptanceOrderHom hsub) = M.deferredAcceptanceOperator` are definitional.
+  -- `⊤ = (univ, toDual ∅)` and
+  -- `⇑(M.deferredAcceptanceOrderHom hsub) = M.deferredAcceptanceOperator` are definitional.
   have htop : ((Set.univ, toDual (∅ : Set X)) : Set X × (Set X)ᵒᵈ) = ⊤ := rfl
   rw [htop]
   exact hn

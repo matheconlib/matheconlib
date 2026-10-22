@@ -5,9 +5,9 @@ Authors: Bo Cowgill
 -/
 module
 
-import MathEconLib.ValueDistribution
-import Mathlib.Probability.Distributions.Cauchy
-import Mathlib.Probability.UniformOn
+public import MathEconLib.ValueDistribution
+public import Mathlib.Probability.Distributions.Cauchy
+public import Mathlib.Probability.UniformOn
 
 /-!
 # Representative Value Distributions
@@ -17,6 +17,8 @@ instantiated by standard distribution classes without adding parallel
 probability constructions to the production library. It also exercises the
 demand API on finite-support atomic and unbounded atomless distributions.
 -/
+
+@[expose] public section
 
 noncomputable section
 

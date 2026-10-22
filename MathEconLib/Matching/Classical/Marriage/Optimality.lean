@@ -27,10 +27,11 @@ variable {M : Type u} {W : Type v}
 variable (mkt : MarriageMarket M W)
 variable [Fintype M] [Fintype W]
 
+omit [Fintype M] [Fintype W] in
 /-- The contracts proof gives exactly the same opposition statement as the
 independent classical blocking-pair proof above. The graph dictionaries
 identify the two orders, not merely the optimal outcomes. -/
-theorem menWeaklyPrefer_iff_womenWeaklyPrefer_via_contracts {μ ν : M ≃. W}
+theorem menWeaklyPrefer_iff_womenWeaklyPrefer_via_contracts [Finite M] [Finite W] {μ ν : M ≃. W}
     (hμ : mkt.IsStableMatching μ) (hν : mkt.IsStableMatching ν) :
     mkt.MenWeaklyPrefer μ ν ↔ mkt.WomenWeaklyPrefer ν μ := by
   rw [← mkt.sellerChosen_graphOf_iff_menWeaklyPrefer_of_individuallyRationalM hμ.1.1,
@@ -49,7 +50,8 @@ noncomputable def manOptimalMatching : M ≃. W :=
 
 @[simp] theorem graphOf_manOptimalMatching :
     mkt.graphOf mkt.manOptimalMatching =
-      mkt.toContractsMarket.sellerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
+      mkt.toContractsMarket.sellerOptimal
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
   mkt.graphOf_matchingOfStable
     (mkt.toContractsMarket.stable_sellerOptimal
       mkt.substitutable_toContractsMarket
@@ -76,12 +78,15 @@ theorem le_manOptimalMatching
       ((mkt.isStableMatching_iff_stable_graphOf ν).mp hν)
   exact mkt.menWeaklyPrefer_of_sellerChosen_graphOf hchosen m
 
+omit [Fintype M] [Fintype W] in
 /-- Classical man-optimality. -/
-theorem exists_manOptimal_stableMatching :
+theorem exists_manOptimal_stableMatching [Finite M] [Finite W] :
     ∃ μ : M ≃. W, mkt.IsStableMatching μ ∧
       ∀ ν : M ≃. W, mkt.IsStableMatching ν →
-        ∀ m, mkt.leM m (ν m) (μ m) :=
-  ⟨mkt.manOptimalMatching,
+        ∀ m, mkt.leM m (ν m) (μ m) := by
+  letI := Fintype.ofFinite M
+  letI := Fintype.ofFinite W
+  exact ⟨mkt.manOptimalMatching,
     mkt.stable_manOptimalMatching,
     fun _ hν m => mkt.le_manOptimalMatching hν m⟩
 
@@ -95,7 +100,8 @@ noncomputable def womanOptimalMatching : M ≃. W :=
 
 @[simp] theorem graphOf_womanOptimalMatching :
     mkt.graphOf mkt.womanOptimalMatching =
-      mkt.toContractsMarket.buyerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
+      mkt.toContractsMarket.buyerOptimal
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
   mkt.graphOf_matchingOfStable _
 
 theorem stable_womanOptimalMatching :
@@ -156,19 +162,28 @@ theorem isWomanPessimal_manOptimalMatching :
     mkt.IsWomanPessimal mkt.manOptimalMatching :=
   ⟨mkt.stable_manOptimalMatching, fun _ hν => mkt.manOptimalMatching_le hν⟩
 
-theorem exists_womanOptimal_stableMatching :
+omit [Fintype M] [Fintype W] in
+theorem exists_womanOptimal_stableMatching [Finite M] [Finite W] :
     ∃ μ : M ≃. W, mkt.IsStableMatching μ ∧
       ∀ ν : M ≃. W, mkt.IsStableMatching ν →
-        ∀ w, mkt.leW w (ν.symm w) (μ.symm w) :=
-  ⟨mkt.womanOptimalMatching, mkt.isWomanOptimal_womanOptimalMatching⟩
+        ∀ w, mkt.leW w (ν.symm w) (μ.symm w) := by
+  letI := Fintype.ofFinite M
+  letI := Fintype.ofFinite W
+  exact ⟨mkt.womanOptimalMatching, mkt.isWomanOptimal_womanOptimalMatching⟩
 
-theorem exists_manPessimal_stableMatching :
-    ∃ μ : M ≃. W, mkt.IsManPessimal μ :=
-  ⟨mkt.womanOptimalMatching, mkt.isManPessimal_womanOptimalMatching⟩
+omit [Fintype M] [Fintype W] in
+theorem exists_manPessimal_stableMatching [Finite M] [Finite W] :
+    ∃ μ : M ≃. W, mkt.IsManPessimal μ := by
+  letI := Fintype.ofFinite M
+  letI := Fintype.ofFinite W
+  exact ⟨mkt.womanOptimalMatching, mkt.isManPessimal_womanOptimalMatching⟩
 
-theorem exists_womanPessimal_stableMatching :
-    ∃ μ : M ≃. W, mkt.IsWomanPessimal μ :=
-  ⟨mkt.manOptimalMatching, mkt.isWomanPessimal_manOptimalMatching⟩
+omit [Fintype M] [Fintype W] in
+theorem exists_womanPessimal_stableMatching [Finite M] [Finite W] :
+    ∃ μ : M ≃. W, mkt.IsWomanPessimal μ := by
+  letI := Fintype.ofFinite M
+  letI := Fintype.ofFinite W
+  exact ⟨mkt.manOptimalMatching, mkt.isWomanPessimal_manOptimalMatching⟩
 
 /-- The unique stable matching worst for every man. This definition uses
 its own preference specification, independently of `womanOptimalMatching`;
