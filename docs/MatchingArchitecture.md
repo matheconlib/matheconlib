@@ -110,6 +110,8 @@ The section headings separate these scopes without introducing another module.
 | `Matching.Classical.Marriage.Existence` | The stable-matching existence theorem |
 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
 | `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
+| `Matching.Continuum.Basic` | Balanced measured populations, matching maps and measures, marginals and side exchange |
+| `Matching.Continuum.Stability` | Pointwise and distributional stability, outside options and the graph-measure stability bridge |
 
 Marriage preferences and their induced choices belong together. The embedding
 into the contracts model lives in `ToContracts`, with the explicit constructor
@@ -128,6 +130,23 @@ Public names use `ofOptionLinearOrder` for the optional-partner constructor,
 `DeferredAcceptanceComputable` contains the executable refinement. None of these
 organizational steps removes finiteness assumptions. The many-to-one completion
 reduction below is a separate mathematical extension.
+
+## Two-sided continuum foundations
+
+`Matching.Continuum` is the entry point for [#197](https://github.com/matheconlib/matheconlib/issues/197).
+Both populations have mass one and all agents are matched. `MatchingMap` uses a Mathlib
+measure-preserving measurable equivalence; `MatchingMeasure` records a probability measure on
+pairs with the prescribed marginals. The graph construction connects them and commutes with
+side exchange. Assignments that agree almost everywhere give the same matching measure.
+
+Utilities include outside options. `PointwiseStable` checks every agent and potential blocking
+pair; `DistributionallyStable` checks individual rationality almost everywhere and blocking
+under the product of the matching measure with itself. A pointwise-stable map gives a
+stable measure when the utility data are measurable. The example in
+`MathEconLibExamples/Matching/Continuum.lean` applies this to two uniform populations on `[0,1]`.
+Tests also show that blocking among zero-mass types can prevent pointwise stability while
+preserving distributional stability. Existence, approximation, unmatched mass and the separate
+admissions-cutoff model in [#167](https://github.com/matheconlib/matheconlib/issues/167) remain later work.
 
 ## Many-to-one completion reduction
 

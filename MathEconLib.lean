@@ -81,6 +81,9 @@ import MathEconLib.Matching.Classical.Marriage.Optimality
 import MathEconLib.Matching.Classical.Marriage.Preferences
 import MathEconLib.Matching.Classical.Marriage.StableOrder
 import MathEconLib.Matching.Classical.Marriage.ToContracts
+import MathEconLib.Matching.Continuum
+import MathEconLib.Matching.Continuum.Basic
+import MathEconLib.Matching.Continuum.Stability
 import MathEconLib.Matching.Contracts.Basic
 import MathEconLib.Matching.Contracts.Completion
 import MathEconLib.Matching.Contracts.FixedPointConvergence
