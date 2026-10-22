@@ -1,9 +1,10 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 import Mathlib.Data.PEquiv
+import Mathlib.Data.Fintype.Card
 import Mathlib.Data.Set.Card
 import Mathlib.Data.Set.Subsingleton
 
@@ -13,7 +14,9 @@ import Mathlib.Data.Set.Subsingleton
 A `PEquiv` is represented by its graph. Conversely, a relation with at most
 one value in each row and each column determines a `PEquiv`. The graph and
 reconstruction operations are inverse. No preferences, markets, finiteness,
-or decidability assumptions are involved.
+or decidability assumptions are involved in the graph constructions. The finite-cardinality
+lemma below shows that a partial equivalence covering the right side also covers a no-larger
+left side.
 
 The existing `PEquiv` is the only matching structure: these are constructors
 and graph lemmas for it. Its existing order remains the extension order.
@@ -24,6 +27,29 @@ universe u v
 namespace PEquiv
 
 variable {α : Type u} {β : Type v}
+
+/-- A partial equivalence covering the right side also covers the left side when the finite
+left side is no larger. -/
+theorem isSome_of_forall_symm_isSome_of_card_le [Fintype α] [Fintype β] (μ : α ≃. β)
+    (hcard : Fintype.card α ≤ Fintype.card β) (hβ : ∀ b, (μ.symm b).isSome)
+    (a : α) : (μ a).isSome := by
+  classical
+  by_contra ha
+  have ha' : μ a = none := Option.not_isSome_iff_eq_none.mp ha
+  let f : β → α := fun b ↦ (μ.symm b).get (hβ b)
+  have hf (b : β) : μ (f b) = some b :=
+    μ.eq_some_iff.mp (Option.some_get (hβ b)).symm
+  have hinj : Function.Injective f := by
+    intro b c h
+    have he := congrArg μ h
+    rw [hf b, hf c] at he
+    exact Option.some.inj he
+  have hnot : a ∉ Set.range f := by
+    rintro ⟨b, hba⟩
+    have he := hf b
+    rw [hba, ha'] at he
+    cases he
+  exact (Nat.not_lt_of_ge hcard) (Fintype.card_lt_of_injective_of_notMem f hinj hnot)
 
 /-- The graph of a partial equivalence. -/
 def graph (μ : α ≃. β) : Set (α × β) :=
