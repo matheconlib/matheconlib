@@ -18,6 +18,7 @@ import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.RandomPreferences
 import MathEconLibTest.Matching.RankPreferences
+import MathEconLibTest.Matching.Relabel
 import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames

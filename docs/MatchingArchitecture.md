@@ -103,14 +103,14 @@ The section headings separate these scopes without introducing another module.
 
 | Matching-market module | Contents |
 | --- | --- |
-| `Matching.Classical.Marriage.Preferences` | Market preference data, acceptability, induced choice functions and finite maximization |
+| `Matching.Classical.Marriage.Preferences` | Market preference data, relabeling, acceptability, induced choice functions and finite maximization |
 | `Matching.Classical.Marriage.RankPreferences` | Deterministic finite rankings, the existing preference adapter, side exchange and ordinal-rank statistics |
 | `Matching.Classical.Marriage.Basic` | Matching, individual rationality, blocking, stability and optimality specifications |
 | `Matching.Classical.Marriage.ToContracts` | Embedding the marriage model into contracts, graph/reconstruction and the preference dictionary |
 | `Matching.Classical.Marriage.Existence` | The stable-matching existence theorem |
 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
 | `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
-| `Matching.Classical.Marriage.RandomPreferences` | Uniform profile law, short-side DA completeness, rank optimality and the exact two-by-two expectation |
+| `Matching.Classical.Marriage.RandomPreferences` | Uniform joint and marginal laws, Mathlib independence, short-side DA completeness, rank optimality and the exact two-by-two expectation |
 
 Marriage preferences and their induced choices belong together. The embedding
 into the contracts model lives in `ToContracts`, with the explicit constructor
@@ -128,15 +128,26 @@ to existing matching optimality.
 
 `RandomPreferences` adds the uniform law and applications of existing DA. Its expectation
 formula specializes the shared `PMF.integral_uniformOfFintype` lemma in `ForMathlib.Uniform`.
+The same shared module proves uniform-law transport along equivalences and the finite-product
+law. `RankProfile.equivAgentRanks` views the existing profile as one family indexed by both
+populations; its joint law gives the individual marginals and Mathlib's `iIndepFun`, including
+empty and unequal populations. Discrete measurable structures are confined to the probability
+layer. Rank injectivity uses Mathlib's option-to-finite equivalence without changing rank values.
 `Probability.FinDist` connects its own uniform law to that PMF and the same Mathlib finite
 average. The shared `PEquiv` cardinality lemma supports short-side completeness in `Marriage.Basic`
 using only no blocking pairs and universal acceptability; balanced stability is a corollary.
+
+`MarriageMarket.relabel` transports optional-partner orders along population equivalences;
+`PEquiv.relabel` composes partial assignments with those equivalences. Identity, composition,
+side exchange, and stability preservation hold without finite-population or acceptability
+restrictions. `MathEconLibExamples.Matching.NamedMarriage` applies this interface to a stable
+DA outcome with named participants. This transports outcomes and does not assert correspondence
+between algorithm execution states. Reverse rank encodings and stable-outcome counting bridges
+remain follow-ups in [#192](https://github.com/matheconlib/matheconlib/issues/192).
+
 The exact `5/4` benchmark concerns ordinal positions, not cardinal welfare. Proposal bounds,
 asymptotics, and matched-agent imbalance results remain later milestones under
-[#166](https://github.com/matheconlib/matheconlib/issues/166). Optional bounded-rank,
-independence, and representation bridges are tracked in
-[#192](https://github.com/matheconlib/matheconlib/issues/192); they do not block this benchmark
-or launch.
+[#166](https://github.com/matheconlib/matheconlib/issues/166). Matching remains optional for launch.
 
 Use `map` for the choice-function operation along an embedding, and reserve
 “transport” for transferring structure along an equivalence. A specialization

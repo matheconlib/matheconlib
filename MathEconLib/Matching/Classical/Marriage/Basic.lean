@@ -123,6 +123,23 @@ theorem unblocked_iff_no_blockingPair (μ : M ≃. W) :
   · intro h
     exact ⟨h, fun w m => h m w⟩
 
+/-- Relabeling both preferences and assignments preserves stability in both directions.
+This transports outcomes; it makes no claim about the intermediate states of an algorithm. -/
+@[simp] theorem isStableMatching_relabel {M' W' : Type*} (μ : M ≃. W)
+    (eM : M ≃ M') (eW : W ≃ W') :
+    (mkt.relabel eM eW).IsStableMatching (μ.relabel eM eW) ↔ mkt.IsStableMatching μ := by
+  simp only [IsStableMatching, IndividuallyRational, IndividuallyRationalM,
+    IndividuallyRationalW, IndividuallyRationalForM, IndividuallyRationalForW,
+    Unblocked, UnblockedM, UnblockedW, IsBlockingPair, BlocksM, BlocksW,
+    relabel_leM, relabel_leW, relabel_ltM, relabel_ltW, PEquiv.relabel_symm,
+    PEquiv.relabel_apply, Option.map_none, Option.map_some, Option.map_map]
+  simp only [Equiv.symm_comp_self, Option.map_id, id_eq]
+  refine and_congr (and_congr ?_ ?_) (and_congr ?_ ?_)
+  · exact eM.symm.forall_congr (by intro; rfl)
+  · exact eW.symm.forall_congr (by intro; rfl)
+  · exact eM.symm.forall₂_congr eW.symm (by intros; rfl)
+  · exact eW.symm.forall₂_congr eM.symm (by intros; rfl)
+
 theorem IsStableMatching.individuallyRationalForM
     {μ : M ≃. W} (h : mkt.IsStableMatching μ) (m : M) :
     mkt.IndividuallyRationalForM μ m :=

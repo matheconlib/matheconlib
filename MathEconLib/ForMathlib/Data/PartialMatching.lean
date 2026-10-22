@@ -21,11 +21,42 @@ left side.
 The existing `PEquiv` is the only matching structure. Its order remains the extension order.
 -/
 
-universe u v
+universe u v u' v' u'' v''
 
 namespace PEquiv
 
 variable {α : Type u} {β : Type v}
+
+section Relabel
+
+variable {α' : Type u'} {β' : Type v'} {α'' : Type u''} {β'' : Type v''}
+
+/-- Change the labels of a partial equivalence by composing with total equivalences.
+Unmatched arguments remain unmatched. -/
+def relabel (μ : α ≃. β) (eα : α ≃ α') (eβ : β ≃ β') : α' ≃. β' :=
+  eα.symm.toPEquiv.trans (μ.trans eβ.toPEquiv)
+
+@[simp] theorem relabel_apply (μ : α ≃. β) (eα : α ≃ α') (eβ : β ≃ β') (a : α') :
+    μ.relabel eα eβ a = (μ (eα.symm a)).map eβ := by
+  change ((μ (eα.symm a)).bind fun b ↦ some (eβ b)) = _
+  cases μ (eα.symm a) <;> rfl
+
+@[simp] theorem relabel_symm (μ : α ≃. β) (eα : α ≃ α') (eβ : β ≃ β') :
+    (μ.relabel eα eβ).symm = μ.symm.relabel eβ eα := by
+  simp only [relabel, symm_trans_rev, ← Equiv.toPEquiv_symm, Equiv.symm_symm,
+    trans_assoc]
+
+@[simp] theorem relabel_refl (μ : α ≃. β) :
+    μ.relabel (Equiv.refl α) (Equiv.refl β) = μ := by
+  simp [relabel]
+
+theorem relabel_trans (μ : α ≃. β) (eα : α ≃ α') (eβ : β ≃ β')
+    (fα : α' ≃ α'') (fβ : β' ≃ β'') :
+    (μ.relabel eα eβ).relabel fα fβ = μ.relabel (eα.trans fα) (eβ.trans fβ) := by
+  ext a
+  simp [Option.map_map, Function.comp_def]
+
+end Relabel
 
 /-- A partial equivalence covering the right side also covers the left side when the finite
 left side is no larger. -/
