@@ -23,6 +23,20 @@ example : market.IsStableMatching
 
 #print axioms MathEconLibExamples.Matching.Continuum.FiniteBridge.identity_classicallyStable
 
+open MathEconLibExamples.Matching.Continuum in
+example : SplitMass.matching.DistributionallyStable
+    ⟨fun _ _ ↦ 0, fun _ _ ↦ 0, fun _ ↦ 0, fun _ ↦ 0⟩ ∧
+    ¬Nonempty (MatchingMap SplitMass.leftPopulation FiniteBridge.population) :=
+  ⟨SplitMass.matching_distributionallyStable, SplitMass.no_matchingMap⟩
+
+example (b : Fin 2) :
+    MathEconLibExamples.Matching.Continuum.SplitMass.matching.toMeasure {(0, b)} =
+      (2 : ENNReal)⁻¹ := MathEconLibExamples.Matching.Continuum.SplitMass.matching_mass b
+
+#print axioms MathEconLibExamples.Matching.Continuum.SplitMass.matching_mass
+#print axioms MathEconLibExamples.Matching.Continuum.SplitMass.matching_distributionallyStable
+#print axioms MathEconLibExamples.Matching.Continuum.SplitMass.no_matchingMap
+
 -- Only type 0 has population mass. Types 1 and 2 still matter for pointwise stability.
 noncomputable def atomicPopulation : ProbabilityMeasure (Fin 3) :=
   ⟨Measure.dirac 0, inferInstance⟩

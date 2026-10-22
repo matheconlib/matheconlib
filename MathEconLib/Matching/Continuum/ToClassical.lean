@@ -13,7 +13,8 @@ A measured matching map is a complete classical matching after forgetting its me
 When classical preferences and utilities give the same comparisons, including the outside option,
 their pointwise stability predicates agree. The representation hypothesis is explicit: utility
 profiles with ties need not represent a classical market's linear preferences. No finiteness or
-existence theorem is used, and distributional stability remains a separate, weaker notion.
+existence theorem is used. Pointwise stability implies distributional stability under the
+measurability hypotheses of `PointwiseStable.toMatchingMeasure`.
 -/
 
 namespace MathEconLib.Matching.Continuum.MatchingMap

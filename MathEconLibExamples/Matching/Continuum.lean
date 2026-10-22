@@ -15,7 +15,8 @@ Both populations are uniform on `[0,1]`. Each agent prefers partners closer to t
 with utility minus absolute distance and outside-option utility `-1`. The identity assignment
 is pointwise stable and induces a distributionally stable matching measure with the required
 marginals. Its population measure is atomless. A separate two-type example applies the bridge
-between utility-based pointwise stability and classical marriage stability.
+between utility-based pointwise stability and classical marriage stability. A split-mass example
+shows that matching measures need not come from bijections between the supplied type spaces.
 -/
 
 namespace MathEconLibExamples.Matching.Continuum
@@ -96,5 +97,35 @@ theorem identity_classicallyStable :
     identity_pointwiseStable
 
 end FiniteBridge
+
+namespace SplitMass
+
+/-- One left type with total population mass one. -/
+noncomputable def leftPopulation : ProbabilityMeasure (Fin 1) :=
+  ⟨(PMF.uniformOfFintype (Fin 1)).toMeasure, inferInstance⟩
+
+/-- Split the left type's mass equally between the two right types. -/
+noncomputable def matching : MatchingMeasure leftPopulation FiniteBridge.population :=
+  MatchingMeasure.product leftPopulation FiniteBridge.population
+
+/-- Each of the two possible type pairs receives half the population mass. -/
+theorem matching_mass (b : Fin 2) : matching.toMeasure {(0, b)} = (2 : ENNReal)⁻¹ := by
+  change (leftPopulation.toMeasure.prod FiniteBridge.population.toMeasure) {(0, b)} = _
+  rw [← Set.singleton_prod_singleton, Measure.prod_prod]
+  simp [leftPopulation, FiniteBridge.population, PMF.uniformOfFintype_apply]
+
+/-- Indifferent agents with zero outside options make this split assignment stable. -/
+theorem matching_distributionallyStable : matching.DistributionallyStable
+    ⟨fun _ _ ↦ 0, fun _ _ ↦ 0, fun _ ↦ 0, fun _ ↦ 0⟩ := by
+  simp [MatchingMeasure.DistributionallyStable, MatchingMeasure.IndividuallyRational,
+    MatchingMeasure.Unblocked, Utilities.IndividuallyRationalPair, Utilities.Blocks]
+
+/-- There is no bijection from one left type to two right types. -/
+theorem no_matchingMap : ¬Nonempty (MatchingMap leftPopulation FiniteBridge.population) := by
+  rintro ⟨f⟩
+  have h := Fintype.card_congr f.toMeasurableEquiv.toEquiv
+  norm_num at h
+
+end SplitMass
 
 end MathEconLibExamples.Matching.Continuum
