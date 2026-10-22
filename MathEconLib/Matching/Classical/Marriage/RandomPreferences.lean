@@ -3,10 +3,12 @@ Copyright (c) 2026 The Formal Conjectures Authors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The Formal Conjectures Authors, Bo Cowgill
 -/
-import MathEconLib.Matching.Classical.Marriage.Preferences
+import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
 import Mathlib.Data.Fintype.Perm
 import Mathlib.Data.Fintype.Pi
 import Mathlib.Data.Fintype.Prod
+import Mathlib.Probability.Distributions.Uniform
+import Mathlib.Probability.ProbabilityMassFunction.Integrals
 
 /-!
 # Finite random preference profiles for marriage markets
@@ -26,6 +28,8 @@ is imported.
 -/
 
 namespace MathEconLib.Matching.MarriageMarket
+
+open scoped BigOperators
 
 /-- Complete strict rank profiles for `m` men and `n` women, with zero-based ranks. -/
 structure RankProfile (m n : ℕ) where
@@ -110,6 +114,84 @@ def toMarriageMarket (p : RankProfile m n) : MarriageMarket (Fin m) (Fin n) wher
 
 @[simp] theorem toMarriageMarket_acceptableW (p : RankProfile m n) (j : Fin n) (i : Fin m) :
     p.toMarriageMarket.AcceptableW j i := rank_some_lt_none _ _
+
+/-- Discrete measurable structure on the finite profile space. -/
+instance : MeasurableSpace (RankProfile m n) := ⊤
+
+/-- Independent uniform rankings for both populations, as the uniform law on all rank profiles.
+This adapts `StableMarriage.uniformProfile` from the source cited above. -/
+noncomputable def uniformProfile (m n : ℕ) : PMF (RankProfile m n) :=
+  PMF.uniformOfFintype (RankProfile m n)
+
+/-- Every full profile has equal mass. -/
+theorem uniformProfile_apply (p : RankProfile m n) :
+    uniformProfile m n p =
+      (((Nat.factorial n) ^ m * (Nat.factorial m) ^ n : ℕ) : ENNReal)⁻¹ := by
+  simp [uniformProfile, PMF.uniformOfFintype_apply, card]
+
+/-- The full joint mass factors into the uniform masses of all individual rankings.
+Because `equivRanks` is a bijection onto unrestricted ranking families, this characterizes
+independent uniform preference lists, rather than only normalization of the joint law. -/
+theorem uniformProfile_apply_eq_prod (p : RankProfile m n) :
+    uniformProfile m n p =
+      (∏ i : Fin m, PMF.uniformOfFintype (Equiv.Perm (Fin n)) (p.manRank i)) *
+      (∏ j : Fin n, PMF.uniformOfFintype (Equiv.Perm (Fin m)) (p.womanRank j)) := by
+  simp only [uniformProfile, PMF.uniformOfFintype_apply, card, Fintype.card_perm,
+    Fintype.card_fin, Finset.prod_const, Finset.card_univ, Nat.cast_mul, Nat.cast_pow]
+  rw [ENNReal.mul_inv (a := (n.factorial : ENNReal) ^ m)
+    (b := (m.factorial : ENNReal) ^ n) (by simp) (by simp)]
+  simp [ENNReal.inv_pow]
+
+/-- The profile law is normalized, including empty populations. -/
+theorem uniformProfile_univ (m n : ℕ) :
+    (uniformProfile m n).toMeasure Set.univ = 1 := by simp
+
+/-- Balanced rank profiles give complete outcomes under the existing executable proposer DA. -/
+theorem isSome_galeShapleyComputable (p : RankProfile n n) (i : Fin n) :
+    (p.toMarriageMarket.galeShapleyComputable i).isSome :=
+  IsStableMatching.isSome_of_card_eq p.toMarriageMarket
+    p.toMarriageMarket.stable_galeShapleyComputable rfl
+    p.toMarriageMarket_acceptableM p.toMarriageMarket_acceptableW i
+
+/-- The same balanced DA outcome matches every receiver. -/
+theorem isSome_symm_galeShapleyComputable (p : RankProfile n n) (j : Fin n) :
+    (p.toMarriageMarket.galeShapleyComputable.symm j).isSome := by
+  have h := p.toMarriageMarket.stable_galeShapleyComputable
+  exact IsStableMatching.isSome_of_card_eq p.toMarriageMarket.symm
+    ((p.toMarriageMarket.isStableMatching_symm _).mpr h) rfl
+    p.toMarriageMarket_acceptableW p.toMarriageMarket_acceptableM j
+
+/-- Sum of one-based partner ranks for all proposers. This permits partial matchings,
+with `none` assigned rank `n+1`; later matched-agent statistics must exclude unmatched agents. -/
+def totalProposerRank (p : RankProfile m n) (μ : Fin m ≃. Fin n) : ℕ :=
+  ∑ i, rank (p.manRank i) (μ i)
+
+/-- Average one-based proposer rank in a balanced market. The empty population has average
+zero by real division's convention; economic average-rank claims use a positive size.
+This statistic measures ordinal position, not cardinal welfare. -/
+noncomputable def averageProposerRank (p : RankProfile n n) (μ : Fin n ≃. Fin n) : ℝ :=
+  (p.totalProposerRank μ : ℝ) / n
+
+/-- Expected average rank of the existing executable proposer DA under independent uniform
+preferences. Randomness is in the profile, not selection among stable outcomes. -/
+noncomputable def expectedAverageProposerRank (n : ℕ) : ℝ :=
+  ∫ p, p.averageProposerRank p.toMarriageMarket.galeShapleyComputable
+    ∂(uniformProfile n n).toMeasure
+
+/-- The expectation is the ordinary average over all finite profiles. -/
+theorem expectedAverageProposerRank_eq_sum (n : ℕ) :
+    expectedAverageProposerRank n =
+      (∑ p : RankProfile n n,
+        (p.totalProposerRank p.toMarriageMarket.galeShapleyComputable : ℝ)) /
+        ((Fintype.card (RankProfile n n) : ℝ) * n) := by
+  rw [expectedAverageProposerRank, PMF.integral_eq_sum]
+  simp only [uniformProfile, PMF.uniformOfFintype_apply, ENNReal.toReal_inv,
+    ENNReal.toReal_natCast, smul_eq_mul, averageProposerRank]
+  simp_rw [div_eq_mul_inv, mul_inv_rev]
+  rw [Finset.sum_mul]
+  apply Finset.sum_congr rfl
+  intro p _
+  ring
 
 end RankProfile
 end MathEconLib.Matching.MarriageMarket

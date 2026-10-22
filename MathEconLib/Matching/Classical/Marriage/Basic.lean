@@ -1,9 +1,10 @@
 /-
 Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 import MathEconLib.Matching.Classical.Marriage.Preferences
+import Mathlib.Data.Fintype.EquivFin
 import MathEconLib.ForMathlib.Data.PartialMatching
 import Mathlib.Data.Set.Basic
 import Mathlib.Data.Fintype.Defs
@@ -190,6 +191,34 @@ theorem IsStableMatching.unblockedW
 @[simp] theorem isStableMatching_symm (μ : M ≃. W) :
     mkt.symm.IsStableMatching μ.symm ↔ mkt.IsStableMatching μ := by
   simp only [IsStableMatching, individuallyRational_symm, unblocked_symm]
+
+/-- In a finite balanced market where all partners are mutually acceptable,
+every stable matching matches every man. The woman-side statement follows by side exchange. -/
+theorem IsStableMatching.isSome_of_card_eq [Fintype M] [Fintype W] {μ : M ≃. W}
+    (hμ : mkt.IsStableMatching μ) (hcard : Fintype.card M = Fintype.card W)
+    (hM : ∀ m w, mkt.AcceptableM m w) (hW : ∀ w m, mkt.AcceptableW w m)
+    (m : M) : (μ m).isSome := by
+  classical
+  by_contra hm
+  have hm' : μ m = none := Option.not_isSome_iff_eq_none.mp hm
+  have hw (w : W) : (μ.symm w).isSome := by
+    by_contra h
+    have hw' : μ.symm w = none := Option.not_isSome_iff_eq_none.mp h
+    apply hμ.2.1 m w
+    exact ⟨by simpa [BlocksM, hm', AcceptableM] using hM m w,
+      by simpa [BlocksW, hw', AcceptableW] using hW w m⟩
+  let f : W → M := fun w ↦ (μ.symm w).get (hw w)
+  have hf (w : W) : μ (f w) = some w :=
+    μ.eq_some_iff.mp (Option.some_get (hw w)).symm
+  have hinj : Function.Injective f := by
+    intro w v h
+    have he := congrArg μ h
+    rw [hf w, hf v] at he
+    exact Option.some.inj he
+  obtain ⟨w, hwm⟩ := hinj.surjective_of_finite (Fintype.equivOfCardEq hcard.symm) m
+  have he := hf w
+  rw [hwm, hm'] at he
+  cases he
 
 /-- Every man weakly prefers `μ` to `ν`. This is the preference order,
 not the extension order that `PEquiv` already carries. -/
