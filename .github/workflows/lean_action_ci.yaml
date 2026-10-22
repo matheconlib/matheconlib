@@ -26,16 +26,21 @@ jobs:
           # can commit back to it. Fork PRs and pushes: default checkout, which for
           # a PR is the merge ref - i.e. the contributor's code merged onto main.
           ref: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) && github.event.pull_request.head.ref || '' }}
+      - name: Check copyright headers
+        run: bash scripts/check-headers.sh
       - name: Test import regeneration helper
         run: python3 scripts/tests/test_update_imports.py
       - name: Test warning reporting helper
         run: node --test scripts/tests/test_warning_counts.cjs
-      - name: Cache Lean build artifacts
+      - name: Cache project build artifacts
         uses: actions/cache@v5
         with:
-          path: .lake
-          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
-          restore-keys: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
+          # Mathlib has its own cache. Archiving all of .lake duplicates its large
+          # dependency build and can exhaust runner disk space during cache save.
+          path: .lake/build
+          # Use a separate namespace so old whole-.lake archives are not restored.
+          key: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
       - name: Set up Lean and Mathlib
         uses: leanprover/lean-action@v1
         with:
@@ -45,6 +50,7 @@ jobs:
           test: false
           lint: false
           use-github-cache: false
+          use-mathlib-cache: true
           mk_all-check: false
       - name: Regenerate import lists (same-repo PRs only)
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository

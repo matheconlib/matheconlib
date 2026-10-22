@@ -12,9 +12,12 @@ alongside the review order below.
 
 ## What review is for
 
-The kernel already checked the proofs, and CI enforces the verification bar
-(see CONTRIBUTING.md). Review checks meaning: is the headline statement the
-theorem the cited paper states, are the hypotheses honest and load-bearing,
+CI builds the library, API pins, tests, and examples and checks both import
+lists. Reviewers also check for `sorry`, `admit`, and `native_decide` and inspect
+axioms on new main results, as required by
+[CONTRIBUTING.md](../CONTRIBUTING.md#verification-bar). Review checks meaning:
+is the headline statement the theorem the cited paper states, are the
+hypotheses honest and load-bearing,
 and is the API something the next file can build on. A wrong hypothesis in a
 docstring is treated as a pre-merge blocker.
 
@@ -59,8 +62,9 @@ docstring is treated as a pre-merge blocker.
 7. Docs and attribution. Docstrings and README claims are checked against
    the actual declarations. Check the
    [citation guidance](../CONTRIBUTING.md#citing-sources): paper- or book-based
-   work names its author, year, title, and DOI or stable link, with theorem or
-   section numbers when available and adaptations stated. Standard toy examples
+   work names its author, year, and title, and includes a DOI or stable link when
+   available, with theorem or section numbers when available and adaptations
+   stated. Standard toy examples
    need no invented citation. Ported files carry correct author lines and a
    provenance note.
 
@@ -74,7 +78,9 @@ review is hostility.
 
 For a stack: systemic feedback is stated once on the tracking issue and the
 per-PR reviews point back to it. Request Changes only on the PRs that own a
-concrete blocker; siblings get Comment.
+concrete blocker; siblings get Comment. For base branches, refreshes, and review
+handoff after a parent merges, see the
+[branch and stacked-PR guidance](../CONTRIBUTING.md#branches-and-stacked-prs).
 
 Decide, do not deflect. State maintainer decisions so the author does not
 have to guess; accept-now-with-bridge versus redesign-later is a ruling, and

@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill, Ruiz Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill, Ruiz Chen
+-/
 module
 
 public import MathEconLib.Auction.Affiliation.FiniteCondExp

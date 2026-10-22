@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
 import MathEconLib.Choice.Induced
 import MathEconLib.Choice.Matching.Relationships
 
@@ -30,7 +35,7 @@ relationships are in `MathEconLib.Choice.Matching.Relationships`.
 
 The five completion corollaries are helpers for the planned many-to-one
 matching-with-contracts applications, including cadet–branch matching, in
-https://github.com/AxiomMath/auctionlib/issues/38. They are not yet used by a
+https://github.com/matheconlib/matheconlib/issues/38. They are not yet used by a
 formalized many-to-one market application. For bundle preferences, unilateral
 substitutability remains an explicit hypothesis; finite preference maximization
 supplies IRC, and the feasible-bundle representation supplies at most one

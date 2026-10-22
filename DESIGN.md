@@ -60,7 +60,7 @@ The same discipline applies to theorem statements. A theorem's name, documentati
 
 Consider a deterministic mechanism: Agents choose actions and the mechanism selects an outcome and monetary transfers. Its constitutive data can be expressed as follows:
 
-> **Note.** The prior-free generic mechanism was introduced in [PR #68](https://github.com/AxiomMath/auctionlib/pull/68), merged on 3 October 2026, following [issue #67](https://github.com/AxiomMath/auctionlib/issues/67). The current declarations are in [`MathEconLib/Mechanism/Core/Mechanism.lean`](MathEconLib/Mechanism/Core/Mechanism.lean). The examples below illustrate the design; the source remains authoritative for the exact API.
+> **Note.** The prior-free generic mechanism was introduced in [PR #68](https://github.com/matheconlib/matheconlib/pull/68), merged on 3 October 2026, following [issue #67](https://github.com/matheconlib/matheconlib/issues/67). The current declarations are in [`MathEconLib/Mechanism/Core/Mechanism.lean`](MathEconLib/Mechanism/Core/Mechanism.lean). The examples below illustrate the design; the source remains authoritative for the exact API.
 
 ```lean
 /-- A profile assigning one value of type `X i` to each agent `i`. -/
@@ -469,6 +469,6 @@ This design applies P1 to keep allocation and distribution assumptions out of th
 
 ## Provenance
 
-Daniel Lyng (@danlyng) drafted the general principles (P1–P8) in the original discussion on [issue #60](https://github.com/AxiomMath/auctionlib/issues/60) and developed the version imported here in [his design-principles gist](https://gist.github.com/danlyng/1fc6bf249436782e1e00b99c3ff6ce5e). Comments from Scott Duke Kominers (@scduko) on issue #60 motivated several revisions. Later refinements reflect the review practice recorded in [issue #72](https://github.com/AxiomMath/auctionlib/issues/72).
+Daniel Lyng (@danlyng) drafted the general principles (P1–P8) in the original discussion on [issue #60](https://github.com/matheconlib/matheconlib/issues/60) and developed the version imported here in [his design-principles gist](https://gist.github.com/danlyng/1fc6bf249436782e1e00b99c3ff6ce5e). Comments from Scott Duke Kominers (@scduko) on issue #60 motivated several revisions. Later refinements reflect the review practice recorded in [issue #72](https://github.com/matheconlib/matheconlib/issues/72).
 
-Scott Duke Kominers (@scduko) drafted the economic-model design principles (M1–M5) in [issue #73](https://github.com/AxiomMath/auctionlib/issues/73). The version here clarifies their scope and relationship to P1–P8, specialization choices, information requirements, solution selection, computational guarantees, and reuse of instance-level mathematics.
+Scott Duke Kominers (@scduko) drafted the economic-model design principles (M1–M5) in [issue #73](https://github.com/matheconlib/matheconlib/issues/73). The version here clarifies their scope and relationship to P1–P8, specialization choices, information requirements, solution selection, computational guarantees, and reuse of instance-level mathematics.

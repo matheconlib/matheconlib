@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>MathEconLib</title>
-<meta name="description" content="MathEconLib is building shared Lean 4 foundations for new research in microeconomic theory, macroeconomic theory, and econometrics.">
+<meta name="description" content="MathEconLib is building shared Lean 4 foundations for research and applications in economics.">
 <meta name="color-scheme" content="light dark">
 <meta property="og:type" content="website">
 <meta property="og:title" content="MathEconLib">
-<meta property="og:description" content="Machine-checked foundations for new research in economics.">
-<meta property="og:url" content="https://matheconlib.bo-cowgill.workers.dev/">
+<meta property="og:description" content="Machine-checked mathematical economics.">
+<meta property="og:url" content="{{ site.url }}/">
 <meta property="og:site_name" content="MathEconLib">
 <meta name="twitter:card" content="summary">
 <link rel="icon" href="/assets/favicon-mexists.svg?v=2" type="image/svg+xml" sizes="any">
@@ -26,9 +26,6 @@
     --rule: #E9ECEA;
     --rule-strong: #A9B4AF;
     --code-bg: #F7F8F7;
-    --todo: #A2632A;
-    --note-bg: #FFFCF6;
-    --note-rule: #EAD8B6;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -41,9 +38,6 @@
       --rule: #26302C;
       --rule-strong: #3E4B46;
       --code-bg: #1A211E;
-      --todo: #D9A059;
-      --note-bg: #2A2318;
-      --note-rule: #5A4A2A;
     }
   }
   :root[data-theme="dark"] {
@@ -56,9 +50,6 @@
     --rule: #26302C;
     --rule-strong: #3E4B46;
     --code-bg: #1A211E;
-    --todo: #D9A059;
-    --note-bg: #2A2318;
-    --note-rule: #5A4A2A;
   }
 
   * { box-sizing: border-box; }
@@ -104,26 +95,16 @@
   nav.top a { font-size: 0.92rem; color: var(--muted); border: 0; }
   nav.top a:hover { color: var(--accent); }
 
-  .draft {
-    margin: 1rem 0 1.8rem;
-    padding: 0.7rem 1rem;
-    background: var(--note-bg);
-    border: 1px solid var(--note-rule);
-    border-radius: 3px;
-    font-size: 0.9rem;
-  }
-  .draft strong { font-weight: 600; }
-
   h1 {
     font-family: "IBM Plex Serif", Georgia, serif;
-    font-weight: 600; font-size: 3rem; line-height: 1.05;
+    font-weight: 600; font-size: clamp(2rem, 12vw, 3rem); line-height: 1.05;
     letter-spacing: -0.02em;
     margin: 2.8rem 0 0.4rem;
   }
   .tagline {
     font-family: "IBM Plex Serif", Georgia, serif;
     font-size: 1.5rem; line-height: 1.3; font-weight: 400;
-    color: var(--muted); margin: 0; text-wrap: balance; max-width: 34rem;
+    color: var(--muted); margin: 0 0 1.6rem; text-wrap: balance; max-width: 34rem;
   }
   .lede { font-size: 1.25rem; line-height: 1.5; margin: 0 0 1.1rem; max-width: 40rem; }
 
@@ -154,8 +135,6 @@
   .people .handle:hover { color: var(--accent); }
   @media (max-width: 34rem) { .people { columns: 1; } }
 
-  .placeholder { color: var(--todo); font-style: italic; }
-
   footer {
     margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
     font-size: 0.88rem; color: var(--muted);
@@ -178,25 +157,24 @@
         <li><a href="#docs">Docs</a></li>
         <li><a href="#contribute">Contribute</a></li>
         <li><a href="#people">People</a></li>
-        <li><a href="https://github.com/AxiomMath/auctionlib">GitHub</a></li>
+        <li><a href="{{ site.repository }}">GitHub</a></li>
       </ul>
     </nav>
   </header>
 
   <main id="top">
     <h1 id="about">MathEconLib</h1>
-    <p class="tagline">Machine-checked foundations&nbsp;for new research in economics.</p>
-    <p class="draft"><strong>Collaborator draft.</strong> Items in <span class="placeholder">amber italics</span> need confirming.</p>
-    <p class="lede">MathEconLib is a long-term effort to build a shared formal foundation for economics in Lean 4. Its scope spans microeconomic theory, macroeconomic theory, and econometrics.</p>
+    <p class="tagline">Machine-checked mathematical economics.</p>
+    <p class="lede">MathEconLib is an effort to build a shared formal foundation in Lean 4 for research and applications in economics. Co-founded by academic economists and <a href="https://axiommath.ai/">Axiom Math</a> in 2026.</p>
     <h2 id="research">Use existing theorems to prove new ones</h2>
-    <p>MathEconLib develops common definitions, explicit assumptions, and reusable intermediate results that researchers can combine and extend. Researchers can use these building blocks to assemble new models and develop results about preferences, incentives, equilibrium, dynamics, identification, estimation, and inference.</p>
-    <p>Lean checks each new proof against the formalized foundations it uses. Shared assumptions make clear where a new model agrees with earlier formalized work, where it departs, and which differences open new research questions.</p>
+    <p>MathEconLib provides shared definitions and reusable results that scholars and practitioners can apply and extend. Researchers can use these building blocks to refine existing economic frameworks, assemble new ones, and prove results about preferences, incentives, equilibrium, dynamics, identification, estimation, and inference.</p>
+    <p>Library definitions and theorems support many economic models. Lean tracks the assumptions each proof relies on.</p>
     <p>MathEconLib builds on <a href="https://github.com/leanprover-community/mathlib4">Mathlib</a> and encourages upstream contributions of broadly reusable mathematical results.</p>
     <p>MathEconLib is not an end-to-end autoformalization project. Its definitions and conventions are developed by economic theorists, with the aim of building a trusted foundation for formal research in economics.</p>
-    <p>We welcome researchers to use AI to help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem. Contributions receive human review for consistency with our <a href="https://github.com/AxiomMath/auctionlib/blob/main/DESIGN.md">design principles</a>.</p>
+    <p>We welcome researchers to use AI to help with formalization and proof development, but researchers determine the mathematical architecture and Lean's kernel checks every theorem. Contributions receive human review for consistency with our <a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/DESIGN.md">design principles</a>.</p>
 
     <h2 id="vision">Long-term scope</h2>
-    <p>MathEconLib is intended to cover all major mathematical areas of economics.</p>
+    <p>MathEconLib is intended to cover all mathematical areas of economics, including:</p>
     <dl class="scope">
       <dt>Microeconomic theory</dt>
       <dd>Preferences and choice, games, information, contracts, market and mechanism design, industrial organization, and general equilibrium.</dd>
@@ -208,45 +186,49 @@
 
     <h2 id="docs">Documentation</h2>
     <dl class="docs">
-      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/docs/BeginnersManual.md">Lean 4 and MathEconLib: A Beginner's Manual</a></dt>
-      <dd>From installing the toolchain to reading the bidder-problem file line by line, with runnable exercises. Assumes no Lean and no auction theory.</dd>
-      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/docs/PricingArchitecture.md">Pricing Foundations: Mathematical Model and Architecture</a></dt>
+      <dt><a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/docs/BeginnersManual.md">Lean 4 and MathEconLib: A Beginner's Manual</a></dt>
+      <dd>From installing the toolchain to reading the bidder-problem file line by line, with runnable exercises. Assumes no prior knowledge of Lean.</dd>
+      <dt><a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/docs/PricingArchitecture.md">Pricing Foundations: Mathematical Model and Architecture</a></dt>
       <dd>How the auction layers extend to posted pricing and other single-parameter problems.</dd>
-      <dt><a href="https://github.com/AxiomMath/auctionlib/blob/main/README.md">MathEconLib README</a></dt>
-      <dd>File-by-file index of definitions and theorems, with build instructions.</dd>
+      <dt><a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/README.md">MathEconLib README</a></dt>
+      <dd>Project overview, current coverage, and instructions for using or building the library.</dd>
     </dl>
 
     <h2 id="contribute">Contributing</h2>
     <p>Research questions and new models are welcome in design issues. New theorems in existing chapters, documentation, and applications built on the existing layers can go straight to a pull request. Small, well-scoped additions to the <code>ForMathlib</code> folder can be suitable first contributions.</p>
     <p>Changes to the foundational layers start with a design issue: sketch the definitions and main statements and get agreement on the shape before writing proofs. Every pull request must build cleanly, contain no <code>sorry</code>, <code>admit</code>, or <code>native_decide</code>, and add no axioms beyond the standard three.</p>
-    <p>Lean contributors should read <a href="https://github.com/AxiomMath/auctionlib/blob/main/CONTRIBUTING.md">CONTRIBUTING.md</a> for the build, API, and review requirements. New contributors can work through the beginner's manual, improve documentation, or discuss a small task in <a href="https://github.com/AxiomMath/auctionlib/issues">GitHub Issues</a>. PRs touching the core layers require a maintainer review before merge.</p>
-    <p>For a first contribution, try <a href="https://github.com/AxiomMath/auctionlib/issues/118">documenting the BidderProblem umbrella</a>, a small documentation task with a starting file and build instructions.</p>
+    <p>Lean contributors should read <a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/CONTRIBUTING.md">CONTRIBUTING.md</a> for the build, API, and review requirements. New contributors can work through the beginner's manual, improve documentation, or discuss a small task in <a href="{{ site.issues }}">GitHub Issues</a>. PRs touching the core layers require a maintainer review before merge.</p>
+    <p>For a first contribution, try <a href="{{ site.issues }}/118">documenting the BidderProblem umbrella</a>, a small documentation task with a starting file and build instructions.</p>
     <h3>Propose a focused research project</h3>
-    <p>Email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a> or, with repository access, open a design issue. Describe the economic question and relevant literature, the intended definitions and assumptions, the main statement or example to formalize, and the existing library components you expect to reuse. Identify any changes to foundational definitions so the team can agree on the design before proofs are written.</p>
+    <p>Email <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a> or open a design issue. Describe the economic question and relevant literature, the intended definitions and assumptions, the main statement or example to formalize, and the existing library components you expect to reuse. Identify any changes to foundational definitions so the team can agree on the design before proofs are written.</p>
 
     <h2 id="people">People</h2>
     <h3>Core contributors</h3>
     <p>Alphabetical.</p>
     <ul class="people">
-      <li>Ruiz Chen<span class="aff">Axiom</span><a class="handle" href="https://github.com/Ruizsolveall">@Ruizsolveall</a></li>
+      <li>Ruiz Chen<span class="aff">Axiom Math</span><a class="handle" href="https://github.com/Ruizsolveall">@Ruizsolveall</a></li>
       <li>Bo Cowgill<span class="aff">University of Toronto</span><a class="handle" href="https://github.com/bocowgill">@bocowgill</a></li>
-      <li>Ben Eltschig<span class="aff">Axiom</span><a class="handle" href="https://github.com/peabrainiac">@peabrainiac</a></li>
-      <li>Scott Duke Kominers<span class="aff">Harvard Business School</span><a class="handle" href="https://github.com/scduko">@scduko</a></li>
+      <li>Piotr Dworczak<span class="aff">University of Cologne; Northwestern University; GRAPE</span><a class="handle" href="https://pdworczak.com/">Profile</a></li>
+      <li>Ben Eltschig<span class="aff">Axiom Math</span><a class="handle" href="https://github.com/peabrainiac">@peabrainiac</a></li>
+      <li>Nikhil Garg<span class="aff">Cornell Tech and Cornell University</span><a class="handle" href="https://gargnikhil.com/">Profile</a></li>
+      <li>Ziv Hellman<span class="aff">Bar-Ilan University</span><a class="handle" href="https://econ.biu.ac.il/en/hellman">Profile</a></li>
+      <li>Scott Duke Kominers<span class="aff">Harvard University and a16z crypto</span><a class="handle" href="https://github.com/scduko">@scduko</a></li>
       <li>Moran Koren<span class="aff">Ben-Gurion University</span><a class="handle" href="https://github.com/morankor">@morankor</a></li>
       <li>Daniel Lyng<span class="aff">Princeton University</span><a class="handle" href="https://github.com/danlyng">@danlyng</a></li>
-      <li>Jujian Zhang<span class="aff">Axiom Math</span><a class="handle" href="https://github.com/jjaassoonn">@jjaassoonn</a></li>
+      <li>Ken Ono<span class="aff">Axiom Math; University of Virginia (on leave)</span><a class="handle" href="https://uva.theopenscholar.com/ken-ono">Profile</a></li>
+      <li>Jujian Zhang<br><a class="handle" href="https://github.com/jjaassoonn">@jjaassoonn</a></li>
     </ul>
 
-    <h3>Acknowledgments</h3>
-    <p>MathEconLib was developed with the support of <a href="https://axiommath.ai">Axiom Math</a>.</p>
+    <h3>Supporting organizations</h3>
+    <p><a href="https://axiommath.ai">Axiom Math</a> co-founded the project and continues to support its development. Organizations interested in supporting MathEconLib can write to <a href="mailto:contact@mathecon.dev">contact@mathecon.dev</a>.</p>
   </main>
 
   <footer>
     <span>MathEconLib</span>
-    <span>Updated 10 September 2026</span>
-    <span>License: <span class="placeholder">[to decide; Mathlib uses Apache 2.0]</span></span>
-    <a href="https://github.com/AxiomMath/auctionlib/tree/main/website">Site source</a>
-    <a href="https://github.com/morankor/MathEconLib">Original design</a>
+    <span>Updated 16 October 2026</span>
+    <span>License: <a href="{{ site.repository }}/blob/{{ site.sourceBranch }}/LICENSE">Apache-2.0</a></span>
+    <a href="{{ site.repository }}/tree/{{ site.sourceBranch }}/website">Site source</a>
+    | QED
   </footer>
 </div>
 </body>

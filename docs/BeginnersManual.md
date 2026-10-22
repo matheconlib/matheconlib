@@ -15,6 +15,10 @@ Its runnable snippets are collected in
 which `lake build` compiles, so a snippet that stops working turns the build
 red rather than quietly rotting in the prose.
 
+The [research walkthrough in Part 9](#part-9--a-research-walkthrough-higher-fines-and-aggregate-crime)
+has its own checked client,
+[`MathEconLibTest/Manual/BeckerResearch.lean`](../MathEconLibTest/Manual/BeckerResearch.lean).
+
 The [8 October 2026 walkthrough record](BeginnersManualVerification.md) records
 the tested revision, fresh-checkout build, exercise checks, and environment limits.
 
@@ -45,6 +49,7 @@ The material is arranged so that nothing is used before it is explained.
 | [6](#part-6--traps-for-beginners) | Traps that cost beginners hours | — |
 | [7](#part-7--reference-tables) | Lookup tables | it is reference material |
 | [8](#part-8--exercises) | Exercises, with full solutions | — |
+| [9](#part-9--a-research-walkthrough-higher-fines-and-aggregate-crime) | Derive a policy comparison using an existing model | — |
 | [A](#appendix-a--glossary-of-auction-theory-terms) | Economics vocabulary | you are an economist |
 | [B](#appendix-b--how-matheconlib-is-organised) | The library's architecture | you only want the Lean |
 
@@ -103,13 +108,11 @@ This is why you must **open the project folder, not a lone file**: outside the f
 If you do not already have a checkout, clone it first:
 
 ```bash
-git clone https://github.com/AxiomMath/auctionlib.git
-cd auctionlib
+git clone https://github.com/matheconlib/matheconlib.git
+cd matheconlib
 ```
 
-The repository currently requires team access. Until it is public, authenticate
-Git with an account that has access, or use GitHub's SSH clone URL. Use the
-current repository URL shown on GitHub after the planned transfer.
+The repository is public. Cloning over HTTPS does not require GitHub credentials.
 
 **File → Open Folder**, and select the repository root (the folder containing `lakefile.toml`). Not the folder above it, not a single file inside it. VS Code will ask whether you trust the authors; say yes, or nothing will run.
 
@@ -204,6 +207,25 @@ If you cannot remember an abbreviation, **hover the mouse over the symbol** anyw
 | First setup running for many minutes | Dependency sources or cached artifacts may still be downloading. Check which command is running: `lake exe cache get` fetches the cache; `lake build` checks the project |
 
 
+
+#### Recovering an interrupted Mathlib download
+
+If `lake exe cache get` fails with a network error while cloning Mathlib,
+check the connection before retrying. When `.lake/packages/mathlib` is absent,
+you can fetch just the pinned release instead of its full Git history:
+
+```bash
+git -c http.version=HTTP/1.1 clone --depth 1 --branch v4.28.0 \
+  https://github.com/leanprover-community/mathlib4 .lake/packages/mathlib
+git -C .lake/packages/mathlib rev-parse HEAD
+```
+
+This command targets the current `v4.28.0` dependency. Before continuing, the
+printed commit must match the `mathlib` entry's `rev` in `lake-manifest.json`
+(currently `8f9d9cff6bd728b17a24e163c9402775d9e6a365`). For a different checkout,
+use its matching release. Leave `lean-toolchain` and `lake-manifest.json` unchanged.
+Then rerun `lake exe cache get`. After it succeeds, continue with import regeneration
+and `lake build`.
 
 ### ✍️ Hands-on 0 — your first file, and the loop
 
@@ -1949,6 +1971,136 @@ CI checks must pass on the latest PR revision.
 **House rules.** Names follow the Mathlib conventions in [Part 7](#how-mathlib-names-things), and the tactic `native_decide` is not permitted anywhere in the library. [`CONTRIBUTING.md`](../CONTRIBUTING.md) has the rest — no `sorry` or `admit`, `#print axioms` on new results showing only the three axioms from [Part 1](#part-1--why-formalise-mathematics-at-all), the API stability pins, and the design-first rule for changes to the core layers.
 
 The second rule repays understanding rather than mere obedience. `native_decide` settles a goal by compiling it to machine code and running it, then asking you to believe the answer. It is fast, and for some finite checks it is the only practical option. But it moves the compiler and the runtime inside the trusted base, alongside the kernel. A proof using it is no longer checked by the small, heavily scrutinised program described in [Part 1](#part-1--why-formalise-mathematics-at-all); it is underwritten by the whole Lean compiler. Since the trusted base is the entire argument for formalising in the first place, the project declines to enlarge it.
+
+---
+
+## Part 9 — A research walkthrough: higher fines and aggregate crime
+
+Can a higher fine increase crime in the existing risk-neutral model? We will derive a
+policy comparison from the library's expected-sanction theorem, then apply it to a
+population. This small extension shows how a researcher can assemble a further result
+from an existing formalization.
+
+The [canonical Becker example](../MathEconLibExamples/SingleParameter/BeckerCrime.lean)
+already defines the choices and proves optimality. A person with net gain `v` commits
+when `p * f ≤ v`, where `p` is the detection probability and `f` is the fine. The model
+selects committing at equality. Under risk neutrality, only the expected sanction
+`p * f` enters this comparison.
+
+### 9.1 Import the model and state the comparison
+
+Paste the following Lean blocks, in order, into one scratch file inside your checkout.
+The complete checked client is
+[`MathEconLibTest/Manual/BeckerResearch.lean`](../MathEconLibTest/Manual/BeckerResearch.lean);
+it is included in the default build. We import the existing model rather than defining
+its choices, payoffs, or optimal strategy again.
+
+```lean
+import MathEconLibExamples.SingleParameter.BeckerCrime
+
+open MathEconLib MathEconLibExamples.SingleParameter
+
+namespace Manual.BeckerResearch
+```
+
+Let `D` be the distribution of net gains in a population. The same `D` appears on both
+sides of our comparison; we hold the population's gains and the detection probability
+fixed. `D.expectedAllocation` is the expected offense indicator, hence the crime rate.
+No density or atomlessness assumption is needed.
+
+For the policy interpretation, `p` is in `[0, 1]` and fines are nonnegative. The proof
+needs only `0 ≤ p` and `f₁ ≤ f₂`, so its statement uses those weaker assumptions. The
+interval endpoints `lo` and `hi` are parameters of the underlying choice problem; its
+cutoff strategy is defined at every real gain. This population comparison does not
+require `D` to be supported on that interval.
+
+### 9.2 Reuse a theorem, then discharge its assumption
+
+The existing theorem says that increasing `p * f` weakly reduces aggregate crime.
+`apply` reduces our goal to its expected-sanction comparison. Mathlib's multiplication
+lemma proves that comparison from the two hypotheses:
+
+```lean
+/-- For a fixed distribution and nonnegative detection probability, a higher fine weakly
+reduces the aggregate crime rate. -/
+theorem aggregateCrime_antitone_in_fine
+    (D : ValueDistribution) (lo hi p f₁ f₂ : ℝ)
+    (hp : 0 ≤ p) (hf : f₁ ≤ f₂) :
+    D.expectedAllocation (crimeProblem lo hi p f₂) ≤
+      D.expectedAllocation (crimeProblem lo hi p f₁) := by
+  apply crimeProblem_expectedAllocation_antitone_in_expectedSanction
+  exact mul_le_mul_of_nonneg_left hf hp
+```
+
+The goal after `apply` is `p * f₁ ≤ p * f₂`. There is no new integration proof: the
+imported theorem already handles the population average, including mass at a cutoff.
+`antitone` means that the outcome weakly decreases as the argument increases.
+
+### 9.3 Apply the result to a policy and a population
+
+With detection probability `1/2`, raising the fine from `2` to `3` weakly reduces crime
+for every fixed distribution `D`. `norm_num` verifies the numerical assumptions:
+
+```lean
+example (D : ValueDistribution) :
+    D.expectedAllocation (crimeProblem 0 2 (1 / 2) 3) ≤
+      D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) := by
+  apply aggregateCrime_antitone_in_fine
+  all_goals norm_num
+```
+
+For a concrete population, put all probability mass at net gain `1`. This is the Dirac
+measure at `1`; `inferInstance` supplies its probability-measure property. At fine `2`,
+everyone is exactly at the cutoff and commits. At fine `3`, everyone abstains. The
+existing cutoff-probability identity calculates both crime rates:
+
+```lean
+example :
+    let D : ValueDistribution := ⟨MeasureTheory.Measure.dirac (1 : ℝ), inferInstance⟩
+    D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) = 1 ∧
+      D.expectedAllocation (crimeProblem 0 2 (1 / 2) 3) = 0 := by
+  dsimp only
+  rw [crimeProblem_expectedAllocation_eq_probAtLeast,
+    crimeProblem_expectedAllocation_eq_probAtLeast]
+  norm_num [ValueDistribution.probAtLeast, MeasureTheory.ProbabilityMeasure.coeFn_def]
+```
+
+### 9.4 Check the boundary and the scope
+
+A weak inequality does not promise a strict reduction. When detection probability is
+zero, changing the fine leaves the crime rate unchanged:
+
+```lean
+example (D : ValueDistribution) (lo hi f₁ f₂ : ℝ) :
+    D.expectedAllocation (crimeProblem lo hi 0 f₂) =
+      D.expectedAllocation (crimeProblem lo hi 0 f₁) := by
+  rw [crimeProblem_expectedAllocation_eq_probAtLeast,
+    crimeProblem_expectedAllocation_eq_probAtLeast]
+  simp
+```
+
+Close the namespace and inspect the derived theorem's trusted assumptions:
+
+```lean
+end Manual.BeckerResearch
+
+#print axioms Manual.BeckerResearch.aggregateCrime_antitone_in_fine
+```
+
+Lean reports only `propext`, `Classical.choice`, and `Quot.sound`. To build the checked
+client from the repository root, run:
+
+```bash
+lake build MathEconLibTest.Manual.BeckerResearch
+```
+
+The result holds within the imported model: risk-neutral binary choice with an
+exogenous detection probability and a fixed distribution of net gains. It does not
+compare enforcement costs, model changes in detection or gains induced by the policy,
+or establish an optimal fine. Changing those assumptions would require stating the
+new model and checking which existing results still apply. Even within this model,
+a positive detection probability alone does not guarantee strict deterrence: the
+population may put no mass between the old and new cutoffs.
 
 ---
 

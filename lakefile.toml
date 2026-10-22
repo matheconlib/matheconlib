@@ -1,6 +1,9 @@
 name = "matheconlib"
 version = "0.1.0"
 keywords = ["math"]
+description = "Machine-checked mathematical economics in Lean 4"
+license = "Apache-2.0"
+licenseFiles = ["LICENSE"]
 defaultTargets = ["MathEconLib", "ApiStability", "MathEconLibTest", "MathEconLibExamples"]
 
 [leanOptions]

@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2026 Ben Eltschig, Ruiz Chen, Daniel Lyng. All rights reserved.
-Released under license as described in the file LICENSE.
+Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ben Eltschig, Ruiz Chen, Daniel Lyng
 -/
 module
