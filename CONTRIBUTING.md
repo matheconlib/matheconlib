@@ -77,10 +77,14 @@ Use the author–year format shown below as the default, with complete reference
 Detailed formatting guidance is tracked in
 [style conventions (#109)](https://github.com/matheconlib/matheconlib/issues/109).
 
+Contributions may cover selected results or complete papers, subject to our
+integration and review standards. Paper-specific developments may remain downstream,
+with reusable components contributed here following the [placement guidance](#examples-and-tests).
+
 For work based on a paper or book, give the author, year, and title in the module
 documentation, and include a DOI or stable link when available. Include the theorem
-or section number when available, and explain any adaptations or differences in
-scope. For example:
+or section number when available. State which source results are covered, any
+adapted assumptions, and important omissions, as in the example below:
 
 ```lean
 /-!
