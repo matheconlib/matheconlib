@@ -58,7 +58,8 @@ docstring is treated as a pre-merge blocker.
    must not import examples or tests.
 6. Machines first, then you. Do not relitigate what CI checks. When CI did
    not run (stacked PRs skip it), do the missing run yourself and say so in
-   the review.
+   the review. Check the [warning comparison](../CONTRIBUTING.md#build-warnings)
+   and review justifications for new warnings or linter suppressions.
 7. Docs and attribution. Docstrings and README claims are checked against
    the actual declarations. Check the
    [citation guidance](../CONTRIBUTING.md#citing-sources): paper- or book-based
@@ -78,7 +79,9 @@ review is hostility.
 
 For a stack: systemic feedback is stated once on the tracking issue and the
 per-PR reviews point back to it. Request Changes only on the PRs that own a
-concrete blocker; siblings get Comment.
+concrete blocker; siblings get Comment. For base branches, refreshes, and review
+handoff after a parent merges, see the
+[branch and stacked-PR guidance](../CONTRIBUTING.md#branches-and-stacked-prs).
 
 Decide, do not deflect. State maintainer decisions so the author does not
 have to guess; accept-now-with-bridge versus redesign-later is a ruling, and

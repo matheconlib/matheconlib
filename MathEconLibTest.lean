@@ -7,6 +7,7 @@ import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.ConditionalBeliefs
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
+import MathEconLibTest.GameTheory.MatchingPennies
 import MathEconLibTest.GameTheory.MeasurableBayesian
 import MathEconLibTest.GameTheory.OrderedPayoffs
 import MathEconLibTest.GameTheory.Strategic
@@ -26,6 +27,7 @@ import MathEconLibTest.Mechanism.TruthfulNash
 import MathEconLibTest.Namespace
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.Probability.Uniform
+import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples

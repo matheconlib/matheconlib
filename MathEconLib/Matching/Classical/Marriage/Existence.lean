@@ -24,7 +24,7 @@ namespace MarriageMarket
 
 variable {M : Type u} {W : Type v}
 variable (mkt : MarriageMarket M W)
-variable [Fintype M] [Fintype W]
+variable [Finite M] [Finite W]
 
 /-- Existence of a stable marriage matching. -/
 theorem exists_stableMatching :

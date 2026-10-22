@@ -2395,7 +2395,7 @@ lemma degree_ge_two_of_two_adj {V : Type} [Fintype V] [DecidableEq V]
     2 ≤ G.degree v := by
   have hsub : {w₁, w₂} ⊆ G.neighborFinset v := by
     intro x hx
-    simp [SimpleGraph.mem_neighborFinset] at hx ⊢
+    simp only [Finset.mem_insert, Finset.mem_singleton, SimpleGraph.mem_neighborFinset] at hx ⊢
     rcases hx with rfl | rfl <;> assumption
   calc 2 = ({w₁, w₂} : Finset V).card := (Finset.card_pair hne).symm
     _ ≤ (G.neighborFinset v).card := Finset.card_le_card hsub
@@ -2699,7 +2699,7 @@ lemma scarf_degree_one_is_colorful {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
   · -- Case A: colorful room → produce witnesses
     refine ⟨σ, CC, ?_, hCne, hcard, hcol, hDom⟩
     rw [Finset.nonempty_iff_ne_empty]
-    intro h; simp [h] at hcol; exact hCne.ne_empty hcol
+    intro h; simp only [h, Finset.image_empty] at hcol; exact hCne.ne_empty hcol
   · -- Case B: nearly colorful room → degree ≥ 2, contradiction
     exfalso
     by_cases hinj : (σ.image c).card = σ.card
@@ -2812,7 +2812,7 @@ lemma scarf_degree_one_is_colorful {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       omega
     · -- Outside door → v = v₀
       rw [Finset.not_nonempty_iff_eq_empty] at hσne
-      simp [hσne] at hnear
+      simp only [hσne, Finset.image_empty, Finset.sdiff_empty] at hnear
       apply hne; apply Subtype.ext; rw [hv₀]
       exact Prod.ext hσne hnear
 
@@ -2906,7 +2906,7 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
   by_cases h0 : i = 0
   · -- Case C: i = 0, so w = v₀
     subst h0
-    simp at hi_eq
+    simp only [SimpleGraph.Walk.getVert_zero] at hi_eq
     subst hi_eq
     by_cases hlen1 : p.length = 1
     · -- p.length = 1: penultimate = v₀, contradicts hne
@@ -3174,7 +3174,7 @@ lemma rotateCoord_injective (n l : ℕ) (i : Fin (n + 1)) :
   have heq : (a.1 : Fin (n + 1) → ℝ) = (b.1 : Fin (n + 1) → ℝ) := by
     ext k
     have := congr_fun hab' (k - i)
-    simp [add_sub_cancel] at this
+    simp only [add_sub_cancel] at this
     exact this
   exact Subtype.ext (Subtype.ext heq)
 
@@ -3577,7 +3577,7 @@ lemma coord_deviation_bound (n : ℕ) (l : ℕ) (hl : 0 < l)
   have hkey := key_ineq n l hl σ C hσ hdiscrete hdom
   have hcard : (↑C.card : ℝ) ≤ (↑(n + 1) : ℝ) := by
     have h1 : C.card ≤ Finset.univ.card := Finset.card_le_card (Finset.subset_univ C)
-    simp [Finset.card_univ, Fintype.card_fin] at h1
+    simp only [Finset.card_univ, Fintype.card_fin] at h1
     exact Nat.cast_le.mpr h1
   have hl_pos : (0 : ℝ) < ↑l := Nat.cast_pos.mpr hl
   intro x hx i
@@ -3625,9 +3625,7 @@ lemma scarf_bounds (n : ℕ) (l : ℕ) (hl : 0 < l)
     exact ⟨by linarith, by linarith⟩
   · -- Small outside C
     have hx_dev := hdev x hx i
-    simp [hi] at hx_dev
-    rw [show (↑n : ℝ) + 1 = ↑(n + 1) from by push_cast; ring] at hx_dev
-    exact hx_dev
+    simpa [hi, ↓reduceIte, sub_zero] using hx_dev
 
 lemma exists_colorful_room_with_bounds (n : ℕ) (l : ℕ) (hl : 0 < l)
     (c : ↑(stdSimplex ℝ (Fin (n + 1))) → Fin (n + 1)) :
