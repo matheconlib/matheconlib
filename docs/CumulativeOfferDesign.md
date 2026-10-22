@@ -15,17 +15,19 @@ specializations. Add source-specific views and correspondence theorems where
 the papers use different state variables. Equality across schedules is a
 theorem, not part of the definition.
 
-Use strict preferences over a proposer's own contracts and the outside option,
-and unrestricted receiving-side choice functions. Reuse the existing
-`Market.ofSellerPreferences`, `ChoiceFunction`, incidence maps, and stability
-predicates. Do not require substitutability, IRC, LAD, or feasible holdings in
+Use weak preferences over a proposer's own contracts and the outside option,
+with explicit fixed tie-breaking and unrestricted receiving-side choice
+functions. Reuse `ChoiceFunction`, incidence maps, and stability predicates;
+bridge to `Market.ofSellerPreferences` through a strict refinement. Do not require substitutability, IRC, LAD, or feasible holdings in
 the process data. These conditions belong to individual results.
 
 The initial economic scope is unit-demand proposing sellers and accepting
 buyers. A completely abstract proposal oracle would admit procedures that
 do not follow proposers' preferences; it should not replace the canonical
 economic definition. Extract a more general helper only if a second consumer
-needs it. Ties and many-to-many proposing behavior are separate extensions.
+needs it. Many-to-many proposing behavior is a separate extension. General choice
+correspondences with indifferences are tracked separately in
+[#200](https://github.com/matheconlib/matheconlib/issues/200).
 
 ## Source distinctions and explicit projections
 
@@ -46,8 +48,8 @@ A(t) = A(t−1) ∪ C_D(D(t))
 ```
 
 The fresh-offer formulation must be related to this recurrence on reachable
-states by an invariant about descending proposals and previously offered
-contracts. Repeated held offers disappear under the cumulative-set projection.
+states by an invariant about descending proposals under the fixed strict
+refinement and previously offered contracts. Repeated held offers disappear under the cumulative-set projection.
 Do not claim definitional equality on arbitrary states. Their Theorem 15
 compares cumulative offers with their generalized deferred acceptance under
 substitutes; it is not itself a sequential-versus-batch independence theorem.
@@ -66,9 +68,25 @@ public names: Hatfield–Kojima and Hirata–Kasuya are different references.
 ## Data, locality, and state
 
 Let `X` be contracts, `S` proposers, and `B` receivers, with existing
-`seller : X → S` and `buyer : X → B`. Preferences use the existing strict
-ordering of `Option {x : X // seller x = s}`, with `none` the outside
-option. Document the library's ordering orientation at the implementation site.
+`seller : X → S` and `buyer : X → B`. Preferences are complete, transitive weak relations on
+`Option {x : X // seller x = s}`, with `none` the outside option.
+Use a total preorder built from existing relation/order primitives, without
+antisymmetry on distinct tied contracts. Keep the relation explicit; the
+resulting strict refinement, rather than the economic weak preference itself,
+can be supplied to the existing linear-order constructor.
+
+Separate fixed tie-breaking from the scheduling policy. For own contracts,
+the refinement ranks x above y exactly when x is strictly preferred, or when
+x and y are indifferent and the fixed tie-break prioritizes x. The full
+refinement includes the outside option. The baseline convention puts the
+outside option ahead of contracts tied with it, so only strictly acceptable
+contracts are offered. An adapter allowing such contracts must specify their
+placement explicitly; a contract-only offer order cannot determine that.
+
+Prove that proposing a weakly best remaining acceptable contract and resolving
+ties by this fixed order coincides with proposing under the strict refinement.
+Strict economic preferences are a specialization in which contract tie-breaking
+has no effect. Document the library's comparison orientation at implementation.
 
 The semantic state is the accumulated offer set `A : Set X`. Start at the
 empty set. Define the own-buyer menu and holdings by
@@ -98,7 +116,8 @@ an obligation of the matching-valued adapter.
 
 For a proposer s, let `U_s(A)` be its acceptable contracts outside A.
 It is eligible when no contract of s belongs to H(A) and U_s(A) is nonempty.
-A valid offer is its unique best member of U_s(A).
+A valid offer is the tie-break-selected member of the weakly best elements of
+U_s(A), equivalently its unique best member under the specified refinement.
 
 A productive batch Q is nonempty, contains only valid offers by eligible
 proposers, and contains at most one offer per proposer. The step is
@@ -117,8 +136,17 @@ Provide policies selecting:
 - Every eligible proposer (simultaneous).
 - Any nonempty subset of eligible proposers (general batches).
 
-A policy may depend on the prior history. A fixed priority order is a convenient
-instance, not the definition of a process. Require the chosen batch to be valid
+The HKW-style single-contract-order specialization uses one fixed order Γ on X
+both to resolve each proposer's contract ties and to select the first available
+proposal globally. Equivalently, form the union of eligible proposers' weakly
+best remaining acceptable contracts and choose its Γ-first member. This is a
+proposed extension to weak preferences, not an assertion that HKW's original
+model permits ties. A simultaneous batch takes each eligible proposer's
+selected contract using the same fixed tie-break.
+
+A policy may depend on the prior history. A fixed scheduling priority order is a convenient
+instance, not the definition of a process. Tie-breaking remains fixed while
+scheduling varies. Require the chosen batch to be valid
 whenever the state is nonterminal.
 
 Retain batch labels in a run. Its accumulated-set projection forgets order and
@@ -150,7 +178,10 @@ outcome function. This function still returns a set of contracts.
 
 Promote it to a matching-valued allocation rule only after proving feasibility
 for every report in its stated domain. An independence theorem then permits a
-canonical outcome that suppresses the policy parameter. Keep the policy-indexed
+canonical outcome that suppresses the scheduling-policy parameter while
+retaining the preference refinement. Changing tie-breaking can change the
+outcome, even for one proposer indifferent between two accepted contracts.
+Independence from scheduling is not independence from tie-breaking. Keep the policy-indexed
 interface available for domains without independence.
 
 Reports vary the proposer preference profile; receiving choices and incidence
@@ -168,13 +199,20 @@ The following are proof targets, not claims that this draft establishes them.
 | --- | --- |
 | Step invariants | Choice containment, incidence support, valid fresh offers; no substitutes or IRC. |
 | Finite termination | Finite contracts and valid nonempty scheduling; best offers exist. |
-| Source views | Reachability and strict-preference invariants; explicit locality bridges. |
+| Source views | Weak-preference/refinement correspondence, reachability and refined-order invariants; explicit locality bridges. |
 | Sequential feasibility/stability | Audit the precise bilateral/unilateral hypotheses and IRC in the source and existing library predicates. |
 | Proposer optimality | Separate theorem under its own conditions; use the existing stable-outcome comparison. |
-| Sequential order independence | State equality across the specific class of singleton policies covered by the proof. |
-| Batch independence | Separate theorem quantifying over batch policies, with its own sufficient conditions. |
+| Sequential order independence | Hold tie-breaking fixed; state equality across the specific class of singleton scheduling policies covered by the proof. |
+| Batch independence | Hold tie-breaking fixed; separate theorem quantifying over batch policies with its own sufficient conditions. |
 | Ordinary DA comparison | Explicit map to the existing deferred-acceptance operator and its initialization; substitutes/IRC as required. |
 | Mechanism and incentives | Feasibility for the report domain, then independence and incentive hypotheses as needed. |
+
+With weak economic preferences, stability and incentive statements must specify
+their interpretation. Stability under a strict refinement is not automatically
+strong or super-stability under the weak relation; use an explicit transfer
+theorem for the intended blocking notion. Proposer optimality and incentives
+likewise require their own weak-domain statements and fixed exogenous
+tie-breaking conventions.
 
 Hirata–Kasuya (2014) gives an order-independence result under bilateral
 substitutes and IRC; its abstract was checked, but its complete proof remains
@@ -208,11 +246,36 @@ obligation for #138, not an automatic corollary of terminal feasibility.
 Do not infer original-market proposer optimality solely from completed-market
 optimality and one-way stability transfer.
 
+## Existing preference API and scope boundary
+
+The current `Choice/Induced.lean` constructors `ofBundleOrder`,
+`ofSetLinearOrder`, and `ofOptionLinearOrder` require `LinearOrder`;
+so do `bestOption` in `Choice/FiniteOption.lean` and the feasible-bundle
+constructor in `Choice/Matching/Preferences.lean`. They do not represent ties
+between distinct alternatives. Their use of weak comparisons does not remove
+antisymmetry.
+
+The raw `ChoiceFunction` structure imposes only containment. It can encode
+a set of maximizing individual alternatives, but under the matching
+interpretation its output is one held bundle. A family of tied optimal bundles
+requires a correspondence or equivalent relational interface. Simply weakening
+the order in the current existential bundle formula would union all optimal
+bundles, potentially destroying feasibility and optimality.
+
+[#200](https://github.com/matheconlib/matheconlib/issues/200) tracks weak
+preference-induced choice, correspondences, selection bridges, and
+utility/transfer examples, coordinated with the preferences-port issue
+[#161](https://github.com/matheconlib/matheconlib/issues/161).
+This work is outside #139. The process may use a small explicit relation and
+refinement interface without adding a general weak-preference constructor to
+the choice module. Do not introduce a parallel preference foundation.
+
 ## Implementation sequence and acceptance checks
 
 1. **Core and sequential process.** Tentative module
    `Matching/Contracts/CumulativeOffer/Basic.lean`: own-menu holdings,
-   eligibility, valid batches, labeled runs and terminal outcomes.
+   weak-preference/refinement interface, eligibility, valid batches, labeled
+   runs and terminal outcomes.
    `Termination.lean`: finite progress bounds and policy execution.
    Deliver a usable singleton policy and small concrete examples.
 2. **Source specializations.** Tentative `Presentations.lean`: simultaneous
@@ -227,7 +290,8 @@ optimality and one-way stability transfer.
 
 Initial regression examples should exercise empty contracts, all-unacceptable
 contracts, a rejected proposer making a second offer, two contracts between
-the same proposer and receiver, re-selection of an earlier rejected contract,
+the same proposer and receiver, tied acceptable contracts, a tie with the
+outside option, refinement correspondence, re-selection of an earlier rejected contract,
 and infeasible raw holdings under unrestricted choices. A small regular market
 should run under both singleton and simultaneous policies. Include a public
 umbrella-import client when Lean files are added.
@@ -239,8 +303,10 @@ scoped economic guarantees. A design document does not close #139 or #138.
 
 ## Decisions for review
 
-- Approve strict proposer preferences with arbitrary receiving choices as the
-  economic core, using the existing preference constructor.
+- Adopt weak proposer preferences with explicit fixed tie-breaking and arbitrary
+  receiving choices; bridge strict refinements to the existing constructor.
+- Review the outside-option convention and keep general choice with
+  indifferences in #200.
 - Approve own-menu receiver evaluation and explicit locality transport.
 - Approve batch-labeled runs with sequential and simultaneous specializations,
   while prioritizing sequential proofs.
