@@ -6,7 +6,7 @@ Authors: Daniel Lyng
 module
 
 public import MathEconLib.SingleParameter.PostedPrice
-public import MathEconLibExamples.GameTheory.MatchingPennies
+public import MathEconLibExamples
 
 /-!
 # Dominance, matching pennies, the prisoners' dilemma, and posted pricing
