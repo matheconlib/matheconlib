@@ -78,7 +78,9 @@ review is hostility.
 
 For a stack: systemic feedback is stated once on the tracking issue and the
 per-PR reviews point back to it. Request Changes only on the PRs that own a
-concrete blocker; siblings get Comment.
+concrete blocker; siblings get Comment. For base branches, refreshes, and review
+handoff after a parent merges, see the
+[branch and stacked-PR guidance](../CONTRIBUTING.md#branches-and-stacked-prs).
 
 Decide, do not deflect. State maintainer decisions so the author does not
 have to guess; accept-now-with-bridge versus redesign-later is a ruling, and

@@ -13,6 +13,7 @@ import MathEconLibTest.GameTheory.Strategic
 import MathEconLibTest.GameTheory.StrategicTransport
 import MathEconLibTest.GameTheory.Transport
 import MathEconLibTest.GameTheory.VectorPayoffs
+import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Mechanism.Core
@@ -21,6 +22,7 @@ import MathEconLibTest.Mechanism.PostedPriceGames
 import MathEconLibTest.Mechanism.TruthfulNash
 import MathEconLibTest.Namespace
 import MathEconLibTest.Pricing.Compatibility
+import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples

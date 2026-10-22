@@ -77,10 +77,14 @@ Use the author–year format shown below as the default, with complete reference
 Detailed formatting guidance is tracked in
 [style conventions (#109)](https://github.com/matheconlib/matheconlib/issues/109).
 
+Contributions may cover selected results or complete papers, subject to our
+integration and review standards. Paper-specific developments may remain downstream,
+with reusable components contributed here following the [placement guidance](#examples-and-tests).
+
 For work based on a paper or book, give the author, year, and title in the module
 documentation, and include a DOI or stable link when available. Include the theorem
-or section number when available, and explain any adaptations or differences in
-scope. For example:
+or section number when available. State which source results are covered, any
+adapted assumptions, and important omissions, as in the example below:
 
 ```lean
 /-!
@@ -169,6 +173,40 @@ New layers pin their own public API next to themselves in `MathEconLibTest/` (se
 while a layer is young. Once a layer has downstream users inside the library, its
 pins are promoted into `ApiStability.lean`; from then on its statements follow the
 design-first rule.
+
+## Branches and stacked PRs
+
+Start a short-lived topic branch from current `main`; ordinary PRs target `main`.
+For dependent work, branch from the parent and target its branch so the child diff
+shows only the dependent change. Each PR description names its base and links its
+parent and any known children.
+
+For example, a shared lemma and its application can be reviewed separately:
+
+| PR | Head branch | Base branch | Description |
+| --- | --- | --- | --- |
+| A | `envelope-lemma` | `main` | Shared lemma; child: B |
+| B | `envelope-example` | `envelope-lemma` | Application; depends on A |
+
+1. Merge A first and fetch current `main`. Keep a reference to the last parent
+   commit contained in B until the child is refreshed.
+2. Refresh B onto `main` and retarget its PR to `main`. After a squash merge,
+   replay only B's commits, using [git rebase --onto](https://git-scm.com/docs/git-rebase)
+   with that parent commit as the boundary. Coordinate any rewrite of a shared
+   branch; use `--force-with-lease` when pushing rewritten history. Check that B's
+   diff contains only its intended application before deleting the parent branch.
+3. After a refresh or conflict resolution, rerun the import checks and `lake build`
+   from the [verification bar](#verification-bar), and wait for applicable CI on
+   the latest revision. Verify against current `main` before merging: an old
+   green check can predate changes to build requirements. CI currently runs only
+   for PRs targeting `main`; check children locally until they are retargeted.
+4. Leave a brief update naming the new base, conflicts resolved, substantive
+   changes, and check results. Request another review when statements, APIs,
+   implementation, or guidance changed substantively; carry forward
+   earlier feedback and confirm that required changes are addressed.
+
+The [stack-review guidance](docs/REVIEWING.md#how-to-write-the-review) explains
+where to put shared feedback and which PR owns a blocker.
 
 ## Review
 

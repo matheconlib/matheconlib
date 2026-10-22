@@ -36,6 +36,9 @@ a local correspondence between crime and purchase decisions.
 
 Gary S. Becker (1968), *Crime and Punishment: An Economic Approach*,
 *Journal of Political Economy* **76**(2), 169–217.
+Section II.B.3, pp. 176–177, especially the expected-utility formula in
+footnote 16. The binary action space, risk neutrality, and tie-breaking rule
+are choices of this example.
 [DOI: 10.1086/259394](https://doi.org/10.1086/259394).
 -/
 
@@ -264,6 +267,8 @@ does not model a policy-induced change in the population's gains.
 
 Because individuals choose to commit at the cutoff, the crime rate includes
 any probability mass at `p * f`. No density or atomlessness is assumed.
+The offense indicator is measurable and bounded, hence integrable under any
+probability distribution of gains. No moment bound on those gains is needed.
 -/
 
 /-- The aggregate crime rate is the probability that the net gain is at least
