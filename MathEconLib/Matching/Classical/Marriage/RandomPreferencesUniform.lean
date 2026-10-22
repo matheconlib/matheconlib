@@ -66,17 +66,22 @@ theorem uniformProfile_map_agentRanks (m n : ℕ) :
   rw [uniformProfile, PMF.map_uniformOfFintype]
   exact PMF.toMeasure_uniformOfFintype_pi (α := Ranking m n)
 
+/-- Independent uniform individual laws give exactly the uniform law on full profiles. -/
+theorem independentProfile_uniform (m n : ℕ) :
+    independentProfile (fun a ↦ PMF.uniformOfFintype (Ranking m n a)) = uniformProfile m n := by
+  apply PMF.toMeasure_injective
+  have h : (independentProfile (fun a ↦ PMF.uniformOfFintype (Ranking m n a))).toMeasure.map
+      (equivAgentRanks m n) = (uniformProfile m n).toMeasure.map (equivAgentRanks m n) := by
+    rw [independentProfile_map_agentRanks, uniformProfile_map_agentRanks]
+  have h' := congrArg (Measure.map (equivAgentRanks m n).symm) h
+  simpa [Measure.map_map Measurable.of_discrete Measurable.of_discrete] using h'
+
 /-- Every agent's ranking is uniform on all permutations of the other population. -/
 theorem uniformProfile_map_ranking (m n : ℕ) (a : Fin m ⊕ Fin n) :
     (uniformProfile m n).toMeasure.map (fun p ↦ equivAgentRanks m n p a) =
       (PMF.uniformOfFintype (Ranking m n a)).toMeasure := by
-  calc
-    _ = ((uniformProfile m n).toMeasure.map (equivAgentRanks m n)).map
-        (Function.eval a) := by
-      exact (Measure.map_map (measurable_pi_apply a) Measurable.of_discrete).symm
-    _ = _ := by
-      rw [uniformProfile_map_agentRanks]
-      exact (measurePreserving_eval _ a).map_eq
+  rw [← independentProfile_uniform]
+  exact independentProfile_map_ranking _ a
 
 theorem uniformProfile_map_manRank (i : Fin m) :
     (uniformProfile m n).toMeasure.map (fun p ↦ p.manRank i) =
@@ -92,20 +97,8 @@ theorem uniformProfile_map_womanRank (j : Fin n) :
 theorem iIndepFun_uniformProfile (m n : ℕ) :
     ProbabilityTheory.iIndepFun (fun a p ↦ equivAgentRanks m n p a)
       (uniformProfile m n).toMeasure := by
-  apply (ProbabilityTheory.iIndepFun_iff_map_fun_eq_pi_map
-    (fun _ ↦ Measurable.of_discrete.aemeasurable)).mpr
-  simp only [uniformProfile_map_ranking]
-  exact uniformProfile_map_agentRanks m n
-
-/-- Independent uniform individual laws give exactly the uniform law on full profiles. -/
-theorem independentProfile_uniform (m n : ℕ) :
-    independentProfile (fun a ↦ PMF.uniformOfFintype (Ranking m n a)) = uniformProfile m n := by
-  apply PMF.toMeasure_injective
-  have h : (independentProfile (fun a ↦ PMF.uniformOfFintype (Ranking m n a))).toMeasure.map
-      (equivAgentRanks m n) = (uniformProfile m n).toMeasure.map (equivAgentRanks m n) := by
-    rw [independentProfile_map_agentRanks, uniformProfile_map_agentRanks]
-  have h' := congrArg (Measure.map (equivAgentRanks m n).symm) h
-  simpa [Measure.map_map Measurable.of_discrete Measurable.of_discrete] using h'
+  rw [← independentProfile_uniform]
+  exact iIndepFun_independentProfile _
 
 /-- Under the uniform specialization, expectation is the average over all full profiles. -/
 theorem expectedAverageProposerRank_uniform_eq_sum
