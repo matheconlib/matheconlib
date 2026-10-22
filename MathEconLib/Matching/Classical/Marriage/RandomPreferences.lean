@@ -6,6 +6,7 @@ Authors: The Formal Conjectures Authors, Bo Cowgill
 import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
 import MathEconLib.Matching.Classical.Marriage.RankPreferences
 import MathEconLib.ForMathlib.Uniform
+import Mathlib.Probability.Independence.Basic
 
 /-!
 # Finite random preference profiles for marriage markets
@@ -16,7 +17,11 @@ and puts every partner above remaining unmatched. The two population sizes are s
 
 `uniformProfile` is Mathlib's uniform PMF on the full finite profile space.
 `uniformProfile_apply_eq_prod` identifies its joint masses with the product of uniform
-individual-ranking masses. No executable random-number generator is asserted.
+individual-ranking masses. `uniformProfile_map_agentRanks` gives the product measure,
+`uniformProfile_map_ranking` gives each marginal, and `iIndepFun_uniformProfile` establishes
+Mathlib's joint independence across both populations, including empty and unequal markets.
+These specialize shared finite-uniform transport and product-law lemmas.
+No executable random-number generator is asserted.
 
 The short-side completeness results show that the existing executable proposer DA matches
 everyone on a side no larger than the other. The balanced corollaries cover both sides.
@@ -70,6 +75,15 @@ variable {m n : ℕ}
 /-- Discrete measurable structure on the finite profile space. -/
 instance : MeasurableSpace (RankProfile m n) := ⊤
 
+/-- Individual finite rankings carry the discrete measurable structure. -/
+instance (n : ℕ) : MeasurableSpace (Equiv.Perm (Fin n)) := ⊤
+
+instance (a : Fin m ⊕ Fin n) : MeasurableSpace (Ranking m n a) := by
+  cases a <;> dsimp [Ranking] <;> infer_instance
+
+instance (a : Fin m ⊕ Fin n) : DiscreteMeasurableSpace (Ranking m n a) := by
+  cases a <;> dsimp [Ranking] <;> infer_instance
+
 /-- Independent uniform rankings for both populations, as the uniform law on all rank profiles.
 This adapts `StableMarriage.uniformProfile` from the source cited above. -/
 noncomputable def uniformProfile (m n : ℕ) : PMF (RankProfile m n) :=
@@ -97,6 +111,47 @@ theorem uniformProfile_apply_eq_prod (p : RankProfile m n) :
 /-- The profile law is normalized, including empty populations. -/
 theorem uniformProfile_univ (m n : ℕ) :
     (uniformProfile m n).toMeasure Set.univ = 1 := by simp
+
+open MeasureTheory
+
+/-- Viewing a uniform profile as its individual rankings gives their full product law. -/
+theorem uniformProfile_map_agentRanks (m n : ℕ) :
+    (uniformProfile m n).toMeasure.map (equivAgentRanks m n) =
+      Measure.pi (fun a ↦ (PMF.uniformOfFintype (Ranking m n a)).toMeasure) := by
+  rw [PMF.toMeasure_map _ _ Measurable.of_discrete]
+  rw [uniformProfile, PMF.map_uniformOfFintype]
+  exact PMF.toMeasure_uniformOfFintype_pi (α := Ranking m n)
+
+/-- Every agent's ranking is uniform on all permutations of the other population. -/
+theorem uniformProfile_map_ranking (m n : ℕ) (a : Fin m ⊕ Fin n) :
+    (uniformProfile m n).toMeasure.map (fun p ↦ equivAgentRanks m n p a) =
+      (PMF.uniformOfFintype (Ranking m n a)).toMeasure := by
+  calc
+    _ = ((uniformProfile m n).toMeasure.map (equivAgentRanks m n)).map
+        (Function.eval a) := by
+      exact (Measure.map_map (measurable_pi_apply a) Measurable.of_discrete).symm
+    _ = _ := by
+      rw [uniformProfile_map_agentRanks]
+      exact (measurePreserving_eval _ a).map_eq
+
+theorem uniformProfile_map_manRank (i : Fin m) :
+    (uniformProfile m n).toMeasure.map (fun p ↦ p.manRank i) =
+      (PMF.uniformOfFintype (Equiv.Perm (Fin n))).toMeasure :=
+  uniformProfile_map_ranking m n (Sum.inl i)
+
+theorem uniformProfile_map_womanRank (j : Fin n) :
+    (uniformProfile m n).toMeasure.map (fun p ↦ p.womanRank j) =
+      (PMF.uniformOfFintype (Equiv.Perm (Fin m))).toMeasure :=
+  uniformProfile_map_ranking m n (Sum.inr j)
+
+/-- All individual rankings are jointly independent, across as well as within the two sides. -/
+theorem iIndepFun_uniformProfile (m n : ℕ) :
+    ProbabilityTheory.iIndepFun (fun a p ↦ equivAgentRanks m n p a)
+      (uniformProfile m n).toMeasure := by
+  apply (ProbabilityTheory.iIndepFun_iff_map_fun_eq_pi_map
+    (fun _ ↦ Measurable.of_discrete.aemeasurable)).mpr
+  simp only [uniformProfile_map_ranking]
+  exact uniformProfile_map_agentRanks m n
 
 /-- Every proposer is matched when the proposer population is no larger. -/
 theorem isSome_galeShapleyComputable_of_le (p : RankProfile m n) (h : m ≤ n) (i : Fin m) :

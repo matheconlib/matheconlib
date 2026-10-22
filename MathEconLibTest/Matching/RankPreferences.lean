@@ -53,6 +53,7 @@ example (p : RankProfile 1 0) : p.averageProposerRank ⊥ = 1 := by
   simp [averageProposerRank, rank]
 
 #print axioms RankProfile.symm_toMarriageMarket
+#print axioms RankProfile.rank_injective
 #print axioms RankProfile.averageProposerRank_le
 
 end MathEconLibTest.Matching.RankPreferences

@@ -10,6 +10,7 @@ import Mathlib.Data.Fintype.Pi
 import Mathlib.Data.Fintype.Prod
 import Mathlib.Data.PEquiv
 import Mathlib.Data.Real.Basic
+import Mathlib.Logic.Equiv.Fin.Basic
 
 /-!
 # Finite ordinal rank profiles for marriage markets
@@ -65,6 +66,26 @@ def equivRanks (m n : ℕ) : RankProfile m n ≃
 
 instance : Fintype (RankProfile m n) := Fintype.ofEquiv _ (equivRanks m n).symm
 
+/-- An agent's ranking type, indexed by the disjoint union of both populations. -/
+def Ranking (m n : ℕ) : Fin m ⊕ Fin n → Type :=
+  Sum.elim (fun _ ↦ Equiv.Perm (Fin n)) (fun _ ↦ Equiv.Perm (Fin m))
+
+instance (a : Fin m ⊕ Fin n) : Fintype (Ranking m n a) := by
+  cases a <;> dsimp [Ranking] <;> infer_instance
+
+instance (a : Fin m ⊕ Fin n) : Inhabited (Ranking m n a) := by
+  cases a <;> dsimp [Ranking] <;> infer_instance
+
+/-- The same profile as one family indexed by all agents; no restrictions link coordinates. -/
+def equivAgentRanks (m n : ℕ) : RankProfile m n ≃ (∀ a, Ranking m n a) :=
+  (equivRanks m n).trans (Equiv.sumPiEquivProdPi (Ranking m n)).symm
+
+@[simp] theorem equivAgentRanks_inl (p : RankProfile m n) (i : Fin m) :
+    equivAgentRanks m n p (Sum.inl i) = p.manRank i := rfl
+
+@[simp] theorem equivAgentRanks_inr (p : RankProfile m n) (j : Fin n) :
+    equivAgentRanks m n p (Sum.inr j) = p.womanRank j := rfl
+
 /-- The full profile space has `(n!)^m (m!)^n` elements. -/
 theorem card (m n : ℕ) : Fintype.card (RankProfile m n) =
     (Nat.factorial n) ^ m * (Nat.factorial m) ^ n := by
@@ -90,19 +111,12 @@ theorem rank_some_lt_none (r : Equiv.Perm (Fin n)) (w : Fin n) :
   simp [rank, (r w).isLt]
 
 theorem rank_injective (r : Equiv.Perm (Fin n)) : Function.Injective (rank r) := by
-  intro x y h
-  cases x with
-  | none =>
-    cases y with
-    | none => rfl
-    | some w => exact False.elim ((rank_some_lt_none r w).ne h.symm)
-  | some v =>
-    cases y with
-    | none => exact False.elim ((rank_some_lt_none r v).ne h)
-    | some w =>
-      congr 1
-      apply r.injective
-      exact Fin.ext (Nat.add_right_cancel h)
+  let e := (Equiv.optionCongr r).trans finSuccEquivLast.symm
+  have h : rank r = Nat.succ ∘ Fin.val ∘ e := by
+    funext o
+    cases o <;> simp [e, rank]
+  rw [h]
+  exact Nat.succ_injective.comp (Fin.val_injective.comp e.injective)
 
 /-- The existing marriage API prefers larger values, so its order is the dual rank order. -/
 def rankOrder (r : Equiv.Perm (Fin n)) : LinearOrder (Option (Fin n)) :=

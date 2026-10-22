@@ -29,7 +29,28 @@ example : (FinDist.uniform (α := Fin 3)).expect (fun i ↦ (i.val + 1 : ℝ)) =
   rw [FinDist.expect_uniform, Fintype.expect_eq_sum_div_card]
   norm_num [Fin.sum_univ_succ]
 
+-- A nonmatching application: relabeling three possible outcomes preserves their uniform law.
+example : (PMF.uniformOfFintype (Fin 3)).map (Equiv.swap 0 1) =
+    PMF.uniformOfFintype (Fin 3) := PMF.map_uniformOfFintype (Equiv.swap 0 1)
+
+section BinarySignals
+
+local instance : MeasurableSpace Bool := ⊤
+
+-- Three binary signals and the empty family use the same product-law lemma as rankings.
+example : (PMF.uniformOfFintype (Fin 3 → Bool)).toMeasure =
+    Measure.pi (fun _ : Fin 3 ↦ (PMF.uniformOfFintype Bool).toMeasure) :=
+  PMF.toMeasure_uniformOfFintype_pi
+
+example : (PMF.uniformOfFintype (Fin 0 → Bool)).toMeasure =
+    Measure.pi (fun _ : Fin 0 ↦ (PMF.uniformOfFintype Bool).toMeasure) :=
+  PMF.toMeasure_uniformOfFintype_pi
+
+end BinarySignals
+
 #print axioms PMF.integral_uniformOfFintype
+#print axioms PMF.map_uniformOfFintype
+#print axioms PMF.toMeasure_uniformOfFintype_pi
 #print axioms MathEconLib.Probability.FinDist.expect_uniform
 #print axioms MathEconLib.Probability.FinDist.toPMF_uniform
 

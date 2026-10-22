@@ -27,6 +27,36 @@ example : Fintype.card (RankProfile 0 0) = 1 := by rw [card]; norm_num
 example (p : RankProfile 0 0) : uniformProfile 0 0 p = 1 := by
   simp [uniformProfile_apply]
 
+-- The standard probability API applies to the whole family, including the empty product.
+example {m n : ℕ} :
+    (uniformProfile m n).toMeasure.map (equivAgentRanks m n) =
+      MeasureTheory.Measure.pi
+        (fun a ↦ (PMF.uniformOfFintype (Ranking m n a)).toMeasure) :=
+  uniformProfile_map_agentRanks m n
+
+example : ProbabilityTheory.iIndepFun (fun a p ↦ equivAgentRanks 0 0 p a)
+    (uniformProfile 0 0).toMeasure := iIndepFun_uniformProfile 0 0
+
+-- This is cross-side independence, not merely independence within each population.
+example {m n : ℕ} (i : Fin m) (j : Fin n) :
+    ProbabilityTheory.IndepFun (fun p : RankProfile m n ↦ p.manRank i)
+      (fun p ↦ p.womanRank j) (uniformProfile m n).toMeasure :=
+  (iIndepFun_uniformProfile m n).indepFun (i := Sum.inl i) (j := Sum.inr j) (by simp)
+
+-- Agents on a nonempty side facing no partners have the unique permutation of `Fin 0`.
+example : (uniformProfile 0 2).toMeasure.map (fun p ↦ p.womanRank 0) =
+    (PMF.uniformOfFintype (Equiv.Perm (Fin 0))).toMeasure :=
+  uniformProfile_map_womanRank 0
+
+example : (uniformProfile 2 0).toMeasure.map (fun p ↦ p.manRank 0) =
+    (PMF.uniformOfFintype (Equiv.Perm (Fin 0))).toMeasure :=
+  uniformProfile_map_manRank 0
+
+-- In an unequal market the ranking law still uses the opposite population's size.
+example : (uniformProfile 1 2).toMeasure.map (fun p ↦ p.manRank 0) =
+    (PMF.uniformOfFintype (Equiv.Perm (Fin 2))).toMeasure :=
+  uniformProfile_map_manRank 0
+
 -- The one-agent market returns its only partner, with rank one.
 example : expectedAverageProposerRank 1 = 1 := by
   have h : (∑ p : RankProfile 1 1,
@@ -112,6 +142,9 @@ example (n : ℕ) : expectedAverageProposerRank n =
 
 #print axioms RankProfile.expectedAverageProposerRank_two
 #print axioms RankProfile.uniformProfile_apply_eq_prod
+#print axioms RankProfile.uniformProfile_map_agentRanks
+#print axioms RankProfile.uniformProfile_map_ranking
+#print axioms RankProfile.iIndepFun_uniformProfile
 #print axioms MathEconLib.Matching.MarriageMarket.IsStableMatching.isSome_of_card_eq
 #print axioms MathEconLib.Matching.MarriageMarket.Unblocked.isSome_of_card_le
 #print axioms PEquiv.isSome_of_forall_symm_isSome_of_card_le
