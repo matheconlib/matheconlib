@@ -7,17 +7,32 @@ import MathEconLib.Matching
 import MathEconLib.Probability.FinDist.Measure
 import MathEconLibExamples.Matching.RandomPreferences
 
-/-! Uniform-law client checks import the canonical numerical example rather than duplicating it. -/
+/-!
+Joint-law clients import the independent and correlated worked examples without duplicating them.
+-/
 
 namespace MathEconLibTest.Matching.RandomPreferencesUniform
 
 open MathEconLib.Matching.MarriageMarket
 open RankProfile
+open MathEconLibExamples.Matching.RandomPreferences
 open scoped BigOperators
 
 example : expectedAverageProposerRank (uniformProfile 2 2)
     (fun p ↦ p.toMarriageMarket.galeShapleyComputable) = (5 : ℝ) / 4 :=
   MathEconLibExamples.Matching.RandomPreferences.expectedAverageProposerRank_two
+
+-- The same individual uniform marginals can yield dependent rankings and a different expectation.
+example (a : Fin 2 ⊕ Fin 2) :
+    Correlated.law.map (fun p ↦ equivAgentRanks 2 2 p a) =
+      PMF.uniformOfFintype (Ranking 2 2 a) := Correlated.law_map_ranking a
+
+example : ¬ ProbabilityTheory.IndepFun (fun p : RankProfile 2 2 ↦ p.manRank 0)
+    (fun p ↦ p.manRank 1) Correlated.law.toMeasure := Correlated.not_indepFun
+
+example : expectedAverageProposerRank Correlated.law
+    (fun p ↦ p.toMarriageMarket.galeShapleyComputable) = (3 : ℝ) / 2 :=
+  Correlated.expectedAverageProposerRank_eq_three_halves
 
 example : expectedAverageProposerRank (uniformProfile 0 0)
     (fun p ↦ p.toMarriageMarket.galeShapleyComputable) = 0 := by simp
@@ -87,5 +102,8 @@ example (m n : ℕ) :
 #print axioms RankProfile.uniformProfile_map_ranking
 #print axioms RankProfile.iIndepFun_uniformProfile
 #print axioms RankProfile.independentProfile_uniform
+#print axioms Correlated.law_map_ranking
+#print axioms Correlated.not_indepFun
+#print axioms Correlated.expectedAverageProposerRank_eq_three_halves
 
 end MathEconLibTest.Matching.RandomPreferencesUniform

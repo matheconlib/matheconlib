@@ -161,7 +161,9 @@ remain follow-ups in [#192](https://github.com/matheconlib/matheconlib/issues/19
 
 The canonical `MathEconLibExamples.Matching.RandomPreferences` example proves the exact `5/4`
 proposer DA expectation and explains the two equally likely first-choice cases. Tests import that
-example; the core contains the reusable statistics and laws. The benchmark concerns ordinal
+example; a correlated law with the same individual uniform marginals gives expectation `3/2`.
+Its checked marginals and dependence witness illustrate why the joint law matters. The core
+contains the reusable statistics and laws. These benchmarks concern ordinal
 positions, not cardinal welfare. Proposal bounds,
 asymptotics, and matched-agent imbalance results remain later milestones under
 [#166](https://github.com/matheconlib/matheconlib/issues/166). Weak preferences

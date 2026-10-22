@@ -33,15 +33,6 @@ example (p : RankProfile 1 2) :
 example (μ : PMF (RankProfile 0 2)) (outcome : RankProfile 0 2 → Fin 0 ≃. Fin 2) :
     expectedAverageProposerRank μ outcome = 0 := by simp
 
--- This joint law forces both proposers' rankings to move together. Nothing requires independence.
-noncomputable def correlatedProfile (μ : PMF (Equiv.Perm (Fin 2))) : PMF (RankProfile 2 2) :=
-  μ.map fun r ↦ ⟨fun _ ↦ r, fun _ ↦ 1⟩
-
-example (μ : PMF (Equiv.Perm (Fin 2))) (p : RankProfile 2 2)
-    (hp : p ∈ (correlatedProfile μ).support) : p.manRank 0 = p.manRank 1 := by
-  obtain ⟨r, _, rfl⟩ := (PMF.mem_support_map_iff _ _ _).mp hp
-  rfl
-
 -- Arbitrary individual laws give the declared marginals and full joint independence.
 example {m n : ℕ} (ν : ∀ a, PMF (Ranking m n a)) (a : Fin m ⊕ Fin n) :
     (independentProfile ν).toMeasure.map (fun p ↦ equivAgentRanks m n p a) =
