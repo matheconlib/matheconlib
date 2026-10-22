@@ -156,6 +156,15 @@ Omit the `git add` line if you have not added a file. Include changes to
 `MathEconLib.lean` and `MathEconLibTest.lean` in your commit.
 Use `bash scripts/update-imports.sh --check` to verify imports without changing files.
 
+### Build warnings
+
+Contributions should avoid introducing new compiler or linter warnings. Fix new
+warnings where practical; otherwise explain in the PR why they are needed. Keep
+any linter suppression narrow and justified.
+
+CI's warning-count comparison is informational; an increase does not fail CI.
+All verification requirements above still apply.
+
 ## API stability pins
 
 `ApiStability.lean` at the repository root pins the exact statements of the

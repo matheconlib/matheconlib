@@ -58,7 +58,8 @@ docstring is treated as a pre-merge blocker.
    must not import examples or tests.
 6. Machines first, then you. Do not relitigate what CI checks. When CI did
    not run (stacked PRs skip it), do the missing run yourself and say so in
-   the review.
+   the review. Check the [warning comparison](../CONTRIBUTING.md#build-warnings)
+   and review justifications for new warnings or linter suppressions.
 7. Docs and attribution. Docstrings and README claims are checked against
    the actual declarations. Check the
    [citation guidance](../CONTRIBUTING.md#citing-sources): paper- or book-based
