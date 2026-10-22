@@ -57,9 +57,8 @@ theorem uniformProfile_apply_eq_prod (p : RankProfile m n) :
 theorem uniformProfile_univ (m n : ℕ) :
     (uniformProfile m n).toMeasure Set.univ = 1 := by simp
 
-/-- Push the joint profile law forward by `equivAgentRanks`: the resulting law on the complete
-family of individual rankings is the product of their uniform laws. This is equality of measures
-on ranking families, and establishes joint independence rather than only uniform marginals. -/
+/-- Choosing a full preference profile uniformly at random gives the same distribution as
+choosing each agent's ranking independently and uniformly at random. -/
 theorem uniformProfile_map_agentRanks (m n : ℕ) :
     (uniformProfile m n).toMeasure.map (equivAgentRanks m n) =
       Measure.pi (fun a ↦ (PMF.uniformOfFintype (Ranking m n a)).toMeasure) := by
