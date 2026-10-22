@@ -153,6 +153,11 @@ def toMarriageMarket (p : RankProfile m n) : MarriageMarket (Fin m) (Fin n) wher
 @[simp] theorem toMarriageMarket_acceptableW (p : RankProfile m n) (j : Fin n) (i : Fin m) :
     p.toMarriageMarket.AcceptableW j i := rank_some_lt_none _ _
 
+/-- Complete rank profiles satisfy the optional universal-acceptability condition. -/
+theorem toMarriageMarket_universallyAcceptable (p : RankProfile m n) :
+    p.toMarriageMarket.UniversallyAcceptable :=
+  ⟨p.toMarriageMarket_acceptableM, p.toMarriageMarket_acceptableW⟩
+
 /-- Sum of one-based partner ranks for all proposers. This permits partial matchings,
 with `none` assigned rank `n+1`; later matched-agent statistics must exclude unmatched agents. -/
 def totalProposerRank (p : RankProfile m n) (μ : Fin m ≃. Fin n) : ℕ :=

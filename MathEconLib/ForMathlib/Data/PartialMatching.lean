@@ -32,7 +32,7 @@ section Relabel
 variable {α' : Type u'} {β' : Type v'} {α'' : Type u''} {β'' : Type v''}
 
 /-- Change the labels of a partial equivalence by composing with total equivalences.
-Unmatched arguments remain unmatched. -/
+This uses Mathlib's `Equiv.toPEquiv` and `PEquiv.trans`; unmatched arguments remain unmatched. -/
 def relabel (μ : α ≃. β) (eα : α ≃ α') (eβ : β ≃ β') : α' ≃. β' :=
   eα.symm.toPEquiv.trans (μ.trans eβ.toPEquiv)
 

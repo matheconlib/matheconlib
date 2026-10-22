@@ -212,7 +212,7 @@ theorem IsStableMatching.unblockedW
 larger than the other side is matched. The woman-side statement follows by side exchange. -/
 theorem Unblocked.isSome_of_card_le [Fintype M] [Fintype W] {μ : M ≃. W}
     (hμ : mkt.Unblocked μ) (hcard : Fintype.card M ≤ Fintype.card W)
-    (hM : ∀ m w, mkt.AcceptableM m w) (hW : ∀ w m, mkt.AcceptableW w m)
+    (hA : mkt.UniversallyAcceptable)
     (m : M) : (μ m).isSome := by
   classical
   by_contra hm
@@ -221,17 +221,17 @@ theorem Unblocked.isSome_of_card_le [Fintype M] [Fintype W] {μ : M ≃. W}
     by_contra h
     have hw' : μ.symm w = none := Option.not_isSome_iff_eq_none.mp h
     apply hμ.1 m w
-    exact ⟨by simpa [BlocksM, hm', AcceptableM] using hM m w,
-      by simpa [BlocksW, hw', AcceptableW] using hW w m⟩
+    exact ⟨by simpa [BlocksM, hm', AcceptableM] using hA.acceptableM m w,
+      by simpa [BlocksW, hw', AcceptableW] using hA.acceptableW w m⟩
   exact hm (μ.isSome_of_forall_symm_isSome_of_card_le hcard hw m)
 
 /-- In a finite balanced market where all partners are mutually acceptable,
 every stable matching matches every man. The woman-side statement follows by side exchange. -/
 theorem IsStableMatching.isSome_of_card_eq [Fintype M] [Fintype W] {μ : M ≃. W}
     (hμ : mkt.IsStableMatching μ) (hcard : Fintype.card M = Fintype.card W)
-    (hM : ∀ m w, mkt.AcceptableM m w) (hW : ∀ w m, mkt.AcceptableW w m)
+    (hA : mkt.UniversallyAcceptable)
     (m : M) : (μ m).isSome :=
-  Unblocked.isSome_of_card_le mkt hμ.2 hcard.le hM hW m
+  Unblocked.isSome_of_card_le mkt hμ.2 hcard.le hA m
 
 /-- Every man weakly prefers `μ` to `ν`. This is the preference order,
 not the extension order that `PEquiv` already carries. -/

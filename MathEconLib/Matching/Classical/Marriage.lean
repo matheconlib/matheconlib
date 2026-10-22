@@ -9,6 +9,8 @@ import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
 import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 import MathEconLib.Matching.Classical.Marriage.LoneWolf
 import MathEconLib.Matching.Classical.Marriage.RandomPreferences
+import MathEconLib.Matching.Classical.Marriage.RandomPreferencesUniform
+import MathEconLib.Matching.Classical.Marriage.RankPreferencesDA
 import MathEconLib.Matching.Classical.Marriage.RankPreferences
 import MathEconLib.Matching.Classical.Marriage.StableOrder
 

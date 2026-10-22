@@ -19,7 +19,9 @@ import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.RandomPreferences
+import MathEconLibTest.Matching.RandomPreferencesUniform
 import MathEconLibTest.Matching.RankPreferences
+import MathEconLibTest.Matching.RankPreferencesDA
 import MathEconLibTest.Matching.Relabel
 import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Mechanism.Games
