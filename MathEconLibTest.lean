@@ -18,6 +18,7 @@ import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.Continuum
+import MathEconLibTest.Matching.Continuum.Compatibility
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Mechanism.Games

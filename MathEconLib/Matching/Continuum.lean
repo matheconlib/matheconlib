@@ -5,6 +5,7 @@ Authors: Bo Cowgill
 -/
 import MathEconLib.Matching.Continuum.Basic
 import MathEconLib.Matching.Continuum.Stability
+import MathEconLib.Matching.Continuum.ToClassical
 
 /-!
 # Two-sided continuum matching

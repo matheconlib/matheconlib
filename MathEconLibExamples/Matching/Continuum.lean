@@ -3,9 +3,10 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib.Matching.Continuum.Stability
+import MathEconLib.Matching.Continuum
 import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
 import Mathlib.MeasureTheory.Order.Group.Lattice
+import Mathlib.Probability.Distributions.Uniform
 
 /-!
 # Matching identical points in two uniform populations
@@ -13,7 +14,8 @@ import Mathlib.MeasureTheory.Order.Group.Lattice
 Both populations are uniform on `[0,1]`. Each agent prefers partners closer to their own point,
 with utility minus absolute distance and outside-option utility `-1`. The identity assignment
 is pointwise stable and induces a distributionally stable matching measure with the required
-marginals. Its population measure is atomless.
+marginals. Its population measure is atomless. A separate two-type example applies the bridge
+between utility-based pointwise stability and classical marriage stability.
 -/
 
 namespace MathEconLibExamples.Matching.Continuum
@@ -44,8 +46,9 @@ theorem identity_pointwiseStable : (MatchingMap.refl population).PointwiseStable
   · intro a
     norm_num [Utilities.IndividuallyRationalPair, MatchingMap.graph, utilities]
   · intro a b h
+    have hab := (MatchingMap.isBlockingPair_iff _ _ _ _).mp h
     exact (not_lt_of_ge (neg_nonpos.mpr (abs_nonneg (a - b))))
-      (by simpa [MatchingMap.IsBlockingPair, utilities] using h.1)
+      (by simpa [utilities] using hab.1)
 
 /-- The distribution of pairs `(x,x)` for a uniform draw from the unit interval. -/
 noncomputable def matching : MatchingMeasure population population :=
@@ -54,5 +57,44 @@ noncomputable def matching : MatchingMeasure population population :=
 /-- Apply the general bridge to the pointwise-stable continuum assignment. -/
 theorem matching_distributionallyStable : matching.DistributionallyStable utilities :=
   identity_pointwiseStable.toMatchingMeasure utilities_measurable
+
+namespace FiniteBridge
+
+open MathEconLib.Matching
+
+/-- Equal population weights on two types. -/
+noncomputable def population : ProbabilityMeasure (Fin 2) :=
+  ⟨(PMF.uniformOfFintype (Fin 2)).toMeasure, inferInstance⟩
+
+/-- Both sides rank type 1 above type 0 and either partner above remaining unmatched. -/
+def market : MarriageMarket (Fin 2) (Fin 2) :=
+  ⟨fun _ ↦ inferInstanceAs (LinearOrder (WithBot (Fin 2))),
+    fun _ ↦ inferInstanceAs (LinearOrder (WithBot (Fin 2)))⟩
+
+/-- Partner ranks as utilities, with outside-option utility `-1`. -/
+def utilities : Utilities (Fin 2) (Fin 2) :=
+  ⟨fun _ b ↦ b.val, fun _ a ↦ a.val, fun _ ↦ -1, fun _ ↦ -1⟩
+
+/-- The utility and classical descriptions give exactly the same partner comparisons. -/
+theorem represents : market.toPartnerComparisons = utilities.toPartnerComparisons := by
+  ext a x y <;> fin_cases x <;> fin_cases y <;>
+    norm_num [market, MarriageMarket.toPartnerComparisons, MarriageMarket.ltM, MarriageMarket.ltW,
+      Utilities.toPartnerComparisons, utilities] <;> decide
+
+/-- The identity assignment has no mutually profitable cross-match. -/
+theorem identity_pointwiseStable : (MatchingMap.refl population).PointwiseStable utilities := by
+  constructor
+  · intro a
+    constructor <;> exact le_trans (by norm_num [utilities]) (Nat.cast_nonneg _)
+  · intro a b h
+    exact lt_asymm h.1 h.2
+
+/-- Apply the general bridge to obtain classical stability of the identity assignment. -/
+theorem identity_classicallyStable :
+    market.IsStableMatching (MatchingMap.refl population).toMeasurableEquiv.toEquiv.toPEquiv :=
+  ((MatchingMap.refl population).pointwiseStable_iff_classical utilities market represents).mp
+    identity_pointwiseStable
+
+end FiniteBridge
 
 end MathEconLibExamples.Matching.Continuum

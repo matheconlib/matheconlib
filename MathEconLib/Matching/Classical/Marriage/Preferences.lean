@@ -1,9 +1,10 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 import MathEconLib.Choice.Induced
+import MathEconLib.Matching.PartnerComparisons
 import Mathlib.Data.Finset.Max
 
 /-!
@@ -77,6 +78,12 @@ def ltW (w : W) (y z : Option M) : Prop :=
 def leW (w : W) (y z : Option M) : Prop :=
   letI := mkt.prefW w
   y ≤ z
+
+/-- View classical strict preferences through the shared partner-comparison interface. -/
+def toPartnerComparisons : PartnerComparisons M W := ⟨mkt.ltM, mkt.ltW⟩
+
+@[simp] theorem toPartnerComparisons_symm :
+    mkt.symm.toPartnerComparisons = mkt.toPartnerComparisons.symm := rfl
 
 /-- `w` is acceptable to `m`. -/
 def AcceptableM (m : M) (w : W) : Prop :=

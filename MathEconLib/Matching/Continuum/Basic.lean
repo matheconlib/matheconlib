@@ -12,7 +12,9 @@ import Mathlib.MeasureTheory.Measure.Prod
 The two populations are probability measures, so each has total mass one. A `MatchingMeasure`
 records the joint distribution of matched pairs with those population marginals. A `MatchingMap`
 is a measure-preserving measurable bijection. Its graph induces a matching measure. A matching
-measure need not be induced by a bijection between the given population spaces.
+measure describes the distribution of matched types and may split one type's mass among partners.
+It need not be induced by a bijection between the given population spaces; realizing a general
+matching measure using individual agents requires separate agent spaces and type maps.
 
 These definitions allow both atomless populations and atoms; no finiteness assumptions are used.
 Everyone is matched in this first layer. Outside options enter the stability definitions, while

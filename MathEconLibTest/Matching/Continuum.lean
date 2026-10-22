@@ -13,47 +13,15 @@ namespace MathEconLibTest.Matching.Continuum
 open MeasureTheory
 open MathEconLib.Matching.Continuum
 
-section Generic
-
-variable {A B : Type*} [MeasurableSpace A] [MeasurableSpace B]
-variable {μ : ProbabilityMeasure A} {ν : ProbabilityMeasure B}
-
-example (γ : MatchingMeasure μ ν) : γ.toMeasure.fst = μ.toMeasure := γ.fst_eq
-example (γ : MatchingMeasure μ ν) : γ.toMeasure.snd = ν.toMeasure := γ.snd_eq
-example (γ : MatchingMeasure μ ν) : IsProbabilityMeasure γ.toMeasure := inferInstance
-
-example (γ : MatchingMeasure μ ν) : γ.symm.symm = γ := γ.symm_symm
-
-example : (MatchingMeasure.product μ ν).symm = MatchingMeasure.product ν μ :=
-  MatchingMeasure.product_symm μ ν
-
-example (f : MatchingMap μ ν) : f.toMatchingMeasure.toMeasure.fst = μ.toMeasure :=
-  f.toMatchingMeasure.fst_eq
-
-example (f : MatchingMap μ ν) : f.toMatchingMeasure.toMeasure.snd = ν.toMeasure :=
-  f.toMatchingMeasure.snd_eq
-
-example (f : MatchingMap μ ν) : f.symm.toMatchingMeasure = f.toMatchingMeasure.symm :=
-  f.toMatchingMeasure_symm
-
-example (f : MatchingMap μ ν) (u : Utilities A B) (hu : u.IsMeasurable)
-    (hf : f.PointwiseStable u) : f.toMatchingMeasure.DistributionallyStable u :=
-  hf.toMatchingMeasure hu
-
-example (γ : MatchingMeasure μ ν) (u : Utilities A B)
-    (hγ : γ.DistributionallyStable u) : γ.symm.DistributionallyStable u.symm := hγ.symm
-
 example : MathEconLibExamples.Matching.Continuum.matching.DistributionallyStable
     MathEconLibExamples.Matching.Continuum.utilities :=
   MathEconLibExamples.Matching.Continuum.matching_distributionallyStable
 
--- Indifference is not a strict blocking improvement.
-example (γ : MatchingMeasure μ ν) : γ.DistributionallyStable
-    ⟨fun _ _ ↦ 0, fun _ _ ↦ 0, fun _ ↦ 0, fun _ ↦ 0⟩ := by
-  simp [MatchingMeasure.DistributionallyStable, MatchingMeasure.IndividuallyRational,
-    MatchingMeasure.Unblocked, Utilities.IndividuallyRationalPair, Utilities.Blocks]
+open MathEconLibExamples.Matching.Continuum.FiniteBridge in
+example : market.IsStableMatching
+    (MatchingMap.refl population).toMeasurableEquiv.toEquiv.toPEquiv := identity_classicallyStable
 
-end Generic
+#print axioms MathEconLibExamples.Matching.Continuum.FiniteBridge.identity_classicallyStable
 
 -- Only type 0 has population mass. Types 1 and 2 still matter for pointwise stability.
 noncomputable def atomicPopulation : ProbabilityMeasure (Fin 3) :=

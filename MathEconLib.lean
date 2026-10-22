@@ -84,6 +84,7 @@ import MathEconLib.Matching.Classical.Marriage.ToContracts
 import MathEconLib.Matching.Continuum
 import MathEconLib.Matching.Continuum.Basic
 import MathEconLib.Matching.Continuum.Stability
+import MathEconLib.Matching.Continuum.ToClassical
 import MathEconLib.Matching.Contracts.Basic
 import MathEconLib.Matching.Contracts.Completion
 import MathEconLib.Matching.Contracts.FixedPointConvergence
@@ -92,6 +93,7 @@ import MathEconLib.Matching.Contracts.RuralHospitals
 import MathEconLib.Matching.Contracts.StableFixedPoints
 import MathEconLib.Matching.Contracts.StableOrder
 import MathEconLib.Matching.Contracts.WeakSubstitutes
+import MathEconLib.Matching.PartnerComparisons
 import MathEconLib.Mechanism
 import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 import MathEconLib.Mechanism.Auctions.Allocation

@@ -110,8 +110,10 @@ The section headings separate these scopes without introducing another module.
 | `Matching.Classical.Marriage.Existence` | The stable-matching existence theorem |
 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
 | `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
+| `Matching.PartnerComparisons` | Shared comparisons over optional partners and bilateral blocking |
 | `Matching.Continuum.Basic` | Balanced measured populations, matching maps and measures, marginals and side exchange |
 | `Matching.Continuum.Stability` | Pointwise and distributional stability, outside options and the graph-measure stability bridge |
+| `Matching.Continuum.ToClassical` | Agreement with classical stability under an explicit utility representation |
 
 Marriage preferences and their induced choices belong together. The embedding
 into the contracts model lives in `ToContracts`, with the explicit constructor
@@ -136,10 +138,16 @@ reduction below is a separate mathematical extension.
 `Matching.Continuum` is the entry point for [#197](https://github.com/matheconlib/matheconlib/issues/197).
 Both populations have mass one and all agents are matched. `MatchingMap` uses a Mathlib
 measure-preserving measurable equivalence; `MatchingMeasure` records a probability measure on
-pairs with the prescribed marginals. The graph construction connects them and commutes with
-side exchange. Assignments that agree almost everywhere give the same matching measure.
+matched types with the prescribed marginals; one type’s mass may be split among partners.
+The graph construction connects them and commutes with side exchange. Assignments that agree
+almost everywhere give the same matching measure.
 
-Utilities include outside options. `PointwiseStable` checks every agent and potential blocking
+Classical preferences and utilities supply adapters to `PartnerComparisons`, which defines
+bilateral blocking once. This is comparison data, with no choice-correspondence framework.
+The pointwise/classical stability bridge requires the adapters to agree, including outside options.
+
+Utilities include outside options; this is a utility-representable specialization of Greinecker–Kah,
+whose preference relations are more general. `PointwiseStable` checks every agent and potential blocking
 pair; `DistributionallyStable` checks individual rationality almost everywhere and blocking
 under the product of the matching measure with itself. A pointwise-stable map gives a
 stable measure when the utility data are measurable. The example in
