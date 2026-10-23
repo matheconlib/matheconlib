@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Ruiz Chen, Jujian Zhang, Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Ruiz Chen, Jujian Zhang, Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ruiz Chen, Jujian Zhang, Scott Duke Kominers
+Authors: Ruiz Chen, Jujian Zhang, Scott Duke Kominers, Bo Cowgill
 -/
 module
 
@@ -9,6 +9,8 @@ public import MathEconLib.Auction.Basic
 public import Mathlib.Probability.Independence.Basic
 public import Mathlib.Probability.IdentDistrib
 public import Mathlib.Probability.CDF
+
+import MathEconLib.ForMathlib.IndepFun
 
 /-! # Auction Environment Typeclasses (Section 3a) -/
 
@@ -24,10 +26,6 @@ variable {n : ℕ} [NeZero n]
 namespace Auction
 
 /-! ### Composable typeclasses -/
-
-/-- Types are mutually independent (the "I" in IPV). -/
-class HasIndependentTypes (A : Auction Ω n) : Prop where
-  θ_indep : iIndepFun A.θ ℙ
 
 /-- All bidders share the same type distribution and bounds (symmetric bidders). -/
 class HasIdenticalTypes (A : Auction Ω n) : Prop where
@@ -142,9 +140,81 @@ family. Matches `SingleParameterProblem.HasZeroLowestTypeUtility`. -/
 class HasZeroLowestTypeUtility [HasIdenticalTypes A] : Prop where
   zeroLowestTypeUtility : ∀ i, A.U i A.lowestType = 0
 
-/-- Expected total revenue. -/
+/-- Expected realized truthful revenue under the joint law of all bidder types. This definition
+allows correlated types. As a totalized Bochner integral it is zero for a nonintegrable revenue;
+economic uses should establish integrability. -/
 noncomputable def expectedRevenue : ℝ :=
-  𝔼[fun ω => ∑ i : Fin n, A.p i (A.θ i ω)]
+  𝔼[fun ω => A.rules.revenue (A.θ · ω)]
+
+omit [NeZero n] in
+/-- A bidder's type is independent of the profile with its own coordinate replaced by zero. -/
+private lemma indepFun_type_update [A.HasIndependentTypes] (i : Fin n) :
+    IndepFun (A.θ i) (fun ω => Function.update (A.θ · ω) i 0) ℙ := by
+  classical
+  let S : Finset (Fin n) := {i}
+  let T : Finset (Fin n) := Finset.univ.erase i
+  have hST : Disjoint S T := by simp [S, T]
+  have h := iIndepFun.indepFun_finset S T hST
+    (HasIndependentTypes.θ_indep (A := A)) A.θ_measurable
+  let f : (S → ℝ) → ℝ := fun x => x ⟨i, by simp [S]⟩
+  let g : (T → ℝ) → (Fin n → ℝ) :=
+    fun x j => if hj : j = i then 0 else x ⟨j, by simp [T, hj]⟩
+  have hf : Measurable f := measurable_pi_apply _
+  have hg : Measurable g := by
+    apply Measurable.of_eval
+    intro j
+    by_cases hj : j = i
+    · simp only [g, dite_eq_left hj]
+      exact measurable_const
+    · simp only [g, dite_eq_right hj]
+      exact measurable_pi_apply _
+  have hc := h.comp hf hg
+  have hleft : (f ∘ fun (ω : Ω) (j : S) ↦ A.θ j ω) = A.θ i := rfl
+  have hright : (g ∘ fun (ω : Ω) (j : T) ↦ A.θ j ω) =
+      (fun ω ↦ Function.update (A.θ · ω) i 0) := by
+    funext ω j
+    by_cases hj : j = i
+    · subst j; simp [g]
+    · simp [g, hj]
+  rw [hleft, hright] at hc
+  exact hc
+
+omit [NeZero n] in
+/-- Under independent types, a measurable, integrable realized payment has the same expectation as
+the marginal interim payment evaluated at the bidder's own type. -/
+lemma integral_payment_eq_integral_p [A.HasIndependentTypes]
+    (i : Fin n) (hm : Measurable (A.rules.payment i))
+    (hi : Integrable (fun ω => A.rules.payment i (A.θ · ω)) ℙ) :
+    (∫ ω, A.rules.payment i (A.θ · ω) ∂ℙ) = ∫ ω, A.p i (A.θ i ω) ∂ℙ := by
+  let Y : Ω → (Fin n → ℝ) := fun ω => Function.update (A.θ · ω) i 0
+  let h : ℝ → (Fin n → ℝ) → ℝ := fun x y => A.rules.payment i (Function.update y i x)
+  have hXY : IndepFun (A.θ i) Y ℙ := A.indepFun_type_update i
+  have hY : Measurable Y := measurable_update_left.comp
+    (Measurable.of_eval A.θ_measurable)
+  have hh : Measurable h.uncurry := hm.comp (measurable_update'.comp
+    (measurable_snd.prodMk measurable_fst))
+  have hl : (fun ω => A.rules.payment i (A.θ · ω)) =
+      (fun ω => h (A.θ i ω) (Y ω)) := by
+    funext ω
+    simp [h, Y]
+  have hr : (fun ω => A.p i (A.θ i ω)) =
+      (fun ω => ∫ ω', h (A.θ i ω) (Y ω') ∂ℙ) := by
+    funext ω
+    simp [p, p_strat, h, Y]
+  rw [hl, hr]
+  exact integral_indep_swap hXY (A.θ_measurable i) hY h hh (hl ▸ hi)
+
+omit [NeZero n] in
+/-- Independent types and measurable, integrable realized payments justify computing actual
+expected revenue as the sum of expected marginal interim payments. -/
+lemma expectedRevenue_eq_sum_integral_p [A.HasIndependentTypes]
+    (hm : ∀ i, Measurable (A.rules.payment i))
+    (hi : ∀ i, Integrable (fun ω => A.rules.payment i (A.θ · ω)) ℙ) :
+    A.expectedRevenue = ∑ i : Fin n, ∫ ω, A.p i (A.θ i ω) ∂ℙ := by
+  unfold expectedRevenue
+  simp_rw [Mechanism.revenue_eq_sum_payment]
+  rw [integral_finsetSum _ fun i _ => hi i]
+  exact Finset.sum_congr rfl fun i _ => A.integral_payment_eq_integral_p i (hm i) (hi i)
 
 end Auction
 

@@ -1,31 +1,36 @@
 /-
-Copyright (c) 2026 Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang. All rights reserved.
+Copyright (c) 2026 Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang,
+Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
+Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang, Bo Cowgill
 -/
 module
 
 public import MathEconLib.BidderProblem.TypeDeviationIC
 public import MathEconLib.Mechanism.Auctions.Allocation
+public import MathEconLib.Mechanism.Core.BayesianIC
 public import Mathlib.Probability.Notation
+public import Mathlib.Probability.Independence.Basic
 
 /-!
 # Auctions with random bidder values
 
 An auction combines rules for allocating goods and making transfers with a probability distribution
 over bidder values. Bidders submit real bids, and the rules return an allocation vector and signed
-transfers, with positive transfers paid to bidders. Interim allocation and payment average over
-opponents' bids, either under a common strategy or truthful reporting.
+transfers, with positive transfers paid to bidders. The carrier allows correlated values. The
+quantities called interim allocation and payment below average over the unconditional law of
+opponents' bids, either under a common strategy or truthful reporting. They represent a bidder's
+interim beliefs under independent types; they do not condition on the bidder's own value.
 
 Allocation rules and bidder values are measurable. Under a measurable strategy, allocations in
 `[0, 1]` are integrable. The interim definitions also allow arbitrary strategies: their Bochner
 integrals are zero when the integrands are not integrable. Payment integrability is a separate
 condition and does not follow from bounded allocations.
 
-Individual rationality and Bayesian incentive compatibility describe bidders' incentives. When each
-allocation coordinate lies in `[0, 1]`, incentive compatibility determines interim payments from
-the allocation rule and the utility of the lowest type, yielding payment equivalence across
-auctions.
+`BIC` and `InterimIR` use selected true-type conditional beliefs and allow correlation. `IPV.BIC`
+specializes the same incentive predicate to constant opponent beliefs under independent types.
+In that specialization, allocation coordinates in `[0, 1]` and incentive compatibility determine
+interim payments from allocations and lowest-type utility, yielding payment equivalence.
 
 ## Main definitions
 
@@ -33,7 +38,9 @@ auctions.
 * `Auction.q_strat`, `Auction.p_strat`: interim allocation and payment under opponents' strategy.
 * `Auction.q`, `Auction.p`, `Auction.U`: interim quantities under truthful reporting.
 * `Auction.ExPostIR`, `Auction.InterimIR`, `Auction.ExAnteIR`: individual rationality conditions.
+* `Auction.MarginalIR`: the unconditional participation inequality.
 * `Auction.BIC`: Bayesian incentive compatibility.
+* `Auction.IsIPV`, `Auction.IPV.BIC`: independent private values and the BIC specialization.
 * `Auction.toBidderProblem`: the interim decision problem faced by one bidder.
 
 ## Main statements
@@ -55,6 +62,7 @@ namespace MathEconLib
 
 open MeasureTheory ProbabilityTheory Set
 open MathEconLib.Mechanism.Auctions
+open MathEconLib.GameTheory.BayesianPrior
 
 /-- An auction with `n` bidders, indexed by `Fin n`, on the state space `Ω` with probability
 measure `ℙ`. Each bidder `i` has a real-valued random value `θ i` and submits a real bid.
@@ -83,14 +91,77 @@ namespace Auction
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} (A : Auction Ω n)
 
+/-- Types are mutually independent. This is the independence assumption needed to interpret the
+unconditional opponent averages as interim quantities under constant product beliefs. -/
+class HasIndependentTypes : Prop where
+  θ_indep : iIndepFun A.θ ℙ
+
+/-- In this scalar auction carrier values are already private and linear. The minimal IPV
+restriction is therefore independence alone; symmetry and density are separate assumptions. -/
+abbrev IsIPV : Prop := A.HasIndependentTypes
+
+/-- The joint law of the actual bidder values, allowing correlation. -/
+noncomputable def typeLaw : Measure (Fin n → ℝ) := Measure.map (fun ω i ↦ A.θ i ω) ℙ
+
+instance : IsProbabilityMeasure A.typeLaw := by
+  unfold typeLaw
+  infer_instance
+
+/-- The scalar auction valuation environment; private values are constitutive of this carrier. -/
+def valuationEnvironment (n : ℕ) :
+    Mechanism.QuasilinearEnvironment (Fin n) (fun _ ↦ ℝ) (Fin n → ℝ) :=
+  Mechanism.QuasilinearEnvironment.ofPrivate fun i s x ↦ s * x i
+
+/-- Conditional utility keeps true type `s` fixed when the bidder reports `r`. -/
+noncomputable abbrev conditionalUtility (B : ConditionalBeliefs A.typeLaw)
+    (i : Fin n) (s r : ℝ) : ℝ :=
+  Mechanism.DirectMechanism.Quasilinear.interimUtility
+    (valuationEnvironment n) A.rules A.typeLaw B i s r
+
+/-- Independence of each coordinate and its opponents under the joint value law. -/
+theorem independentOfOpponents [A.IsIPV] : IsIndependentOfOpponents A.typeLaw := by
+  classical
+  have hcoords : iIndepFun (fun i (θ : Fin n → ℝ) ↦ θ i) A.typeLaw := by
+    have hlaw := (iIndepFun_iff_map_fun_eq_pi_map
+      (fun i ↦ (A.θ_measurable i).aemeasurable)).mp
+      (HasIndependentTypes.θ_indep (A := A))
+    change iIndepFun _ (Measure.map (fun ω i ↦ A.θ i ω) ℙ)
+    rw [hlaw]
+    exact iIndepFun_pi (fun _ ↦ measurable_id.aemeasurable)
+  intro i
+  let S : Finset (Fin n) := {i}
+  let T : Finset (Fin n) := Finset.univ.erase i
+  have h := hcoords.indepFun_finset S T (by simp [S, T])
+    (fun j ↦ measurable_pi_apply j)
+  let f : (S → ℝ) → ℝ := fun x ↦ x ⟨i, by simp [S]⟩
+  let g : (T → ℝ) → OpponentProfile (fun _ : Fin n ↦ ℝ) i :=
+    fun x j ↦ x ⟨j.val, by simp [T, j.property]⟩
+  have hf : Measurable f := measurable_pi_apply _
+  have hg : Measurable g := Measurable.of_eval fun _ ↦ measurable_pi_apply _
+  change IndepFun (fun θ : Fin n → ℝ ↦ θ i)
+    (fun θ (j : {j : Fin n // j ≠ i}) ↦ θ j.val) A.typeLaw
+  simpa only [f, g, drop, Function.comp_def] using h.comp hf hg
+
+/-- The constant opponent-belief version for an IPV auction, at every declared own type. -/
+noncomputable def independentBeliefs [A.IsIPV] : ConditionalBeliefs A.typeLaw :=
+  MathEconLib.GameTheory.BayesianPrior.independentBeliefs A.independentOfOpponents
+
+/-- Constant independent beliefs equal the pushforward of the state-space opponent profile. -/
+lemma independentBeliefs_opponents [A.IsIPV] (i : Fin n) (s : ℝ) :
+    A.independentBeliefs.opponents i s =
+      Measure.map (fun ω ↦ drop i (A.θ · ω)) ℙ := by
+  change Measure.map (drop i) A.typeLaw = _
+  exact Measure.map_map (measurable_drop i) (Measurable.of_eval A.θ_measurable)
+
 /-- Type interval for bidder `i`. -/
 abbrev interval (i : Fin n) : Set ℝ := Icc (A.θmin i) (A.θmax i)
 
 /-! ### Strategy-dependent interim quantities
 
-When opponents play strategy `σ` instead of reporting truthfully, the interim quantities take
+When opponents play strategy `σ` instead of reporting truthfully, the marginal quantities take
 `σ(θⱼ)` as opponent bids rather than `θⱼ`. The standard interim quantities `q`, `p` are the
-`σ = id` special case. -/
+`σ = id` special case. Under independent types these are interim expectations; for correlated
+types they remain unconditional averages and do not describe conditional incentives. -/
 
 /-- Interim allocation when opponents play strategy `σ`: `q_strat(σ, i, b) = 𝔼[xᵢ(b, σ(θ₋ᵢ))]`. No
 measurability of `σ` is assumed. This is a totalized Bochner integral, equal to zero if the
@@ -176,10 +247,21 @@ def ExPostIR : Prop :=
   ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ A.interval j) →
     0 ≤ θ i * A.rules.outcome θ i + A.rules.transfer i θ
 
-/-- Interim individual rationality: every bidder gets nonnegative expected utility for every
-type. -/
-def InterimIR : Prop :=
+/-- Nonnegative marginal utility at every type. Under independent types, unit-interval allocation
+bounds, and integrable conditional truthful utilities, this is interim IR with constant product
+beliefs. Without the allocation bounds, integrability of net utility alone does not justify
+splitting its expectation into allocation and payment integrals. For correlated types, `U` remains
+unconditional and this predicate does not assert conditional individual rationality. -/
+def MarginalIR : Prop :=
   ∀ i, ∀ s ∈ A.interval i, 0 ≤ A.U i s
+
+/-- Conditional interim individual rationality, pointwise on the declared type intervals relative
+to the selected belief version. Conditional truthful utilities must be integrable. -/
+def InterimIR (B : ConditionalBeliefs A.typeLaw) : Prop :=
+  (∀ i, ∀ s ∈ A.interval i,
+    Integrable (fun θo ↦ (valuationEnvironment n).utility A.rules i
+      (insert i s θo) (Function.update (insert i s θo) i s)) (B.opponents i s)) ∧
+  ∀ i, ∀ s ∈ A.interval i, 0 ≤ A.conditionalUtility B i s s
 
 /-- Ex-ante individual rationality: every bidder gets nonnegative ex-ante expected utility. -/
 def ExAnteIR : Prop :=
@@ -188,10 +270,97 @@ def ExAnteIR : Prop :=
 
 /-! ### BIC -/
 
-/-- Bayesian incentive compatibility: truthful reporting maximizes each bidder's interim utility. -/
-class BIC : Prop where
-  bic : ∀ i, ∀ s ∈ A.interval i, ∀ s' ∈ A.interval i,
-    s * A.q i s' - A.p i s' ≤ A.U i s
+/-- Quasilinear conditional BIC on the stated type/report intervals, relative to selected beliefs.
+The prior may correlate values. At null types, pointwise constraints use the supplied version.
+This specializes the quasilinear mechanism predicate to scalar private linear values. -/
+abbrev BIC (B : ConditionalBeliefs A.typeLaw) : Prop :=
+  Mechanism.DirectMechanism.Quasilinear.IsBICOn
+    (valuationEnvironment n) A.rules A.typeLaw B A.interval
+
+namespace IPV
+
+/-- The IPV specialization of quasilinear BIC uses constant opponent beliefs. Analytic and null-type
+requirements are inherited from quasilinear BIC; independence is an environment assumption.
+
+This class is a compatibility adapter to the existing inferred chain
+`IPV.BIC → BidderProblem.HasTypeDeviationIC → HasEnvelopeIC`. It stores only the supplied BIC
+proof, never selected belief data, and does not ask typeclass search to establish BIC. General
+mechanism and correlated-auction BIC remain ordinary predicates with explicit beliefs. -/
+class BIC [A.IsIPV] : Prop where
+  conditional_bic : A.BIC A.independentBeliefs
+
+end IPV
+
+/-- Under IPV, a finite conditional utility is the usual marginal allocation/payment expression.
+The conditional integrability hypothesis prevents use of a totalized nonintegrable integral. -/
+lemma conditionalUtility_eq_marginal [A.IsIPV]
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i ↦ o i))
+    (i : Fin n) (s r : ℝ)
+    (hi : Integrable (fun θo ↦ (valuationEnvironment n).utility A.rules i
+      (insert i s θo) (Function.update (insert i s θo) i r))
+      (A.independentBeliefs.opponents i s)) :
+    A.conditionalUtility A.independentBeliefs i s r = s * A.q i r - A.p i r := by
+  rw [A.independentBeliefs_opponents] at hi
+  have hY := (measurable_drop i).comp (Measurable.of_eval A.θ_measurable)
+  have hiω := (integrable_map_measure hi.aestronglyMeasurable hY.aemeasurable).mp hi
+  have heq (ω : Ω) :
+      (valuationEnvironment n).utility A.rules i
+        (insert i s (drop i (A.θ · ω)))
+        (Function.update (insert i s (drop i (A.θ · ω))) i r) =
+      s * A.rules.outcome (Function.update (A.θ · ω) i r) i -
+        A.rules.payment i (Function.update (A.θ · ω) i r) := by
+    simp [insert_drop_eq_update, valuationEnvironment,
+      Mechanism.QuasilinearEnvironment.ofPrivate]
+  simp only [Function.comp_def, heq] at hiω
+  have hx : Integrable (fun ω ↦
+      s * A.rules.outcome (Function.update (A.θ · ω) i r) i) ℙ :=
+    (A.integrable_allocation_strat halloc measurable_id i r).const_mul s
+  have hp : Integrable (fun ω ↦ A.rules.payment i (Function.update (A.θ · ω) i r)) ℙ := by
+    convert hx.sub hiω using 1
+    funext ω
+    dsimp
+    ring
+  rw [conditionalUtility, Mechanism.DirectMechanism.Quasilinear.interimUtility_eq_integral,
+    A.independentBeliefs_opponents,
+    integral_map (φ := fun ω ↦ drop i (A.θ · ω)) hY.aemeasurable hi.aestronglyMeasurable]
+  simp only [heq]
+  rw [integral_sub hx hp, integral_const_mul]
+  rfl
+
+/-- The familiar marginal report inequalities follow from the general conditional IPV predicate. -/
+lemma IPV.BIC.marginal_ic [A.IsIPV] [h : IPV.BIC A]
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i ↦ o i))
+    (i : Fin n) (s : ℝ) (hs : s ∈ A.interval i) (r : ℝ) (hr : r ∈ A.interval i) :
+    s * A.q i r - A.p i r ≤ A.U i s := by
+  have hb := h.conditional_bic
+  simpa only [A.conditionalUtility_eq_marginal halloc i s r (hb.integrable i s hs r hr),
+    A.conditionalUtility_eq_marginal halloc i s s (hb.integrable i s hs s hs), U] using
+    hb.bic i s hs r hr
+
+namespace IPV
+
+/-- Marginal inequalities characterize the IPV specialization when all compared conditional
+utilities are integrable. This is an equivalence for the selected constant-belief version,
+including declared types of marginal probability zero. -/
+theorem bic_iff_marginal [A.IsIPV]
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i ↦ o i))
+    (hi : ∀ i, ∀ s ∈ A.interval i, ∀ r ∈ A.interval i,
+      Integrable (fun θo ↦ (valuationEnvironment n).utility A.rules i
+        (insert i s θo) (Function.update (insert i s θo) i r))
+        (A.independentBeliefs.opponents i s)) :
+    BIC A ↔ ∀ i, ∀ s ∈ A.interval i, ∀ r ∈ A.interval i,
+      s * A.q i r - A.p i r ≤ A.U i s := by
+  constructor
+  · intro h
+    let := h
+    exact BIC.marginal_ic A halloc
+  · intro h
+    refine ⟨⟨hi, ?_⟩⟩
+    intro i s hs r hr
+    simpa only [A.conditionalUtility_eq_marginal halloc i s r (hi i s hs r hr),
+      A.conditionalUtility_eq_marginal halloc i s s (hi i s hs s hs), U] using h i s hs r hr
+
+end IPV
 
 /-! ### Bidder problems -/
 
@@ -242,41 +411,43 @@ variable (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i)) in
 
 /-! ### Incentive compatibility for bidder problems -/
 
-/-- BIC implies `HasTypeDeviationIC` on the bidder problem for each bidder. -/
+/-- IPV BIC implies `HasTypeDeviationIC` on the marginal bidder problem for each bidder. -/
 instance hasTypeDeviationIC_of_bic
-    (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i)) [hbic : A.BIC] (i : Fin n) :
+    (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    [A.IsIPV] [IPV.BIC A] (i : Fin n) :
     BidderProblem.HasTypeDeviationIC (A.toBidderProblem halloc id i) where
   typeDeviationIC v hv v' hv' := by
     simp only [BidderProblem.payoff]
-    exact hbic.bic i v hv v' hv'
+    exact IPV.BIC.marginal_ic A halloc i v hv v' hv'
 
 /-! ### Consequences
 
-Bayesian incentive compatibility implies the envelope formula for interim utility. Interim
-payments therefore depend only on the allocation rule and the utility of the lowest type. -/
+In the IPV specialization, Bayesian incentive compatibility implies the scalar envelope formula.
+Marginal payments then depend only on allocations and the utility of the lowest type. -/
 
-/-- Under BIC and allocation coordinate bounds in `[0, 1]`, interim payment is determined by `q`
-and the utility of the lowest type. -/
-theorem payment_formula (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i)) [A.BIC]
+/-- Under IPV BIC and allocation coordinate bounds in `[0, 1]`, interim payment is determined by
+`q` and the utility of the lowest type. -/
+theorem payment_formula (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    [A.IsIPV] [IPV.BIC A]
     (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) :
     A.p i s = s * A.q i s - A.U i (A.θmin i) -
       ∫ ψ in A.θmin i..s, A.q i ψ :=
   (A.toBidderProblem halloc id i).payment_identity s hs
 
-/-- **General Payment Equivalence.**
+/-- **Payment equivalence under IPV.**
 
-Two BIC auctions with allocation coordinates in `[0, 1]`, the same interim allocation `q`, the same
-type bounds, and the same base utility `U(θmin)` have the same interim payment for every type in
-their common type interval.
+Two IPV BIC auctions with allocation coordinates in `[0, 1]`, the same marginal allocation `q`,
+the same type bounds, and the same base utility `U(θmin)` have the same interim payment for every
+type in their common type interval.
 
-No efficiency, symmetry, or distributional assumptions needed. The two auctions may live on
-different probability spaces. -/
+No efficiency or symmetry assumptions are needed. Independence is explicit in each auction's
+environment, and BIC uses the constant-belief specialization. The probability spaces may differ. -/
 theorem payment_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n)
     (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
     (halloc₂ : IsUnitIntervalAllocation A₂.rules (fun o i => o i))
-    [A.BIC] [A₂.BIC]
+    [A.IsIPV] [A₂.IsIPV] [IPV.BIC A] [IPV.BIC A₂]
     (i j : Fin n)
     (hθmin : A.θmin i = A₂.θmin j)
     (hθmax : A.θmax i = A₂.θmax j)

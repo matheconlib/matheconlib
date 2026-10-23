@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Daniel Lyng, Bo Cowgill
 -/
 module
 
@@ -69,6 +69,14 @@ def insert [DecidableEq I] (i : I) (θᵢ : Θ i) (θo : OpponentProfile Θ i) :
 /-- Removing and reinserting a coordinate recovers the full profile. -/
 @[simp] lemma insert_drop [DecidableEq I] (i : I) (θ : ∀ j, Θ j) :
     insert i (θ i) (drop i θ) = θ := (Equiv.piSplitAt i Θ).symm_apply_apply θ
+
+/-- Inserting a new own type into the dropped profile changes only that coordinate. -/
+lemma insert_drop_eq_update [DecidableEq I] (i : I) (s : Θ i) (θ : ∀ j, Θ j) :
+    insert i s (drop i θ) = Function.update θ i s := by
+  funext j
+  by_cases hj : j = i
+  · subst j; simp
+  · simp [insert_of_ne, Function.update_of_ne, hj, drop]
 
 variable [∀ i, MeasurableSpace (Θ i)]
 
