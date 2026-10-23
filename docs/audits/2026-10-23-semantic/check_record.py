@@ -25,6 +25,9 @@ def main():
             ast.parse(text, filename=str(path))
         if path.suffix != ".md":
             continue
+        for literal in re.findall(r"(?<!\[)`([^`\s]+\.(?:json|py|md))`", text):
+            assert (path.parent / literal).exists() or (ROOT / literal).exists(), (
+                path.relative_to(ROOT), "unresolved literal file reference", literal)
         prose = re.sub(r"`[^`]*`", "", text)
         for raw in re.findall(r"\]\(([^)]+)\)", prose):
             if raw.startswith(PREFIX):

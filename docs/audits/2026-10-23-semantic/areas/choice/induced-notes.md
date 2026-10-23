@@ -31,7 +31,7 @@ These boundary examples were checked directly from the quantifiers and option ta
 
 ## Independent finite checks and limitations
 
-Reproducible checker: `choice/induced/check_finite.py` (Python standard library only).
+Reproducible checker: [`choice/induced/check_finite.py`](induced/check_finite.py) (Python standard library only).
 It represents sets as bitmasks and orders by explicit permutations, separately compares the formal union-of-greatest-bundle-members description with a direct maximum selector, and checks the relevant choice conditions. Exact result:
 
 ```text

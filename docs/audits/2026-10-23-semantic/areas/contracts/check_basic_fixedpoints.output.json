@@ -1,0 +1,42 @@
+{
+  "finite_exhaustion": [
+    {
+      "contracts": 0,
+      "contractive_tables": 1,
+      "substitutable_tables": 1,
+      "substitutable_irc_tables": 1,
+      "stable_pairwise_checks": 1,
+      "fixed_state_checks": 1
+    },
+    {
+      "contracts": 1,
+      "contractive_tables": 2,
+      "substitutable_tables": 2,
+      "substitutable_irc_tables": 2,
+      "stable_pairwise_checks": 8,
+      "fixed_state_checks": 16
+    },
+    {
+      "contracts": 2,
+      "contractive_tables": 16,
+      "substitutable_tables": 9,
+      "substitutable_irc_tables": 6,
+      "stable_pairwise_checks": 324,
+      "fixed_state_checks": 576
+    },
+    {
+      "contracts": 3,
+      "contractive_tables": 4096,
+      "substitutable_tables": 216,
+      "substitutable_irc_tables": 35,
+      "stable_pairwise_checks": 373248,
+      "fixed_state_checks": 78400
+    }
+  ],
+  "boundary_controls": [
+    "pairwise_without_substitutability",
+    "support_without_locality",
+    "acceptance_operator_uses_insert"
+  ],
+  "result": "PASS"
+}

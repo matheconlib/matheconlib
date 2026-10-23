@@ -1,0 +1,46 @@
+{
+  "0": {
+    "consistent": 1,
+    "longest_selected_repair_run": 0,
+    "path_independent": 1,
+    "repairs": 0,
+    "rules": 1,
+    "size_monotone": 1,
+    "substitutable": 1,
+    "terminal": 1,
+    "unit_demand": 1
+  },
+  "1": {
+    "consistent": 2,
+    "longest_selected_repair_run": 0,
+    "path_independent": 2,
+    "repairs": 0,
+    "rules": 2,
+    "size_monotone": 2,
+    "substitutable": 2,
+    "terminal": 2,
+    "unit_demand": 2
+  },
+  "2": {
+    "consistent": 9,
+    "longest_selected_repair_run": 2,
+    "path_independent": 6,
+    "repairs": 8,
+    "rules": 16,
+    "size_monotone": 13,
+    "substitutable": 9,
+    "terminal": 9,
+    "unit_demand": 12
+  },
+  "3": {
+    "consistent": 246,
+    "longest_selected_repair_run": 6,
+    "path_independent": 35,
+    "repairs": 14592,
+    "rules": 4096,
+    "size_monotone": 1406,
+    "substitutable": 216,
+    "terminal": 216,
+    "unit_demand": 864
+  }
+}

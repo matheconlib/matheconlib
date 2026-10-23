@@ -13,7 +13,7 @@ Source revision: `1d9f8cc233cdaeee0364b51befb84feea657a4da`. Scope: all **23 mod
 | [Measure foundations](measure.md) | `ForMathlib/{AbsolutelyContinuous,IndepFun,MeasureTheory,ProbabilityMeasure,StochasticOrder}` | 5 |
 | [Finite probability](finite_prob.md) | `Probability/FinDist/{Basic,ConditionalOn,Expect,Measure,Simplex}` | 19 |
 
-`coverage.json` maps every one of the 40 inventory entries to its exact source line and responsible note. All 40 recorded declaration texts were matched against the actual source lines during final reconciliation. Each note gives the standard mathematical concept, both semantic implications, assumptions, edge cases, exact locations, and the disposition of hostile counterexample attempts.
+[`coverage.json`](coverage.json) maps every one of the 40 inventory entries to its exact source line and responsible note. All 40 recorded declaration texts were matched against the actual source lines during final reconciliation. Each note gives the standard mathematical concept, both semantic implications, assumptions, edge cases, exact locations, and the disposition of hostile counterexample attempts.
 
 Verification combines formula-level mathematical review, independent hostile reviewers for finite probability, likelihood-ratio order, Scarf/Schauder and probability-measure helpers, and retained exact bounded computations. The integrator independently read and reran every retained script. The scripts test their displayed finite encodings; no general result is inferred from their finite bounds. No Lean elaboration/build success is claimed: this checkout lacks installed mathlib packages and built project oleans. Existing mathlib source files in a separate local clone were used read-only to inspect primitive definitions.
 

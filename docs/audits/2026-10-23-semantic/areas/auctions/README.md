@@ -4,7 +4,7 @@
 
 Read-only source revision: `1d9f8cc233cdaeee0364b51befb84feea657a4da`.
 
-All **28** definition-like declarations assigned to `auctions` in `inventory.json` are covered, with their accompanying results and interpretation dependencies:
+All **28** definition-like declarations assigned to `auctions` in [`inventory.json`](../../inventory.json) are covered, with their accompanying results and interpretation dependencies:
 
 | Files | Inventoried definitions | Coverage note |
 | --- | ---: | --- |

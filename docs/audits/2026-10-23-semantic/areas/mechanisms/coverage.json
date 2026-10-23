@@ -1,0 +1,461 @@
+[
+  {
+    "file": "MathEconLib/BidderProblem/Basic.lean",
+    "line": 24,
+    "declaration": "structure BidderProblem where",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "BidderProblem",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/Basic.lean",
+    "line": 43,
+    "declaration": "abbrev typeInterval : Set ℝ := Icc B.lowestType B.highestType",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "typeInterval",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/Basic.lean",
+    "line": 47,
+    "declaration": "def payoff (v bid : ℝ) : ℝ := v * B.winProb bid - B.cost bid",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "payoff",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/Basic.lean",
+    "line": 48,
+    "declaration": "def q : ℝ → ℝ := B.winProb ∘ B.strategy",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "q",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/Basic.lean",
+    "line": 49,
+    "declaration": "def U (v : ℝ) : ℝ := B.payoff v (B.strategy v)",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "U",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/Basic.lean",
+    "line": 70,
+    "declaration": "def toSingleParameterProblem : SingleParameterProblem ℝ where",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "toSingleParameterProblem",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/Basic.lean",
+    "line": 122,
+    "declaration": "class IsRegular (B : BidderProblem) : Prop where",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "IsRegular",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/EnvelopeIC.lean",
+    "line": 47,
+    "declaration": "class HasEnvelopeIC (B : BidderProblem) : Prop where",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "HasEnvelopeIC",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/TypeDeviationIC.lean",
+    "line": 46,
+    "declaration": "class HasTypeDeviationIC (B : BidderProblem) : Prop where",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "HasTypeDeviationIC",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/TypeDeviationIC.lean",
+    "line": 119,
+    "declaration": "noncomputable def allPayBid [HasTypeDeviationIC B] (v : ℝ) : ℝ :=",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "allPayBid",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/BidderProblem/UniversalIC.lean",
+    "line": 43,
+    "declaration": "class HasUniversalIC (B : BidderProblem) (S : outParam (Set ℝ)) : Prop where",
+    "area": "mechanisms",
+    "concept_map": "bidderproblem.md",
+    "declaration_name": "HasUniversalIC",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Auctions/AllPurchase/Spec.lean",
+    "line": 60,
+    "declaration": "structure AllPurchaseSpec {I : Type u} [Fintype I] {O : Type w}",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "AllPurchaseSpec",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Auctions/AllPurchase/Spec.lean",
+    "line": 81,
+    "declaration": "def IsAllPurchase {I : Type u} [Fintype I] {O : Type w}",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "IsAllPurchase",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Auctions/Allocation.lean",
+    "line": 53,
+    "declaration": "def IsUnitIntervalAllocation {I : Type u} {A : I → Type v} {O : Type w}",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "IsUnitIntervalAllocation",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Auctions/Allocation.lean",
+    "line": 61,
+    "declaration": "def UsesStrictHighestBidAllocation {I : Type u} {O : Type w}",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "UsesStrictHighestBidAllocation",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Bayesian.lean",
+    "line": 59,
+    "declaration": "@[simps] def inducedBayesianGame : BayesianGame I T A ℝ where",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "inducedBayesianGame",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Comap.lean",
+    "line": 44,
+    "declaration": "def comap (σ : ∀ i, B i → A i) : Mechanism I B O where",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "comap",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Environment.lean",
+    "line": 60,
+    "declaration": "structure QuasilinearEnvironment (I : Type uI) (Θ : I → Type uΘ) (O : Type uO) where",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "QuasilinearEnvironment",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Environment.lean",
+    "line": 70,
+    "declaration": "def IsPrivateValues (E : QuasilinearEnvironment I Θ O) : Prop :=",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "IsPrivateValues",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Environment.lean",
+    "line": 74,
+    "declaration": "def ofPrivate (v : (i : I) → Θ i → O → ℝ) : QuasilinearEnvironment I Θ O where",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "ofPrivate",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Environment.lean",
+    "line": 94,
+    "declaration": "def utility (M : Mechanism I A O) (i : I) (θ : Profile Θ) (a : Profile A) : ℝ :=",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "utility",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Environment.lean",
+    "line": 110,
+    "declaration": "def totalValue [Fintype I] (θ : Profile Θ) (o : O) : ℝ := ∑ i, E.value i θ o",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "totalValue",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Environment.lean",
+    "line": 117,
+    "declaration": "def welfareExcl [Fintype I] [DecidableEq I] (i : I) (θ : Profile Θ) (o : O) : ℝ :=",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "welfareExcl",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Mechanism.lean",
+    "line": 54,
+    "declaration": "structure Mechanism (I : Type uI) (A : I → Type uA) (O : Type uO) where",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "Mechanism",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Mechanism.lean",
+    "line": 65,
+    "declaration": "abbrev DirectMechanism (I : Type uI) (Θ : I → Type uA) (O : Type uO) :=",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "DirectMechanism",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Mechanism.lean",
+    "line": 71,
+    "declaration": "def payment (i : I) (a : Profile A) : ℝ := -M.transfer i a",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "payment",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Mechanism.lean",
+    "line": 78,
+    "declaration": "def revenue [Fintype I] (a : Profile A) : ℝ := -∑ i, M.transfer i a",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "revenue",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Profile.lean",
+    "line": 33,
+    "declaration": "abbrev Profile {I : Type uI} (X : I → Type uX) := ∀ i, X i",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "Profile",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/SolutionConcepts.lean",
+    "line": 63,
+    "declaration": "def IsDSIC [DecidableEq I] : Prop :=",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "IsDSIC",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/SolutionConcepts.lean",
+    "line": 70,
+    "declaration": "def IsExPostIR : Prop := ∀ i θ, 0 ≤ E.utility M i θ θ",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "IsExPostIR",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/SolutionConcepts.lean",
+    "line": 75,
+    "declaration": "def IsEfficient [Fintype I] : Prop :=",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "IsEfficient",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/SolutionConcepts.lean",
+    "line": 88,
+    "declaration": "def IsBudgetBalanced [Fintype I] : Prop := ∀ a, ∑ i, M.transfer i a = 0",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "IsBudgetBalanced",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/SolutionConcepts.lean",
+    "line": 91,
+    "declaration": "def IsNoDeficit [Fintype I] : Prop := ∀ a, ∑ i, M.transfer i a ≤ 0",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "IsNoDeficit",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/Mechanism/Core/Strategic.lean",
+    "line": 58,
+    "declaration": "@[simps] def utilityGame (M : Mechanism I A O) (θ : Profile T) : StrategicGame I A ℝ where",
+    "area": "mechanisms",
+    "concept_map": "core.md",
+    "declaration_name": "utilityGame",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/Basic.lean",
+    "line": 53,
+    "declaration": "structure SingleParameterProblem (Action : Type u) where",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "SingleParameterProblem",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/Basic.lean",
+    "line": 72,
+    "declaration": "abbrev typeInterval : Set ℝ := Icc P.lowestType P.highestType",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "typeInterval",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/Basic.lean",
+    "line": 79,
+    "declaration": "def payoff (v : ℝ) (a : Action) : ℝ :=",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "payoff",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/Basic.lean",
+    "line": 83,
+    "declaration": "def q (v : ℝ) : ℝ :=",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "q",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/Basic.lean",
+    "line": 87,
+    "declaration": "def U (v : ℝ) : ℝ :=",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "U",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/Basic.lean",
+    "line": 119,
+    "declaration": "def withStrategy (newStrategy : ℝ → Action) : SingleParameterProblem Action :=",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "withStrategy",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/Basic.lean",
+    "line": 136,
+    "declaration": "def reduce : SingleParameterProblem ℝ where",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "reduce",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/IC.lean",
+    "line": 55,
+    "declaration": "class HasEnvelopeIC (P : SingleParameterProblem Action) : Prop where",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "HasEnvelopeIC",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/IC.lean",
+    "line": 62,
+    "declaration": "class HasTypeDeviationIC (P : SingleParameterProblem Action) : Prop where",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "HasTypeDeviationIC",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/IC.lean",
+    "line": 71,
+    "declaration": "class HasUniversalIC",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "HasUniversalIC",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/IC.lean",
+    "line": 149,
+    "declaration": "def IsIndividuallyRational : Prop :=",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "IsIndividuallyRational",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/IC.lean",
+    "line": 157,
+    "declaration": "def HasZeroLowestTypeUtility : Prop :=",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "HasZeroLowestTypeUtility",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/PostedPrice.lean",
+    "line": 42,
+    "declaration": "inductive PurchaseDecision where",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "PurchaseDecision",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/PostedPrice.lean",
+    "line": 52,
+    "declaration": "def allocation : PurchaseDecision → ℝ",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "allocation",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/PostedPrice.lean",
+    "line": 57,
+    "declaration": "def payment (price : ℝ) : PurchaseDecision → ℝ",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "payment",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/PostedPrice.lean",
+    "line": 73,
+    "declaration": "noncomputable def postedPriceProblem",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "postedPriceProblem",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  },
+  {
+    "file": "MathEconLib/SingleParameter/Revelation.lean",
+    "line": 65,
+    "declaration": "def HasIdentityStrategy (D : SingleParameterProblem ℝ) : Prop :=",
+    "area": "mechanisms",
+    "concept_map": "singleparameter.md",
+    "declaration_name": "HasIdentityStrategy",
+    "assessment": "No substantive mismatch under documented scope; see concept map for limits."
+  }
+]
