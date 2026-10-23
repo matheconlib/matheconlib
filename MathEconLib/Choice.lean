@@ -13,3 +13,4 @@ import MathEconLib.Choice.Matching.Preferences
 import MathEconLib.Choice.Matching.Relationships
 import MathEconLib.Choice.Matching.WeakSubstitutability
 import MathEconLib.Choice.SubstituteHull
+import MathEconLib.Choice.WeakPreferences
