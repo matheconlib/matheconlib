@@ -1,0 +1,66 @@
+name: Blueprint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "blueprint/**"
+      - "MathEconLib/**"
+      - "scripts/check-blueprint-decls.sh"
+      - ".github/workflows/blueprint.yaml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "blueprint/**"
+      - "MathEconLib/**"
+      - "scripts/check-blueprint-decls.sh"
+      - ".github/workflows/blueprint.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: blueprint-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  blueprint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - name: Restore project build artifacts
+        uses: actions/cache/restore@v5
+        with:
+          path: .lake/build
+          key: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
+      - name: Set up Lean and build the library
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: true
+          build-args: MathEconLib
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: true
+          mk_all-check: false
+      - name: Install blueprint tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz libgraphviz-dev latexmk texlive-xetex texlive-latex-recommended fonts-lmodern
+          pip install leanblueprint
+      - name: Build the web version
+        run: leanblueprint web
+      - name: Check that blueprint declarations exist
+        run: bash scripts/check-blueprint-decls.sh
+      - name: Build the pdf version
+        run: leanblueprint pdf
+      - name: Upload the blueprint
+        uses: actions/upload-artifact@v4
+        with:
+          name: blueprint
+          path: |
+            blueprint/web
+            blueprint/print/print.pdf
