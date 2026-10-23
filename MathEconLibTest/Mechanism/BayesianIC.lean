@@ -5,7 +5,7 @@ Authors: Bo Cowgill
 -/
 module
 
-public import MathEconLib.Mechanism.Core.BayesianIC
+public import MathEconLib.Mechanism
 
 /-!
 # General BIC permits interdependent valuations
@@ -14,6 +14,10 @@ Reports choose an outcome vector. Each agent values accurate matching to its own
 plus the other agent's true type. The latter makes values interdependent, even though truthful
 reporting remains optimal. A Dirac prior and its constant conditional-belief version make all
 integrability and equilibrium checks explicit. Incentive comparisons cover all real reports.
+
+A separate two-good posted-price client uses vector reports in `ℝ × ℝ` and the same BIC predicate.
+It proves truthfulness for all vector reports and evaluates a concrete truthful payment. Both
+clients import the public mechanism umbrella so missing exports fail this regression.
 -/
 
 @[expose] public noncomputable section
@@ -80,3 +84,58 @@ theorem truthful_bne : (mechanism.inducedBayesianGame environment).IsBNE prior
     exact integrable_dirac (by simp)
 
 end MathEconLibTest.GeneralBayesianIC
+
+namespace MathEconLibTest.TwoDimensionalBayesianIC
+
+/-- Buy each good when its reported value reaches the per-good price one half. -/
+def quantity (z : ℝ) : ℝ := if (1 / 2 : ℝ) ≤ z then 1 else 0
+
+/-- Additive private values for two goods. The type is a vector, not a scalar auction value. -/
+def environment : QuasilinearEnvironment Unit (fun _ ↦ ℝ × ℝ) (ℝ × ℝ) :=
+  QuasilinearEnvironment.ofPrivate fun _ t x ↦ t.1 * x.1 + t.2 * x.2
+
+/-- Separate posted prices for the two goods, with transfers paid by the buyer. -/
+def mechanism : DirectMechanism Unit (fun _ ↦ ℝ × ℝ) (ℝ × ℝ) where
+  outcome r := (quantity (r ()).1, quantity (r ()).2)
+  transfer _ r := -(quantity (r ()).1 + quantity (r ()).2) / 2
+
+/-- The component posted-price inequality holds for all real true values and reports. -/
+lemma scalar_ic (s r : ℝ) :
+    s * quantity r - quantity r / 2 ≤ s * quantity s - quantity s / 2 := by
+  unfold quantity
+  split_ifs <;> linarith
+
+/-- The existing general BIC predicate accepts two-dimensional reports under any prior and
+selected conditional beliefs. No multidimensional BIC definition is introduced. -/
+theorem bic (μ : Measure (Unit → ℝ × ℝ)) [IsProbabilityMeasure μ]
+    (B : ConditionalBeliefs μ) :
+    DirectMechanism.IsBIC environment mechanism μ B := by
+  refine ⟨?_, ?_⟩
+  · intro i s _ r _
+    cases i
+    simp [environment, mechanism, QuasilinearEnvironment.ofPrivate]
+  · intro i s _ r _
+    cases i
+    simp only [DirectMechanism.interimUtility_eq_integral, environment, mechanism,
+      QuasilinearEnvironment.utility, QuasilinearEnvironment.ofPrivate,
+      Function.update_self, insert_self, integral_const, probReal_univ, one_smul]
+    have h₁ := scalar_ic s.1 r.1
+    have h₂ := scalar_ic s.2 r.2
+    linarith
+
+/-- A concrete buyer values each good at one. -/
+def prior : Measure (Unit → ℝ × ℝ) := Measure.dirac (fun _ ↦ (1, 1))
+
+instance : IsProbabilityMeasure prior := inferInstanceAs
+  (IsProbabilityMeasure (Measure.dirac (fun _ : Unit ↦ ((1, 1) : ℝ × ℝ))))
+
+/-- The concrete vector-valued model satisfies the existing general incentive predicate. -/
+theorem concrete_bic : DirectMechanism.IsBIC environment mechanism prior (canonicalBeliefs prior) :=
+  bic prior (canonicalBeliefs prior)
+
+/-- The truthful buyer buys both goods and pays one in total. -/
+theorem both_items_payment :
+    mechanism.payment () (fun _ ↦ ((1, 1) : ℝ × ℝ)) = 1 := by
+  norm_num [mechanism, quantity, MathEconLib.Mechanism.payment]
+
+end MathEconLibTest.TwoDimensionalBayesianIC

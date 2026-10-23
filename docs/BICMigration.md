@@ -51,6 +51,11 @@ convenience bundle.
 `A.independentBeliefs` constructs constant opponent beliefs from independence
 and proves that they disintegrate the actual joint prior. `Auction.IPV.BIC A`
 is a convenience class containing exactly `A.BIC A.independentBeliefs`.
+Its limited purpose is compatibility with the existing inferred
+`BidderProblem.HasTypeDeviationIC → HasEnvelopeIC` chain. The caller supplies
+the BIC proof; typeclass search propagates it through that fixed chain.
+It selects no beliefs or equilibrium and introduces no reverse inference
+from general BIC to independence. General BIC remains an ordinary predicate.
 `IPV.bic_iff_marginal` proves equivalence with the familiar marginal
 `s * q(r) - p(r) ≤ U(s)` inequalities when allocations lie in `[0,1]` and all
 compared conditional utilities are integrable. This is pointwise on the
@@ -78,6 +83,10 @@ nonintegrable utility integral into totalized allocation/payment integrals.
 - `hasTypeDeviationIC_of_bic`, `payment_formula`, and
   `payment_equivalence` explicitly use the IPV specialization. Their
   public API pins change together with their statements.
+- General mechanism clients import `MathEconLib.Mechanism`. The BIC regression
+  consumes this umbrella, so a missing public export fails compilation.
+- `BayesianPrior.insert_drop_eq_update` is shared by arbitrary dependent type
+  profiles; the earlier auction-specific helper moves to that general layer.
 - The scalar `toBidderProblem` still describes a fixed marginal menu.
   Conditional correlated menus generally depend on both true type and
   report and do not automatically satisfy the scalar envelope theorem.
@@ -104,7 +113,9 @@ measurable, integrable realized payments. The explicit payment hypotheses on
   formula to derive the allocation integral one quarter.
 - `MathEconLibTest/Mechanism/BayesianIC.lean`: a provably interdependent
   valuation environment satisfies general BIC over all real types/reports;
-  applying `IsBIC.isBNE` certifies truthful Bayesian equilibrium.
+  applying `IsBIC.isBNE` certifies truthful Bayesian equilibrium. A separate
+  two-good posted-price client supplies vector reports, proves general BIC
+  for every report pair, instantiates a concrete prior, and checks payment.
 
 Verification uses the full default `lake build`, regenerated and checked
 library/test imports, public API pins, header/whitespace checks, transitive
@@ -116,6 +127,30 @@ remaining all-purchase work or the other audit repairs in #214–#217.
 conditional/marginal counterexample arithmetic, realized receipts, and
 independent-revenue calculations using exact fractions. Its finite report
 checks supplement the Lean proofs over all real reports.
+
+## Design and inheritance boundary
+
+The general mechanism, environment, probability law and selected beliefs are
+composed as explicit arguments. Scalar auction BIC and IPV BIC specialize that
+same predicate. No second payoff or conditional-belief foundation is defined,
+and incentive compatibility does not imply independence.
+
+The narrow IPV class is an adapter for the existing bidder IC inference chain,
+not a new definition of incentive compatibility or a selected model. The
+ordinary general predicate remains the preferred interface for new clients.
+Changing the legacy bidder class chain is a separate API migration.
+
+The generic profile-update identity belongs to `BayesianPrior` with arbitrary
+dependent type carriers. It is shared directly rather than reproved in the
+auction specialization. General BIC is exported by the public mechanism
+umbrella and checked through that import.
+
+The current interface already accepts vector and agent-specific type spaces.
+The two-dimensional regression validates this without introducing another
+carrier or BIC predicate. The larger affine-menu and implementability theory
+is deferred to [design issue #221](https://github.com/matheconlib/matheconlib/issues/221).
+That work should compose the general primitives and prove scalar agreement;
+inheriting the scalar auction carrier would impose its real-report restriction.
 
 ## Reference
 

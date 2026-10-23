@@ -275,19 +275,16 @@ abbrev BIC (B : ConditionalBeliefs A.typeLaw) : Prop :=
 namespace IPV
 
 /-- The IPV specialization of general BIC uses constant opponent beliefs. Analytic and null-type
-requirements are inherited from general BIC; independence is an environment assumption. -/
+requirements are inherited from general BIC; independence is an environment assumption.
+
+This class is a compatibility adapter to the existing inferred chain
+`IPV.BIC → BidderProblem.HasTypeDeviationIC → HasEnvelopeIC`. It stores only the supplied BIC
+proof, never selected belief data, and does not ask typeclass search to establish BIC. General
+mechanism and correlated-auction BIC remain ordinary predicates with explicit beliefs. -/
 class BIC [A.IsIPV] : Prop where
   conditional_bic : A.BIC A.independentBeliefs
 
 end IPV
-
-/-- Reconstructing opponents from a full profile replaces only the bidder's own coordinate. -/
-lemma insert_drop_eq_update (i : Fin n) (s : ℝ) (θ : Fin n → ℝ) :
-    insert i s (drop i θ) = Function.update θ i s := by
-  funext j
-  by_cases hj : j = i
-  · subst j; simp
-  · simp [insert_of_ne, Function.update_of_ne, hj, drop]
 
 /-- Under IPV, a finite conditional utility is the usual marginal allocation/payment expression.
 The conditional integrability hypothesis prevents use of a totalized nonintegrable integral. -/
