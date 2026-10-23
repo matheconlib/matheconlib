@@ -206,6 +206,13 @@ class DriverIntegrationTest(unittest.TestCase):
         self.assertTrue(any(v["axiom"] == "sorryAx"
                             for v in report["elaboration_violations"]), report)
 
+    def test_later_example_in_one_macro_command_is_also_audited(self):
+        report = self.check_compiled_fixture("RepeatedExamples")
+        self.assertEqual(report["source_violations"], [])
+        self.assertEqual(report["status"], "failed")
+        self.assertTrue(any(v["axiom"] == "sorryAx"
+                            for v in report["elaboration_violations"]), report)
+
     def test_completed_examples_and_literal_proof_words_are_allowed(self):
         report = self.check_compiled_fixture("CompleteInterpolations", expected_exit=0)
         self.assertEqual(report["status"], "passed")
