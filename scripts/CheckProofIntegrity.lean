@@ -99,13 +99,16 @@ private unsafe def auditSource (reportPath sourcePath : System.FilePath)
     throw <| IO.userError s!"Source elaboration failed: {sourcePath}"
   let mut checked := 0
   let mut violations : Array Json := #[]
-  -- Deduplicate within each command, rather than across commands: successive examples can share
-  -- a generated name because their declarations do not survive in the module environment.
+  -- Examples can reuse a generated name, even within one macro-expanded command. Deduplicate
+  -- only identical types and bodies, so a later example with the same name is still audited.
   for tree in state.commandState.infoState.trees do
-    let (_, count, found) ← tree.foldInfoM (init := (({} : NameSet), 0, #[]))
+    let (_, count, found) ← tree.foldInfoM
+      (init := (({} : NameMap (Expr × Option Expr)), 0, #[]))
       fun ctx _ (seen, count, found) => do
         let some decl := ctx.parentDecl? | return (seen, count, found)
-        if seen.contains decl || (ctx.env.find? decl).isNone then
+        let some info := ctx.env.find? decl | return (seen, count, found)
+        let signature := (info.type, info.value? (allowOpaque := true))
+        if seen.find? decl == some signature then
           return (seen, count, found)
         let used := Id.run <| (collectAxioms decl : StateM Environment (Array Name)).run' ctx.env
         let mut found := found
@@ -116,7 +119,7 @@ private unsafe def auditSource (reportPath sourcePath : System.FilePath)
               ("module", toJson moduleName.toString),
               ("source", toJson sourcePath.toString),
               ("axiom", toJson axiomName.toString)]
-        return (seen.insert decl, count + 1, found)
+        return (seen.insert decl signature, count + 1, found)
     checked := checked + count
     violations := violations ++ found
   let report := Json.mkObj [
