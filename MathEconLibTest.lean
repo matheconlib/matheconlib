@@ -28,3 +28,4 @@ import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples
+import MathEconLibTest.ValueDistribution.UniformPricing
