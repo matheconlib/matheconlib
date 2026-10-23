@@ -142,6 +142,8 @@ Every PR must satisfy:
   and `Quot.sound`.
 - Both library and test imports are regenerated and verified with
   `bash scripts/update-imports.sh`.
+- `StatementLedger.txt` is regenerated with `lake exe statement_ledger`; see
+  [Statement ledger](#statement-ledger).
 
 From the repository root, use:
 
@@ -150,10 +152,11 @@ lake exe cache get                 # first checkout, or after a dependency/toolc
 git add path/to/NewFile.lean        # if adding a Lean file
 bash scripts/update-imports.sh      # regenerate both root import files, then verify them
 lake build                         # includes API pins and MathEconLibTest/Manual/HandsOn.lean
+lake exe statement_ledger          # regenerate StatementLedger.txt from the built library
 ```
 
 Omit the `git add` line if you have not added a file. Include changes to
-`MathEconLib.lean` and `MathEconLibTest.lean` in your commit.
+`MathEconLib.lean`, `MathEconLibTest.lean`, and `StatementLedger.txt` in your commit.
 Use `bash scripts/update-imports.sh --check` to verify imports without changing files.
 
 ### Build warnings
@@ -164,6 +167,25 @@ any linter suppression narrow and justified.
 
 CI's warning-count comparison is informational; an increase does not fail CI.
 All verification requirements above still apply.
+
+### Statement ledger
+
+`StatementLedger.txt` lists the statement of every library declaration: theorem
+signatures, definitions with their equation lemmas, and structure fields, sorted
+by name. Review its diff as the change in what the library claims, separately
+from the proofs. The file header documents the declaration filter and printing
+options.
+
+Regenerate it after building the library and commit the result:
+
+```bash
+lake build MathEconLib && lake exe statement_ledger
+```
+
+CI runs `bash scripts/check-statement-ledger.sh`, which regenerates the ledger and
+fails if it differs from the committed file. Do not edit the file by hand. A
+Lean or Mathlib upgrade usually changes the printed form of many entries; include
+the regenerated ledger in the upgrade PR.
 
 ## Lean and Mathlib upgrades
 

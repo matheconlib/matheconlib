@@ -78,6 +78,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "Run mk_all: update imports"
           git push
+      # Like the header check, but it needs the built library, so it runs after the build.
+      - name: Check statement ledger
+        run: bash scripts/check-statement-ledger.sh
       # Record after the convenience commit so counts follow the verified code
       # even when CI has advanced the PR head by committing regenerated imports.
       - name: Record library warning counts

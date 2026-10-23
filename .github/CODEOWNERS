@@ -12,3 +12,6 @@
 # Single-parameter layer
 /MathEconLib/SingleParameter/     @bocowgill @Ruizsolveall
 /MathEconLibTest/SingleParameter/ @bocowgill @Ruizsolveall
+
+# Statement ledger: changes to library statements across all areas
+/StatementLedger.txt @Ruizsolveall

@@ -12,7 +12,7 @@ relaxedAutoImplicit = false
 autoImplicit = false
 weak.linter.mathlibStandardSet = true
 maxSynthPendingDepth = 3
-linter.style.longLine = true
+weak.linter.style.longLine = true
 
 [[require]]
 name = "mathlib"
@@ -30,3 +30,10 @@ name = "MathEconLibTest"
 
 [[lean_lib]]
 name = "MathEconLibExamples"
+
+[[lean_exe]]
+name = "statement_ledger"
+srcDir = "scripts"
+root = "StatementLedger"
+# Loading the library at runtime runs environment-extension initializers.
+supportInterpreter = true
