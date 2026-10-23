@@ -53,9 +53,9 @@ def priority : Option (Fin 2) ↪ Fin 3 := (finSuccEquiv 2).symm.toEmbedding
 /-- Each tied acceptable singleton remains a possible best bundle. -/
 theorem singleton_mem (i : Fin 2) :
     {i} ∈ optimalBundles pref ChoiceFunction.optionBundle Set.univ := by
-  refine ⟨some i, ?_, rfl⟩
-  change ChoiceFunction.optionBundle (some i) ⊆ Set.univ ∧
-    ∀ o, ChoiceFunction.optionBundle o ⊆ Set.univ → utility o ≤ utility (some i)
+  apply (mem_optimalBundles_iff pref ChoiceFunction.optionBundle).mpr
+  refine ⟨some i, rfl, Set.subset_univ _, ?_⟩
+  change ∀ o, ChoiceFunction.optionBundle o ⊆ Set.univ → utility o ≤ utility (some i)
   simp [Option.forall]
 
 /-- The union of all optimal bundles is not a unit-demand holding. -/
@@ -102,7 +102,8 @@ def outsidePriority : Option (Fin 2) ↪ Fin 3 := finSuccEquivLast.symm.toEmbedd
 /-- Every represented bundle, including the empty one, is weakly optimal. -/
 theorem bundle_mem (o : Option (Fin 2)) :
     ChoiceFunction.optionBundle o ∈ optimalBundles pref ChoiceFunction.optionBundle Set.univ :=
-  ⟨o, ⟨Set.subset_univ _, fun _ _ ↦ (show (0 : ℤ) ≤ 0 from le_rfl)⟩, rfl⟩
+  (mem_optimalBundles_iff pref ChoiceFunction.optionBundle).mpr
+    ⟨o, rfl, Set.subset_univ _, fun _ _ ↦ (show (0 : ℤ) ≤ 0 from le_rfl)⟩
 
 /-- One fixed tie-break chooses nonparticipation. -/
 theorem selected_outside :
@@ -127,7 +128,8 @@ theorem selected_contract :
 /-- At an empty menu, the represented outside option is still an optimal bundle. -/
 theorem empty_mem_empty_menu :
     ∅ ∈ optimalBundles pref ChoiceFunction.optionBundle (∅ : Set (Fin 2)) :=
-  ⟨none, ⟨Set.empty_subset _, fun _ _ ↦ (show (0 : ℤ) ≤ 0 from le_rfl)⟩, rfl⟩
+  (mem_optimalBundles_iff pref ChoiceFunction.optionBundle).mpr
+    ⟨none, rfl, Set.empty_subset _, fun _ _ ↦ (show (0 : ℤ) ≤ 0 from le_rfl)⟩
 
 end OutsideTie
 
@@ -154,7 +156,8 @@ theorem complete : Std.Total pref.le := ⟨fun a b ↦ le_total (utility a) (uti
 
 /-- Both different bundles remain in the correspondence. -/
 theorem bundle_mem (i : Fin 2) : bundle i ∈ optimalBundles pref bundle Set.univ :=
-  ⟨i, ⟨Set.subset_univ _, fun j _ ↦ by change utility j ≤ utility i; simp⟩, rfl⟩
+  (mem_optimalBundles_iff pref bundle).mpr
+    ⟨i, rfl, Set.subset_univ _, fun j _ ↦ by change utility j ≤ utility i; simp⟩
 
 /-- The selected consumption bundle is a member of the weak correspondence. -/
 theorem selected_mem :
@@ -179,12 +182,29 @@ theorem selected_eq :
 theorem empty_menu : optimalBundles pref bundle ∅ = ∅ := by
   ext A
   simp only [Set.mem_empty_iff_false, iff_false]
-  rintro ⟨i, hi, rfl⟩
-  have h := hi.1
+  intro hA
+  obtain ⟨i, rfl, h, _⟩ := (mem_optimalBundles_iff pref bundle).mp hA
   have hnonempty : (bundle i).Nonempty := by
     fin_cases i <;> simp [bundle]
   exact hnonempty.not_subset_empty h
 
 end Bundles
+
+namespace FiniteFamily
+
+/-- Only two singleton bundles are represented, although the menu contains all natural numbers. -/
+def bundle : Fin 2 ↪ Set ℕ where
+  toFun i := {i.val}
+  inj' := fun _ _ h ↦ Fin.val_injective (Set.singleton_injective h)
+
+/-- The ordinary order on the two indices refines the all-tied weak preferences. -/
+theorem selected_mem :
+    ChoiceFunction.ofBundleOrder (inferInstance : LinearOrder (Fin 2)) bundle Set.univ ∈
+      optimalBundles (Preorder.lift fun _ : Fin 2 ↦ (0 : ℕ)) bundle Set.univ :=
+  ChoiceFunction.ofBundleOrder_mem_optimalBundles_of_finite_feasible _ _
+    (fun _ _ _ ↦ (show (0 : ℕ) ≤ 0 from le_rfl)) bundle (Set.toFinite _)
+    ⟨0, Set.subset_univ _⟩
+
+end FiniteFamily
 
 end MathEconLibExamples.Choice.WeakPreferences
