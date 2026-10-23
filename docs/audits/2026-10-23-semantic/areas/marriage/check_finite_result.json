@@ -1,0 +1,67 @@
+{
+  "scope": "all strict orders, optional partners, both populations size 0..2",
+  "source_execution": false,
+  "result": "PASS",
+  "totals": {
+    "profiles": 1353,
+    "matching_stability_comparisons": 9229,
+    "both_sides_da_comparisons": 2706,
+    "extremality_comparisons": 5420
+  },
+  "by_size": [
+    {
+      "men": 0,
+      "women": 0,
+      "profiles": 1,
+      "partial_matchings_per_profile": 1
+    },
+    {
+      "men": 0,
+      "women": 1,
+      "profiles": 1,
+      "partial_matchings_per_profile": 1
+    },
+    {
+      "men": 0,
+      "women": 2,
+      "profiles": 1,
+      "partial_matchings_per_profile": 1
+    },
+    {
+      "men": 1,
+      "women": 0,
+      "profiles": 1,
+      "partial_matchings_per_profile": 1
+    },
+    {
+      "men": 1,
+      "women": 1,
+      "profiles": 4,
+      "partial_matchings_per_profile": 2
+    },
+    {
+      "men": 1,
+      "women": 2,
+      "profiles": 24,
+      "partial_matchings_per_profile": 3
+    },
+    {
+      "men": 2,
+      "women": 0,
+      "profiles": 1,
+      "partial_matchings_per_profile": 1
+    },
+    {
+      "men": 2,
+      "women": 1,
+      "profiles": 24,
+      "partial_matchings_per_profile": 3
+    },
+    {
+      "men": 2,
+      "women": 2,
+      "profiles": 1296,
+      "partial_matchings_per_profile": 7
+    }
+  ]
+}

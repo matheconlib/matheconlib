@@ -1,0 +1,42 @@
+{
+  "audited_revision": "1d9f8cc233cdaeee0364b51befb84feea657a4da",
+  "original_library_compilation": {
+    "modules": 129,
+    "includes": "128 library modules and root umbrella",
+    "full_default_build": false,
+    "lean_version": "4.28.0"
+  },
+  "supporting_lean_lemmas": {
+    "count": 12,
+    "module": "MathEconLibTest.Audit.SemanticCounterexamples",
+    "scope": "zero-density structure/properties, strict positivity, real algebra; not all full probabilistic countermodels"
+  },
+  "publication_verification": {
+    "status": "local checks passed; remote CI pending",
+    "lean_version": "4.28.0",
+    "default_build_jobs": 8195,
+    "project_warning_lines": 0,
+    "axiom_reports": 12,
+    "allowed_axioms": [
+      "propext",
+      "Classical.choice",
+      "Quot.sound"
+    ],
+    "negative_coverage_controls_rejected": 2,
+    "commands": [
+      "lake --rehash --no-ansi build",
+      "python3 docs/audits/2026-10-23-semantic/check_coverage.py --self-test",
+      "python3 docs/audits/2026-10-23-semantic/check_record.py",
+      "lake env lean docs/audits/2026-10-23-semantic/AxiomChecks.lean"
+    ],
+    "test_source_sha256": "cbab496369a5445c9d0c0e296bc3c45e00d3fde2903af6fd495b83a41574e431",
+    "full_build_log_sha256": "187699df1f73cdd0e2a79bbaed1d79785f224e02b9d59256c1c23705e7f712b8",
+    "import_helper_tests": 11,
+    "warning_helper_tests": 27,
+    "exact_countermodel_scripts": 4,
+    "portable_local_links": 125,
+    "immutable_audited_source_links": 96
+  },
+  "repair_status": "F1/F2 partly implemented in unmerged PR 210; F3-F6 and conditional all-purchase remain open",
+  "review_scope": "Original independent automated workstreams; publication also requires normal maintainer review"
+}

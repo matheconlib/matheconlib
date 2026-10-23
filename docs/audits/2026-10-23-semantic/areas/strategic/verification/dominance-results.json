@@ -1,0 +1,84 @@
+{
+  "boundary_cases": {
+    "empty_opponent_action_space": {
+      "each_player_0_action": {
+        "dominant": true,
+        "strict_order_dominant": false,
+        "strictly_dominant": true
+      },
+      "game": "Player 0 actions 0 and 1; player 1 no actions",
+      "interpretation": "Vacuity; Nonempty profile hypothesis correctly excludes this from bridge theorem",
+      "profile_count": 0
+    },
+    "empty_own_action_space": {
+      "profile_count": 0,
+      "strategy_count": 0
+    },
+    "no_players": {
+      "empty_profile": {
+        "nash": true,
+        "strict_nash": true,
+        "strong_nash": true
+      },
+      "profile_count": 1
+    },
+    "singleton_action_space": {
+      "only_profile": {
+        "nash": true,
+        "strict_nash": true,
+        "strong_nash": true
+      },
+      "only_strategy": {
+        "dominant": true,
+        "strict_order_dominant": true,
+        "strictly_dominant": true
+      }
+    },
+    "status": "PASS",
+    "strict_order_dominance_with_some_ties": {
+      "game": "Two binary-action players; payoff vector (a0*a1, 0)",
+      "interpretation": "Strict-order dominance and strict dominance intentionally differ",
+      "player_0_action_1": {
+        "dominant": true,
+        "strict_order_dominant": true,
+        "strictly_dominant": false
+      }
+    },
+    "tied_duplicate_actions": {
+      "each_action": {
+        "dominant": true,
+        "strict_order_dominant": false,
+        "strictly_dominant": false
+      },
+      "each_profile": {
+        "nash": true,
+        "strict_nash": false,
+        "strong_nash": true
+      },
+      "game": "One player, actions 0 and 1, payoff 0 at both",
+      "interpretation": "Distinct payoff-equivalent actions are weakly optimal but not strict",
+      "mutual_preorder_comparison": true
+    }
+  },
+  "finite_exhaustion": {
+    "actions_per_player": 2,
+    "checked_equivalences": [
+      "Strong Nash: changing-player witness versus nonempty profitable coalition",
+      "Strict Nash: different action versus different unilateral profile",
+      "Dominant: top of payoff preorder versus pointwise best action",
+      "Strict-order dominant: strict preorder versus weak everywhere and strict somewhere"
+    ],
+    "game_player_action_cases": 1024,
+    "game_profile_cases": 1024,
+    "games": 256,
+    "payoff_values": [
+      0,
+      1
+    ],
+    "players": 2,
+    "status": "PASS"
+  },
+  "scope_limit": "Finite evidence only; no inference of a general theorem from enumeration",
+  "source": "MathEconLib/GameTheory/Strategic/Basic.lean",
+  "status": "PASS"
+}

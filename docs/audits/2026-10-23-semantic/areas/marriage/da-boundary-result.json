@@ -1,0 +1,30 @@
+{
+  "result": "PASS",
+  "source_execution": false,
+  "records": [
+    {
+      "alarm": "arbitrary terminal history need not be stable",
+      "verified": true,
+      "library_defect": false,
+      "reason": "stable_gsMatchingAt requires reachable gsRejected n"
+    },
+    {
+      "alarm": "zero fuel may return an unstable holding",
+      "verified": true,
+      "library_defect": false,
+      "reason": "WithFuel explicitly permits stopping before stabilization"
+    },
+    {
+      "alarm": "gsStep need not be monotone in arbitrary histories",
+      "verified": true,
+      "library_defect": false,
+      "reason": "termination uses inflationarity, not monotonicity"
+    },
+    {
+      "alarm": "intermediate generalized outcome may not be a matching",
+      "verified": true,
+      "library_defect": false,
+      "reason": "outcomes are Set contracts; only terminal outputs are asserted stable"
+    }
+  ]
+}
