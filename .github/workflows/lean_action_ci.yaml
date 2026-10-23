@@ -3,14 +3,8 @@ name: Lean Action CI
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "website/**"
-      - ".github/workflows/deploy_website.yaml"
   pull_request:
     branches: [main]
-    paths-ignore:
-      - "website/**"
-      - ".github/workflows/deploy_website.yaml"
   workflow_dispatch:
 
 permissions:
