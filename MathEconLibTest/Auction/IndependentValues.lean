@@ -81,7 +81,7 @@ instance bic : Auction.IPV.BIC auction := by
   · intro i s _ r _
     simp [Auction.valuationEnvironment, Mechanism.QuasilinearEnvironment.ofPrivate, auction]
 
-/-- The independent positive control satisfies the same general BIC predicate as correlated
+/-- The independent positive control satisfies the same quasilinear BIC predicate as correlated
 models; no second incentive definition is maintained for IPV. -/
 theorem conditional_bic : auction.BIC auction.independentBeliefs := bic.conditional_bic
 

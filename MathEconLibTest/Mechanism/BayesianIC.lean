@@ -8,7 +8,7 @@ module
 public import MathEconLib.Mechanism
 
 /-!
-# General BIC permits interdependent valuations
+# Quasilinear BIC permits interdependent valuations
 
 Reports choose an outcome vector. Each agent values accurate matching to its own true type,
 plus the other agent's true type. The latter makes values interdependent, even though truthful
@@ -62,20 +62,20 @@ theorem not_private_values : ¬ environment.IsPrivateValues := by
 
 /-- Truthful reports are optimal over the entire real type/report spaces, with integrable
 conditional utilities, although the valuation environment is not private values. -/
-theorem bic : DirectMechanism.IsBIC environment mechanism prior beliefs := by
+theorem bic : DirectMechanism.Quasilinear.IsBIC environment mechanism prior beliefs := by
   refine ⟨?_, ?_⟩
   · intro i s _ r _
     exact integrable_dirac (by simp)
   · intro i s _ r _
-    simp only [DirectMechanism.interimUtility_eq_integral, beliefs, Kernel.const_apply,
+    simp only [DirectMechanism.Quasilinear.interimUtility_eq_integral, beliefs, Kernel.const_apply,
       integral_dirac, QuasilinearEnvironment.utility, environment, mechanism,
       Function.update_self, insert_self, add_zero]
     nlinarith [sq_nonneg (r - s)]
 
 /-- The general conditional incentive predicate connects to the existing truthful BNE API. -/
 theorem truthful_bne : (mechanism.inducedBayesianGame environment).IsBNE prior
-    (DirectMechanism.truthfulStrategy environment mechanism) := by
-  apply DirectMechanism.IsBIC.isBNE environment mechanism prior beliefs bic
+    (DirectMechanism.Quasilinear.truthfulStrategy environment mechanism) := by
+  apply DirectMechanism.Quasilinear.IsBIC.isBNE environment mechanism prior beliefs bic
   · intro i
     change Measurable (fun p : (Fin 2 → ℝ) × (Fin 2 → ℝ) ↦
       -((p.1 i - p.2 i) ^ 2) + p.2 (1 - i) + 0)
@@ -105,18 +105,18 @@ lemma scalar_ic (s r : ℝ) :
   unfold quantity
   split_ifs <;> linarith
 
-/-- The existing general BIC predicate accepts two-dimensional reports under any prior and
+/-- The existing quasilinear BIC predicate accepts two-dimensional reports under any prior and
 selected conditional beliefs. No multidimensional BIC definition is introduced. -/
 theorem bic (μ : Measure (Unit → ℝ × ℝ)) [IsProbabilityMeasure μ]
     (B : ConditionalBeliefs μ) :
-    DirectMechanism.IsBIC environment mechanism μ B := by
+    DirectMechanism.Quasilinear.IsBIC environment mechanism μ B := by
   refine ⟨?_, ?_⟩
   · intro i s _ r _
     cases i
     simp [environment, mechanism, QuasilinearEnvironment.ofPrivate]
   · intro i s _ r _
     cases i
-    simp only [DirectMechanism.interimUtility_eq_integral, environment, mechanism,
+    simp only [DirectMechanism.Quasilinear.interimUtility_eq_integral, environment, mechanism,
       QuasilinearEnvironment.utility, QuasilinearEnvironment.ofPrivate,
       Function.update_self, insert_self, integral_const, probReal_univ, one_smul]
     have h₁ := scalar_ic s.1 r.1
@@ -130,7 +130,8 @@ instance : IsProbabilityMeasure prior := inferInstanceAs
   (IsProbabilityMeasure (Measure.dirac (fun _ : Unit ↦ ((1, 1) : ℝ × ℝ))))
 
 /-- The concrete vector-valued model satisfies the existing general incentive predicate. -/
-theorem concrete_bic : DirectMechanism.IsBIC environment mechanism prior (canonicalBeliefs prior) :=
+theorem concrete_bic :
+    DirectMechanism.Quasilinear.IsBIC environment mechanism prior (canonicalBeliefs prior) :=
   bic prior (canonicalBeliefs prior)
 
 /-- The truthful buyer buys both goods and pays one in total. -/

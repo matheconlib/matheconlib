@@ -159,13 +159,14 @@ def diagonalBeliefs (A : MathEconLib.Auction Bool 2)
     funext j
     exact (hθ i ω).trans (hθ j ω).symm
 
-/-- The general BIC predicate rejects the bad mechanism by its actual profitable deviation,
+/-- The quasilinear BIC predicate rejects the bad mechanism by its actual profitable deviation,
 without imposing independence on BIC. -/
 theorem not_bic : ¬ auction.BIC (diagonalBeliefs auction (fun _ _ ↦ rfl)) := by
   intro h
   have hh := h.bic 0 1 (by norm_num [Auction.interval, auction])
     0 (by norm_num [Auction.interval, auction])
-  norm_num [Auction.conditionalUtility, Mechanism.DirectMechanism.interimUtility_eq_integral,
+  norm_num [Auction.conditionalUtility,
+    Mechanism.DirectMechanism.Quasilinear.interimUtility_eq_integral,
     diagonalBeliefs, Kernel.deterministic_apply, Auction.valuationEnvironment,
     Mechanism.QuasilinearEnvironment.ofPrivate,
     auction, GameTheory.BayesianPrior.insert, Equiv.piSplitAt] at hh
@@ -179,7 +180,8 @@ theorem old_marginal_ir : auction.MarginalIR := by
 theorem not_interim_ir : ¬ auction.InterimIR (diagonalBeliefs auction (fun _ _ ↦ rfl)) := by
   intro h
   have hh := h.2 0 1 (by norm_num [Auction.interval, auction])
-  norm_num [Auction.conditionalUtility, Mechanism.DirectMechanism.interimUtility_eq_integral,
+  norm_num [Auction.conditionalUtility,
+    Mechanism.DirectMechanism.Quasilinear.interimUtility_eq_integral,
     diagonalBeliefs, Kernel.deterministic_apply, Auction.valuationEnvironment,
     Mechanism.QuasilinearEnvironment.ofPrivate, auction,
     GameTheory.BayesianPrior.insert, Equiv.piSplitAt] at hh
@@ -210,14 +212,14 @@ unrealized interior types under the selected diagonal-belief version. -/
 lemma square_utility (i : Fin 2) (s r : ℝ) :
     squareAuction.conditionalUtility (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)) i s r =
       -((r - s) ^ 2) := by
-  rw [Auction.conditionalUtility, Mechanism.DirectMechanism.interimUtility_eq_integral]
+  rw [Auction.conditionalUtility, Mechanism.DirectMechanism.Quasilinear.interimUtility_eq_integral]
   fin_cases i <;>
     simp [diagonalBeliefs, Kernel.deterministic_apply, squareAuction,
       Auction.valuationEnvironment, Mechanism.QuasilinearEnvironment.ofPrivate,
       GameTheory.BayesianPrior.insert, Equiv.piSplitAt]
   all_goals ring
 
-/-- General BIC accepts a correlated model, with a proof over the full report continuum. -/
+/-- Quasilinear BIC accepts a correlated model, with a proof over the full report continuum. -/
 theorem square_bic : squareAuction.BIC (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)) := by
   refine ⟨?_, ?_⟩
   · intro i s _ r _
@@ -231,7 +233,7 @@ theorem square_bic : squareAuction.BIC (diagonalBeliefs squareAuction (fun _ _ �
     rw [square_utility, square_utility]
     nlinarith [sq_nonneg (r - s)]
 
-/-- The correlated positive control is outside IPV, although it satisfies general BIC. -/
+/-- The correlated positive control is outside IPV, although it satisfies quasilinear BIC. -/
 theorem square_not_ipv : ¬ squareAuction.IsIPV := by
   intro h
   exact not_independent ⟨h.θ_indep⟩

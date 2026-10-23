@@ -9,11 +9,14 @@ public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Interim
 
 /-!
-# Bayesian incentive compatibility with conditional beliefs
+# Quasilinear Bayesian incentive compatibility with conditional beliefs
 
 Bayesian incentive compatibility compares truthful reporting with alternative reports while
 holding the full true type profile and the bidder's true-type conditional beliefs fixed. The
-environment may have interdependent values and the prior may correlate types.
+environment here is quasilinear: utility is outcome value plus the signed transfer received.
+Values may be interdependent, the prior may correlate types, and type spaces may be
+multidimensional. BIC as an economic concept does not require quasilinearity; these declarations
+provide its quasilinear specialization using the existing Bayesian game machinery.
 
 `IsBICOn` is pointwise on declared type/report sets relative to a selected conditional-belief
 version. At marginally null types this is additional belief data, not information determined by
@@ -22,6 +25,9 @@ On the full type spaces, pointwise BIC implies truthful Bayesian Nash equilibriu
 realized truthful payoffs are integrable and the game payoffs are jointly measurable.
 
 ## References
+
+Roger B. Myerson (1985), *Bayesian equilibrium and incentive-compatibility: an introduction*,
+§§1 and 5. <https://home.uchicago.edu/~rmyerson/research/myerson1985pazner.pdf>
 
 Matthew O. Jackson (2003), *Mechanism Theory*, §§4.1–4.7.
 <https://web.stanford.edu/~jacksonm/mechtheo.pdf>
@@ -32,7 +38,7 @@ Matthew O. Jackson (2003), *Mechanism Theory*, §§4.1–4.7.
 open MeasureTheory MathEconLib.GameTheory
 open MathEconLib.GameTheory.BayesianPrior
 
-namespace MathEconLib.Mechanism.DirectMechanism
+namespace MathEconLib.Mechanism.DirectMechanism.Quasilinear
 
 variable {I : Type*} {T : I → Type*} {O : Type*} [DecidableEq I]
   [∀ i, MeasurableSpace (T i)]
@@ -42,7 +48,8 @@ variable {I : Type*} {T : I → Type*} {O : Type*} [DecidableEq I]
 /-- The measurable strategy in which each agent reports its own true type. -/
 def truthfulStrategy : (M.inducedBayesianGame E).Strategy := fun _ ↦ ⟨id, measurable_id⟩
 
-/-- Conditional expected utility from report `r` at true type `s`, with truthful opponents. -/
+/-- Conditional expected quasilinear utility from report `r` at true type `s`, with truthful
+opponents. -/
 def interimUtility (i : I) (s r : T i) : ℝ :=
   (M.inducedBayesianGame E).interimPayoffAction μ B i s r (truthfulStrategy E M)
 
@@ -52,9 +59,9 @@ lemma interimUtility_eq_integral (i : I) (s r : T i) :
       ∫ θo, E.utility M i (insert i s θo) (Function.update (insert i s θo) i r)
         ∂(B.opponents i s) := rfl
 
-/-- Pointwise Bayesian IC on the declared sets of true types and reports, relative to selected
-conditional beliefs. Every permitted report has integrable conditional utility. Independence and
-private values are not required. -/
+/-- Pointwise quasilinear Bayesian IC on the declared sets of true types and reports, relative to
+selected conditional beliefs. Every permitted report has integrable conditional utility.
+Independence and private values are not required. -/
 structure IsBICOn [IsProbabilityMeasure μ] (D : ∀ i, Set (T i)) : Prop where
   /-- All conditional utility comparisons are between finite expectations. -/
   integrable : ∀ i, ∀ s ∈ D i, ∀ r ∈ D i,
@@ -65,11 +72,13 @@ structure IsBICOn [IsProbabilityMeasure μ] (D : ∀ i, Set (T i)) : Prop where
   bic : ∀ i, ∀ s ∈ D i, ∀ r ∈ D i,
     interimUtility E M μ B i s r ≤ interimUtility E M μ B i s s
 
-/-- Pointwise BIC on the full type spaces, relative to the selected conditional-belief version. -/
+/-- Pointwise quasilinear BIC on the full type spaces, relative to the selected conditional-belief
+version. -/
 abbrev IsBIC [IsProbabilityMeasure μ] : Prop := IsBICOn E M μ B (fun _ ↦ Set.univ)
 
-/-- Full-space pointwise BIC implies that truth is a Bayesian Nash equilibrium. This implication
-does not identify pointwise beliefs at null types with the weaker a.e. equilibrium condition. -/
+/-- Full-space pointwise quasilinear BIC implies that truth is a Bayesian Nash equilibrium. This
+implication does not identify pointwise beliefs at null types with the weaker a.e. equilibrium
+condition. -/
 theorem IsBIC.isBNE [IsProbabilityMeasure μ] (h : IsBIC E M μ B)
     (hmeas : ∀ i, Measurable (fun p : Profile T × Profile T ↦
       (M.inducedBayesianGame E).payoff i p.1 p.2))
@@ -79,4 +88,4 @@ theorem IsBIC.isBNE [IsProbabilityMeasure μ] (h : IsBIC E M μ B)
   intro i
   exact Filter.Eventually.of_forall fun s r ↦ h.bic i s (Set.mem_univ _) r (Set.mem_univ _)
 
-end MathEconLib.Mechanism.DirectMechanism
+end MathEconLib.Mechanism.DirectMechanism.Quasilinear

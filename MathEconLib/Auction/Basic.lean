@@ -114,7 +114,8 @@ def valuationEnvironment (n : ℕ) :
 /-- Conditional utility keeps true type `s` fixed when the bidder reports `r`. -/
 noncomputable abbrev conditionalUtility (B : ConditionalBeliefs A.typeLaw)
     (i : Fin n) (s r : ℝ) : ℝ :=
-  Mechanism.DirectMechanism.interimUtility (valuationEnvironment n) A.rules A.typeLaw B i s r
+  Mechanism.DirectMechanism.Quasilinear.interimUtility
+    (valuationEnvironment n) A.rules A.typeLaw B i s r
 
 /-- Independence of each coordinate and its opponents under the joint value law. -/
 theorem independentOfOpponents [A.IsIPV] : IsIndependentOfOpponents A.typeLaw := by
@@ -266,16 +267,17 @@ def ExAnteIR : Prop :=
 
 /-! ### BIC -/
 
-/-- General conditional BIC on the stated type/report intervals, relative to selected beliefs.
+/-- Quasilinear conditional BIC on the stated type/report intervals, relative to selected beliefs.
 The prior may correlate values. At null types, pointwise constraints use the supplied version.
-This is the scalar private-values specialization of the general mechanism predicate. -/
+This specializes the quasilinear mechanism predicate to scalar private linear values. -/
 abbrev BIC (B : ConditionalBeliefs A.typeLaw) : Prop :=
-  Mechanism.DirectMechanism.IsBICOn (valuationEnvironment n) A.rules A.typeLaw B A.interval
+  Mechanism.DirectMechanism.Quasilinear.IsBICOn
+    (valuationEnvironment n) A.rules A.typeLaw B A.interval
 
 namespace IPV
 
-/-- The IPV specialization of general BIC uses constant opponent beliefs. Analytic and null-type
-requirements are inherited from general BIC; independence is an environment assumption.
+/-- The IPV specialization of quasilinear BIC uses constant opponent beliefs. Analytic and null-type
+requirements are inherited from quasilinear BIC; independence is an environment assumption.
 
 This class is a compatibility adapter to the existing inferred chain
 `IPV.BIC → BidderProblem.HasTypeDeviationIC → HasEnvelopeIC`. It stores only the supplied BIC
@@ -315,7 +317,7 @@ lemma conditionalUtility_eq_marginal [A.IsIPV]
     funext ω
     dsimp
     ring
-  rw [conditionalUtility, Mechanism.DirectMechanism.interimUtility_eq_integral,
+  rw [conditionalUtility, Mechanism.DirectMechanism.Quasilinear.interimUtility_eq_integral,
     A.independentBeliefs_opponents,
     integral_map (φ := fun ω ↦ drop i (A.θ · ω)) hY.aemeasurable hi.aestronglyMeasurable]
   simp only [heq]

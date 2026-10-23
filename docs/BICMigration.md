@@ -1,4 +1,4 @@
-# General BIC and the IPV specialization
+# Quasilinear conditional BIC and its IPV specialization
 
 Design: [#211](https://github.com/matheconlib/matheconlib/issues/211),
 repair: [#212](https://github.com/matheconlib/matheconlib/issues/212),
@@ -8,16 +8,22 @@ still required before merge.
 
 Bayesian incentive compatibility means that truthful reports maximize expected
 utility given the agent's true-type beliefs and truthful opponents. It does not
-require independent types or private values. The defect in the old auction API
-was averaging opponents unconditionally, even when observing one's own value
+require independent types, private values, or quasilinear utility. The mechanism
+API implemented here is the quasilinear specialization: utility is outcome
+value plus the signed transfer received. It is general with respect to type
+correlation, value interdependence and type dimension, within that utility model.
+The defect in the old auction API was averaging opponents unconditionally,
+even when observing one's own value
 changed their conditional distribution. Adding independence to the definition
-of general BIC would exclude valid correlated mechanisms.
+of BIC would exclude valid correlated mechanisms.
 
-## General mechanism API
+## Quasilinear mechanism incentive API
 
-`Mechanism.DirectMechanism.IsBICOn E M μ B D` composes the existing valuation
+`Mechanism.DirectMechanism.Quasilinear.IsBICOn E M μ B D` composes the existing valuation
 environment, induced Bayesian game, probability prior, conditional-belief
-version, and declared type/report sets. `E` can have interdependent values.
+version, and declared type/report sets. `E : QuasilinearEnvironment I T O` can
+have interdependent values. The `Quasilinear` namespace makes the utility
+restriction visible without assigning it to the mechanism rules.
 `B.opponents i s` is held fixed when the report changes from `s` to `r`; the
 valuation environment also continues to see the true type profile.
 
@@ -36,7 +42,7 @@ an a.e. equilibrium cannot determine incentives or beliefs at null types.
 
 ## Scalar auctions and IPV
 
-`Auction.BIC B` is the general mechanism predicate on the auction's stated
+`Auction.BIC B` is the quasilinear mechanism predicate on the auction's stated
 type/report intervals, with joint prior `A.typeLaw` and selected beliefs `B`.
 It is an ordinary proposition, replacing the old typeclass. `Auction.InterimIR B`
 likewise uses integrable conditional truthful utility; `Auction.MarginalIR`
@@ -55,7 +61,7 @@ Its limited purpose is compatibility with the existing inferred
 `BidderProblem.HasTypeDeviationIC → HasEnvelopeIC` chain. The caller supplies
 the BIC proof; typeclass search propagates it through that fixed chain.
 It selects no beliefs or equilibrium and introduces no reverse inference
-from general BIC to independence. General BIC remains an ordinary predicate.
+from quasilinear BIC to independence. Quasilinear BIC remains an ordinary predicate.
 `IPV.bic_iff_marginal` proves equivalence with the familiar marginal
 `s * q(r) - p(r) ≤ U(s)` inequalities when allocations lie in `[0,1]` and all
 compared conditional utilities are integrable. This is pointwise on the
@@ -66,13 +72,38 @@ proof derives payment integrability from conditional utility integrability
 and bounded allocations, then separates the integral. It never splits a
 nonintegrable utility integral into totalized allocation/payment integrals.
 
+## Naming and broader concepts
+
+`Mechanism` and `DirectMechanism` store rules, with no preference assumption.
+They can be paired with other utility models; renaming them to
+`QuasilinearMechanism` would assign the restriction to the wrong object.
+Payment signs, realized receipts and budget conditions do not assume
+quasilinear preferences. Scalar envelope/payment and revenue-equivalence
+results do use quasilinearity and their advertised scope must say so.
+
+The new conditional incentive API is under `DirectMechanism.Quasilinear`.
+Its `truthfulStrategy`, `interimUtility`, `interimUtility_eq_integral`,
+`IsBICOn`, `IsBIC` and `IsBIC.isBNE` names move together in this unmerged PR.
+The older `DirectMechanism.IsDSIC`, `IsExPostIR` and `IsEfficient` APIs still
+bind `QuasilinearEnvironment`; a consistent namespace migration and its
+compatibility policy are tracked in [#222](https://github.com/matheconlib/matheconlib/issues/222).
+The existing efficiency predicate maximizes summed valuations, rather than
+providing a general arbitrary-preference Pareto-efficiency concept.
+
+BIC for broader preferences should reuse the arbitrary-payoff Bayesian game
+and equilibrium machinery. A broader utility-environment adapter, with a
+checked quasilinear specialization, can be designed when a concrete
+non-quasilinear application needs it. No such adapter is implemented here.
+Multidimensional types do not require non-quasilinear preferences; #221
+therefore remains scoped to quasilinear vector/implementability theory.
+
 ## Public migration
 
 - Replace `[A.BIC]` in scalar payment/envelope applications with
   `[A.IsIPV] [Auction.IPV.BIC A]`. Symmetric-IPV environments already supply
   the independence instance. Both auctions need the specialization in
   `payment_equivalence` and `revenue_equivalence`.
-- Construct `IPV.BIC` from a proof of general conditional BIC, or use
+- Construct `IPV.BIC` from a proof of conditional quasilinear BIC, or use
   `IPV.bic_iff_marginal` with a proof of conditional integrability. An old
   record supplying only scalar inequalities is insufficient.
 - General correlated incentive arguments use a hypothesis `h : A.BIC B`
@@ -100,7 +131,7 @@ measurable, integrable realized payments. The explicit payment hypotheses on
 ## Regression and verification map
 
 - `MathEconLibTest/Auction/CorrelatedValues.lean`: the old false-positive
-  inequalities still hold, but general BIC rejects the mechanism through a
+  inequalities still hold, but quasilinear BIC rejects the mechanism through a
   profitable conditional deviation. Truthful realized revenue is two.
   Squared-disagreement payments give a correlated BIC positive control for
   every real report; the old marginal inequalities reject that mechanism.
@@ -112,9 +143,9 @@ measurable, integrable realized payments. The explicit payment hypotheses on
   total expected revenue one quarter. It applies the migrated payment
   formula to derive the allocation integral one quarter.
 - `MathEconLibTest/Mechanism/BayesianIC.lean`: a provably interdependent
-  valuation environment satisfies general BIC over all real types/reports;
+  valuation environment satisfies quasilinear BIC over all real types/reports;
   applying `IsBIC.isBNE` certifies truthful Bayesian equilibrium. A separate
-  two-good posted-price client supplies vector reports, proves general BIC
+  two-good posted-price client supplies vector reports, proves quasilinear BIC
   for every report pair, instantiates a concrete prior, and checks payment.
 
 Verification uses the full default `lake build`, regenerated and checked
@@ -142,7 +173,7 @@ Changing the legacy bidder class chain is a separate API migration.
 
 The generic profile-update identity belongs to `BayesianPrior` with arbitrary
 dependent type carriers. It is shared directly rather than reproved in the
-auction specialization. General BIC is exported by the public mechanism
+auction specialization. Quasilinear BIC is exported by the public mechanism
 umbrella and checked through that import.
 
 The current interface already accepts vector and agent-specific type spaces.
@@ -153,6 +184,10 @@ That work should compose the general primitives and prove scalar agreement;
 inheriting the scalar auction carrier would impose its real-report restriction.
 
 ## Reference
+
+Roger B. Myerson (1985), *Bayesian equilibrium and incentive-compatibility:
+an introduction*, §§1 and 5.
+<https://home.uchicago.edu/~rmyerson/research/myerson1985pazner.pdf>
 
 Matthew O. Jackson (2003), *Mechanism Theory*, §§4.1–4.7.
 <https://web.stanford.edu/~jacksonm/mechtheo.pdf>

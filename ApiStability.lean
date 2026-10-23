@@ -189,11 +189,11 @@ example : ∀ (B : MathEconLib.BidderProblem),
 
 /-! ## MathEconLib.Auction — payment and revenue equivalence -/
 
--- General BIC is the mechanism conditional incentive predicate, with no IPV hypothesis.
+-- Auction BIC specializes quasilinear conditional IC, with no IPV hypothesis.
 example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : MathEconLib.Auction Ω n)
     (B : MathEconLib.GameTheory.BayesianPrior.ConditionalBeliefs A.typeLaw) :
-    A.BIC B = MathEconLib.Mechanism.DirectMechanism.IsBICOn
+    A.BIC B = MathEconLib.Mechanism.DirectMechanism.Quasilinear.IsBICOn
       (MathEconLib.Auction.valuationEnvironment n) A.rules A.typeLaw B A.interval := rfl
 
 -- IPV specializes the same general predicate to constant opponent beliefs.
