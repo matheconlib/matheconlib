@@ -249,8 +249,8 @@ def ExPostIR : Prop :=
 
 /-- Nonnegative marginal utility at every type. Under independent types, unit-interval allocation
 bounds, and integrable conditional truthful utilities, this is interim IR with constant product
-beliefs. Without the allocation bounds, integrability of net utility alone does not justify splitting
-its expectation into allocation and payment integrals. For correlated types, `U` remains
+beliefs. Without the allocation bounds, integrability of net utility alone does not justify
+splitting its expectation into allocation and payment integrals. For correlated types, `U` remains
 unconditional and this predicate does not assert conditional individual rationality. -/
 def MarginalIR : Prop :=
   ∀ i, ∀ s ∈ A.interval i, 0 ≤ A.U i s
