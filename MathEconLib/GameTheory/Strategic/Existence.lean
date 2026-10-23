@@ -479,13 +479,16 @@ lemma payoff_eq_eval_weakDual {ι : Type*} {A : ι → Type*} {O : Type*}
   dsimp [toWeakDualContinuousMap]
   change _ = integral _ _
   dsimp [PayoffStructure.expected]
-  rw [integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
+  rw [OutcomeGame.mixed_outcome, ProbabilityMeasure.toMeasure_map, ProbabilityMeasure.toMeasure_pi,
+    integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
     ← Measure.pi_map_piSplitAt i, integral_map (MeasurableEquiv.measurable _).aemeasurable
       (by exact ((P.measurable_payoff i).comp G.measurable_outcome).aestronglyMeasurable),
     Function.update_self, integral_prod]
   · congr 1
     ext x
-    rw [integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
+    change _ = ∫ o, P.payoff i o ∂(G.mixed.outcome (Function.update a i (diracProba x))).toMeasure
+    rw [OutcomeGame.mixed_outcome, ProbabilityMeasure.toMeasure_map, ProbabilityMeasure.toMeasure_pi,
+      integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
       ← Measure.pi_map_piSplitAt i, integral_map (MeasurableEquiv.measurable _).aemeasurable
         (by exact ((P.measurable_payoff i).comp G.measurable_outcome).aestronglyMeasurable),
       Function.update_self, integral_prod,

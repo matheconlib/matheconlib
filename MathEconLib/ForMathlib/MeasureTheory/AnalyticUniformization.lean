@@ -163,7 +163,7 @@ lemma nonempty_inter_listCylinder_leftmostPrefix (hne : K.Nonempty) (n : ℕ) :
     obtain ⟨β, hβK, hβcyl⟩ := ih
     have hβS : β t.length ∈ S :=
       ⟨β, hβK, by rw [listCylinder_append_singleton]; exact ⟨hβcyl, rfl⟩⟩
-    simpa [leftmostPrefix, ← ht, ← hS] using Nat.sInf_mem ⟨β t.length, hβS⟩
+    simpa [leftmostPrefix, ← ht, hS] using Nat.sInf_mem ⟨β t.length, hβS⟩
 
 /-- The `(n + 1)`-st prefix is `t ++ [m]` exactly when the `n`-th prefix is `t`, the set meets the
 `t ++ [m]` cylinder, and it misses the `t ++ [j]` cylinders for all `j < m`. -/

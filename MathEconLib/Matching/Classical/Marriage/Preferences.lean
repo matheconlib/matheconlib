@@ -345,7 +345,7 @@ theorem bestM_eq_some_iff {m : M} {w : W} {Y : Set (M × W)} :
       (m, w) ∈ Y ∧ mkt.leM m none (some w) ∧
         ∀ w', (m, w') ∈ Y → mkt.leM m (some w') (some w) := by
   classical
-  simpa only [bestM, Finset.mem_filter, Finset.mem_univ, true_and] using
+  simpa only [bestM, leM, Finset.mem_filter, Finset.mem_univ, true_and] using
     (ChoiceFunction.bestOption_eq_some_iff (mkt.prefM m)
       (Finset.univ.filter fun w => (m, w) ∈ Y) (x := w))
 
@@ -356,7 +356,7 @@ theorem bestW_eq_some_iff {m : M} {w : W} {Y : Set (M × W)} :
       (m, w) ∈ Y ∧ mkt.leW w none (some m) ∧
         ∀ m', (m', w) ∈ Y → mkt.leW w (some m') (some m) := by
   classical
-  simpa only [bestW, Finset.mem_filter, Finset.mem_univ, true_and] using
+  simpa only [bestW, leW, Finset.mem_filter, Finset.mem_univ, true_and] using
     (ChoiceFunction.bestOption_eq_some_iff (mkt.prefW w)
       (Finset.univ.filter fun m => (m, w) ∈ Y) (x := m))
 

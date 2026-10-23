@@ -120,7 +120,6 @@ private theorem integrable_value_mul_clampedAllocation
     (measurable_id.mul (measurable_clampedAllocation P horder)).aestronglyMeasurable
     (max |P.lowestType| |P.highestType|)
   filter_upwards [hsupport] with value hvalue
-  simp only [id_eq]
   have hq := clampedAllocation_range P horder value
   calc
     ‖value * clampedAllocation P horder value‖ =
@@ -407,7 +406,7 @@ private theorem intervalIntegrable_q_mul_probAtLeast
     have hq := clampedAllocation_range P horder value
     have hprobNonneg := D.probAtLeast_nonneg value
     have hprobOne := D.probAtLeast_le_one value
-    rw [Real.norm_eq_abs,
+    rw [Real.norm_eq_abs, Pi.mul_apply,
       abs_of_nonneg (mul_nonneg hq.1 hprobNonneg)]
     exact mul_le_one₀ hq.2 hprobNonneg hprobOne
   have hclampedIntervalIntegrable :
@@ -551,7 +550,8 @@ theorem expectedPayment_eq_integral_q_mul_virtualSurplusWeight
       density =ᵐ[volume.restrict
         (uIoc P.lowestType P.highestType)] D.realDensity := by
     apply ae_restrict_of_ae_restrict_of_subset uIoc_subset_uIcc
-    simpa [uIcc_of_le horder] using hdensity
+    simp only [uIcc_of_le horder]
+    exact hdensity
   congr 1
   apply intervalIntegral.integral_congr_ae_restrict
   filter_upwards [hdensityOnIntegral] with value hdensityValue
@@ -578,7 +578,7 @@ theorem expectedPayment_eq_integral_q_mul_sub_one_sub_cdf
         P.U P.lowestType := by
   rw [D.expectedPayment_eq_integral_q_mul_virtualSurplusWeight
     P density horder hsupport hD hdensity]
-  letI : NoAtoms (D : Measure ℝ) :=
+  letI : NullSingletonClass (D : Measure ℝ) :=
     ⟨fun _ => hD (by simp)⟩
   congr 1
   apply intervalIntegral.integral_congr

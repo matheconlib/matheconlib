@@ -1806,7 +1806,7 @@ lemma ordMin_insert_eq_of_lt {n : ℕ} {T : Type} [DecidableEq T]
   have h := @Finset.min'_insert T (ords k) x τ hne
   have hmr := @min_eq_right T (ords k) _ _ (@le_of_lt T (ords k).toPreorder _ _ hlt)
   convert h.trans hmr using 2
-  ext y; simp [Finset.mem_insert]
+  all_goals first | rfl | (ext y; simp [Finset.mem_insert])
 
 lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
@@ -2833,7 +2833,7 @@ lemma scarf_graph_construction (n : ℕ) (T : Type) [Fintype T] [Nonempty T]
   let V := { p : Finset T × Finset (Fin (n + 1)) // IsScarfVtx ords c i₀ p }
   let G : SimpleGraph V := {
     Adj := fun v w ↦ scarfAdjRel v.val w.val
-    symm := fun v w (h : scarfAdjRel v.val w.val) ↦ scarfAdjRel_symm v.val w.val h
+    symm := ⟨fun v w (h : scarfAdjRel v.val w.val) ↦ scarfAdjRel_symm v.val w.val h⟩
     loopless := ⟨fun v (h : scarfAdjRel v.val v.val) ↦ h.1 rfl⟩
   }
   have hDecAdj : DecidableRel G.Adj := by
@@ -3703,7 +3703,7 @@ lemma exists_convergent_subseq (n : ℕ)
       (φ : ℕ → ℕ), StrictMono φ ∧
       Filter.Tendsto (fun l ↦ (x (φ l) : Fin (n + 1) → ℝ)) Filter.atTop
         (nhds (z : Fin (n + 1) → ℝ)) := by
-  have hcomp : IsCompact (stdSimplex ℝ (Fin (n + 1))) := isCompact_stdSimplex _
+  have hcomp : IsCompact (stdSimplex ℝ (Fin (n + 1))) := isCompact_stdSimplex ℝ _
   have hmem : ∀ m, (x m : Fin (n + 1) → ℝ) ∈ stdSimplex ℝ (Fin (n + 1)) := fun m ↦ (x m).2
   obtain ⟨a, ha, φ, hφ, htend⟩ := hcomp.tendsto_subseq hmem
   exact ⟨⟨a, ha⟩, φ, hφ, htend⟩
@@ -4061,7 +4061,7 @@ lemma finite_cover_of_compact
       K ⊆ ⋃ i : Fin (N + 1), (fun u ↦ pts i + u) '' U := by
   have h_open : ∀ x : E, IsOpen ((fun u ↦ x + u) '' U) := fun x ↦ by
     rw [Set.image_add_left]
-    exact hU_open.preimage (continuous_add_left (-x))
+    exact hU_open.preimage (continuous_const.add continuous_id)
   have h_mem : ∀ x : E, x ∈ (fun u ↦ x + u) '' U :=
     fun x ↦ ⟨0, hU_zero, by simp⟩
   obtain ⟨t, ht_mem, ht_cover⟩ := hK_compact.elim_nhds_subcover

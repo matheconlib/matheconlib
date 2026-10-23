@@ -6,6 +6,7 @@ Authors: Daniel Lyng
 module
 
 public import MathEconLib.Probability.FinDist.ConditionalOn
+public import Mathlib.Algebra.Order.BigOperators.GroupWithZero.Finset
 
 /-!
 # Dependent products of finite distributions

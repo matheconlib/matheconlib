@@ -119,7 +119,8 @@ theorem sellerProfit_eq_virtualSurplus
       density =ᵐ[volume.restrict
         (uIoc P.lowestType P.highestType)] D.realDensity := by
     apply ae_restrict_of_ae_restrict_of_subset uIoc_subset_uIcc
-    simpa [uIcc_of_le horder] using hdensity
+    simp only [uIcc_of_le horder]
+    exact hdensity
   congr 1
   apply intervalIntegral.integral_congr_ae_restrict
   filter_upwards [hdensityOnIntegral] with value hdensityValue
@@ -147,7 +148,7 @@ theorem sellerProfit_eq_virtualSurplus_cdf
               continuationValue * density value) := by
   rw [D.sellerProfit_eq_virtualSurplus P density
     continuationValue acquisitionCost horder hsupport hD hdensity]
-  letI : NoAtoms (D : Measure ℝ) :=
+  letI : NullSingletonClass (D : Measure ℝ) :=
     ⟨fun _ => hD (by simp)⟩
   congr 1
   apply intervalIntegral.integral_congr

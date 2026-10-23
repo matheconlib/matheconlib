@@ -45,7 +45,7 @@ class HasDensity (A : Auction Ω n) : Prop where
 
 /-- The type distribution is atomless. -/
 class HasAtomlessTypes (A : Auction Ω n) : Prop where
-  θ_noAtoms : NoAtoms (Measure.map (A.θ 0) ℙ)
+  θ_noAtoms : NullSingletonClass (Measure.map (A.θ 0) ℙ)
 
 /-! ### IsSymmetricIPV (convenience bundle) -/
 
@@ -71,10 +71,6 @@ noncomputable def highestType [HasIdenticalTypes A] : ℝ := A.θmax 0
   rw [HasIdenticalTypes.θmax_eq]; rfl
 
 /-! ### Common CDF (needs HasIdenticalTypes) -/
-
-instance isProbabilityMeasure_map_θ₀ :
-    IsProbabilityMeasure (Measure.map (A.θ 0) ℙ) :=
-  Measure.isProbabilityMeasure_map (A.θ_measurable 0).aemeasurable
 
 /-- The common CDF: `F(s) = cdf(Measure.map (θ₀) ℙ)(s)`. -/
 noncomputable abbrev commonCDF [HasIdenticalTypes A] (s : ℝ) : ℝ :=
@@ -117,7 +113,7 @@ lemma commonCDF_eq [HasIdenticalTypes A] (s : ℝ) :
       exact le_antisymm h hθ.1
     · intro h; exact le_of_eq h
   rw [heq, ← Measure.map_apply (A.θ_measurable 0) (measurableSet_singleton _)]
-  have : NoAtoms (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
+  have : NullSingletonClass (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
   exact measure_singleton _
 
 @[simp] lemma commonCDF_highestType

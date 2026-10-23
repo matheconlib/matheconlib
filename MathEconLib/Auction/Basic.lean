@@ -111,7 +111,7 @@ noncomputable def p_strat (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) : ℝ :=
 lemma measurable_allocation_strat {σ : ℝ → ℝ} (hσ : Measurable σ) (i : Fin n) (b : ℝ) :
     Measurable (fun ω => A.rules.outcome (Function.update (fun j => σ (A.θ j ω)) i b) i) :=
   (A.outcome_measurable i).comp <| measurable_update_left.comp <|
-    measurable_pi_lambda _ fun j => hσ.comp (A.θ_measurable j)
+    Measurable.of_eval fun j => hσ.comp (A.θ_measurable j)
 
 /-- Allocations in `[0, 1]` are integrable under measurable opponents' strategies. -/
 lemma integrable_allocation_strat (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))

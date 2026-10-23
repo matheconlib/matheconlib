@@ -83,7 +83,9 @@ lemma nhd_zero_mem_entourage_subtype {E : Type*} [AddCommGroup E] [Module ℝ E]
         (t := IsTopologicalAddGroup.rightUniformSpace E)) := by
   rw [@uniformity_setCoe _ k (IsTopologicalAddGroup.rightUniformSpace E),
       show @uniformity E (IsTopologicalAddGroup.rightUniformSpace E) =
-        Filter.comap (fun (p : E × E) => p.2 - p.1) (𝓝 0) from rfl, Filter.comap_comap]
+        Filter.comap (fun (p : E × E) => p.2 - p.1) (𝓝 0) from by
+          simp only [sub_eq_add_neg]
+          exact @uniformity_eq_comap_nhds_zero' E _ _ _, Filter.comap_comap]
   exact Filter.preimage_mem_comap hV
 
 lemma raw_approx_index_codirected {E : Type*} [AddCommGroup E] [Module ℝ E]

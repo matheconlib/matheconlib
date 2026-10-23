@@ -41,7 +41,7 @@ distributional symmetry or bounded-support assumptions. -/
 noncomputable def valueDistribution (i : Fin n) : ValueDistribution :=
   ValueDistribution.ofRandomVariable
     (⟨ℙ, inferInstance⟩ : ProbabilityMeasure Ω)
-    (A.θ i) (A.θ_measurable i).aemeasurable
+    (A.θ i)
 
 /-- The measure underlying a bidder's value distribution is the ordinary
 pushforward of the auction measure along that bidder's type random variable. -/
@@ -49,7 +49,7 @@ pushforward of the auction measure along that bidder's type random variable. -/
 theorem toMeasure_valueDistribution (i : Fin n) :
     ((A.valueDistribution i : ValueDistribution) : Measure ℝ) =
       Measure.map (A.θ i) ℙ := by
-  simp [valueDistribution]
+  exact ValueDistribution.toMeasure_ofRandomVariable _ _
 
 /-- Under the auction's existing density assumption, bidder `i`'s value
 distribution is absolutely continuous with respect to Lebesgue measure.

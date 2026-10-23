@@ -88,8 +88,8 @@ example (a : Action true) :
     intro h
     have hv := congrArg Fin.val h
     norm_num [thetaZero] at hv
-  change ¬ 0 < (FinDist.pure thetaZero).marginalD true ⟨1, by decide⟩
-  rw [FinDist.marginalD_pure, if_neg hn]
+  change ¬ 0 < (FinDist.pure thetaZero).marginalD true (⟨1, by decide⟩ : Theta true)
+  erw [FinDist.marginalD_pure, if_neg hn]
   exact lt_irrefl 0
 
 /-- Both players maximize payoff at the only positive-probability type. -/

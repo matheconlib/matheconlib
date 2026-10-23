@@ -15,6 +15,7 @@ import Mathlib.Analysis.Convex.PartitionOfUnity
 import Mathlib.Analysis.LocallyConvex.WithSeminorms
 import Mathlib.Analysis.Normed.Module.Convex
 import Mathlib.Topology.EMetricSpace.Paracompact
+import Mathlib.Topology.ShrinkingLemma
 
 /-!
 # Approximate selections of upper hemi-continuous functions
@@ -219,7 +220,6 @@ public lemma exists_star_refinement
       (∀ k, IsOpen (S k)) ∧ (⋃ k, S k = univ) ∧ LocallyFinite S ∧
       (∀ k, S k ⊆ C (π k)) ∧
       (∀ k₁ k₂, (S k₁ ∩ S k₂).Nonempty → S k₁ ⊆ C (π k₂)) := by
-  haveI : NormalSpace X := T4Space.of_paracompactSpace_t2Space.toNormalSpace
   obtain ⟨R, W, hR_open, hR_cover, hR_lf, hRC, hW_open, hW_cover, hWR⟩ :=
     star_refinement_shrinking C hC_open hC_cover
   have hW_lf : LocallyFinite W :=
@@ -251,7 +251,6 @@ public theorem UpperHemicontinuous.exists_isApproxSelection
   have hC_open : ∀ x₀, IsOpen (C x₀) :=
     fun x₀ ↦ coverSet_isOpen F hF W hW V hV_open x₀
   have hC_cover : ⋃ x₀, C x₀ = univ := coverSets_cover F W hW' V hV_mem
-  haveI : NormalSpace X := T4Space.of_paracompactSpace_t2Space.toNormalSpace
   obtain ⟨κ, S, π, hS_open, hS_cover, hS_lf, hS_sub, hS_star⟩ :=
     exists_star_refinement C hC_open hC_cover
   obtain ⟨φ, hφ⟩ := PartitionOfUnity.exists_isSubordinate (ι := κ) isClosed_univ S hS_open

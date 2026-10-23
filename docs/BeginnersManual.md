@@ -57,7 +57,7 @@ A practical suggestion: do Part 0 at the computer, read Parts 1–3 away from it
 
 ### A note on the code
 
-Every Lean snippet here was compiled against `MathEconLib` at Lean `v4.28.0`. Where a snippet is meant to fail, it was checked that it fails, and the error quoted is the real one. If something does not typecheck for you, the likeliest cause is that the library or the Lean version has moved on. Please let us know.
+Every Lean snippet here was compiled against `MathEconLib` at Lean `v4.35.0`. Where a snippet is meant to fail, it was checked that it fails, and the error quoted is the real one. If something does not typecheck for you, the likeliest cause is that the library or the Lean version has moved on. Please let us know.
 
 ### ✍️ A note on the hands-on blocks
 
@@ -99,7 +99,7 @@ brew install elan-init
 
 Or let the VS Code extension install it when it notices Lean is missing.
 
-You never pick a Lean version by hand. Each project pins its own in a file called `lean-toolchain` (this one says `leanprover/lean4:v4.28.0`), and `elan` reads that file and fetches the matching version automatically. Mathlib is pinned to a matching revision in `lake-manifest.json`.
+You never pick a Lean version by hand. Each project pins its own in a file called `lean-toolchain` (this one says `leanprover/lean4:v4.35.0`), and `elan` reads that file and fetches the matching version automatically. Mathlib is pinned to a matching revision in `lake-manifest.json`.
 
 This is why you must **open the project folder, not a lone file**: outside the folder there is no `lean-toolchain`, and elan will download whatever is newest for no reason.
 
@@ -215,12 +215,12 @@ check the connection before retrying. When `.lake/packages/mathlib` is absent,
 you can fetch just the pinned release instead of its full Git history:
 
 ```bash
-git -c http.version=HTTP/1.1 clone --depth 1 --branch v4.28.0 \
+git -c http.version=HTTP/1.1 clone --depth 1 --branch v4.35.0 \
   https://github.com/leanprover-community/mathlib4 .lake/packages/mathlib
 git -C .lake/packages/mathlib rev-parse HEAD
 ```
 
-This command targets the current `v4.28.0` dependency. Before continuing, the
+This command targets the current `v4.35.0` dependency. Before continuing, the
 printed commit must match the `mathlib` entry's `rev` in `lake-manifest.json`
 (currently `8f9d9cff6bd728b17a24e163c9402775d9e6a365`). For a different checkout,
 use its matching release. Leave `lean-toolchain` and `lake-manifest.json` unchanged.

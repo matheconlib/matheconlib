@@ -194,7 +194,8 @@ private theorem intervalIntegrable_q_mul_netVirtualSurplus
   have hae :
       density =ᵐ[volume.restrict (uIoc lowestType highestType)] D.realDensity := by
     apply ae_restrict_of_ae_restrict_of_subset uIoc_subset_uIcc
-    simpa [uIcc_of_le horder] using hdensity
+    simp only [uIcc_of_le horder]
+    exact hdensity
   apply hcanonical.congr_ae
   filter_upwards [hae] with value hvalue
   simp [virtualSurplusWeight, hvalue]

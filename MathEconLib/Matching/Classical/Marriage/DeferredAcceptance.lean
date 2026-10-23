@@ -171,9 +171,9 @@ theorem gs_step_avoids_stable {R : Set (M × W)} {ν : M ≃. W}
         letI := mkt.prefW w
         have hir : (none : Option M) ≤ some m := by
           have := hν.1.2 w
-          simpa only [IndividuallyRationalForW, hνw] using this
+          simpa only [IndividuallyRationalForW, hνw, leW] using this
         have hlt : some m < (none : Option M) := by
-          simpa only [hbest] using hstrict
+          simpa only [hbest, ltW] using hstrict
         exact (not_lt_of_ge hir) hlt
     | some m' =>
         have hp' : (m', w) ∈ mkt.gsProposals R := mkt.gs_bestW_mem hbest
@@ -184,14 +184,14 @@ theorem gs_step_avoids_stable {R : Set (M × W)} {ν : M ≃. W}
           letI := mkt.prefM m'
           have hle : ν m' ≤ some w := by
             have := mkt.gs_assignment_le_proposal hR m'
-            simpa only [← hbestM] using this
+            simpa only [← hbestM, leM] using this
           apply lt_of_le_of_ne hle
           intro heq
           have he : m = m' :=
             mkt.graphOf_leftUnique ν hpair (mkt.mem_graphOf.mpr heq)
           subst m'
           letI := mkt.prefW w
-          have hbad : some m < some m := by simpa only [hνw] using hw
+          have hbad : some m < some m := by simpa only [hνw, ltW] using hw
           exact (lt_irrefl _) hbad
         exact hν.2.1 m' w ⟨hm, hw⟩
 

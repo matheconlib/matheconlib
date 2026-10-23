@@ -71,14 +71,14 @@ instance : IsProbabilityMeasure uniform where
 def profile (t : ℝ) : Unit → ℝ := fun _ => t
 
 /-- The one-player profile map is measurable. -/
-lemma measurable_profile : Measurable profile := measurable_pi_lambda _ fun _ => measurable_id
+lemma measurable_profile : Measurable profile := Measurable.of_eval fun _ => measurable_id
 
 /-- The common prior induced by the uniform individual type. -/
 def prior : Measure (Unit → ℝ) := uniform.map profile
 
 /-- The profile law is a probability measure. -/
 instance : IsProbabilityMeasure prior :=
-  Measure.isProbabilityMeasure_map measurable_profile.aemeasurable
+  inferInstanceAs (IsProbabilityMeasure (uniform.map profile))
 
 /-- The player receives reciprocal-type utility independently of their action. -/
 def game : BayesianGame Unit (fun _ => ℝ) (fun _ => ℝ) ℝ where
@@ -149,7 +149,7 @@ lemma zeroStrategy_law : Measure.pi (fun _ : Unit => (zeroAction : Measure ℝ))
   rw [hlaw]
   change (Measure.dirac (0 : ℝ)).map
     (MeasurableEquiv.piUnique (fun _ : Unit => ℝ)).symm = _
-  rw [Measure.map_dirac (MeasurableEquiv.piUnique (fun _ : Unit => ℝ)).symm.measurable]
+  rw [Measure.map_dirac' (MeasurableEquiv.piUnique (fun _ : Unit => ℝ)).symm.measurable]
   rfl
 
 /-- Negative absolute reciprocal utility is nonintegrable under uniform randomization. -/

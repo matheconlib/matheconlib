@@ -174,7 +174,7 @@ lemma eq_pure_pair_of_disjoint_fin_two {d₁ d₂ : FinDist (Fin 2)}
 /-- The support of a point mass is the singleton at that outcome. -/
 lemma support_pure (a : α) : (FinDist.pure a).support = {a} := by
   ext b
-  simp only [support, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton, pure_pmf]
+  rw [support, Finset.mem_filter, pure_pmf]
   split_ifs with hab <;> simp [hab, eq_comm]
 
 end Pure
@@ -213,7 +213,9 @@ lemma support_mixture [DecidableEq α] (t : unitInterval) (d₁ d₂ : FinDist �
     (h₀ : (0 : ℝ) < (t : ℝ)) (h₁ : (t : ℝ) < 1) :
     (FinDist.mixture t d₁ d₂).support = d₁.support ∪ d₂.support := by
   ext a
-  simp only [support, mixture_pmf, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+  rw [support, support, support, Finset.mem_union, Finset.mem_filter, Finset.mem_filter,
+    Finset.mem_filter, mixture_pmf]
+  simp only [Finset.mem_univ, true_and]
   constructor
   · intro h
     by_contra hcon

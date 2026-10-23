@@ -32,9 +32,10 @@ lemma ProbabilityMeasure.measurable_toMeasure {α : Type*}
 
 lemma ProbabilityMeasure.measurable_map {α β : Type*} [MeasurableSpace α]
     [MeasurableSpace β] {f : α → β} (hf : Measurable f) :
-    Measurable fun μ : ProbabilityMeasure α ↦ μ.map hf.aemeasurable :=
-  (Measure.measurable_map f hf).subtype_map fun μ hμ ↦
-    @μ.isProbabilityMeasure_map _ _ _ _ hμ _ hf.aemeasurable
+    Measurable fun μ : ProbabilityMeasure α ↦ μ.map f :=
+  (Measure.measurable_map f hf).subtype_map fun μ hμ ↦ by
+    have : IsProbabilityMeasure μ := hμ
+    infer_instance
 
 lemma ProbabilityMeasure.measurable_pi {ι : Type*} [Fintype ι] {α : ι → Type*}
     [∀ i, MeasurableSpace (α i)] :
@@ -57,7 +58,7 @@ noncomputable def ProbabilityMeasure.join {α : Type*} [MeasurableSpace α]
     (μ : ProbabilityMeasure (ProbabilityMeasure α)) : ProbabilityMeasure α where
   val := (μ.toMeasure.map (↑)).join
   property := @isProbabilityMeasure_join _ _ _
-    (Measure.isProbabilityMeasure_map measurable_subtype_coe.aemeasurable) <|
+    inferInstance <|
       (ae_map_iff measurable_subtype_coe.aemeasurable
         measurableSet_isProbabilityMeasure).2 <| .of_forall fun x ↦ x.2
 
@@ -88,18 +89,19 @@ noncomputable def ProbabilityMeasure.equivStdSimplex {α : Type*} [MeasurableSpa
     [DiscreteMeasurableSpace α] [Fintype α] : ProbabilityMeasure α ≃ stdSimplex ℝ α where
   toFun μ := ⟨fun a ↦ μ {a}, by simp, by
     simp_rw [← μ.measureReal_eq_coe_coeFn, sum_measureReal_singleton]; simp⟩
-  invFun x := ⟨∑ a, ENNReal.ofNNReal ⟨x a, x.2.1 a⟩ • Measure.dirac a, ⟨by
-    simp [← ENNReal.toReal_eq_one_iff, ← ENNReal.coe_finset_sum]⟩⟩
+  invFun x := ⟨∑ a, ENNReal.ofReal (x.1 a) • Measure.dirac a, ⟨by
+    obtain ⟨h0, h1⟩ : (∀ b, 0 ≤ x.1 b) ∧ ∑ b, x.1 b = 1 := x.2
+    simp [← ENNReal.ofReal_sum_of_nonneg fun b _ ↦ h0 b, h1]⟩⟩
   left_inv μ := by
     refine ProbabilityMeasure.toMeasure_injective <| Measure.ext_of_singleton fun a ↦ ?_
     classical
     simpa [Set.indicator, -ennreal_coeFn_eq_coeFn_toMeasure] using
       μ.ennreal_coeFn_eq_coeFn_toMeasure {a}
   right_inv x := by
-    ext a
+    obtain ⟨h0, -⟩ : (∀ b, 0 ≤ x.1 b) ∧ ∑ b, x.1 b = 1 := x.2
+    refine Subtype.ext (funext fun a ↦ ?_)
     classical
-    simp [Set.indicator]
-    rfl
+    simp [Set.indicator, ENNReal.ofReal, h0 a]
 
 /-- The map from probability measures on `α` to the weak dual of the space of continuous functions
 on `α` given by integration, as a continuous map. -/

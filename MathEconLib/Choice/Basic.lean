@@ -51,7 +51,7 @@ namespace ChoiceFunction
 
 instance : FunLike (ChoiceFunction α) (Set α) (Set α) where
   coe := toFun
-  coe_injective' := by
+  coe_injective := by
     rintro ⟨f, _⟩ ⟨g, _⟩ h
     simpa using h
 

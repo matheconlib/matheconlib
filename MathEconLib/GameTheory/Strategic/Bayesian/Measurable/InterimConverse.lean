@@ -86,13 +86,13 @@ theorem ae_interim_of_isBNE (s : G.Strategy) (hbne : G.IsBNE μ s)
     by_contra hall
     push Not at hall
     have hnull : ∀ M : ℕ, marginalType μ i (T ∩ {θᵢ | hMass θᵢ ≤ M}) = 0 :=
-      fun M => le_antisymm (hall M) (zero_le _)
+      fun M => le_antisymm (hall M) zero_le
     have hcover : T ≤ᵐ[marginalType μ i] ⋃ M : ℕ, T ∩ {θᵢ | hMass θᵢ ≤ M} := by
       filter_upwards [hMass_fin_ae] with θᵢ hfin hT
       obtain ⟨M, hM⟩ := ENNReal.exists_nat_gt hfin.ne
       exact Set.mem_iUnion.mpr ⟨M, hT, hM.le⟩
     have hTnull : marginalType μ i T = 0 :=
-      le_antisymm ((measure_mono_ae hcover).trans (measure_iUnion_null hnull).le) (zero_le _)
+      le_antisymm ((measure_mono_ae hcover).trans (measure_iUnion_null hnull).le) zero_le
     exact absurd hTnull hT_pos.ne'
   obtain ⟨M, hSM_pos⟩ := hSM_ex
   set SM : Set (Θ i) := T ∩ {θᵢ | hMass θᵢ ≤ M}

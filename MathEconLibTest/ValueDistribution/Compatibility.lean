@@ -32,10 +32,10 @@ universe u
 /-- The distribution of a random variable uses the ordinary pushforward
 measure. -/
 example {Ω : Type*} [MeasurableSpace Ω]
-    (μ : ProbabilityMeasure Ω) (X : Ω → ℝ) (hX : AEMeasurable X μ) :
-    ((ValueDistribution.ofRandomVariable μ X hX : ValueDistribution) :
+    (μ : ProbabilityMeasure Ω) (X : Ω → ℝ) :
+    ((ValueDistribution.ofRandomVariable μ X : ValueDistribution) :
         Measure ℝ) = Measure.map X μ :=
-  ValueDistribution.toMeasure_ofRandomVariable μ X hX
+  ValueDistribution.toMeasure_ofRandomVariable μ X
 
 /-- Bounded support remains an optional almost-everywhere predicate. -/
 example (D : ValueDistribution) (lower upper : ℝ) :
@@ -70,7 +70,7 @@ example (D : ValueDistribution) (price : ℝ) :
   D.probAtLeast_eq_one_sub_cdf_add_mass price
 
 /-- Atomless demand remains one minus the CDF. -/
-example (D : ValueDistribution) [NoAtoms (D : Measure ℝ)] (price : ℝ) :
+example (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)] (price : ℝ) :
     D.probAtLeast price = 1 - cdf (D : Measure ℝ) price :=
   D.probAtLeast_eq_one_sub_cdf price
 
@@ -333,8 +333,7 @@ example [SingleParameterProblem.HasEnvelopeIC P]
         P.U P.lowestType -
         ∫ cutoff in P.lowestType..P.highestType,
           P.q cutoff * D.probAtLeast cutoff := by
-  simpa [P.reduce_q, P.reduce_U] using
-    D.expectedPayment_eq_integral_value_mul_q_sub_integral_tail
+  exact D.expectedPayment_eq_integral_value_mul_q_sub_integral_tail
       P.reduce horder hsupport
 
 end SingleParameter
@@ -371,7 +370,7 @@ example (continuationValue acquisitionCost : ℝ) :
 
 /-- The pointwise CDF derivative determines the posted-price profit
 derivative. -/
-example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+example [NullSingletonClass (D : Measure ℝ)] (density : ℝ → ℝ)
     (continuationValue acquisitionCost : ℝ)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price) :
     HasDerivAt
@@ -387,7 +386,7 @@ example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
 
 /-- An interior local profit maximum has zero division-free net virtual
 surplus. -/
-example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+example [NullSingletonClass (D : Measure ℝ)] (density : ℝ → ℝ)
     (continuationValue acquisitionCost : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)
@@ -406,7 +405,7 @@ example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
 
 /-- Nonzero pointwise density turns the division-free condition into the
 virtual-value equation. -/
-example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+example [NullSingletonClass (D : Measure ℝ)] (density : ℝ → ℝ)
     (continuationValue acquisitionCost : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)
@@ -425,7 +424,7 @@ example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
 
 /-- With no continuation value, the interior first-order condition says that
 virtual value is zero. -/
-example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+example [NullSingletonClass (D : Measure ℝ)] (density : ℝ → ℝ)
     (acquisitionCost : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)

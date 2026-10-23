@@ -1,4 +1,4 @@
-This is Lean4 project (lean-4.28.0) to formalize theorems in auction theory. The main mathematical reference are located `documents/` folder.
+This is Lean4 project (lean-4.35.0) to formalize theorems in auction theory. The main mathematical reference are located `documents/` folder.
 
 ## Architecture
 
