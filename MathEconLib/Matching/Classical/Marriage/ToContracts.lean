@@ -104,7 +104,7 @@ theorem choiceM_graphOf_eq_side
     (hIR : mkt.IndividuallyRationalForM μ m) :
     mkt.toContractsMarket.choiceS m (mkt.graphOf μ) =
       mkt.toContractsMarket.sellerSide m (mkt.graphOf μ) := by
-  letI := Fintype.ofFinite W
+  let := Fintype.ofFinite W
   ext p
   rcases p with ⟨m', w⟩
   constructor
@@ -120,7 +120,7 @@ theorem choiceM_graphOf_eq_side
     · have h : mkt.leM m none (μ m) := hIR
       rwa [hμ] at h
     · intro w' hw'
-      letI := mkt.prefM m
+      let := mkt.prefM m
       have hww' : w' = w := mkt.graphOf_rightUnique μ hw' hpY
       exact le_of_eq (congrArg Option.some hww')
 
@@ -132,7 +132,7 @@ theorem choiceW_graphOf_eq_side
     (hIR : mkt.IndividuallyRationalForW μ w) :
     mkt.toContractsMarket.choiceB w (mkt.graphOf μ) =
       mkt.toContractsMarket.buyerSide w (mkt.graphOf μ) := by
-  letI := Fintype.ofFinite M
+  let := Fintype.ofFinite M
   ext p
   rcases p with ⟨m, w'⟩
   constructor
@@ -148,7 +148,7 @@ theorem choiceW_graphOf_eq_side
     · have h : mkt.leW w none (μ.symm w) := hIR
       rwa [hμ] at h
     · intro m' hm'
-      letI := mkt.prefW w
+      let := mkt.prefW w
       have hmm' : m' = m := mkt.graphOf_leftUnique μ hm' hpY
       exact le_of_eq (congrArg Option.some hmm')
 
@@ -166,7 +166,7 @@ theorem individuallyRational_of_graphOf
   constructor
   · intro m
     change mkt.leM m none (μ m)
-    letI := mkt.prefM m
+    let := mkt.prefM m
     cases hμ : μ m with
     | none =>
         exact le_rfl
@@ -183,7 +183,7 @@ theorem individuallyRational_of_graphOf
         exact (mkt.mem_inducedChoiceM_iff.mp hwChoice).2.1
   · intro w
     change mkt.leW w none (μ.symm w)
-    letI := mkt.prefW w
+    let := mkt.prefW w
     cases hμ : μ.symm w with
     | none =>
         exact le_rfl
@@ -218,7 +218,7 @@ theorem mem_choiceM_insert_graphOf_iff
         (insert (m, w) (mkt.graphOf μ)) ↔
       mkt.BlocksM μ m w := by
   classical
-  letI := mkt.prefM m
+  let := mkt.prefM m
   unfold BlocksM
   rw [mkt.toContractsMarket_choiceS, mkt.mem_inducedChoiceM_iff]
   constructor
@@ -252,7 +252,7 @@ theorem mem_choiceW_insert_graphOf_iff
         (insert (m, w) (mkt.graphOf μ)) ↔
       mkt.BlocksW μ w m := by
   classical
-  letI := mkt.prefW w
+  let := mkt.prefW w
   unfold BlocksW
   rw [mkt.toContractsMarket_choiceB, mkt.mem_inducedChoiceW_iff]
   constructor
@@ -293,10 +293,10 @@ theorem blocks_singleton_graphOf_iff
       (mkt.mem_choiceW_insert_graphOf_iff (hIR.2 w) hnewW).mp hw⟩
   · rintro ⟨hm, hw⟩
     have hnewM : μ m ≠ some w := by
-      letI := mkt.prefM m
+      let := mkt.prefM m
       exact ne_of_lt hm
     have hnewW : μ.symm w ≠ some m := by
-      letI := mkt.prefW w
+      let := mkt.prefW w
       exact ne_of_lt hw
     refine ⟨?_, ?_, ?_⟩
     · intro hmem
@@ -497,7 +497,7 @@ omit [Finite M] in
 theorem menWeaklyPrefer_of_sellerChosen_graphOf {μ ν : M ≃. W}
     (hchosen : mkt.toContractsMarket.SellerChosen (mkt.graphOf μ) (mkt.graphOf ν)) :
     mkt.MenWeaklyPrefer μ ν := by
-  letI := Fintype.ofFinite W
+  let := Fintype.ofFinite W
   intro m
   have hbest := mkt.bestM_eq_of_choiceM_eq_side (hchosen m)
   simpa only [hbest] using mkt.le_bestM_of_mem
@@ -510,7 +510,7 @@ omit [Finite W] in
 theorem womenWeaklyPrefer_of_buyerChosen_graphOf {μ ν : M ≃. W}
     (hchosen : mkt.toContractsMarket.BuyerChosen (mkt.graphOf μ) (mkt.graphOf ν)) :
     mkt.WomenWeaklyPrefer μ ν := by
-  letI := Fintype.ofFinite M
+  let := Fintype.ofFinite M
   intro w
   have hbest := mkt.bestW_eq_of_choiceW_eq_side (hchosen w)
   simpa only [hbest] using mkt.le_bestW_of_mem
@@ -527,7 +527,7 @@ theorem individuallyRationalM_of_sellerChosen_graphOf {μ ν : M ≃. W}
     mkt.IndividuallyRationalM μ := by
   intro m
   change mkt.leM m none (μ m)
-  letI := mkt.prefM m
+  let := mkt.prefM m
   cases hμ : μ m with
   | none =>
       exact le_rfl
@@ -548,7 +548,7 @@ theorem individuallyRationalW_of_buyerChosen_graphOf {μ ν : M ≃. W}
     mkt.IndividuallyRationalW μ := by
   intro w
   change mkt.leW w none (μ.symm w)
-  letI := mkt.prefW w
+  let := mkt.prefW w
   cases hμ : μ.symm w with
   | none =>
       exact le_rfl
@@ -581,9 +581,9 @@ omit [Finite M] in
 theorem sellerChosen_graphOf_of_individuallyRationalM {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRationalM μ) (h : mkt.MenWeaklyPrefer μ ν) :
     mkt.toContractsMarket.SellerChosen (mkt.graphOf μ) (mkt.graphOf ν) := by
-  letI := Fintype.ofFinite W
+  let := Fintype.ofFinite W
   intro m
-  letI := mkt.prefM m
+  let := mkt.prefM m
   ext p
   rcases p with ⟨m', w⟩
   constructor
@@ -616,9 +616,9 @@ omit [Finite W] in
 theorem buyerChosen_graphOf_of_individuallyRationalW {μ ν : M ≃. W}
     (hμ : mkt.IndividuallyRationalW μ) (h : mkt.WomenWeaklyPrefer μ ν) :
     mkt.toContractsMarket.BuyerChosen (mkt.graphOf μ) (mkt.graphOf ν) := by
-  letI := Fintype.ofFinite M
+  let := Fintype.ofFinite M
   intro w
-  letI := mkt.prefW w
+  let := mkt.prefW w
   ext p
   rcases p with ⟨m, w'⟩
   constructor

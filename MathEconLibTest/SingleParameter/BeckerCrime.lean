@@ -79,7 +79,7 @@ example (D : ValueDistribution) (lo hi p f : ℝ) :
 -- Positive detection and a strictly higher fine need not give strict deterrence:
 -- no type in this population crosses a cutoff. Its gain also lies outside [0, 2].
 example :
-    let D : ValueDistribution := ⟨Measure.dirac (3 : ℝ), inferInstance⟩
+    let D : ValueDistribution := (Measure.dirac (3 : ℝ)).toProbabilityMeasure
     D.expectedAllocation (crimeProblem 0 2 (1 / 2) 1) = 1 ∧
       D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) = 1 := by
   dsimp only

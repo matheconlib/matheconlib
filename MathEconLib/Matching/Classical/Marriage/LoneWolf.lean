@@ -5,7 +5,7 @@ Authors: Scott Duke Kominers
 -/
 import MathEconLib.Matching.Classical.Marriage.ToContracts
 import MathEconLib.Matching.Contracts.RuralHospitals
-import Mathlib.Data.Finite.Prod
+import Mathlib.Basic.Finite.Prod
 
 /-!
 # The lone-wolf theorem

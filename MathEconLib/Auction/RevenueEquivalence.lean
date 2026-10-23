@@ -63,8 +63,8 @@ theorem revenue_equivalence
     (hint₂ : ∀ i, Integrable (fun ω => A₂.p i (A₂.θ i ω)) ℙ) :
     A.expectedRevenue = A₂.expectedRevenue := by
   simp only [expectedRevenue]
-  rw [integral_finset_sum _ fun i _ => hint₁ i,
-      integral_finset_sum _ fun i _ => hint₂ i]
+  rw [integral_finsetSum _ fun i _ => hint₁ i,
+      integral_finsetSum _ fun i _ => hint₂ i]
   congr 1
   ext i
   have hθmin : A.θmin i = A₂.θmin i := by simp [hmin]
@@ -107,7 +107,7 @@ lemma total_revenue
     have hadd := (intervalIntegral.integral_add_adjacent_intervals hii1 hii2).symm
     linarith [intervalIntegral.integral_nonneg (μ := volume) hst
       (fun ψ _ => pow_nonneg (A.commonCDF_nonneg ψ) (n - 1))]
-  rw [integral_finset_sum Finset.univ fun i _ => by
+  rw [integral_finsetSum Finset.univ fun i _ => by
     refine Integrable.mono'
       (integrable_const
         (max |A.lowestType| |A.highestType| + (A.highestType - A.lowestType)))
@@ -146,7 +146,7 @@ lemma total_revenue
           _ ≤ A.highestType := hhi
           _ ≤ |A.highestType| := le_abs_self _
           _ ≤ max |A.lowestType| |A.highestType| := le_max_right _ _
-      · push_neg at hnn
+      · push Not at hnn
         calc |A.θ i ω| = -(A.θ i ω) := abs_of_neg hnn
           _ ≤ -(A.lowestType) := by linarith
           _ ≤ |-(A.lowestType)| := le_abs_self _

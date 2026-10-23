@@ -345,7 +345,7 @@ theorem bestM_eq_some_iff {m : M} {w : W} {Y : Set (M × W)} :
       (m, w) ∈ Y ∧ mkt.leM m none (some w) ∧
         ∀ w', (m, w') ∈ Y → mkt.leM m (some w') (some w) := by
   classical
-  simpa only [bestM, Finset.mem_filter, Finset.mem_univ, true_and] using
+  simpa only [bestM, leM, Finset.mem_filter, Finset.mem_univ, true_and] using
     (ChoiceFunction.bestOption_eq_some_iff (mkt.prefM m)
       (Finset.univ.filter fun w => (m, w) ∈ Y) (x := w))
 
@@ -356,7 +356,7 @@ theorem bestW_eq_some_iff {m : M} {w : W} {Y : Set (M × W)} :
       (m, w) ∈ Y ∧ mkt.leW w none (some m) ∧
         ∀ m', (m', w) ∈ Y → mkt.leW w (some m') (some m) := by
   classical
-  simpa only [bestW, Finset.mem_filter, Finset.mem_univ, true_and] using
+  simpa only [bestW, leW, Finset.mem_filter, Finset.mem_univ, true_and] using
     (ChoiceFunction.bestOption_eq_some_iff (mkt.prefW w)
       (Finset.univ.filter fun m => (m, w) ∈ Y) (x := m))
 
@@ -413,7 +413,7 @@ theorem bestM_eq_of_choice_subset {m : M} {Y Z : Set (M × W)}
     (hchoice : mkt.inducedChoiceM m Y ⊆ Z) (hZY : Z ⊆ Y) :
     mkt.bestM m Z = mkt.bestM m Y := by
   classical
-  letI := mkt.prefM m
+  let := mkt.prefM m
   have hle : mkt.bestM m Z ≤ mkt.bestM m Y :=
     mkt.bestM_mono hZY
   cases hY : mkt.bestM m Y with
@@ -435,7 +435,7 @@ theorem bestW_eq_of_choice_subset {w : W} {Y Z : Set (M × W)}
     (hchoice : mkt.inducedChoiceW w Y ⊆ Z) (hZY : Z ⊆ Y) :
     mkt.bestW w Z = mkt.bestW w Y := by
   classical
-  letI := mkt.prefW w
+  let := mkt.prefW w
   have hle : mkt.bestW w Z ≤ mkt.bestW w Y :=
     mkt.bestW_mono hZY
   cases hY : mkt.bestW w Y with
