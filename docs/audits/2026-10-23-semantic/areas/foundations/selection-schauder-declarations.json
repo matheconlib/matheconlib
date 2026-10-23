@@ -1,0 +1,1376 @@
+{
+  "file": "MathEconLib/ForMathlib/Schauder.lean",
+  "sha256": "3aee441da3565990633362755f632e25e88d4dd51ebbcd64b95eee524ea209b3",
+  "definition_count": 9,
+  "declaration_count": 171,
+  "declarations": [
+    {
+      "kind": "def",
+      "name": "isDominant",
+      "line": 55,
+      "signature_end": 57,
+      "signature": "def isDominant {n : \u2115} {T : Type}\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1))) : Prop",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "def",
+      "name": "scarfAdjRel",
+      "line": 62,
+      "signature_end": 63,
+      "signature": "def scarfAdjRel {n : \u2115} {T : Type} [DecidableEq T]\n    (v w : Finset T \u00d7 Finset (Fin (n + 1))) : Prop",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "def",
+      "name": "IsScarfVtx",
+      "line": 78,
+      "signature_end": 80,
+      "signature": "def IsScarfVtx {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1)) (p : Finset T \u00d7 Finset (Fin (n + 1))) : Prop",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_erase",
+      "line": 86,
+      "signature_end": 90,
+      "signature": "lemma isDominant_erase {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1))) (z : T)\n    (hdom : isDominant ords \u03c3 C) :\n    isDominant ords (\u03c3.erase z) C",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "image_erase_of_injOn",
+      "line": 97,
+      "signature_end": 100,
+      "signature": "lemma image_erase_of_injOn {\u03b1 \u03b2 : Type*} [DecidableEq \u03b1] [DecidableEq \u03b2]\n    {f : \u03b1 \u2192 \u03b2} {s : Finset \u03b1} {a : \u03b1}\n    (hinj : Set.InjOn f \u2191s) (ha : a \u2208 s) :\n    (s.erase a).image f = (s.image f).erase (f a)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "colorful_room_unique_adj_mem",
+      "line": 108,
+      "signature_end": 116,
+      "signature": "lemma colorful_room_unique_adj_mem {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hcard : \u03c3.card = C.card) (hcolor : C = \u03c3.image c)\n    (hdom : isDominant ords \u03c3 C) (hC : C.Nonempty)\n    (hi\u2080 : i\u2080 \u2208 C) :\n    \u2203! w : Finset T \u00d7 Finset (Fin (n + 1)),\n      scarfAdjRel (\u03c3, C) w \u2227 IsScarfVtx ords c i\u2080 w",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_mono",
+      "line": 193,
+      "signature_end": 197,
+      "signature": "lemma isDominant_mono {n : \u2115} {T : Type}\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (C D : Finset (Fin (n + 1)))\n    (hdom : isDominant ords \u03c3 C) (hsub : C \u2286 D) :\n    isDominant ords \u03c3 D",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "adj_insert_of_not_mem",
+      "line": 210,
+      "signature_end": 214,
+      "signature": "lemma adj_insert_of_not_mem {n : \u2115} {T : Type} [DecidableEq T]\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (i\u2080 : Fin (n + 1))\n    (hcard : \u03c3.card = C.card) (hi\u2080 : i\u2080 \u2209 C) :\n    scarfAdjRel (\u03c3, C) (\u03c3, insert i\u2080 C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isScarfVtx_insert_of_not_mem",
+      "line": 230,
+      "signature_end": 237,
+      "signature": "lemma isScarfVtx_insert_of_not_mem {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hcard : \u03c3.card = C.card) (hcolor : C = \u03c3.image c)\n    (hdom : isDominant ords \u03c3 C)\n    (hi\u2080 : i\u2080 \u2209 C) :\n    IsScarfVtx ords c i\u2080 (\u03c3, insert i\u2080 C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "colorful_room_unique_adj_not_mem",
+      "line": 241,
+      "signature_end": 249,
+      "signature": "lemma colorful_room_unique_adj_not_mem {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hcard : \u03c3.card = C.card) (hcolor : C = \u03c3.image c)\n    (hdom : isDominant ords \u03c3 C)\n    (hi\u2080 : i\u2080 \u2209 C) :\n    \u2203! w : Finset T \u00d7 Finset (Fin (n + 1)),\n      scarfAdjRel (\u03c3, C) w \u2227 IsScarfVtx ords c i\u2080 w",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "colorful_room_unique_adj",
+      "line": 296,
+      "signature_end": 303,
+      "signature": "lemma colorful_room_unique_adj {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hcard : \u03c3.card = C.card) (hcolor : C = \u03c3.image c)\n    (hdom : isDominant ords \u03c3 C) (hC : C.Nonempty) :\n    \u2203! w : Finset T \u00d7 Finset (Fin (n + 1)),\n      scarfAdjRel (\u03c3, C) w \u2227 IsScarfVtx ords c i\u2080 w",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "degree_one_of_unique_adj_raw",
+      "line": 308,
+      "signature_end": 317,
+      "signature": "lemma degree_one_of_unique_adj_raw {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (huniq : \u2203! w : Finset T \u00d7 Finset (Fin (n + 1)),\n      scarfAdjRel v.val w \u2227 IsScarfVtx ords c i\u2080 w) :\n    G.degree v = 1",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_colorful_room",
+      "line": 323,
+      "signature_end": 333,
+      "signature": "lemma scarf_degree_colorful_room {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hcard : v.val.1.card = v.val.2.card)\n    (hcolor : v.val.2 = v.val.1.image c) :\n    G.degree v = 1",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "nearly_colorful_image_card_cases",
+      "line": 337,
+      "signature_end": 343,
+      "signature": "lemma nearly_colorful_image_card_cases {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (i\u2080 : Fin (n + 1))\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080}) :\n    (\u03c3.image c).card = \u03c3.card \u2228 (\u03c3.image c).card + 1 = \u03c3.card",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_of_two_adj_pairs",
+      "line": 349,
+      "signature_end": 363,
+      "signature": "lemma scarf_degree_of_two_adj_pairs {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (p\u2081 p\u2082 : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hne : p\u2081 \u2260 p\u2082)\n    (hp\u2081 : IsScarfVtx ords c i\u2080 p\u2081) (hadj\u2081 : scarfAdjRel v.val p\u2081)\n    (hp\u2082 : IsScarfVtx ords c i\u2080 p\u2082) (hadj\u2082 : scarfAdjRel v.val p\u2082)\n    (huniq : \u2200 q : Finset T \u00d7 Finset (Fin (n + 1)),\n      IsScarfVtx ords c i\u2080 q \u2192 scarfAdjRel v.val q \u2192 q = p\u2081 \u2228 q = p\u2082) :\n    G.degree v = 2",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "erase_image_eq_of_duplicate",
+      "line": 377,
+      "signature_end": 382,
+      "signature": "lemma erase_image_eq_of_duplicate {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c3 : Finset T)\n    (x y : T)\n    (hy : y \u2208 \u03c3) (hne : x \u2260 y) (hc : c x = c y) :\n    (\u03c3.erase x).image c = \u03c3.image c",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "collision_with_uniqueness",
+      "line": 393,
+      "signature_end": 398,
+      "signature": "lemma collision_with_uniqueness {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c3 : Finset T)\n    (himg : (\u03c3.image c).card + 1 = \u03c3.card) :\n    \u2203 x y, x \u2208 \u03c3 \u2227 y \u2208 \u03c3 \u2227 x \u2260 y \u2227 c x = c y \u2227\n    (\u2200 z \u2208 \u03c3, z \u2260 x \u2192 z \u2260 y \u2192 c z \u2260 c x)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "noninjective_pair_exists",
+      "line": 432,
+      "signature_end": 439,
+      "signature": "lemma noninjective_pair_exists {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c3 : Finset T)\n    (himg : (\u03c3.image c).card + 1 = \u03c3.card) :\n    \u2203 x y, x \u2208 \u03c3 \u2227 y \u2208 \u03c3 \u2227 x \u2260 y \u2227 c x = c y \u2227\n    (\u2200 z \u2208 \u03c3, z \u2260 x \u2192 z \u2260 y \u2192 c z \u2260 c x) \u2227\n    (\u03c3.erase x).image c = \u03c3.image c \u2227\n    (\u03c3.erase y).image c = \u03c3.image c",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "image_subset_of_sdiff_singleton",
+      "line": 453,
+      "signature_end": 460,
+      "signature": "lemma image_subset_of_sdiff_singleton {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (i\u2080 : Fin (n + 1))\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg : (\u03c3.image c).card + 1 = \u03c3.card) :\n    \u03c3.image c \u2286 C",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "not_scarf_erase_non_colliding_1",
+      "line": 473,
+      "signature_end": 481,
+      "signature": "lemma not_scarf_erase_non_colliding_1 {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (i\u2080 : Fin (n + 1))\n    (z : T) (hz : z \u2208 \u03c3)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg_sub : \u03c3.image c \u2286 C)\n    (hz_unique : c z \u2209 (\u03c3.erase z).image c) :\n    \u00ac (C \\ (\u03c3.erase z).image c = {i\u2080})",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "not_scarf_insert_form",
+      "line": 487,
+      "signature_end": 495,
+      "signature": "lemma not_scarf_insert_form {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg_sub : \u03c3.image c \u2286 C)\n    (j : Fin (n + 1)) (hj : j \u2209 C) :\n    \u00ac IsScarfVtx ords c i\u2080 (\u03c3, insert j C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "card_erase_ne'",
+      "line": 523,
+      "signature_end": 526,
+      "signature": "lemma card_erase_ne' {T : Type} [DecidableEq T] {\u03b1 : Type} [DecidableEq \u03b1]\n    (\u03c3 : Finset T) (C : Finset \u03b1) (z : T)\n    (hz : z \u2208 \u03c3) (hcard : \u03c3.card = C.card) (hC_ne : C.Nonempty) :\n    (\u03c3.erase z).card \u2260 C.card",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "image_card_eq'",
+      "line": 529,
+      "signature_end": 533,
+      "signature": "lemma image_card_eq' {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1)) (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (i\u2080 : Fin (n + 1)) (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080}) (himg_sub : \u03c3.image c \u2286 C) :\n    (\u03c3.image c).card + 1 = \u03c3.card",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "image_erase_eq_of_cover'",
+      "line": 538,
+      "signature_end": 541,
+      "signature": "lemma image_erase_eq_of_cover' {T : Type} [DecidableEq T] {\u03b2 : Type} [DecidableEq \u03b2]\n    (f : T \u2192 \u03b2) (\u03c3 : Finset T) (z : T)\n    (w : T) (hw : w \u2208 \u03c3.erase z) (hwz : f w = f z) :\n    (\u03c3.erase z).image f = \u03c3.image f",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "cz_unique'",
+      "line": 544,
+      "signature_end": 552,
+      "signature": "lemma cz_unique' {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1)) (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (i\u2080 : Fin (n + 1)) (x y z : T)\n    (hx : x \u2208 \u03c3) (hy : y \u2208 \u03c3) (hz : z \u2208 \u03c3)\n    (hxy : x \u2260 y) (hzx : z \u2260 x) (hzy : z \u2260 y)\n    (hcxy : c x = c y) (huniq : \u2200 w \u2208 \u03c3, w \u2260 x \u2192 w \u2260 y \u2192 c w \u2260 c x)\n    (hcard : \u03c3.card = C.card) (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg_sub : \u03c3.image c \u2286 C) :\n    c z \u2209 (\u03c3.erase z).image c",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "not_scarf_vtx_erase_non_colliding'",
+      "line": 571,
+      "signature_end": 584,
+      "signature": "lemma not_scarf_vtx_erase_non_colliding' {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hC_ne : C.Nonempty)\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg_sub : \u03c3.image c \u2286 C)\n    (x y z : T) (hx : x \u2208 \u03c3) (hy : y \u2208 \u03c3) (hz : z \u2208 \u03c3)\n    (hxy : x \u2260 y)\n    (hzx : z \u2260 x) (hzy : z \u2260 y)\n    (hcxy : c x = c y)\n    (huniq : \u2200 w \u2208 \u03c3, w \u2260 x \u2192 w \u2260 y \u2192 c w \u2260 c x) :\n    \u00ac IsScarfVtx ords c i\u2080 (\u03c3.erase z, C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "caseB_impossible'",
+      "line": 592,
+      "signature_end": 599,
+      "signature": "lemma caseB_impossible' {n : \u2115} {T : Type} [DecidableEq T]\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hcard : \u03c3.card = C.card)\n    (q : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hq_room : q.1.card = q.2.card)\n    (hadj : (\u2203 x \u2208 q.1, \u03c3 = q.1.erase x \u2227 C = q.2) \u2228\n            (\u2203 i, i \u2209 q.2 \u2227 \u03c3 = q.1 \u2227 C = insert i q.2)) :\n    False",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ncr_noninjective_uniqueness",
+      "line": 603,
+      "signature_end": 617,
+      "signature": "lemma ncr_noninjective_uniqueness {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hC_ne : C.Nonempty)\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg_sub : \u03c3.image c \u2286 C)\n    (x y : T) (hx : x \u2208 \u03c3) (hy : y \u2208 \u03c3) (hxy : x \u2260 y)\n    (hcxy : c x = c y)\n    (huniq : \u2200 z \u2208 \u03c3, z \u2260 x \u2192 z \u2260 y \u2192 c z \u2260 c x) :\n    \u2200 q : Finset T \u00d7 Finset (Fin (n + 1)),\n      IsScarfVtx ords c i\u2080 q \u2192 scarfAdjRel (\u03c3, C) q \u2192\n      q = (\u03c3.erase x, C) \u2228 q = (\u03c3.erase y, C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ncr_noninjective_two_adj_pairs",
+      "line": 636,
+      "signature_end": 651,
+      "signature": "lemma ncr_noninjective_two_adj_pairs {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hC_ne : C.Nonempty)\n    (hdom : isDominant ords \u03c3 C)\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg : (\u03c3.image c).card + 1 = \u03c3.card) :\n    \u2203 p\u2081 p\u2082 : Finset T \u00d7 Finset (Fin (n + 1)),\n      p\u2081 \u2260 p\u2082 \u2227\n      IsScarfVtx ords c i\u2080 p\u2081 \u2227 scarfAdjRel (\u03c3, C) p\u2081 \u2227\n      IsScarfVtx ords c i\u2080 p\u2082 \u2227 scarfAdjRel (\u03c3, C) p\u2082 \u2227\n      \u2200 q : Finset T \u00d7 Finset (Fin (n + 1)),\n        IsScarfVtx ords c i\u2080 q \u2192 scarfAdjRel (\u03c3, C) q \u2192 q = p\u2081 \u2228 q = p\u2082",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_ncr_case_noninjective",
+      "line": 677,
+      "signature_end": 688,
+      "signature": "lemma scarf_degree_ncr_case_noninjective {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hcard : v.val.1.card = v.val.2.card)\n    (hnearly : v.val.2 \\ v.val.1.image c = {i\u2080})\n    (himg : (v.val.1.image c).card + 1 = v.val.1.card) :\n    G.degree v = 2",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ncr_injective_unique_y",
+      "line": 706,
+      "signature_end": 715,
+      "signature": "lemma ncr_injective_unique_y {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (i\u2080 : Fin (n + 1))\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg : (\u03c3.image c).card = \u03c3.card) :\n    \u2203 y \u2208 \u03c3, c y \u2209 C \u2227 \u03c3.image c \\ C = {c y} \u2227\n      (\u2200 z \u2208 \u03c3, c z \u2209 C \u2192 z = y) \u2227 \u03c3.Nonempty \u2227\n      (\u2200 x \u2208 \u03c3, c x \u2209 (\u03c3.erase x).image c)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_mono_C",
+      "line": 752,
+      "signature_end": 757,
+      "signature": "lemma isDominant_mono_C {n : \u2115} {T : Type}\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (C D : Finset (Fin (n + 1)))\n    (hCD : C \u2286 D)\n    (hdom : isDominant ords \u03c3 C) :\n    isDominant ords \u03c3 D",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ncr_injective_uniqueness",
+      "line": 782,
+      "signature_end": 794,
+      "signature": "lemma ncr_injective_uniqueness {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (y : T) (hy : y \u2208 \u03c3) (hcy : c y \u2209 C)\n    (huniq : \u2200 z \u2208 \u03c3, c z \u2209 C \u2192 z = y)\n    (hinj_erase : \u2200 x \u2208 \u03c3, c x \u2209 (\u03c3.erase x).image c) :\n    \u2200 q : Finset T \u00d7 Finset (Fin (n + 1)),\n      IsScarfVtx ords c i\u2080 q \u2192 scarfAdjRel (\u03c3, C) q \u2192\n        q = (\u03c3.erase y, C) \u2228 q = (\u03c3, insert (c y) C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ncr_injective_p1_isScarfVtx",
+      "line": 870,
+      "signature_end": 880,
+      "signature": "lemma ncr_injective_p1_isScarfVtx {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hnonempty_C : C.Nonempty)\n    (hdom : isDominant ords \u03c3 C)\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg : (\u03c3.image c).card = \u03c3.card)\n    (y : T) (hy : y \u2208 \u03c3) (hcy : c y \u2209 C) :\n    IsScarfVtx ords c i\u2080 (\u03c3.erase y, C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ncr_injective_p2_isScarfVtx",
+      "line": 894,
+      "signature_end": 902,
+      "signature": "lemma ncr_injective_p2_isScarfVtx {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hdom : isDominant ords \u03c3 C)\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (y : T) (hy : y \u2208 \u03c3) (hcy : c y \u2209 C) :\n    IsScarfVtx ords c i\u2080 (\u03c3, insert (c y) C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ncr_injective_two_adj_pairs",
+      "line": 909,
+      "signature_end": 926,
+      "signature": "lemma ncr_injective_two_adj_pairs {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (C : Finset (Fin (n + 1)))\n    (hnonempty_C : C.Nonempty)\n    (hdom : isDominant ords \u03c3 C)\n    (hcard : \u03c3.card = C.card)\n    (hnearly : C \\ \u03c3.image c = {i\u2080})\n    (himg : (\u03c3.image c).card = \u03c3.card) :\n    \u2203 p\u2081 p\u2082 : Finset T \u00d7 Finset (Fin (n + 1)),\n      p\u2081 \u2260 p\u2082 \u2227\n      IsScarfVtx ords c i\u2080 p\u2081 \u2227\n      scarfAdjRel (\u03c3, C) p\u2081 \u2227\n      IsScarfVtx ords c i\u2080 p\u2082 \u2227\n      scarfAdjRel (\u03c3, C) p\u2082 \u2227\n      \u2200 q : Finset T \u00d7 Finset (Fin (n + 1)),\n        IsScarfVtx ords c i\u2080 q \u2192 scarfAdjRel (\u03c3, C) q \u2192 q = p\u2081 \u2228 q = p\u2082",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_ncr_case_injective",
+      "line": 950,
+      "signature_end": 961,
+      "signature": "lemma scarf_degree_ncr_case_injective {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hcard : v.val.1.card = v.val.2.card)\n    (hnearly : v.val.2 \\ v.val.1.image c = {i\u2080})\n    (himg : (v.val.1.image c).card = v.val.1.card) :\n    G.degree v = 2",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_nearly_colorful_room",
+      "line": 967,
+      "signature_end": 977,
+      "signature": "lemma scarf_degree_nearly_colorful_room {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hcard : v.val.1.card = v.val.2.card)\n    (hnearly : v.val.2 \\ v.val.1.image c = {i\u2080}) :\n    G.degree v = 2",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_outside_door",
+      "line": 982,
+      "signature_end": 993,
+      "signature": "lemma scarf_degree_outside_door {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hdoor : v.val.2.card = v.val.1.card + 1)\n    (hnearly : v.val.2 \\ v.val.1.image c = {i\u2080})\n    (hempty : v.val.1 = \u2205) :\n    G.degree v = 1",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "def",
+      "name": "ordMin",
+      "line": 1088,
+      "signature_end": 1090,
+      "signature": "def ordMin {n : \u2115} {T : Type}\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (hne : \u03c4.Nonempty) (i : Fin (n + 1)) : T",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_mem",
+      "line": 1096,
+      "signature_end": 1099,
+      "signature": "lemma ordMin_mem {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (hne : \u03c4.Nonempty) (i : Fin (n + 1)) :\n    ordMin ords \u03c4 hne i \u2208 \u03c4",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_le",
+      "line": 1105,
+      "signature_end": 1108,
+      "signature": "lemma ordMin_le {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (hne : \u03c4.Nonempty) (i : Fin (n + 1)) (x : T) (hx : x \u2208 \u03c4) :\n    \u00ac (ords i).lt x (ordMin ords \u03c4 hne i)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_surj_on_tau",
+      "line": 1122,
+      "signature_end": 1126,
+      "signature": "lemma ordMin_surj_on_tau {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hne : \u03c4.Nonempty) (hdom : isDominant ords \u03c4 D) (t : T) (ht : t \u2208 \u03c4) :\n    \u2203 i \u2208 D, ordMin ords \u03c4 hne i = t",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_image_eq_tau",
+      "line": 1136,
+      "signature_end": 1140,
+      "signature": "lemma ordMin_image_eq_tau {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hne : \u03c4.Nonempty) (hdom : isDominant ords \u03c4 D) :\n    Finset.image (ordMin ords \u03c4 hne) D = \u03c4",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_collision_unique",
+      "line": 1153,
+      "signature_end": 1162,
+      "signature": "lemma ordMin_collision_unique {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hne : \u03c4.Nonempty)\n    (hdom : isDominant ords \u03c4 D)\n    (hdoor : D.card = \u03c4.card + 1)\n    (a : Fin (n + 1)) (ha : a \u2208 D) (b : Fin (n + 1)) (hb : b \u2208 D)\n    (hab : a \u2260 b) (heq : ordMin ords \u03c4 hne a = ordMin ords \u03c4 hne b) :\n    \u2200 c \u2208 D, \u2200 d \u2208 D, c \u2260 d \u2192 ordMin ords \u03c4 hne c = ordMin ords \u03c4 hne d \u2192\n      ({c, d} : Finset (Fin (n + 1))) = {a, b}",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_unique_collision",
+      "line": 1189,
+      "signature_end": 1197,
+      "signature": "lemma ordMin_unique_collision {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hne : \u03c4.Nonempty)\n    (hdom : isDominant ords \u03c4 D)\n    (hdoor : D.card = \u03c4.card + 1) :\n    \u2203 a \u2208 D, \u2203 b \u2208 D, a \u2260 b \u2227 ordMin ords \u03c4 hne a = ordMin ords \u03c4 hne b \u2227\n      (\u2200 c \u2208 D, \u2200 d \u2208 D, c \u2260 d \u2192 ordMin ords \u03c4 hne c = ordMin ords \u03c4 hne d \u2192\n        ({c, d} : Finset (Fin (n + 1))) = {a, b})",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "adj_door_neighbor_form",
+      "line": 1218,
+      "signature_end": 1227,
+      "signature": "lemma adj_door_neighbor_form {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (q : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hscarf : IsScarfVtx ords c i\u2080 q)\n    (hadj : scarfAdjRel (\u03c4, D) q) :\n    (\u2203 x, x \u2209 \u03c4 \u2227 q.1 = insert x \u03c4 \u2227 q.2 = D \u2227 isDominant ords (insert x \u03c4) D) \u2228\n    (\u2203 i, i \u2208 D \u2227 q.1 = \u03c4 \u2227 q.2 = D.erase i \u2227 isDominant ords \u03c4 (D.erase i))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_erase_of_empty_Mi",
+      "line": 1245,
+      "signature_end": 1251,
+      "signature": "lemma isDominant_erase_of_empty_Mi {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hnonempty : \u03c4.Nonempty)\n    (i : Fin (n + 1))\n    (hMi : \u2200 y : T, \u2203 k \u2208 D.erase i, \u00ac (ords k).lt (ordMin ords \u03c4 hnonempty k) y) :\n    isDominant ords \u03c4 (D.erase i)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "erase_nonempty_of_card_ge_two",
+      "line": 1258,
+      "signature_end": 1260,
+      "signature": "lemma erase_nonempty_of_card_ge_two {\u03b1 : Type} [DecidableEq \u03b1]\n    (D : Finset \u03b1) (i : \u03b1) (hi : i \u2208 D) (hcard : D.card \u2265 2) :\n    (D.erase i).Nonempty",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "erase_eq_image_of_eq_i\u2080",
+      "line": 1273,
+      "signature_end": 1280,
+      "signature": "lemma erase_eq_image_of_eq_i\u2080 {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (i\u2080 : Fin (n + 1))\n    (hiD : i\u2080 \u2208 D)\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnearly : D \\ \u03c4.image c = {i\u2080}) :\n    D.erase i\u2080 = \u03c4.image c",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "erase_sdiff_image_eq_singleton",
+      "line": 1291,
+      "signature_end": 1297,
+      "signature": "lemma erase_sdiff_image_eq_singleton {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (i i\u2080 : Fin (n + 1))\n    (hne : i \u2260 i\u2080)\n    (hnearly : D \\ \u03c4.image c = {i\u2080}) :\n    (D.erase i) \\ \u03c4.image c = {i\u2080}",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isScarfVtx_erase_case",
+      "line": 1300,
+      "signature_end": 1309,
+      "signature": "lemma isScarfVtx_erase_case {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (i : Fin (n + 1)) (hiD : i \u2208 D)\n    (hdom_erase : isDominant ords \u03c4 (D.erase i))\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnearly : D \\ \u03c4.image c = {i\u2080})\n    (hcard2 : D.card \u2265 2) :\n    IsScarfVtx ords c i\u2080 (\u03c4, D.erase i)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarfAdjRel_erase",
+      "line": 1320,
+      "signature_end": 1324,
+      "signature": "lemma scarfAdjRel_erase {n : \u2115} {T : Type} [DecidableEq T]\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (i : Fin (n + 1)) (hiD : i \u2208 D) :\n    scarfAdjRel (\u03c4, D) (\u03c4, D.erase i)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "not_lt_ordMin_of_max_Mi",
+      "line": 1328,
+      "signature_end": 1335,
+      "signature": "lemma not_lt_ordMin_of_max_Mi {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdom : isDominant ords \u03c4 D)\n    (hnonempty : \u03c4.Nonempty)\n    (i : Fin (n + 1))\n    (x : T) (hx_in_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) :\n    \u00ac (ords i).lt (ordMin ords \u03c4 hnonempty i) x",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_eq_of_mem_of_not_lt",
+      "line": 1341,
+      "signature_end": 1345,
+      "signature": "lemma ordMin_eq_of_mem_of_not_lt {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (hne : \u03c4.Nonempty) (i : Fin (n + 1))\n    (x : T) (hx : x \u2208 \u03c4) (hnotlt : \u00ac (ords i).lt (ordMin ords \u03c4 hne i) x) :\n    ordMin ords \u03c4 hne i = x",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "not_mem_tau_of_max_Mi",
+      "line": 1350,
+      "signature_end": 1359,
+      "signature": "lemma not_mem_tau_of_max_Mi {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hb : b \u2208 D) (hab : a \u2260 b)\n    (hcoll : ordMin ords \u03c4 hnonempty a = ordMin ords \u03c4 hnonempty b)\n    (i : Fin (n + 1)) (hi : i \u2208 ({a, b} : Finset (Fin (n + 1))))\n    (x : T) (hx_in_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x)\n    (hx_not_lt : \u00ac (ords i).lt (ordMin ords \u03c4 hnonempty i) x) :\n    x \u2209 \u03c4",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_insert_case1",
+      "line": 1378,
+      "signature_end": 1384,
+      "signature": "lemma isDominant_insert_case1 {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (x y : T)\n    (k\u2080 : Fin (n + 1))\n    (hk\u2080_\u03c4 : \u2200 z \u2208 \u03c4, \u00ac (ords k\u2080).lt z y)\n    (hk\u2080_x : \u00ac (ords k\u2080).lt x y) :\n    \u2200 z \u2208 insert x \u03c4, \u00ac (ords k\u2080).lt z y",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "case2_k0_eq_i",
+      "line": 1387,
+      "signature_end": 1397,
+      "signature": "lemma case2_k0_eq_i {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hnonempty : \u03c4.Nonempty)\n    (i : Fin (n + 1))\n    (x y : T)\n    (k\u2080 : Fin (n + 1)) (hk\u2080D : k\u2080 \u2208 D)\n    (hk\u2080_\u03c4 : \u2200 z \u2208 \u03c4, \u00ac (ords k\u2080).lt z y)\n    (hx_lt_k\u2080 : (ords k\u2080).lt x y)\n    (hx_in_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) :\n    k\u2080 = i",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "case2_witness_k1_tau",
+      "line": 1404,
+      "signature_end": 1410,
+      "signature": "lemma case2_witness_k1_tau {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (hnonempty : \u03c4.Nonempty)\n    (y : T)\n    (k\u2081 : Fin (n + 1))\n    (hk\u2081_not : \u00ac (ords k\u2081).lt (ordMin ords \u03c4 hnonempty k\u2081) y) :\n    \u2200 z \u2208 \u03c4, \u00ac (ords k\u2081).lt z y",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "case2_witness_k1_x",
+      "line": 1416,
+      "signature_end": 1423,
+      "signature": "lemma case2_witness_k1_x {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (hnonempty : \u03c4.Nonempty)\n    (x y : T)\n    (k\u2081 : Fin (n + 1))\n    (hk\u2081_not : \u00ac (ords k\u2081).lt (ordMin ords \u03c4 hnonempty k\u2081) y)\n    (hk\u2081_lt_x : (ords k\u2081).lt (ordMin ords \u03c4 hnonempty k\u2081) x) :\n    \u00ac (ords k\u2081).lt x y",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "case2_witness_k1",
+      "line": 1429,
+      "signature_end": 1438,
+      "signature": "lemma case2_witness_k1 {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hnonempty : \u03c4.Nonempty)\n    (i : Fin (n + 1))\n    (x y : T)\n    (k\u2081 : Fin (n + 1)) (hk\u2081 : k\u2081 \u2208 D.erase i)\n    (hk\u2081_not : \u00ac (ords k\u2081).lt (ordMin ords \u03c4 hnonempty k\u2081) y)\n    (hx_in_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) :\n    \u2200 z \u2208 insert x \u03c4, \u00ac (ords k\u2081).lt z y",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_insert_of_max_Mi",
+      "line": 1445,
+      "signature_end": 1454,
+      "signature": "lemma isDominant_insert_of_max_Mi {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdom : isDominant ords \u03c4 D)\n    (hnonempty : \u03c4.Nonempty)\n    (i : Fin (n + 1)) (x : T)\n    (hx_in_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x)\n    (hx_max : \u2200 y : T, (\u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) y) \u2192\n      \u00ac (ords i).lt x y) :\n    isDominant ords (insert x \u03c4) D",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isScarfVtx_insert_case_cx_eq",
+      "line": 1471,
+      "signature_end": 1479,
+      "signature": "lemma isScarfVtx_insert_case_cx_eq {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (x : T) (hx_not_mem : x \u2209 \u03c4)\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnearly : D \\ \u03c4.image c = {i\u2080})\n    (hcx : c x = i\u2080) :\n    (insert x \u03c4).card = D.card \u2227 D = (insert x \u03c4).image c",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isScarfVtx_insert_case_cx_ne",
+      "line": 1497,
+      "signature_end": 1505,
+      "signature": "lemma isScarfVtx_insert_case_cx_ne {n : \u2115} {T : Type} [DecidableEq T]\n    (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (x : T) (hx_not_mem : x \u2209 \u03c4)\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnearly : D \\ \u03c4.image c = {i\u2080})\n    (hcx : c x \u2260 i\u2080) :\n    (insert x \u03c4).card = D.card \u2227 D \\ (insert x \u03c4).image c = {i\u2080}",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isScarfVtx_insert_case",
+      "line": 1511,
+      "signature_end": 1520,
+      "signature": "lemma isScarfVtx_insert_case {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (x : T) (hx_not_mem : x \u2209 \u03c4)\n    (hdom_ins : isDominant ords (insert x \u03c4) D)\n    (hne : D.Nonempty)\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnearly : D \\ \u03c4.image c = {i\u2080}) :\n    IsScarfVtx ords c i\u2080 (insert x \u03c4, D)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarfAdjRel_insert",
+      "line": 1528,
+      "signature_end": 1532,
+      "signature": "lemma scarfAdjRel_insert {n : \u2115} {T : Type} [DecidableEq T]\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (x : T) (hx_not_mem : x \u2209 \u03c4) :\n    scarfAdjRel (\u03c4, D) (insert x \u03c4, D)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_neighbor_from_collision_index",
+      "line": 1548,
+      "signature_end": 1568,
+      "signature": "lemma scarf_neighbor_from_collision_index {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hne : D.Nonempty) (hdom : isDominant ords \u03c4 D)\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnearly : D \\ \u03c4.image c = {i\u2080})\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hb : b \u2208 D) (hab : a \u2260 b)\n    (hcoll : ordMin ords \u03c4 hnonempty a = ordMin ords \u03c4 hnonempty b)\n    (huniq : \u2200 c' \u2208 D, \u2200 d \u2208 D, c' \u2260 d \u2192\n      ordMin ords \u03c4 hnonempty c' = ordMin ords \u03c4 hnonempty d \u2192\n        ({c', d} : Finset (Fin (n + 1))) = {a, b})\n    (i : Fin (n + 1)) (hi : i \u2208 ({a, b} : Finset (Fin (n + 1)))) :\n    \u2203 p : Finset T \u00d7 Finset (Fin (n + 1)),\n      IsScarfVtx ords c i\u2080 p \u2227 scarfAdjRel (\u03c4, D) p \u2227\n      ((p.1 = \u03c4 \u2227 p.2 = D.erase i) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p.1 = insert x \u03c4 \u2227 p.2 = D \u2227\n        (\u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords i).lt (ordMin ords \u03c4 hnonempty i) x))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "insert_elements_ne_of_collision",
+      "line": 1607,
+      "signature_end": 1615,
+      "signature": "lemma insert_elements_ne_of_collision {n : \u2115} {T : Type}\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (hnonempty : \u03c4.Nonempty)\n    (D : Finset (Fin (n + 1)))\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hab : a \u2260 b)\n    (x\u2081 x\u2082 : T)\n    (hx\u2081_not : \u00ac (ords a).lt (ordMin ords \u03c4 hnonempty a) x\u2081)\n    (hx\u2082_lt : \u2200 k \u2208 D.erase b, (ords k).lt (ordMin ords \u03c4 hnonempty k) x\u2082) :\n    x\u2081 \u2260 x\u2082",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_two_neighbors_distinct",
+      "line": 1618,
+      "signature_end": 1636,
+      "signature": "lemma scarf_two_neighbors_distinct {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hab : a \u2260 b)\n    (p\u2081 p\u2082 : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hp\u2081 : IsScarfVtx ords c i\u2080 p\u2081 \u2227 scarfAdjRel (\u03c4, D) p\u2081 \u2227\n      ((p\u2081.1 = \u03c4 \u2227 p\u2081.2 = D.erase a) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p\u2081.1 = insert x \u03c4 \u2227 p\u2081.2 = D \u2227\n        (\u2200 k \u2208 D.erase a, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords a).lt (ordMin ords \u03c4 hnonempty a) x)))\n    (hp\u2082 : IsScarfVtx ords c i\u2080 p\u2082 \u2227 scarfAdjRel (\u03c4, D) p\u2082 \u2227\n      ((p\u2082.1 = \u03c4 \u2227 p\u2082.2 = D.erase b) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p\u2082.1 = insert x \u03c4 \u2227 p\u2082.2 = D \u2227\n        (\u2200 k \u2208 D.erase b, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords b).lt (ordMin ords \u03c4 hnonempty b) x))) :\n    p\u2081 \u2260 p\u2082",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "i_mem_pair_ab",
+      "line": 1668,
+      "signature_end": 1677,
+      "signature": "lemma i_mem_pair_ab {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hb : b \u2208 D) (hab : a \u2260 b)\n    (hcoll : ordMin ords \u03c4 hnonempty a = ordMin ords \u03c4 hnonempty b)\n    (i : Fin (n + 1)) (hi : i \u2208 D)\n    (hqi : isDominant ords \u03c4 (D.erase i)) :\n    i = a \u2228 i = b",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "insert_branch_absurd",
+      "line": 1696,
+      "signature_end": 1702,
+      "signature": "lemma insert_branch_absurd {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hnonempty : \u03c4.Nonempty) (j : Fin (n + 1))\n    (hqi : isDominant ords \u03c4 (D.erase j))\n    (x : T) (hx : \u2200 k \u2208 D.erase j, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) :\n    False",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "erase_case_q_eq_p1_or_p2",
+      "line": 1706,
+      "signature_end": 1730,
+      "signature": "lemma erase_case_q_eq_p1_or_p2 {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hb : b \u2208 D) (hab : a \u2260 b)\n    (hcoll : ordMin ords \u03c4 hnonempty a = ordMin ords \u03c4 hnonempty b)\n    (p\u2081 p\u2082 : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hp\u2081 : IsScarfVtx ords c i\u2080 p\u2081 \u2227 scarfAdjRel (\u03c4, D) p\u2081 \u2227\n      ((p\u2081.1 = \u03c4 \u2227 p\u2081.2 = D.erase a) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p\u2081.1 = insert x \u03c4 \u2227 p\u2081.2 = D \u2227\n        (\u2200 k \u2208 D.erase a, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords a).lt (ordMin ords \u03c4 hnonempty a) x)))\n    (hp\u2082 : IsScarfVtx ords c i\u2080 p\u2082 \u2227 scarfAdjRel (\u03c4, D) p\u2082 \u2227\n      ((p\u2082.1 = \u03c4 \u2227 p\u2082.2 = D.erase b) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p\u2082.1 = insert x \u03c4 \u2227 p\u2082.2 = D \u2227\n        (\u2200 k \u2208 D.erase b, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords b).lt (ordMin ords \u03c4 hnonempty b) x)))\n    (i : Fin (n + 1)) (hi : i \u2208 D)\n    (hqi : isDominant ords \u03c4 (D.erase i))\n    (q : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hq1 : q.1 = \u03c4) (hq2 : q.2 = D.erase i) :\n    q = p\u2081 \u2228 q = p\u2082",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "insert_dominant_gives_ordMin_conditions",
+      "line": 1745,
+      "signature_end": 1753,
+      "signature": "lemma insert_dominant_gives_ordMin_conditions {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (x : T) (hx : x \u2209 \u03c4)\n    (hdom_ins : isDominant ords (insert x \u03c4) D)\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnonempty : \u03c4.Nonempty) :\n    \u2203 i \u2208 D, (\u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n      \u00ac (ords i).lt (ordMin ords \u03c4 hnonempty i) x",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_insert_eq_of_lt",
+      "line": 1799,
+      "signature_end": 1804,
+      "signature": "lemma ordMin_insert_eq_of_lt {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (hne : \u03c4.Nonempty)\n    (k : Fin (n + 1)) (x : T)\n    (hlt : (ords k).lt (ordMin ords \u03c4 hne k) x) :\n    ordMin ords (insert x \u03c4) (Finset.insert_nonempty x \u03c4) k = ordMin ords \u03c4 hne k",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_conditions_not_outside_ab",
+      "line": 1811,
+      "signature_end": 1823,
+      "signature": "lemma ordMin_conditions_not_outside_ab {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hb : b \u2208 D) (hab : a \u2260 b)\n    (hcoll : ordMin ords \u03c4 hnonempty a = ordMin ords \u03c4 hnonempty b)\n    (i : Fin (n + 1)) (hi : i \u2208 D)\n    (hia : i \u2260 a) (hib : i \u2260 b)\n    (x : T) (hx : x \u2209 \u03c4)\n    (hdom_ins : isDominant ords (insert x \u03c4) D)\n    (hx_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) :\n    False",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ordMin_conditions_index_in_ab",
+      "line": 1854,
+      "signature_end": 1865,
+      "signature": "lemma ordMin_conditions_index_in_ab {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hb : b \u2208 D) (hab : a \u2260 b)\n    (hcoll : ordMin ords \u03c4 hnonempty a = ordMin ords \u03c4 hnonempty b)\n    (i : Fin (n + 1)) (hi : i \u2208 D)\n    (x : T) (hx : x \u2209 \u03c4)\n    (hdom_ins : isDominant ords (insert x \u03c4) D)\n    (hx_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) :\n    i \u2208 ({a, b} : Finset (Fin (n + 1)))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "x_maximal_in_Mi",
+      "line": 1872,
+      "signature_end": 1881,
+      "signature": "lemma x_maximal_in_Mi {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hnonempty : \u03c4.Nonempty)\n    (i : Fin (n + 1)) (hi : i \u2208 D)\n    (x : T)\n    (hdom_x : isDominant ords (insert x \u03c4) D)\n    (hx_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x)\n    (y : T) (hy_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) y) :\n    \u00ac (ords i).lt x y",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "insert_elements_equal",
+      "line": 1893,
+      "signature_end": 1901,
+      "signature": "lemma insert_elements_equal {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1))) (hnonempty : \u03c4.Nonempty)\n    (i : Fin (n + 1)) (hi : i \u2208 D) (x x' : T)\n    (hdom_x : isDominant ords (insert x \u03c4) D)\n    (hdom_x' : isDominant ords (insert x' \u03c4) D)\n    (hx_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x)\n    (hx'_Mi : \u2200 k \u2208 D.erase i, (ords k).lt (ordMin ords \u03c4 hnonempty k) x') :\n    x = x'",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "insert_case_q_eq_p1_or_p2",
+      "line": 1908,
+      "signature_end": 1935,
+      "signature": "lemma insert_case_q_eq_p1_or_p2 {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hb : b \u2208 D) (hab : a \u2260 b)\n    (hcoll : ordMin ords \u03c4 hnonempty a = ordMin ords \u03c4 hnonempty b)\n    (huniq : \u2200 c' \u2208 D, \u2200 d \u2208 D, c' \u2260 d \u2192\n      ordMin ords \u03c4 hnonempty c' = ordMin ords \u03c4 hnonempty d \u2192\n        ({c', d} : Finset (Fin (n + 1))) = {a, b})\n    (p\u2081 p\u2082 : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hp\u2081 : IsScarfVtx ords c i\u2080 p\u2081 \u2227 scarfAdjRel (\u03c4, D) p\u2081 \u2227\n      ((p\u2081.1 = \u03c4 \u2227 p\u2081.2 = D.erase a) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p\u2081.1 = insert x \u03c4 \u2227 p\u2081.2 = D \u2227\n        (\u2200 k \u2208 D.erase a, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords a).lt (ordMin ords \u03c4 hnonempty a) x)))\n    (hp\u2082 : IsScarfVtx ords c i\u2080 p\u2082 \u2227 scarfAdjRel (\u03c4, D) p\u2082 \u2227\n      ((p\u2082.1 = \u03c4 \u2227 p\u2082.2 = D.erase b) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p\u2082.1 = insert x \u03c4 \u2227 p\u2082.2 = D \u2227\n        (\u2200 k \u2208 D.erase b, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords b).lt (ordMin ords \u03c4 hnonempty b) x)))\n    (x : T) (hx : x \u2209 \u03c4)\n    (hdom_ins : isDominant ords (insert x \u03c4) D)\n    (q : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hq1 : q.1 = insert x \u03c4) (hq2 : q.2 = D) :\n    q = p\u2081 \u2228 q = p\u2082",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_neighbor_uniqueness",
+      "line": 1973,
+      "signature_end": 1999,
+      "signature": "lemma scarf_neighbor_uniqueness {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnonempty : \u03c4.Nonempty)\n    (a b : Fin (n + 1)) (ha : a \u2208 D) (hb : b \u2208 D) (hab : a \u2260 b)\n    (hcoll : ordMin ords \u03c4 hnonempty a = ordMin ords \u03c4 hnonempty b)\n    (huniq : \u2200 c' \u2208 D, \u2200 d \u2208 D, c' \u2260 d \u2192\n      ordMin ords \u03c4 hnonempty c' = ordMin ords \u03c4 hnonempty d \u2192\n        ({c', d} : Finset (Fin (n + 1))) = {a, b})\n    (p\u2081 p\u2082 : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hp\u2081 : IsScarfVtx ords c i\u2080 p\u2081 \u2227 scarfAdjRel (\u03c4, D) p\u2081 \u2227\n      ((p\u2081.1 = \u03c4 \u2227 p\u2081.2 = D.erase a) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p\u2081.1 = insert x \u03c4 \u2227 p\u2081.2 = D \u2227\n        (\u2200 k \u2208 D.erase a, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords a).lt (ordMin ords \u03c4 hnonempty a) x)))\n    (hp\u2082 : IsScarfVtx ords c i\u2080 p\u2082 \u2227 scarfAdjRel (\u03c4, D) p\u2082 \u2227\n      ((p\u2082.1 = \u03c4 \u2227 p\u2082.2 = D.erase b) \u2228\n       (\u2203 x, x \u2209 \u03c4 \u2227 p\u2082.1 = insert x \u03c4 \u2227 p\u2082.2 = D \u2227\n        (\u2200 k \u2208 D.erase b, (ords k).lt (ordMin ords \u03c4 hnonempty k) x) \u2227\n        \u00ac (ords b).lt (ordMin ords \u03c4 hnonempty b) x)))\n    (q : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hqscarf : IsScarfVtx ords c i\u2080 q)\n    (hqadj : scarfAdjRel (\u03c4, D) q) :\n    q = p\u2081 \u2228 q = p\u2082",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_internal_door_two_adj_pairs",
+      "line": 2010,
+      "signature_end": 2024,
+      "signature": "lemma scarf_internal_door_two_adj_pairs {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c4 : Finset T) (D : Finset (Fin (n + 1)))\n    (hne : D.Nonempty) (hdom : isDominant ords \u03c4 D)\n    (hdoor : D.card = \u03c4.card + 1)\n    (hnearly : D \\ \u03c4.image c = {i\u2080})\n    (hnonempty : \u03c4.Nonempty) :\n    \u2203 p\u2081 p\u2082 : Finset T \u00d7 Finset (Fin (n + 1)),\n      p\u2081 \u2260 p\u2082 \u2227\n      IsScarfVtx ords c i\u2080 p\u2081 \u2227 scarfAdjRel (\u03c4, D) p\u2081 \u2227\n      IsScarfVtx ords c i\u2080 p\u2082 \u2227 scarfAdjRel (\u03c4, D) p\u2082 \u2227\n      (\u2200 q : Finset T \u00d7 Finset (Fin (n + 1)),\n        IsScarfVtx ords c i\u2080 q \u2192 scarfAdjRel (\u03c4, D) q \u2192 q = p\u2081 \u2228 q = p\u2082)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_internal_door",
+      "line": 2044,
+      "signature_end": 2055,
+      "signature": "lemma scarf_degree_internal_door {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hdoor : v.val.2.card = v.val.1.card + 1)\n    (hnearly : v.val.2 \\ v.val.1.image c = {i\u2080})\n    (hnonempty : v.val.1.Nonempty) :\n    G.degree v = 2",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_one_or_two",
+      "line": 2061,
+      "signature_end": 2068,
+      "signature": "lemma scarf_degree_one_or_two {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val) :\n    \u2200 v, G.degree v = 1 \u2228 G.degree v = 2",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarfAdjRel_symm",
+      "line": 2078,
+      "signature_end": 2080,
+      "signature": "lemma scarfAdjRel_symm {n : \u2115} {T : Type} [DecidableEq T]\n    (v w : Finset T \u00d7 Finset (Fin (n + 1)))\n    (h : scarfAdjRel v w) : scarfAdjRel w v",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "empty_singleton_isScarfVtx",
+      "line": 2083,
+      "signature_end": 2086,
+      "signature": "lemma empty_singleton_isScarfVtx {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1)) :\n    IsScarfVtx ords c i\u2080 (\u2205, {i\u2080})",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarfAdjRel_v0_max",
+      "line": 2099,
+      "signature_end": 2102,
+      "signature": "lemma scarfAdjRel_v0_max {n : \u2115} {T : Type} [DecidableEq T]\n    (i\u2080 : Fin (n + 1))\n    (x_max : T) :\n    scarfAdjRel ((\u2205 : Finset T), ({i\u2080} : Finset (Fin (n + 1)))) ({x_max}, {i\u2080})",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarfAdjRel_v0_iff",
+      "line": 2110,
+      "signature_end": 2117,
+      "signature": "lemma scarfAdjRel_v0_iff {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (w : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hw : IsScarfVtx ords c i\u2080 w) :\n    scarfAdjRel (\u2205, {i\u2080}) w \u2194\n      (\u2203 x : T, (\u2200 y : T, \u00ac (ords i\u2080).lt x y) \u2227\n        w = ({x}, {i\u2080}))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "exists_unique_max",
+      "line": 2150,
+      "signature_end": 2153,
+      "signature": "lemma exists_unique_max {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (i\u2080 : Fin (n + 1)) :\n    \u2203! x : T, \u2200 y : T, \u00ac (ords i\u2080).lt x y",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "max_isScarfVtx",
+      "line": 2163,
+      "signature_end": 2167,
+      "signature": "lemma max_isScarfVtx {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (x_max : T) (hmax : \u2200 y : T, \u00ac (ords i\u2080).lt x_max y) :\n    IsScarfVtx ords c i\u2080 ({x_max}, {i\u2080})",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_v0_degree_one",
+      "line": 2173,
+      "signature_end": 2182,
+      "signature": "lemma scarf_v0_degree_one {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v\u2080 : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hv\u2080 : v\u2080.val = (\u2205, {i\u2080})) :\n    G.degree v\u2080 = 1",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "def",
+      "name": "\u03bc'",
+      "line": 2199,
+      "signature_end": 2200,
+      "signature": "def \u03bc' {n : \u2115} {T : Type} (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (h\u03c3ne : \u03c3.Nonempty) (i : Fin (n + 1)) : T",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "def",
+      "name": "admSet",
+      "line": 2203,
+      "signature_end": 2205,
+      "signature": "def admSet {n : \u2115} {T : Type} [Fintype T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (\u03c3 : Finset T)\n    (h\u03c3ne : \u03c3.Nonempty) (CC : Finset (Fin (n + 1))) (i : Fin (n + 1)) : Finset T",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_subset",
+      "line": 2212,
+      "signature_end": 2216,
+      "signature": "lemma isDominant_subset {n : \u2115} {T : Type}\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 \u03c4 : Finset T) (C : Finset (Fin (n + 1)))\n    (hsub : \u03c4 \u2286 \u03c3) (hdom : isDominant ords \u03c3 C) :\n    isDominant ords \u03c4 C",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_supset",
+      "line": 2223,
+      "signature_end": 2227,
+      "signature": "lemma isDominant_supset {n : \u2115} {T : Type}\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (C D : Finset (Fin (n + 1)))\n    (hsub : C \u2286 D) (hdom : isDominant ords \u03c3 C) :\n    isDominant ords \u03c3 D",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "admSet_disjoint",
+      "line": 2234,
+      "signature_end": 2240,
+      "signature": "lemma admSet_disjoint {n : \u2115} {T : Type} [Fintype T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (CC : Finset (Fin (n + 1)))\n    (h\u03c3ne : \u03c3.Nonempty)\n    (hDom : isDominant ords \u03c3 CC)\n    (a b : Fin (n + 1)) (hab : a \u2260 b) :\n    Disjoint (admSet ords \u03c3 h\u03c3ne CC a) (admSet ords \u03c3 h\u03c3ne CC b)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_erase_of_admSet_empty",
+      "line": 2253,
+      "signature_end": 2259,
+      "signature": "lemma isDominant_erase_of_admSet_empty {n : \u2115} {T : Type} [Fintype T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (CC : Finset (Fin (n + 1)))\n    (h\u03c3ne : \u03c3.Nonempty)\n    (i : Fin (n + 1))\n    (hempty : admSet ords \u03c3 h\u03c3ne CC i = \u2205) :\n    isDominant ords \u03c3 (CC.erase i)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isScarfVtx_erase",
+      "line": 2274,
+      "signature_end": 2283,
+      "signature": "lemma isScarfVtx_erase {n : \u2115} {T : Type} [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (CC : Finset (Fin (n + 1)))\n    (h\u03c3ne : \u03c3.Nonempty)\n    (i : Fin (n + 1)) (hi : i \u2208 CC)\n    (hDom_erase : isDominant ords \u03c3 (CC.erase i))\n    (hdoor_card : CC.card = \u03c3.card + 1)\n    (hnear : CC \\ \u03c3.image c = {i\u2080}) :\n    IsScarfVtx ords c i\u2080 (\u03c3, CC.erase i)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isDominant_insert_of_admSet_max",
+      "line": 2319,
+      "signature_end": 2327,
+      "signature": "lemma isDominant_insert_of_admSet_max {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (CC : Finset (Fin (n + 1)))\n    (h\u03c3ne : \u03c3.Nonempty)\n    (hDom : isDominant ords \u03c3 CC)\n    (i : Fin (n + 1)) (hi : i \u2208 CC)\n    (m : T) (hm_adm : m \u2208 admSet ords \u03c3 h\u03c3ne CC i)\n    (hm_max : \u2200 y \u2208 admSet ords \u03c3 h\u03c3ne CC i, \u00ac (ords i).lt m y) :\n    isDominant ords (insert m \u03c3) CC",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "m_not_mem_\u03c3_aux",
+      "line": 2357,
+      "signature_end": 2366,
+      "signature": "lemma m_not_mem_\u03c3_aux {n : \u2115} {T : Type} [Fintype T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (\u03c3 : Finset T) (CC : Finset (Fin (n + 1)))\n    (h\u03c3ne : \u03c3.Nonempty)\n    (hDom : isDominant ords \u03c3 CC)\n    (a b : Fin (n + 1)) (ha : a \u2208 CC) (hb : b \u2208 CC) (hab : a \u2260 b)\n    (h\u03bceq : \u03bc' ords \u03c3 h\u03c3ne a = \u03bc' ords \u03c3 h\u03c3ne b)\n    (i : Fin (n + 1)) (hi_ab : i = a \u2228 i = b)\n    (m : T) (hm_adm : m \u2208 admSet ords \u03c3 h\u03c3ne CC i) (hm_\u03c3 : m \u2208 \u03c3) :\n    False",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "degree_ge_two_of_two_adj",
+      "line": 2392,
+      "signature_end": 2395,
+      "signature": "lemma degree_ge_two_of_two_adj {V : Type} [Fintype V] [DecidableEq V]\n    (G : SimpleGraph V) [DecidableRel G.Adj]\n    (v w\u2081 w\u2082 : V) (h1 : G.Adj v w\u2081) (h2 : G.Adj v w\u2082) (hne : w\u2081 \u2260 w\u2082) :\n    2 \u2264 G.degree v",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "mk_adj_of_scarfAdjRel",
+      "line": 2406,
+      "signature_end": 2415,
+      "signature": "lemma mk_adj_of_scarfAdjRel {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1)) (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (q : Finset T \u00d7 Finset (Fin (n + 1)))\n    (hq : IsScarfVtx ords c i\u2080 q)\n    (hadj : scarfAdjRel v.val q) :\n    G.Adj v \u27e8q, hq\u27e9",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "isScarfVtx_insert",
+      "line": 2424,
+      "signature_end": 2432,
+      "signature": "lemma isScarfVtx_insert {n : \u2115} {T : Type} [Fintype T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (\u03c3 : Finset T) (CC : Finset (Fin (n + 1)))\n    (m : T) (hm_not_mem : m \u2209 \u03c3)\n    (hCne : CC.Nonempty) (hDom_ins : isDominant ords (insert m \u03c3) CC)\n    (hdoor_card : CC.card = \u03c3.card + 1)\n    (hnear : CC \\ \u03c3.image c = {i\u2080}) :\n    IsScarfVtx ords c i\u2080 (insert m \u03c3, CC)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "image_erase_of_injOn'",
+      "line": 2459,
+      "signature_end": 2462,
+      "signature": "lemma image_erase_of_injOn' {T : Type} [DecidableEq T] {n : \u2115}\n    (\u03c3 : Finset T) (c : T \u2192 Fin (n + 1))\n    (y : T) (hy : y \u2208 \u03c3) (hinj : Set.InjOn c \u2191\u03c3) :\n    (\u03c3.erase y).image c = (\u03c3.image c).erase (c y)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "sdiff_erase_of_not_mem",
+      "line": 2473,
+      "signature_end": 2476,
+      "signature": "lemma sdiff_erase_of_not_mem {\u03b1 : Type} [DecidableEq \u03b1]\n    (CC Im : Finset \u03b1) (i\u2080 j : \u03b1) (hj : j \u2209 CC)\n    (h : CC \\ Im = {i\u2080}) :\n    CC \\ Im.erase j = {i\u2080}",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "insert_sdiff_of_mem'",
+      "line": 2481,
+      "signature_end": 2484,
+      "signature": "lemma insert_sdiff_of_mem' {\u03b1 : Type} [DecidableEq \u03b1]\n    (CC Im : Finset \u03b1) (i\u2080 j : \u03b1) (hj : j \u2208 Im)\n    (h : CC \\ Im = {i\u2080}) :\n    (insert j CC) \\ Im = {i\u2080}",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "internal_door_degree_ge_two",
+      "line": 2493,
+      "signature_end": 2506,
+      "signature": "lemma internal_door_degree_ge_two {n : \u2115} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (\u03c3 : Finset T) (CC : Finset (Fin (n + 1)))\n    (hv : v.val = (\u03c3, CC))\n    (hCne : CC.Nonempty) (hDom : isDominant ords \u03c3 CC)\n    (hdoor_card : CC.card = \u03c3.card + 1)\n    (hnear : CC \\ \u03c3.image c = {i\u2080})\n    (h\u03c3ne : \u03c3.Nonempty) :\n    2 \u2264 G.degree v",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_degree_one_is_colorful",
+      "line": 2681,
+      "signature_end": 2694,
+      "signature": "lemma scarf_degree_one_is_colorful {n : \u2115} {T : Type} [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T) (c : T \u2192 Fin (n + 1))\n    (i\u2080 : Fin (n + 1))\n    (G : SimpleGraph { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    [DecidableRel G.Adj]\n    (hG : \u2200 v w, G.Adj v w \u2194 scarfAdjRel v.val w.val)\n    (v\u2080 : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hv\u2080 : v\u2080.val = (\u2205, {i\u2080}))\n    (v : { p : Finset T \u00d7 Finset (Fin (n + 1)) // IsScarfVtx ords c i\u2080 p })\n    (hne : v \u2260 v\u2080) (hdeg : G.degree v = 1) :\n    \u2203 (\u03c3\u2080 : Finset T) (C : Finset (Fin (n + 1))),\n      \u03c3\u2080.Nonempty \u2227 C.Nonempty \u2227 \u03c3\u2080.card = C.card \u2227\n      C = \u03c3\u2080.image c \u2227 isDominant ords \u03c3\u2080 C",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_graph_construction",
+      "line": 2819,
+      "signature_end": 2831,
+      "signature": "lemma scarf_graph_construction (n : \u2115) (T : Type) [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (c : T \u2192 Fin (n + 1)) :\n    \u2203 (V : Type) (_ : Fintype V) (_ : DecidableEq V)\n      (G : SimpleGraph V) (_ : DecidableRel G.Adj)\n      (v\u2080 : V),\n      (\u2200 v : V, G.degree v = 1 \u2228 G.degree v = 2) \u2227\n      G.degree v\u2080 = 1 \u2227\n      (\u2200 v : V, v \u2260 v\u2080 \u2192 G.degree v = 1 \u2192\n        \u2203 (\u03c3\u2080 : Finset T) (C : Finset (Fin (n + 1))),\n          \u03c3\u2080.Nonempty \u2227 C.Nonempty \u2227 \u03c3\u2080.card = C.card \u2227\n          C = \u03c3\u2080.image c \u2227 isDominant ords \u03c3\u2080 C)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "degree_two_other_adj",
+      "line": 2849,
+      "signature_end": 2852,
+      "signature": "lemma degree_two_other_adj {V : Type} [Fintype V] [DecidableEq V]\n    (G : SimpleGraph V) [DecidableRel G.Adj]\n    (v w : V) (hadj : G.Adj v w) (hdeg : G.degree v = 2) :\n    \u2203 w' : V, w' \u2260 w \u2227 G.Adj v w' \u2227 \u2200 u : V, G.Adj v u \u2192 u = w \u2228 u = w'",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "path_next_not_in_support",
+      "line": 2895,
+      "signature_end": 2902,
+      "signature": "lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]\n    (G : SimpleGraph V) [DecidableRel G.Adj]\n    (hdeg : \u2200 v : V, G.degree v = 1 \u2228 G.degree v = 2)\n    (v\u2080 : V) (hv\u2080 : G.degree v\u2080 = 1)\n    {v : V} (p : G.Walk v\u2080 v) (hp : p.IsPath) (hnil : \u00acp.Nil)\n    (hdeg2 : G.degree v = 2)\n    (w : V) (hadj : G.Adj v w) (hne : w \u2260 p.penultimate) :\n    w \u2209 p.support",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "degree_one_two_path_aux",
+      "line": 3019,
+      "signature_end": 3025,
+      "signature": "lemma degree_one_two_path_aux {V : Type} [Fintype V] [DecidableEq V]\n    (G : SimpleGraph V) [DecidableRel G.Adj]\n    (hdeg : \u2200 v : V, G.degree v = 1 \u2228 G.degree v = 2)\n    (v\u2080 : V) (hv\u2080 : G.degree v\u2080 = 1)\n    {v : V} (p : G.Walk v\u2080 v) (hp : p.IsPath) (hnil : \u00acp.Nil)\n    (hdeg2 : G.degree v = 2) :\n    \u2203 v\u2081 : V, v\u2081 \u2260 v\u2080 \u2227 G.degree v\u2081 = 1 \u2227 G.Reachable v\u2080 v\u2081",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "degree_one_two_path",
+      "line": 3044,
+      "signature_end": 3048,
+      "signature": "lemma degree_one_two_path {V : Type} [Fintype V] [DecidableEq V]\n    (G : SimpleGraph V) [DecidableRel G.Adj]\n    (hdeg : \u2200 v : V, G.degree v = 1 \u2228 G.degree v = 2)\n    (v\u2080 : V) (hv\u2080 : G.degree v\u2080 = 1) :\n    \u2203 v\u2081 : V, v\u2081 \u2260 v\u2080 \u2227 G.degree v\u2081 = 1 \u2227 G.Reachable v\u2080 v\u2081",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_colorful_room_exists",
+      "line": 3067,
+      "signature_end": 3074,
+      "signature": "lemma scarf_colorful_room_exists (n : \u2115) (T : Type) [Fintype T] [Nonempty T]\n    [DecidableEq T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (c : T \u2192 Fin (n + 1)) :\n    \u2203 (\u03c3\u2080 : Finset T) (C : Finset (Fin (n + 1))),\n      \u03c3\u2080.Nonempty \u2227 C.Nonempty \u2227 \u03c3\u2080.card = C.card \u2227\n      C = \u03c3\u2080.image c \u2227\n      (\u2200 y : T, \u2203 i \u2208 C, \u2200 x \u2208 \u03c3\u2080, \u00ac (ords i).lt x y)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_abstract",
+      "line": 3080,
+      "signature_end": 3087,
+      "signature": "lemma scarf_abstract (n : \u2115) (T : Type) [Fintype T] [Nonempty T]\n    (ords : Fin (n + 1) \u2192 LinearOrder T)\n    (c : T \u2192 Fin (n + 1)) :\n    \u2203 (\u03c3\u2080 : Finset T) (C : Finset (Fin (n + 1))),\n      \u03c3\u2080.Nonempty \u2227 C.Nonempty \u2227 \u03c3\u2080.card = C.card \u2227\n      (\u2200 x \u2208 \u03c3\u2080, c x \u2208 C) \u2227\n      (\u2200 i \u2208 C, \u2203 x \u2208 \u03c3\u2080, c x = i) \u2227\n      (\u2200 y : T, \u2203 i \u2208 C, \u2200 x \u2208 \u03c3\u2080, \u00ac (ords i).lt x y)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "def",
+      "name": "DiscreteSimplex",
+      "line": 3092,
+      "signature_end": 3092,
+      "signature": "def DiscreteSimplex (n l : \u2115) : Type",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_on_finite_type",
+      "line": 3096,
+      "signature_end": 3105,
+      "signature": "lemma scarf_on_finite_type (n l : \u2115)\n    [inst : Fintype (DiscreteSimplex n l)]\n    [inh : Nonempty (DiscreteSimplex n l)]\n    (ords : Fin (n + 1) \u2192 LinearOrder (DiscreteSimplex n l))\n    (c : \u2191(stdSimplex \u211d (Fin (n + 1))) \u2192 Fin (n + 1)) :\n    \u2203 (\u03c3\u2080 : Finset (DiscreteSimplex n l)) (C : Finset (Fin (n + 1))),\n      \u03c3\u2080.Nonempty \u2227 C.Nonempty \u2227 \u03c3\u2080.card = C.card \u2227\n      (\u2200 x \u2208 \u03c3\u2080, c x.1 \u2208 C) \u2227\n      (\u2200 i \u2208 C, \u2203 x \u2208 \u03c3\u2080, c x.1 = i) \u2227\n      (\u2200 y : DiscreteSimplex n l, \u2203 i \u2208 C, \u2200 x \u2208 \u03c3\u2080, \u00ac (ords i).lt x y)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "discreteSimplex_numerator_bound",
+      "line": 3108,
+      "signature_end": 3112,
+      "signature": "lemma discreteSimplex_numerator_bound {n l : \u2115} (hl : 0 < l)\n    (x : \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (hx : \u2200 i : Fin (n + 1), \u2203 k : \u2115, (x : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l)\n    (i : Fin (n + 1)) :\n    (hx i).choose < l + 1",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "def",
+      "name": "discreteSimplex_encode",
+      "line": 3120,
+      "signature_end": 3121,
+      "signature": "def discreteSimplex_encode (n l : \u2115) (hl : 0 < l) :\n    DiscreteSimplex n l \u2192 (Fin (n + 1) \u2192 Fin (l + 1))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "discreteSimplex_encode_injective",
+      "line": 3124,
+      "signature_end": 3125,
+      "signature": "lemma discreteSimplex_encode_injective (n l : \u2115) (hl : 0 < l) :\n    Function.Injective (discreteSimplex_encode n l hl)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "discreteSimplex_finite",
+      "line": 3139,
+      "signature_end": 3140,
+      "signature": "lemma discreteSimplex_finite (n l : \u2115) (hl : 0 < l) :\n    Finite (DiscreteSimplex n l)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "discreteSimplex_nonempty",
+      "line": 3143,
+      "signature_end": 3144,
+      "signature": "lemma discreteSimplex_nonempty (n l : \u2115) (hl : 0 < l) :\n    Nonempty (DiscreteSimplex n l)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "def",
+      "name": "rotateCoord",
+      "line": 3156,
+      "signature_end": 3157,
+      "signature": "def rotateCoord (n l : \u2115) (i : Fin (n + 1)) (x : DiscreteSimplex n l) :\n    Lex (Fin (n + 1) \u2192 \u211d)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "rotateCoord_injective",
+      "line": 3169,
+      "signature_end": 3170,
+      "signature": "lemma rotateCoord_injective (n l : \u2115) (i : Fin (n + 1)) :\n    Function.Injective (rotateCoord n l i : DiscreteSimplex n l \u2192 Lex (Fin (n + 1) \u2192 \u211d))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "rotateCoord_lt_of_coord_lt",
+      "line": 3190,
+      "signature_end": 3193,
+      "signature": "lemma rotateCoord_lt_of_coord_lt (n l : \u2115) (i : Fin (n + 1))\n    (x y : DiscreteSimplex n l)\n    (h : (x.1 : Fin (n + 1) \u2192 \u211d) i < (y.1 : Fin (n + 1) \u2192 \u211d) i) :\n    rotateCoord n l i x < rotateCoord n l i y",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "build_coord_compatible_orders",
+      "line": 3200,
+      "signature_end": 3203,
+      "signature": "lemma build_coord_compatible_orders (n l : \u2115) :\n    \u2203 ords : Fin (n + 1) \u2192 LinearOrder (DiscreteSimplex n l),\n      \u2200 i : Fin (n + 1), \u2200 x y : DiscreteSimplex n l,\n        (x.1 : Fin (n + 1) \u2192 \u211d) i < (y.1 : Fin (n + 1) \u2192 \u211d) i \u2192 (ords i).lt x y",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "discrete_simplex_scarf",
+      "line": 3208,
+      "signature_end": 3219,
+      "signature": "lemma discrete_simplex_scarf (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (c : \u2191(stdSimplex \u211d (Fin (n + 1))) \u2192 Fin (n + 1)) :\n    \u2203 (\u03c3\u2080 : Finset (DiscreteSimplex n l)) (C : Finset (Fin (n + 1)))\n      (ords : Fin (n + 1) \u2192 LinearOrder (DiscreteSimplex n l)),\n      \u03c3\u2080.Nonempty \u2227 C.Nonempty \u2227 \u03c3\u2080.card = C.card \u2227\n      (\u2200 x \u2208 \u03c3\u2080, c x.1 \u2208 C) \u2227\n      (\u2200 i \u2208 C, \u2203 x \u2208 \u03c3\u2080, c x.1 = i) \u2227\n      -- Coordinate compatibility of the orders\n      (\u2200 i : Fin (n + 1), \u2200 x y : DiscreteSimplex n l,\n        (x.1 : Fin (n + 1) \u2192 \u211d) i < (y.1 : Fin (n + 1) \u2192 \u211d) i \u2192 (ords i).lt x y) \u2227\n      -- Order-dominance\n      (\u2200 y : DiscreteSimplex n l, \u2203 i \u2208 C, \u2200 x \u2208 \u03c3\u2080, \u00ac (ords i).lt x y)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_colorful_room",
+      "line": 3228,
+      "signature_end": 3238,
+      "signature": "lemma scarf_colorful_room (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (c : \u2191(stdSimplex \u211d (Fin (n + 1))) \u2192 Fin (n + 1)) :\n    \u2203 (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1))),\n      \u03c3.Nonempty \u2227 C.Nonempty \u2227\n      \u03c3.card = C.card \u2227\n      (\u2200 x \u2208 \u03c3, c x \u2208 C) \u2227\n      (\u2200 i \u2208 C, \u2203 x \u2208 \u03c3, c x = i) \u2227\n      (\u2200 x \u2208 \u03c3, \u2200 i : Fin (n + 1), \u2203 k : \u2115, (x : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l) \u2227\n      (\u00ac \u2203 y : \u2191(stdSimplex \u211d (Fin (n + 1))),\n        (\u2200 i : Fin (n + 1), \u2203 k : \u2115, (y : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l) \u2227\n        \u2200 i \u2208 C, \u2203 x \u2208 \u03c3, (x : Fin (n + 1) \u2192 \u211d) i < (y : Fin (n + 1) \u2192 \u211d) i)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "remaining_mass_discrete",
+      "line": 3283,
+      "signature_end": 3288,
+      "signature": "lemma remaining_mass_discrete (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (C : Finset (Fin (n + 1)))\n    (v : Fin (n + 1) \u2192 \u211d)\n    (hv_discrete : \u2200 k \u2208 C, \u2203 m : \u2115, v k = \u2191m / \u2191l)\n    (hv_sum : C.sum v \u2264 1) :\n    \u2203 r : \u2115, 1 - C.sum v = \u2191r / \u2191l",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "construct_simplex_point",
+      "line": 3316,
+      "signature_end": 3321,
+      "signature": "lemma construct_simplex_point (n : \u2115)\n    (C : Finset (Fin (n + 1)))\n    (v : Fin (n + 1) \u2192 \u211d)\n    (hv_nonneg : \u2200 k \u2208 C, 0 \u2264 v k)\n    (hv_sum : C.sum v \u2264 1) :\n    let M : Fin (n + 1) \u2192 \u211d",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "construct_dominating_point",
+      "line": 3353,
+      "signature_end": 3361,
+      "signature": "lemma construct_dominating_point (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (C : Finset (Fin (n + 1)))\n    (v : Fin (n + 1) \u2192 \u211d)\n    (hv_nonneg : \u2200 k \u2208 C, 0 \u2264 v k)\n    (hv_discrete : \u2200 k \u2208 C, \u2203 m : \u2115, v k = \u2191m / \u2191l)\n    (hv_sum : C.sum v \u2264 1) :\n    \u2203 y : \u2191(stdSimplex \u211d (Fin (n + 1))),\n      (\u2200 i : Fin (n + 1), \u2203 k : \u2115, (y : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l) \u2227\n      \u2200 k \u2208 C, (y : Fin (n + 1) \u2192 \u211d) k \u2265 v k",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "inf'_discrete",
+      "line": 3408,
+      "signature_end": 3413,
+      "signature": "lemma inf'_discrete (n : \u2115) (l : \u2115)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (h\u03c3 : \u03c3.Nonempty)\n    (hdiscrete : \u2200 x \u2208 \u03c3, \u2200 i : Fin (n + 1), \u2203 k : \u2115, (x : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l)\n    (i : Fin (n + 1)) :\n    \u2203 k : \u2115, \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) i) = \u2191k / \u2191l",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "inf'_attained",
+      "line": 3427,
+      "signature_end": 3431,
+      "signature": "lemma inf'_attained (n : \u2115)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (h\u03c3 : \u03c3.Nonempty)\n    (i : Fin (n + 1)) :\n    \u2203 x \u2208 \u03c3, \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) i) = (x : Fin (n + 1) \u2192 \u211d) i",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "sum_shifted_le_one",
+      "line": 3444,
+      "signature_end": 3448,
+      "signature": "lemma sum_shifted_le_one (n : \u2115) (l : \u2115)\n    (C : Finset (Fin (n + 1)))\n    (m : Fin (n + 1) \u2192 \u211d)\n    (h : \u00ac (1 - C.sum m < (\u2191C.card : \u211d) / (\u2191l : \u211d))) :\n    C.sum (fun k \u21a6 m k + 1 / (\u2191l : \u211d)) \u2264 1",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "key_ineq",
+      "line": 3457,
+      "signature_end": 3464,
+      "signature": "lemma key_ineq (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1))) (h\u03c3 : \u03c3.Nonempty)\n    (hdiscrete : \u2200 x \u2208 \u03c3, \u2200 i : Fin (n + 1), \u2203 k : \u2115, (x : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l)\n    (hdom : \u00ac \u2203 y : \u2191(stdSimplex \u211d (Fin (n + 1))),\n        (\u2200 i : Fin (n + 1), \u2203 k : \u2115, (y : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l) \u2227\n        \u2200 i \u2208 C, \u2203 x \u2208 \u03c3, (x : Fin (n + 1) \u2192 \u211d) i < (y : Fin (n + 1) \u2192 \u211d) i) :\n    1 - C.sum (fun k \u21a6 \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) k)) <\n      (\u2191C.card : \u211d) / (\u2191l : \u211d)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "deviation_nonneg",
+      "line": 3502,
+      "signature_end": 3506,
+      "signature": "lemma deviation_nonneg (n : \u2115)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (h\u03c3 : \u03c3.Nonempty)\n    (x : \u2191(stdSimplex \u211d (Fin (n + 1)))) (hx : x \u2208 \u03c3) (k : Fin (n + 1)) :\n    0 \u2264 (x : Fin (n + 1) \u2192 \u211d) k - \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) k)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "sum_subset_le_one",
+      "line": 3509,
+      "signature_end": 3511,
+      "signature": "lemma sum_subset_le_one (n : \u2115) (C : Finset (Fin (n + 1)))\n    (x : \u2191(stdSimplex \u211d (Fin (n + 1)))) :\n    C.sum (fun k \u21a6 (x : Fin (n + 1) \u2192 \u211d) k) \u2264 1",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "deviation_in_C",
+      "line": 3517,
+      "signature_end": 3522,
+      "signature": "lemma deviation_in_C (n : \u2115)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1)))\n    (h\u03c3 : \u03c3.Nonempty)\n    (x : \u2191(stdSimplex \u211d (Fin (n + 1)))) (hx : x \u2208 \u03c3) (i : Fin (n + 1)) (hi : i \u2208 C) :\n    (x : Fin (n + 1) \u2192 \u211d) i - \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) i) \u2264\n      1 - C.sum (fun k \u21a6 \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) k))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "xi_le_one_sub_sum_C",
+      "line": 3532,
+      "signature_end": 3535,
+      "signature": "lemma xi_le_one_sub_sum_C (n : \u2115)\n    (x : \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1)))\n    (i : Fin (n + 1)) (hi : i \u2209 C) :\n    (x : Fin (n + 1) \u2192 \u211d) i \u2264 1 - C.sum (fun k \u21a6 (x : Fin (n + 1) \u2192 \u211d) k)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "sum_inf_le_sum_x",
+      "line": 3546,
+      "signature_end": 3551,
+      "signature": "lemma sum_inf_le_sum_x (n : \u2115)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1)))\n    (h\u03c3 : \u03c3.Nonempty)\n    (x : \u2191(stdSimplex \u211d (Fin (n + 1)))) (hx : x \u2208 \u03c3) :\n    C.sum (fun k \u21a6 \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) k)) \u2264\n      C.sum (fun k \u21a6 (x : Fin (n + 1) \u2192 \u211d) k)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "deviation_not_in_C",
+      "line": 3556,
+      "signature_end": 3561,
+      "signature": "lemma deviation_not_in_C (n : \u2115)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1)))\n    (h\u03c3 : \u03c3.Nonempty)\n    (x : \u2191(stdSimplex \u211d (Fin (n + 1)))) (hx : x \u2208 \u03c3) (i : Fin (n + 1)) (hi : i \u2209 C) :\n    (x : Fin (n + 1) \u2192 \u211d) i \u2264\n      1 - C.sum (fun k \u21a6 \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) k))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "coord_deviation_bound",
+      "line": 3567,
+      "signature_end": 3576,
+      "signature": "lemma coord_deviation_bound (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1))) (h\u03c3 : \u03c3.Nonempty)\n    (hdiscrete : \u2200 x \u2208 \u03c3, \u2200 i : Fin (n + 1), \u2203 k : \u2115, (x : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l)\n    (hdom : \u00ac \u2203 y : \u2191(stdSimplex \u211d (Fin (n + 1))),\n        (\u2200 i : Fin (n + 1), \u2203 k : \u2115, (y : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l) \u2227\n        \u2200 i \u2208 C, \u2203 x \u2208 \u03c3, (x : Fin (n + 1) \u2192 \u211d) i < (y : Fin (n + 1) \u2192 \u211d) i) :\n    \u2200 x \u2208 \u03c3, \u2200 i : Fin (n + 1),\n      (x : Fin (n + 1) \u2192 \u211d) i -\n        (if i \u2208 C then \u03c3.inf' h\u03c3 (fun z \u21a6 (z : Fin (n + 1) \u2192 \u211d) i) else 0) <\n        (\u2191(n + 1) : \u211d) / (\u2191l : \u211d)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "scarf_bounds",
+      "line": 3598,
+      "signature_end": 3608,
+      "signature": "lemma scarf_bounds (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1))) (h\u03c3 : \u03c3.Nonempty)\n    (hdiscrete : \u2200 x \u2208 \u03c3, \u2200 i : Fin (n + 1), \u2203 k : \u2115, (x : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l)\n    (hdom : \u00ac \u2203 y : \u2191(stdSimplex \u211d (Fin (n + 1))),\n        (\u2200 i : Fin (n + 1), \u2203 k : \u2115, (y : Fin (n + 1) \u2192 \u211d) i = \u2191k / \u2191l) \u2227\n        \u2200 i \u2208 C, \u2203 x \u2208 \u03c3, (x : Fin (n + 1) \u2192 \u211d) i < (y : Fin (n + 1) \u2192 \u211d) i) :\n    (\u2200 x \u2208 \u03c3, \u2200 y \u2208 \u03c3, \u2200 i,\n      |(x : Fin (n + 1) \u2192 \u211d) i - (y : Fin (n + 1) \u2192 \u211d) i| <\n        2 * (\u2191(n + 1) : \u211d) / (\u2191l : \u211d)) \u2227\n    (\u2200 x \u2208 \u03c3, \u2200 i, i \u2209 C \u2192\n      (x : Fin (n + 1) \u2192 \u211d) i < (\u2191(n + 1) : \u211d) / (\u2191l : \u211d))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "exists_colorful_room_with_bounds",
+      "line": 3630,
+      "signature_end": 3641,
+      "signature": "lemma exists_colorful_room_with_bounds (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (c : \u2191(stdSimplex \u211d (Fin (n + 1))) \u2192 Fin (n + 1)) :\n    \u2203 (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1))),\n      \u03c3.Nonempty \u2227 C.Nonempty \u2227\n      \u03c3.card = C.card \u2227\n      (\u2200 x \u2208 \u03c3, c x \u2208 C) \u2227\n      (\u2200 i \u2208 C, \u2203 x \u2208 \u03c3, c x = i) \u2227\n      (\u2200 x \u2208 \u03c3, \u2200 y \u2208 \u03c3, \u2200 i,\n        |(x : Fin (n + 1) \u2192 \u211d) i - (y : Fin (n + 1) \u2192 \u211d) i| <\n          2 * (\u2191(n + 1) : \u211d) / (\u2191l : \u211d)) \u2227\n      (\u2200 x \u2208 \u03c3, \u2200 i, i \u2209 C \u2192\n        (x : Fin (n + 1) \u2192 \u211d) i < (\u2191(n + 1) : \u211d) / (\u2191l : \u211d))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "exists_ge_coord_of_simplex_map",
+      "line": 3647,
+      "signature_end": 3650,
+      "signature": "lemma exists_ge_coord_of_simplex_map (n : \u2115)\n    (x : \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (f : \u2191(stdSimplex \u211d (Fin (n + 1))) \u2192 \u2191(stdSimplex \u211d (Fin (n + 1)))) :\n    \u2203 i : Fin (n + 1), ((f x) : Fin (n + 1) \u2192 \u211d) i \u2265 (x : Fin (n + 1) \u2192 \u211d) i",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "exists_colorful_room",
+      "line": 3671,
+      "signature_end": 3681,
+      "signature": "lemma exists_colorful_room (n : \u2115) (l : \u2115) (hl : 0 < l)\n    (f : \u2191(stdSimplex \u211d (Fin (n + 1))) \u2192 \u2191(stdSimplex \u211d (Fin (n + 1)))) :\n    \u2203 (\u03c3 : Finset \u2191(stdSimplex \u211d (Fin (n + 1)))) (C : Finset (Fin (n + 1))),\n      \u03c3.Nonempty \u2227 C.Nonempty \u2227\n      \u03c3.card = C.card \u2227\n      (\u2200 i \u2208 C, \u2203 z \u2208 \u03c3, ((f z) : Fin (n + 1) \u2192 \u211d) i \u2265 (z : Fin (n + 1) \u2192 \u211d) i) \u2227\n      (\u2200 x \u2208 \u03c3, \u2200 y \u2208 \u03c3, \u2200 i,\n        |(x : Fin (n + 1) \u2192 \u211d) i - (y : Fin (n + 1) \u2192 \u211d) i| <\n          2 * (\u2191(n + 1) : \u211d) / (\u2191l : \u211d)) \u2227\n      (\u2200 x \u2208 \u03c3, \u2200 i, i \u2209 C \u2192\n        (x : Fin (n + 1) \u2192 \u211d) i < (\u2191(n + 1) : \u211d) / (\u2191l : \u211d))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "exists_convergent_subseq",
+      "line": 3700,
+      "signature_end": 3705,
+      "signature": "lemma exists_convergent_subseq (n : \u2115)\n    (x : \u2115 \u2192 \u2191(stdSimplex \u211d (Fin (n + 1)))) :\n    \u2203 (z : \u2191(stdSimplex \u211d (Fin (n + 1))))\n      (\u03c6 : \u2115 \u2192 \u2115), StrictMono \u03c6 \u2227\n      Filter.Tendsto (fun l \u21a6 (x (\u03c6 l) : Fin (n + 1) \u2192 \u211d)) Filter.atTop\n        (nhds (z : Fin (n + 1) \u2192 \u211d))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "exists_const_finset_subseq",
+      "line": 3711,
+      "signature_end": 3713,
+      "signature": "lemma exists_const_finset_subseq (n : \u2115) (C : \u2115 \u2192 Finset (Fin (n + 1))) :\n    \u2203 (C\u2080 : Finset (Fin (n + 1))) (\u03c6 : \u2115 \u2192 \u2115),\n      StrictMono \u03c6 \u2227 \u2200 l, C (\u03c6 l) = C\u2080",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "close_seqs_same_limit",
+      "line": 3722,
+      "signature_end": 3727,
+      "signature": "lemma close_seqs_same_limit (n : \u2115)\n    (u v : \u2115 \u2192 Fin (n + 1) \u2192 \u211d) (z : Fin (n + 1) \u2192 \u211d)\n    (hv : Filter.Tendsto v Filter.atTop (nhds z))\n    (bound : \u2115 \u2192 \u211d) (hbound : Filter.Tendsto bound Filter.atTop (nhds 0))\n    (hclose : \u2200 l, \u2200 i, |u l i - v l i| < bound l) :\n    Filter.Tendsto u Filter.atTop (nhds z)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "ge_coord_of_tendsto",
+      "line": 3753,
+      "signature_end": 3759,
+      "signature": "lemma ge_coord_of_tendsto (n : \u2115) (i : Fin (n + 1))\n    (x : \u2115 \u2192 Fin (n + 1) \u2192 \u211d) (z : Fin (n + 1) \u2192 \u211d)\n    (y : \u2115 \u2192 Fin (n + 1) \u2192 \u211d) (w : Fin (n + 1) \u2192 \u211d)\n    (hx : Filter.Tendsto x Filter.atTop (nhds z))\n    (hy : Filter.Tendsto y Filter.atTop (nhds w))\n    (hge : \u2200 l, (y l) i \u2265 (x l) i) :\n    w i \u2265 z i",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "tendsto_bound_zero",
+      "line": 3799,
+      "signature_end": 3800,
+      "signature": "lemma tendsto_bound_zero (n : \u2115) (\u03c6 : \u2115 \u2192 \u2115) (h\u03c6 : StrictMono \u03c6) :\n    Filter.Tendsto (fun l \u21a6 (\u2191(n + 1) : \u211d) / (\u2191(\u03c6 l + 1) : \u211d)) Filter.atTop (nhds 0)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "coord_zero_of_tendsto_bound",
+      "line": 3809,
+      "signature_end": 3816,
+      "signature": "lemma coord_zero_of_tendsto_bound (n : \u2115) (i : Fin (n + 1))\n    (x_seq : \u2115 \u2192 Fin (n + 1) \u2192 \u211d)\n    (z : Fin (n + 1) \u2192 \u211d)\n    (\u03c6 : \u2115 \u2192 \u2115) (h\u03c6 : StrictMono \u03c6)\n    (hconv : Filter.Tendsto (x_seq \u2218 \u03c6) Filter.atTop (nhds z))\n    (hbound : \u2200 l, x_seq (\u03c6 l) i < (\u2191(n + 1) : \u211d) / (\u2191(\u03c6 l + 1) : \u211d))\n    (hnn : \u2200 l, 0 \u2264 x_seq (\u03c6 l) i) :\n    z i = 0",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "sum_eq_one_of_zero_outside",
+      "line": 3829,
+      "signature_end": 3833,
+      "signature": "lemma sum_eq_one_of_zero_outside (n : \u2115)\n    (z : Fin (n + 1) \u2192 \u211d) (hz : z \u2208 stdSimplex \u211d (Fin (n + 1)))\n    (C : Finset (Fin (n + 1)))\n    (hzero : \u2200 i, i \u2209 C \u2192 z i = 0) :\n    \u2211 i \u2208 C, z i = 1",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "sum_compl_eq_zero",
+      "line": 3858,
+      "signature_end": 3863,
+      "signature": "lemma sum_compl_eq_zero (n : \u2115)\n    (w : Fin (n + 1) \u2192 \u211d)\n    (hw : w \u2208 stdSimplex \u211d (Fin (n + 1)))\n    (C : Finset (Fin (n + 1)))\n    (hge_sum : \u2211 i \u2208 C, w i \u2265 1) :\n    \u2211 i \u2208 C\u1d9c, w i = 0",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "eq_of_ge_sum_one",
+      "line": 3868,
+      "signature_end": 3875,
+      "signature": "lemma eq_of_ge_sum_one (n : \u2115)\n    (z w : Fin (n + 1) \u2192 \u211d)\n    (hw : w \u2208 stdSimplex \u211d (Fin (n + 1)))\n    (C : Finset (Fin (n + 1)))\n    (hge : \u2200 i \u2208 C, w i \u2265 z i)\n    (hzero_z : \u2200 i, i \u2209 C \u2192 z i = 0)\n    (hsum_z : \u2211 i \u2208 C, z i = 1) :\n    \u2200 i, w i = z i",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "tendsto_apply_of_subtype_tendsto",
+      "line": 3921,
+      "signature_end": 3929,
+      "signature": "lemma tendsto_apply_of_subtype_tendsto (n : \u2115)\n    (f : \u2191(stdSimplex \u211d (Fin (n + 1))) \u2192 \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (hf : Continuous f)\n    (x : \u2115 \u2192 \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (z : \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (hconv : Filter.Tendsto (fun l \u21a6 (x l : Fin (n + 1) \u2192 \u211d))\n      Filter.atTop (nhds (z : Fin (n + 1) \u2192 \u211d))) :\n    Filter.Tendsto (fun l \u21a6 ((f (x l)) : Fin (n + 1) \u2192 \u211d))\n      Filter.atTop (nhds ((f z) : Fin (n + 1) \u2192 \u211d))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "tendsto_bound_to_zero",
+      "line": 3937,
+      "signature_end": 3939,
+      "signature": "lemma tendsto_bound_to_zero (n : \u2115) (\u03c6 : \u2115 \u2192 \u2115) (h\u03c6 : StrictMono \u03c6) :\n    Filter.Tendsto (fun l \u21a6 2 * (\u2191(n + 1) : \u211d) / (\u2191(\u03c6 l + 1) : \u211d))\n      Filter.atTop (nhds 0)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "theorem",
+      "name": "brouwer_fixed_point",
+      "line": 3947,
+      "signature_end": 3950,
+      "signature": "theorem brouwer_fixed_point (n : \u2115)\n    (f : \u2191(stdSimplex \u211d (Fin (n + 1))) \u2192 \u2191(stdSimplex \u211d (Fin (n + 1))))\n    (hf : Continuous f) :\n    \u2203 z : \u2191(stdSimplex \u211d (Fin (n + 1))), f z = z",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "convex_combination_mem",
+      "line": 4035,
+      "signature_end": 4039,
+      "signature": "lemma convex_combination_mem {E : Type*} [AddCommGroup E] [Module \u211d E]\n    {K : Set E} (hK_convex : Convex \u211d K)\n    {N : \u2115} (pts : Fin N \u2192 E) (hpts : \u2200 i, pts i \u2208 K)\n    (w : Fin N \u2192 \u211d) (hw_nonneg : \u2200 i, 0 \u2264 w i) (hw_sum : \u2211 i, w i = 1) :\n    \u2211 i, w i \u2022 pts i \u2208 K",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "eval_map_continuous",
+      "line": 4044,
+      "signature_end": 4047,
+      "signature": "lemma eval_map_continuous {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    {N : \u2115} (pts : Fin N \u2192 E) :\n    Continuous (fun w : (stdSimplex \u211d (Fin N)) \u21a6 \u2211 i, (w : Fin N \u2192 \u211d) i \u2022 pts i)",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "finite_cover_of_compact",
+      "line": 4054,
+      "signature_end": 4061,
+      "signature": "lemma finite_cover_of_compact\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [IsTopologicalAddGroup E]\n    {K : Set E} (hK_compact : IsCompact K) (hK_nonempty : K.Nonempty)\n    {U : Set E} (hU_open : IsOpen U) (hU_zero : (0 : E) \u2208 U) :\n    \u2203 (N : \u2115) (pts : Fin (N + 1) \u2192 E),\n      (\u2200 i, pts i \u2208 K) \u2227\n      K \u2286 \u22c3 i : Fin (N + 1), (fun u \u21a6 pts i + u) '' U",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "partition_of_unity_maps_to_simplex",
+      "line": 4096,
+      "signature_end": 4100,
+      "signature": "lemma partition_of_unity_maps_to_simplex\n    {X : Type*} [TopologicalSpace X] {N : \u2115}\n    (\u03c1 : PartitionOfUnity (Fin (N + 1)) X Set.univ)\n    (x : X) :\n    (fun i \u21a6 (\u03c1 i) x) \u2208 stdSimplex \u211d (Fin (N + 1))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "partition_of_unity_phi_continuous",
+      "line": 4107,
+      "signature_end": 4111,
+      "signature": "lemma partition_of_unity_phi_continuous\n    {X : Type*} [TopologicalSpace X] {N : \u2115}\n    (\u03c1 : PartitionOfUnity (Fin (N + 1)) X Set.univ) :\n    Continuous (fun x : X \u21a6 (\u27e8fun i \u21a6 (\u03c1 i) x,\n      partition_of_unity_maps_to_simplex \u03c1 x\u27e9 : (stdSimplex \u211d (Fin (N + 1)))))",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "subordination_gives_mem_U",
+      "line": 4117,
+      "signature_end": 4125,
+      "signature": "lemma subordination_gives_mem_U\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    {K : Set E} {U : Set E}\n    {N : \u2115} (pts : Fin (N + 1) \u2192 E)\n    (\u03c1 : PartitionOfUnity (Fin (N + 1)) K Set.univ)\n    (h\u03c1_sub : \u03c1.IsSubordinate (fun i \u21a6 Subtype.val \u207b\u00b9' ((fun u \u21a6 pts i + u) '' U)))\n    (i : Fin (N + 1)) (x : K) (hne : (\u03c1 i) x \u2260 0) :\n    (x : E) - pts i \u2208 U",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "finsum_smul_sub_eq",
+      "line": 4135,
+      "signature_end": 4142,
+      "signature": "lemma finsum_smul_sub_eq\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    {K : Set E}\n    {N : \u2115} (pts : Fin (N + 1) \u2192 E)\n    (\u03c1 : PartitionOfUnity (Fin (N + 1)) K Set.univ)\n    (x : K) :\n    \u2211\u1da0 i, (\u03c1 i) x \u2022 ((x : E) - pts i) = (x : E) - \u2211 i, (\u03c1 i) x \u2022 pts i",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "approximation_from_partition_of_unity",
+      "line": 4151,
+      "signature_end": 4159,
+      "signature": "lemma approximation_from_partition_of_unity\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    {K : Set E} {U : Set E} (hU_convex : Convex \u211d U)\n    {N : \u2115} (pts : Fin (N + 1) \u2192 E)\n    (\u03c1 : PartitionOfUnity (Fin (N + 1)) K Set.univ)\n    (h\u03c1_sub : \u03c1.IsSubordinate (fun i \u21a6 Subtype.val \u207b\u00b9' ((fun u \u21a6 pts i + u) '' U)))\n    (x : K) :\n    (x : E) - \u2211 i, (\u03c1 i) x \u2022 pts i \u2208 U",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "schauder_projection_eval_pair",
+      "line": 4169,
+      "signature_end": 4177,
+      "signature": "lemma schauder_projection_eval_pair\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    {K : Set E} (hK_compact : IsCompact K) (hK_convex : Convex \u211d K) (hK_nonempty : K.Nonempty)\n    {U : Set E} (hU_open : IsOpen U) (hU_zero : (0 : E) \u2208 U) (hU_convex : Convex \u211d U) :\n    \u2203 (N : \u2115) (\u03c6 : K \u2192 stdSimplex \u211d (Fin (N + 1)))\n      (\u03c8 : stdSimplex \u211d (Fin (N + 1)) \u2192 K),\n      Continuous \u03c6 \u2227 Continuous \u03c8 \u2227\n      \u2200 x : K, (x : E) - (\u03c8 (\u03c6 x) : E) \u2208 U",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "approximate_fixed_point_of_brouwer",
+      "line": 4203,
+      "signature_end": 4209,
+      "signature": "lemma approximate_fixed_point_of_brouwer\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    {K : Set E} (hK_compact : IsCompact K) (hK_convex : Convex \u211d K) (hK_nonempty : K.Nonempty)\n    (f : K \u2192 K) (hf : Continuous f)\n    {U : Set E} (hU_open : IsOpen U) (hU_zero : (0 : E) \u2208 U) (hU_convex : Convex \u211d U) :\n    \u2203 z : K, (f z : E) - (z : E) \u2208 U",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "lemma",
+      "name": "fixed_point_of_approximate_fixed_points",
+      "line": 4219,
+      "signature_end": 4226,
+      "signature": "lemma fixed_point_of_approximate_fixed_points\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    {K : Set E} (hK_compact : IsCompact K)\n    (f : K \u2192 K) (hf : Continuous f)\n    (happrox : \u2200 U : Set E, IsOpen U \u2192 (0 : E) \u2208 U \u2192\n      \u2203 z : K, (f z : E) - (z : E) \u2208 U) :\n    \u2203 x : K, f x = x",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "instance",
+      "name": "FiniteDimensional.locallyConvexSpace",
+      "line": 4247,
+      "signature_end": 4251,
+      "signature": "instance FiniteDimensional.locallyConvexSpace\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    [FiniteDimensional \u211d E] :\n    LocallyConvexSpace \u211d E",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "theorem",
+      "name": "Continuous.exists_fixedPt_of_isConvex_isCompact",
+      "line": 4267,
+      "signature_end": 4273,
+      "signature": "theorem Continuous.exists_fixedPt_of_isConvex_isCompact\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    [LocallyConvexSpace \u211d E]\n    {k : Set E} (hk : IsCompact k) (hk' : Convex \u211d k) (hk'' : k.Nonempty)\n    {f : k \u2192 k} (hf : Continuous f) :\n    \u2203 x, f x = x",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    },
+    {
+      "kind": "theorem",
+      "name": "ContinuousOn.exists_fixedPt_of_isConvex_isCompact",
+      "line": 4284,
+      "signature_end": 4290,
+      "signature": "theorem ContinuousOn.exists_fixedPt_of_isConvex_isCompact\n    {E : Type*} [AddCommGroup E] [Module \u211d E]\n    [TopologicalSpace E] [T2Space E] [IsTopologicalAddGroup E] [ContinuousSMul \u211d E]\n    [LocallyConvexSpace \u211d E]\n    {k : Set E} (hk : IsCompact k) (hk' : Convex \u211d k) (hk'' : k.Nonempty)\n    {f : E \u2192 E} (hf : ContinuousOn f k) (hf' : Set.MapsTo f k k) :\n    \u2203 x \u2208 k, f x = x",
+      "semantic_review": "reviewed; no substantive mismatch identified"
+    }
+  ]
+}

@@ -1,0 +1,452 @@
+[
+  {
+    "file": "MathEconLib/GameTheory/Equilibrium/Problem.lean",
+    "line": 52,
+    "declaration": "structure EquilibriumProblem (S : Type u) (I : Type v) (V : Type r) where",
+    "area": "strategic",
+    "audit_family": "EP",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#ep"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Equilibrium/Problem.lean",
+    "line": 68,
+    "declaration": "def IsEquilibrium [LE V] (P : EquilibriumProblem S I V) (s : S) : Prop :=",
+    "area": "strategic",
+    "audit_family": "EP",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#ep"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Equilibrium/Problem.lean",
+    "line": 96,
+    "declaration": "structure GameMorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x}",
+    "area": "strategic",
+    "audit_family": "MOR",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mor"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Equilibrium/Problem.lean",
+    "line": 121,
+    "declaration": "def id (P : EquilibriumProblem S I V) : GameMorphism P P where",
+    "area": "strategic",
+    "audit_family": "MOR",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mor"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Equilibrium/Problem.lean",
+    "line": 128,
+    "declaration": "def comp (g : GameMorphism Q R) (f : GameMorphism P Q) : GameMorphism P R where",
+    "area": "strategic",
+    "audit_family": "MOR",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mor"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Equilibrium/Problem.lean",
+    "line": 140,
+    "declaration": "structure GameComorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x}",
+    "area": "strategic",
+    "audit_family": "COMOR",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#comor"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Equilibrium/Problem.lean",
+    "line": 164,
+    "declaration": "def id (P : EquilibriumProblem S I V) : GameComorphism P P where",
+    "area": "strategic",
+    "audit_family": "COMOR",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#comor"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Equilibrium/Problem.lean",
+    "line": 171,
+    "declaration": "def comp (g : GameComorphism Q R) (f : GameComorphism P Q) : GameComorphism P R where",
+    "area": "strategic",
+    "audit_family": "COMOR",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#comor"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 66,
+    "declaration": "structure StrategicGame (I : Type*) (A : I → Type*) (V : Type*) where",
+    "area": "strategic",
+    "audit_family": "GAME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#game"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 76,
+    "declaration": "@[simps] def comapActions {B : ι → Type*} (G : StrategicGame ι A V)",
+    "area": "strategic",
+    "audit_family": "GAME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#game"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 90,
+    "declaration": "def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) : EquilibriumProblem (∀ i, A i) ι V where",
+    "area": "strategic",
+    "audit_family": "NASH",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#nash"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 96,
+    "declaration": "def comapActionsComorphism [DecidableEq ι] {B : ι → Type*} (G : StrategicGame ι A V)",
+    "area": "strategic",
+    "audit_family": "NASH",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#nash"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 107,
+    "declaration": "def IsNash [LE V] [DecidableEq ι] (G : StrategicGame ι A V) (a : ∀ i, A i) : Prop :=",
+    "area": "strategic",
+    "audit_family": "NASH",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#nash"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 164,
+    "declaration": "def Strategy (G : StrategicGame ι A V) (i : ι) := A i",
+    "area": "strategic",
+    "audit_family": "DOM",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#dom"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 201,
+    "declaration": "def IsDominant {G : StrategicGame ι A V} {i : ι} (s : G.Strategy i) :=",
+    "area": "strategic",
+    "audit_family": "DOM",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#dom"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 230,
+    "declaration": "def IsStrictOrderDominant {G : StrategicGame ι A V} {i : ι} (s : G.Strategy i) :=",
+    "area": "strategic",
+    "audit_family": "DOM",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#dom"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 248,
+    "declaration": "def IsStrictlyDominant [LT V] [DecidableEq ι] {G : StrategicGame ι A V} {i : ι}",
+    "area": "strategic",
+    "audit_family": "DOM",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#dom"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 283,
+    "declaration": "def IsStrictNash [LT V] [DecidableEq ι] (G : StrategicGame ι A V)",
+    "area": "strategic",
+    "audit_family": "REFINE",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#refine"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Basic.lean",
+    "line": 313,
+    "declaration": "def IsStrongNash [LE V] (G : StrategicGame ι A V)",
+    "area": "strategic",
+    "audit_family": "REFINE",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#refine"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Existence.lean",
+    "line": 69,
+    "declaration": "noncomputable def decode {ι : Type*} {A : ι → Type*} {E : ι → Type*}",
+    "area": "strategic",
+    "audit_family": "EXIST",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#exist"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Existence.lean",
+    "line": 76,
+    "declaration": "noncomputable def encode {ι : Type*} {A : ι → Type*} {E : ι → Type*}",
+    "area": "strategic",
+    "audit_family": "EXIST",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#exist"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Existence.lean",
+    "line": 93,
+    "declaration": "noncomputable def bestResponseCorr {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}",
+    "area": "strategic",
+    "audit_family": "EXIST",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#exist"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Existence.lean",
+    "line": 458,
+    "declaration": "noncomputable def toWeakDualContinuousMap_homeomorph {α : Type*} [TopologicalSpace α]",
+    "area": "strategic",
+    "audit_family": "EXIST",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#exist"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed/Finite.lean",
+    "line": 58,
+    "declaration": "abbrev FiniteMixedStrategy (A : I → Type*) [∀ i, Fintype (A i)] := ∀ i, FinDist (A i)",
+    "area": "strategic",
+    "audit_family": "FINITE-MIX",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#finite-mix"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed/Finite.lean",
+    "line": 65,
+    "declaration": "def finiteExpectedPayoff [AddCommMonoid V] [Module ℝ V] (G : StrategicGame I A V) (i : I)",
+    "area": "strategic",
+    "audit_family": "FINITE-MIX",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#finite-mix"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed/Finite.lean",
+    "line": 79,
+    "declaration": "def finiteMixedExtension [AddCommMonoid V] [Module ℝ V] (G : StrategicGame I A V) :",
+    "area": "strategic",
+    "audit_family": "FINITE-MIX",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#finite-mix"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed/Finite.lean",
+    "line": 84,
+    "declaration": "def IsFiniteMixedNash [AddCommMonoid V] [Module ℝ V] [LE V] (G : StrategicGame I A V)",
+    "area": "strategic",
+    "audit_family": "FINITE-MIX",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#finite-mix"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed/Finite.lean",
+    "line": 101,
+    "declaration": "def toSimplex (σ : MixedStrategy A) : FiniteMixedStrategy A :=",
+    "area": "strategic",
+    "audit_family": "FINITE-MIX",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#finite-mix"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed/Finite.lean",
+    "line": 105,
+    "declaration": "def toProbability (σ : FiniteMixedStrategy A) : MixedStrategy A :=",
+    "area": "strategic",
+    "audit_family": "FINITE-MIX",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#finite-mix"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 56,
+    "declaration": "def outcomeGame (G : StrategicGame I A V) : OutcomeGame I A (∀ i, A i) where",
+    "area": "strategic",
+    "audit_family": "MIX-REP",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-rep"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 60,
+    "declaration": "def payoffStructure (G : StrategicGame I A V) : PayoffStructure I (∀ i, A i) V where",
+    "area": "strategic",
+    "audit_family": "MIX-REP",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-rep"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 64,
+    "declaration": "protected class Bounded [Bornology V] (G : StrategicGame I A V) : Prop where",
+    "area": "strategic",
+    "audit_family": "MIX-REP",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-rep"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 79,
+    "declaration": "abbrev MixedStrategy (A : I → Type*) [∀ i, MeasurableSpace (A i)] :=",
+    "area": "strategic",
+    "audit_family": "MIX-REP",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-rep"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 83,
+    "declaration": "protected class Measurable [MeasurableSpace V] (G : StrategicGame I A V) : Prop where",
+    "area": "strategic",
+    "audit_family": "MIX-REP",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-rep"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 99,
+    "declaration": "def mixedExtension [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]",
+    "area": "strategic",
+    "audit_family": "RAW-MIX",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#raw-mix"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 114,
+    "declaration": "def MixedPayoffsIntegrable [NormedAddCommGroup V] [Fintype I]",
+    "area": "strategic",
+    "audit_family": "MIX-NE",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-ne"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 142,
+    "declaration": "def mixedNashProblem [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]",
+    "area": "strategic",
+    "audit_family": "MIX-NE",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-ne"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 167,
+    "declaration": "structure IsMixedNash [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]",
+    "area": "strategic",
+    "audit_family": "MIX-NE",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-ne"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Mixed.lean",
+    "line": 243,
+    "declaration": "protected class Continuous [TopologicalSpace V] (G : StrategicGame I A V) : Prop where",
+    "area": "strategic",
+    "audit_family": "MIX-REP",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#mix-rep"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 48,
+    "declaration": "structure OutcomeGame (I : Type*) (A : I → Type*) (O : Type*) where",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 53,
+    "declaration": "structure PayoffStructure (I : Type*) (O : Type*) (V : Type*) where",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 60,
+    "declaration": "def StrategicGame.ofOutcome (G : OutcomeGame ι A O) (P : PayoffStructure ι O V) :",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 80,
+    "declaration": "protected class Measurable (G : OutcomeGame ι A O) where",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 90,
+    "declaration": "@[simps] noncomputable def mixed (G : OutcomeGame ι A O) [G.Measurable] [Fintype ι] :",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 96,
+    "declaration": "@[simps] noncomputable def mixedFlattened (G : OutcomeGame ι A (ProbabilityMeasure O))",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 117,
+    "declaration": "protected class Measurable [MeasurableSpace V] (P : PayoffStructure ι O V) where",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 122,
+    "declaration": "protected class Bounded [Bornology V] (P : PayoffStructure ι O V) where",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 134,
+    "declaration": "noncomputable def expected [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]",
+    "area": "strategic",
+    "audit_family": "EXPECTED",
+    "assessment": "semantic-domain caveat; correct on integrable utilities",
+    "note": "audit.md#expected"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 163,
+    "declaration": "protected class Continuous (G : OutcomeGame ι A O) where",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  },
+  {
+    "file": "MathEconLib/GameTheory/Strategic/Outcome.lean",
+    "line": 190,
+    "declaration": "protected class Continuous [TopologicalSpace V] (P : PayoffStructure ι O V) where",
+    "area": "strategic",
+    "audit_family": "OUTCOME",
+    "assessment": "no substantive defect identified under documented conventions",
+    "note": "audit.md#outcome"
+  }
+]

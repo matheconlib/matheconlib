@@ -1,0 +1,49 @@
+{
+  "pointwise_factorization_obstruction": {
+    "f00": 2,
+    "f01": 1,
+    "f10": 1,
+    "f11": 1,
+    "rectangle_determinant": 1,
+    "affiliated_on_corners": true,
+    "note": "Analytic density is 1 on [0,1]^2 with f(0,0)=2; corner checks do not establish general claims."
+  },
+  "pointwise_affiliation_obstruction": {
+    "x": [
+      "1/2",
+      "1/2"
+    ],
+    "y": [
+      1,
+      0
+    ],
+    "meet": [
+      "1/2",
+      0
+    ],
+    "join": [
+      1,
+      "1/2"
+    ],
+    "left_product": 1,
+    "right_product": 2
+  },
+  "private_values_off_support_obstruction": {
+    "own_signal": 0,
+    "rival_signals": [
+      1,
+      2
+    ],
+    "values": [
+      1,
+      2
+    ]
+  },
+  "finite_comparison_checks": {
+    "affiliated_weight_vectors": 48,
+    "monotone_observables": 20,
+    "comparisons": 5760
+  },
+  "arithmetic": "fractions.Fraction; no floating-point calculations",
+  "scope": "Finite exhaustive checks only; independent analytic proofs in affiliation.md."
+}

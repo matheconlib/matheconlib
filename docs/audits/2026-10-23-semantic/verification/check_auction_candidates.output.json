@@ -1,0 +1,46 @@
+{
+  "actual_revenue": "1/2",
+  "allpurchase_formal_actual_cost": [
+    "1/2",
+    "1"
+  ],
+  "center_spike_affiliation_lhs_rhs": [
+    "1",
+    "2"
+  ],
+  "fn_expected_payment_coefficients": [
+    "1/2",
+    "-1",
+    "1"
+  ],
+  "fn_formal_type_zero_truth_and_deviation_utilities": [
+    "-1/2",
+    "-1/4"
+  ],
+  "formal_revenue": "1/4",
+  "fp_expected_payment_coefficients": [
+    "0",
+    "0"
+  ],
+  "fp_type_one_truth_and_deviation_utilities": [
+    "-1",
+    "0"
+  ],
+  "limitations": "No Lean build. Continuum quantifiers, zero-probability types, atomlessness, and null-set density equivalence use the analytic proof in the note.",
+  "off_diagonal_spike_affiliation_lhs_rhs": [
+    "1",
+    "2"
+  ],
+  "origin_spike_factorization_determinant": "1",
+  "private_values_off_support_counterexample": [
+    "own signal 0",
+    "rival 1: value 1",
+    "rival 2: value 2"
+  ],
+  "result": "INDEPENDENT_EXACT_AUCTION_CHECKS_PASSED",
+  "squared_loss_actual_formal_revenue": [
+    "0",
+    "1/2"
+  ],
+  "supplemental_report_grid_size": 9
+}
