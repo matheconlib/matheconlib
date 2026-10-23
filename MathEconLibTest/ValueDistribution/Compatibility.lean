@@ -6,6 +6,7 @@ Authors: Bo Cowgill
 module
 
 import MathEconLib.Auction.ValueDistribution
+import MathEconLib.Statistics.OrderStatistics
 import MathEconLib.ValueDistribution
 import Mathlib.MeasureTheory.Measure.DiracProba
 
@@ -32,10 +33,21 @@ universe u
 /-- The distribution of a random variable uses the ordinary pushforward
 measure. -/
 example {Ω : Type*} [MeasurableSpace Ω]
-    (μ : ProbabilityMeasure Ω) (X : Ω → ℝ) :
-    ((ValueDistribution.ofRandomVariable μ X : ValueDistribution) :
+    (μ : ProbabilityMeasure Ω) (X : Ω → ℝ) (hX : AEMeasurable X μ) :
+    ((ValueDistribution.ofRandomVariable μ X hX : ValueDistribution) :
         Measure ℝ) = Measure.map X μ :=
-  ValueDistribution.toMeasure_ofRandomVariable μ X
+  ValueDistribution.toMeasure_ofRandomVariable μ X hX
+
+-- These names remain callable even though Mathlib now supplies the instances.
+example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : Auction Ω n) :
+    IsProbabilityMeasure (Measure.map (A.θ 0) ℙ) :=
+  Auction.isProbabilityMeasure_map_θ₀ (A := A)
+
+example {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+    {n : ℕ} (S : OrderStatisticsSetup Ω n) (k : Fin n) :
+    IsProbabilityMeasure (Measure.map (S.val k) ℙ) :=
+  OrderStatisticsSetup.isProbabilityMeasure_map_val S k
 
 /-- Bounded support remains an optional almost-everywhere predicate. -/
 example (D : ValueDistribution) (lower upper : ℝ) :

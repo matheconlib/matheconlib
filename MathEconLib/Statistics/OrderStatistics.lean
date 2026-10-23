@@ -221,6 +221,10 @@ noncomputable instance hasPDF_val (k : Fin n) : HasPDF (S.val k) ℙ volume wher
   haveLebesgueDecomposition' := inferInstance
   absolutelyContinuous' := S.map_val_absolutelyContinuous k
 
+-- Compatibility name; Mathlib now supplies the instance.
+theorem isProbabilityMeasure_map_val (k : Fin n) :
+    IsProbabilityMeasure (Measure.map (S.val k) ℙ) :=
+  inferInstance
 
 /-- Tail expectation formula for order statistics.
 

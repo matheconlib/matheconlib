@@ -41,16 +41,20 @@ The source is itself supplied as a probability measure. The result is its
 pushforward along `X`. -/
 noncomputable def ofRandomVariable
     {Ω : Type*} [MeasurableSpace Ω]
-    (μ : ProbabilityMeasure Ω) (X : Ω → ℝ) : ValueDistribution :=
-  μ.map X
+    (μ : ProbabilityMeasure Ω) (X : Ω → ℝ)
+    (hX : AEMeasurable X μ) : ValueDistribution := by
+  -- Measurability remains a precondition even though Mathlib's map is total.
+  have _ := hX
+  exact μ.map X
 
 /-- The measure underlying `ofRandomVariable` is the ordinary pushforward
 measure. -/
 @[simp]
 theorem toMeasure_ofRandomVariable
     {Ω : Type*} [MeasurableSpace Ω]
-    (μ : ProbabilityMeasure Ω) (X : Ω → ℝ) :
-    ((ofRandomVariable μ X : ValueDistribution) : Measure ℝ) =
+    (μ : ProbabilityMeasure Ω) (X : Ω → ℝ)
+    (hX : AEMeasurable X μ) :
+    ((ofRandomVariable μ X hX : ValueDistribution) : Measure ℝ) =
       Measure.map X μ :=
   ProbabilityMeasure.toMeasure_map μ
 

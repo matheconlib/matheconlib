@@ -42,6 +42,7 @@ noncomputable def valueDistribution (i : Fin n) : ValueDistribution :=
   ValueDistribution.ofRandomVariable
     (⟨ℙ, inferInstance⟩ : ProbabilityMeasure Ω)
     (A.θ i)
+    (A.θ_measurable i).aemeasurable
 
 /-- The measure underlying a bidder's value distribution is the ordinary
 pushforward of the auction measure along that bidder's type random variable. -/
@@ -49,7 +50,7 @@ pushforward of the auction measure along that bidder's type random variable. -/
 theorem toMeasure_valueDistribution (i : Fin n) :
     ((A.valueDistribution i : ValueDistribution) : Measure ℝ) =
       Measure.map (A.θ i) ℙ := by
-  exact ValueDistribution.toMeasure_ofRandomVariable _ _
+  exact ValueDistribution.toMeasure_ofRandomVariable _ _ (A.θ_measurable i).aemeasurable
 
 /-- Under the auction's existing density assumption, bidder `i`'s value
 distribution is absolutely continuous with respect to Lebesgue measure.

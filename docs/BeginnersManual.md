@@ -222,7 +222,7 @@ git -C .lake/packages/mathlib rev-parse HEAD
 
 This command targets the current `v4.35.0` dependency. Before continuing, the
 printed commit must match the `mathlib` entry's `rev` in `lake-manifest.json`
-(currently `8f9d9cff6bd728b17a24e163c9402775d9e6a365`). For a different checkout,
+(currently `56a005855ea17e0b0958f73ec801ae140b0a1679`). For a different checkout,
 use its matching release. Leave `lean-toolchain` and `lake-manifest.json` unchanged.
 Then rerun `lake exe cache get`. After it succeeds, continue with import regeneration
 and `lake build`.

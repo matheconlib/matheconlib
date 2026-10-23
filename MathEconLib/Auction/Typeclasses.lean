@@ -72,6 +72,11 @@ noncomputable def highestType [HasIdenticalTypes A] : ℝ := A.θmax 0
 
 /-! ### Common CDF (needs HasIdenticalTypes) -/
 
+-- Compatibility name; Mathlib now supplies the instance.
+theorem isProbabilityMeasure_map_θ₀ :
+    IsProbabilityMeasure (Measure.map (A.θ 0) ℙ) :=
+  inferInstance
+
 /-- The common CDF: `F(s) = cdf(Measure.map (θ₀) ℙ)(s)`. -/
 noncomputable abbrev commonCDF [HasIdenticalTypes A] (s : ℝ) : ℝ :=
   ProbabilityTheory.cdf (Measure.map (A.θ 0) ℙ) s

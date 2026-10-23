@@ -175,6 +175,7 @@ def twoPointDistribution : ValueDistribution :=
   ValueDistribution.ofRandomVariable
     (ProbabilityTheory.uniformOn Set.univ : Measure Bool).toProbabilityMeasure
     (fun selected => if selected then 1 else 0)
+    (measurable_of_finite _).aemeasurable
 
 /-- Its support is contained in the finite set `{0, 1}`. -/
 example :
