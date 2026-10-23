@@ -3,7 +3,7 @@
 Design: [#211](https://github.com/matheconlib/matheconlib/issues/211),
 repair: [#212](https://github.com/matheconlib/matheconlib/issues/212),
 implementation: [#210](https://github.com/matheconlib/matheconlib/pull/210).
-Bo authorized this API revision on 23 October 2026. Core-maintainer review is
+This API revision follows the 23 October 2026 BIC/IPV design recorded in #211/#212. Core-maintainer review is
 still required before merge.
 
 Bayesian incentive compatibility means that truthful reports maximize expected
