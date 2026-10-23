@@ -137,9 +137,9 @@ the same short name routinely co-occur, distinguish the carrier names too.
 Every PR must satisfy:
 
 - `lake build` is green.
-- No `sorry`, `admit`, or `native_decide` anywhere in the change.
-- `#print axioms` on new main results shows only `propext`, `Classical.choice`,
-  and `Quot.sound`.
+- The proof integrity check passes: no `sorry`, `admit`, or `native_decide` in
+  project code, and compiled declarations use only `propext`, `Classical.choice`,
+  and `Quot.sound` as axioms.
 - Both library and test imports are regenerated and verified with
   `bash scripts/update-imports.sh`.
 
@@ -150,11 +150,30 @@ lake exe cache get                 # first checkout, or after a dependency/toolc
 git add path/to/NewFile.lean        # if adding a Lean file
 bash scripts/update-imports.sh      # regenerate both root import files, then verify them
 lake build                         # includes API pins and MathEconLibTest/Manual/HandsOn.lean
+python3 scripts/check-proof-integrity.py
 ```
 
 Omit the `git add` line if you have not added a file. Include changes to
 `MathEconLib.lean` and `MathEconLibTest.lean` in your commit.
 Use `bash scripts/update-imports.sh --check` to verify imports without changing files.
+
+CI runs the proof integrity check as a failing step in the build job. It builds
+every project Lean source, including files missing from umbrella imports, then
+examines compiled declarations and their transitive axiom dependencies. Private
+declarations and unused custom axioms are included. A source check also rejects
+explicit proof holes in anonymous `example`s, which Lean can discard from compiled
+files; comments and string text are ignored.
+
+The local report is `.lake/proof-integrity/report.json`; CI saves it as the
+`proof-integrity` artifact, including failures. It lists the sources, their hashes,
+and a declaration reaching each forbidden axiom. Dependencies in `.lake` and the
+checker itself are excluded as audit roots; dependencies used by project
+declarations are still followed. This checks proof assumptions, not whether an
+economic definition or theorem statement is correct.
+
+To test the checker, run `python3 scripts/tests/test_proof_integrity.py`. Its
+deliberately invalid fixtures use `.lean.txt` filenames and are compiled only
+inside temporary test projects.
 
 ### Build warnings
 

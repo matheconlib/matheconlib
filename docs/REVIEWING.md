@@ -13,9 +13,10 @@ alongside the review order below.
 ## What review is for
 
 CI builds the library, API pins, tests, and examples and checks both import
-lists. Reviewers also check for `sorry`, `admit`, and `native_decide` and inspect
-axioms on new main results, as required by
-[CONTRIBUTING.md](../CONTRIBUTING.md#verification-bar). Review checks meaning:
+lists. Its proof integrity check rejects incomplete proofs and nonstandard
+axioms, including unused and private axioms; the report is saved with the build
+artifacts. See [CONTRIBUTING.md](../CONTRIBUTING.md#verification-bar) for local
+commands and coverage. Review checks meaning:
 is the headline statement the theorem the cited paper states, are the
 hypotheses honest and load-bearing,
 and is the API something the next file can build on. A wrong hypothesis in a
