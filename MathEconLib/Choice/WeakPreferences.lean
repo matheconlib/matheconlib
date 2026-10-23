@@ -4,9 +4,8 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
 import MathEconLib.Choice.Induced
+import MathEconLib.Choice.Maximizers
 import MathEconLib.ForMathlib.Order.Refinement
-import Mathlib.Order.Filter.Extr
-import Mathlib.Order.Preorder.Finite
 
 /-!
 # Choice under weak preferences
@@ -38,39 +37,6 @@ namespace MathEconLib.Choice
 universe u v w
 
 variable {α : Type u} {β : Type v} {γ : Type w}
-
-/-- All greatest feasible alternatives under the supplied preorder. -/
-def maximizers (pref : Preorder α) (S : Set α) : Set α :=
-  {a | letI := pref; IsGreatest S a}
-
-@[simp] theorem mem_maximizers (pref : Preorder α) {S : Set α} {a : α} :
-    a ∈ maximizers pref S ↔ a ∈ S ∧ ∀ b ∈ S, pref.le b a := Iff.rfl
-
-/-- Value-induced maximizers are feasible `IsMaxOn` witnesses. `IsMaxOn` alone does not
-require the candidate to belong to the feasible set. -/
-theorem mem_maximizers_lift [Preorder β] (value : α → β) {S : Set α} {a : α} :
-    a ∈ maximizers (Preorder.lift value) S ↔ a ∈ S ∧ IsMaxOn value S a := Iff.rfl
-
-theorem maximizers_subset (pref : Preorder α) (S : Set α) : maximizers pref S ⊆ S :=
-  fun _ h ↦ h.1
-
-@[simp] theorem maximizers_empty (pref : Preorder α) : maximizers pref ∅ = ∅ := by
-  ext a
-  simp
-
-/-- Any two maximizers are indifferent, although they need not be equal. -/
-theorem indifferent_of_mem_maximizers (pref : Preorder α) {S : Set α} {a b : α}
-    (ha : a ∈ maximizers pref S) (hb : b ∈ maximizers pref S) :
-    AntisymmRel pref.le a b :=
-  ⟨hb.2 ha.1, ha.2 hb.1⟩
-
-/-- A nonempty finite feasible set attains a greatest element under complete preferences. -/
-theorem maximizers_nonempty_of_finite (pref : Preorder α) (complete : Std.Total pref.le)
-    {S : Set α} (hS : S.Finite) (hne : S.Nonempty) : (maximizers pref S).Nonempty := by
-  letI := pref
-  letI := complete
-  obtain ⟨a, ha⟩ := hS.exists_maximal hne
-  exact ⟨a, (Std.Total.directedOn S).maximal_iff_isGreatest.mp ha⟩
 
 /-- The family of best represented bundles, retaining each tied bundle separately. -/
 def optimalBundles (pref : Preorder β) (bundle : β ↪ Set α) (Y : Set α) : Set (Set α) :=

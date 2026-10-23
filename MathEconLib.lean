@@ -34,6 +34,7 @@ import MathEconLib.Choice.Matching.Completion
 import MathEconLib.Choice.Matching.Preferences
 import MathEconLib.Choice.Matching.Relationships
 import MathEconLib.Choice.Matching.WeakSubstitutability
+import MathEconLib.Choice.Maximizers
 import MathEconLib.Choice.SubstituteHull
 import MathEconLib.Choice.WeakPreferences
 import MathEconLib.ForMathlib.AbsolutelyContinuous
@@ -94,6 +95,7 @@ import MathEconLib.Matching.Contracts.WeakSubstitutes
 import MathEconLib.Mechanism
 import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 import MathEconLib.Mechanism.Auctions.Allocation
+import MathEconLib.Mechanism.Choice
 import MathEconLib.Mechanism.Core.Bayesian
 import MathEconLib.Mechanism.Core.Comap
 import MathEconLib.Mechanism.Core.Environment
@@ -108,6 +110,7 @@ import MathEconLib.Probability.FinDist.Measure
 import MathEconLib.Probability.FinDist.Simplex
 import MathEconLib.SingleParameter
 import MathEconLib.SingleParameter.Basic
+import MathEconLib.SingleParameter.Choice
 import MathEconLib.SingleParameter.EnvelopeIC
 import MathEconLib.SingleParameter.IC
 import MathEconLib.SingleParameter.Payment
