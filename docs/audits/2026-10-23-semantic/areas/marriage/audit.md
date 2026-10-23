@@ -124,7 +124,7 @@ No proposed source correction is needed for a verified substantive defect in thi
 
 ## Evidence and review passes
 
-- Coverage: all 81 declarations were reconciled against `inventory.json`; all 12 modules read. The two implicit instances were checked in addition.
+- Coverage: all 81 declarations were reconciled against [`inventory.json`](../../inventory.json); all 12 modules read. The two implicit instances were checked in addition.
 - Expert reread: preference orientation, outside-option placement, IR, quantifier order, all four extrema, contracts endpoint orientation, and stable-order transport were reread against the standard concepts. DA and bridge reviews were delegated separately within this area.
 - Hostile refutation: the explicit boundary cases above were tested against the precise hypotheses. Separate reviewers attempted to refute DA and bridge/order semantics; their retained notes distinguish rejected candidates.
 - Polish: declaration names/source lines were reconciled again; no unsupported “compiled” assertion appears. Evidence results are bounded Python encodings, not Lean execution or general theorems.

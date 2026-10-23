@@ -17,7 +17,7 @@ This conclusion is confined to the specified models: deterministic mechanisms, q
 | Mechanism core and auction specification | 23 | 9 | [core.md](core.md) |
 | BidderProblem | 11 | 4 | [bidderproblem.md](bidderproblem.md) |
 | SingleParameter | 17 | 6 | [singleparameter.md](singleparameter.md) |
-| Total | 51 | 19 | `coverage.json` records every inventory entry. |
+| Total | 51 | 19 | [`coverage.json`](coverage.json) records every inventory entry. |
 
 The six single-parameter files are `Basic`, `IC`, `EnvelopeIC`, `Payment`, `PostedPrice`, and `Revelation`. The four bidder files are `Basic`, `EnvelopeIC`, `TypeDeviationIC`, and `UniversalIC`. The nine mechanism files are `Core/{Profile,Mechanism,Environment,SolutionConcepts,Comap,Strategic,Bayesian}` and `Auctions/{Allocation,AllPurchase/Spec}`. The theorem-only `SingleParameter/EnvelopeIC` and `SingleParameter/Payment` were reviewed as part of the definitions' analytic interpretation, even though they contribute no inventory declarations.
 

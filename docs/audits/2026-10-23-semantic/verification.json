@@ -12,7 +12,7 @@
     "scope": "zero-density structure/properties, strict positivity, real algebra; not all full probabilistic countermodels"
   },
   "publication_verification": {
-    "status": "local checks passed; remote CI pending",
+    "status": "Local checks passed; current remote CI is recorded on PR #232",
     "lean_version": "4.28.0",
     "default_build_jobs": 8195,
     "project_warning_lines": 0,
@@ -34,7 +34,7 @@
     "import_helper_tests": 11,
     "warning_helper_tests": 27,
     "exact_countermodel_scripts": 4,
-    "portable_local_links": 125,
+    "portable_local_links": 145,
     "immutable_audited_source_links": 96
   },
   "repair_status": "F1/F2 partly implemented in unmerged PR 210; F3-F6 and conditional all-purchase remain open",

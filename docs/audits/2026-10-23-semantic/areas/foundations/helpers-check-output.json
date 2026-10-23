@@ -1,0 +1,23 @@
+{
+  "fixed_points_need_not_close_under_ambient_join": {
+    "ambient_join": 3,
+    "carrier": "P({0,1,2}), subsets encoded as bit masks",
+    "fixed_p": 1,
+    "fixed_q": 2,
+    "image_of_ambient_join": 7,
+    "map": [
+      0,
+      1,
+      2,
+      7,
+      4,
+      5,
+      6,
+      7
+    ]
+  },
+  "inflationary_boolean_maps_n_le_3": 4115,
+  "monotone_chain_maps_card_le_6": 637,
+  "partial_injections": 90,
+  "relations_dimensions_0_through_3": 689
+}

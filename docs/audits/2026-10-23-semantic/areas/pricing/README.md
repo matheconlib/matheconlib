@@ -8,7 +8,7 @@ Source revision: `1d9f8cc233cdaeee0364b51befb84feea657a4da`.
 
 ## Scope and coverage
 
-All 14 files in `MathEconLib/ValueDistribution/` and `MathEconLib/Statistics/` were read. The following table reconciles all 17 pricing rows of the expanded `inventory.json`, including two private helpers. Locations are exact definition starts; supplementary locations below identify interpretation conditions and associated theorems.
+All 14 files in `MathEconLib/ValueDistribution/` and `MathEconLib/Statistics/` were read. The following table reconciles all 17 pricing rows of the expanded [`inventory.json`](../../inventory.json), including two private helpers. Locations are exact definition starts; supplementary locations below identify interpretation conditions and associated theorems.
 
 | Declaration and source | Intended standard concept | Formal → intended; intended → formal |
 | --- | --- | --- |

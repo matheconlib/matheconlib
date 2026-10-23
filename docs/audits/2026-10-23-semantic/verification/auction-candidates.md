@@ -2,7 +2,7 @@
 
 Source revision: `1d9f8cc233cdaeee0364b51befb84feea657a4da`.
 
-The verifier independently read the actual declarations, reconstructed the witnesses, and checked the hypotheses and quantifiers. A separate hostile reviewer read the affiliation source and independently proved those examples. No library source was changed. These are analytic and exact-arithmetic verifications; they are not Lean certificates. The standalone checker is `verification/check_auction_candidates.py`; its saved result is `verification/check_auction_candidates.output.json`.
+The verifier independently read the actual declarations, reconstructed the witnesses, and checked the hypotheses and quantifiers. A separate hostile reviewer read the affiliation source and independently proved those examples. No library source was changed. These are analytic and exact-arithmetic verifications; they are not Lean certificates. The standalone checker is [`verification/check_auction_candidates.py`](check_auction_candidates.py); its saved result is [`verification/check_auction_candidates.output.json`](check_auction_candidates.output.json).
 
 ## Verdict matrix
 

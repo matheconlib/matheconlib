@@ -49,6 +49,6 @@ The retained script is `independent_checks.py`. Reproduce from the repository ro
 python3 docs/audits/2026-10-23-semantic/areas/pricing/independent_checks.py
 ```
 
-The rerun output is retained in `independent_checks.json`; its result is `all checks passed` with `exact_uniform_comparisons = 5733`.
+The rerun output is retained in [`independent_checks.json`](independent_checks.json); its result is `all checks passed` with `exact_uniform_comparisons = 5733`.
 
 No Lean counterexample was claimed or needed: no surviving defect candidate was identified. The report's direct finite and rational computations verify the explicit boundary examples only.

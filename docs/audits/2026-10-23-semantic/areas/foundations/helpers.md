@@ -39,7 +39,7 @@ These files introduce no new independently named economic predicate. Their theor
 
 ## Reproducible evidence and four passes
 
-`helpers-check.py` encodes exact finite relations/finite orders using integer subsets and ordinary tuples. The completed run, recorded in `helpers-check-output.json`, exhaustively checked:
+`helpers-check.py` encodes exact finite relations/finite orders using integer subsets and ordinary tuples. The completed run, recorded in [`helpers-check-output.json`](helpers-check-output.json), exhaustively checked:
 
 - all 689 relations between carriers of sizes 0 through 3, including all 90 partial injections;
 - all 4,115 inflationary maps on Boolean lattices on at most three elements, checking the `card X` iteration bound;

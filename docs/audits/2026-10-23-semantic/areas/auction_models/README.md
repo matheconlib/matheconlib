@@ -20,13 +20,13 @@ from this area's completion gates. This area makes no project-compilation claim.
 
 Reproducible evidence:
 
-- `evidence/check_allpurchase.py` and `evidence/allpurchase-results.json`:
+- `evidence/check_allpurchase.py` and [`evidence/allpurchase-results.json`](evidence/allpurchase-results.json):
   exact rational two-state correlated counterexample and rejected scope probes.
 - `affiliation-evidence/check_finite.py` and
   `affiliation-evidence/check_finite.output.json`: exact density-value witnesses
   and 5,760 finite conditional-average comparisons. The continuous normalization
   and null-set arguments are analytic and are not inferred from those grids.
-- `evidence/check_coverage.py` and `coverage.json`: final inventory reconciliation,
+- [`evidence/check_coverage.py`](../../check_coverage.py) and [`coverage.json`](coverage.json): final inventory reconciliation,
   naming every inventoried declaration and its detailed note. This check verifies
   coverage presence only; semantic assessments remain manually reviewed.
 

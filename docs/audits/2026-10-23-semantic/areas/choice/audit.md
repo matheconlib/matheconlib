@@ -72,7 +72,7 @@ No suspected substantive defect remains, so there is no reportable counterexampl
 
 The general assessments above use direct quantifier, order, and set arguments. Independent bounded computations check the exact encodings only:
 
-- `python3 docs/audits/2026-10-23-semantic/areas/choice/check_core.py`: all choice rules on carriers of size 0, 1, 2, 3 (1, 2, 16, 4,096 rules). Every tested core equivalence, hull/IRC property, terminal characterization and deterministic repair-to-hull check passed. Exact counts are saved in `core-results.json`; the three-element case has 216 hereditary rules, 246 consistent rules and 35 path-independent rules.
+- `python3 docs/audits/2026-10-23-semantic/areas/choice/check_core.py`: all choice rules on carriers of size 0, 1, 2, 3 (1, 2, 16, 4,096 rules). Every tested core equivalence, hull/IRC property, terminal characterization and deterministic repair-to-hull check passed. Exact counts are saved in [`core-results.json`](core-results.json); the three-element case has 216 hereditary rules, 246 consistent rules and 35 path-independent rules.
 - `python3 docs/audits/2026-10-23-semantic/areas/choice/induced/check_finite.py`: all 109,601 ranked represented-bundle families on three alternatives (876,808 family/menu cases), all 192 option-order/menu cases, and all 4,096 arbitrary contracting maps from three into four alternatives passed. This independently compares union-of-maximizer-members with direct maximum selection, and checks relabeling and its preservation properties.
 - `python3 docs/audits/2026-10-23-semantic/areas/choice/matching/finite_check.py`: all 4,096 choice rules crossed with all five partner partitions of three contracts passed the stated hull/US/IRC/feasible-completion relationships. The underlying menus, subsets and partner partitions are fully encoded in the preserved script.
 
@@ -90,4 +90,4 @@ Detailed subreviews: `induced-notes.md` and `matching-notes.md` in this director
 1. Complete coverage: all 34 inventoried declarations mapped above, with no definitions in `Relationships.lean` omitted.
 2. Expert reread: domain restrictions, preference orientation, outside option, contract-partner feasibility, completion direction, and finite-vs-infinite arguments checked against source and available primary papers.
 3. Hostile refutation: empty outputs, tied preferences, no attained maximum, strong-vs-single-addition substitutes, finite LAD, non-enlarging completions, same-partner added/rejected contracts, arbitrary repair schedules and missing finite-valuedness examined. No reportable defect survived.
-4. Polish: locations reconciled to `inventory.json`, executable evidence rerun, no source changes or unjustified fresh-compilation claim made.
+4. Polish: locations reconciled to [`inventory.json`](../../inventory.json), executable evidence rerun, no source changes or unjustified fresh-compilation claim made.
