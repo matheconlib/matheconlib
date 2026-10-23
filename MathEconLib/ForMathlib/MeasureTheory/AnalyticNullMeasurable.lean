@@ -143,7 +143,7 @@ private lemma exists_isCompact_subset_range_measure_le
       rw [← Set.image_iUnion]
       congr 1
       ext β
-      simp only [Set.mem_iUnion, Set.mem_inter_iff, Set.mem_setOf_eq]
+      simp only [Set.mem_iUnion, Set.mem_inter_iff, Set.mem_ofPred_eq]
       exact ⟨fun ⟨_, hβ, _⟩ => hβ, fun hβ => ⟨β n, hβ, le_refl _⟩⟩
     have hsup : μ (f '' T) ≤ ⨆ M, μ (f '' (T ∩ {β | β n ≤ M})) := by
       rw [← hmono.measure_iUnion, hunion]
@@ -163,7 +163,7 @@ private lemma exists_isCompact_subset_range_measure_le
     | succ n ih =>
       rw [hF_succ, ih]
       ext β
-      simp only [Set.mem_inter_iff, Set.mem_setOf_eq]
+      simp only [Set.mem_inter_iff, Set.mem_ofPred_eq]
       constructor
       · rintro ⟨hpre, hn⟩ k hk
         rcases Nat.lt_succ_iff_lt_or_eq.mp hk with hk' | hk'
@@ -239,13 +239,13 @@ private lemma nullMeasurableSet_of_forall_exists_isCompact
   have hS_sub_H : S ⊆ toMeasurable μ S := subset_toMeasurable μ S
   have hHG_null : μ (toMeasurable μ S \ G) = 0 := by
     have hG_in_H : G ⊆ toMeasurable μ S := hG_sub.trans hS_sub_H
-    rw [measure_diff hG_in_H hG_meas.nullMeasurableSet (measure_ne_top μ G),
+    rw [measure_sdiff hG_in_H hG_meas.nullMeasurableSet (measure_ne_top μ G),
       measure_toMeasurable]
     exact tsub_eq_zero_of_le hμSG
   have hSG_null : μ (S \ G) = 0 :=
-    measure_mono_null (Set.diff_subset_diff_left hS_sub_H) hHG_null
+    measure_mono_null (Set.sdiff_subset_sdiff_left hS_sub_H) hHG_null
   have hS_eq : S = G ∪ (S \ G) := by
-    rw [Set.union_diff_cancel hG_sub]
+    rw [Set.union_sdiff_cancel hG_sub]
   rw [hS_eq]
   exact hG_meas.nullMeasurableSet.union (NullMeasurableSet.of_null hSG_null)
 
@@ -259,7 +259,7 @@ theorem AnalyticSet.nullMeasurableSet
   rw [AnalyticSet] at hS
   rcases hS with rfl | ⟨f, hf_cont, rfl⟩
   · exact MeasurableSet.empty.nullMeasurableSet
-  · letI := TopologicalSpace.upgradeIsCompletelyMetrizable X
+  · let := TopologicalSpace.upgradeIsCompletelyMetrizable X
     exact nullMeasurableSet_of_forall_exists_isCompact fun ε hε =>
       exists_isCompact_subset_range_measure_le hf_cont hε
 

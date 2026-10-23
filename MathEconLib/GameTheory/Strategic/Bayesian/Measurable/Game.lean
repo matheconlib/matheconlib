@@ -7,6 +7,7 @@ module
 
 public import MathEconLib.GameTheory.Strategic.Bayesian.Game
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+import Mathlib.MeasureTheory.Integral.IntegrableOn
 
 /-!
 # Measurable strategies and ex-ante payoffs
@@ -66,7 +67,7 @@ def measurableActionProfile (G : BayesianGame I Θ A V) (s : G.Strategy) (θ : �
 /-- The realized action profile is measurable in the full type profile. -/
 lemma measurable_actionProfile (G : BayesianGame I Θ A V) (s : G.Strategy) :
     Measurable (G.measurableActionProfile s) :=
-  measurable_pi_lambda _ fun i => (s i).2.comp (measurable_pi_apply i)
+  Measurable.of_eval fun i => (s i).2.comp (measurable_pi_apply i)
 
 /-- Jointly measurable payoffs remain measurable after players use measurable strategies. -/
 lemma measurable_payoff_comp [MeasurableSpace V] (G : BayesianGame I Θ A V)

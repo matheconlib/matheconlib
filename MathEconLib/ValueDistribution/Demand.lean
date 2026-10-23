@@ -102,7 +102,7 @@ theorem probAtLeast_eq_one_sub_cdf_of_singleton_eq_zero
 
 /-- For an atomless distribution, demand is one minus the CDF. -/
 theorem probAtLeast_eq_one_sub_cdf
-    (D : ValueDistribution) [NoAtoms (D : Measure ℝ)] (price : ℝ) :
+    (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)] (price : ℝ) :
     D.probAtLeast price = 1 - cdf (D : Measure ℝ) price := by
   apply D.probAtLeast_eq_one_sub_cdf_of_singleton_eq_zero price
   simp [ProbabilityMeasure.coeFn_def]

@@ -47,7 +47,7 @@ theorem exists_iterate_deferredAcceptanceOperator_top (hsub : M.Substitutable) [
     ∃ n, M.deferredAcceptanceOperator^[n] (Set.univ, toDual (∅ : Set X)) =
       OrderHom.gfp (M.deferredAcceptanceOrderHom hsub) := by
   classical
-  letI := Fintype.ofFinite X
+  let := Fintype.ofFinite X
   obtain ⟨n, hn⟩ := OrderHom.exists_iterate_top_eq_gfp (M.deferredAcceptanceOrderHom hsub)
   refine ⟨n, ?_⟩
   -- `⊤ = (univ, toDual ∅)` and
@@ -61,7 +61,7 @@ theorem exists_iterate_deferredAcceptanceOperator_bot (hsub : M.Substitutable) [
     ∃ n, M.deferredAcceptanceOperator^[n] (∅, toDual (Set.univ : Set X)) =
       OrderHom.lfp (M.deferredAcceptanceOrderHom hsub) := by
   classical
-  letI := Fintype.ofFinite X
+  let := Fintype.ofFinite X
   obtain ⟨n, hn⟩ := OrderHom.exists_iterate_bot_eq_lfp (M.deferredAcceptanceOrderHom hsub)
   refine ⟨n, ?_⟩
   have hbot : ((∅, toDual (Set.univ : Set X)) : Set X × (Set X)ᵒᵈ) = ⊥ := rfl

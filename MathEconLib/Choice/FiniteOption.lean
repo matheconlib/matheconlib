@@ -59,27 +59,27 @@ def bestOption (pref : LinearOrder (Option α)) (A : Finset α) : Option α := b
 
 theorem bestOption_mem (pref : LinearOrder (Option α)) (A : Finset α) :
     bestOption pref A ∈ optionMenu A := by
-  letI := pref
+  let := pref
   exact Finset.max'_mem _ _
 
 theorem le_bestOption (pref : LinearOrder (Option α)) (A : Finset α)
     {o : Option α} (ho : o ∈ optionMenu A) :
     pref.le o (bestOption pref A) := by
-  letI := pref
+  let := pref
   exact Finset.le_max' _ _ ho
 
 theorem bestOption_eq_iff (pref : LinearOrder (Option α)) (A : Finset α)
     (o : Option α) :
     bestOption pref A = o ↔
       o ∈ optionMenu A ∧ ∀ p ∈ optionMenu A, pref.le p o := by
-  letI := pref
+  let := pref
   exact Finset.max'_eq_iff _ _ _
 
 /-- The finite selector attains the greatest element under the supplied order. -/
 theorem isGreatest_bestOption (pref : LinearOrder (Option α)) (A : Finset α) :
     letI := pref
     IsGreatest (↑(optionMenu A) : Set (Option α)) (bestOption pref A) := by
-  letI := pref
+  let := pref
   exact ⟨bestOption_mem pref A, fun _ ho => le_bestOption pref A ho⟩
 
 theorem bestOption_mono (pref : LinearOrder (Option α))

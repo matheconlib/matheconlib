@@ -49,7 +49,8 @@ example :
   ValueDistribution.uniformInterval_absolutelyContinuous a b hab
 
 example :
-    NoAtoms ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) :=
+    NullSingletonClass
+      ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) :=
   ValueDistribution.uniformInterval_noAtoms a b hab
 
 /-- Its density is the reciprocal of interval length, almost everywhere on

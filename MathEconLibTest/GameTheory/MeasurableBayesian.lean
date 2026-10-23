@@ -50,7 +50,7 @@ def prior : Measure (Unit → ℝ) := (gaussianReal 0 1).map (fun x _ => x)
 
 /-- The Gaussian type prior has total mass one. -/
 instance : IsProbabilityMeasure prior :=
-  Measure.isProbabilityMeasure_map (measurable_pi_lambda _ fun _ => measurable_id).aemeasurable
+  inferInstanceAs (IsProbabilityMeasure ((gaussianReal 0 1).map fun x (_ : Unit) => x))
 
 /-- A selected version of conditional opponent beliefs for the Gaussian prior. -/
 def beliefs : ConditionalBeliefs prior := canonicalBeliefs prior

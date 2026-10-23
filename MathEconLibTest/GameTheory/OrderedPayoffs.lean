@@ -113,12 +113,12 @@ theorem exists_isNash : ∃ a, game.IsNash a := by
         ((fun s => game.payoff i (Function.update a i s)) ∘
           (Homeomorph.refl Action).symm) (fun _ => game.payoff i a) ⟨x, hx⟩
       cases i
-      simp only [Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_Ici, hx, true_and]
+      simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, Set.mem_Ici, hx, true_and]
       rw [hextend]
       simp only [Function.comp_apply, Homeomorph.refl_symm, Homeomorph.refl_apply,
         game, Function.update_self]
       rfl
-    · simp only [Set.mem_setOf_eq, Set.mem_inter_iff, hx, false_and]
+    · simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, hx, false_and]
   change Convex ℝ _
   rw [hsuperlevel]
   exact (convex_Icc 1 2).inter (convex_Ici (r : ℝ))

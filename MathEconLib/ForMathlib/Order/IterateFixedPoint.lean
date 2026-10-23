@@ -50,7 +50,7 @@ theorem OrderHom.exists_iterate_top_eq_gfp {L : Type*} [CompleteLattice L]
   refine ⟨k, le_antisymm (f.isGreatest_gfp.2 hfix) ?_⟩
   calc
     OrderHom.gfp f = (f : L → L)^[k] (OrderHom.gfp f) :=
-      (f.isFixedPt_gfp.iterate k).symm
+      (Function.iterate_fixed f.isFixedPt_gfp k).symm
     _ ≤ (f : L → L)^[k] ⊤ := f.monotone.iterate k le_top
 
 /-- Iteration from `⊥` reaches the least fixed point, by applying

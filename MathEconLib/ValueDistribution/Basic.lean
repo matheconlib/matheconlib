@@ -35,16 +35,17 @@ abbrev ValueDistribution := ProbabilityMeasure ℝ
 
 namespace ValueDistribution
 
-/-- The distribution of a measurable real-valued random variable.
+/-- The distribution of a real-valued random variable.
 
 The source is itself supplied as a probability measure. The result is its
-pushforward along `X`. Almost-everywhere measurability is the weakest
-assumption required by mathlib's probability-measure map. -/
+pushforward along `X`. -/
 noncomputable def ofRandomVariable
     {Ω : Type*} [MeasurableSpace Ω]
     (μ : ProbabilityMeasure Ω) (X : Ω → ℝ)
-    (hX : AEMeasurable X μ) : ValueDistribution :=
-  μ.map hX
+    (hX : AEMeasurable X μ) : ValueDistribution := by
+  -- Measurability remains a precondition even though Mathlib's map is total.
+  have _ := hX
+  exact μ.map X
 
 /-- The measure underlying `ofRandomVariable` is the ordinary pushforward
 measure. -/
@@ -55,7 +56,7 @@ theorem toMeasure_ofRandomVariable
     (hX : AEMeasurable X μ) :
     ((ofRandomVariable μ X hX : ValueDistribution) : Measure ℝ) =
       Measure.map X μ :=
-  ProbabilityMeasure.toMeasure_map μ hX
+  ProbabilityMeasure.toMeasure_map μ
 
 /-- The distribution is concentrated on the closed interval `[lower, upper]`.
 
