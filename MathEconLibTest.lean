@@ -1,3 +1,4 @@
+import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
