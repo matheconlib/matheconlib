@@ -128,7 +128,7 @@ omit [Fintype M] in
 @[simp] theorem bestMFinset_eq_bestM (m : M) (Y : Finset (M × W)) :
     mkt.bestMFinset m Y = mkt.bestM m (Y : Set (M × W)) := by
   classical
-  letI := mkt.prefM m
+  let := mkt.prefM m
   apply le_antisymm
   · apply mkt.le_bestM_of_mem
     rw [← mkt.menuMFinset_eq_menuM m Y]
@@ -142,7 +142,7 @@ omit [Fintype W] in
 @[simp] theorem bestWFinset_eq_bestW (w : W) (Y : Finset (M × W)) :
     mkt.bestWFinset w Y = mkt.bestW w (Y : Set (M × W)) := by
   classical
-  letI := mkt.prefW w
+  let := mkt.prefW w
   apply le_antisymm
   · apply mkt.le_bestW_of_mem
     rw [← mkt.menuWFinset_eq_menuW w Y]

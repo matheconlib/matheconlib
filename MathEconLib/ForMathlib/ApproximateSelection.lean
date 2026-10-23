@@ -208,7 +208,7 @@ lemma star_refinement_assembly
         (Set.mem_iUnion₂.mpr ⟨π k₂, hx, subset_closure (hS_ref k₂ hz₂).2⟩)
     calc S k₁ ⊆ D k₁.1 ∩ W (π k₁) := hS_ref k₁
       _ ⊆ D k₁.1 := inter_subset_left
-      _ ⊆ R (π k₂) := Set.diff_subset.trans (Set.biInter_subset_of_mem hτR)
+      _ ⊆ R (π k₂) := Set.sdiff_subset.trans (Set.biInter_subset_of_mem hτR)
       _ ⊆ C (π k₂) := hRC (π k₂)
 
 /-- Every open cover of a paracompact Hausdorff space admits a locally finite star-refinement

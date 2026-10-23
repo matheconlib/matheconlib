@@ -183,7 +183,7 @@ theorem strictMonotonicity
       v * B.winProb b - B.cost b ≤ v * B.winProb (σ v) - B.cost (σ v) :=
     fun v hv b hb => hic.universalIC v (hBI ▸ hv) b (mem_Ici.mpr hb)
   by_contra h
-  simp only [StrictMonoOn] at h; push_neg at h
+  simp only [StrictMonoOn] at h; push Not at h
   obtain ⟨a, ha, b, hb, hab, hnlt⟩ := h
   have heq : σ a = σ b := le_antisymm (hσ_mono ha hb hab.le) hnlt
   have hv₁ : (2 * a + b) / 3 ∈ I° :=

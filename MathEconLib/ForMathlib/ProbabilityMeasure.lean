@@ -145,7 +145,7 @@ lemma ProbabilityMeasure.convex_range_toWeakDualContinuousMap {α : Type*} [Topo
     simp [Measure.add_apply, Measure.smul_apply, smul_eq_mul,
       ← ENNReal.ofReal_add ha hb, hab]⟩
   refine ⟨⟨_, hν⟩, ContinuousLinearMap.ext fun f ↦ ?_⟩
-  simp only [toWeakDualContinuousMap, ContinuousMap.coe_mk]
+  simp only [toWeakDualContinuousMap]
   change ∫ x, f x ∂(ENNReal.ofReal a • μ₁.toMeasure + ENNReal.ofReal b • μ₂.toMeasure) =
     a * ∫ x, f x ∂μ₁ + b * ∫ x, f x ∂μ₂
   rw [integral_add_measure (f.continuous.integrable.smul_measure ENNReal.ofReal_ne_top)

@@ -38,7 +38,7 @@ public lemma UpperHemicontinuous.isClosed_graph {X : Type*} [TopologicalSpace X]
     IsClosed {p : X × Y | p.2 ∈ F p.1} := by
   rw [← isOpen_compl_iff, isOpen_prod_iff]
   intro x₀ y₀ hy₀
-  simp only [mem_compl_iff, mem_setOf_eq] at hy₀
+  simp only [mem_compl_iff, mem_ofPred_eq] at hy₀
   have hsep := SeparatedNhds.of_isCompact_isCompact isCompact_singleton (hF' x₀)
     (Set.disjoint_singleton_left.mpr hy₀)
   rw [SeparatedNhds.eq_1] at hsep
@@ -59,9 +59,9 @@ lemma approx_fixed_point_data {E : Type*} [AddCommGroup E] [Module ℝ E] [Topol
       (t := IsTopologicalAddGroup.rightUniformSpace E)))
     {W : Set E} (hW : W ∈ 𝓝 (0 : E)) :
     ∃ (x x' : k) (y : E), y ∈ F x' ∧ (x, x') ∈ U ∧ (↑x : E) - y ∈ W := by
-  letI : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
-  haveI : CompactSpace k := isCompact_iff_compactSpace.mp hk
-  haveI : ParacompactSpace k := paracompact_of_compact
+  let : UniformSpace E := IsTopologicalAddGroup.rightUniformSpace E
+  have : CompactSpace k := isCompact_iff_compactSpace.mp hk
+  have : ParacompactSpace k := paracompact_of_compact
   obtain ⟨f, hf_cont, hf_range, hf_approx⟩ := hF.exists_isApproxSelection' hFne hFconv hU hW hk' hFk
   have hf_mem : ∀ a : k, f a ∈ k := Set.range_subset_iff.mp hf_range
   obtain ⟨x, hx⟩ := (hf_cont.codRestrict hf_mem).exists_fixedPt_of_isConvex_isCompact hk hk' hk''
@@ -157,8 +157,8 @@ lemma raw_approx_data {E : Type u} [AddCommGroup E] [Module ℝ E]
   choose xι x'ι yι hy hpair hsub using
     fun (i : ι) => hApprox i.val.1 i.2.1 i.val.2 i.2.2
   obtain ⟨hne, hcodir⟩ := raw_approx_index_codirected (k := k)
-  haveI : Nonempty ι := hne
-  haveI : IsCodirectedOrder ι := hcodir
+  have : Nonempty ι := hne
+  have : IsCodirectedOrder ι := hcodir
   exact ⟨ι, atBot, atBot_neBot, xι, x'ι, yι, hy,
     tendsto_diff_of_entourage_atBot (hmem := hpair),
     tendsto_sub_of_nhd_atBot (hmem := hsub)⟩
@@ -196,7 +196,7 @@ lemma approx_data_cluster_point {E : Type u} [AddCommGroup E] [Module ℝ E]
         Tendsto (fun i => (↑(x'ι i) : E)) l (𝓝 ↑x₀) ∧
         Tendsto yι l (𝓝 ↑x₀)) := by
   obtain ⟨ι, l₀, hl₀, xι, x'ι, yι, hmem, hpair, hdiff⟩ := raw_approx_data hApprox
-  haveI : CompactSpace k := isCompact_iff_compactSpace.mp hk
+  have : CompactSpace k := isCompact_iff_compactSpace.mp hk
   obtain ⟨x₀, hNeBot, hxTendsto⟩ := compact_cluster_refine (l₀ := l₀) xι
   set l := l₀ ⊓ comap xι (𝓝 x₀)
   have hl_le : l ≤ l₀ := inf_le_left

@@ -185,7 +185,8 @@ protected lemma le_iff [DecidableEq ι] {G : StrategicGame ι A V} {i : ι}
     s ≤ s' ↔ ∀ (a a' : (i : ι) → A i), a i = s → a' = Function.update a i s' →
       G.payoff i a ≤ G.payoff i a' := by
   rw [Strategy.le_def]
-  exact ⟨fun h a a' ha ha' ↦ h a a' ha (ha' ▸ Function.update_self ..) fun j hj ↦ ha' ▸ (Function.update_of_ne hj ..).symm,
+  exact ⟨fun h a a' ha ha' ↦ h a a' ha (ha' ▸ Function.update_self ..)
+      fun j hj ↦ ha' ▸ (Function.update_of_ne hj ..).symm,
     fun h a a' ha ha' hj ↦ h a a' ha (Function.eq_update_iff.2 ⟨ha', fun j hj' ↦ (hj j hj').symm⟩)⟩
 
 /-- Weak dominance is the payoff inequality for both actions at every opponent profile. -/
@@ -194,7 +195,8 @@ protected lemma le_iff' [DecidableEq ι] {G : StrategicGame ι A V} {i : ι}
     s ≤ s' ↔ ∀ a : (i : ι) → A i, G.payoff i (Function.update a i s) ≤
       G.payoff i (Function.update a i s') := by
   rw [Strategy.le_iff]
-  refine ⟨fun h a ↦ h _ _ (Function.update_self ..) (Function.update_idem ..).symm, fun h a a' ha ha' ↦ ?_⟩
+  refine ⟨fun h a ↦ h _ _ (Function.update_self ..) (Function.update_idem ..).symm,
+    fun h a a' ha ha' ↦ ?_⟩
   rw [Function.eq_update_self_iff.2 ha, ha']
   exact h a
 

@@ -90,7 +90,7 @@ theorem gs_bestW_mem {R : Set (M × W)} {m : M} {w : W}
 theorem gs_held_proposes_next {R : Set (M × W)} {m : M} {w : W}
     (hh : (m, w) ∈ mkt.gsHeld R) :
     (m, w) ∈ mkt.gsProposals (mkt.gsStep R) := by
-  letI := mkt.prefM m
+  let := mkt.prefM m
   have hbest : some w = mkt.bestM m Rᶜ := hh.1
   have hnew : (m, w) ∉ mkt.gsStep R := by
     rintro (hR | ⟨_, hn⟩)
@@ -122,7 +122,7 @@ theorem gs_rejected_below_holding (n : ℕ) {m : M} {w : W}
     (hR : (m, w) ∈ mkt.gsRejected n) :
     mkt.ltW w (some m)
       (mkt.bestW w (mkt.gsProposals (mkt.gsRejected n))) := by
-  letI := mkt.prefW w
+  let := mkt.prefW w
   revert hR
   induction n with
   | zero => intro hR; exact False.elim hR
@@ -162,13 +162,13 @@ theorem gs_step_avoids_stable {R : Set (M × W)} {ν : M ≃. W}
   · exact hR (m, w) hr hpair
   · have hνw : ν.symm w = some m := mkt.mem_graphOf_symm.mp hpair
     have hstrict : mkt.ltW w (some m) (mkt.bestW w (mkt.gsProposals R)) := by
-      letI := mkt.prefW w
+      let := mkt.prefW w
       have hle : some m ≤ mkt.bestW w (mkt.gsProposals R) :=
         mkt.le_bestW_of_mem (mkt.some_mem_menuW.mpr hp)
       exact lt_of_le_of_ne hle (fun heq => hnh ⟨hp, heq⟩)
     cases hbest : mkt.bestW w (mkt.gsProposals R) with
     | none =>
-        letI := mkt.prefW w
+        let := mkt.prefW w
         have hir : (none : Option M) ≤ some m := by
           have := hν.1.2 w
           simpa only [IndividuallyRationalForW, hνw, leW] using this
@@ -181,7 +181,7 @@ theorem gs_step_avoids_stable {R : Set (M × W)} {ν : M ≃. W}
         have hw : mkt.ltW w (ν.symm w) (some m') := by
           simpa only [hνw, hbest] using hstrict
         have hm : mkt.ltM m' (ν m') (some w) := by
-          letI := mkt.prefM m'
+          let := mkt.prefM m'
           have hle : ν m' ≤ some w := by
             have := mkt.gs_assignment_le_proposal hR m'
             simpa only [← hbestM, leM] using this
@@ -190,7 +190,7 @@ theorem gs_step_avoids_stable {R : Set (M × W)} {ν : M ≃. W}
           have he : m = m' :=
             mkt.graphOf_leftUnique ν hpair (mkt.mem_graphOf.mpr heq)
           subst m'
-          letI := mkt.prefW w
+          let := mkt.prefW w
           have hbad : some m < some m := by simpa only [hνw, ltW] using hw
           exact (lt_irrefl _) hbad
         exact hν.2.1 m' w ⟨hm, hw⟩
@@ -286,11 +286,11 @@ theorem stable_gsMatchingAt (n : ℕ)
     have hrej : (m, w) ∈ mkt.gsRejected n := by
       classical
       by_contra hnot
-      letI := mkt.prefM m
+      let := mkt.prefM m
       have hle : some w ≤ mkt.bestM m (mkt.gsRejected n)ᶜ :=
         mkt.le_bestM_of_mem (mkt.some_mem_menuM.mpr hnot)
       exact (not_lt_of_ge hle) hblock.1
-    letI := mkt.prefW w
+    let := mkt.prefW w
     have hlt := mkt.gs_rejected_below_holding n hrej
     exact (lt_asymm hlt) hblock.2
 

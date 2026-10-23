@@ -53,7 +53,7 @@ theorem ae_interim_of_isBNE (s : G.Strategy) (hbne : G.IsBNE μ s)
     (hdev : G.HasIntegrableInterimDeviations μ B s) : G.IsAEInterimBestResponse μ B s := by
   have hint := hbne.integrable
   intro i
-  haveI : Nonempty (A i) := ⟨(s i).1 (Classical.arbitrary (Θ i))⟩
+  have : Nonempty (A i) := ⟨(s i).1 (Classical.arbitrary (Θ i))⟩
   by_contra hviol
   rw [ae_iff] at hviol
   have hpos : 0 < marginalType μ i

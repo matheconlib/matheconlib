@@ -408,7 +408,7 @@ private theorem intervalIntegrable_q_mul_probAtLeast
     have hprobOne := D.probAtLeast_le_one value
     rw [Real.norm_eq_abs, Pi.mul_apply,
       abs_of_nonneg (mul_nonneg hq.1 hprobNonneg)]
-    exact mul_le_one₀ hq.2 hprobNonneg hprobOne
+    exact ((mul_le_of_le_one_left hprobNonneg hq.2).trans hprobOne)
   have hclampedIntervalIntegrable :
       IntervalIntegrable
         (fun value =>
@@ -578,7 +578,7 @@ theorem expectedPayment_eq_integral_q_mul_sub_one_sub_cdf
         P.U P.lowestType := by
   rw [D.expectedPayment_eq_integral_q_mul_virtualSurplusWeight
     P density horder hsupport hD hdensity]
-  letI : NullSingletonClass (D : Measure ℝ) :=
+  let : NullSingletonClass (D : Measure ℝ) :=
     ⟨fun _ => hD (by simp)⟩
   congr 1
   apply intervalIntegral.integral_congr

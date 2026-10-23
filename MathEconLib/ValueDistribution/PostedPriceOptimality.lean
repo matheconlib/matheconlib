@@ -130,7 +130,7 @@ private theorem intervalIntegral_q_postedPriceProblem_mul
       apply intervalIntegral.integral_congr_ae
       filter_upwards [hnull] with value hne hmem
       rw [uIoc_of_le hprice.1] at hmem
-      rw [postedPriceProblem_q, if_neg (not_le.mpr (lt_of_le_of_ne hmem.2 hne))]
+      rw [postedPriceProblem_q, ite_eq_right (not_le.mpr (lt_of_le_of_ne hmem.2 hne))]
       ring
     simpa using hzero
   have hupper :
@@ -141,7 +141,7 @@ private theorem intervalIntegral_q_postedPriceProblem_mul
     intro value hvalue
     rw [uIcc_of_le hprice.2] at hvalue
     dsimp only
-    rw [postedPriceProblem_q, if_pos hvalue.1]
+    rw [postedPriceProblem_q, ite_eq_left hvalue.1]
     ring
   rw [← intervalIntegral.integral_add_adjacent_intervals hlowerint hupperint,
     hlower, hupper, zero_add]
@@ -225,7 +225,7 @@ private theorem intervalIntegrable_netVirtualSurplus
   apply hweighted.congr_ae
   filter_upwards [ae_restrict_mem measurableSet_uIoc] with value hvalue
   rw [uIoc_of_le horder] at hvalue
-  rw [postedPriceProblem_q, if_pos hvalue.1.le]
+  rw [postedPriceProblem_q, ite_eq_left hvalue.1.le]
   simp
 
 /-! ## Comparing cutoff integrals -/

@@ -5,6 +5,8 @@ Authors: Bo Cowgill
 -/
 import MathEconLibExamples.SingleParameter.BeckerCrime
 
+/-! Worked examples for the Becker crime model. -/
+
 open MathEconLib MathEconLibExamples.SingleParameter
 
 namespace Manual.BeckerResearch

@@ -148,7 +148,7 @@ theorem sellerProfit_eq_virtualSurplus_cdf
               continuationValue * density value) := by
   rw [D.sellerProfit_eq_virtualSurplus P density
     continuationValue acquisitionCost horder hsupport hD hdensity]
-  letI : NullSingletonClass (D : Measure ℝ) :=
+  let : NullSingletonClass (D : Measure ℝ) :=
     ⟨fun _ => hD (by simp)⟩
   congr 1
   apply intervalIntegral.integral_congr

@@ -287,12 +287,12 @@ theorem prob_iInter_inter_iInter_eq (i₀ : Fin n) (T : Finset (Fin n)) (x : ℝ
   set p := ENNReal.ofReal F
   have h_in : ∀ i ∈ T, ℙ (S.X i ⁻¹' A i) = p := by
     intro i hi
-    simp only [A, hi, if_true]
+    simp only [A, hi, ite_true]
     rw [← Measure.map_apply (S.X_measurable i) measurableSet_Iic, (S.X_ident i i₀).map_eq]
     exact (ofReal_cdf _ x).symm
   have h_out : ∀ i ∉ T, ℙ (S.X i ⁻¹' A i) = 1 - p := by
     intro i hi
-    simp only [A, hi, if_false]
+    simp only [A, hi, ite_false]
     rw [show S.X i ⁻¹' Set.Ioi x = (S.X i ⁻¹' Set.Iic x)ᶜ by ext ω; simp [Set.mem_Ioi, Set.mem_Iic,
         not_le], measure_compl ((S.X_measurable i) measurableSet_Iic) (measure_ne_top ℙ _),
         measure_univ]
@@ -332,7 +332,7 @@ theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
   have h_decomp : {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} =
       ⋃ T ∈ Finset.univ.powersetCard l, E T := by
     ext ω
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     constructor
     · intro hω
       exact Set.mem_iUnion₂.mpr ⟨univ.filter (S.X · ω ≤ x), Finset.mem_powersetCard.mpr
@@ -381,7 +381,7 @@ theorem cdf_val (i₀ : Fin n) (k : Fin n) (x : ℝ) :
     show {ω : Ω | k.val + 1 ≤ #(Finset.univ.filter (S.X · ω ≤ x))} =
       ⋃ l ∈ Finset.Icc (k.val + 1) n, {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} by
     ext ω
-    simp only [Set.mem_setOf_eq, Set.mem_iUnion, Finset.mem_Icc, exists_prop]
+    simp only [Set.mem_ofPred_eq, Set.mem_iUnion, Finset.mem_Icc, exists_prop]
     constructor
     · intro h
       exact ⟨_, ⟨h, (Finset.card_filter_le _ _).trans (by simp)⟩, rfl⟩
@@ -610,7 +610,7 @@ theorem expected_val (k : Fin n) (i₀ : Fin n) (a b : ℝ) (hab : a ≤ b)
     filter_upwards [pdf_eq_zero0, pdf_eq_zero1] with ψ h_lo h_hi h_not_mem
     by_cases h : ψ ≤ a
     · rw [h_lo (Set.mem_Iic.mpr h), mul_zero]
-    · push_neg at h
+    · push Not at h
       have hb : b < ψ := by
         by_contra! h'
         exact h_not_mem (Set.mem_Ioc.mpr ⟨h, h'⟩)

@@ -61,7 +61,7 @@ theorem valueDistribution_absolutelyContinuous
     [HasDensity A] (i : Fin n) :
     ((A.valueDistribution i : ValueDistribution) : Measure ℝ) ≪ volume := by
   rw [A.toMeasure_valueDistribution]
-  letI : HasPDF (A.θ i) ℙ (volume : Measure ℝ) :=
+  let : HasPDF (A.θ i) ℙ (volume : Measure ℝ) :=
     HasDensity.θ_hasPDF (A := A) i
   exact HasPDF.absolutelyContinuous
 

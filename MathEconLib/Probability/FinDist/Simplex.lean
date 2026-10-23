@@ -101,7 +101,7 @@ lemma condProbD_eq_of_pos (d : FinDist (∀ i, β i)) (i : ι) (b : β i)
 lemma condProbD_eq_zero_of_not_pos (d : FinDist (∀ i, β i)) (i : ι) (b : β i)
     (x : ∀ j, β j) (hnot : ¬ 0 < d.marginalD i b) :
     d.condProbD i b x = 0 :=
-  if_neg fun h => hnot (probEvent_coordFiber d i b ▸ h.2)
+  ite_eq_right fun h => hnot (probEvent_coordFiber d i b ▸ h.2)
 
 /-- On a positive-mass coordinate fiber the conditional distribution sums to one. -/
 lemma condProbD_sum_one_of_pos (d : FinDist (∀ i, β i)) (i : ι) (b : β i)
@@ -125,7 +125,7 @@ lemma marginalD_mul_condProbD (d : FinDist (∀ i, β i)) (i : ι) (b : β i)
     (x : ∀ j, β j) :
     d.marginalD i b * d.condProbD i b x = if x i = b then d x else 0 := by
   by_cases hx : x i = b
-  · rw [if_pos hx]
+  · rw [ite_eq_left hx]
     by_cases hp : 0 < d.marginalD i b
     · rw [d.condProbD_eq_of_pos i b hx hp]
       exact mul_div_cancel₀ _ hp.ne'
@@ -134,7 +134,7 @@ lemma marginalD_mul_condProbD (d : FinDist (∀ i, β i)) (i : ι) (b : β i)
       have hx0 : d x = 0 := le_antisymm
         (by simpa [hx, hm] using d.pmf_le_marginalD i x) (d.nonneg x)
       simp [hm, hx0]
-  · rw [if_neg hx, d.condProbD_of_ne i b hx, mul_zero]
+  · rw [ite_eq_right hx, d.condProbD_of_ne i b hx, mul_zero]
 
 end FinDist
 

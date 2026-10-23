@@ -113,11 +113,11 @@ lemma pure_pmf (a b : α) : (FinDist.pure a).pmf b = if a = b then 1 else 0 := r
 
 /-- A point mass assigns probability one to its own outcome. -/
 lemma pure_pmf_self (a : α) : (FinDist.pure a).pmf a = 1 := by
-  rw [pure_pmf, if_pos rfl]
+  rw [pure_pmf, ite_eq_left rfl]
 
 /-- A point mass assigns probability zero to every other outcome. -/
 lemma pure_pmf_of_ne {a b : α} (h : a ≠ b) : (FinDist.pure a).pmf b = 0 := by
-  rw [pure_pmf, if_neg h]
+  rw [pure_pmf, ite_eq_right h]
 
 /-- A distribution assigning probability one to an outcome is the point mass at that outcome. -/
 lemma eq_pure_of_pmf_eq_one {d : FinDist α} {a : α} (h : d.pmf a = 1) :

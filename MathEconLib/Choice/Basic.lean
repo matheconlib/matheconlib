@@ -83,7 +83,7 @@ lemma mem_rejected {Y : Set α} {x : α} :
   Iff.rfl
 
 lemma choose_union_rejected (Y : Set α) : C Y ∪ C.rejected Y = Y :=
-  Set.union_diff_cancel (C.choose_subset Y)
+  Set.union_sdiff_cancel (C.choose_subset Y)
 
 end ChoiceFunction
 
