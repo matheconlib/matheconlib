@@ -22,6 +22,7 @@ The example exercises the joint-to-interim revenue bridge with measurable, integ
 @[expose] public noncomputable section
 
 open MathEconLib MathEconLib.Probability MeasureTheory ProbabilityTheory
+open MathEconLib.Mechanism.Auctions
 
 namespace MathEconLibTest.IndependentValues
 
@@ -64,12 +65,38 @@ lemma payment (i : Fin 2) (b : ℝ) :
     auction.p i b = if (1 / 2 : ℝ) ≤ b then 1 / 4 else 0 := by
   simp [Auction.p, Auction.p_strat, auction, Mechanism.payment]
 
-/-- Truthful reporting maximizes utility on the full interval under independent types. -/
-instance bic : auction.BIC where
-  toHasIndependentTypes := inferInstance
-  bic i s _ s' _ := by
+/-- The two posted-price allocations satisfy the coordinate bounds used by the IPV bridge. -/
+lemma allocation_bounds : IsUnitIntervalAllocation auction.rules (fun o i ↦ o i) := by
+  intro i b
+  dsimp [auction]
+  split_ifs <;> norm_num
+
+/-- Truthful reporting maximizes utility on the full interval under independent types. This
+constructs general conditional BIC through the checked marginal/IPV equivalence. -/
+instance bic : Auction.IPV.BIC auction := by
+  apply (Auction.IPV.bic_iff_marginal auction allocation_bounds ?_).mpr
+  · intro i s _ s' _
     simp only [Auction.U, allocation, payment]
     split_ifs <;> linarith
+  · intro i s _ r _
+    simp [Auction.valuationEnvironment, Mechanism.QuasilinearEnvironment.ofPrivate, auction]
+
+/-- The independent positive control satisfies the same general BIC predicate as correlated
+models; no second incentive definition is maintained for IPV. -/
+theorem conditional_bic : auction.BIC auction.independentBeliefs := bic.conditional_bic
+
+/-- Applying the migrated payment identity to the concrete IPV model recovers the area under
+the posted-price allocation curve. This checks a theorem application, not only its signature. -/
+theorem allocation_integral_quarter (i : Fin 2) :
+    (∫ s in (0 : ℝ)..1, auction.q i s) = 1 / 4 := by
+  have hp := auction.payment_formula allocation_bounds i
+    (show (1 : ℝ) ∈ auction.interval i by norm_num [Auction.interval, auction])
+  change auction.p i 1 = 1 * auction.q i 1 - auction.U i 0 -
+    ∫ s in (0 : ℝ)..1, auction.q i s at hp
+  have hu : auction.U i 0 = 0 := by norm_num [Auction.U, allocation, payment]
+  rw [payment i 1, allocation i 1, hu] at hp
+  norm_num at hp
+  linarith
 
 /-- The posted-price payment rule is measurable. -/
 lemma payment_measurable (i : Fin 2) : Measurable (auction.rules.payment i) :=

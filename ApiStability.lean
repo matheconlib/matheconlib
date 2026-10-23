@@ -189,9 +189,17 @@ example : ∀ (B : MathEconLib.BidderProblem),
 
 /-! ## MathEconLib.Auction — payment and revenue equivalence -/
 
--- The unconditional BIC interface includes independent types.
+-- General BIC is the mechanism conditional incentive predicate, with no IPV hypothesis.
 example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
-    {n : ℕ} (A : MathEconLib.Auction Ω n) [A.BIC] : A.HasIndependentTypes := inferInstance
+    {n : ℕ} (A : MathEconLib.Auction Ω n)
+    (B : MathEconLib.GameTheory.BayesianPrior.ConditionalBeliefs A.typeLaw) :
+    A.BIC B = MathEconLib.Mechanism.DirectMechanism.IsBICOn
+      (MathEconLib.Auction.valuationEnvironment n) A.rules A.typeLaw B A.interval := rfl
+
+-- IPV specializes the same general predicate to constant opponent beliefs.
+example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.Auction Ω n) [A.IsIPV]
+    [h : MathEconLib.Auction.IPV.BIC A] : A.BIC A.independentBeliefs := h.conditional_bic
 
 -- Revenue is realized revenue under the joint prior, including correlated type laws.
 example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
@@ -223,7 +231,8 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
     {n : ℕ} (A : MathEconLib.Auction Ω n) {Ω₂ : Type} [MeasureSpace Ω₂]
     [IsProbabilityMeasure (volume : Measure Ω₂)] (A₂ : MathEconLib.Auction Ω₂ n)
     (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
-    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)) [A.BIC] [A₂.BIC] (i j : Fin n),
+    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)) [A.IsIPV] [A₂.IsIPV]
+    [MathEconLib.Auction.IPV.BIC A] [MathEconLib.Auction.IPV.BIC A₂] (i j : Fin n),
     A.θmin i = A₂.θmin j → A.θmax i = A₂.θmax j → A.q i = A₂.q j →
       A.U i (A.θmin i) = A₂.U j (A₂.θmin j) →
         ∀ {s : ℝ}, s ∈ A.interval i → A.p i s = A₂.p j s :=
@@ -240,7 +249,8 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
       A.lowestType = A₂.lowestType →
         A.highestType = A₂.highestType →
           (∀ i : Fin n, IdentDistrib (A.θ i) (A₂.θ i) volume volume) →
-            ∀ [A.BIC] [A₂.BIC] [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility],
+            ∀ [MathEconLib.Auction.IPV.BIC A] [MathEconLib.Auction.IPV.BIC A₂]
+              [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility],
               (∀ i : Fin n, Measurable (A₂.p i)) →
                 (∀ i : Fin n, Measurable (A.rules.payment i)) →
                   (∀ i : Fin n, Measurable (A₂.rules.payment i)) →
@@ -253,7 +263,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : MathEconLib.Auction Ω n) [A.IsSymmetricIPV]
     (_ : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility] (i : Fin n) {s : ℝ},
+    [MathEconLib.Auction.IPV.BIC A] [A.HasZeroLowestTypeUtility] (i : Fin n) {s : ℝ},
     s ∈ A.interval i →
       A.p i s = s * A.commonCDF s ^ (n - 1) -
         ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1) :=
@@ -263,7 +273,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : MathEconLib.Auction Ω n) [A.IsSymmetricIPV]
     (_ : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility]
+    [MathEconLib.Auction.IPV.BIC A] [A.HasZeroLowestTypeUtility]
     (_ : ∀ i, Measurable (A.rules.payment i))
     (_ : ∀ i, Integrable (fun ω => A.rules.payment i (A.θ · ω)) volume),
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=

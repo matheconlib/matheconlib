@@ -24,6 +24,7 @@ This regression records the counterexample behind maintenance issue #209.
 @[expose] public noncomputable section
 
 open MathEconLib MathEconLib.Probability MeasureTheory ProbabilityTheory
+open MathEconLib.GameTheory.BayesianPrior
 
 namespace MathEconLibTest.CorrelatedValues
 
@@ -132,8 +133,56 @@ theorem not_independent : ¬ auction.HasIndependentTypes := by
   simp only [integral_bool] at hh
   norm_num [auction, value] at hh
 
-/-- The repaired independent-types BIC interface rejects the correlated counterexample. -/
-theorem not_bic : ¬ auction.BIC := fun h ↦ not_independent h.toHasIndependentTypes
+/-- A selected conditional-belief version for any auction whose values all equal the state.
+At every real true type `s`, opponents have that same value. The disintegration identity checks
+agreement with the actual correlated prior. -/
+def diagonalBeliefs (A : MathEconLib.Auction Bool 2)
+    (hθ : ∀ i ω, A.θ i ω = value ω) : ConditionalBeliefs A.typeLaw where
+  opponents i := Kernel.deterministic (fun s _ ↦ s)
+    (measurable_pi_lambda _ fun _ ↦ measurable_id)
+  isMarkov _ := inferInstance
+  disintegrates i := by
+    rw [Measure.compProd_deterministic]
+    simp only [marginalType, Auction.typeLaw]
+    rw [Measure.map_map (measurable_pi_apply i) (measurable_pi_lambda _ A.θ_measurable)]
+    rw [Measure.map_map (show Measurable (fun s : ℝ ↦
+        (s, fun _ : {j : Fin 2 // j ≠ i} ↦ s)) from
+          measurable_id.prodMk (measurable_pi_lambda _ fun _ ↦ measurable_id))
+      ((measurable_pi_apply i).comp (measurable_pi_lambda _ A.θ_measurable))]
+    rw [Measure.map_map ((measurable_pi_apply i).prodMk (measurable_drop i))
+      (measurable_pi_lambda _ A.θ_measurable)]
+    congr 1
+    funext ω
+    change (A.θ i ω, fun _ : {j : Fin 2 // j ≠ i} ↦ A.θ i ω) =
+      (A.θ i ω, fun j ↦ A.θ j.val ω)
+    congr 1
+    funext j
+    exact (hθ i ω).trans (hθ j ω).symm
+
+/-- The general BIC predicate rejects the bad mechanism by its actual profitable deviation,
+without imposing independence on BIC. -/
+theorem not_bic : ¬ auction.BIC (diagonalBeliefs auction (fun _ _ ↦ rfl)) := by
+  intro h
+  have hh := h.bic 0 1 (by norm_num [Auction.interval, auction])
+    0 (by norm_num [Auction.interval, auction])
+  norm_num [Auction.conditionalUtility, Mechanism.DirectMechanism.interimUtility_eq_integral,
+    diagonalBeliefs, Kernel.deterministic_apply, Auction.valuationEnvironment,
+    Mechanism.QuasilinearEnvironment.ofPrivate,
+    auction, GameTheory.BayesianPrior.insert, Equiv.piSplitAt] at hh
+
+/-- The old marginal participation inequality accepts the bad correlated mechanism. -/
+theorem old_marginal_ir : auction.MarginalIR := by
+  intro i s _
+  simp [Auction.U, marginal_payment, marginal_allocation]
+
+/-- Conditional interim IR rejects its negative truthful utility. -/
+theorem not_interim_ir : ¬ auction.InterimIR (diagonalBeliefs auction (fun _ _ ↦ rfl)) := by
+  intro h
+  have hh := h.2 0 1 (by norm_num [Auction.interval, auction])
+  norm_num [Auction.conditionalUtility, Mechanism.DirectMechanism.interimUtility_eq_integral,
+    diagonalBeliefs, Kernel.deterministic_apply, Auction.valuationEnvironment,
+    Mechanism.QuasilinearEnvironment.ofPrivate, auction,
+    GameTheory.BayesianPrior.insert, Equiv.piSplitAt] at hh
 
 /-- Actual expected truthful revenue is two under the correlated joint law. -/
 theorem realized_revenue :
@@ -144,5 +193,73 @@ theorem realized_revenue :
 
 /-- The repaired expected-revenue definition returns the realized joint revenue. -/
 theorem expectedRevenue_two : auction.expectedRevenue = 2 := realized_revenue
+
+/-- A correlated truthful mechanism: no allocation, and each bidder pays squared disagreement
+with the other bidder's report. -/
+def squareAuction : MathEconLib.Auction Bool 2 where
+  rules.outcome _ _ := 0
+  rules.transfer _ b := -((b 0 - b 1) ^ 2)
+  outcome_measurable _ := measurable_const
+  θmin _ := 0
+  θmax _ := 1
+  θ _ := value
+  θ_measurable _ := measurable_of_countable _
+
+/-- Conditional utility is a negative square for every real true type and report, including
+unrealized interior types under the selected diagonal-belief version. -/
+lemma square_utility (i : Fin 2) (s r : ℝ) :
+    squareAuction.conditionalUtility (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)) i s r =
+      -((r - s) ^ 2) := by
+  rw [Auction.conditionalUtility, Mechanism.DirectMechanism.interimUtility_eq_integral]
+  fin_cases i <;>
+    simp [diagonalBeliefs, Kernel.deterministic_apply, squareAuction,
+      Auction.valuationEnvironment, Mechanism.QuasilinearEnvironment.ofPrivate,
+      GameTheory.BayesianPrior.insert, Equiv.piSplitAt]
+  all_goals ring
+
+/-- General BIC accepts a correlated model, with a proof over the full report continuum. -/
+theorem square_bic : squareAuction.BIC (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)) := by
+  refine ⟨?_, ?_⟩
+  · intro i s _ r _
+    simp only [diagonalBeliefs, Kernel.deterministic_apply]
+    apply integrable_dirac
+    simp
+  · intro i s _ r _
+    change squareAuction.conditionalUtility (diagonalBeliefs squareAuction (fun _ _ ↦ rfl))
+      i s r ≤ squareAuction.conditionalUtility
+        (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)) i s s
+    rw [square_utility, square_utility]
+    nlinarith [sq_nonneg (r - s)]
+
+/-- The correlated positive control is outside IPV, although it satisfies general BIC. -/
+theorem square_not_ipv : ¬ squareAuction.IsIPV := by
+  intro h
+  exact not_independent ⟨h.θ_indep⟩
+
+/-- Conditional participation accepts the truthful correlated positive control. -/
+theorem square_interim_ir :
+    squareAuction.InterimIR (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)) := by
+  refine ⟨fun i s hs ↦ square_bic.integrable i s hs s hs, ?_⟩
+  intro i s _
+  rw [square_utility]
+  simp
+
+/-- Its old marginal participation inequality incorrectly rejects truthful utility zero. -/
+theorem square_not_marginal_ir : ¬ squareAuction.MarginalIR := by
+  intro h
+  have hh := h 0 0 (by norm_num [Auction.interval, squareAuction])
+  norm_num [Auction.U, Auction.q, Auction.q_strat, Auction.p, Auction.p_strat,
+    integral_bool, squareAuction, Mechanism.payment, value] at hh
+
+/-- The old marginal inequalities reject this genuinely BIC mechanism at a supported type and
+an interior report. This is the audit's false negative, independently of the false-positive test. -/
+theorem square_marginal_false_negative :
+    ¬ (∀ i, ∀ s ∈ squareAuction.interval i, ∀ r ∈ squareAuction.interval i,
+      s * squareAuction.q i r - squareAuction.p i r ≤ squareAuction.U i s) := by
+  intro h
+  have hh := h 0 0 (by norm_num [Auction.interval, squareAuction])
+    (1 / 2) (by norm_num [Auction.interval, squareAuction])
+  norm_num [Auction.U, Auction.q, Auction.q_strat, Auction.p, Auction.p_strat,
+    integral_bool, squareAuction, Mechanism.payment, value] at hh
 
 end MathEconLibTest.CorrelatedValues

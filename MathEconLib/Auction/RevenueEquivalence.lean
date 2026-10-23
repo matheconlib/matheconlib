@@ -13,8 +13,8 @@ public import MathEconLib.Auction.SymmetricIPV
 Under BIC, zero lowest-type utility, and strict-highest-bid allocation in a symmetric IPV auction,
 the expected total revenue equals `𝔼[S₂]` (expected second-highest type).
 
-More generally, two BIC mechanisms with zero lowest-type utility and the same `q` yield the same
-expected revenue, without any efficiency assumption.
+More generally, two symmetric-IPV BIC mechanisms with zero lowest-type utility and the same `q`
+yield the same expected revenue, without any efficiency assumption.
 
 Revenue means realized receipts under the joint type law. Relating it to marginal interim payments
 requires measurable payment rules and integrable realized payments; BIC and bounded allocations
@@ -39,7 +39,7 @@ variable (A : Auction Ω n) [A.IsSymmetricIPV]
 payment is uniquely determined by the common CDF. -/
 lemma payment_formula_strictHighestBid
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility]
+    [IPV.BIC A] [A.HasZeroLowestTypeUtility]
     (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) :
     A.p i s = s * A.commonCDF s ^ (n - 1) -
       ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1) := by
@@ -61,7 +61,7 @@ theorem revenue_equivalence
     (hmin : A.lowestType = A₂.lowestType)
     (hmax : A.highestType = A₂.highestType)
     (ident : ∀ i, IdentDistrib (A.θ i) (A₂.θ i) ℙ ℙ)
-    [A.BIC] [A₂.BIC]
+    [IPV.BIC A] [IPV.BIC A₂]
     [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
     (p_meas : ∀ i, Measurable (A₂.p i))
     (payment_meas₁ : ∀ i, Measurable (A.rules.payment i))
@@ -92,7 +92,7 @@ revenue equals `𝔼[S₂]`, provided payment rules are measurable and truthful 
 integrable. -/
 lemma total_revenue
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility]
+    [IPV.BIC A] [A.HasZeroLowestTypeUtility]
     (payment_meas : ∀ i, Measurable (A.rules.payment i))
     (payment_integrable : ∀ i, Integrable (fun ω => A.rules.payment i (A.θ · ω)) ℙ) :
     A.expectedRevenue = 𝔼[A.S₂] := by
