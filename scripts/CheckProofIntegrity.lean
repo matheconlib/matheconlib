@@ -14,15 +14,20 @@ Lean's public axiom collector follows types and proof bodies transitively, using
 precomputed imported-module axiom data. An unused axiom is itself a declaration, so it is checked
 even when no theorem refers to it.
 
-The `--source` mode also elaborates a source file and audits the declaration environments saved in
-its info trees. These retain anonymous examples before Lean discards them, including holes inside
-interpolated strings or produced by macros. This check does not depend on warning settings or a
-second parser for Lean string syntax.
+The `--source` mode also elaborates a source file and audits the anonymous-example environments
+saved in its info trees. These retain examples and their auxiliaries before Lean discards them.
+The audit covers holes inside interpolated strings or produced by macros. It does not depend on
+warning settings or a second parser for Lean string syntax.
 -/
 
 open Lean
 
 private def allowedAxioms : Array Name := #[``propext, ``Classical.choice, ``Quot.sound]
+
+private def isExampleName : Name → Bool
+  | .anonymous => false
+  | .str parent part => part == "_example" || isExampleName parent
+  | .num parent _ => isExampleName parent
 
 private instance : MonadEnv (StateM Environment) where
   getEnv := get
@@ -106,6 +111,10 @@ private unsafe def auditSource (reportPath sourcePath : System.FilePath)
       (init := (({} : NameMap (Expr × Option Expr)), 0, #[]))
       fun ctx _ (seen, count, found) => do
         let some decl := ctx.parentDecl? | return (seen, count, found)
+        -- Persistent declarations are covered by the compiled audit. Here inspect only examples
+        -- and their auxiliaries; compiler intermediates from commands such as `#eval` are not
+        -- kernel proof declarations and may contain temporary compiler assumptions.
+        unless isExampleName decl do return (seen, count, found)
         let some info := ctx.env.find? decl | return (seen, count, found)
         let signature := (info.type, info.value? (allowOpaque := true))
         if seen.find? decl == some signature then
