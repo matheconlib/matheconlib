@@ -161,7 +161,7 @@ class DriverIntegrationTest(unittest.TestCase):
         (self.root / "Fixture.lean").write_text("module\npublic import Init\n")
         (self.root / "Fixture").mkdir()
 
-    def check(self, source):
+    def check(self, source, expected_exit=1):
         # Deliberately absent from Fixture.lean's imports and Lake's default targets.
         (self.root / "Fixture/Orphan.lean").write_text(source)
         report = self.root / "report.json"
@@ -169,9 +169,48 @@ class DriverIntegrationTest(unittest.TestCase):
             [sys.executable, str(DRIVER), "--root", str(self.root), "--report", str(report)],
             cwd=ROOT, capture_output=True, text=True, timeout=120,
         )
-        self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+        self.assertEqual(result.returncode, expected_exit, result.stdout + result.stderr)
         self.assertTrue(report.exists(), result.stdout + result.stderr)
         return json.loads(report.read_text())
+
+    def check_compiled_fixture(self, name, expected_exit=1):
+        source = (FIXTURES / (name + ".lean.txt")).read_text()
+        (self.root / "Fixture/Orphan.lean").write_text(source)
+        built = subprocess.run(
+            ["lake", "--rehash", "--no-ansi", "build", "Fixture.Orphan"],
+            cwd=self.root, capture_output=True, text=True, timeout=90,
+        )
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        return self.check(source, expected_exit)
+
+    def test_separated_interpolations_with_suppressed_sorry_warnings_are_rejected(self):
+        for name in ("SpacedInterpolation", "CommentInterpolation", "NewlineInterpolation"):
+            with self.subTest(fixture=name):
+                report = self.check_compiled_fixture(name)
+                self.assertEqual(report["source_violations"], [])
+                self.assertEqual(report["status"], "failed")
+                self.assertTrue(any(v["axiom"] == "sorryAx"
+                                    for v in report["elaboration_violations"]), report)
+
+    def test_trace_interpolation_without_a_bang_is_rejected(self):
+        report = self.check_compiled_fixture("TraceInterpolation")
+        self.assertEqual(report["source_violations"], [])
+        self.assertEqual(report["status"], "failed")
+        self.assertTrue(any(v["axiom"] == "sorryAx"
+                            for v in report["elaboration_violations"]), report)
+
+    def test_macro_generated_anonymous_hole_is_rejected(self):
+        report = self.check_compiled_fixture("MacroHole")
+        self.assertEqual(report["source_violations"], [])
+        self.assertEqual(report["status"], "failed")
+        self.assertTrue(any(v["axiom"] == "sorryAx"
+                            for v in report["elaboration_violations"]), report)
+
+    def test_completed_examples_and_literal_proof_words_are_allowed(self):
+        report = self.check_compiled_fixture("CompleteInterpolations", expected_exit=0)
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(report["elaboration_violations"], [])
+        self.assertGreater(report["elaboration_declarations_checked"], 0)
 
     def test_unused_axiom_in_an_unimported_file_is_built_and_rejected(self):
         report = self.check("module\npublic import Init\npublic axiom unused : False\n")

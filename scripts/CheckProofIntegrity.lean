@@ -13,6 +13,11 @@ output path followed by the modules to audit. Modules are loaded with their priv
 Lean's public axiom collector follows types and proof bodies transitively, using Lean 4.35's
 precomputed imported-module axiom data. An unused axiom is itself a declaration, so it is checked
 even when no theorem refers to it.
+
+The `--source` mode also elaborates a source file and audits the declaration environments saved in
+its info trees. These retain anonymous examples before Lean discards them, including holes inside
+interpolated strings or produced by macros. This check does not depend on warning settings or a
+second parser for Lean string syntax.
 -/
 
 open Lean
@@ -76,8 +81,59 @@ private unsafe def audit (reportPath : System.FilePath) (modules : Array Name) :
   IO.eprintln s!"Proof integrity check failed: {violations.size} forbidden axioms."
   return 1
 
+private unsafe def auditSource (reportPath sourcePath : System.FilePath)
+    (moduleName : Name) : IO UInt32 := do
+  initSearchPath (← findSysroot)
+  enableInitializersExecution
+  let inputCtx := Parser.mkInputContext (← IO.FS.readFile sourcePath) sourcePath.toString
+  -- Retain full elaboration information, including the environments of discarded examples.
+  let opts := ({} : Options).setBool `Elab.async false
+    |>.setBool `internal.cmdlineSnapshots false
+  let (header, parserState, messages) ← Parser.parseHeader inputCtx
+  let (env, messages) ← Elab.processHeader header opts messages inputCtx
+    (leakEnv := true) (mainModule := moduleName)
+  let state ← Elab.IO.processCommands inputCtx parserState (Elab.Command.mkState env messages opts)
+  if state.commandState.messages.hasErrors then
+    for message in state.commandState.messages.toList do
+      IO.eprintln (← message.toString)
+    throw <| IO.userError s!"Source elaboration failed: {sourcePath}"
+  let mut checked := 0
+  let mut violations : Array Json := #[]
+  -- Deduplicate within each command, rather than across commands: successive examples can share
+  -- a generated name because their declarations do not survive in the module environment.
+  for tree in state.commandState.infoState.trees do
+    let (_, count, found) ← tree.foldInfoM (init := (({} : NameSet), 0, #[]))
+      fun ctx _ (seen, count, found) => do
+        let some decl := ctx.parentDecl? | return (seen, count, found)
+        if seen.contains decl || (ctx.env.find? decl).isNone then
+          return (seen, count, found)
+        let used := Id.run <| (collectAxioms decl : StateM Environment (Array Name)).run' ctx.env
+        let mut found := found
+        for axiomName in used do
+          unless allowedAxioms.contains axiomName do
+            found := found.push <| Json.mkObj [
+              ("declaration", toJson decl.toString),
+              ("module", toJson moduleName.toString),
+              ("source", toJson sourcePath.toString),
+              ("axiom", toJson axiomName.toString)]
+        return (seen.insert decl, count + 1, found)
+    checked := checked + count
+    violations := violations ++ found
+  let report := Json.mkObj [
+    ("status", toJson (if violations.isEmpty then "passed" else "failed")),
+    ("source", toJson sourcePath.toString),
+    ("module", toJson moduleName.toString),
+    ("declarations_checked", toJson checked),
+    ("violations", toJson violations)]
+  IO.FS.writeFile reportPath (report.pretty ++ "\n")
+  if violations.isEmpty then return 0
+  IO.eprintln s!"Source audit found forbidden axioms in {sourcePath}"
+  return 1
+
 unsafe def main (args : List String) : IO UInt32 := do
   match args with
+  | ["--source", reportPath, sourcePath, moduleName] =>
+    auditSource reportPath sourcePath moduleName.toName
   | reportPath :: firstModule :: rest =>
     audit reportPath ((firstModule :: rest).toArray.map String.toName)
   | _ =>

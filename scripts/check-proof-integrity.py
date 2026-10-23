@@ -23,8 +23,8 @@ def proof_holes(source):
     """Find explicit holes, including anonymous examples discarded from .olean files.
 
     Skip nested comments, quoted identifiers, character literals and string text.
-    Expressions inside interpolated strings are still code. Compiled axiom checking
-    remains the authority for named declarations, including macro-generated holes.
+    This is only an early diagnostic. Lean's elaboration audit checks anonymous
+    examples too, without depending on which string interpolation forms this scan knows.
     """
     found = []
     length = len(source)
@@ -176,8 +176,40 @@ def run(root, report_path):
             if checked.returncode != expected or result.get("status") not in {"passed", "failed"}:
                 raise ValueError("Lean checker returned an inconsistent result")
             report.update(result)
+            if expected:
+                report["stage"] = "complete"
+                return expected
+            report["stage"] = "elaboration"
+            report["elaboration_sources"] = []
+            report["elaboration_declarations_checked"] = 0
+            report["elaboration_violations"] = []
+            write_report(report_path, report)
+            for path, module in zip(sources, modules):
+                source_report = Path(work) / "source.json"
+                source_report.unlink(missing_ok=True)
+                checked = subprocess.run(
+                    ["lake", "env", "lean", "--run", str(BACKEND), "--source",
+                     str(source_report), path.as_posix(), module], cwd=root,
+                )
+                if not source_report.exists():
+                    raise ValueError("Lean did not write a source audit report: " + str(path))
+                result = json.loads(source_report.read_text())
+                if result.get("source") != path.as_posix() or result.get("module") != module:
+                    raise ValueError("Lean audited a different source: " + str(path))
+                expected = 0 if result.get("status") == "passed" else 1
+                if checked.returncode != expected or result.get("status") not in {"passed", "failed"}:
+                    raise ValueError("Lean source audit returned an inconsistent result")
+                report["elaboration_sources"].append(path.as_posix())
+                report["elaboration_declarations_checked"] += result["declarations_checked"]
+                report["elaboration_violations"].extend(result["violations"])
+                if expected:
+                    report["status"] = "failed"
+                write_report(report_path, report)
             report["stage"] = "complete"
-            return expected
+            print("Source elaboration audit: {} declarations in {} sources; {} violations.".format(
+                report["elaboration_declarations_checked"], len(report["elaboration_sources"]),
+                len(report["elaboration_violations"])))
+            return 0 if report["status"] == "passed" else 1
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         report["status"] = "error"
         report["error"] = str(error)
