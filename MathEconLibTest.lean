@@ -21,6 +21,7 @@ import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Mechanism.BayesianIC
+import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames

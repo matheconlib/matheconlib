@@ -34,7 +34,11 @@ symmetry, private-values, or atomlessness assumption is present.
 
 The predicate is **pointwise relative to a selected belief version**, including
 declared types with marginal probability zero. A prior alone specifies
-conditional beliefs only almost everywhere. `IsBIC` is the full-type-space
+conditional beliefs only almost everywhere. Changing a version only at a null
+type can change pointwise BIC while preserving the prior. The squared-disagreement
+regression proves this: diagonal beliefs give BIC on `[0,1]`, but replacing the
+opponent's value by zero only at own type `1/2` gives a profitable report zero
+there. Both kernels disintegrate the same prior. `IsBIC` is the full-type-space
 case. `IsBIC.isBNE` proves truthful Bayesian Nash equilibrium using the existing
 equilibrium API, with jointly measurable payoffs and integrable truthful
 realized utilities. The reverse implication to pointwise BIC is not asserted:
@@ -123,8 +127,23 @@ therefore remains scoped to quasilinear vector/implementability theory.
   report and do not automatically satisfy the scalar envelope theorem.
   The all-purchase conditional adapter remains tracked in #212.
 
-Expected revenue continues to integrate realized joint payments, with no BIC
-or IPV prerequisite. The marginal-payment bridge requires independence and
+### Expected revenue changes meaning
+
+Before #210, `Auction.expectedRevenue` integrated the marginal interim payments:
+`∫ ω, ∑ i, A.p i (A.θ i ω)`. Each `p i` had already averaged opponents
+unconditionally. That expression can differ from expected actual receipts when
+types are correlated. The repaired definition instead integrates the realized
+joint payments: `∫ ω, A.rules.revenue (A.θ · ω)`. This is a semantic change to
+the existing public name, not just a refactoring or a change in notation.
+
+With diagonal Bernoulli types and payment `b₀ * b₁` charged only to bidder zero,
+the old expression is `1/4` and actual expected revenue is `1/2`. The committed
+two-paying-bidder polynomial regression separately gives old revenue zero and
+repaired revenue two. Independence was already assumed by the symmetric-IPV
+revenue-equivalence results; the correlated examples do not refute those results.
+
+The realized-revenue definition has no BIC or IPV prerequisite.
+The marginal-payment bridge requires independence and
 measurable, integrable realized payments. The explicit payment hypotheses on
 `revenue_equivalence` and `total_revenue` from the earlier #210 repair remain.
 
@@ -132,9 +151,13 @@ measurable, integrable realized payments. The explicit payment hypotheses on
 
 - `MathEconLibTest/Auction/CorrelatedValues.lean`: the old false-positive
   inequalities still hold, but quasilinear BIC rejects the mechanism through a
-  profitable conditional deviation. Truthful realized revenue is two.
+  profitable conditional deviation for every compatible conditional-belief
+  version. The argument uses type one, which has positive marginal probability.
+  Truthful realized revenue is two.
   Squared-disagreement payments give a correlated BIC positive control for
   every real report; the old marginal inequalities reject that mechanism.
+  An alternate kernel changes beliefs only at the null type `1/2`, preserves
+  the same prior, and defeats this pointwise positive control there.
   Both examples also check the old marginal and repaired conditional IR
   outcomes in the corresponding directions.
 - `MathEconLibTest/Auction/IndependentValues.lean`: the nonzero posted-price
@@ -147,6 +170,10 @@ measurable, integrable realized payments. The explicit payment hypotheses on
   applying `IsBIC.isBNE` certifies truthful Bayesian equilibrium. A separate
   two-good posted-price client supplies vector reports, proves quasilinear BIC
   for every report pair, instantiates a concrete prior, and checks payment.
+- `MathEconLibTest/Mechanism/BayesianICContract.lean`: the named
+  `isBICOn_iff` contract pins integrability and the explicit true-type conditional
+  incentive inequality through the public mechanism umbrella. This checks the
+  predicate's mathematical content separately from the scalar alias pin.
 
 Verification uses the full default `lake build`, regenerated and checked
 library/test imports, public API pins, header/whitespace checks, transitive

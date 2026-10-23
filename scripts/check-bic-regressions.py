@@ -78,4 +78,24 @@ nested = sum(expectation(independent, lambda state: expectation(
     * updated(opponents, i, state[i])[1])) for i in range(2))
 assert actual == nested == F(1, 2)
 
+# The null-type version change preserves both supported posterior cells. At the
+# unsupported true type one half it changes the square mechanism's best report.
+half = F(1, 2)
+alternate_opponent = lambda s: F(0) if s == half else s
+for s in (F(0), F(1)):
+    assert alternate_opponent(s) == s
+assert sum(p for state, p in correlated.items() if state[0] == half) == 0
+diagonal_truth = -(half - half) ** 2
+alternate_truth = -(half - alternate_opponent(half)) ** 2
+alternate_deviation = -(F(0) - alternate_opponent(half)) ** 2
+assert diagonal_truth == 0
+assert alternate_truth == -F(1, 4) < alternate_deviation == 0
+
+# The original audit's single-paying-bidder revenue witness differs from the
+# committed symmetric two-paying-bidder polynomial example above.
+old_single_payment = expectation(correlated, lambda own: expectation(
+    correlated, lambda opponents: own[0] * opponents[1]))
+actual_single_payment = expectation(correlated, lambda state: state[0] * state[1])
+assert old_single_payment == F(1, 4) and actual_single_payment == F(1, 2)
+
 print("BIC exact arithmetic checks passed")

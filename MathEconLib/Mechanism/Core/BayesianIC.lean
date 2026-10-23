@@ -20,7 +20,8 @@ provide its quasilinear specialization using the existing Bayesian game machiner
 
 `IsBICOn` is pointwise on declared type/report sets relative to a selected conditional-belief
 version. At marginally null types this is additional belief data, not information determined by
-the prior. Conditional utilities must be integrable; totalized integrals cannot certify BIC.
+the prior. Changing only those null-type beliefs can change pointwise BIC without changing the
+prior. Conditional utilities must be integrable; totalized integrals cannot certify BIC.
 On the full type spaces, pointwise BIC implies truthful Bayesian Nash equilibrium when the
 realized truthful payoffs are integrable and the game payoffs are jointly measurable.
 
@@ -71,6 +72,21 @@ structure IsBICOn [IsProbabilityMeasure μ] (D : ∀ i, Set (T i)) : Prop where
   /-- Truthful reporting weakly maximizes expected utility at the same true-type beliefs. -/
   bic : ∀ i, ∀ s ∈ D i, ∀ r ∈ D i,
     interimUtility E M μ B i s r ≤ interimUtility E M μ B i s s
+
+/-- Quasilinear BIC is exactly conditional integrability and truthful optimality, with true types
+and their conditional beliefs fixed while the report changes. -/
+theorem isBICOn_iff [IsProbabilityMeasure μ] (D : ∀ i, Set (T i)) :
+    IsBICOn E M μ B D ↔
+      (∀ i, ∀ s ∈ D i, ∀ r ∈ D i,
+        Integrable (fun θo ↦
+          E.utility M i (insert i s θo) (Function.update (insert i s θo) i r))
+          (B.opponents i s)) ∧
+      (∀ i, ∀ s ∈ D i, ∀ r ∈ D i,
+        (∫ θo, E.utility M i (insert i s θo) (Function.update (insert i s θo) i r)
+          ∂(B.opponents i s)) ≤
+        ∫ θo, E.utility M i (insert i s θo) (Function.update (insert i s θo) i s)
+          ∂(B.opponents i s)) :=
+  ⟨fun h ↦ ⟨h.integrable, h.bic⟩, fun h ↦ ⟨h.1, h.2⟩⟩
 
 /-- Pointwise quasilinear BIC on the full type spaces, relative to the selected conditional-belief
 version. -/

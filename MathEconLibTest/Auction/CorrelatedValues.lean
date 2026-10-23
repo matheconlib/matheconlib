@@ -159,17 +159,41 @@ def diagonalBeliefs (A : MathEconLib.Auction Bool 2)
     funext j
     exact (hθ i ω).trans (hθ j ω).symm
 
-/-- The quasilinear BIC predicate rejects the bad mechanism by its actual profitable deviation,
-without imposing independence on BIC. -/
-theorem not_bic : ¬ auction.BIC (diagonalBeliefs auction (fun _ _ ↦ rfl)) := by
+/-- Every compatible belief version agrees with the diagonal version at both realized types:
+each underlying state has strictly positive probability. -/
+lemma beliefs_at_realized_type (A : MathEconLib.Auction Bool 2)
+    (hθ : ∀ i ω, A.θ i ω = value ω) (B : ConditionalBeliefs A.typeLaw)
+    (i : Fin 2) (ω : Bool) :
+    B.opponents i (value ω) = (diagonalBeliefs A hθ).opponents i (value ω) := by
+  have h₁ := ae_of_ae_map (measurable_pi_apply i).aemeasurable
+    (B.ae_eq (diagonalBeliefs A hθ) i)
+  have h₂ := ae_of_ae_map (Measurable.of_eval A.θ_measurable).aemeasurable h₁
+  have hatom : (volume : Measure Bool) {ω} ≠ 0 := by
+    change (FinDist.uniform : FinDist Bool).toMeasure {ω} ≠ 0
+    rw [FinDist.toMeasure, PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton ω)]
+    unfold FinDist.toPMF
+    change ENNReal.ofReal ((FinDist.uniform : FinDist Bool).pmf ω) ≠ 0
+    simp [FinDist.pmf_eq_coe]
+  simpa only [hθ] using (ae_iff_of_countable.mp h₂ ω hatom)
+
+/-- The profitable deviation is rejected for every belief version disintegrating this prior;
+it occurs at the positive-probability type one, not at a null type. -/
+theorem not_bic_of_any_beliefs (B : ConditionalBeliefs auction.typeLaw) : ¬ auction.BIC B := by
   intro h
+  have heq := beliefs_at_realized_type auction (fun _ _ ↦ rfl) B 0 true
+  simp only [value, ↓reduceIte] at heq
   have hh := h.bic 0 1 (by norm_num [Auction.interval, auction])
     0 (by norm_num [Auction.interval, auction])
   norm_num [Auction.conditionalUtility,
-    Mechanism.DirectMechanism.Quasilinear.interimUtility_eq_integral,
+    Mechanism.DirectMechanism.Quasilinear.interimUtility_eq_integral, heq,
     diagonalBeliefs, Kernel.deterministic_apply, Auction.valuationEnvironment,
     Mechanism.QuasilinearEnvironment.ofPrivate,
     auction, GameTheory.BayesianPrior.insert, Equiv.piSplitAt] at hh
+
+/-- The originally selected diagonal version is a particular case of the version-uniform
+counterexample; BIC itself has no independence prerequisite. -/
+theorem not_bic : ¬ auction.BIC (diagonalBeliefs auction (fun _ _ ↦ rfl)) :=
+  not_bic_of_any_beliefs _
 
 /-- The old marginal participation inequality accepts the bad correlated mechanism. -/
 theorem old_marginal_ir : auction.MarginalIR := by
@@ -232,6 +256,73 @@ theorem square_bic : squareAuction.BIC (diagonalBeliefs squareAuction (fun _ _ �
         (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)) i s s
     rw [square_utility, square_utility]
     nlinarith [sq_nonneg (r - s)]
+
+/-- Change the selected opponent value only at the unrealized own type one half. -/
+def nullTypeValue (s : ℝ) : ℝ := if s = 1 / 2 then 0 else s
+
+lemma measurable_nullTypeValue : Measurable nullTypeValue :=
+  measurable_const.piecewise (measurableSet_singleton (1 / 2 : ℝ)) measurable_id
+
+/-- The alternate version has the same disintegration: both positive-probability types keep
+their diagonal beliefs. Only the marginally null type one half is changed. -/
+def nullTypeBeliefs : ConditionalBeliefs squareAuction.typeLaw where
+  opponents i := Kernel.deterministic (fun s _ ↦ nullTypeValue s)
+    (Measurable.of_eval fun _ ↦ measurable_nullTypeValue)
+  isMarkov _ := inferInstance
+  disintegrates i := by
+    rw [Measure.compProd_deterministic]
+    simp only [marginalType, Auction.typeLaw]
+    rw [Measure.map_map (measurable_pi_apply i)
+      (Measurable.of_eval squareAuction.θ_measurable)]
+    rw [Measure.map_map (show Measurable (fun s : ℝ ↦
+        (s, fun _ : {j : Fin 2 // j ≠ i} ↦ nullTypeValue s)) from
+          measurable_id.prodMk (Measurable.of_eval fun _ ↦ measurable_nullTypeValue))
+      ((measurable_pi_apply i).comp (Measurable.of_eval squareAuction.θ_measurable))]
+    rw [Measure.map_map ((measurable_pi_apply i).prodMk (measurable_drop i))
+      (Measurable.of_eval squareAuction.θ_measurable)]
+    congr 1
+    funext ω
+    cases ω <;> simp [squareAuction, value, nullTypeValue] <;> rfl
+
+/-- The changed own type has zero marginal probability. -/
+theorem half_is_null (i : Fin 2) :
+    marginalType squareAuction.typeLaw i {(1 / 2 : ℝ)} = 0 := by
+  rw [marginalType, Auction.typeLaw,
+    Measure.map_map (measurable_pi_apply i)
+      (Measurable.of_eval squareAuction.θ_measurable)]
+  change (Measure.map (squareAuction.θ i) volume) {(1 / 2 : ℝ)} = 0
+  rw [Measure.map_apply (squareAuction.θ_measurable i) (measurableSet_singleton _)]
+  have hempty : (squareAuction.θ i) ⁻¹' {(1 / 2 : ℝ)} = ∅ := by
+    ext ω
+    cases ω <;> norm_num [squareAuction, value]
+  rw [hempty, measure_empty]
+
+/-- Outside that one null type, the two versions agree pointwise. -/
+lemma nullTypeBeliefs_eq (i : Fin 2) (s : ℝ) (hs : s ≠ 1 / 2) :
+    nullTypeBeliefs.opponents i s =
+      (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)).opponents i s := by
+  simp only [nullTypeBeliefs, diagonalBeliefs, Kernel.deterministic_apply, nullTypeValue,
+    ite_eq_right hs]
+
+/-- At own type one half, the alternate version expects the opponent to report zero. -/
+lemma nullType_utility (i : Fin 2) (r : ℝ) :
+    squareAuction.conditionalUtility nullTypeBeliefs i (1 / 2) r = -(r ^ 2) := by
+  rw [Auction.conditionalUtility, Mechanism.DirectMechanism.Quasilinear.interimUtility_eq_integral]
+  fin_cases i <;>
+    simp [nullTypeBeliefs, Kernel.deterministic_apply, nullTypeValue, squareAuction,
+      Auction.valuationEnvironment, Mechanism.QuasilinearEnvironment.ofPrivate,
+      GameTheory.BayesianPrior.insert, Equiv.piSplitAt]
+
+/-- Altering only null-type beliefs breaks pointwise BIC: reporting zero improves utility
+from minus one quarter to zero at the declared true type one half. -/
+theorem square_not_bic_nullTypeBeliefs : ¬ squareAuction.BIC nullTypeBeliefs := by
+  intro h
+  have hh := h.bic 0 (1 / 2) (by norm_num [Auction.interval, squareAuction])
+    0 (by norm_num [Auction.interval, squareAuction])
+  change squareAuction.conditionalUtility nullTypeBeliefs 0 (1 / 2) 0 ≤
+    squareAuction.conditionalUtility nullTypeBeliefs 0 (1 / 2) (1 / 2) at hh
+  rw [nullType_utility, nullType_utility] at hh
+  norm_num at hh
 
 /-- The correlated positive control is outside IPV, although it satisfies quasilinear BIC. -/
 theorem square_not_ipv : ¬ squareAuction.IsIPV := by
