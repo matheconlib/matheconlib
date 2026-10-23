@@ -219,6 +219,12 @@ class DriverIntegrationTest(unittest.TestCase):
         self.assertEqual(report["elaboration_violations"], [])
         self.assertGreater(report["elaboration_declarations_checked"], 0)
 
+    def test_evaluation_commands_are_not_treated_as_proof_axioms(self):
+        report = self.check_compiled_fixture("Evaluation", expected_exit=0)
+        self.assertEqual(report["status"], "passed")
+        self.assertEqual(report["elaboration_violations"], [])
+        self.assertGreater(report["elaboration_declarations_checked"], 0)
+
     def test_unused_axiom_in_an_unimported_file_is_built_and_rejected(self):
         report = self.check("module\npublic import Init\npublic axiom unused : False\n")
         self.assertEqual(report["stage"], "complete", report)
