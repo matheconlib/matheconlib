@@ -139,18 +139,18 @@ agreement with the actual correlated prior. -/
 def diagonalBeliefs (A : MathEconLib.Auction Bool 2)
     (hθ : ∀ i ω, A.θ i ω = value ω) : ConditionalBeliefs A.typeLaw where
   opponents i := Kernel.deterministic (fun s _ ↦ s)
-    (measurable_pi_lambda _ fun _ ↦ measurable_id)
+    (Measurable.of_eval fun _ ↦ measurable_id)
   isMarkov _ := inferInstance
   disintegrates i := by
     rw [Measure.compProd_deterministic]
     simp only [marginalType, Auction.typeLaw]
-    rw [Measure.map_map (measurable_pi_apply i) (measurable_pi_lambda _ A.θ_measurable)]
+    rw [Measure.map_map (measurable_pi_apply i) (Measurable.of_eval A.θ_measurable)]
     rw [Measure.map_map (show Measurable (fun s : ℝ ↦
         (s, fun _ : {j : Fin 2 // j ≠ i} ↦ s)) from
-          measurable_id.prodMk (measurable_pi_lambda _ fun _ ↦ measurable_id))
-      ((measurable_pi_apply i).comp (measurable_pi_lambda _ A.θ_measurable))]
+          measurable_id.prodMk (Measurable.of_eval fun _ ↦ measurable_id))
+      ((measurable_pi_apply i).comp (Measurable.of_eval A.θ_measurable))]
     rw [Measure.map_map ((measurable_pi_apply i).prodMk (measurable_drop i))
-      (measurable_pi_lambda _ A.θ_measurable)]
+      (Measurable.of_eval A.θ_measurable)]
     congr 1
     funext ω
     change (A.θ i ω, fun _ : {j : Fin 2 // j ≠ i} ↦ A.θ i ω) =

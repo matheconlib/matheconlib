@@ -41,6 +41,6 @@ lemma quasiconcaveOn_subtype_val_extend_iff {𝕜 E V : Type*} [Semiring 𝕜] [
     by_cases hx : x ∈ s
     · have h_extend₁ := Subtype.val_injective.extend_apply f g₁ ⟨x, hx⟩
       have h_extend₂ := Subtype.val_injective.extend_apply f g₂ ⟨x, hx⟩
-      simp only [Set.mem_setOf_eq, h_extend₁, h_extend₂]
-    · simp only [Set.mem_setOf_eq, hx, false_and]
+      simp only [Set.mem_ofPred_eq, h_extend₁, h_extend₂]
+    · simp only [Set.mem_ofPred_eq, hx, false_and]
   rw [hsuperlevels]

@@ -66,6 +66,16 @@ test('counts project diagnostic headers, including tests, examples, cached logs,
   });
 });
 
+test('counts Lean 4.35 module-import warnings without source positions', () => {
+  const log = [
+    'warning: MathEconLib/Choice/Basic.lean: imports `Mathlib.A` from package `mathlib`, which is designed for use with the module system',
+    'warning: ./MathEconLib/Choice/Basic.lean: imports `Mathlib.B` from package `mathlib`, which is designed for use with the module system',
+    'warning: .lake/packages/mathlib/Mathlib/A.lean: imports `Mathlib.B` from package `mathlib`',
+    '  warning: MathEconLib/Choice/Basic.lean: imports quoted in a continuation',
+  ].join('\n');
+  assert.deepEqual(countWarnings(log), { 'MathEconLib/Choice/Basic.lean': 2 });
+});
+
 test('renders a signed total delta and added, deleted, and changed files', () => {
   const markdown = renderReport(report());
   assert.match(markdown, /Base: `aaaaaaaa` · PR: `bbbbbbbb` · Last run: 2026-10-11 18:37 UTC/);

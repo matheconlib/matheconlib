@@ -48,8 +48,8 @@ def beliefs : ConditionalBeliefs prior where
   isMarkov _ := inferInstance
   disintegrates i := by
     simp only [marginalType, prior, Measure.compProd_const]
-    rw [Measure.map_dirac (measurable_pi_apply i),
-      Measure.map_dirac ((measurable_pi_apply i).prodMk (measurable_drop i)),
+    rw [Measure.map_dirac' (measurable_pi_apply i),
+      Measure.map_dirac' ((measurable_pi_apply i).prodMk (measurable_drop i)),
       Measure.dirac_prod_dirac]
     rfl
 

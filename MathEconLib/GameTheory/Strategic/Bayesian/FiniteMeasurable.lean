@@ -68,7 +68,7 @@ lemma exAntePayoffFin_update (i : I) (s : G.PureStrategy) (f : Θ i → A i) :
   simp only [ite_smul, zero_smul]
   simp only [← ite_and, and_self]
   rw [Finset.sum_ite_eq]
-  simp only [Finset.mem_univ, if_true]
+  simp only [Finset.mem_univ, ite_true]
   congr 2
   funext j
   by_cases h : j = i

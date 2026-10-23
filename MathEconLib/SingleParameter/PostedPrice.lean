@@ -182,7 +182,7 @@ theorem postedPriceProblem_hasZeroLowestTypeUtility
   change (postedPriceProblem lowestType highestType price).U lowestType = 0
   rw [postedPriceProblem_U]
   by_cases hbuy : price ≤ lowestType
-  · rw [if_pos hbuy]
+  · rw [ite_eq_left hbuy]
     linarith
   · simp [hbuy]
 

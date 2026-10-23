@@ -82,18 +82,17 @@ variable [∀ i, MeasurableSpace (Θ i)]
 
 /-- Opponent projection is measurable. -/
 @[fun_prop] lemma measurable_drop (i : I) : Measurable (drop (Θ := Θ) i) :=
-  measurable_pi_lambda _ fun j => measurable_pi_apply j.val
+  Measurable.of_eval fun j => measurable_pi_apply j.val
 
 /-- Inserting own and opponent types is jointly measurable. -/
 @[fun_prop] lemma measurable_insert [DecidableEq I] (i : I) :
     Measurable (fun p : Θ i × OpponentProfile Θ i => insert i p.1 p.2) := by
-  refine measurable_pi_lambda _ fun j => ?_
+  refine Measurable.of_eval fun j => ?_
   by_cases hj : j = i
   · subst j
     simpa using (measurable_fst : Measurable (Prod.fst : Θ i × OpponentProfile Θ i → Θ i))
-  · simpa [insert_of_ne, hj] using (measurable_pi_apply ⟨j, hj⟩).comp
-      (measurable_snd :
-        Measurable (Prod.snd : Θ i × OpponentProfile Θ i → OpponentProfile Θ i))
+  · simp only [insert_of_ne _ _ _ hj]
+    exact (measurable_pi_apply (⟨j, hj⟩ : {j // j ≠ i})).comp measurable_snd
 
 /-- A player's marginal distribution of types. -/
 def marginalType (μ : Measure (∀ i, Θ i)) (i : I) : Measure (Θ i) := μ.map (fun θ => θ i)
@@ -101,7 +100,7 @@ def marginalType (μ : Measure (∀ i, Θ i)) (i : I) : Measure (Θ i) := μ.map
 /-- The own-type marginal of a probability measure is a probability measure. -/
 instance (μ : Measure (∀ i, Θ i)) [IsProbabilityMeasure μ] (i : I) :
     IsProbabilityMeasure (marginalType μ i) :=
-  Measure.isProbabilityMeasure_map (measurable_pi_apply i).aemeasurable
+  inferInstanceAs (IsProbabilityMeasure (μ.map fun θ => θ i))
 
 /-- Conditional distributions over opponents that disintegrate the common prior. Each kernel is
 defined at every own type; the disintegration identity need not determine its values on sets of
@@ -146,8 +145,6 @@ def independentBeliefs {μ : Measure (∀ i, Θ i)} [IsProbabilityMeasure μ]
     (h : IsIndependentOfOpponents μ) : ConditionalBeliefs μ where
   opponents i := Kernel.const (Θ i) (μ.map (drop i))
   isMarkov i := by
-    haveI : IsProbabilityMeasure (μ.map (drop i)) :=
-      Measure.isProbabilityMeasure_map (measurable_drop i).aemeasurable
     infer_instance
   disintegrates i := by
     rw [Measure.compProd_const]
@@ -175,7 +172,7 @@ theorem ConditionalBeliefs.ae_eq [Countable I] [∀ i, StandardBorelSpace (Θ i)
       (μ.map (fun θ => (θ i, drop i θ))).condKernel := by
     have heq := eq_condKernel_of_measure_eq_compProd (C.opponents i)
       (by rw [fst_map_drop]; exact (C.disintegrates i).symm)
-    simpa using heq
+    rwa [fst_map_drop] at heq
   exact (h_eq_condKernel B).trans (h_eq_condKernel B').symm
 
 /-- Measurable integrable functions remain integrable in own-type/opponents coordinates. -/

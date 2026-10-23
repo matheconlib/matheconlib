@@ -103,8 +103,9 @@ abbrev IsIPV : Prop := A.HasIndependentTypes
 /-- The joint law of the actual bidder values, allowing correlation. -/
 noncomputable def typeLaw : Measure (Fin n → ℝ) := Measure.map (fun ω i ↦ A.θ i ω) ℙ
 
-instance : IsProbabilityMeasure A.typeLaw :=
-  Measure.isProbabilityMeasure_map (measurable_pi_lambda _ A.θ_measurable).aemeasurable
+instance : IsProbabilityMeasure A.typeLaw := by
+  unfold typeLaw
+  infer_instance
 
 /-- The scalar auction valuation environment; private values are constitutive of this carrier. -/
 def valuationEnvironment (n : ℕ) :
@@ -120,8 +121,6 @@ noncomputable abbrev conditionalUtility (B : ConditionalBeliefs A.typeLaw)
 /-- Independence of each coordinate and its opponents under the joint value law. -/
 theorem independentOfOpponents [A.IsIPV] : IsIndependentOfOpponents A.typeLaw := by
   classical
-  letI : ∀ i, IsProbabilityMeasure (Measure.map (A.θ i) ℙ) :=
-    fun i ↦ Measure.isProbabilityMeasure_map (A.θ_measurable i).aemeasurable
   have hcoords : iIndepFun (fun i (θ : Fin n → ℝ) ↦ θ i) A.typeLaw := by
     have hlaw := (iIndepFun_iff_map_fun_eq_pi_map
       (fun i ↦ (A.θ_measurable i).aemeasurable)).mp
@@ -138,7 +137,9 @@ theorem independentOfOpponents [A.IsIPV] : IsIndependentOfOpponents A.typeLaw :=
   let g : (T → ℝ) → OpponentProfile (fun _ : Fin n ↦ ℝ) i :=
     fun x j ↦ x ⟨j.val, by simp [T, j.property]⟩
   have hf : Measurable f := measurable_pi_apply _
-  have hg : Measurable g := measurable_pi_lambda _ fun _ ↦ measurable_pi_apply _
+  have hg : Measurable g := Measurable.of_eval fun _ ↦ measurable_pi_apply _
+  change IndepFun (fun θ : Fin n → ℝ ↦ θ i)
+    (fun θ (j : {j : Fin n // j ≠ i}) ↦ θ j.val) A.typeLaw
   simpa only [f, g, drop, Function.comp_def] using h.comp hf hg
 
 /-- The constant opponent-belief version for an IPV auction, at every declared own type. -/
@@ -150,7 +151,7 @@ lemma independentBeliefs_opponents [A.IsIPV] (i : Fin n) (s : ℝ) :
     A.independentBeliefs.opponents i s =
       Measure.map (fun ω ↦ drop i (A.θ · ω)) ℙ := by
   change Measure.map (drop i) A.typeLaw = _
-  exact Measure.map_map (measurable_drop i) (measurable_pi_lambda _ A.θ_measurable)
+  exact Measure.map_map (measurable_drop i) (Measurable.of_eval A.θ_measurable)
 
 /-- Type interval for bidder `i`. -/
 abbrev interval (i : Fin n) : Set ℝ := Icc (A.θmin i) (A.θmax i)
@@ -181,7 +182,7 @@ noncomputable def p_strat (σ : ℝ → ℝ) (i : Fin n) (b : ℝ) : ℝ :=
 lemma measurable_allocation_strat {σ : ℝ → ℝ} (hσ : Measurable σ) (i : Fin n) (b : ℝ) :
     Measurable (fun ω => A.rules.outcome (Function.update (fun j => σ (A.θ j ω)) i b) i) :=
   (A.outcome_measurable i).comp <| measurable_update_left.comp <|
-    measurable_pi_lambda _ fun j => hσ.comp (A.θ_measurable j)
+    Measurable.of_eval fun j => hσ.comp (A.θ_measurable j)
 
 /-- Allocations in `[0, 1]` are integrable under measurable opponents' strategies. -/
 lemma integrable_allocation_strat (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
@@ -298,7 +299,7 @@ lemma conditionalUtility_eq_marginal [A.IsIPV]
       (A.independentBeliefs.opponents i s)) :
     A.conditionalUtility A.independentBeliefs i s r = s * A.q i r - A.p i r := by
   rw [A.independentBeliefs_opponents] at hi
-  have hY := (measurable_drop i).comp (measurable_pi_lambda _ A.θ_measurable)
+  have hY := (measurable_drop i).comp (Measurable.of_eval A.θ_measurable)
   have hiω := (integrable_map_measure hi.aestronglyMeasurable hY.aemeasurable).mp hi
   have heq (ω : Ω) :
       (valuationEnvironment n).utility A.rules i
@@ -349,7 +350,7 @@ theorem bic_iff_marginal [A.IsIPV]
       s * A.q i r - A.p i r ≤ A.U i s := by
   constructor
   · intro h
-    letI := h
+    let := h
     exact BIC.marginal_ic A halloc
   · intro h
     refine ⟨⟨hi, ?_⟩⟩

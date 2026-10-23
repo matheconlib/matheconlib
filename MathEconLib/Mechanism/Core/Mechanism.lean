@@ -7,7 +7,7 @@ module
 
 public import MathEconLib.Mechanism.Core.Profile
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-public import Mathlib.Data.Real.Basic
+public import Mathlib.Basic.Real.Basic
 
 /-!
 # Mechanisms and signed transfers

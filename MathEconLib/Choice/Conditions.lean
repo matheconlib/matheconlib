@@ -150,7 +150,7 @@ theorem not_mem_of_forall_insert_insert
         simpa using hx
     | insert _ _ ih =>
         simpa [Set.union_insert] using h ih
-  rw [← Set.union_diff_cancel hYZ]
+  rw [← Set.union_sdiff_cancel hYZ]
   exact key (Z \ Y) hfin
 
 /-- On a finite domain the single-new-alternative form and `Substitutable`
@@ -434,7 +434,7 @@ theorem PathIndependent.substitutable
   obtain ⟨hxV, hxW⟩ := hx
   have hx :
       x ∈ C (C W ∪ (V \ W)) := by
-    rw [← hpi W (V \ W), Set.union_diff_cancel hWV]
+    rw [← hpi W (V \ W), Set.union_sdiff_cancel hWV]
     exact hxV
   rcases C.choose_subset _ hx with hxCW | hxDiff
   · exact hxCW

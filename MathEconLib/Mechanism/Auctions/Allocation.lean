@@ -3,9 +3,6 @@ Copyright (c) 2026 Ruiz Chen, Bo Cowgill, Scott Duke Kominers, Daniel Lyng, Juji
 All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ruiz Chen, Bo Cowgill, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
-
-Allocation predicates and the coordinate-bound proof are adapted from
-Auctionlib/Mechanism/Basic.lean, introduced in commit 384acbf and revised in ec59856.
 -/
 module
 
@@ -23,6 +20,9 @@ the total allocation. `UsesStrictHighestBidAllocation` describes an award rule f
 bids: the bidder whose bid strictly exceeds every other bid receives the whole object, and all
 other bidders receive nothing. A tie for the highest bid leaves the object unallocated. This rule
 is a condition on bids and allocations, not a welfare-efficiency condition.
+
+Allocation predicates and the coordinate-bound proof are adapted from
+Auctionlib/Mechanism/Basic.lean, introduced in commit 384acbf and revised in ec59856.
 
 ## Main definitions
 

@@ -213,7 +213,7 @@ theorem menWeaklyPrefer_antisymm {μ ν : M ≃. W}
     μ = ν := by
   apply PEquiv.ext
   intro m
-  letI := mkt.prefM m
+  let := mkt.prefM m
   exact le_antisymm (hνμ m) (hμν m)
 
 theorem womenWeaklyPrefer_antisymm {μ ν : M ≃. W}
@@ -231,7 +231,7 @@ theorem womenWeaklyPrefer_of_menWeaklyPrefer {μ ν : M ≃. W}
     (hν : mkt.IsStableMatching ν) (h : mkt.MenWeaklyPrefer μ ν) :
     mkt.WomenWeaklyPrefer ν μ := by
   intro w
-  letI := mkt.prefW w
+  let := mkt.prefW w
   cases hμw : μ.symm w with
   | none => exact hν.1.2 w
   | some m =>
@@ -247,7 +247,7 @@ theorem womenWeaklyPrefer_of_menWeaklyPrefer {μ ν : M ≃. W}
         rw [hnuw] at hlt
         exact (lt_irrefl _ hlt)
       have hm : mkt.BlocksM ν m w := by
-        letI := mkt.prefM m
+        let := mkt.prefM m
         exact lt_of_le_of_ne hmle hmne
       exact hν.2.1 m w ⟨hm, hw⟩
 

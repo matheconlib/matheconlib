@@ -315,7 +315,7 @@ lemma graph_eq_iInter {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Ty
         P.payoff i (G.outcome (Function.update (decode e p.1) i s)) ≤
           P.payoff i (G.outcome (Function.update (decode e p.1) i (decode e p.2 i)))} := by
   ext p
-  simp only [Set.mem_setOf_eq, Set.mem_iInter]
+  simp only [Set.mem_ofPred_eq, Set.mem_iInter]
   exact ⟨fun ⟨_, h⟩ => h, fun hp => ⟨fun i => p.2.property i (Set.mem_univ i), hp⟩⟩
 
 /-- The best response correspondence has a closed graph for continuous payoffs. -/
@@ -336,7 +336,7 @@ lemma bestResponseCorr_isClosed_graph {ι : Type*} {A : ι → Type*} {O : Type*
     (Prod.map id Subtype.val) ''
       {p : ↑(Set.univ.pi k) × ↑(Set.univ.pi k) | p.2.val ∈ bestResponseCorr e G P p.1} from by
     ext ⟨x, y⟩
-    simp only [Set.mem_setOf_eq, Set.mem_image, Prod.exists, Prod.map]
+    simp only [Set.mem_ofPred_eq, Set.mem_image, Prod.exists, Prod.map]
     exact ⟨fun hy => ⟨x, ⟨y, bestResponseCorr_subset e G P x hy⟩, hy, rfl⟩,
       fun ⟨_, _, hb, heq⟩ => by
         obtain ⟨rfl, rfl⟩ := Prod.mk.inj heq
@@ -353,7 +353,7 @@ private lemma uhc_compl_eq_fst_image {X Y : Type*} [TopologicalSpace X] [Topolog
     {F : X → Set Y} {V : Set Y} :
     {x : X | F x ⊆ V}ᶜ = Prod.fst '' ({p : X × Y | p.2 ∈ F p.1} ∩ (Set.univ ×ˢ Vᶜ)) := by
   ext x
-  simp only [Set.mem_compl_iff, Set.mem_setOf_eq, Set.mem_image, Set.mem_inter_iff,
+  simp only [Set.mem_compl_iff, Set.mem_ofPred_eq, Set.mem_image, Set.mem_inter_iff,
     Set.mem_prod, Set.mem_univ, true_and]
   exact ⟨fun hx => by
       rw [Set.not_subset] at hx
@@ -479,13 +479,17 @@ lemma payoff_eq_eval_weakDual {ι : Type*} {A : ι → Type*} {O : Type*}
   dsimp [toWeakDualContinuousMap]
   change _ = integral _ _
   dsimp [PayoffStructure.expected]
-  rw [integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
+  rw [OutcomeGame.mixed_outcome, ProbabilityMeasure.toMeasure_map, ProbabilityMeasure.toMeasure_pi,
+    integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
     ← Measure.pi_map_piSplitAt i, integral_map (MeasurableEquiv.measurable _).aemeasurable
       (by exact ((P.measurable_payoff i).comp G.measurable_outcome).aestronglyMeasurable),
     Function.update_self, integral_prod]
   · congr 1
     ext x
-    rw [integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
+    change _ = ∫ o, P.payoff i o ∂(G.mixed.outcome (Function.update a i (diracProba x))).toMeasure
+    rw [OutcomeGame.mixed_outcome, ProbabilityMeasure.toMeasure_map,
+      ProbabilityMeasure.toMeasure_pi,
+      integral_map G.measurable_outcome.aemeasurable (P.measurable_payoff i).aestronglyMeasurable,
       ← Measure.pi_map_piSplitAt i, integral_map (MeasurableEquiv.measurable _).aemeasurable
         (by exact ((P.measurable_payoff i).comp G.measurable_outcome).aestronglyMeasurable),
       Function.update_self, integral_prod,

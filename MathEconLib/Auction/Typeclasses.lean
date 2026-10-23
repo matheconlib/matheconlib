@@ -43,7 +43,7 @@ class HasDensity (A : Auction Ω n) : Prop where
 
 /-- The type distribution is atomless. -/
 class HasAtomlessTypes (A : Auction Ω n) : Prop where
-  θ_noAtoms : NoAtoms (Measure.map (A.θ 0) ℙ)
+  θ_noAtoms : NullSingletonClass (Measure.map (A.θ 0) ℙ)
 
 /-! ### IsSymmetricIPV (convenience bundle) -/
 
@@ -70,9 +70,10 @@ noncomputable def highestType [HasIdenticalTypes A] : ℝ := A.θmax 0
 
 /-! ### Common CDF (needs HasIdenticalTypes) -/
 
-instance isProbabilityMeasure_map_θ₀ :
+-- Compatibility name; Mathlib now supplies the instance.
+theorem isProbabilityMeasure_map_θ₀ :
     IsProbabilityMeasure (Measure.map (A.θ 0) ℙ) :=
-  Measure.isProbabilityMeasure_map (A.θ_measurable 0).aemeasurable
+  inferInstance
 
 /-- The common CDF: `F(s) = cdf(Measure.map (θ₀) ℙ)(s)`. -/
 noncomputable abbrev commonCDF [HasIdenticalTypes A] (s : ℝ) : ℝ :=
@@ -115,7 +116,7 @@ lemma commonCDF_eq [HasIdenticalTypes A] (s : ℝ) :
       exact le_antisymm h hθ.1
     · intro h; exact le_of_eq h
   rw [heq, ← Measure.map_apply (A.θ_measurable 0) (measurableSet_singleton _)]
-  have : NoAtoms (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
+  have : NullSingletonClass (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
   exact measure_singleton _
 
 @[simp] lemma commonCDF_highestType
@@ -160,19 +161,23 @@ private lemma indepFun_type_update [A.HasIndependentTypes] (i : Fin n) :
     fun x j => if hj : j = i then 0 else x ⟨j, by simp [T, hj]⟩
   have hf : Measurable f := measurable_pi_apply _
   have hg : Measurable g := by
-    apply measurable_pi_lambda
+    apply Measurable.of_eval
     intro j
     by_cases hj : j = i
-    · simp only [g, dif_pos hj]
+    · simp only [g, dite_eq_left hj]
       exact measurable_const
-    · simp only [g, dif_neg hj]
+    · simp only [g, dite_eq_right hj]
       exact measurable_pi_apply _
   have hc := h.comp hf hg
-  convert hc using 1
-  funext ω j
-  by_cases hj : j = i
-  · subst j; simp [g]
-  · simp [g, hj]
+  have hleft : (f ∘ fun (ω : Ω) (j : S) ↦ A.θ j ω) = A.θ i := rfl
+  have hright : (g ∘ fun (ω : Ω) (j : T) ↦ A.θ j ω) =
+      (fun ω ↦ Function.update (A.θ · ω) i 0) := by
+    funext ω j
+    by_cases hj : j = i
+    · subst j; simp [g]
+    · simp [g, hj]
+  rw [hleft, hright] at hc
+  exact hc
 
 omit [NeZero n] in
 /-- Under independent types, a measurable, integrable realized payment has the same expectation as
@@ -185,7 +190,7 @@ lemma integral_payment_eq_integral_p [A.HasIndependentTypes]
   let h : ℝ → (Fin n → ℝ) → ℝ := fun x y => A.rules.payment i (Function.update y i x)
   have hXY : IndepFun (A.θ i) Y ℙ := A.indepFun_type_update i
   have hY : Measurable Y := measurable_update_left.comp
-    (measurable_pi_lambda _ A.θ_measurable)
+    (Measurable.of_eval A.θ_measurable)
   have hh : Measurable h.uncurry := hm.comp (measurable_update'.comp
     (measurable_snd.prodMk measurable_fst))
   have hl : (fun ω => A.rules.payment i (A.θ · ω)) =
@@ -208,7 +213,7 @@ lemma expectedRevenue_eq_sum_integral_p [A.HasIndependentTypes]
     A.expectedRevenue = ∑ i : Fin n, ∫ ω, A.p i (A.θ i ω) ∂ℙ := by
   unfold expectedRevenue
   simp_rw [Mechanism.revenue_eq_sum_payment]
-  rw [integral_finset_sum _ fun i _ => hi i]
+  rw [integral_finsetSum _ fun i _ => hi i]
   exact Finset.sum_congr rfl fun i _ => A.integral_payment_eq_integral_p i (hm i) (hi i)
 
 end Auction
