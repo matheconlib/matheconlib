@@ -1,0 +1,81 @@
+> Historical concept assessment at the audited revision. The [publication and proof-scope record](../../README.md) and [repair/migration table](../../MIGRATION.md) distinguish confirmed findings from candidates and current repairs.
+
+# Finite probability semantic audit
+
+Scope: all declarations and theorem contracts in `MathEconLib/Probability/FinDist/{Basic,ConditionalOn,Expect,Measure,Simplex}.lean`, at source revision `1d9f8cc233cdaeee0364b51befb84feea657a4da`. All 19 inventoried definition-like declarations are mapped below. Library sources were read only. No substantive semantic defect survived review. No Lean compilation is claimed.
+
+In the tables, `F ⇒ S` means the formal object or result has the standard semantics; `S ⇒ F` means every object with those semantics, under the declared carrier/structure assumptions, is represented. For deterministic constructors the two directions mean equality with the standard formula, rather than surjectivity onto unrelated distributions.
+
+## Definition-by-definition concept mapping
+
+All paths below are relative to `MathEconLib/Probability/FinDist/`.
+
+| Exact source | Declaration; intended standard concept | F ⇒ S | S ⇒ F; assumptions and boundary cases |
+| --- | --- | --- | --- |
+| `Basic.lean:48` | `FinDist`: probability distribution on a finite outcome type | `stdSimplex ℝ α` supplies exactly `p(a) ≥ 0` and `∑ p(a)=1`; singleton masses determine the law on the discrete finite space. | Every finite probability vector satisfies these two fields and yields an inhabitant. The empty outcome type admits none, as required. This is a finite-law carrier, not a claim to represent infinite distributions. |
+| `Basic.lean:55` | `pmf`: probability mass function | The underlying simplex function is precisely the outcome masses. | Any intended mass function already determines its simplex member uniquely; no probability is transformed. |
+| `Basic.lean:67` | `support`: positive-mass support | Filtering the entire finite universe by `0 < p(a)` gives exactly positive-mass outcomes. | Every positive-mass outcome is included and every zero-mass outcome excluded. No topological support on a separately chosen topology is claimed. |
+| `Basic.lean:72` | `IsMode`: a global mode of a finite distribution | `∀ b, p(b) ≤ p(a)` is exactly global mass maximization, including ties. | Every standard mode satisfies the predicate. Normalization ensures at least one positive mass, so zero-mass outcomes cannot spuriously become modes. |
+| `Basic.lean:104` | `pure`: Dirac/point-mass distribution | The indicator of `a=b` assigns one at the designated outcome and zero elsewhere. | The standard Dirac vector is this function; a mass-one distribution equals it. `DecidableEq` enables the indicator and imposes no mathematical restriction under classical logic. |
+| `Basic.lean:185` | `uniform`: uniform distribution | The barycenter assigns `1 / card α` to every point. | Every equal-mass probability vector has that value by normalization. `Nonempty α` is necessary; uniform probability on an empty outcome set does not exist. |
+| `Basic.lean:199` | `mixture`: binary convex mixture | The mass is `t p₁(a)+(1−t)p₂(a)`, with `t∈[0,1]`, the standard randomized choice between laws. | Every mixture with the specified components and weight has exactly this function. Endpoint weights correctly recover a component; support-union equality is asserted only for strict weights. |
+| `Basic.lean:232` | `finMixture`: finite probability mixture | The mass is `∑s w(s)p_s(a)`, with a probability vector of weights; nonnegativity and normalization follow by interchanging finite sums. | Every finite mixture with those weights/components has this mass function. A prior is Bayes-plausibly split only when it equals this resulting mixture; the definition does not claim that arbitrary supplied posteriors split an independently fixed prior. |
+| `ConditionalOn.lean:49` | `probEvent`: event probability | The finite sum over `a∈e` is `Pr(e)`. | Every finite event probability is determined by this sum. `DecidablePred` computes membership and adds no classical semantic restriction. |
+| `ConditionalOn.lean:68` | `condProb`: point mass conditional on an event; zero totalization on null events | For `Pr(e)>0`, it is `p(a)/Pr(e)` on `e`, zero outside: precisely `Pr({a}∩e)/Pr(e)`. | The standard positive-event conditional mass equals this value uniquely. At null events standard elementary conditioning is undefined; the explicitly documented extension is zero everywhere and is not advertised as a normalized law. |
+| `ConditionalOn.lean:118` | `conditionalOnOrSelf`: distribution-valued conditioning with prior fallback | It is the conditional law for positive-mass `e`; otherwise it is the original probability vector. Both branches are normalized. | It equals the stated conditional/prior-fallback convention exactly. It does not claim support inside a null conditioning event. |
+| `ConditionalOn.lean:125` | `conditionalOn`: conditional law on a positive-probability event | The argument requires `0 < Pr(e)`, so the prior fallback cannot occur. The mass is the conditional ratio, supported on `e`. | Every elementary conditional law on positive-mass `e` has these masses; simplex extensionality gives equality. The positivity argument is not computationally used, but it excludes precisely the problematic branch. |
+| `Expect.lean:55` | `expect`: finite expectation in a real module | `∑a p(a) • f(a)` is the probability-weighted finite average. | This is the defining finite-expectation formula; no measurability, convergence or completeness is needed for a finite algebraic sum. Ordered or analytic results add the appropriate structure explicitly. |
+| `Measure.lean:46` | `toPMF`: conversion to an extended-nonnegative-real PMF | `ENNReal.ofReal` preserves every nonnegative mass, and their finite sum remains one. | A finite PMF has each mass at most one, hence no infinite coordinate, and is recovered from `ofPMF`; `toPMF_ofPMF` proves this direction explicitly. |
+| `Measure.lean:56` | `ofPMF`: conversion of a finite PMF to real masses | Since `p(a)≤1`, `toReal` never encounters infinity; it yields nonnegative masses summing to one. | For every real finite distribution, `toReal(ofReal(p(a)))=p(a)` pointwise because `p(a)≥0`, so the inverse round trip follows by extensionality as well. |
+| `Measure.lean:77` | `toMeasure`: probability measure induced by masses on the supplied measurable space | On each measurable event it is the sum of the prescribed masses on that event, via `PMF.toMeasure`. | On a finite discrete measurable space the inverse is the singleton-mass vector, as the simplex equivalence at line 85 states. On a coarser measurable space only measurable-event masses are claimed: different vectors may induce the same law, and no injectivity is asserted. |
+| `Simplex.lean:44` | `productD`: independent product law on finite dependent profiles | The mass at a profile is `∏i p_i(x_i)`. Finite summation factors into `∏i∑b p_i(b)=1`; rectangular probabilities factor, giving joint independence and the specified marginals. | Every independent finite joint law has point masses equal to that product, and so equals this constructor. The empty index set has one empty profile of mass one; an empty coordinate cannot supply a marginal probability vector. |
+| `Simplex.lean:55` | `marginalD`: coordinate marginal mass | Summing the joint vector over the fiber `x_i=b` is exactly `Pr(X_i=b)`. | Every coordinate pushforward law has these masses. Summing over `b` partitions the profile space and gives one; zero-mass coordinate values remain zero. |
+| `Simplex.lean:78` | `condProbD`: conditional mass of the whole profile given a coordinate value | It applies `condProb` to the coordinate fiber, thus gives `p(x)/Pr(X_i=b)` when `x_i=b` and the marginal is positive. | Every positive-fiber conditional law on the **entire profile** has these masses. It is not an opponents-only carrier, but dropping the fixed coordinate gives the usual law of the other coordinates. Null fibers use the explicitly documented zero-mass convention. |
+
+## Theorem-contract review
+
+Every theorem and the probability-measure instance in these files was checked against the definitions and its actual stated assumptions. The table records all theorem source locations; the statements do not silently strengthen the underlying concepts.
+
+| Source locations | Reviewed statements and semantic scope |
+| --- | --- |
+| `Basic.lean:58,61,64,76,80,85,94` | `nonneg`, `sum_one`, `pmf_eq_coe`, `pmf_le_one`, `sum_pmf_two`, `exists_pmf_pos`, `ext`: exact probability axioms, binary normalization, nonempty positive support and pointwise determination. |
+| `Basic.lean:108,112,115,119,123,141,175` | `pure_apply`, `pure_pmf`, `pure_pmf_self`, `pure_pmf_of_ne`, `eq_pure_of_pmf_eq_one`, `eq_pure_pair_of_disjoint_fin_two`, `support_pure`: correct Dirac identities. Disjoint-support point masses are asserted only for a two-outcome space, where both nonempty supports must be distinct singletons. |
+| `Basic.lean:188,192,208,212,241` | `uniform_pmf`, `uniform_apply`, `mixture_pmf`, `support_mixture`, `finMixture_pmf`: correct formulas. Both positive weights are required for the support-union theorem; no endpoint overclaim. |
+| `ConditionalOn.lean:53,58,62,74,78,86,91,98,111` | `probEvent_nonneg`, `probEvent_eq_sum_filter`, `probEvent_eq_sum_ite`, `condProb_eq_ite`, `condProb_nonneg`, `condProb_eq_zero_of_notMem`, `condProb_eq_of_pos`, `condProb_sum_one_of_pos`, `condProb_sum_zero_of_not_pos`: event/point identities and conditional normalization with explicit positive/null-event cases. Nonnegativity makes “not positive” equivalent to zero here. |
+| `ConditionalOn.lean:132,137,146,152,161` | `conditionalOn_eq_conditionalOnOrSelf`, `conditionalOn_apply`, `conditionalOn_prob_eq`, `conditionalOnOrSelf_eq_self_of_zero`, `probEvent_conditionalOn`: every identification with standard conditioning requires positive event mass. The last theorem is exactly `Pr(B∣A)=Pr(A∩B)/Pr(A)`. |
+| `Expect.lean:59,63,67,72,81,88,94` | `expect_eq_sum`, `expect_const`, `expect_add`, `expect_smul`, `expect_pure`, `expect_of_pmf_eq_one`, `expect_mixture`: finite linear-average identities hold in the declared real module. |
+| `Expect.lean:104,109,115` | `expect_nonneg`, `expect_mono`, `expect_le_expect_of_support_max`: addition/order compatibility and nonnegative scalar monotonicity are explicitly supplied. A distribution supported on global maximizers attains a maximal expectation; equality of supported maximizer values follows from antisymmetry even in a partial order. No unsupported converse in an arbitrary ordered module is claimed. |
+| `Expect.lean:139` | `eq_expect_of_pmf_pos_of_forall_le_expect`: if every value is bounded by its own weighted average, each positive-mass value equals it. The proof uses nonnegative gaps whose weighted sum is zero and cancels a nonzero real scalar; the additional additive-group structure permits subtraction. |
+| `Measure.lean:68,80,85,95,100` | `toPMF_ofPMF`; `IsProbabilityMeasure` instance; `toMeasure_eq_equivStdSimplex_symm`; `integrable_toMeasure`; `expect_eq_integral`. The simplex equivalence requires a discrete measurable space. Integrability requires measurable singletons, which on a finite space makes every fiber measurable; the integral identity also supplies a complete real normed space. No finite-sum/Bochner-integral equality for a nonmeasurable function is claimed. |
+| `Simplex.lean:59,64,71,83,88,93,100,106,112,117,123` | `marginalD_nonneg`, `marginalD_sum_one`, `probEvent_coordFiber`, `condProbD_nonneg`, `condProbD_of_ne`, `condProbD_eq_of_pos`, `condProbD_eq_zero_of_not_pos`, `condProbD_sum_one_of_pos`, `marginalD_pure`, `pmf_le_marginalD`, `marginalD_mul_condProbD`: correct fiber-sum identities. Reconstruction multiplies the marginal by the conditional mass and equals the joint mass **on the conditioning fiber**, zero elsewhere. Null-fiber reconstruction holds because nonnegativity forces each joint mass in that fiber to zero. |
+
+## Adversarial edge cases and rejected defect candidates
+
+1. **Zero conditional masses are not a distribution on a null event.** Minimal test: one-point space, prior mass one, conditioning event empty. `condProb` gives zero and sums to zero, while `conditionalOnOrSelf` returns the prior. This difference is the explicit contract at `ConditionalOn.lean:14–16,66–70,116–129`; `conditionalOn` cannot be invoked with the missing positivity proof. Thus this is neither a false positive nor a false negative for the stated concepts. A downstream claim of normalized null-event masses would be wrong, but is absent here.
+2. **The measure conversion can forget point distinctions in a coarse measurable space.** Minimal test: two points with sigma algebra `{∅,univ}`. The two distinct Dirac vectors give the same induced probability measure. This does not violate `toMeasure`'s contract, which states its measurable-event masses; `toMeasure_eq_equivStdSimplex_symm` has the discrete-space hypothesis. No injectivity is promised without measurable singletons.
+3. **A mode has no separate positive-mass field.** This is sufficient, not too weak: choose any positive-mass point using normalization, and the mode inequality forces a mode's mass to be at least that positive number. For the uniform law every outcome is a mode; ties are intended.
+4. **Coordinate conditioning retains the coordinate.** On a binary pair, conditioning on the first bit gives a law on the pair with that bit fixed. The carrier and documentation say exactly this, so its use instead of a deleted-coordinate carrier is not a change in conditional probabilities.
+5. **Empty carriers and endpoints.** There is no normalized vector on an empty outcome set; the empty product has the singleton empty profile; mixture endpoints return their respective components. Support-union equality would fail at endpoints (e.g. two different Dirac vectors), but `support_mixture` explicitly excludes them.
+
+No source correction is proposed because none of these candidates contradicts the stated concept.
+
+## Verification evidence and limits
+
+The audit used four passes: full formula and hypothesis reading; expert review of both semantic directions; hostile review of null events, empty types, tied modes, coarse measurability, endpoints, and partial orders; final source-location and coverage reconciliation. An independently spawned hostile reviewer also read all five files and found no surviving substantive defect.
+
+The independent reviewer authored and executed exact-rational loops over finite formulas; the auditor retained and reran them in `finite_prob-check.py`, then added checks for the remaining basic and expectation identities. The foundations integrator independently read the retained script, checked its conditioning formulas against `ConditionalOn.lean`, and reran it successfully with the same counts and exit status zero. Command from the repository root:
+
+```sh
+python3 docs/audits/2026-10-23-semantic/areas/foundations/finite_prob-check.py
+```
+
+Observed exit status: `0`. Observed output:
+
+```text
+PASS: 702 event cases; 140 binary joint-coordinate cases; 25 binary product laws. Exact Fraction arithmetic, bounded verification only.
+PASS: 56 probability vectors; 3288 expectation cases; 7380 mixture cases; empty carrier and empty profile edge cases.
+```
+
+The event tests enumerate all denominator-four probability vectors on 1–4 outcomes and all conditioning events, including all test events for the conditional event-ratio identity. Coordinate tests enumerate all denominator-four laws on a binary pair and every coordinate/value pair. Product tests enumerate binary marginals with denominator four. Basic tests check masses/support/modes; expectation tests use all functions valued in `{-1,0,1}`; mixture tests cover all pairs of these distributions and all denominator-four mixture weights. These computations are corroboration for the exact finite encodings. The unrestricted equivalences above rest on their explicit formulas and algebraic arguments, not on the bounded search. They do not establish successful Lean elaboration of this checkout.
+
+Retained script SHA-256: `a20ffdbf268242fa9ec70ec09faa0c5b54cb93843e483bb46544d03a6e19f835`.
