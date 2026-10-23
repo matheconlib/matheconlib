@@ -8,6 +8,7 @@ module
 public import MathEconLib.Auction.Typeclasses
 public import MathEconLib.Probability.FinDist.Measure
 import Mathlib.Tactic.FinCases
+import Mathlib.Probability.Independence.Integration
 
 /-!
 # Correlated values distinguish marginal averages from interim incentives
@@ -56,6 +57,19 @@ def auction : MathEconLib.Auction Bool 2 where
   θ _ := value
   θ_measurable _ := measurable_of_countable _
 
+/-- Both realized values lie in the declared interval. -/
+instance bounded_types : auction.HasBoundedTypes where
+  θ_in i ω := by cases ω <;> norm_num [auction, value]
+
+/-- The counterexample uses a measurable polynomial payment rule. -/
+lemma payment_measurable (i : Fin 2) : Measurable (auction.rules.payment i) := by
+  change Measurable (fun b : Fin 2 → ℝ ↦ -(-((2 * b 0 - 1) * (2 * b 1 - 1))))
+  fun_prop
+
+/-- Finite support makes every realized payment integrable. -/
+lemma payment_integrable (i : Fin 2) :
+    Integrable (fun ω ↦ auction.rules.payment i (auction.θ · ω)) := Integrable.of_finite
+
 /-- Every fixed report has zero expected payment under the unconditional opponent law. -/
 lemma marginal_payment (i : Fin 2) (b : ℝ) : auction.p i b = 0 := by
   simp only [Auction.p, Auction.p_strat, integral_bool]
@@ -65,13 +79,15 @@ lemma marginal_payment (i : Fin 2) (b : ℝ) : auction.p i b = 0 := by
 lemma marginal_allocation (i : Fin 2) (b : ℝ) : auction.q i b = 0 := by
   simp [Auction.q, Auction.q_strat, auction]
 
-/-- The old BIC definition accepts the counterexample. -/
-theorem old_bic : auction.BIC where
-  bic i s _ s' _ := by simp [Auction.U, marginal_payment, marginal_allocation]
+/-- All the incentive inequalities in the old, unrestricted BIC definition hold. -/
+theorem old_bic_inequalities (i : Fin 2) (s s' : ℝ) :
+    s * auction.q i s' - auction.p i s' ≤ auction.U i s := by
+  simp [Auction.U, marginal_payment, marginal_allocation]
 
 /-- The old revenue definition reports zero. -/
-theorem old_expectedRevenue : auction.expectedRevenue = 0 := by
-  simp [Auction.expectedRevenue, marginal_payment]
+theorem old_expectedRevenue :
+    (∫ ω, ∑ i : Fin 2, auction.p i (auction.θ i ω)) = 0 := by
+  simp [marginal_payment]
 
 /-- Under truthful reporting each bidder is charged one in either state. -/
 lemma truthful_payment (i : Fin 2) (ω : Bool) :
@@ -100,11 +116,33 @@ lemma deviation_mem_interval (i : Fin 2) (ω : Bool) :
     1 - value ω ∈ auction.interval i := by
   cases ω <;> norm_num [Auction.interval, auction, value]
 
+/-- Each bidder's own value uniquely determines the state, so the deviation uses only own
+information. -/
+lemma state_determined_by_value (i : Fin 2) {ω ω' : Bool}
+    (h : auction.θ i ω = auction.θ i ω') : ω = ω' := by
+  cases ω <;> cases ω' <;> norm_num [auction, value] at *
+
+/-- The values are not independent: their joint second moment is one half, not one quarter. -/
+theorem not_independent : ¬ auction.HasIndependentTypes := by
+  intro h
+  have hXY := h.θ_indep.indepFun (i := (0 : Fin 2)) (j := (1 : Fin 2)) (by decide)
+  have hh := hXY.integral_fun_mul_eq_mul_integral
+    (auction.θ_measurable 0).aestronglyMeasurable
+    (auction.θ_measurable 1).aestronglyMeasurable
+  simp only [integral_bool] at hh
+  norm_num [auction, value] at hh
+
+/-- The repaired independent-types BIC interface rejects the correlated counterexample. -/
+theorem not_bic : ¬ auction.BIC := fun h ↦ not_independent h.toHasIndependentTypes
+
 /-- Actual expected truthful revenue is two under the correlated joint law. -/
 theorem realized_revenue :
     (∫ ω, auction.rules.revenue (auction.θ · ω)) = 2 := by
   rw [integral_bool]
   simp only [Mechanism.revenue_eq_sum_payment, truthful_payment]
   norm_num
+
+/-- The repaired expected-revenue definition returns the realized joint revenue. -/
+theorem expectedRevenue_two : auction.expectedRevenue = 2 := realized_revenue
 
 end MathEconLibTest.CorrelatedValues

@@ -1,31 +1,35 @@
 /-
-Copyright (c) 2026 Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang. All rights reserved.
+Copyright (c) 2026 Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang,
+Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
+Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang, Bo Cowgill
 -/
 module
 
 public import MathEconLib.BidderProblem.TypeDeviationIC
 public import MathEconLib.Mechanism.Auctions.Allocation
 public import Mathlib.Probability.Notation
+public import Mathlib.Probability.Independence.Basic
 
 /-!
 # Auctions with random bidder values
 
 An auction combines rules for allocating goods and making transfers with a probability distribution
 over bidder values. Bidders submit real bids, and the rules return an allocation vector and signed
-transfers, with positive transfers paid to bidders. Interim allocation and payment average over
-opponents' bids, either under a common strategy or truthful reporting.
+transfers, with positive transfers paid to bidders. The carrier allows correlated values. The
+quantities called interim allocation and payment below average over the unconditional law of
+opponents' bids, either under a common strategy or truthful reporting. They represent a bidder's
+interim beliefs under independent types; they do not condition on the bidder's own value.
 
 Allocation rules and bidder values are measurable. Under a measurable strategy, allocations in
 `[0, 1]` are integrable. The interim definitions also allow arbitrary strategies: their Bochner
 integrals are zero when the integrands are not integrable. Payment integrability is a separate
 condition and does not follow from bounded allocations.
 
-Individual rationality and Bayesian incentive compatibility describe bidders' incentives. When each
-allocation coordinate lies in `[0, 1]`, incentive compatibility determines interim payments from
-the allocation rule and the utility of the lowest type, yielding payment equivalence across
-auctions.
+The `BIC` interface requires independent types. Correlated-type incentives require conditional
+beliefs, as in `GameTheory.BayesianPrior.ConditionalBeliefs`, rather than these marginal averages.
+Allocation coordinates in `[0, 1]` and incentive compatibility determine interim payments from the
+allocation rule and the utility of the lowest type, yielding payment equivalence across auctions.
 
 ## Main definitions
 
@@ -83,14 +87,20 @@ namespace Auction
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} (A : Auction Ω n)
 
+/-- Types are mutually independent. This is the independence assumption needed to interpret the
+unconditional opponent averages as interim quantities under constant product beliefs. -/
+class HasIndependentTypes : Prop where
+  θ_indep : iIndepFun A.θ ℙ
+
 /-- Type interval for bidder `i`. -/
 abbrev interval (i : Fin n) : Set ℝ := Icc (A.θmin i) (A.θmax i)
 
 /-! ### Strategy-dependent interim quantities
 
-When opponents play strategy `σ` instead of reporting truthfully, the interim quantities take
+When opponents play strategy `σ` instead of reporting truthfully, the marginal quantities take
 `σ(θⱼ)` as opponent bids rather than `θⱼ`. The standard interim quantities `q`, `p` are the
-`σ = id` special case. -/
+`σ = id` special case. Under independent types these are interim expectations; for correlated
+types they remain unconditional averages and do not describe conditional incentives. -/
 
 /-- Interim allocation when opponents play strategy `σ`: `q_strat(σ, i, b) = 𝔼[xᵢ(b, σ(θ₋ᵢ))]`. No
 measurability of `σ` is assumed. This is a totalized Bochner integral, equal to zero if the
@@ -176,8 +186,9 @@ def ExPostIR : Prop :=
   ∀ i, ∀ θ : Fin n → ℝ, (∀ j, θ j ∈ A.interval j) →
     0 ≤ θ i * A.rules.outcome θ i + A.rules.transfer i θ
 
-/-- Interim individual rationality: every bidder gets nonnegative expected utility for every
-type. -/
+/-- Nonnegative marginal utility at every type. Under independent types this is interim individual
+rationality with constant product beliefs. For correlated types, `U` is unconditional and this
+predicate does not assert conditional individual rationality. -/
 def InterimIR : Prop :=
   ∀ i, ∀ s ∈ A.interval i, 0 ≤ A.U i s
 
@@ -188,8 +199,11 @@ def ExAnteIR : Prop :=
 
 /-! ### BIC -/
 
-/-- Bayesian incentive compatibility: truthful reporting maximizes each bidder's interim utility. -/
-class BIC : Prop where
+/-- Bayesian incentive compatibility for independent private values: with constant product beliefs,
+truthful reporting maximizes each bidder's interim utility on the stated type interval. Independence
+is part of this interface, not a consequence of the incentive inequalities. For correlated types
+use conditional opponent beliefs; the marginal functions `q` and `p` are insufficient. -/
+class BIC : Prop extends A.HasIndependentTypes where
   bic : ∀ i, ∀ s ∈ A.interval i, ∀ s' ∈ A.interval i,
     s * A.q i s' - A.p i s' ≤ A.U i s
 
@@ -269,8 +283,8 @@ Two BIC auctions with allocation coordinates in `[0, 1]`, the same interim alloc
 type bounds, and the same base utility `U(θmin)` have the same interim payment for every type in
 their common type interval.
 
-No efficiency, symmetry, or distributional assumptions needed. The two auctions may live on
-different probability spaces. -/
+No efficiency or symmetry assumptions are needed. Independence is included in each auction's
+`BIC` hypothesis. The two auctions may live on different probability spaces. -/
 theorem payment_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n)

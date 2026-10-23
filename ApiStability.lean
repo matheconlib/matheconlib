@@ -189,6 +189,15 @@ example : ∀ (B : MathEconLib.BidderProblem),
 
 /-! ## MathEconLib.Auction — payment and revenue equivalence -/
 
+-- The unconditional BIC interface includes independent types.
+example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.Auction Ω n) [A.BIC] : A.HasIndependentTypes := inferInstance
+
+-- Revenue is realized revenue under the joint prior, including correlated type laws.
+example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.Auction Ω n) :
+    A.expectedRevenue = ∫ ω, A.rules.revenue (A.θ · ω) := rfl
+
 -- Truthful opponents give winning probability F(s)^(n−1) under strict-highest-bid allocation.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
@@ -220,7 +229,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
         ∀ {s : ℝ}, s ∈ A.interval i → A.p i s = A₂.p j s :=
   @MathEconLib.Auction.payment_equivalence
 
--- Revenue Equivalence Theorem for symmetric IPV auctions (Theorem 6.4)
+-- Revenue equivalence now requires measurable rules and integrable realized payments.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : MathEconLib.Auction Ω n) [A.IsSymmetricIPV]
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
@@ -233,9 +242,11 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
           (∀ i : Fin n, IdentDistrib (A.θ i) (A₂.θ i) volume volume) →
             ∀ [A.BIC] [A₂.BIC] [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility],
               (∀ i : Fin n, Measurable (A₂.p i)) →
-                (∀ i : Fin n, Integrable (fun ω => A.p i (A.θ i ω)) volume) →
-                  (∀ i : Fin n, Integrable (fun ω => A₂.p i (A₂.θ i ω)) volume) →
-                    A.expectedRevenue = A₂.expectedRevenue :=
+                (∀ i : Fin n, Measurable (A.rules.payment i)) →
+                  (∀ i : Fin n, Measurable (A₂.rules.payment i)) →
+                    (∀ i : Fin n, Integrable (fun ω => A.rules.payment i (A.θ · ω)) volume) →
+                      (∀ i : Fin n, Integrable (fun ω => A₂.rules.payment i (A₂.θ · ω)) volume) →
+                        A.expectedRevenue = A₂.expectedRevenue :=
   @MathEconLib.Auction.revenue_equivalence
 
 -- Strict-highest-bid allocation already supplies the unit-interval allocation bound.
@@ -252,7 +263,9 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : MathEconLib.Auction Ω n) [A.IsSymmetricIPV]
     (_ : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility],
+    [A.BIC] [A.HasZeroLowestTypeUtility]
+    (_ : ∀ i, Measurable (A.rules.payment i))
+    (_ : ∀ i, Integrable (fun ω => A.rules.payment i (A.θ · ω)) volume),
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @MathEconLib.Auction.total_revenue
 
