@@ -5,6 +5,9 @@ import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
 import MathEconLibTest.Choice.MatchingConditionsImport
 import MathEconLibTest.Choice.PublicImport
+import MathEconLibTest.Choice.WeakPreferences
+import MathEconLibTest.Choice.WeakPreferencesGame
+import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.ConditionalBeliefs
 import MathEconLibTest.GameTheory.FiniteBayesian

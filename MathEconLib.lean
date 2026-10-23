@@ -35,6 +35,7 @@ import MathEconLib.Choice.Matching.Preferences
 import MathEconLib.Choice.Matching.Relationships
 import MathEconLib.Choice.Matching.WeakSubstitutability
 import MathEconLib.Choice.SubstituteHull
+import MathEconLib.Choice.WeakPreferences
 import MathEconLib.ForMathlib.AbsolutelyContinuous
 import MathEconLib.ForMathlib.ApproximateSelection
 import MathEconLib.ForMathlib.Data.PartialMatching
@@ -49,6 +50,7 @@ import MathEconLib.ForMathlib.MeasureTheory.VonNeumannSelection
 import MathEconLib.ForMathlib.Order.FixedPointLattice
 import MathEconLib.ForMathlib.Order.IterateFiniteSet
 import MathEconLib.ForMathlib.Order.IterateFixedPoint
+import MathEconLib.ForMathlib.Order.Refinement
 import MathEconLib.ForMathlib.ProbabilityMeasure
 import MathEconLib.ForMathlib.Quasiconvex
 import MathEconLib.ForMathlib.Schauder
