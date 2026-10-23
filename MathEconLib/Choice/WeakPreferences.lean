@@ -5,6 +5,7 @@ Authors: Bo Cowgill
 -/
 import MathEconLib.Choice.Induced
 import MathEconLib.ForMathlib.Order.Refinement
+import Mathlib.Order.Filter.Extr
 import Mathlib.Order.Preorder.Finite
 
 /-!
@@ -16,15 +17,19 @@ Completeness is supplied separately when finite existence or linear refinement n
 
 `maximizers` retains all greatest feasible alternatives, and `optimalBundles` retains their
 represented bundles as a family of sets. It does not combine tied bundles into their union.
+For value-induced preferences, `mem_maximizers_lift` identifies maximizers with feasible
+`IsMaxOn` witnesses without requiring cardinal representations for arbitrary preferences.
 The definitions allow infinite menus; existence results require finite feasible sets.
 An empty correspondence means no greatest feasible alternative exists, not that the empty
 bundle is optimal. It may reflect infeasibility or failure of attainment.
 
 `ChoiceFunction.ofWeakBundleOrder` uses a fixed priority to refine preferences and then calls
-the existing `ofBundleOrder`. On finite menus with a feasible represented bundle, its output
-belongs to `optimalBundles`. It inherits the old constructor's empty-set totalization if
+the existing `ofBundleOrder`. More generally, any linear refinement selects a weakly optimal
+bundle when the feasible represented family is finite and nonempty, even on an infinite menu.
+It inherits the old constructor's empty-set totalization if
 the refined order has no greatest feasible bundle. This selector is noncomputable; it is
-distinct from the correspondence. Strict preferences recover the existing constructor.
+distinct from the correspondence. A weak optimum alone does not ensure refinement attainment.
+Strict preferences recover the existing constructor.
 
 -/
 
@@ -40,6 +45,11 @@ def maximizers (pref : Preorder α) (S : Set α) : Set α :=
 
 @[simp] theorem mem_maximizers (pref : Preorder α) {S : Set α} {a : α} :
     a ∈ maximizers pref S ↔ a ∈ S ∧ ∀ b ∈ S, pref.le b a := Iff.rfl
+
+/-- Value-induced maximizers are feasible `IsMaxOn` witnesses. `IsMaxOn` alone does not
+require the candidate to belong to the feasible set. -/
+theorem mem_maximizers_lift [Preorder β] (value : α → β) {S : Set α} {a : α} :
+    a ∈ maximizers (Preorder.lift value) S ↔ a ∈ S ∧ IsMaxOn value S a := Iff.rfl
 
 theorem maximizers_subset (pref : Preorder α) (S : Set α) : maximizers pref S ⊆ S :=
   fun _ h ↦ h.1
@@ -66,20 +76,47 @@ theorem maximizers_nonempty_of_finite (pref : Preorder α) (complete : Std.Total
 def optimalBundles (pref : Preorder β) (bundle : β ↪ Set α) (Y : Set α) : Set (Set α) :=
   bundle '' maximizers pref {b | bundle b ⊆ Y}
 
+/-- Membership means being represented by a feasible index weakly above all feasible indices. -/
+theorem mem_optimalBundles_iff (pref : Preorder β) (bundle : β ↪ Set α) {Y A : Set α} :
+    A ∈ optimalBundles pref bundle Y ↔
+      ∃ b, bundle b = A ∧ bundle b ⊆ Y ∧ ∀ c, bundle c ⊆ Y → pref.le c b :=
+  ⟨fun ⟨b, hb, h⟩ ↦ ⟨b, h, hb.1, hb.2⟩,
+    fun ⟨b, h, hb, hmax⟩ ↦ ⟨b, ⟨hb, hmax⟩, h⟩⟩
+
 /-- Every bundle in the correspondence is feasible at the given menu. -/
 theorem subset_of_mem_optimalBundles (pref : Preorder β) (bundle : β ↪ Set α)
     {Y A : Set α} (hA : A ∈ optimalBundles pref bundle Y) : A ⊆ Y := by
   obtain ⟨b, hb, rfl⟩ := hA
   exact hb.1
 
+/-- A finite nonempty feasible bundle family has a weak optimum, even on an infinite menu. -/
+theorem optimalBundles_nonempty_of_finite_feasible
+    (pref : Preorder β) (complete : Std.Total pref.le) (bundle : β ↪ Set α)
+    {Y : Set α} (hF : {b | bundle b ⊆ Y}.Finite) (hne : ∃ b, bundle b ⊆ Y) :
+    (optimalBundles pref bundle Y).Nonempty :=
+  (maximizers_nonempty_of_finite pref complete hF hne).image bundle
+
 /-- Finite menus have a best bundle if some represented bundle is feasible. -/
 theorem optimalBundles_nonempty_of_finite (pref : Preorder β) (complete : Std.Total pref.le)
     (bundle : β ↪ Set α) {Y : Set α} (hY : Y.Finite) (hne : ∃ b, bundle b ⊆ Y) :
     (optimalBundles pref bundle Y).Nonempty :=
-  (maximizers_nonempty_of_finite pref complete
-    (hY.finite_subsets.preimage_embedding bundle) hne).image bundle
+  optimalBundles_nonempty_of_finite_feasible pref complete bundle
+    (hY.finite_subsets.preimage_embedding bundle) hne
 
 namespace ChoiceFunction
+
+/-- Any linear refinement selects a weak optimum from a finite nonempty feasible bundle family.
+The menu itself need not be finite. No separate completeness hypothesis is required. -/
+theorem ofBundleOrder_mem_optimalBundles_of_finite_feasible
+    (pref : Preorder β) (refined : LinearOrder β)
+    (hrefine : ∀ a b, refined.le a b → pref.le a b)
+    (bundle : β ↪ Set α) {Y : Set α}
+    (hF : {b | bundle b ⊆ Y}.Finite) (hne : ∃ b, bundle b ⊆ Y) :
+    ofBundleOrder refined bundle Y ∈ optimalBundles pref bundle Y := by
+  obtain ⟨b, hb⟩ := maximizers_nonempty_of_finite refined.toPreorder ⟨refined.le_total⟩ hF hne
+  rw [ofBundleOrder_eq_of_isGreatest refined bundle hb]
+  exact (mem_optimalBundles_iff pref bundle).mpr
+    ⟨b, rfl, hb.1, fun c hc ↦ hrefine c b (hb.2 hc)⟩
 
 /-- Select a bundle with a fixed priority among ties, using the existing strict constructor.
 Priority is independent of the menu, with larger priority preferred. -/
@@ -102,12 +139,11 @@ theorem ofWeakBundleOrder_eq_of_max [LinearOrder γ] (pref : Preorder β)
 theorem ofWeakBundleOrder_mem_optimalBundles_of_finite [LinearOrder γ]
     (pref : Preorder β) (complete : Std.Total pref.le) (priority : β ↪ γ)
     (bundle : β ↪ Set α) {Y : Set α} (hY : Y.Finite) (hne : ∃ b, bundle b ⊆ Y) :
-    ofWeakBundleOrder pref complete priority bundle Y ∈ optimalBundles pref bundle Y := by
-  obtain ⟨b, hb, hmax⟩ := exists_greatest_bundle_of_finite
-    (Order.tieBreakOrder pref complete priority) bundle hY hne
-  rw [ofWeakBundleOrder, ofBundleOrder_eq_of_max _ bundle hb hmax]
-  exact ⟨b, ⟨hb, fun c hc ↦ Order.tieBreakOrder_le pref complete priority
-    (hmax c hc)⟩, rfl⟩
+    ofWeakBundleOrder pref complete priority bundle Y ∈ optimalBundles pref bundle Y :=
+  ofBundleOrder_mem_optimalBundles_of_finite_feasible pref
+    (Order.tieBreakOrder pref complete priority)
+    (fun _ _ h ↦ Order.tieBreakOrder_le pref complete priority h) bundle
+    (hY.finite_subsets.preimage_embedding bundle) hne
 
 /-- For a strict order, fixed tie-breaking recovers the existing choice function. -/
 @[simp] theorem ofWeakBundleOrder_linearOrder [LinearOrder γ] (pref : LinearOrder β)

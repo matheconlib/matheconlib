@@ -12,6 +12,7 @@ import Lean.Elab.Tactic.Omega
 
 Empty and unattained feasible menus distinguish an empty correspondence from the represented
 outside option. A finite incomplete preference shows why existence requires completeness.
+An infinite all-tied example has weak optima but no optimum after increasing-priority refinement.
 The worked utility and participation examples are imported, not reconstructed.
 -/
 
@@ -43,6 +44,70 @@ theorem incomplete_no_maximizer : maximizers incomparable Set.univ = ∅ := by
   have hone : (1 : Fin 2) = n := h.2 (Set.mem_univ 1)
   exact (by decide : (0 : Fin 2) ≠ 1) (hzero.trans hone.symm)
 
+namespace InfiniteTies
+
+/-- Every natural-number singleton is represented, with no represented empty bundle. -/
+def bundle : ℕ ↪ Set ℕ where
+  toFun n := {n}
+  inj' := Set.singleton_injective
+
+/-- All represented bundles are indifferent. -/
+def pref : Preorder ℕ := Preorder.lift fun _ : ℕ ↦ (0 : ℕ)
+
+theorem complete : Std.Total pref.le :=
+  ⟨fun _ _ ↦ Or.inl (show (0 : ℕ) ≤ 0 from le_rfl)⟩
+
+/-- Every singleton is a weak optimum on the infinite menu. -/
+theorem singleton_mem (n : ℕ) : {n} ∈ optimalBundles pref bundle Set.univ :=
+  (mem_optimalBundles_iff pref bundle).mpr
+    ⟨n, rfl, Set.subset_univ _, fun _ _ ↦ (show (0 : ℕ) ≤ 0 from le_rfl)⟩
+
+/-- Weak preferences attain an optimum despite the infinite feasible family. -/
+theorem optimal_nonempty : (optimalBundles pref bundle Set.univ).Nonempty :=
+  ⟨{0}, singleton_mem 0⟩
+
+/-- Increasing natural-number priorities have no greatest feasible index. -/
+theorem refined_unattained :
+    maximizers (MathEconLib.Order.tieBreakOrder pref complete
+      (Function.Embedding.refl ℕ)).toPreorder Set.univ = ∅ := by
+  ext b
+  simp only [Set.mem_empty_iff_false, iff_false]
+  intro hb
+  have h := (MathEconLib.Order.tieBreakOrder_le_iff pref complete
+    (Function.Embedding.refl ℕ) (b + 1) b).mp (hb.2 (Set.mem_univ (b + 1)))
+  have hnext : b + 1 ≤ b := h.2
+    ⟨(show (0 : ℕ) ≤ 0 from le_rfl), (show (0 : ℕ) ≤ 0 from le_rfl)⟩
+  exact Nat.not_succ_le_self b hnext
+
+/-- The existing selector totalizes refinement nonattainment to the empty set. -/
+theorem selected_empty :
+    ChoiceFunction.ofWeakBundleOrder pref complete (Function.Embedding.refl ℕ)
+      bundle Set.univ = ∅ := by
+  ext x
+  simp only [ChoiceFunction.ofWeakBundleOrder, ChoiceFunction.mem_ofBundleOrder,
+    Set.mem_empty_iff_false, iff_false]
+  rintro ⟨b, _, _, hmax⟩
+  have hb : b ∈ maximizers (MathEconLib.Order.tieBreakOrder pref complete
+      (Function.Embedding.refl ℕ)).toPreorder Set.univ :=
+    ⟨Set.mem_univ _, fun c _ ↦ hmax c (Set.subset_univ _)⟩
+  simp only [refined_unattained, Set.mem_empty_iff_false] at hb
+
+/-- Totalization is not a weak optimum: the empty bundle is not represented. -/
+theorem empty_not_optimal : ∅ ∉ optimalBundles pref bundle Set.univ := by
+  intro h
+  obtain ⟨b, heq, _, _⟩ := (mem_optimalBundles_iff pref bundle).mp h
+  have hmem := congrArg (fun S : Set ℕ ↦ b ∈ S) heq
+  simp [bundle] at hmem
+
+/-- Existence of weak optima alone does not guarantee optimality of the refined selection. -/
+theorem selected_not_optimal :
+    ChoiceFunction.ofWeakBundleOrder pref complete (Function.Embedding.refl ℕ)
+      bundle Set.univ ∉ optimalBundles pref bundle Set.univ := by
+  rw [selected_empty]
+  exact empty_not_optimal
+
+end InfiniteTies
+
 open MathEconLibExamples.Choice.WeakPreferences
 
 example : {(0 : Fin 2)} ∈ optimalBundles Contracts.pref ChoiceFunction.optionBundle Set.univ :=
@@ -61,6 +126,10 @@ example : ∅ ∈ optimalBundles OutsideTie.pref ChoiceFunction.optionBundle (�
 
 example : optimalBundles Bundles.pref Bundles.bundle ∅ = ∅ := Bundles.empty_menu
 
+#print axioms mem_maximizers_lift
+#print axioms mem_optimalBundles_iff
+#print axioms optimalBundles_nonempty_of_finite_feasible
+#print axioms ChoiceFunction.ofBundleOrder_mem_optimalBundles_of_finite_feasible
 #print axioms MathEconLib.Order.tieBreakOrder_le_iff
 #print axioms MathEconLib.Order.tieBreakOrder_of_linearOrder
 #print axioms maximizers_nonempty_of_finite
@@ -76,5 +145,12 @@ example : optimalBundles Bundles.pref Bundles.bundle ∅ = ∅ := Bundles.empty_
 #print axioms Bundles.selected_eq
 #print axioms unattained
 #print axioms incomplete_no_maximizer
+#print axioms FiniteFamily.selected_mem
+#print axioms InfiniteTies.singleton_mem
+#print axioms InfiniteTies.optimal_nonempty
+#print axioms InfiniteTies.refined_unattained
+#print axioms InfiniteTies.selected_empty
+#print axioms InfiniteTies.empty_not_optimal
+#print axioms InfiniteTies.selected_not_optimal
 
 end MathEconLibTest.Choice.WeakPreferences
