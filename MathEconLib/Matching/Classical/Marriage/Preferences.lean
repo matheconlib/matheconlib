@@ -1,10 +1,11 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 import MathEconLib.Choice.Induced
 import Mathlib.Data.Finset.Max
+import Mathlib.Logic.Equiv.Option
 
 /-!
 # Marriage preferences and their induced choice functions
@@ -86,6 +87,25 @@ def AcceptableM (m : M) (w : W) : Prop :=
 def AcceptableW (w : W) (m : M) : Prop :=
   mkt.ltW w none (some m)
 
+/-- Every agent strictly prefers every partner to remaining unmatched.
+This optional condition is not part of the underlying `MarriageMarket` structure. -/
+structure NoUnacceptablePartners : Prop where
+  /-- Every partner is acceptable to each proposer. -/
+  acceptableM : ∀ m w, mkt.AcceptableM m w
+  /-- Every partner is acceptable to each receiver. -/
+  acceptableW : ∀ w m, mkt.AcceptableW w m
+
+/-- Universal mutual acceptability is symmetric between the two populations. -/
+theorem NoUnacceptablePartners.symm (h : mkt.NoUnacceptablePartners) :
+    mkt.symm.NoUnacceptablePartners := ⟨h.acceptableW, h.acceptableM⟩
+
+/-- Previous name for `NoUnacceptablePartners`. -/
+abbrev UniversallyAcceptable := mkt.NoUnacceptablePartners
+
+/-- Side exchange under the previous name. -/
+theorem UniversallyAcceptable.symm (h : mkt.UniversallyAcceptable) :
+    mkt.symm.UniversallyAcceptable := NoUnacceptablePartners.symm mkt h
+
 @[simp] theorem ltM_symm (w : W) (y z : Option M) :
     mkt.symm.ltM w y z ↔ mkt.ltW w y z := Iff.rfl
 
@@ -103,6 +123,61 @@ def AcceptableW (w : W) (m : M) : Prop :=
 
 @[simp] theorem acceptableW_symm (m : M) (w : W) :
     mkt.symm.AcceptableW m w ↔ mkt.AcceptableM m w := Iff.rfl
+
+/-! ## Relabeling populations -/
+
+section Relabel
+
+variable {M' W' M'' W'' : Type*}
+
+/-- Transport preferences to new population labels. Optional partners are transported
+by `Equiv.optionCongr`, which fixes the outside option `none`. No finiteness is needed. -/
+def relabel (eM : M ≃ M') (eW : W ≃ W') : MarriageMarket M' W' where
+  prefM m := by
+    letI := mkt.prefM (eM.symm m)
+    exact LinearOrder.lift' (Equiv.optionCongr eW.symm) (Equiv.optionCongr eW.symm).injective
+  prefW w := by
+    letI := mkt.prefW (eW.symm w)
+    exact LinearOrder.lift' (Equiv.optionCongr eM.symm) (Equiv.optionCongr eM.symm).injective
+
+@[simp] theorem relabel_leM (eM : M ≃ M') (eW : W ≃ W') (m : M') (x y : Option W') :
+    (mkt.relabel eM eW).leM m x y ↔
+      mkt.leM (eM.symm m) (x.map eW.symm) (y.map eW.symm) := Iff.rfl
+
+@[simp] theorem relabel_ltM (eM : M ≃ M') (eW : W ≃ W') (m : M') (x y : Option W') :
+    (mkt.relabel eM eW).ltM m x y ↔
+      mkt.ltM (eM.symm m) (x.map eW.symm) (y.map eW.symm) := Iff.rfl
+
+@[simp] theorem relabel_leW (eM : M ≃ M') (eW : W ≃ W') (w : W') (x y : Option M') :
+    (mkt.relabel eM eW).leW w x y ↔
+      mkt.leW (eW.symm w) (x.map eM.symm) (y.map eM.symm) := Iff.rfl
+
+@[simp] theorem relabel_ltW (eM : M ≃ M') (eW : W ≃ W') (w : W') (x y : Option M') :
+    (mkt.relabel eM eW).ltW w x y ↔
+      mkt.ltW (eW.symm w) (x.map eM.symm) (y.map eM.symm) := Iff.rfl
+
+@[simp] theorem relabel_refl : mkt.relabel (Equiv.refl M) (Equiv.refl W) = mkt := by
+  cases mkt
+  apply congrArg₂ MarriageMarket.mk
+  all_goals
+    funext a
+    apply LinearOrder.ext
+    intro x y
+    cases x <;> cases y <;> rfl
+
+theorem relabel_trans (eM : M ≃ M') (eW : W ≃ W') (fM : M' ≃ M'') (fW : W' ≃ W'') :
+    (mkt.relabel eM eW).relabel fM fW = mkt.relabel (eM.trans fM) (eW.trans fW) := by
+  apply congrArg₂ MarriageMarket.mk
+  all_goals
+    funext a
+    apply LinearOrder.ext
+    intro x y
+    cases x <;> cases y <;> rfl
+
+@[simp] theorem relabel_symm (eM : M ≃ M') (eW : W ≃ W') :
+    (mkt.relabel eM eW).symm = mkt.symm.relabel eW eM := rfl
+
+end Relabel
 
 /-! ## Structural choice on arbitrary partner types -/
 

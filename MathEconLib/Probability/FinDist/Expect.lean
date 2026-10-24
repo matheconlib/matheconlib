@@ -1,11 +1,12 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Daniel Lyng, Bo Cowgill
 -/
 module
 
 public import MathEconLib.Probability.FinDist.Basic
+public import Mathlib.Algebra.BigOperators.Expect
 
 /-!
 # Expectations for finite distributions
@@ -27,6 +28,7 @@ expectation.
 
 * `FinDist.expect_add`: Additivity of expectation.
 * `FinDist.expect_mixture`: Expectation of a binary mixture.
+* `FinDist.expect_uniform`: Uniform real-valued expectations are Mathlib finite averages.
 * `FinDist.expect_le_expect_of_support_max`: Distributions supported on maximizers maximize
   expectation.
 * `FinDist.eq_expect_of_pmf_pos_of_forall_le_expect`: Outcomes with positive probability attain a
@@ -133,6 +135,12 @@ lemma expect_le_expect_of_support_max {d : FinDist α} {f : α → V}
 end Ordered
 
 end Module
+
+/-- A real-valued expectation under the uniform law is Mathlib's finite average. -/
+lemma expect_uniform [Nonempty α] (f : α → ℝ) :
+    (FinDist.uniform (α := α)).expect f = 𝔼 a, f a := by
+  rw [expect, Fintype.expect_eq_sum_div_card]
+  simp only [uniform_pmf, smul_eq_mul, div_eq_inv_mul, Finset.mul_sum]
 
 /-- If the expectation of `f` bounds `f` everywhere, every outcome with positive probability
 attains that expectation. -/

@@ -1,11 +1,12 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Daniel Lyng, Bo Cowgill
 -/
 module
 
 public import MathEconLib.ForMathlib.ProbabilityMeasure
+public import MathEconLib.ForMathlib.Uniform
 public import MathEconLib.Probability.FinDist.Expect
 public import Mathlib.Probability.ProbabilityMassFunction.Integrals
 
@@ -26,6 +27,7 @@ function. Finite expectations agree with Bochner integrals on discrete measurabl
 
 * `FinDist.toPMF_ofPMF`: Converting a probability mass function to real-valued masses and back
   preserves it.
+* `FinDist.toPMF_uniform`: The finite-distribution and PMF uniform laws agree.
 * `FinDist.toMeasure_eq_equivStdSimplex_symm`: The finite distribution and its simplex probability
   measure assign the same mass to every event on a discrete space.
 * `FinDist.integrable_toMeasure`: Functions on finite discrete spaces are integrable.
@@ -70,6 +72,15 @@ lemma toPMF_ofPMF {α : Type*} [Fintype α] (p : PMF α) :
   ext a
   simp only [toPMF, ofPMF]
   exact ENNReal.ofReal_toReal (ne_top_of_le_ne_top ENNReal.one_ne_top (PMF.coe_le_one p a))
+
+/-- The uniform finite distribution induces Mathlib's uniform PMF on the same space. -/
+@[simp] lemma toPMF_uniform {α : Type*} [Fintype α] [Nonempty α] :
+    (FinDist.uniform (α := α)).toPMF = PMF.uniformFintype α := by
+  ext a
+  rw [PMF.uniformFintype_apply]
+  change ENNReal.ofReal ((FinDist.uniform (α := α)).pmf a) = _
+  rw [uniform_pmf, ENNReal.ofReal_inv_of_pos (Nat.cast_pos.mpr Fintype.card_pos)]
+  simp
 
 variable {α : Type*} [Fintype α] [MeasurableSpace α]
 

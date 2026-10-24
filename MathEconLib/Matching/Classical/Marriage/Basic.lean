@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 import MathEconLib.Matching.Classical.Marriage.Preferences
 import MathEconLib.ForMathlib.Data.PartialMatching
@@ -123,6 +123,23 @@ theorem unblocked_iff_no_blockingPair (μ : M ≃. W) :
   · intro h
     exact ⟨h, fun w m => h m w⟩
 
+/-- Relabeling both preferences and assignments preserves stability in both directions.
+This transports outcomes; it makes no claim about the intermediate states of an algorithm. -/
+@[simp] theorem isStableMatching_relabel {M' W' : Type*} (μ : M ≃. W)
+    (eM : M ≃ M') (eW : W ≃ W') :
+    (mkt.relabel eM eW).IsStableMatching (μ.relabel eM eW) ↔ mkt.IsStableMatching μ := by
+  simp only [IsStableMatching, IndividuallyRational, IndividuallyRationalM,
+    IndividuallyRationalW, IndividuallyRationalForM, IndividuallyRationalForW,
+    Unblocked, UnblockedM, UnblockedW, IsBlockingPair, BlocksM, BlocksW,
+    relabel_leM, relabel_leW, relabel_ltM, relabel_ltW, PEquiv.relabel_symm,
+    PEquiv.relabel_apply, Option.map_none, Option.map_some, Option.map_map]
+  simp only [Equiv.symm_comp_self, Option.map_id, id_eq]
+  refine and_congr (and_congr ?_ ?_) (and_congr ?_ ?_)
+  · exact eM.symm.forall_congr (by intro; rfl)
+  · exact eW.symm.forall_congr (by intro; rfl)
+  · exact eM.symm.forall₂_congr eW.symm (by intros; rfl)
+  · exact eW.symm.forall₂_congr eM.symm (by intros; rfl)
+
 theorem IsStableMatching.individuallyRationalForM
     {μ : M ≃. W} (h : mkt.IsStableMatching μ) (m : M) :
     mkt.IndividuallyRationalForM μ m :=
@@ -190,6 +207,31 @@ theorem IsStableMatching.unblockedW
 @[simp] theorem isStableMatching_symm (μ : M ≃. W) :
     mkt.symm.IsStableMatching μ.symm ↔ mkt.IsStableMatching μ := by
   simp only [IsStableMatching, individuallyRational_symm, unblocked_symm]
+
+/-- With no blocking pair and universal mutual acceptability, every man on a finite side no
+larger than the other side is matched. The woman-side statement follows by side exchange. -/
+theorem Unblocked.isSome_of_card_le [Fintype M] [Fintype W] {μ : M ≃. W}
+    (hμ : mkt.Unblocked μ) (hcard : Fintype.card M ≤ Fintype.card W)
+    (hA : mkt.NoUnacceptablePartners)
+    (m : M) : (μ m).isSome := by
+  classical
+  by_contra hm
+  have hm' : μ m = none := Option.not_isSome_iff_eq_none.mp hm
+  have hw (w : W) : (μ.symm w).isSome := by
+    by_contra h
+    have hw' : μ.symm w = none := Option.not_isSome_iff_eq_none.mp h
+    apply hμ.1 m w
+    exact ⟨by simpa [BlocksM, hm', AcceptableM] using hA.acceptableM m w,
+      by simpa [BlocksW, hw', AcceptableW] using hA.acceptableW w m⟩
+  exact hm (μ.isSome_of_forall_symm_isSome_of_card_le hcard hw m)
+
+/-- In a finite balanced market where all partners are mutually acceptable,
+every stable matching matches every man. The woman-side statement follows by side exchange. -/
+theorem IsStableMatching.isSome_of_card_eq [Fintype M] [Fintype W] {μ : M ≃. W}
+    (hμ : mkt.IsStableMatching μ) (hcard : Fintype.card M = Fintype.card W)
+    (hA : mkt.NoUnacceptablePartners)
+    (m : M) : (μ m).isSome :=
+  Unblocked.isSome_of_card_le mkt hμ.2 hcard.le hA m
 
 /-- Every man weakly prefers `μ` to `ν`. This is the preference order,
 not the extension order that `PEquiv` already carries. -/

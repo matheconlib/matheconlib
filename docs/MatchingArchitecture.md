@@ -104,12 +104,16 @@ The section headings separate these scopes without introducing another module.
 | --- | --- |
 | `Matching.Contracts.ManyToOne` | Seller unit demand, buyer counterparty feasibility, outcome feasibility and construction from seller preferences |
 | `Matching.Contracts.Completion` | Completed markets, stability transfer, stable existence and unilateral-substitutes corollaries |
-| `Matching.Classical.Marriage.Preferences` | Market preference data, acceptability, induced choice functions and finite maximization |
+| `Matching.Classical.Marriage.Preferences` | Market preference data, relabeling, acceptability, induced choice functions and finite maximization |
+| `Matching.Classical.Marriage.RankPreferences` | Deterministic finite rankings, the existing preference adapter, side exchange and ordinal-rank statistics |
 | `Matching.Classical.Marriage.Basic` | Matching, individual rationality, blocking, stability and optimality specifications |
 | `Matching.Classical.Marriage.ToContracts` | Embedding the marriage model into contracts, graph/reconstruction and the preference dictionary |
 | `Matching.Classical.Marriage.Existence` | The stable-matching existence theorem |
 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
 | `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
+| `Matching.Classical.Marriage.RankPreferencesDA` | Deterministic short-side DA completeness and rank optimality, without probability |
+| `Matching.Classical.Marriage.RandomPreferences` | Arbitrary joint profile laws, explicit-law expectations and independent individual-law specialization |
+| `Matching.Classical.Marriage.RandomPreferencesUniform` | Independent uniform rankings, their product law, marginals and finite expectation formula |
 
 Marriage preferences and their induced choices belong together. The embedding
 into the contracts model lives in `ToContracts`, with the explicit constructor
@@ -118,6 +122,57 @@ correspondence. `Existence` holds the existence theorem, while `FixedPointConver
 the iteration results previously in `GeneralizedDA`. The embedding module
 depends only on the basic contracts model; existence introduces fixed-point
 theory. Marriage `Preferences` and `Basic` remain independent of Contracts.
+
+`RankPreferences` depends on marriage preference data and Mathlib finite orders and averages;
+it imports neither probability nor DA. Its two population sizes vary independently. Average
+proposer rank includes unmatched agents at the outside-option rank; receiver statistics reuse
+the same definitions after side exchange. Weak preference comparisons connect the statistics
+to existing matching optimality.
+
+`RankPreferencesDA` combines those rankings with the existing executable proposer DA, keeping
+short-side completeness and rank optimality independent of probability. The shared `PEquiv`
+cardinality lemma supports completeness under no blocking pairs and the optional
+`MarriageMarket.NoUnacceptablePartners` condition; balanced stable matchings are a corollary.
+
+`RandomPreferences` accepts any joint `PMF (RankProfile m n)`, including correlated rankings.
+Expected average rank takes the law and outcome rule explicitly, with separate population sizes.
+`independentProfile` specializes to arbitrary independent individual laws, and
+`RandomPreferencesUniform` specializes further to independent uniform rankings. Its product-law
+and expectation formulas use the shared lemmas in `ForMathlib.Uniform`.
+`RankProfile.equivAgentRanks` identifies profiles with one unrestricted family of rankings across
+both populations; the product law gives marginals and Mathlib's `iIndepFun`, including empty and
+unequal populations. Discrete measurable structures stay in the probability layer.
+`Probability.FinDist` also connects its uniform law to the same PMF and finite-average identity.
+
+Sampling preference relations directly, constructing rankings sequentially, and drawing random
+primitives are distinct procedures. The present `RankProfile` API requires strict rankings with
+all partners above `none`; this is a restriction of the representation, not of sampling itself.
+The underlying `MarriageMarket` permits incomplete acceptable lists by placing unacceptable
+partners below `none`, but random laws on those lists need a separate extension. Ties remain
+under [#200](https://github.com/matheconlib/matheconlib/issues/200); a sampling procedure that
+breaks ties must specify that rule. The induced joint laws are the common interface: `PMF.map`
+handles discrete sources, or `Measure.map` and `Measure.toPMF` handle general measurable sources.
+Comparing procedures requires proving equality of those laws rather than assuming equivalence.
+
+`MarriageMarket.relabel` transports optional-partner orders along population equivalences;
+`PEquiv.relabel` composes partial assignments with those equivalences. Identity, composition,
+side exchange, and stability preservation hold without finite-population or acceptability
+restrictions. `MathEconLibExamples.Matching.NamedMarriage` applies this interface to a stable
+DA outcome with named participants. The wrappers compose Mathlib's existing equivalences and
+order lifts. This transports outcomes and does not assert correspondence between algorithm
+execution states. Reverse rank encodings and stable-outcome counting bridges
+remain follow-ups in [#192](https://github.com/matheconlib/matheconlib/issues/192).
+
+The canonical `MathEconLibExamples.Matching.RandomPreferences` example proves the exact `5/4`
+proposer DA expectation and explains the two equally likely first-choice cases. Tests import that
+example; a correlated law with the same individual uniform marginals gives expectation `3/2`.
+Its checked marginals and dependence witness illustrate why the joint law matters. The core
+contains the reusable statistics and laws. These benchmarks concern ordinal
+positions, not cardinal welfare. Proposal bounds,
+asymptotics, and matched-agent imbalance results remain later milestones under
+[#166](https://github.com/matheconlib/matheconlib/issues/166). Weak preferences
+([#200](https://github.com/matheconlib/matheconlib/issues/200)) and relabeling the full contracts
+framework are separate follow-ups.
 
 Use `map` for the choice-function operation along an embedding, and reserve
 “transport” for transferring structure along an equivalence. A specialization

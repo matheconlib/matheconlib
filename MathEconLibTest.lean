@@ -20,6 +20,11 @@ import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.PublicImport
+import MathEconLibTest.Matching.RandomPreferences
+import MathEconLibTest.Matching.RandomPreferencesUniform
+import MathEconLibTest.Matching.RankPreferences
+import MathEconLibTest.Matching.RankPreferencesDA
+import MathEconLibTest.Matching.Relabel
 import MathEconLibTest.Mechanism.BayesianIC
 import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core
@@ -28,6 +33,7 @@ import MathEconLibTest.Mechanism.PostedPriceGames
 import MathEconLibTest.Mechanism.TruthfulNash
 import MathEconLibTest.Namespace
 import MathEconLibTest.Pricing.Compatibility
+import MathEconLibTest.Probability.Uniform
 import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
