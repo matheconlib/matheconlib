@@ -20,6 +20,7 @@ namespace MathEconLibTest.Matching.RankPreferencesDA
 open MathEconLib.Matching.MarriageMarket
 open RankProfile
 
+-- Existing names remain usable after the rename.
 example {m n : ℕ} (p : RankProfile m n) : p.toMarriageMarket.UniversallyAcceptable :=
   p.toMarriageMarket_universallyAcceptable
 
@@ -65,7 +66,7 @@ example : ((default : RankProfile 2 1).toMarriageMarket.galeShapleyComputable 1)
 example {M W : Type*} [Fintype M] [Fintype W]
     (mkt : MathEconLib.Matching.MarriageMarket M W) {μ : M ≃. W}
     (hμ : mkt.Unblocked μ) (hcard : Fintype.card M ≤ Fintype.card W)
-    (hA : mkt.UniversallyAcceptable) (m : M) :
+    (hA : mkt.NoUnacceptablePartners) (m : M) :
     (μ m).isSome := Unblocked.isSome_of_card_le mkt hμ hcard hA m
 
 -- Rank comparisons use the existing economic preference and DA optimality interfaces.

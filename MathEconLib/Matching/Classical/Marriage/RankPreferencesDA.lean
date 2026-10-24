@@ -27,7 +27,7 @@ theorem isSome_galeShapleyComputable_of_le (p : RankProfile m n) (h : m ≤ n) (
     (p.toMarriageMarket.galeShapleyComputable i).isSome :=
   Unblocked.isSome_of_card_le p.toMarriageMarket
     p.toMarriageMarket.stable_galeShapleyComputable.2 (by simpa using h)
-    p.toMarriageMarket_universallyAcceptable i
+    p.toMarriageMarket_noUnacceptablePartners i
 
 /-- Every receiver is matched when the receiver population is no larger. -/
 theorem isSome_symm_galeShapleyComputable_of_le (p : RankProfile m n) (h : n ≤ m)
@@ -35,7 +35,7 @@ theorem isSome_symm_galeShapleyComputable_of_le (p : RankProfile m n) (h : n ≤
   have hs := p.toMarriageMarket.stable_galeShapleyComputable
   exact Unblocked.isSome_of_card_le p.toMarriageMarket.symm
     ((p.toMarriageMarket.isStableMatching_symm _).mpr hs).2 (by simpa using h)
-    p.toMarriageMarket_universallyAcceptable.symm j
+    p.toMarriageMarket_noUnacceptablePartners.symm j
 
 /-- Balanced rank profiles give complete outcomes under the existing executable proposer DA. -/
 theorem isSome_galeShapleyComputable (p : RankProfile n n) (i : Fin n) :

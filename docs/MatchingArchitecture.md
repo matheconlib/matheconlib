@@ -132,7 +132,7 @@ to existing matching optimality.
 `RankPreferencesDA` combines those rankings with the existing executable proposer DA, keeping
 short-side completeness and rank optimality independent of probability. The shared `PEquiv`
 cardinality lemma supports completeness under no blocking pairs and the optional
-`MarriageMarket.UniversallyAcceptable` condition; balanced stable matchings are a corollary.
+`MarriageMarket.NoUnacceptablePartners` condition; balanced stable matchings are a corollary.
 
 `RandomPreferences` accepts any joint `PMF (RankProfile m n)`, including correlated rankings.
 Expected average rank takes the law and outcome rule explicitly, with separate population sizes.
@@ -145,8 +145,12 @@ unequal populations. Discrete measurable structures stay in the probability laye
 `Probability.FinDist` also connects its uniform law to the same PMF and finite-average identity.
 
 Sampling preference relations directly, constructing rankings sequentially, and drawing random
-primitives are distinct procedures. Each must produce a strict complete profile, with a specified
-tie-breaking rule where needed. Their induced joint laws are the common interface: `PMF.map`
+primitives are distinct procedures. The present `RankProfile` API requires strict rankings with
+all partners above `none`; this is a restriction of the representation, not of sampling itself.
+The underlying `MarriageMarket` permits incomplete acceptable lists by placing unacceptable
+partners below `none`, but random laws on those lists need a separate extension. Ties remain
+under [#200](https://github.com/matheconlib/matheconlib/issues/200); a sampling procedure that
+breaks ties must specify that rule. The induced joint laws are the common interface: `PMF.map`
 handles discrete sources, or `Measure.map` and `Measure.toPMF` handle general measurable sources.
 Comparing procedures requires proving equality of those laws rather than assuming equivalence.
 

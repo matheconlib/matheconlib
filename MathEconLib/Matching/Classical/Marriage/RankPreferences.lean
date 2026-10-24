@@ -17,7 +17,8 @@ import Mathlib.Logic.Equiv.Fin.Basic
 
 Strict complete rankings of the opposite population specialize the existing optional-partner
 orders. Smaller ranks are preferred, and every partner is preferred to remaining unmatched.
-The two population sizes are independent parameters.
+The two population sizes are independent parameters. Incomplete acceptable lists and ties
+are not represented here; the underlying `MarriageMarket` permits unacceptable partners.
 
 The adapter, side exchange, and assignment statistics are deterministic. This module depends
 on neither probability nor deferred acceptance. Applying the proposer statistics to `p.symm`
@@ -153,10 +154,14 @@ def toMarriageMarket (p : RankProfile m n) : MarriageMarket (Fin m) (Fin n) wher
 @[simp] theorem toMarriageMarket_acceptableW (p : RankProfile m n) (j : Fin n) (i : Fin m) :
     p.toMarriageMarket.AcceptableW j i := rank_some_lt_none _ _
 
-/-- Complete rank profiles satisfy the optional universal-acceptability condition. -/
-theorem toMarriageMarket_universallyAcceptable (p : RankProfile m n) :
-    p.toMarriageMarket.UniversallyAcceptable :=
+/-- Every partner in a complete rank profile is acceptable. -/
+theorem toMarriageMarket_noUnacceptablePartners (p : RankProfile m n) :
+    p.toMarriageMarket.NoUnacceptablePartners :=
   ⟨p.toMarriageMarket_acceptableM, p.toMarriageMarket_acceptableW⟩
+
+/-- Previous name for `toMarriageMarket_noUnacceptablePartners`. -/
+theorem toMarriageMarket_universallyAcceptable (p : RankProfile m n) :
+    p.toMarriageMarket.UniversallyAcceptable := p.toMarriageMarket_noUnacceptablePartners
 
 /-- Sum of one-based partner ranks for all proposers. This permits partial matchings,
 with `none` assigned rank `n+1`; later matched-agent statistics must exclude unmatched agents. -/

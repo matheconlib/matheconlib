@@ -88,16 +88,23 @@ def AcceptableW (w : W) (m : M) : Prop :=
   mkt.ltW w none (some m)
 
 /-- Every agent strictly prefers every partner to remaining unmatched.
-This optional condition leaves the underlying market and its preference orders unrestricted. -/
-structure UniversallyAcceptable : Prop where
+This optional condition is not part of the underlying `MarriageMarket` structure. -/
+structure NoUnacceptablePartners : Prop where
   /-- Every partner is acceptable to each proposer. -/
   acceptableM : ∀ m w, mkt.AcceptableM m w
   /-- Every partner is acceptable to each receiver. -/
   acceptableW : ∀ w m, mkt.AcceptableW w m
 
 /-- Universal mutual acceptability is symmetric between the two populations. -/
+theorem NoUnacceptablePartners.symm (h : mkt.NoUnacceptablePartners) :
+    mkt.symm.NoUnacceptablePartners := ⟨h.acceptableW, h.acceptableM⟩
+
+/-- Previous name for `NoUnacceptablePartners`. -/
+abbrev UniversallyAcceptable := mkt.NoUnacceptablePartners
+
+/-- Side exchange under the previous name. -/
 theorem UniversallyAcceptable.symm (h : mkt.UniversallyAcceptable) :
-    mkt.symm.UniversallyAcceptable := ⟨h.acceptableW, h.acceptableM⟩
+    mkt.symm.UniversallyAcceptable := h.symm
 
 @[simp] theorem ltM_symm (w : W) (y z : Option M) :
     mkt.symm.ltM w y z ↔ mkt.ltW w y z := Iff.rfl

@@ -212,7 +212,7 @@ theorem IsStableMatching.unblockedW
 larger than the other side is matched. The woman-side statement follows by side exchange. -/
 theorem Unblocked.isSome_of_card_le [Fintype M] [Fintype W] {μ : M ≃. W}
     (hμ : mkt.Unblocked μ) (hcard : Fintype.card M ≤ Fintype.card W)
-    (hA : mkt.UniversallyAcceptable)
+    (hA : mkt.NoUnacceptablePartners)
     (m : M) : (μ m).isSome := by
   classical
   by_contra hm
@@ -229,7 +229,7 @@ theorem Unblocked.isSome_of_card_le [Fintype M] [Fintype W] {μ : M ≃. W}
 every stable matching matches every man. The woman-side statement follows by side exchange. -/
 theorem IsStableMatching.isSome_of_card_eq [Fintype M] [Fintype W] {μ : M ≃. W}
     (hμ : mkt.IsStableMatching μ) (hcard : Fintype.card M = Fintype.card W)
-    (hA : mkt.UniversallyAcceptable)
+    (hA : mkt.NoUnacceptablePartners)
     (m : M) : (μ m).isSome :=
   Unblocked.isSome_of_card_le mkt hμ.2 hcard.le hA m
 

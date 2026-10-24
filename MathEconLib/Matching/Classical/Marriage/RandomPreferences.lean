@@ -19,8 +19,10 @@ ranking laws; `RandomPreferencesUniform` further specializes each ranking to the
 
 Directly sampling preference relations, constructing rankings sequentially, and drawing random
 primitives (for example, discrete-choice shocks with a specified tie-breaking rule) are distinct
-generating procedures. Each must produce a strict complete `RankProfile`; its induced joint law
-is their common interface. For a discrete source use `PMF.map`, and for a general measurable
+generating procedures. This API uses strict `RankProfile`s with every partner acceptable;
+incomplete acceptable lists and ties require extensions of that representation. The underlying
+`MarriageMarket` already permits unacceptable partners below `none`. The induced joint law
+is the common interface for procedures producing these rank profiles. For a discrete source use `PMF.map`, and for a general measurable
 source use `Measure.map` followed by `Measure.toPMF` on this finite profile space. Equality of
 induced laws implies equality of expected ranks. No equivalence of those procedures is assumed.
 
