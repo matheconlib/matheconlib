@@ -3,16 +3,14 @@ Copyright (c) 2026 The Formal Conjectures Authors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The Formal Conjectures Authors, Bo Cowgill
 -/
-module
-
-public import MathEconLib.Matching.Classical.Marriage.Preferences
-public import Mathlib.Algebra.BigOperators.Expect
-public import Mathlib.Data.Fintype.Perm
-public import Mathlib.Data.Fintype.Pi
-public import Mathlib.Data.Fintype.Prod
-public import Mathlib.Basic.PEquiv
-public import Mathlib.Basic.Real.Basic
-public import Mathlib.Logic.Equiv.Fin.Basic
+import MathEconLib.Matching.Classical.Marriage.Preferences
+import Mathlib.Algebra.BigOperators.Expect
+import Mathlib.Data.Fintype.Perm
+import Mathlib.Data.Fintype.Pi
+import Mathlib.Data.Fintype.Prod
+import Mathlib.Basic.PEquiv
+import Mathlib.Basic.Real.Basic
+import Mathlib.Logic.Equiv.Fin.Basic
 
 /-!
 # Finite ordinal rank profiles for marriage markets
@@ -37,8 +35,6 @@ Here its single size parameter is generalized to two; existing marriage preferen
 supply the economic interpretation. The preference-port scoping in #161 may identify further
 shared interfaces; this module introduces no alternative preference or stability foundation.
 -/
-
-@[expose] public section
 
 namespace MathEconLib.Matching.MarriageMarket
 
@@ -124,7 +120,7 @@ theorem rank_injective (r : Equiv.Perm (Fin n)) : Function.Injective (rank r) :=
   exact Nat.succ_injective.comp (Fin.val_injective.comp e.injective)
 
 /-- The existing marriage API prefers larger values, so its order is the dual rank order. -/
-def rankOrder (r : Equiv.Perm (Fin n)) : LinearOrder (Option (Fin n)) :=
+@[instance_reducible] def rankOrder (r : Equiv.Perm (Fin n)) : LinearOrder (Option (Fin n)) :=
   LinearOrder.lift' (fun o ↦ OrderDual.toDual (rank r o)) (rank_injective r)
 
 /-- Interpret a rank profile as the existing marriage-market structure. -/

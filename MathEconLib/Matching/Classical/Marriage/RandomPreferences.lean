@@ -3,12 +3,10 @@ Copyright (c) 2026 The Formal Conjectures Authors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The Formal Conjectures Authors, Bo Cowgill
 -/
-module
-
-public import MathEconLib.Matching.Classical.Marriage.RankPreferences
-public import Mathlib.MeasureTheory.Constructions.Pi
-public import Mathlib.Probability.Independence.Basic
-public import Mathlib.Probability.ProbabilityMassFunction.Integrals
+import MathEconLib.Matching.Classical.Marriage.RankPreferences
+import Mathlib.MeasureTheory.Constructions.Pi
+import Mathlib.Probability.Independence.Basic
+import Mathlib.Probability.ProbabilityMassFunction.Integrals
 
 /-!
 # General finite random preference profiles
@@ -24,15 +22,14 @@ primitives (for example, discrete-choice shocks with a specified tie-breaking ru
 generating procedures. This API uses strict `RankProfile`s with every partner acceptable;
 incomplete acceptable lists and ties require extensions of that representation. The underlying
 `MarriageMarket` already permits unacceptable partners below `none`. The induced joint law
-is the common interface for procedures producing these rank profiles. For a discrete source use `PMF.map`, and for a general measurable
-source use `Measure.map` followed by `Measure.toPMF` on this finite profile space. Equality of
+is the common interface for procedures producing these rank profiles. For a discrete source use
+`PMF.map`; for a general measurable source use `Measure.map` followed by `Measure.toPMF`
+on this finite profile space. Equality of
 induced laws implies equality of expected ranks. No equivalence of those procedures is assumed.
 
 The profile representation and its Formal Conjectures provenance are documented in
 `RankPreferences`. Stability and outcome rules reuse the existing marriage-market API.
 -/
-
-@[expose] public section
 
 namespace MathEconLib.Matching.MarriageMarket
 

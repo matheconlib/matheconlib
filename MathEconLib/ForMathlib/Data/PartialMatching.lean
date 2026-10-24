@@ -4,7 +4,6 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers, Bo Cowgill
 -/
 import Mathlib.Basic.PEquiv
-import Mathlib.Data.Fintype.Card
 import Mathlib.Data.Set.Card
 import Mathlib.Data.Set.Subsingleton
 

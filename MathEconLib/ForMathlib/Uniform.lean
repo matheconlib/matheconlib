@@ -30,10 +30,11 @@ namespace PMF
 /-- Uniform mass on a nonempty finite type, using Mathlib's finite PMF constructor.
 Mathlib's `Measure.uniformOfFinset` supplies the corresponding measure. -/
 noncomputable def uniformFintype (α : Type*) [Fintype α] [Nonempty α] : PMF α :=
-  ofFintype (fun _ ↦ (Fintype.card α : ℝ≥0∞)⁻¹) (by simp)
+  ofFintype (fun _ ↦ (Fintype.card α : ENNReal)⁻¹) (by
+    simp [ENNReal.mul_inv_cancel, Fintype.card_ne_zero])
 
 @[simp] theorem uniformFintype_apply {α : Type*} [Fintype α] [Nonempty α] (a : α) :
-    uniformFintype α a = (Fintype.card α : ℝ≥0∞)⁻¹ := rfl
+    uniformFintype α a = (Fintype.card α : ENNReal)⁻¹ := rfl
 
 /-- The finite uniform PMF agrees with Mathlib's uniform measure on the full finite set. -/
 theorem toMeasure_uniformFintype {α : Type*} [Fintype α] [Nonempty α]
@@ -42,7 +43,7 @@ theorem toMeasure_uniformFintype {α : Type*} [Fintype α] [Nonempty α]
   classical
   apply Measure.ext_of_singleton
   intro a
-  simp [PMF.toMeasure_apply_singleton]
+  simp
 
 /-- A bijective change of representation preserves the uniform law on a finite space. -/
 theorem map_uniformOfFintype {α β : Type*} [Fintype α] [Fintype β]

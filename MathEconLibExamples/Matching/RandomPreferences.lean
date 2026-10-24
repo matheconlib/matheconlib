@@ -74,12 +74,10 @@ theorem law_map_ranking (a : Fin 2 ⊕ Fin 2) :
 private theorem mass_identity (i : Fin 2) :
     law.toMeasure ((fun p ↦ p.manRank i) ⁻¹' ({1} : Set (Equiv.Perm (Fin 2)))) =
       (2 : ENNReal)⁻¹ := by
-  rw [← Measure.map_apply Measurable.of_discrete (measurableSet_singleton _)]
-  have hm : law.map (fun p ↦ p.manRank i) =
-      PMF.uniformFintype (Equiv.Perm (Fin 2)) := by
-    simpa using law_map_ranking (Sum.inl i)
-  rw [PMF.toMeasure_map _ _ Measurable.of_discrete, hm]
-  norm_num [PMF.toMeasure_apply_singleton, PMF.uniformFintype_apply, Fintype.card_perm]
+  rw [law, ← PMF.toMeasure_map _ _ Measurable.of_discrete,
+    Measure.map_apply Measurable.of_discrete MeasurableSet.of_discrete]
+  norm_num [Set.preimage, sharedRanks, PMF.toMeasure_apply_singleton,
+    PMF.uniformFintype_apply, Fintype.card_perm]
 
 private theorem joint_mass_identity :
     law.toMeasure ((fun p ↦ p.manRank 0) ⁻¹' ({1} : Set (Equiv.Perm (Fin 2))) ∩
