@@ -35,22 +35,16 @@ The formalisation is based on https://arxiv.org/abs/1902.00827 and
 https://planetmath.org/proofofschauderfixedpointtheorem.
 -/
 
--- This file is the original auto-formalisation output (see the module doc below) and has not
--- been through the library's review discipline. The Mathlib style linters are scoped off here
--- so that they give a usable signal on the hand-written parts of the library; re-enable them
--- when this file is cleaned up or replaced by an upstreamed version.
--- TODO: 116 linter findings, dominated by unused `Fintype`/`DecidableEq` instance arguments in
--- statements (42 + 29) and `show` used where `change` is meant (29). The 14 `linter.flexible`
--- findings are deliberately left visible: Mathlib forbids scoping that linter off downstream.
-set_option linter.unusedFintypeInType false
-set_option linter.unusedDecidableInType false
-set_option linter.style.show false
-set_option linter.style.refine false
-set_option linter.style.openClassical false
+-- Local review proceeds in stages under #191. All five linters are enabled for the Scarf
+-- room section below; its review record is in docs/SchauderReview.md. The remaining sections
+-- still await review and keep temporary exceptions at the boundary marked below.
+set_option linter.unusedFintypeInType true
+set_option linter.unusedDecidableInType true
+set_option linter.style.show true
+set_option linter.style.refine true
+set_option linter.style.openClassical true
 
 noncomputable section
-
-open Classical
 
 def isDominant {n : ℕ} {T : Type}
     (ords : Fin (n + 1) → LinearOrder T)
@@ -88,6 +82,7 @@ lemma isDominant_erase {n : ℕ} {T : Type} [DecidableEq T]
     (σ : Finset T) (C : Finset (Fin (n + 1))) (z : T)
     (hdom : isDominant ords σ C) :
     isDominant ords (σ.erase z) C := by
+  classical
   intro y
   obtain ⟨i, hi, hx⟩ := hdom y
   exact ⟨i, hi, fun x hx' ↦ hx x (Finset.mem_of_mem_erase hx')⟩
@@ -98,6 +93,7 @@ lemma image_erase_of_injOn {α β : Type*} [DecidableEq α] [DecidableEq β]
     {f : α → β} {s : Finset α} {a : α}
     (hinj : Set.InjOn f ↑s) (ha : a ∈ s) :
     (s.erase a).image f = (s.image f).erase (f a) := by
+  classical
   ext y
   simp only [Finset.mem_image, Finset.mem_erase]
   constructor
@@ -105,7 +101,7 @@ lemma image_erase_of_injOn {α β : Type*} [DecidableEq α] [DecidableEq β]
     exact ⟨fun h ↦ ht_ne (hinj ht_mem ha h), t, ht_mem, rfl⟩
   · grind
 
-lemma colorful_room_unique_adj_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
+lemma colorful_room_unique_adj_mem {n : ℕ} {T : Type} [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -114,6 +110,7 @@ lemma colorful_room_unique_adj_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (hi₀ : i₀ ∈ C) :
     ∃! w : Finset T × Finset (Fin (n + 1)),
       scarfAdjRel (σ, C) w ∧ IsScarfVtx ords c i₀ w := by
+  classical
   -- Step 1: c is injective on σ
   have hinj : Set.InjOn c ↑σ := by
     apply Finset.injOn_of_card_image_eq
@@ -195,6 +192,7 @@ lemma isDominant_mono {n : ℕ} {T : Type}
     (σ : Finset T) (C D : Finset (Fin (n + 1)))
     (hdom : isDominant ords σ C) (hsub : C ⊆ D) :
     isDominant ords σ D := by
+  classical
   intro y
   obtain ⟨i, hi, hx⟩ := hdom y
   exact ⟨i, hsub hi, hx⟩
@@ -212,21 +210,12 @@ lemma adj_insert_of_not_mem {n : ℕ} {T : Type} [DecidableEq T]
     (i₀ : Fin (n + 1))
     (hcard : σ.card = C.card) (hi₀ : i₀ ∉ C) :
     scarfAdjRel (σ, C) (σ, insert i₀ C) := by
+  classical
   refine ⟨?_, Or.inl ⟨hcard, Or.inr ⟨i₀, hi₀, rfl, rfl⟩⟩⟩
   grind
 
-/-- The candidate w = (σ, insert i₀ C) satisfies IsScarfVtx when (σ, C) is a colorful room
-    with i₀ ∉ C.
-
-    Verification:
-    - (insert i₀ C).Nonempty: since C.Nonempty
-    - isDominant ords σ (insert i₀ C): from isDominant ords σ C and C ⊆ insert i₀ C
-    - Third disjunct: (insert i₀ C).card = σ.card + 1 (by `Finset.card_insert_of_not_mem`)
-      and (insert i₀ C) \ σ.image c = {i₀} (by `Finset.insert_sdiff_cancel` since
-      i₀ ∉ C = σ.image c).
-    Uses `Finset.card_insert_of_not_mem : a ∉ s → (insert a s).card = s.card + 1`.
-    Uses `Finset.insert_sdiff_cancel : a ∉ s → insert a s \ s = {a}`.
-    No direct Mathlib equivalent. -/
+/-- Adding the distinguished color to a colorful room where it is absent gives a Scarf door.
+The inserted color makes the color set nonempty, and dominance is preserved by enlarging it. -/
 lemma isScarfVtx_insert_of_not_mem {n : ℕ} {T : Type} [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
@@ -235,10 +224,11 @@ lemma isScarfVtx_insert_of_not_mem {n : ℕ} {T : Type} [DecidableEq T]
     (hdom : isDominant ords σ C)
     (hi₀ : i₀ ∉ C) :
     IsScarfVtx ords c i₀ (σ, insert i₀ C) := by
+  classical
   use Finset.insert_nonempty i₀ C, isDominant_mono ords σ C _ hdom (Finset.subset_insert i₀ C)
   grind
 
-lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
+lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -247,6 +237,7 @@ lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Fintype T] [Nonempt
     (hi₀ : i₀ ∉ C) :
     ∃! w : Finset T × Finset (Fin (n + 1)),
       scarfAdjRel (σ, C) w ∧ IsScarfVtx ords c i₀ w := by
+  classical
   refine ⟨(σ, insert i₀ C), ⟨adj_insert_of_not_mem σ C i₀ hcard hi₀,
     isScarfVtx_insert_of_not_mem ords c i₀ σ C hcard hcolor hdom hi₀⟩, ?_⟩
   intro w ⟨hadj, hvtx⟩
@@ -293,7 +284,7 @@ lemma colorful_room_unique_adj_not_mem {n : ℕ} {T : Type} [Fintype T] [Nonempt
   · -- Case 4: second disjunction insert
     grind
 
-lemma colorful_room_unique_adj {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
+lemma colorful_room_unique_adj {n : ℕ} {T : Type} [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -301,10 +292,12 @@ lemma colorful_room_unique_adj {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [De
     (hdom : isDominant ords σ C) (hC : C.Nonempty) :
     ∃! w : Finset T × Finset (Fin (n + 1)),
       scarfAdjRel (σ, C) w ∧ IsScarfVtx ords c i₀ w := by
+  classical
   by_cases hi₀ : i₀ ∈ C
   · exact colorful_room_unique_adj_mem ords c i₀ σ C hcard hcolor hdom hC hi₀
   · exact colorful_room_unique_adj_not_mem ords c i₀ σ C hcard hcolor hdom hi₀
 
+open Classical in
 lemma degree_one_of_unique_adj_raw {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
@@ -315,11 +308,13 @@ lemma degree_one_of_unique_adj_raw {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (huniq : ∃! w : Finset T × Finset (Fin (n + 1)),
       scarfAdjRel v.val w ∧ IsScarfVtx ords c i₀ w) :
     G.degree v = 1 := by
+  classical
   rw [SimpleGraph.degree_eq_one_iff_existsUnique_adj]
   obtain ⟨w₀, ⟨hadj₀, hscarf₀⟩, huniq'⟩ := huniq
   refine ⟨⟨w₀, hscarf₀⟩, (hG v ⟨w₀, hscarf₀⟩).mpr hadj₀, ?_⟩
   grind
 
+open Classical in
 lemma scarf_degree_colorful_room {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -334,16 +329,18 @@ lemma scarf_degree_colorful_room {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
   degree_one_of_unique_adj_raw ords c i₀ G hG v
     (colorful_room_unique_adj ords c i₀ v.val.1 v.val.2 hcard hcolor v.property.2.1 v.property.1)
 
-lemma nearly_colorful_image_card_cases {n : ℕ} {T : Type} [DecidableEq T]
+lemma nearly_colorful_image_card_cases {n : ℕ} {T : Type}
     (c : T → Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
     (i₀ : Fin (n + 1))
     (hcard : σ.card = C.card)
     (hnearly : C \ σ.image c = {i₀}) :
     (σ.image c).card = σ.card ∨ (σ.image c).card + 1 = σ.card := by
+  classical
   have h1 : (C \ σ.image c).card = 1 := by grind
   grind
 
+open Classical in
 /-- Given exactly two adjacent Scarf vertex pairs, the degree in the subtype graph is 2.
     Proved by constructing the neighbor finset as {w₁, w₂} and applying Finset.card_pair. -/
 lemma scarf_degree_of_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
@@ -361,6 +358,7 @@ lemma scarf_degree_of_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T
     (huniq : ∀ q : Finset T × Finset (Fin (n + 1)),
       IsScarfVtx ords c i₀ q → scarfAdjRel v.val q → q = p₁ ∨ q = p₂) :
     G.degree v = 2 := by
+  classical
   let w₁ : { p : Finset T × Finset (Fin (n + 1)) // IsScarfVtx ords c i₀ p } := ⟨p₁, hp₁⟩
   let w₂ : { p : Finset T × Finset (Fin (n + 1)) // IsScarfVtx ords c i₀ p } := ⟨p₂, hp₂⟩
   have hw₁_adj : G.Adj v w₁ := by rw [hG]; exact hadj₁
@@ -380,6 +378,7 @@ lemma erase_image_eq_of_duplicate {n : ℕ} {T : Type} [DecidableEq T]
     (x y : T)
     (hy : y ∈ σ) (hne : x ≠ y) (hc : c x = c y) :
     (σ.erase x).image c = σ.image c := by
+  classical
   grind
 
 -- Key helper: if (σ.image c).card + 1 = σ.card, then c is injective on σ.erase x for
@@ -390,12 +389,13 @@ lemma erase_image_eq_of_duplicate {n : ℕ} {T : Type} [DecidableEq T]
 -- our knowledge that the image equals σ.image c which has exactly σ.card - 1 = |σ.erase x|
 -- elements.
 
-lemma collision_with_uniqueness {n : ℕ} {T : Type} [DecidableEq T]
+lemma collision_with_uniqueness {n : ℕ} {T : Type}
     (c : T → Fin (n + 1))
     (σ : Finset T)
     (himg : (σ.image c).card + 1 = σ.card) :
     ∃ x y, x ∈ σ ∧ y ∈ σ ∧ x ≠ y ∧ c x = c y ∧
     (∀ z ∈ σ, z ≠ x → z ≠ y → c z ≠ c x) := by
+  classical
   -- Get a collision from pigeonhole
   have hlt : (σ.image c).card < σ.card := by omega
   have hmaps : Set.MapsTo c (↑σ) (↑(σ.image c)) := by
@@ -412,8 +412,7 @@ lemma collision_with_uniqueness {n : ℕ} {T : Type} [DecidableEq T]
   -- So there's still a collision in σ.erase x
   -- This means (σ.erase x).image c has < |σ.erase x| elements
   -- But |σ.erase x| = σ.card - 1 = (σ.image c).card = |(σ.erase x).image c|
-  -- Wait, that means (σ.erase x).image c has exactly |σ.erase x| elements
-  -- which would require injectivity on σ.erase x, contradicting the collision y,z
+  -- Equality of these cardinalities forces injectivity, contradicting the collision y,z.
   have hcard_erase : (σ.erase x).card = σ.card - 1 :=
     Finset.card_erase_of_mem hx
   -- So |(σ.erase x).image c| = |σ.image c| = σ.card - 1 = |σ.erase x|
@@ -437,20 +436,15 @@ lemma noninjective_pair_exists {n : ℕ} {T : Type} [DecidableEq T]
     (∀ z ∈ σ, z ≠ x → z ≠ y → c z ≠ c x) ∧
     (σ.erase x).image c = σ.image c ∧
     (σ.erase y).image c = σ.image c := by
+  classical
   obtain ⟨x, y, hx, hy, hne, hc, huniq⟩ := collision_with_uniqueness c σ himg
   exact ⟨x, y, hx, hy, hne, hc, huniq,
     erase_image_eq_of_duplicate c σ x y hy hne hc,
     erase_image_eq_of_duplicate c σ y x hx hne.symm hc.symm⟩
 
-/-- If C \ σ.image c = {i₀} and |σ.image c| + 1 = |σ| = |C|, then σ.image c ⊆ C.
-    From C \ σ.image c = {i₀} we get |C \ σ.image c| = 1. With |C| = |σ| = |σ.image c| + 1,
-    we have |C ∩ σ.image c| = |C| - 1 = |σ.image c|. Since C ∩ σ.image c ⊆ σ.image c and
-    they have the same cardinality, σ.image c = C ∩ σ.image c ⊆ C.
-    Uses `Finset.card_sdiff_eq_sub : (t \ s).card = t.card - s.card` (when s ⊆ t, but here
-    we use the general version or
-    `Finset.card_sdiff_inter_add : (s \ t).card + (s ∩ t).card = s.card`).
-    No direct Mathlib equivalent for this specific combination. -/
-lemma image_subset_of_sdiff_singleton {n : ℕ} {T : Type} [DecidableEq T]
+/-- If the image has one fewer element than C and C has exactly one missing color,
+then the image is contained in C. The intersection has the full cardinality of the image. -/
+lemma image_subset_of_sdiff_singleton {n : ℕ} {T : Type}
     (c : T → Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
     (i₀ : Fin (n + 1))
@@ -458,6 +452,7 @@ lemma image_subset_of_sdiff_singleton {n : ℕ} {T : Type} [DecidableEq T]
     (hnearly : C \ σ.image c = {i₀})
     (himg : (σ.image c).card + 1 = σ.card) :
     σ.image c ⊆ C := by
+  classical
   have h₁ : (C \ σ.image c).card + (C ∩ σ.image c).card = C.card := by grind
   have h₂ : (C \ σ.image c).card = 1 := by grind
   have h₃ : (C ∩ σ.image c).card = (σ.image c).card := by grind
@@ -465,11 +460,8 @@ lemma image_subset_of_sdiff_singleton {n : ℕ} {T : Type} [DecidableEq T]
     Finset.eq_of_subset_of_card_le Finset.inter_subset_right h₃.symm.le
   grind
 
-/-- Given a nearly colorful room (σ, C) with non-injective coloring, for any z ∈ σ with
-    c z unique in σ (c z ∉ (σ.erase z).image c), we have
-    (C \ (σ.erase z).image c).card ≥ 2, so C \ (σ.erase z).image c ≠ {i₀}.
-    This rules out (σ.erase z, C) being a Scarf vertex of the required type.
-    Uses `sdiff_image_erase_card_ge_two` and `Finset.card_singleton : ({a}).card = 1`. -/
+/-- Erasing a point whose color occurs only once leaves that color missing alongside `i₀`.
+Since these colors are distinct, the missing-color set cannot remain `{i₀}`. -/
 lemma not_scarf_erase_non_colliding_1 {n : ℕ} {T : Type} [DecidableEq T]
     (c : T → Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -479,12 +471,13 @@ lemma not_scarf_erase_non_colliding_1 {n : ℕ} {T : Type} [DecidableEq T]
     (himg_sub : σ.image c ⊆ C)
     (hz_unique : c z ∉ (σ.erase z).image c) :
     ¬ (C \ (σ.erase z).image c = {i₀}) := by
+  classical
   have hc_z_in_image : c z ∈ σ.image c := by grind
   have hc_z_in_C : c z ∈ C := by grind
   have hc_z_in_diff : c z ∈ C \ (σ.erase z).image c := by grind
   grind
 
-lemma not_scarf_insert_form {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
+lemma not_scarf_insert_form {n : ℕ} {T : Type} [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -493,6 +486,7 @@ lemma not_scarf_insert_form {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Decid
     (himg_sub : σ.image c ⊆ C)
     (j : Fin (n + 1)) (hj : j ∉ C) :
     ¬ IsScarfVtx ords c i₀ (σ, insert j C) := by
+  classical
   intro ⟨_, _, h_disj⟩
   have hj_not_img : j ∉ σ.image c := fun h ↦ hj (himg_sub h)
   have hsdiff : insert j C \ σ.image c = {i₀, j} := by
@@ -502,35 +496,20 @@ lemma not_scarf_insert_form {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [Decid
     rw [hsdiff, Finset.card_pair hi0_ne_j]
   grind
 
-/-- Given a nearly colorful room (σ, C) with non-injective coloring and the colliding pair x, y,
-    any Scarf vertex q adjacent to (σ, C) must be (σ.erase x, C) or (σ.erase y, C).
-
-    By scarfAdjRel, q is either:
-    (1) (σ.erase z, C) for some z ∈ σ, or (σ, insert j C) for some j ∉ C (first disjunct),
-    (2) a room q with (σ, C) as a door of q (second disjunct).
-
-    Case (2) is impossible because it implies σ.card < C.card or σ.card = C.card - 1,
-    contradicting hcard.
-    Form B (σ, insert j C) is impossible by `not_scarf_insert_form`.
-    Form A (σ.erase z, C) where z ∉ {x,y}: c z is unique in σ, so
-    (σ.erase z).image c ⊊ σ.image c, giving |C \ (σ.erase z).image c| ≥ 2 by
-    `sdiff_image_erase_card_ge_two`, which contradicts the Scarf vertex condition.
-
-    Uses `not_scarf_insert_form`, `not_scarf_erase_non_colliding`, `sdiff_image_erase_card_ge_two`.
-    Uses `Finset.card_erase_of_mem : ∀ {s a}, a ∈ s → (s.erase a).card = s.card - 1`.
-    Uses `Finset.card_insert_of_not_mem : ∀ {s a}, a ∉ s → (insert a s).card = s.card + 1`.
-    No direct Mathlib equivalent. -/
-lemma card_erase_ne' {T : Type} [DecidableEq T] {α : Type} [DecidableEq α]
+/-- Erasing a member reduces cardinality, so the result cannot have the cardinality of `C`. -/
+lemma card_erase_ne' {T : Type} [DecidableEq T] {α : Type}
     (σ : Finset T) (C : Finset α) (z : T)
     (hz : z ∈ σ) (hcard : σ.card = C.card) (hC_ne : C.Nonempty) :
     (σ.erase z).card ≠ C.card := by
+  classical
   grind
 
-lemma image_card_eq' {n : ℕ} {T : Type} [DecidableEq T]
+lemma image_card_eq' {n : ℕ} {T : Type}
     (c : T → Fin (n + 1)) (σ : Finset T) (C : Finset (Fin (n + 1)))
     (i₀ : Fin (n + 1)) (hcard : σ.card = C.card)
     (hnearly : C \ σ.image c = {i₀}) (himg_sub : σ.image c ⊆ C) :
     (σ.image c).card + 1 = σ.card := by
+  classical
   have h1 : (C \ σ.image c).card = 1 := by rw [hnearly]; exact Finset.card_singleton i₀
   have h2 := Finset.card_sdiff_add_card_eq_card himg_sub
   omega
@@ -539,6 +518,7 @@ lemma image_erase_eq_of_cover' {T : Type} [DecidableEq T] {β : Type} [Decidable
     (f : T → β) (σ : Finset T) (z : T)
     (w : T) (hw : w ∈ σ.erase z) (hwz : f w = f z) :
     (σ.erase z).image f = σ.image f := by
+  classical
   grind
 
 lemma cz_unique' {n : ℕ} {T : Type} [DecidableEq T]
@@ -550,6 +530,7 @@ lemma cz_unique' {n : ℕ} {T : Type} [DecidableEq T]
     (hcard : σ.card = C.card) (hnearly : C \ σ.image c = {i₀})
     (himg_sub : σ.image c ⊆ C) :
     c z ∉ (σ.erase z).image c := by
+  classical
   have hcz_ne_cx : c z ≠ c x := huniq z hz hzx hzy
   intro hmem
   rw [Finset.mem_image] at hmem
@@ -568,7 +549,7 @@ lemma cz_unique' {n : ℕ} {T : Type} [DecidableEq T]
   have hy_erase : y ∈ σ.erase z := Finset.mem_erase.mpr ⟨hzy.symm, hy⟩
   exact hxy (h_inj hx_erase hy_erase hcxy)
 
-lemma not_scarf_vtx_erase_non_colliding' {n : ℕ} {T : Type} [Fintype T] [Nonempty T] [DecidableEq T]
+lemma not_scarf_vtx_erase_non_colliding' {n : ℕ} {T : Type} [Nonempty T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
     (σ : Finset T) (C : Finset (Fin (n + 1)))
@@ -582,6 +563,7 @@ lemma not_scarf_vtx_erase_non_colliding' {n : ℕ} {T : Type} [Fintype T] [Nonem
     (hcxy : c x = c y)
     (huniq : ∀ w ∈ σ, w ≠ x → w ≠ y → c w ≠ c x) :
     ¬ IsScarfVtx ords c i₀ (σ.erase z, C) := by
+  classical
   intro ⟨_, _, h⟩
   have hz_unique := cz_unique' c σ C i₀ x y z hx hy hz hxy hzx hzy hcxy huniq
     hcard hnearly himg_sub
@@ -597,10 +579,10 @@ lemma caseB_impossible' {n : ℕ} {T : Type} [DecidableEq T]
     (hadj : (∃ x ∈ q.1, σ = q.1.erase x ∧ C = q.2) ∨
             (∃ i, i ∉ q.2 ∧ σ = q.1 ∧ C = insert i q.2)) :
     False := by
-  have h_main : False := by grind
+  classical
   grind
 
-lemma ncr_noninjective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
+lemma ncr_noninjective_uniqueness {n : ℕ} {T : Type} [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
@@ -615,6 +597,7 @@ lemma ncr_noninjective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     ∀ q : Finset T × Finset (Fin (n + 1)),
       IsScarfVtx ords c i₀ q → scarfAdjRel (σ, C) q →
       q = (σ.erase x, C) ∨ q = (σ.erase y, C) := by
+  classical
   intro q hscarf hadj
   obtain ⟨_hne, hadj⟩ := hadj
   rcases hadj with ⟨_, hforms⟩ | ⟨hqroom, hforms⟩
@@ -633,7 +616,7 @@ lemma ncr_noninjective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       exact absurd hscarf (not_scarf_insert_form ords c i₀ σ C hcard hnearly himg_sub j hj)
   · exact (caseB_impossible' σ C hcard q hqroom hforms).elim
 
-lemma ncr_noninjective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
+lemma ncr_noninjective_two_adj_pairs {n : ℕ} {T : Type} [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
@@ -649,6 +632,7 @@ lemma ncr_noninjective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty 
       IsScarfVtx ords c i₀ p₂ ∧ scarfAdjRel (σ, C) p₂ ∧
       ∀ q : Finset T × Finset (Fin (n + 1)),
         IsScarfVtx ords c i₀ q → scarfAdjRel (σ, C) q → q = p₁ ∨ q = p₂ := by
+  classical
   have himg_sub := image_subset_of_sdiff_singleton c σ C i₀ hcard hnearly himg
   obtain ⟨x, y, hx, hy, hxy, hcxy, huniq, himg_ex, himg_ey⟩ :=
     noninjective_pair_exists c σ himg
@@ -674,6 +658,7 @@ lemma ncr_noninjective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty 
     exact ncr_noninjective_uniqueness ords c i₀ σ C hC_ne hcard hnearly
       himg_sub x y hx hy hxy hcxy huniq
 
+open Classical in
 lemma scarf_degree_ncr_case_noninjective {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -686,6 +671,7 @@ lemma scarf_degree_ncr_case_noninjective {n : ℕ} {T : Type} [Fintype T] [Nonem
     (hnearly : v.val.2 \ v.val.1.image c = {i₀})
     (himg : (v.val.1.image c).card + 1 = v.val.1.card) :
     G.degree v = 2 := by
+  classical
   obtain ⟨hC_ne, hdom, _⟩ := v.prop
   obtain ⟨p₁, p₂, hne, hp₁, hadj₁, hp₂, hadj₂, huniq⟩ :=
     ncr_noninjective_two_adj_pairs ords c i₀ v.val.1 v.val.2 hC_ne hdom hcard hnearly himg
@@ -713,6 +699,7 @@ lemma ncr_injective_unique_y {n : ℕ} {T : Type} [DecidableEq T]
     ∃ y ∈ σ, c y ∉ C ∧ σ.image c \ C = {c y} ∧
       (∀ z ∈ σ, c z ∉ C → z = y) ∧ σ.Nonempty ∧
       (∀ x ∈ σ, c x ∉ (σ.erase x).image c) := by
+  classical
   -- c is injective on σ
   have hinj : Set.InjOn c ↑σ := Finset.injOn_of_card_image_eq himg
   -- |σ.image c \ C| = 1
@@ -754,32 +741,13 @@ lemma isDominant_mono_C {n : ℕ} {T : Type}
     (σ : Finset T) (C D : Finset (Fin (n + 1)))
     (hCD : C ⊆ D)
     (hdom : isDominant ords σ C) :
-    isDominant ords σ D := by
-  intro y
-  obtain ⟨i, hi, hx⟩ := hdom y
-  exact ⟨i, hCD hi, hx⟩
+    isDominant ords σ D :=
+  isDominant_mono ords σ C D hdom hCD
 
-/-- The uniqueness part of ncr_injective_two_adj_pairs: any adjacent Scarf vertex q
-    must be equal to (σ.erase y, C) or (σ, insert (c y) C), where y is the unique
-    element with c(y) ∉ C.
-
-    Case B (q is room, (σ,C) is door) is eliminated because |σ| = |C| leads to
-    cardinality contradictions: if σ = q.1.erase(x) then |σ| = |q.1| - 1 = |q.2| - 1
-    but |σ| = |C| and q.2 = C, contradiction. If C = insert j q.2 then |C| = |q.2| + 1
-    = |q.1| + 1 but |σ| = |C| and σ = q.1, contradiction.
-
-    Case A erase: q = (σ.erase x, C). By injectivity, c(x) ∉ (σ.erase x).image c.
-    If c(x) ∈ C then (C \ (σ.erase x).image c).card ≥ 2 (via sdiff_image_erase_card_ge_two
-    since σ.image c ⊆ C when c is injective on σ and C \ σ.image c = {i₀} with
-    |σ.image c| = |C|), failing all IsScarfVtx disjuncts. So c(x) ∉ C, giving x = y.
-
-    Case A insert: q = (σ, insert j C). If j ∉ σ.image c then
-    insert j C \ σ.image c = insert j (C \ σ.image c) = {j, i₀} has card 2, failing.
-    So j ∈ σ.image c, and since j ∉ C, j ∈ σ.image c \ C = {c y}, giving j = c(y).
-
-    Uses `Finset.insert_sdiff_of_notMem`, `Finset.insert_sdiff_of_mem`,
-    reused lemma `sdiff_image_erase_card_ge_two`. -/
-lemma ncr_injective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
+/-- In the injective case, only erasing the point colored outside `C` or adding its color
+to `C` gives an adjacent Scarf vertex. Erasing a color in `C` leaves two missing colors;
+adding a color outside the image does the same. Reverse adjacency is excluded by cardinality. -/
+lemma ncr_injective_uniqueness {n : ℕ} {T : Type} [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
@@ -792,12 +760,9 @@ lemma ncr_injective_uniqueness {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     ∀ q : Finset T × Finset (Fin (n + 1)),
       IsScarfVtx ords c i₀ q → scarfAdjRel (σ, C) q →
         q = (σ.erase y, C) ∨ q = (σ, insert (c y) C) := by
-  -- Derive img_sub: σ.image c ⊆ C ∪ {c y}
-  -- Actually we need σ.image c not ⊆ C in general; we need to handle things through hsdiff_cy
+  classical
   intro q ⟨hqne, hqdom, hqscarf⟩ ⟨hadj_ne, hadj⟩
-  -- Need: σ.image c ⊆ C ∪ {c y} (for later use with sdiff_image_erase_card_ge_two)
-  -- Actually need: for z with c z ∈ C, σ.image c ⊆ C  is NOT true.
-  -- But we do have: for any x ∈ σ, c x ∈ C ↔ x ≠ y
+  -- Every point other than y has its color in C.
   have hcx_C : ∀ x ∈ σ, x ≠ y → c x ∈ C := by
     intro x hx hne
     by_contra h
@@ -878,6 +843,7 @@ lemma ncr_injective_p1_isScarfVtx {n : ℕ} {T : Type} [DecidableEq T]
     (himg : (σ.image c).card = σ.card)
     (y : T) (hy : y ∈ σ) (hcy : c y ∉ C) :
     IsScarfVtx ords c i₀ (σ.erase y, C) := by
+  classical
   refine ⟨hnonempty_C, isDominant_erase ords σ C y hdom, Or.inr (Or.inr ⟨?_, ?_⟩)⟩ <;> grind
 
 /-- Verifies that (σ, insert (c y) C) is an IsScarfVtx when y is the unique element
@@ -900,13 +866,14 @@ lemma ncr_injective_p2_isScarfVtx {n : ℕ} {T : Type} [DecidableEq T]
     (hnearly : C \ σ.image c = {i₀})
     (y : T) (hy : y ∈ σ) (hcy : c y ∉ C) :
     IsScarfVtx ords c i₀ (σ, insert (c y) C) := by
+  classical
   refine ⟨?_, ?_, Or.inr (Or.inr ⟨?_, ?_⟩)⟩
   · exact (Finset.insert_nonempty _ _)
   · exact isDominant_mono_C ords σ C _ (Finset.subset_insert _ _) hdom
   · rw [Finset.card_insert_of_notMem hcy, hcard]
   · rw [Finset.insert_sdiff_of_mem _ (Finset.mem_image_of_mem c hy), hnearly]
 
-lemma ncr_injective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
+lemma ncr_injective_two_adj_pairs {n : ℕ} {T : Type} [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
     (i₀ : Fin (n + 1))
@@ -924,6 +891,7 @@ lemma ncr_injective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       scarfAdjRel (σ, C) p₂ ∧
       ∀ q : Finset T × Finset (Fin (n + 1)),
         IsScarfVtx ords c i₀ q → scarfAdjRel (σ, C) q → q = p₁ ∨ q = p₂ := by
+  classical
   -- Step 1: Find the unique y ∈ σ with c(y) ∉ C
   obtain ⟨y, hy, hcy, hsdiff_cy, huniq, hσne, hinj_erase⟩ :=
     ncr_injective_unique_y c σ C i₀ hcard hnearly himg
@@ -947,6 +915,7 @@ lemma ncr_injective_two_adj_pairs {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     exact ncr_injective_uniqueness ords c i₀ σ C hcard hnearly
       y hy hcy huniq hinj_erase
 
+open Classical in
 lemma scarf_degree_ncr_case_injective {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -959,11 +928,13 @@ lemma scarf_degree_ncr_case_injective {n : ℕ} {T : Type} [Fintype T] [Nonempty
     (hnearly : v.val.2 \ v.val.1.image c = {i₀})
     (himg : (v.val.1.image c).card = v.val.1.card) :
     G.degree v = 2 := by
+  classical
   obtain ⟨hnonempty_C, hdom, _⟩ := v.prop
   obtain ⟨p₁, p₂, hne, hp₁, hadj₁, hp₂, hadj₂, huniq⟩ :=
     ncr_injective_two_adj_pairs ords c i₀ v.val.1 v.val.2 hnonempty_C hdom hcard hnearly himg
   exact scarf_degree_of_two_adj_pairs ords c i₀ G hG v p₁ p₂ hne hp₁ hadj₁ hp₂ hadj₂ huniq
 
+open Classical in
 lemma scarf_degree_nearly_colorful_room {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -975,10 +946,12 @@ lemma scarf_degree_nearly_colorful_room {n : ℕ} {T : Type} [Fintype T] [Nonemp
     (hcard : v.val.1.card = v.val.2.card)
     (hnearly : v.val.2 \ v.val.1.image c = {i₀}) :
     G.degree v = 2 := by
+  classical
   rcases nearly_colorful_image_card_cases c v.val.1 v.val.2 i₀ hcard hnearly with hinj | hninj
   · exact scarf_degree_ncr_case_injective ords c i₀ G hG v hcard hnearly hinj
   · exact scarf_degree_ncr_case_noninjective ords c i₀ G hG v hcard hnearly hninj
 
+open Classical in
 lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T) (c : T → Fin (n + 1))
@@ -991,6 +964,7 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (hnearly : v.val.2 \ v.val.1.image c = {i₀})
     (hempty : v.val.1 = ∅) :
     G.degree v = 1 := by
+  classical
   have hC : v.val.2 = {i₀} := by grind
   have hv_not_room : v.val.1.card ≠ v.val.2.card := by
     rw [hempty, hC]; simp
@@ -1064,7 +1038,7 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     · -- scarfAdjRel structural part
       right; constructor
       · -- w_max is a room: ({x_max} : Finset T).card = ({i₀} : Finset (Fin (n+1))).card
-        show ({x_max} : Finset T).card = ({i₀} : Finset (Fin (n + 1))).card; simp
+        change ({x_max} : Finset T).card = ({i₀} : Finset (Fin (n + 1))).card; simp
       · left; refine ⟨x_max, Finset.mem_singleton.mpr rfl, ?_, ?_⟩
         · -- v.1 = w_max.1.erase x_max = {x_max}.erase x_max = ∅
           change v.val.1 = ({x_max} : Finset T).erase x_max
@@ -1077,6 +1051,16 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
   exact ⟨w_max, Finset.ext (fun u ↦ by
     rw [SimpleGraph.mem_neighborFinset, Finset.mem_singleton]
     exact ⟨fun hu ↦ adj_unique u w_max hu hadj, fun hu ↦ hu ▸ hadj⟩)⟩
+
+-- Later stages of #191 remain unreviewed. These exceptions apply only to the remainder;
+-- remove them as its sections are reviewed. `linter.flexible` stays enabled throughout.
+set_option linter.unusedFintypeInType false
+set_option linter.unusedDecidableInType false
+set_option linter.style.show false
+set_option linter.style.refine false
+set_option linter.style.openClassical false
+
+open Classical
 
 /-- For each i ∈ D, define the minimum of τ under order (ords i) as the element t ∈ τ
     such that t ≤_i x for all x ∈ τ. This exists because τ is nonempty and T has a
