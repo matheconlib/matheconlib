@@ -1,3 +1,5 @@
+import MathEconLibTest.Auction.CorrelatedValues
+import MathEconLibTest.Auction.IndependentValues
 import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
@@ -23,6 +25,8 @@ import MathEconLibTest.Matching.RandomPreferencesUniform
 import MathEconLibTest.Matching.RankPreferences
 import MathEconLibTest.Matching.RankPreferencesDA
 import MathEconLibTest.Matching.Relabel
+import MathEconLibTest.Mechanism.BayesianIC
+import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
@@ -34,3 +38,4 @@ import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples
+import MathEconLibTest.ValueDistribution.UniformPricing

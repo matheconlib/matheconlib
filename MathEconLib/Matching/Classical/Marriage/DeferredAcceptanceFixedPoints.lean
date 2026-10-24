@@ -61,9 +61,9 @@ theorem gsMatchingAt_accepts_only_graph (n : ℕ)
   have hm := (mkt.mem_choiceM_insert_graphOf_iff (hIR.1 m) hnewM).mp hS
   have hw := (mkt.mem_choiceW_insert_graphOf_iff (hIR.2 w) hnewW).mp hB
   by_cases hR : (m, w) ∈ mkt.gsRejected n
-  · letI := mkt.prefW w
+  · let := mkt.prefW w
     exact (lt_asymm (mkt.gs_rejected_below_holding n hR)) hw
-  · letI := mkt.prefM m
+  · let := mkt.prefM m
     have hle : some w ≤ mkt.bestM m (mkt.gsRejected n)ᶜ :=
       mkt.le_bestM_of_mem (mkt.some_mem_menuM.mpr hR)
     exact (not_lt_of_ge hle) hm

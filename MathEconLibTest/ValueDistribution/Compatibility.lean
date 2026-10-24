@@ -6,6 +6,7 @@ Authors: Bo Cowgill
 module
 
 import MathEconLib.Auction.ValueDistribution
+import MathEconLib.Statistics.OrderStatistics
 import MathEconLib.ValueDistribution
 import Mathlib.MeasureTheory.Measure.DiracProba
 
@@ -36,6 +37,17 @@ example {Ω : Type*} [MeasurableSpace Ω]
     ((ValueDistribution.ofRandomVariable μ X hX : ValueDistribution) :
         Measure ℝ) = Measure.map X μ :=
   ValueDistribution.toMeasure_ofRandomVariable μ X hX
+
+-- These names remain callable even though Mathlib now supplies the instances.
+example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : Auction Ω n) :
+    IsProbabilityMeasure (Measure.map (A.θ 0) ℙ) :=
+  Auction.isProbabilityMeasure_map_θ₀ (A := A)
+
+example {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+    {n : ℕ} (S : OrderStatisticsSetup Ω n) (k : Fin n) :
+    IsProbabilityMeasure (Measure.map (S.val k) ℙ) :=
+  OrderStatisticsSetup.isProbabilityMeasure_map_val S k
 
 /-- Bounded support remains an optional almost-everywhere predicate. -/
 example (D : ValueDistribution) (lower upper : ℝ) :
@@ -70,194 +82,9 @@ example (D : ValueDistribution) (price : ℝ) :
   D.probAtLeast_eq_one_sub_cdf_add_mass price
 
 /-- Atomless demand remains one minus the CDF. -/
-example (D : ValueDistribution) [NoAtoms (D : Measure ℝ)] (price : ℝ) :
+example (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)] (price : ℝ) :
     D.probAtLeast price = 1 - cdf (D : Measure ℝ) price :=
   D.probAtLeast_eq_one_sub_cdf price
-
-/-! ## Uniform interval distributions -/
-
-section UniformInterval
-
-variable (a b : ℝ) (hab : a < b)
-
-/-- The interval-uniform law is Mathlib's conditioned Lebesgue measure. -/
-example :
-    ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) =
-      ProbabilityTheory.cond volume (Icc a b) :=
-  ValueDistribution.toMeasure_uniformInterval a b hab
-
-/-- The constructor also satisfies Mathlib's uniform-law predicate. -/
-example :
-    MeasureTheory.pdf.IsUniform (id : ℝ → ℝ) (Icc a b)
-      ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) volume :=
-  ValueDistribution.isUniform_uniformInterval a b hab
-
-/-- Interval support is a property of the resulting distribution. -/
-example :
-    (ValueDistribution.uniformInterval a b hab).IsSupportedOnInterval a b :=
-  ValueDistribution.uniformInterval_supported a b hab
-
-/-- The uniform law is absolutely continuous and atomless. -/
-example :
-    ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) ≪
-      volume :=
-  ValueDistribution.uniformInterval_absolutelyContinuous a b hab
-
-example :
-    NoAtoms ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) :=
-  ValueDistribution.uniformInterval_noAtoms a b hab
-
-/-- Its density is the reciprocal of interval length, almost everywhere on
-the interval. -/
-example :
-    (fun _ : ℝ ↦ 1 / (b - a)) =ᵐ[volume.restrict (Icc a b)]
-      (ValueDistribution.uniformInterval a b hab).realDensity :=
-  ValueDistribution.uniformInterval_density a b hab
-
-/-- Uniform demand and the CDF are valid at both support endpoints. -/
-example (price : ℝ) (hprice : price ∈ Icc a b) :
-    (ValueDistribution.uniformInterval a b hab).probAtLeast price =
-      (b - price) / (b - a) :=
-  ValueDistribution.uniformInterval_probAtLeast a b hab price hprice
-
-example (price : ℝ) (hprice : price ∈ Icc a b) :
-    cdf ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ) price =
-      (price - a) / (b - a) :=
-  ValueDistribution.uniformInterval_cdf a b hab price hprice
-
-/-- The pointwise CDF derivative is asserted only in the interior. -/
-example (price : ℝ) (hprice : price ∈ Ioo a b) :
-    HasDerivAt
-      (cdf ((ValueDistribution.uniformInterval a b hab : ValueDistribution) : Measure ℝ))
-      (1 / (b - a)) price :=
-  ValueDistribution.uniformInterval_hasDerivAt_cdf a b hab price hprice
-
-end UniformInterval
-
-/-! ## Uniform posted pricing -/
-
-section UniformPricing
-
-variable (a b continuationValue acquisitionCost : ℝ) (hab : a < b)
-
-/-- The uniform virtual-surplus weight uses the chosen constant density
-representative and is valid at both support endpoints. -/
-example (value : ℝ) (hvalue : value ∈ Icc a b) :
-    (ValueDistribution.uniformInterval a b hab).virtualSurplusWeight
-        (fun _ : ℝ ↦ 1 / (b - a)) value =
-      (2 * value - b) / (b - a) :=
-  ValueDistribution.uniformInterval_virtualSurplusWeight a b hab value hvalue
-
-/-- The candidate price is explicitly the midpoint formula clamped to the
-value interval. -/
-example :
-    ValueDistribution.uniformOptimalPrice a b continuationValue =
-      max a (min b ((b + continuationValue) / 2)) :=
-  rfl
-
-example :
-    ValueDistribution.uniformOptimalPrice a b continuationValue ∈ Icc a b :=
-  ValueDistribution.uniformOptimalPrice_mem_Icc a b continuationValue hab
-
-/-- The lower-endpoint formula needs only the peak inequality. -/
-example (hpeak : (b + continuationValue) / 2 ≤ a) :
-    ValueDistribution.uniformOptimalPrice a b continuationValue = a :=
-  ValueDistribution.uniformOptimalPrice_eq_left a b continuationValue hpeak
-
-/-- Above the support, the unconstrained peak is clamped to the upper endpoint. -/
-example (hpeak : b ≤ (b + continuationValue) / 2) :
-    ValueDistribution.uniformOptimalPrice a b continuationValue = b :=
-  ValueDistribution.uniformOptimalPrice_eq_right a b continuationValue hab hpeak
-
-/-- A feasible unconstrained peak is unchanged, including at either endpoint. -/
-example (hpeak : (b + continuationValue) / 2 ∈ Icc a b) :
-    ValueDistribution.uniformOptimalPrice a b continuationValue = (b + continuationValue) / 2 :=
-  ValueDistribution.uniformOptimalPrice_eq_peak a b continuationValue hpeak
-
-/-- The price formula uses the existing seller-profit objective. -/
-example (price : ℝ) (hprice : price ∈ Icc a b) :
-    (ValueDistribution.uniformInterval a b hab).sellerProfit
-        (postedPriceProblem a b price) continuationValue acquisitionCost =
-      continuationValue - acquisitionCost +
-        (price - continuationValue) * ((b - price) / (b - a)) :=
-  ValueDistribution.sellerProfit_uniformInterval a b hab
-    price continuationValue acquisitionCost hprice
-
-/-- The chosen price maximizes profit over the stated feasible interval. -/
-example :
-    IsMaxOn
-      (fun price ↦
-        (ValueDistribution.uniformInterval a b hab).sellerProfit
-          (postedPriceProblem a b price) continuationValue acquisitionCost)
-      (Icc a b) (ValueDistribution.uniformOptimalPrice a b continuationValue) :=
-  ValueDistribution.isMaxOn_sellerProfit_uniformInterval a b hab
-    continuationValue acquisitionCost
-
-/-- Any feasible maximizing price is the chosen price, including in the
-boundary regimes. -/
-example (price : ℝ) (hprice : price ∈ Icc a b)
-    (hmax : IsMaxOn
-      (fun candidate ↦
-        (ValueDistribution.uniformInterval a b hab).sellerProfit
-          (postedPriceProblem a b candidate) continuationValue acquisitionCost)
-      (Icc a b) price) :
-    price = ValueDistribution.uniformOptimalPrice a b continuationValue :=
-  ValueDistribution.uniformOptimalPrice_eq_of_isMaxOn_sellerProfit_uniformInterval
-    a b hab price continuationValue acquisitionCost hprice hmax
-
-/-- At an interior uniform optimum, virtual value equals continuation value. -/
-example (hpeak : (b + continuationValue) / 2 ∈ Ioo a b) :
-    (ValueDistribution.uniformInterval a b hab).virtualValue
-        (fun _ : ℝ ↦ 1 / (b - a)) ((b + continuationValue) / 2) =
-      continuationValue :=
-  ValueDistribution.uniformInterval_virtualValue_eq_continuationValue_of_interior
-    a b hab continuationValue hpeak
-
-end UniformPricing
-
-/-! ## Comparative statics of uniform posted prices -/
-
-section UniformPricingComparativeStatics
-
-variable (a b continuationValue : ℝ)
-
-example : Monotone (fun lowerEndpoint ↦
-    ValueDistribution.uniformOptimalPrice lowerEndpoint b continuationValue) :=
-  ValueDistribution.monotone_uniformOptimalPrice_lowerEndpoint b continuationValue
-
-example : Monotone (fun upperEndpoint ↦
-    ValueDistribution.uniformOptimalPrice a upperEndpoint continuationValue) :=
-  ValueDistribution.monotone_uniformOptimalPrice_upperEndpoint a continuationValue
-
-example : Monotone (fun continuation ↦
-    ValueDistribution.uniformOptimalPrice a b continuation) :=
-  ValueDistribution.monotone_uniformOptimalPrice_continuationValue a b
-
-example (a₁ a₂ : ℝ)
-    (h₁ : (b + continuationValue) / 2 ∈ Ioo a₁ b)
-    (h₂ : (b + continuationValue) / 2 ∈ Ioo a₂ b) :
-    ValueDistribution.uniformOptimalPrice a₂ b continuationValue =
-      ValueDistribution.uniformOptimalPrice a₁ b continuationValue :=
-  ValueDistribution.uniformOptimalPrice_lowerEndpoint_eq_of_interior
-    a₁ a₂ b continuationValue h₁ h₂
-
-example (b₁ b₂ : ℝ)
-    (h₁ : (b₁ + continuationValue) / 2 ∈ Ioo a b₁)
-    (h₂ : (b₂ + continuationValue) / 2 ∈ Ioo a b₂) :
-    ValueDistribution.uniformOptimalPrice a b₂ continuationValue -
-        ValueDistribution.uniformOptimalPrice a b₁ continuationValue = (b₂ - b₁) / 2 :=
-  ValueDistribution.uniformOptimalPrice_upperEndpoint_sub_of_interior
-    a b₁ b₂ continuationValue h₁ h₂
-
-example (r₁ r₂ : ℝ)
-    (h₁ : (b + r₁) / 2 ∈ Ioo a b)
-    (h₂ : (b + r₂) / 2 ∈ Ioo a b) :
-    ValueDistribution.uniformOptimalPrice a b r₂ -
-        ValueDistribution.uniformOptimalPrice a b r₁ = (r₂ - r₁) / 2 :=
-  ValueDistribution.uniformOptimalPrice_continuationValue_sub_of_interior
-    a b r₁ r₂ h₁ h₂
-
-end UniformPricingComparativeStatics
 
 /-! ## Density, virtual surplus, and tail integration -/
 
@@ -518,8 +345,7 @@ example [SingleParameterProblem.HasEnvelopeIC P]
         P.U P.lowestType -
         ∫ cutoff in P.lowestType..P.highestType,
           P.q cutoff * D.probAtLeast cutoff := by
-  simpa [P.reduce_q, P.reduce_U] using
-    D.expectedPayment_eq_integral_value_mul_q_sub_integral_tail
+  exact D.expectedPayment_eq_integral_value_mul_q_sub_integral_tail
       P.reduce horder hsupport
 
 end SingleParameter
@@ -556,7 +382,7 @@ example (continuationValue acquisitionCost : ℝ) :
 
 /-- The pointwise CDF derivative determines the posted-price profit
 derivative. -/
-example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+example [NullSingletonClass (D : Measure ℝ)] (density : ℝ → ℝ)
     (continuationValue acquisitionCost : ℝ)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price) :
     HasDerivAt
@@ -572,7 +398,7 @@ example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
 
 /-- An interior local profit maximum has zero division-free net virtual
 surplus. -/
-example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+example [NullSingletonClass (D : Measure ℝ)] (density : ℝ → ℝ)
     (continuationValue acquisitionCost : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)
@@ -591,7 +417,7 @@ example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
 
 /-- Nonzero pointwise density turns the division-free condition into the
 virtual-value equation. -/
-example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+example [NullSingletonClass (D : Measure ℝ)] (density : ℝ → ℝ)
     (continuationValue acquisitionCost : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)
@@ -610,7 +436,7 @@ example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
 
 /-- With no continuation value, the interior first-order condition says that
 virtual value is zero. -/
-example [NoAtoms (D : Measure ℝ)] (density : ℝ → ℝ)
+example [NullSingletonClass (D : Measure ℝ)] (density : ℝ → ℝ)
     (acquisitionCost : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price)

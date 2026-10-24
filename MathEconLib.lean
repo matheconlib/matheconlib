@@ -98,6 +98,7 @@ import MathEconLib.Mechanism
 import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 import MathEconLib.Mechanism.Auctions.Allocation
 import MathEconLib.Mechanism.Core.Bayesian
+import MathEconLib.Mechanism.Core.BayesianIC
 import MathEconLib.Mechanism.Core.Comap
 import MathEconLib.Mechanism.Core.Environment
 import MathEconLib.Mechanism.Core.Mechanism

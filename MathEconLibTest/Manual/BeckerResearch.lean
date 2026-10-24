@@ -5,6 +5,8 @@ Authors: Bo Cowgill
 -/
 import MathEconLibExamples.SingleParameter.BeckerCrime
 
+/-! Worked examples for the Becker crime model. -/
+
 open MathEconLib MathEconLibExamples.SingleParameter
 
 namespace Manual.BeckerResearch
@@ -26,7 +28,7 @@ example (D : ValueDistribution) :
   all_goals norm_num
 
 example :
-    let D : ValueDistribution := ⟨MeasureTheory.Measure.dirac (1 : ℝ), inferInstance⟩
+    let D : ValueDistribution := (MeasureTheory.Measure.dirac (1 : ℝ)).toProbabilityMeasure
     D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) = 1 ∧
       D.expectedAllocation (crimeProblem 0 2 (1 / 2) 3) = 0 := by
   dsimp only

@@ -99,8 +99,9 @@ lemma toMeasure_eq_equivStdSimplex_symm [DiscreteMeasurableSpace α] (d : FinDis
   apply Measure.ext_of_singleton
   intro a
   rw [toMeasure, PMF.toMeasure_apply_singleton _ _ (measurableSet_singleton a)]
-  simpa [toPMF, ProbabilityMeasure.equivStdSimplex, Set.indicator] using
-    ENNReal.ofReal_eq_coe_nnreal (d.nonneg a)
+  change _ = (∑ b, ENNReal.ofReal (d b) • Measure.dirac b) {a}
+  simp [toPMF, Set.indicator, eq_comm]
+  rfl
 
 /-- Every function from a finite discrete space into a normed additive group is integrable. -/
 lemma integrable_toMeasure [MeasurableSingletonClass α] {V : Type*} [NormedAddCommGroup V]

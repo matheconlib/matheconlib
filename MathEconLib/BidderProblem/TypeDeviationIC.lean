@@ -171,7 +171,7 @@ theorem typeDeviationIC_of_monotone_q
       SingleParameterProblem.HasTypeDeviationIC B.toSingleParameterProblem :=
     SingleParameterProblem.typeDeviationIC_of_monotone_q
       B.toSingleParameterProblem
-      (by simpa using hq_mono)
+      (by exact hq_mono)
       (by
         intro s hs
         simpa using hcost s hs)
