@@ -131,6 +131,14 @@ network, host mounts, credentials or added capabilities. The build still emits
 The source from the `ordMin` docstring onward is byte-for-byte unchanged from
 the baseline, as are all three initial definitions.
 
+Four additional compiled finite checks cover a one-color colorful room, two
+colliding points whose erasures preserve the image, the two neighbors of an
+injective nearly colorful room, and the counterexample to the old containment
+comment above. These check concrete cases; the general results are justified by
+the reviewed proofs. The full axiom audit passed **3,997 compiled declarations
+and 347 retained anonymous declarations across all 170 sources**, with no
+violations. The only permitted axioms are `propext`, `Classical.choice` and `Quot.sound`.
+
 Integration commands are `bash scripts/update-imports.sh`,
 `bash scripts/check-headers.sh`, `lake --rehash --no-ansi build`, and
 `python3 scripts/check-proof-integrity.py`. The last command checks all project
