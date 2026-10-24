@@ -104,7 +104,7 @@ abbrev UniversallyAcceptable := mkt.NoUnacceptablePartners
 
 /-- Side exchange under the previous name. -/
 theorem UniversallyAcceptable.symm (h : mkt.UniversallyAcceptable) :
-    mkt.symm.UniversallyAcceptable := h.symm
+    mkt.symm.UniversallyAcceptable := NoUnacceptablePartners.symm mkt h
 
 @[simp] theorem ltM_symm (w : W) (y z : Option M) :
     mkt.symm.ltM w y z ↔ mkt.ltW w y z := Iff.rfl

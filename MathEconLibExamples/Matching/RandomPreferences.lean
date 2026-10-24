@@ -63,12 +63,12 @@ def sharedRanks (r : Equiv.Perm (Fin 2)) : RankProfile 2 2 := ⟨fun _ ↦ r, fu
 
 /-- Two equally likely profiles, with all four rankings driven by one uniform permutation. -/
 noncomputable def law : PMF (RankProfile 2 2) :=
-  (PMF.uniformOfFintype (Equiv.Perm (Fin 2))).map sharedRanks
+  (PMF.uniformFintype (Equiv.Perm (Fin 2))).map sharedRanks
 
 /-- Every individual ranking has the same uniform marginal as in the independent model. -/
 theorem law_map_ranking (a : Fin 2 ⊕ Fin 2) :
     law.map (fun p ↦ equivAgentRanks 2 2 p a) =
-      PMF.uniformOfFintype (Ranking 2 2 a) := by
+      PMF.uniformFintype (Ranking 2 2 a) := by
   cases a <;> rw [law, PMF.map_comp] <;> exact PMF.map_id _
 
 private theorem mass_identity (i : Fin 2) :
@@ -76,10 +76,10 @@ private theorem mass_identity (i : Fin 2) :
       (2 : ENNReal)⁻¹ := by
   rw [← Measure.map_apply Measurable.of_discrete (measurableSet_singleton _)]
   have hm : law.map (fun p ↦ p.manRank i) =
-      PMF.uniformOfFintype (Equiv.Perm (Fin 2)) := by
+      PMF.uniformFintype (Equiv.Perm (Fin 2)) := by
     simpa using law_map_ranking (Sum.inl i)
   rw [PMF.toMeasure_map _ _ Measurable.of_discrete, hm]
-  norm_num [PMF.toMeasure_apply_singleton, PMF.uniformOfFintype_apply, Fintype.card_perm]
+  norm_num [PMF.toMeasure_apply_singleton, PMF.uniformFintype_apply, Fintype.card_perm]
 
 private theorem joint_mass_identity :
     law.toMeasure ((fun p ↦ p.manRank 0) ⁻¹' ({1} : Set (Equiv.Perm (Fin 2))) ∩
@@ -87,7 +87,7 @@ private theorem joint_mass_identity :
   rw [law, ← PMF.toMeasure_map _ _ Measurable.of_discrete,
     Measure.map_apply Measurable.of_discrete MeasurableSet.of_discrete]
   norm_num [Set.preimage, sharedRanks, PMF.toMeasure_apply_singleton,
-    PMF.uniformOfFintype_apply, Fintype.card_perm]
+    PMF.uniformFintype_apply, Fintype.card_perm]
 
 /-- Uniform individual marginals do not imply that the two proposers' rankings are independent. -/
 theorem not_indepFun :

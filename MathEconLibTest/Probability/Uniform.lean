@@ -16,12 +16,12 @@ open scoped BigOperators
 
 example {α : Type*} [Fintype α] [Nonempty α] [MeasurableSpace α]
     [MeasurableSingletonClass α] (f : α → ℝ) :
-    (∫ a, f a ∂(PMF.uniformOfFintype α).toMeasure) =
+    (∫ a, f a ∂(PMF.uniformFintype α).toMeasure) =
       (FinDist.uniform (α := α)).expect f := by
   rw [PMF.integral_uniformOfFintype, FinDist.expect_uniform]
 
 example {α : Type*} [Fintype α] [Nonempty α] [MeasurableSpace α] :
-    (FinDist.uniform (α := α)).toMeasure = (PMF.uniformOfFintype α).toMeasure := by
+    (FinDist.uniform (α := α)).toMeasure = (PMF.uniformFintype α).toMeasure := by
   simp [FinDist.toMeasure]
 
 -- A payoff statistic on three outcomes uses the same finite-average identity as matching.
@@ -30,20 +30,20 @@ example : (FinDist.uniform (α := Fin 3)).expect (fun i ↦ (i.val + 1 : ℝ)) =
   norm_num [Fin.sum_univ_succ]
 
 -- A nonmatching application: relabeling three possible outcomes preserves their uniform law.
-example : (PMF.uniformOfFintype (Fin 3)).map (Equiv.swap 0 1) =
-    PMF.uniformOfFintype (Fin 3) := PMF.map_uniformOfFintype (Equiv.swap 0 1)
+example : (PMF.uniformFintype (Fin 3)).map (Equiv.swap 0 1) =
+    PMF.uniformFintype (Fin 3) := PMF.map_uniformOfFintype (Equiv.swap 0 1)
 
 section BinarySignals
 
 local instance : MeasurableSpace Bool := ⊤
 
 -- Three binary signals and the empty family use the same product-law lemma as rankings.
-example : (PMF.uniformOfFintype (Fin 3 → Bool)).toMeasure =
-    Measure.pi (fun _ : Fin 3 ↦ (PMF.uniformOfFintype Bool).toMeasure) :=
+example : (PMF.uniformFintype (Fin 3 → Bool)).toMeasure =
+    Measure.pi (fun _ : Fin 3 ↦ (PMF.uniformFintype Bool).toMeasure) :=
   PMF.toMeasure_uniformOfFintype_pi
 
-example : (PMF.uniformOfFintype (Fin 0 → Bool)).toMeasure =
-    Measure.pi (fun _ : Fin 0 ↦ (PMF.uniformOfFintype Bool).toMeasure) :=
+example : (PMF.uniformFintype (Fin 0 → Bool)).toMeasure =
+    Measure.pi (fun _ : Fin 0 ↦ (PMF.uniformFintype Bool).toMeasure) :=
   PMF.toMeasure_uniformOfFintype_pi
 
 end BinarySignals

@@ -25,7 +25,7 @@ example : expectedAverageProposerRank (uniformProfile 2 2)
 -- The same individual uniform marginals can yield dependent rankings and a different expectation.
 example (a : Fin 2 ⊕ Fin 2) :
     Correlated.law.map (fun p ↦ equivAgentRanks 2 2 p a) =
-      PMF.uniformOfFintype (Ranking 2 2 a) := Correlated.law_map_ranking a
+      PMF.uniformFintype (Ranking 2 2 a) := Correlated.law_map_ranking a
 
 example : ¬ ProbabilityTheory.IndepFun (fun p : RankProfile 2 2 ↦ p.manRank 0)
     (fun p ↦ p.manRank 1) Correlated.law.toMeasure := Correlated.not_indepFun
@@ -47,7 +47,7 @@ example (p : RankProfile 0 0) : uniformProfile 0 0 p = 1 := by
 example {m n : ℕ} :
     (uniformProfile m n).toMeasure.map (equivAgentRanks m n) =
       MeasureTheory.Measure.pi
-        (fun a ↦ (PMF.uniformOfFintype (Ranking m n a)).toMeasure) :=
+        (fun a ↦ (PMF.uniformFintype (Ranking m n a)).toMeasure) :=
   uniformProfile_map_agentRanks m n
 
 example : ProbabilityTheory.iIndepFun (fun a p ↦ equivAgentRanks 0 0 p a)
@@ -61,16 +61,16 @@ example {m n : ℕ} (i : Fin m) (j : Fin n) :
 
 -- Agents on a nonempty side facing no partners have the unique permutation of `Fin 0`.
 example : (uniformProfile 0 2).toMeasure.map (fun p ↦ p.womanRank 0) =
-    (PMF.uniformOfFintype (Equiv.Perm (Fin 0))).toMeasure :=
+    (PMF.uniformFintype (Equiv.Perm (Fin 0))).toMeasure :=
   uniformProfile_map_womanRank 0
 
 example : (uniformProfile 2 0).toMeasure.map (fun p ↦ p.manRank 0) =
-    (PMF.uniformOfFintype (Equiv.Perm (Fin 0))).toMeasure :=
+    (PMF.uniformFintype (Equiv.Perm (Fin 0))).toMeasure :=
   uniformProfile_map_manRank 0
 
 -- In an unequal market the ranking law still uses the opposite population's size.
 example : (uniformProfile 1 2).toMeasure.map (fun p ↦ p.manRank 0) =
-    (PMF.uniformOfFintype (Equiv.Perm (Fin 2))).toMeasure :=
+    (PMF.uniformFintype (Equiv.Perm (Fin 2))).toMeasure :=
   uniformProfile_map_manRank 0
 
 -- The one-agent market returns its only partner, with rank one.
@@ -93,7 +93,7 @@ example (n : ℕ) : expectedAverageProposerRank (uniformProfile n n)
     MathEconLib.Probability.FinDist.expect_uniform]
 
 example (m n : ℕ) :
-    independentProfile (fun a ↦ PMF.uniformOfFintype (Ranking m n a)) = uniformProfile m n :=
+    independentProfile (fun a ↦ PMF.uniformFintype (Ranking m n a)) = uniformProfile m n :=
   independentProfile_uniform m n
 
 #print axioms MathEconLibExamples.Matching.RandomPreferences.expectedAverageProposerRank_two

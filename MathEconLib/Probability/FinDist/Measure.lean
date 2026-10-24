@@ -75,9 +75,9 @@ lemma toPMF_ofPMF {α : Type*} [Fintype α] (p : PMF α) :
 
 /-- The uniform finite distribution induces Mathlib's uniform PMF on the same space. -/
 @[simp] lemma toPMF_uniform {α : Type*} [Fintype α] [Nonempty α] :
-    (FinDist.uniform (α := α)).toPMF = PMF.uniformOfFintype α := by
+    (FinDist.uniform (α := α)).toPMF = PMF.uniformFintype α := by
   ext a
-  rw [PMF.uniformOfFintype_apply]
+  rw [PMF.uniformFintype_apply]
   change ENNReal.ofReal ((FinDist.uniform (α := α)).pmf a) = _
   rw [uniform_pmf, ENNReal.ofReal_inv_of_pos (Nat.cast_pos.mpr Fintype.card_pos)]
   simp

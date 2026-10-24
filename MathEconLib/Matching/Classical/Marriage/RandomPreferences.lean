@@ -3,10 +3,12 @@ Copyright (c) 2026 The Formal Conjectures Authors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The Formal Conjectures Authors, Bo Cowgill
 -/
-import MathEconLib.Matching.Classical.Marriage.RankPreferences
-import Mathlib.MeasureTheory.Constructions.Pi
-import Mathlib.Probability.Independence.Basic
-import Mathlib.Probability.ProbabilityMassFunction.Integrals
+module
+
+public import MathEconLib.Matching.Classical.Marriage.RankPreferences
+public import Mathlib.MeasureTheory.Constructions.Pi
+public import Mathlib.Probability.Independence.Basic
+public import Mathlib.Probability.ProbabilityMassFunction.Integrals
 
 /-!
 # General finite random preference profiles
@@ -29,6 +31,8 @@ induced laws implies equality of expected ranks. No equivalence of those procedu
 The profile representation and its Formal Conjectures provenance are documented in
 `RankPreferences`. Stability and outcome rules reuse the existing marriage-market API.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching.MarriageMarket
 

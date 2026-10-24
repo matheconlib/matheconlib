@@ -32,22 +32,22 @@ open scoped BigOperators
 /-- Independent uniform rankings for both populations, as the uniform law on all rank profiles.
 This adapts `StableMarriage.uniformProfile` from the source cited in `RankPreferences`. -/
 noncomputable def uniformProfile (m n : ℕ) : PMF (RankProfile m n) :=
-  PMF.uniformOfFintype (RankProfile m n)
+  PMF.uniformFintype (RankProfile m n)
 
 /-- Every full profile has equal mass. -/
 theorem uniformProfile_apply (p : RankProfile m n) :
     uniformProfile m n p =
       (((Nat.factorial n) ^ m * (Nat.factorial m) ^ n : ℕ) : ENNReal)⁻¹ := by
-  simp [uniformProfile, PMF.uniformOfFintype_apply, card]
+  simp [uniformProfile, PMF.uniformFintype_apply, card]
 
 /-- The full joint mass factors into the uniform masses of all individual rankings.
 Because `equivRanks` is a bijection onto unrestricted ranking families, this characterizes
 independent uniform preference lists, rather than only normalization of the joint law. -/
 theorem uniformProfile_apply_eq_prod (p : RankProfile m n) :
     uniformProfile m n p =
-      (∏ i : Fin m, PMF.uniformOfFintype (Equiv.Perm (Fin n)) (p.manRank i)) *
-      (∏ j : Fin n, PMF.uniformOfFintype (Equiv.Perm (Fin m)) (p.womanRank j)) := by
-  simp only [uniformProfile, PMF.uniformOfFintype_apply, card, Fintype.card_perm,
+      (∏ i : Fin m, PMF.uniformFintype (Equiv.Perm (Fin n)) (p.manRank i)) *
+      (∏ j : Fin n, PMF.uniformFintype (Equiv.Perm (Fin m)) (p.womanRank j)) := by
+  simp only [uniformProfile, PMF.uniformFintype_apply, card, Fintype.card_perm,
     Fintype.card_fin, Finset.prod_const, Finset.card_univ, Nat.cast_mul, Nat.cast_pow]
   rw [ENNReal.mul_inv (a := (n.factorial : ENNReal) ^ m)
     (b := (m.factorial : ENNReal) ^ n) (by simp) (by simp)]
@@ -61,16 +61,16 @@ theorem uniformProfile_univ (m n : ℕ) :
 choosing each agent's ranking independently and uniformly at random. -/
 theorem uniformProfile_map_agentRanks (m n : ℕ) :
     (uniformProfile m n).toMeasure.map (equivAgentRanks m n) =
-      Measure.pi (fun a ↦ (PMF.uniformOfFintype (Ranking m n a)).toMeasure) := by
+      Measure.pi (fun a ↦ (PMF.uniformFintype (Ranking m n a)).toMeasure) := by
   rw [PMF.toMeasure_map _ _ Measurable.of_discrete]
   rw [uniformProfile, PMF.map_uniformOfFintype]
   exact PMF.toMeasure_uniformOfFintype_pi (α := Ranking m n)
 
 /-- Independent uniform individual laws give exactly the uniform law on full profiles. -/
 theorem independentProfile_uniform (m n : ℕ) :
-    independentProfile (fun a ↦ PMF.uniformOfFintype (Ranking m n a)) = uniformProfile m n := by
+    independentProfile (fun a ↦ PMF.uniformFintype (Ranking m n a)) = uniformProfile m n := by
   apply PMF.toMeasure_injective
-  have h : (independentProfile (fun a ↦ PMF.uniformOfFintype (Ranking m n a))).toMeasure.map
+  have h : (independentProfile (fun a ↦ PMF.uniformFintype (Ranking m n a))).toMeasure.map
       (equivAgentRanks m n) = (uniformProfile m n).toMeasure.map (equivAgentRanks m n) := by
     rw [independentProfile_map_agentRanks, uniformProfile_map_agentRanks]
   have h' := congrArg (Measure.map (equivAgentRanks m n).symm) h
@@ -79,18 +79,18 @@ theorem independentProfile_uniform (m n : ℕ) :
 /-- Every agent's ranking is uniform on all permutations of the other population. -/
 theorem uniformProfile_map_ranking (m n : ℕ) (a : Fin m ⊕ Fin n) :
     (uniformProfile m n).toMeasure.map (fun p ↦ equivAgentRanks m n p a) =
-      (PMF.uniformOfFintype (Ranking m n a)).toMeasure := by
+      (PMF.uniformFintype (Ranking m n a)).toMeasure := by
   rw [← independentProfile_uniform]
   exact independentProfile_map_ranking _ a
 
 theorem uniformProfile_map_manRank (i : Fin m) :
     (uniformProfile m n).toMeasure.map (fun p ↦ p.manRank i) =
-      (PMF.uniformOfFintype (Equiv.Perm (Fin n))).toMeasure :=
+      (PMF.uniformFintype (Equiv.Perm (Fin n))).toMeasure :=
   uniformProfile_map_ranking m n (Sum.inl i)
 
 theorem uniformProfile_map_womanRank (j : Fin n) :
     (uniformProfile m n).toMeasure.map (fun p ↦ p.womanRank j) =
-      (PMF.uniformOfFintype (Equiv.Perm (Fin m))).toMeasure :=
+      (PMF.uniformFintype (Equiv.Perm (Fin m))).toMeasure :=
   uniformProfile_map_ranking m n (Sum.inr j)
 
 /-- All individual rankings are jointly independent, across as well as within the two sides. -/
