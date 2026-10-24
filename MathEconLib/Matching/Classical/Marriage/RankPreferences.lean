@@ -8,8 +8,8 @@ import Mathlib.Algebra.BigOperators.Expect
 import Mathlib.Data.Fintype.Perm
 import Mathlib.Data.Fintype.Pi
 import Mathlib.Data.Fintype.Prod
-import Mathlib.Data.PEquiv
-import Mathlib.Data.Real.Basic
+import Mathlib.Basic.PEquiv
+import Mathlib.Basic.Real.Basic
 import Mathlib.Logic.Equiv.Fin.Basic
 
 /-!
