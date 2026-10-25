@@ -11,7 +11,7 @@ import MathEconLib.Matching.Classical.Marriage.IncompleteRankPreferences
 
 Optional ranks feed directly into the existing executable proposer DA. Its stability and
 proposer optimality apply without universal acceptability. Full matching of the shorter side
-requires the explicit `NoUnacceptablePartners` assumption; balance alone does not suffice.
+is ensured here by the explicit `NoUnacceptablePartners` assumption; balance alone does not suffice.
 The complete-profile embedding preserves the market, hence also the DA outcome and its ranks.
 -/
 
