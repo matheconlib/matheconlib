@@ -106,13 +106,16 @@ The section headings separate these scopes without introducing another module.
 | `Matching.Contracts.Completion` | Completed markets, stability transfer, stable existence and unilateral-substitutes corollaries |
 | `Matching.Classical.Marriage.Preferences` | Market preference data, relabeling, acceptability, induced choice functions and finite maximization |
 | `Matching.Classical.Marriage.RankPreferences` | Deterministic finite rankings, the existing preference adapter, side exchange and ordinal-rank statistics |
+| `Matching.Classical.Marriage.IncompleteRankPreferences` | Strict optional rankings, variable acceptable lists, outside ranks and the complete-profile embedding |
 | `Matching.Classical.Marriage.Basic` | Matching, individual rationality, blocking, stability and optimality specifications |
 | `Matching.Classical.Marriage.ToContracts` | Embedding the marriage model into contracts, graph/reconstruction and the preference dictionary |
 | `Matching.Classical.Marriage.Existence` | The stable-matching existence theorem |
 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
 | `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
 | `Matching.Classical.Marriage.RankPreferencesDA` | Deterministic short-side DA completeness and rank optimality, without probability |
+| `Matching.Classical.Marriage.IncompleteRankPreferencesDA` | DA rank optimality with incomplete lists and short-side completeness under explicit universal acceptability |
 | `Matching.Classical.Marriage.RandomPreferences` | Arbitrary joint profile laws, explicit-law expectations and independent individual-law specialization |
+| `Matching.Classical.Marriage.RandomIncompletePreferences` | Joint and independent optional-ranking laws, marginals, independence and complete-law compatibility |
 | `Matching.Classical.Marriage.RandomPreferencesUniform` | Independent uniform rankings, their product law, marginals and finite expectation formula |
 
 Marriage preferences and their induced choices belong together. The embedding
@@ -148,11 +151,31 @@ Sampling preference relations directly, constructing rankings sequentially, and 
 primitives are distinct procedures. The present `RankProfile` API requires strict rankings with
 all partners above `none`; this is a restriction of the representation, not of sampling itself.
 The underlying `MarriageMarket` permits incomplete acceptable lists by placing unacceptable
-partners below `none`, but random laws on those lists need a separate extension. Ties remain
-under [#200](https://github.com/matheconlib/matheconlib/issues/200); a sampling procedure that
-breaks ties must specify that rule. The induced joint laws are the common interface: `PMF.map`
-handles discrete sources, or `Measure.map` and `Measure.toPMF` handle general measurable sources.
+partners below `none`. `IncompleteRankPreferences` supplies that finite representation:
+`OptionalRanking n` is an equivalence from `Option (Fin n)` to `Fin (n + 1)`, so each agent's
+outside option can occupy any position in their strict ranking. Partners above it are acceptable;
+partners below it are unacceptable. The latter retain a strict order to supply the existing
+marriage preference interface. The incomplete-profile carrier permits arbitrary correlations.
+Ties remain under [#200](https://github.com/matheconlib/matheconlib/issues/200); a sampling
+procedure that breaks ties must specify that rule. The induced joint laws are the common
+interface: `PMF.map` handles discrete sources, or `Measure.map` and `Measure.toPMF` handle
+general measurable sources.
 Comparing procedures requires proving equality of those laws rather than assuming equivalence.
+
+`IncompleteRankProfile` has the same side exchange and ordinal-statistic interfaces as the
+complete profile. An unmatched agent is evaluated at the one-based position of their own
+outside option, one plus their number of acceptable partners. The average includes every
+proposer and is zero for an empty proposer side. `IncompleteRankPreferencesDA` reuses the
+existing stable and proposer-optimal DA result; its full-matching corollaries retain explicit
+`NoUnacceptablePartners` hypotheses. A balanced incomplete market can leave agents unmatched.
+
+`RankProfile.toIncomplete` explicitly embeds complete profiles by putting each outside option
+last. The embedding preserves the marriage market and all assignment ranks. In the probability
+layer, `toIncompleteLaw` maps arbitrary complete joint laws, preserving expected ranks for every
+compatible outcome rule. Embedding independent complete laws also agrees with the independent
+law of the embedded individual rankings. `IncompleteRankProfile.independentProfile` supplies
+independent optional rankings, alongside its marginal and independence theorems. All three
+incomplete-preference modules are exported by `MathEconLib.Matching`.
 
 `MarriageMarket.relabel` transports optional-partner orders along population equivalences;
 `PEquiv.relabel` composes partial assignments with those equivalences. Identity, composition,
@@ -166,9 +189,15 @@ remain follow-ups in [#192](https://github.com/matheconlib/matheconlib/issues/19
 The canonical `MathEconLibExamples.Matching.RandomPreferences` example proves the exact `5/4`
 proposer DA expectation and explains the two equally likely first-choice cases. Tests import that
 example; a correlated law with the same individual uniform marginals gives expectation `3/2`.
-Its checked marginals and dependence witness illustrate why the joint law matters. The core
-contains the reusable statistics and laws. These benchmarks concern ordinal
-positions, not cardinal welfare. Proposal bounds,
+Its checked marginals and dependence witness illustrate why the joint law matters.
+
+`MathEconLibExamples.Matching.IncompletePreferences` gives a one-by-one market in which a
+receiver rejects the only proposer. Both remain unmatched under DA despite balance. A fair coin
+between receiver acceptance and rejection gives proposer ranks one and two, with expected rank
+`3/2`; the rejecting receiver's own outside rank is one. The complete `5/4` benchmark is also
+recovered through `toIncompleteLaw`. Tests import these worked examples directly. The core
+contains the reusable statistics and laws. These benchmarks concern ordinal positions,
+not cardinal welfare. Proposal bounds,
 asymptotics, and matched-agent imbalance results remain later milestones under
 [#166](https://github.com/matheconlib/matheconlib/issues/166). Weak preferences
 ([#200](https://github.com/matheconlib/matheconlib/issues/200)) and relabeling the full contracts

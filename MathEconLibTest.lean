@@ -19,6 +19,7 @@ import MathEconLibTest.GameTheory.VectorPayoffs
 import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
+import MathEconLibTest.Matching.IncompletePublicImport
 import MathEconLibTest.Matching.IncompleteRankPreferences
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.RandomIncompletePreferences
