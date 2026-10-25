@@ -77,9 +77,12 @@ import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
 import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
 import MathEconLib.Matching.Classical.Marriage.Existence
 import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
+import MathEconLib.Matching.Classical.Marriage.IncompleteRankPreferences
+import MathEconLib.Matching.Classical.Marriage.IncompleteRankPreferencesDA
 import MathEconLib.Matching.Classical.Marriage.LoneWolf
 import MathEconLib.Matching.Classical.Marriage.Optimality
 import MathEconLib.Matching.Classical.Marriage.Preferences
+import MathEconLib.Matching.Classical.Marriage.RandomIncompletePreferences
 import MathEconLib.Matching.Classical.Marriage.RandomPreferences
 import MathEconLib.Matching.Classical.Marriage.RandomPreferencesUniform
 import MathEconLib.Matching.Classical.Marriage.RankPreferences
