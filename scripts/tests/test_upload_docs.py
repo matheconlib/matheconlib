@@ -1,4 +1,4 @@
-"""Exercise R2 publication using a stub AWS CLI; never contact storage."""
+"""Exercise R2 publication using stub AWS and Git CLIs; never contact storage."""
 
 import json
 import os
@@ -28,33 +28,86 @@ class UploadDocumentationTest(unittest.TestCase):
 import json, os, sys
 with open(os.environ["AWS_TEST_LOG"], "a") as log:
     log.write(json.dumps({"args": sys.argv[1:], "config": os.environ["AWS_CONFIG_FILE"], "region": os.environ["AWS_DEFAULT_REGION"]}) + "\\n")
+    if sys.argv[1:4] == ["s3", "cp", "-"]:
+        log.write(json.dumps({"stdin": sys.stdin.read()}) + "\\n")
 if os.environ.get("AWS_TEST_FAIL") == "1" and sys.argv[1:3] == ["s3", "cp"]:
     sys.exit(1)
+if sys.argv[1:3] == ["s3", "cp"] and sys.argv[4] == "-":
+    pointer = os.environ.get("AWS_TEST_POINTER")
+    if not pointer:
+        sys.exit(1)
+    print(pointer)
+if sys.argv[1:3] == ["s3api", "list-objects-v2"]:
+    print(os.environ.get("AWS_TEST_TREES", "None"))
 ''')
         aws.chmod(0o755)
+        git = binary / "git"
+        git.write_text('''#!/usr/bin/env python3
+import os, sys
+assert sys.argv[1:] == ["ls-remote", "origin", "refs/heads/main"], sys.argv
+print(os.environ["GIT_TEST_MAIN"] + "\\trefs/heads/main")
+''')
+        git.chmod(0o755)
         self.log = self.root / "calls.jsonl"
         self.env = dict(os.environ, PATH=str(binary) + os.pathsep + os.environ["PATH"],
                         AWS_TEST_LOG=str(self.log), R2_BUCKET="test-bucket",
                         R2_ENDPOINT_URL="https://example.invalid", AWS_ACCESS_KEY_ID="fixture",
                         AWS_SECRET_ACCESS_KEY="fixture", GITHUB_RUN_ID="123", GITHUB_RUN_ATTEMPT="2",
                         GITHUB_REF="refs/heads/main", GITHUB_EVENT_NAME="push",
-                        GITHUB_STEP_SUMMARY=str(self.root / "summary"))
+                        GITHUB_STEP_SUMMARY=str(self.root / "summary"), GIT_TEST_MAIN="a" * 40)
 
     def run_helper(self, **env):
         return subprocess.run(["bash", str(HELPER), str(self.output)],
                               env=dict(self.env, **env), capture_output=True, text=True)
 
+    def calls(self):
+        return [json.loads(line) for line in self.log.read_text().splitlines()]
+
     def test_revision_specific_snapshot_and_config_cleanup(self):
         result = self.run_helper()
         self.assertEqual(result.returncode, 0, result.stderr)
-        calls = [json.loads(line) for line in self.log.read_text().splitlines()]
+        calls = self.calls()
         self.assertEqual(calls[0]["args"], ["configure", "set", "default.s3.preferred_transfer_client", "classic"])
-        self.assertEqual(len(calls), 4)
-        for call, name in zip(calls[1:], ["api-docs.db.gz", "lake-manifest.json", "metadata.json"]):
+        for call, name in zip(calls[1:4], ["api-docs.db.gz", "lake-manifest.json", "metadata.json"]):
             self.assertEqual(call["args"][3], f's3://test-bucket/matheconlib/{"a" * 40}/123-2/{name}')
             self.assertEqual(call["region"], "auto")
         self.assertFalse(Path(calls[0]["config"]).parent.exists())
         self.assertIn("api-docs.db.gz", (self.root / "summary").read_text())
+
+    def test_html_tree_moves_pointer_last_and_prunes_all_but_previous(self):
+        tree = f'matheconlib/html/{"a" * 40}-123-2/'
+        previous = "matheconlib/html/old-1-1/"
+        result = self.run_helper(
+            AWS_TEST_POINTER=json.dumps({"revision": "o" * 40, "prefix": previous}),
+            AWS_TEST_TREES="\t".join([previous, tree, "matheconlib/html/stale-2-1/"]))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        calls = self.calls()
+        args = [call.get("args") for call in calls]
+        sync = args.index(["s3", "sync", str(self.output / "doc"), f"s3://test-bucket/{tree}",
+                           "--endpoint-url", "https://example.invalid", "--only-show-errors"])
+        written = next(i for i, call in enumerate(calls) if "stdin" in call)
+        self.assertGreater(written, sync)
+        self.assertEqual(args[written - 1][3], "s3://test-bucket/matheconlib/html/current.json")
+        self.assertEqual(json.loads(calls[written]["stdin"]), {"revision": "a" * 40, "prefix": tree})
+        removed = [(i, a[3]) for i, a in enumerate(args) if a and a[:2] == ["s3", "rm"]]
+        self.assertEqual([key for _, key in removed], ["s3://test-bucket/matheconlib/html/stale-2-1/"])
+        self.assertGreater(removed[0][0], written)
+        self.assertIn(tree, (self.root / "summary").read_text())
+
+    def test_first_publication_writes_pointer_and_keeps_its_tree(self):
+        tree = f'matheconlib/html/{"a" * 40}-123-2/'
+        result = self.run_helper(AWS_TEST_TREES=tree)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue(any("stdin" in call for call in self.calls()))
+        self.assertFalse([c for c in self.calls() if c.get("args", [])[:2] == ["s3", "rm"]])
+
+    def test_superseded_revision_uploads_html_but_keeps_pointer(self):
+        result = self.run_helper(GIT_TEST_MAIN="b" * 40, AWS_TEST_TREES="matheconlib/html/stale-2-1/")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        args = [call.get("args") for call in self.calls()]
+        self.assertTrue(any(a and a[:2] == ["s3", "sync"] for a in args))
+        self.assertFalse(any("stdin" in call for call in self.calls()))
+        self.assertFalse(any(a and (a[:2] == ["s3", "rm"] or a[0] == "s3api") for a in args))
 
     def test_missing_configuration_fails_before_aws(self):
         result = self.run_helper(R2_BUCKET="")

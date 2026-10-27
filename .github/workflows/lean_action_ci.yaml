@@ -10,9 +10,16 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  # A newer push to a PR supersedes its in-progress run
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      revision: ${{ steps.revision.outputs.revision }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -26,8 +33,6 @@ jobs:
         run: python3 scripts/tests/test_update_imports.py
       - name: Test warning reporting helper
         run: node --test scripts/tests/test_warning_counts.cjs
-      - name: Test documentation helpers
-        run: python3 -m unittest discover -s scripts/tests -p 'test_*docs.py'
       - name: Cache project build artifacts
         uses: actions/cache@v5
         with:
@@ -35,6 +40,7 @@ jobs:
           # dependency build and can exhaust runner disk space during cache save.
           path: .lake/build
           # Use a separate namespace so old whole-.lake archives are not restored.
+          # The docs job restores this exact key.
           key: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
           restore-keys: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
       - name: Set up Lean and Mathlib
@@ -74,6 +80,9 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "Run mk_all: update imports"
           git push
+      - name: Record built revision
+        id: revision
+        run: echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Test proof integrity checker
         run: python3 scripts/tests/test_proof_integrity.py
       - name: Check project proof integrity
@@ -104,10 +113,48 @@ jobs:
           if-no-files-found: error
           overwrite: true
           retention-days: 90
+
+  # Advisory: documentation and publication failures are reported here without
+  # failing the library build. Keep this job out of required checks.
+  docs:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    concurrency:
+      # Serialize main publication so pruning never races another upload.
+      group: ${{ github.ref == 'refs/heads/main' && 'docs-publish-main' || format('docs-{0}', github.run_id) }}
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # The commit the build job verified, including any import-list commit.
+          ref: ${{ needs.build.outputs.revision }}
+      - name: Test documentation helpers
+        run: python3 -m unittest discover -s scripts/tests -p 'test_*docs.py'
+      - name: Test signature extractor
+        run: python3 scripts/tests/test_extract_signatures.py
+      - name: Restore project build artifacts
+        uses: actions/cache/restore@v5
+        with:
+          # Saved by the build job; on a miss, Lake rebuilds the project.
+          path: .lake/build
+          key: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+      - name: Set up Lean and Mathlib
+        uses: leanprover/lean-action@v1
+        with:
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: true
+          mk_all-check: false
       - name: Identify documentation cache
         id: doc-cache
         run: |
-          python3 -c 'import sys; sys.path.insert(0, "scripts"); import build_docs; print("revision=" + build_docs.DOCGEN_REV)' >> "$GITHUB_OUTPUT"
+          # The doc-gen4 release matching lean-toolchain, resolved to its current commit.
+          python3 -c 'import sys; from pathlib import Path; sys.path.insert(0, "scripts"); import build_docs as d; print("revision=" + d.resolve_docgen(d.docgen_release(Path("."))))' >> "$GITHUB_OUTPUT"
       - name: Restore dependency documentation cache
         id: restore-doc-cache
         uses: actions/cache/restore@v5
@@ -124,6 +171,8 @@ jobs:
         with:
           path: ${{ runner.temp }}/doc-cache
           key: ${{ steps.restore-doc-cache.outputs.cache-primary-key }}
+      - name: Extract signature index
+        run: python3 scripts/extract_signatures.py --no-build --db "$RUNNER_TEMP/doc-artifacts/api-docs.db" --output "$RUNNER_TEMP/doc-artifacts/doc/signatures"
       - name: Upload API documentation
         uses: actions/upload-artifact@v7
         with:
@@ -140,8 +189,14 @@ jobs:
             ${{ runner.temp }}/doc-artifacts/lake-manifest.json
           compression-level: 0
           if-no-files-found: error
-      - name: Publish documentation database to R2
-        if: github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      - name: Upload signature index
+        uses: actions/upload-artifact@v7
+        with:
+          name: signature-index
+          path: ${{ runner.temp }}/doc-artifacts/doc/signatures
+          if-no-files-found: error
+      - name: Publish documentation database and HTML to R2
+        if: github.repository == 'matheconlib/matheconlib' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
         env:
           R2_BUCKET: ${{ vars.R2_BUCKET }}
           R2_ENDPOINT_URL: ${{ vars.R2_ENDPOINT_URL }}

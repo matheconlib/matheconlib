@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 import shutil
 import sqlite3
 import subprocess
@@ -20,9 +21,25 @@ import tempfile
 REPO_ROOT = Path(__file__).resolve().parent.parent
 LIBRARY = "MathEconLib"
 DOCGEN_URL = "https://github.com/danlyng/doc-gen4"
-DOCGEN_REV = "5dfeb1052b845c95c92516e05b7dea38cba9ee21"
-CACHE_VERSION = 1
+CACHE_VERSION = 3
 DOC_TOOLS = ("doc-gen4", "leansqlite", "MD4Lean", "BibtexQuery", "UnicodeBasic")
+DOCGEN_ENV = {"DOCGEN_BATCH": "1", "DISABLE_EQUATIONS": "1"}
+
+# The fork's library batch facet analyzes only that library, so imported
+# libraries need their own batches before the project's HTML is generated.
+BATCH_DEPENDENCIES = """
+target dependencyDocInfo : Unit := do
+  let some root ← findModule? `MathEconLib
+    | error "MathEconLib library root not found"
+  let imports ← (← root.transImports.fetch).await
+  let mut libraries : Lean.NameSet := {}
+  let mut jobs : Array OpaqueJob := #[]
+  for mod in imports do
+    if mod.lib.name != root.lib.name && !libraries.contains mod.lib.name then
+      libraries := libraries.insert mod.lib.name
+      jobs := jobs.push (← mod.lib.fetchFacetJob `docInfoBatch)
+  return Job.mixArray jobs
+"""
 
 
 def sha256(path: Path) -> str:
@@ -48,7 +65,31 @@ def open_readonly(path: Path) -> sqlite3.Connection:
     return sqlite3.connect(uri, uri=True)
 
 
-def verify_dependencies(root: dict, docs: dict) -> None:
+def docgen_release(repo: Path) -> str:
+    """Return the doc-gen4 fork's release tag for the project toolchain.
+
+    The fork tags each release with the Lean version it supports.
+    """
+    toolchain = (repo / "lean-toolchain").read_text().strip()
+    match = re.fullmatch(r"(?:leanprover/lean4:)?(v\d+\.\d+\.\d+(?:-rc\d+)?)", toolchain)
+    if not match:
+        raise ValueError(f"No doc-gen4 release corresponds to toolchain {toolchain}")
+    return match.group(1)
+
+
+def resolve_docgen(release: str) -> str:
+    """Resolve a doc-gen4 release tag to the commit it currently names."""
+    ref = f"refs/tags/{release}"
+    listing = subprocess.check_output(["git", "ls-remote", DOCGEN_URL, ref, ref + "^{}"], text=True)
+    revisions = {name: rev for rev, name in (line.split("\t") for line in listing.splitlines())}
+    # Annotated tags list the tag object first and the peeled commit as `^{}`.
+    revision = revisions.get(ref + "^{}") or revisions.get(ref)
+    if revision is None:
+        raise ValueError(f"{DOCGEN_URL} has no {release} release for the project toolchain")
+    return revision
+
+
+def verify_dependencies(root: dict, docs: dict, docgen_rev: str) -> None:
     packages = {package_name(p): p for p in docs["packages"]}
     for expected in root["packages"]:
         name = package_name(expected)
@@ -56,22 +97,34 @@ def verify_dependencies(root: dict, docs: dict) -> None:
         if actual is None or actual.get("rev") != expected.get("rev"):
             raise ValueError(f"Documentation dependency {name} differs from the root manifest")
     docgen = packages.get("doc-gen4", {})
-    if docgen.get("rev") != DOCGEN_REV or docgen.get("url", "").removesuffix(".git") != DOCGEN_URL:
-        raise ValueError("Documentation manifest does not contain the pinned doc-gen4 backport")
+    if docgen.get("rev") != docgen_rev or docgen.get("url", "").removesuffix(".git") != DOCGEN_URL:
+        raise ValueError("Documentation manifest does not contain the resolved doc-gen4 release")
 
 
 def fingerprint(repo: Path, manifest: dict) -> dict:
-    return {
+    state = {
         "version": CACHE_VERSION,
         "toolchain": (repo / "lean-toolchain").read_text().strip(),
         "root_manifest_sha256": sha256(repo / "lake-manifest.json"),
-        "docgen_rev": DOCGEN_REV,
         "source_links": os.environ.get("DOCGEN_SRC") or "github",
+        "analysis_environment": DOCGEN_ENV,
         "dependencies": sorted(
             (package_name(p), p.get("url"), p["rev"])
             for p in manifest["packages"] if p["type"] == "git"
         ),
     }
+    if state["source_links"] in ("file", "vscode"):
+        # Local source URLs embed real paths, including symlinked packages.
+        state["source_paths"] = {
+            "checkout": str(repo.resolve()),
+            "packages": {
+                package_name(p): str(
+                    (repo / ".lake/packages" / package_name(p) / (p.get("subDir") or "")).resolve()
+                )
+                for p in manifest["packages"] if p["type"] == "git"
+            },
+        }
+    return state
 
 
 def snapshot(source: Path, target: Path) -> None:
@@ -143,7 +196,13 @@ def restore_cache(cache: Path, build_dir: Path, expected: dict) -> bool:
                 raise ValueError("cached database has no dependency modules")
             for marker in (build_dir / "doc-data").glob("*.doc"):
                 name = marker.stem
-                if name.startswith("core-"):
+                if name.endswith("--library.docInfoBatch"):
+                    listing = marker.with_name(name.removesuffix(".docInfoBatch") + ".modules.txt")
+                    analyzed = {line.strip() for line in listing.read_text().splitlines() if line.strip()}
+                    if not analyzed or not analyzed <= modules:
+                        raise ValueError(f"cached batch marker has missing database data: {name}")
+                    continue
+                elif name.startswith("core-"):
                     prefix = name.removeprefix("core-")
                     present = any(m == prefix or m.startswith(prefix + ".") for m in modules)
                 else:
@@ -193,10 +252,13 @@ def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) 
     if not lake:
         raise ValueError("lake was not found on PATH; install Lean before building documentation")
     root_manifest = json.loads((repo / "lake-manifest.json").read_text())
-    env = dict(os.environ, MATHLIB_NO_CACHE_ON_UPDATE="1")
+    env = dict(os.environ, MATHLIB_NO_CACHE_ON_UPDATE="1", **DOCGEN_ENV)
     if (env.get("DOCGEN_SRC") or "github") not in ("github", "file", "vscode"):
         raise ValueError("DOCGEN_SRC must be github, file, or vscode")
-    print("Building API documentation in a temporary Lake workspace...", flush=True)
+    release = docgen_release(repo)
+    docgen_rev = resolve_docgen(release)
+    print(f"Building API documentation with doc-gen4 {release} ({docgen_rev}) in a temporary Lake workspace...",
+          flush=True)
     with tempfile.TemporaryDirectory(prefix="matheconlib-docbuild-") as tmp:
         workspace = Path(tmp)
         config = (
@@ -205,7 +267,7 @@ def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) 
             f'[[require]]\nname = {json.dumps(root_manifest["name"])}\n'
             f'path = {json.dumps(str(repo))}\n\n'
             f'[[require]]\nname = "doc-gen4"\ngit = {json.dumps(DOCGEN_URL)}\n'
-            f'rev = {json.dumps(DOCGEN_REV)}\n'
+            f'rev = {json.dumps(docgen_rev)}\n'
         )
         # Lake can otherwise select a dependency's older transitive pin (notably
         # leansqlite's plausible). Direct requirements preserve the root graph.
@@ -220,11 +282,16 @@ def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) 
         shutil.copyfile(repo / "lean-toolchain", workspace / "lean-toolchain")
         subprocess.run([lake, "update", root_manifest["name"], "doc-gen4"],
                        cwd=workspace, env=env, check=True)
+        # Let Lake translate its dependency declarations before adding the
+        # target that discovers imported libraries through Lake's own graph.
+        subprocess.run([lake, "translate-config", "lean"], cwd=workspace, env=env, check=True)
+        with (workspace / "lakefile.lean").open("a") as config_file:
+            config_file.write("\n" + BATCH_DEPENDENCIES)
         docs_manifest = json.loads((workspace / "lake-manifest.json").read_text())
-        verify_dependencies(root_manifest, docs_manifest)
+        verify_dependencies(root_manifest, docs_manifest, docgen_rev)
         docgen_toolchain = repo / ".lake/packages/doc-gen4/lean-toolchain"
         if docgen_toolchain.read_text().strip() != (repo / "lean-toolchain").read_text().strip():
-            raise ValueError("The doc-gen4 backport does not match the project toolchain")
+            raise ValueError("The doc-gen4 release does not match the project toolchain")
         state = fingerprint(repo, docs_manifest)
         build_dir = workspace / ".lake/build"
         if cache and restore_cache(cache, build_dir, state):
@@ -234,6 +301,7 @@ def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) 
                 saved_tool = cache / "tool-builds" / name
                 if saved_tool.is_dir():
                     shutil.copytree(saved_tool, repo / ".lake/packages" / name / ".lake/build", dirs_exist_ok=True)
+        subprocess.run([lake, "build", "dependencyDocInfo"], cwd=workspace, env=env, check=True)
         subprocess.run([lake, "build", LIBRARY + ":docs"], cwd=workspace, env=env, check=True)
         database_info = validate_database(build_dir / "api-docs.db")
         expected_modules = {LIBRARY} | {
@@ -260,7 +328,9 @@ def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) 
         metadata = dict(database_info, revision=revision, toolchain=state["toolchain"],
                         checkout_dirty=dirty,
                         source_links=state["source_links"],
-                        docgen_revision=DOCGEN_REV,
+                        analysis_environment=state["analysis_environment"],
+                        docgen_release=release,
+                        docgen_revision=docgen_rev,
                         root_manifest_sha256=state["root_manifest_sha256"],
                         documentation_manifest_sha256=sha256(output / "lake-manifest.json"),
                         database_sha256=sha256(output / "api-docs.db"),
