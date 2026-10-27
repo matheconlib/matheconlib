@@ -6,15 +6,21 @@ Authors: Bo Cowgill
 module
 
 public import MathEconLib.Preferences.Representation.Finite
+public import MathEconLib.Preferences.Refinement
 public import Mathlib.Order.Preorder.Finite
 
 /-!
 # Feasible maximizers
 
 `maximizers` retains every greatest feasible alternative under an explicit `Preference`.
-Completeness is required only by the finite-existence theorem, through `CompletePreference`.
+Finite existence and fixed tie-breaking use `CompletePreference` to supply completeness.
 Value-induced preferences recover feasible `IsMaxOn` witnesses. No choice rule, matching market,
 or cardinal representation of arbitrary preferences is required.
+
+`mem_maximizers_tieBreak_iff` characterizes fixed-priority refinement on every feasible set.
+Refined attainment means that priority attains a greatest value among weak maximizers.
+Finite nonempty weak-maximizer sets suffice, as do well-founded strict priority improvements
+when weak maximizers already exist.
 -/
 
 @[expose] public section
@@ -66,6 +72,45 @@ theorem maximizers_nonempty_of_finite (pref : CompletePreference α)
   let := pref.isTotal
   obtain ⟨a, ha⟩ := hS.exists_maximal hne
   exact ⟨a, (Std.Total.directedOn S).maximal_iff_isGreatest.mp ha⟩
+
+/-- Refinement retains precisely the weak maximizers with highest priority among weak maximizers. -/
+theorem mem_maximizers_tieBreak_iff [LinearOrder β] (pref : CompletePreference α)
+    (priority : α ↪ β) {S : Set α} {a : α} :
+    a ∈ maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S ↔
+      a ∈ maximizers pref.toPreference S ∧
+        ∀ b ∈ maximizers pref.toPreference S, priority b ≤ priority a :=
+  Order.isGreatest_tieBreakOrder_iff pref.toPreference.toPreorder pref.isTotal priority
+
+/-- Refined maximizers exist exactly when priorities attain a greatest value on weak maximizers. -/
+theorem maximizers_tieBreak_nonempty_iff [LinearOrder β] (pref : CompletePreference α)
+    (priority : α ↪ β) (S : Set α) :
+    (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S).Nonempty ↔
+      ∃ p, IsGreatest (priority '' maximizers pref.toPreference S) p :=
+  Order.exists_isGreatest_tieBreakOrder_iff pref.toPreference.toPreorder pref.isTotal priority S
+
+/-- A finite nonempty weak-maximizer set suffices even when the feasible set is infinite. -/
+theorem maximizers_tieBreak_nonempty_of_finite [LinearOrder β] (pref : CompletePreference α)
+    (priority : α ↪ β) {S : Set α} (hfinite : (maximizers pref.toPreference S).Finite)
+    (hne : (maximizers pref.toPreference S).Nonempty) :
+    (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S).Nonempty :=
+  Order.exists_isGreatest_tieBreakOrder_of_finite
+    pref.toPreference.toPreorder pref.isTotal priority hfinite hne
+
+/-- Well-founded strict priority improvement preserves existing weak attainment. -/
+theorem maximizers_tieBreak_nonempty_of_wellFoundedGT [LinearOrder β] [WellFoundedGT β]
+    (pref : CompletePreference α) (priority : α ↪ β) {S : Set α}
+    (hne : (maximizers pref.toPreference S).Nonempty) :
+    (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S).Nonempty :=
+  Order.exists_isGreatest_tieBreakOrder_of_wellFoundedGT
+    pref.toPreference.toPreorder pref.isTotal priority hne
+
+/-- With well-founded strict priority improvement, refined and weak attainment are equivalent. -/
+theorem maximizers_tieBreak_nonempty_iff_of_wellFoundedGT [LinearOrder β] [WellFoundedGT β]
+    (pref : CompletePreference α) (priority : α ↪ β) (S : Set α) :
+    (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S).Nonempty ↔
+      (maximizers pref.toPreference S).Nonempty :=
+  Order.exists_isGreatest_tieBreakOrder_iff_of_wellFoundedGT
+    pref.toPreference.toPreorder pref.isTotal priority S
 
 end Choice
 

@@ -90,14 +90,8 @@ theorem refined_unattained :
 theorem selected_empty :
     ChoiceFunction.ofWeakBundleOrder pref (Function.Embedding.refl ℕ)
       bundle Set.univ = ∅ := by
-  ext x
-  simp only [ChoiceFunction.ofWeakBundleOrder, ChoiceFunction.mem_ofBundleOrder,
-    Set.mem_empty_iff_false, iff_false]
-  rintro ⟨b, _, _, hmax⟩
-  have hb : b ∈ maximizers (Preference.ofPreorder (pref.tieBreak
-      (Function.Embedding.refl ℕ)).toPreorder) Set.univ :=
-    ⟨Set.mem_univ _, fun c _ ↦ hmax c (Set.subset_univ _)⟩
-  simp only [refined_unattained, Set.mem_empty_iff_false] at hb
+  apply ChoiceFunction.ofBundleOrder_eq_empty_of_maximizers_eq_empty
+  simpa only [Set.subset_univ, Set.ofPred_true] using refined_unattained
 
 /-- Totalization is not a weak optimum: the empty bundle is not represented. -/
 theorem empty_not_optimal : ∅ ∉ optimalBundles pref.toPreference bundle Set.univ := by
@@ -186,18 +180,19 @@ theorem refined_unattained :
     change n + 1 + 1 ≤ n + 1 at hpriority
     omega
 
+/-- The priority image fails to attain despite the existence of weak optima. -/
+theorem priority_unattained :
+    ¬∃ p, IsGreatest (increasingPriority '' maximizers pref.toPreference Set.univ) p := by
+  exact fun h ↦
+    let ⟨b, hb⟩ := (maximizers_tieBreak_nonempty_iff pref increasingPriority Set.univ).mpr h
+    Set.notMem_empty b (refined_unattained ▸ hb)
+
 /-- The selector returns the empty set even though the represented outside option is suboptimal. -/
 theorem selected_empty :
     ChoiceFunction.ofWeakBundleOrder pref increasingPriority
       ChoiceFunction.optionBundle Set.univ = ∅ := by
-  ext x
-  simp only [ChoiceFunction.ofWeakBundleOrder, ChoiceFunction.mem_ofBundleOrder,
-    Set.mem_empty_iff_false, iff_false]
-  rintro ⟨b, _, _, hmax⟩
-  have hb : b ∈ maximizers
-      (Preference.ofPreorder (pref.tieBreak increasingPriority).toPreorder) Set.univ :=
-    ⟨Set.mem_univ _, fun c _ ↦ hmax c (Set.subset_univ _)⟩
-  simp only [refined_unattained, Set.mem_empty_iff_false] at hb
+  apply ChoiceFunction.ofBundleOrder_eq_empty_of_maximizers_eq_empty
+  simpa only [Set.subset_univ, Set.ofPred_true] using refined_unattained
 
 theorem selected_not_optimal :
     ChoiceFunction.ofWeakBundleOrder pref increasingPriority
@@ -235,9 +230,9 @@ theorem reversed_selected :
 theorem reversed_selected_optimal :
     ChoiceFunction.ofWeakBundleOrder pref decreasingPriority
       ChoiceFunction.optionBundle Set.univ ∈
-        optimalBundles pref.toPreference ChoiceFunction.optionBundle Set.univ := by
-  rw [reversed_selected]
-  exact singleton_mem 0
+        optimalBundles pref.toPreference ChoiceFunction.optionBundle Set.univ :=
+  ChoiceFunction.ofWeakBundleOrder_mem_optimalBundles_of_wellFoundedGT
+    pref decreasingPriority ChoiceFunction.optionBundle optimal_nonempty
 
 end OutsideOptionNonattainment
 
@@ -275,29 +270,79 @@ theorem optimal_empty :
 theorem refined_unattained :
     maximizers (Preference.ofPreorder (pref.tieBreak decreasingPriority).toPreorder)
       Set.univ = ∅ := by
-  ext b
-  simp only [Set.mem_empty_iff_false, iff_false]
-  intro hb
-  have hweak : b ∈ maximizers pref.toPreference Set.univ :=
-    ⟨Set.mem_univ _, fun c hc ↦
-      pref.le_of_tieBreak_le decreasingPriority (hb.2 hc)⟩
-  simp only [weak_unattained, Set.mem_empty_iff_false] at hweak
+  apply Set.eq_empty_iff_forall_notMem.mpr
+  exact fun b hb ↦
+    let ⟨c, hc⟩ := (maximizers_tieBreak_nonempty_iff_of_wellFoundedGT
+      pref decreasingPriority Set.univ).mp ⟨b, hb⟩
+    Set.notMem_empty c (weak_unattained ▸ hc)
 
 theorem selected_empty :
     ChoiceFunction.ofWeakBundleOrder pref decreasingPriority
       ChoiceFunction.optionBundle Set.univ = ∅ := by
-  ext x
-  simp only [ChoiceFunction.ofWeakBundleOrder, ChoiceFunction.mem_ofBundleOrder,
-    Set.mem_empty_iff_false, iff_false]
-  rintro ⟨b, _, _, hmax⟩
-  have hb : b ∈ maximizers
-      (Preference.ofPreorder (pref.tieBreak decreasingPriority).toPreorder) Set.univ :=
-    ⟨Set.mem_univ _, fun c _ ↦ hmax c (Set.subset_univ _)⟩
-  simp only [refined_unattained, Set.mem_empty_iff_false] at hb
+  apply ChoiceFunction.ofBundleOrder_eq_empty_of_maximizers_eq_empty
+  simpa only [Set.subset_univ, Set.ofPred_true] using refined_unattained
 
 end MissingWeakOptimum
 
 open MathEconLibExamples.Choice.WeakPreferences
+
+namespace OutsideOptionTies
+
+/-- All indices, including the outside option, are weakly optimal under the same preference. -/
+theorem weak_max (o : Option (Fin 2)) :
+    o ∈ maximizers OutsideTie.pref.toPreference
+      {b | ChoiceFunction.optionBundle b ⊆ (Set.univ : Set (Fin 2))} :=
+  ⟨Set.subset_univ _, fun _ _ ↦ (show (0 : ℤ) ≤ 0 from le_rfl)⟩
+
+/-- The outside option wins only with the priority that ranks it highest. -/
+theorem outside_refined :
+    none ∈ maximizers (Preference.ofPreorder
+      (OutsideTie.pref.tieBreak OutsideTie.outsidePriority).toPreorder)
+      {b | ChoiceFunction.optionBundle b ⊆ (Set.univ : Set (Fin 2))} :=
+  (mem_maximizers_tieBreak_iff OutsideTie.pref OutsideTie.outsidePriority).mpr
+    ⟨weak_max none, fun o _ ↦
+      (show OutsideTie.outsidePriority o ≤ (2 : Fin 3) from Fin.le_last _)⟩
+
+theorem contract_refined :
+    some (1 : Fin 2) ∈ maximizers (Preference.ofPreorder
+      (OutsideTie.pref.tieBreak Contracts.priority).toPreorder)
+      {b | ChoiceFunction.optionBundle b ⊆ (Set.univ : Set (Fin 2))} :=
+  (mem_maximizers_tieBreak_iff OutsideTie.pref Contracts.priority).mpr
+    ⟨weak_max (some 1), fun o _ ↦
+      (show Contracts.priority o ≤ (2 : Fin 3) from Fin.le_last _)⟩
+
+/-- Weak optimality of the outside option does not imply it wins the refined participation
+decision. -/
+theorem outside_not_refined :
+    none ∉ maximizers (Preference.ofPreorder
+      (OutsideTie.pref.tieBreak Contracts.priority).toPreorder)
+      {b | ChoiceFunction.optionBundle b ⊆ (Set.univ : Set (Fin 2))} := by
+  exact fun h ↦
+    (by decide : ¬ Contracts.priority (some 1) ≤ Contracts.priority none)
+      (((mem_maximizers_tieBreak_iff OutsideTie.pref Contracts.priority).mp h).2
+        (some 1) (weak_max (some 1)))
+
+theorem selected_outside :
+    ChoiceFunction.ofWeakBundleOrder OutsideTie.pref OutsideTie.outsidePriority
+      ChoiceFunction.optionBundle Set.univ = ∅ :=
+  ChoiceFunction.ofWeakBundleOrder_eq_of_mem_maximizers
+    OutsideTie.pref OutsideTie.outsidePriority ChoiceFunction.optionBundle outside_refined
+
+theorem selected_contract :
+    ChoiceFunction.ofWeakBundleOrder OutsideTie.pref Contracts.priority
+      ChoiceFunction.optionBundle Set.univ = {(1 : Fin 2)} :=
+  ChoiceFunction.ofWeakBundleOrder_eq_of_mem_maximizers
+    OutsideTie.pref Contracts.priority ChoiceFunction.optionBundle contract_refined
+
+theorem selected_contract_optimal :
+    ChoiceFunction.ofWeakBundleOrder OutsideTie.pref Contracts.priority
+      ChoiceFunction.optionBundle Set.univ ∈
+        optimalBundles OutsideTie.pref.toPreference ChoiceFunction.optionBundle Set.univ :=
+  ChoiceFunction.ofWeakBundleOrder_mem_optimalBundles_of_finite_maximizers
+    OutsideTie.pref Contracts.priority ChoiceFunction.optionBundle (Set.toFinite _)
+      ⟨∅, OutsideTie.bundle_mem none⟩
+
+end OutsideOptionTies
 
 example : {(0 : Fin 2)} ∈
     optimalBundles Contracts.pref.toPreference ChoiceFunction.optionBundle Set.univ :=
@@ -349,6 +394,7 @@ example : optimalBundles Bundles.pref.toPreference Bundles.bundle ∅ = ∅ := B
 #print axioms OutsideOptionNonattainment.optimal_nonempty
 #print axioms OutsideOptionNonattainment.empty_not_optimal
 #print axioms OutsideOptionNonattainment.refined_unattained
+#print axioms OutsideOptionNonattainment.priority_unattained
 #print axioms OutsideOptionNonattainment.selected_empty
 #print axioms OutsideOptionNonattainment.selected_not_optimal
 #print axioms OutsideOptionNonattainment.priority_wellFounded
@@ -358,5 +404,11 @@ example : optimalBundles Bundles.pref.toPreference Bundles.bundle ∅ = ∅ := B
 #print axioms MissingWeakOptimum.optimal_empty
 #print axioms MissingWeakOptimum.refined_unattained
 #print axioms MissingWeakOptimum.selected_empty
+#print axioms OutsideOptionTies.outside_refined
+#print axioms OutsideOptionTies.contract_refined
+#print axioms OutsideOptionTies.outside_not_refined
+#print axioms OutsideOptionTies.selected_outside
+#print axioms OutsideOptionTies.selected_contract
+#print axioms OutsideOptionTies.selected_contract_optimal
 
 end MathEconLibTest.Choice.WeakPreferences
