@@ -1,0 +1,237 @@
+\chapter{Auctions, incentive compatibility and revenue equivalence}
+
+This chapter models an $n$-bidder auction with random private types and studies a single bidder's interim problem against opponents who all play a common strategy. Bayesian incentive compatibility reduces to a type-deviation condition on this bidder problem, which yields the envelope formula, the Myerson payment identity and payment equivalence. Under symmetric independent private values this gives revenue equivalence for auctions with the same interim allocation; with the strict-highest-bid rule it further gives the expected second-highest type as revenue and strict monotonicity of equilibrium bids.
+
+\section{Auctions and interim quantities}
+
+\begin{definition}\label{def:MathEconLib.Auction}\lean{MathEconLib.Auction}\leanok
+\uses{def:MathEconLib.Mechanism}
+An auction with $n$ bidders indexed by $\mathrm{Fin}\,n$ on a probability space $(\Omega,\mathbb{P})$ consists of
+\begin{itemize}
+\item rules, a mechanism mapping real bid profiles $b\in\mathbb{R}^n$ to an allocation vector $x(b)\in\mathbb{R}^n$ and signed transfers $t_i(b)$ (a bidder's payment is $-t_i$), with each coordinate $b\mapsto x_i(b)$ measurable;
+\item stated type bounds $\theta^{\min}_i,\theta^{\max}_i\in\mathbb{R}$;
+\item measurable random values $\theta_i:\Omega\to\mathbb{R}$.
+\end{itemize}
+Neither $\theta_i\in[\theta^{\min}_i,\theta^{\max}_i]$ nor $x_i\in[0,1]$ is part of the structure; these are separate hypotheses.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.q_strat}\lean{MathEconLib.Auction.q_strat, MathEconLib.Auction.p_strat, MathEconLib.Auction.q, MathEconLib.Auction.p, MathEconLib.Auction.U}\leanok
+\uses{def:MathEconLib.Auction}
+Let $\sigma:\mathbb{R}\to\mathbb{R}$ be a strategy used by all opponents. Bidder $i$'s interim allocation and payment at bid $b$ are
+\[
+q^\sigma_i(b)=\mathbb{E}\bigl[x_i(b,\sigma(\theta_{-i}))\bigr],\qquad p^\sigma_i(b)=\mathbb{E}\bigl[\mathrm{payment}_i(b,\sigma(\theta_{-i}))\bigr],
+\]
+as Bochner integrals (equal to $0$ when the integrand is not integrable; no measurability of $\sigma$ is assumed). The truthful quantities are $q_i=q^{\mathrm{id}}_i$, $p_i=p^{\mathrm{id}}_i$ and the interim utility $U_i(s)=s\,q_i(s)-p_i(s)$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.BIC}\lean{MathEconLib.Auction.BIC}\leanok
+\uses{def:MathEconLib.Auction.q_strat}
+An auction is Bayesian incentive compatible (BIC) if for every bidder $i$ and all $s,s'\in[\theta^{\min}_i,\theta^{\max}_i]$,
+\[
+s\,q_i(s')-p_i(s')\le U_i(s),
+\]
+that is, truthful reporting maximizes interim utility among reports in the type interval when opponents report truthfully.
+\end{definition}
+
+\section{The bidder problem}
+
+\begin{definition}\label{def:MathEconLib.BidderProblem}\lean{MathEconLib.BidderProblem, MathEconLib.BidderProblem.payoff, MathEconLib.BidderProblem.q, MathEconLib.BidderProblem.U, MathEconLib.BidderProblem.toSingleParameterProblem}\leanok
+\uses{def:MathEconLib.SingleParameterProblem}
+A bidder problem consists of type bounds $\underline v,\overline v\in\mathbb{R}$, a winning probability $G:\mathbb{R}\to[0,1]$ of the bid, a cost function $c:\mathbb{R}\to\mathbb{R}$ of the bid, and a strategy $\beta:\mathbb{R}\to\mathbb{R}$ from types to bids. The payoff is $\pi(v,b)=v\,G(b)-c(b)$, the induced allocation is $q=G\circ\beta$, and the equilibrium utility is $U(v)=\pi(v,\beta(v))$. A bidder problem embeds into the general single-parameter model with real actions without changing $\pi$, $q$ or $U$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.BidderProblem.IsRegular}\lean{MathEconLib.BidderProblem.IsRegular}\leanok
+\uses{def:MathEconLib.BidderProblem}
+A bidder problem is regular if $G$ is monotone on $\mathbb{R}$, $\beta$ is monotone and nonnegative on $[\underline v,\overline v]$, and $c$ is continuous on $\mathbb{R}$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.BidderProblem.HasEnvelopeIC}\lean{MathEconLib.BidderProblem.HasEnvelopeIC}\leanok
+\uses{def:MathEconLib.BidderProblem}
+A bidder problem satisfies envelope IC (level $0$) if $(s-s')\,q(s')\le U(s)-U(s')$ for all $s,s'\in[\underline v,\overline v]$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.BidderProblem.HasTypeDeviationIC}\lean{MathEconLib.BidderProblem.HasTypeDeviationIC, MathEconLib.BidderProblem.instHasEnvelopeICOfHasTypeDeviationIC}\leanok
+\uses{def:MathEconLib.BidderProblem, def:MathEconLib.BidderProblem.HasEnvelopeIC}
+A bidder problem satisfies type-deviation IC (level $1$) if $\pi(v,\beta(v'))\le\pi(v,\beta(v))$ for all $v,v'\in[\underline v,\overline v]$: no type gains by mimicking another type's equilibrium bid. Type-deviation IC implies envelope IC (an instance), by adding the deviation inequalities for $(s,s')$ and $(s',s)$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.BidderProblem.HasUniversalIC}\lean{MathEconLib.BidderProblem.HasUniversalIC, MathEconLib.BidderProblem.instHasTypeDeviationICOfHasUniversalIC}\leanok
+\uses{def:MathEconLib.BidderProblem, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Let $S\subseteq\mathbb{R}$ be a feasible bid set. A bidder problem satisfies universal IC (level $2$) over $S$ if every type $v\in[\underline v,\overline v]$ has $\beta(v)\in S$ and $\pi(v,b)\le\pi(v,\beta(v))$ for all $b\in S$. Universal IC over any $S$ implies type-deviation IC (an instance), since every $\beta(v')$ lies in $S$.
+\end{definition}
+
+\begin{theorem}[Envelope theorem]\label{thm:MathEconLib.BidderProblem.integral_rep}\lean{MathEconLib.BidderProblem.integral_rep}\leanok
+\uses{def:MathEconLib.BidderProblem.HasEnvelopeIC, def:MathEconLib.BidderProblem}
+If a bidder problem satisfies envelope IC, then for every $s\in[\underline v,\overline v]$,
+\[
+U(s)=U(\underline v)+\int_{\underline v}^{s}q(\psi)\,d\psi.
+\]
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.SingleParameterProblem.integral_rep}
+Transfer the statement along the embedding into the single-parameter model, where $U$ and $q$ are unchanged, and apply the single-parameter envelope theorem.
+\end{proof}
+
+\begin{theorem}[Myerson payment identity]\label{thm:MathEconLib.BidderProblem.payment_identity}\lean{MathEconLib.BidderProblem.payment_identity}\leanok
+\uses{def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+If a bidder problem satisfies type-deviation IC, then for every $s\in[\underline v,\overline v]$,
+\[
+c(\beta(s))=s\,q(s)-U(\underline v)-\int_{\underline v}^{s}q(\psi)\,d\psi.
+\]
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.SingleParameterProblem.payment_identity}
+Type-deviation IC gives envelope IC; the single-parameter payment identity then applies to the embedded problem, whose payment at $\beta(s)$ is $c(\beta(s))$.
+\end{proof}
+
+\begin{theorem}[Payment uniqueness]\label{thm:MathEconLib.BidderProblem.payment_unique}\lean{MathEconLib.BidderProblem.payment_unique}\leanok
+\uses{def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Let $B$ and $B_2$ be bidder problems both satisfying type-deviation IC, with $\underline v=\underline v_2$, $\overline v=\overline v_2$, equal induced allocations $q=q_2$ as functions on $\mathbb{R}$, and $U(\underline v)=U_2(\underline v_2)$. Then $c(\beta(s))=c_2(\beta_2(s))$ for every $s\in[\underline v,\overline v]$.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.SingleParameterProblem.payment_identity}
+Both costs are given by the payment identity, whose right-hand side depends only on the type bounds, $q$ and $U(\underline v)$.
+\end{proof}
+
+\begin{theorem}[Myerson sufficiency]\label{thm:MathEconLib.BidderProblem.typeDeviationIC_of_monotone_q}\lean{MathEconLib.BidderProblem.typeDeviationIC_of_monotone_q}\leanok
+\uses{def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+If $q$ is monotone on $[\underline v,\overline v]$ and $c(\beta(s))=s\,q(s)-U(\underline v)-\int_{\underline v}^{s}q(\psi)\,d\psi$ for every $s\in[\underline v,\overline v]$, then the bidder problem satisfies type-deviation IC.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.SingleParameterProblem.typeDeviationIC_of_monotone_q}
+Apply single-parameter Myerson sufficiency to the embedded problem and transfer type-deviation IC back.
+\end{proof}
+
+\section{From auctions to bidder problems}
+
+\begin{definition}\label{def:MathEconLib.Auction.toBidderProblem}\lean{MathEconLib.Auction.toBidderProblem}\leanok
+\uses{def:MathEconLib.Auction.q_strat, def:MathEconLib.BidderProblem, def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}
+Given an auction whose allocation coordinates all lie in $[0,1]$, a common opponent strategy $\sigma$ and a bidder $i$, the bidder problem of $i$ has type bounds $\theta^{\min}_i,\theta^{\max}_i$, winning probability $b\mapsto q^\sigma_i(b)$ (which lies in $[0,1]$ by the allocation bound), cost $b\mapsto p^\sigma_i(b)$, and strategy $\sigma$. For $\sigma=\mathrm{id}$ its $q$ and $U$ coincide with the auction's $q_i$ and $U_i$.
+\end{definition}
+
+\begin{lemma}\label{def:MathEconLib.Auction.hasTypeDeviationIC_of_bic}\lean{MathEconLib.Auction.hasTypeDeviationIC_of_bic}\leanok
+\uses{def:MathEconLib.Auction.BIC, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+If an auction has allocation coordinates in $[0,1]$ and is BIC, then for each bidder $i$ the truthful bidder problem (opponents' strategy $\sigma=\mathrm{id}$) satisfies type-deviation IC. This is registered as an instance.
+\end{lemma}
+\begin{proof}\leanok
+For $\sigma=\mathrm{id}$ the payoff $\pi(v,v')$ unfolds to $v\,q_i(v')-p_i(v')$, so the type-deviation inequality is exactly the BIC inequality.
+\end{proof}
+
+\begin{theorem}[Payment formula]\label{thm:MathEconLib.Auction.payment_formula}\lean{MathEconLib.Auction.payment_formula}\leanok
+\uses{def:MathEconLib.Auction.BIC, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}
+If an auction has allocation coordinates in $[0,1]$ and is BIC, then for every bidder $i$ and every $s\in[\theta^{\min}_i,\theta^{\max}_i]$,
+\[
+p_i(s)=s\,q_i(s)-U_i(\theta^{\min}_i)-\int_{\theta^{\min}_i}^{s}q_i(\psi)\,d\psi.
+\]
+\end{theorem}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Auction.hasTypeDeviationIC_of_bic, thm:MathEconLib.BidderProblem.payment_identity}
+Apply the payment identity to the truthful bidder problem of $i$, which is type-deviation IC by BIC.
+\end{proof}
+
+\begin{theorem}[General payment equivalence]\label{thm:MathEconLib.Auction.payment_equivalence}\lean{MathEconLib.Auction.payment_equivalence}\leanok
+\uses{def:MathEconLib.Auction.BIC, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}
+Let $A$ and $A_2$ be $n$-bidder auctions, possibly on different probability spaces, both with allocation coordinates in $[0,1]$ and both BIC. Suppose bidder $i$ of $A$ and bidder $j$ of $A_2$ have the same type bounds, the same interim allocation $q_i=q^{(2)}_j$ as functions, and the same lowest-type utility $U_i(\theta^{\min}_i)=U^{(2)}_j(\theta^{(2),\min}_j)$. Then $p_i(s)=p^{(2)}_j(s)$ for every $s\in[\theta^{\min}_i,\theta^{\max}_i]$. No efficiency, symmetry or distributional assumption is used.
+\end{theorem}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Auction.hasTypeDeviationIC_of_bic, thm:MathEconLib.BidderProblem.payment_unique}
+Apply payment uniqueness to the truthful bidder problems of $i$ in $A$ and $j$ in $A_2$.
+\end{proof}
+
+\section{Symmetric independent private values}
+
+\begin{definition}\label{def:MathEconLib.Auction.IsSymmetricIPV}\lean{MathEconLib.Auction.IsSymmetricIPV, MathEconLib.Auction.HasIndependentTypes, MathEconLib.Auction.HasIdenticalTypes, MathEconLib.Auction.HasBoundedTypes, MathEconLib.Auction.HasDensity, MathEconLib.Auction.HasAtomlessTypes}\leanok
+\uses{def:MathEconLib.Auction}
+For an auction with $n\ge1$ bidders, the environment typeclasses are:
+\begin{itemize}
+\item independent types: $(\theta_i)_i$ are mutually independent;
+\item identical types: all $\theta_i$ are identically distributed, with $\theta^{\min}_i=\theta^{\min}_0$ and $\theta^{\max}_i=\theta^{\max}_0$;
+\item bounded types: $\theta_i(\omega)\in[\theta^{\min}_i,\theta^{\max}_i]$ for every $\omega$;
+\item density: each $\theta_i$ has a density with respect to Lebesgue measure;
+\item atomless types: the law of $\theta_0$ has no atoms.
+\end{itemize}
+The class IsSymmetricIPV bundles all five.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.commonCDF}\lean{MathEconLib.Auction.commonCDF, MathEconLib.Auction.lowestType, MathEconLib.Auction.highestType}\leanok
+\uses{def:MathEconLib.Auction.IsSymmetricIPV}
+Under identical types, the common type bounds are $\underline\theta=\theta^{\min}_0$ and $\overline\theta=\theta^{\max}_0$, and the common CDF is $F(s)=\mathbb{P}(\theta_0\le s)$, the CDF of the law of $\theta_0$. With bounded types $F(\overline\theta)=1$, and with bounded atomless types also $F(\underline\theta)=0$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.HasZeroLowestTypeUtility}\lean{MathEconLib.Auction.HasZeroLowestTypeUtility}\leanok
+\uses{def:MathEconLib.Auction.commonCDF, def:MathEconLib.Auction.q_strat}
+Under identical types, the auction has zero lowest-type utility if $U_i(\underline\theta)=0$ for every bidder $i$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Auction.expectedRevenue}\lean{MathEconLib.Auction.expectedRevenue}\leanok
+\uses{def:MathEconLib.Auction.q_strat}
+The expected total revenue of an auction is $\mathbb{E}\bigl[\sum_i p_i(\theta_i)\bigr]$, a Bochner integral (equal to $0$ if not integrable).
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.q_eq_pow}\lean{MathEconLib.Auction.q_eq_pow}\leanok
+\uses{def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.Auction.commonCDF, def:MathEconLib.Auction.q_strat, def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation}
+Assume types are independent, identically distributed and atomless, and the rules use strict-highest-bid allocation ($x_i(b)=1$ if $b_j<b_i$ for all $j\ne i$, and $0$ otherwise). Then $q_i(s)=F(s)^{n-1}$ for every bidder $i$ and every $s\in\mathbb{R}$.
+\end{lemma}
+\begin{proof}\leanok
+The interim allocation is the probability that all $n-1$ opponents have type strictly below $s$; by independence this is a product of $n-1$ factors, which are equal because the types are identically distributed, and atomlessness turns each $\mathbb{P}(\theta_j<s)$ into $F(s)$.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.q_strat_eq_cdf_pow}\lean{MathEconLib.Auction.q_strat_eq_cdf_pow, MathEconLib.bidThreshold}\leanok
+\uses{def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.Auction.commonCDF, def:MathEconLib.Auction.q_strat, def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation}
+Assume types are independent, identically distributed, bounded and atomless, the rules use strict-highest-bid allocation, and $\sigma$ is measurable and monotone on $[\underline\theta,\overline\theta]$. Then for every bidder $i$ and bid $b$, $q^\sigma_i(b)=F(v_0)^{n-1}$, where
+\[
+v_0=\sup\bigl(\{\underline\theta\}\cup\{v\in[\underline\theta,\overline\theta]:\sigma(v)<b\}\bigr)
+\]
+is the bid threshold.
+\end{lemma}
+\begin{proof}\leanok
+For a type in $[\underline\theta,\overline\theta]$, monotonicity gives $\{\theta_j<v_0\}\subseteq\{\sigma(\theta_j)<b\}\subseteq\{\theta_j\le v_0\}$; since types are bounded, identically distributed and atomless, both outer events have probability $F(v_0)$. Independence then gives the product $F(v_0)^{n-1}$.
+\end{proof}
+
+\section{Revenue equivalence}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.payment_formula_strictHighestBid}\lean{MathEconLib.Auction.payment_formula_strictHighestBid}\leanok
+\uses{def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.Auction.BIC, def:MathEconLib.Auction.HasZeroLowestTypeUtility, def:MathEconLib.Auction.commonCDF, def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation}
+Let $n\ge2$ and let the auction be symmetric IPV, BIC, with zero lowest-type utility and strict-highest-bid allocation. Then for every bidder $i$ and $s\in[\theta^{\min}_i,\theta^{\max}_i]$,
+\[
+p_i(s)=s\,F(s)^{n-1}-\int_{\underline\theta}^{s}F(\psi)^{n-1}\,d\psi.
+\]
+\end{lemma}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.Auction.payment_formula, thm:MathEconLib.Auction.q_eq_pow, thm:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation.isUnitIntervalAllocation}
+Strict-highest-bid allocation has unit-interval allocations, so the payment formula applies; substitute $q_i=F^{n-1}$, $U_i(\underline\theta)=0$ and $\theta^{\min}_i=\underline\theta$.
+\end{proof}
+
+\begin{theorem}[Revenue equivalence]\label{thm:MathEconLib.Auction.revenue_equivalence}\lean{MathEconLib.Auction.revenue_equivalence}\leanok
+\uses{def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.Auction.BIC, def:MathEconLib.Auction.HasZeroLowestTypeUtility, def:MathEconLib.Auction.expectedRevenue, def:MathEconLib.Auction.commonCDF, def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}
+Let $n\ge2$ and let $A$, $A_2$ be symmetric IPV auctions (possibly on different probability spaces), both with allocation coordinates in $[0,1]$, both BIC and both with zero lowest-type utility. Suppose $q_i=q^{(2)}_i$ for every $i$, the common type bounds agree ($\underline\theta=\underline\theta^{(2)}$ and $\overline\theta=\overline\theta^{(2)}$), $\theta_i$ and $\theta^{(2)}_i$ are identically distributed for every $i$, each $p^{(2)}_i$ is measurable, and $p_i(\theta_i)$ and $p^{(2)}_i(\theta^{(2)}_i)$ are integrable for every $i$. Then $A$ and $A_2$ have equal expected total revenue. No efficiency assumption is used.
+\end{theorem}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.Auction.hasTypeDeviationIC_of_bic, thm:MathEconLib.BidderProblem.payment_unique}
+Split both expectations into sums over bidders. Payment uniqueness for the truthful bidder problems gives $p_i(\theta_i(\omega))=p^{(2)}_i(\theta_i(\omega))$ pointwise (types are bounded), and equality in distribution of $\theta_i$ and $\theta^{(2)}_i$ with measurability of $p^{(2)}_i$ moves the integral to $A_2$'s space.
+\end{proof}
+
+\begin{theorem}[Revenue as second-highest type]\label{thm:MathEconLib.Auction.total_revenue}\lean{MathEconLib.Auction.total_revenue, MathEconLib.Auction.S₂, MathEconLib.Auction.toOrderStatisticsSetup}\leanok
+\uses{def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.Auction.BIC, def:MathEconLib.Auction.HasZeroLowestTypeUtility, def:MathEconLib.Auction.expectedRevenue, def:MathEconLib.OrderStatisticsSetup, def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation}
+Let $n\ge2$ and let the auction be symmetric IPV, BIC, with zero lowest-type utility and strict-highest-bid allocation. Then its expected total revenue equals $\mathbb{E}[S_2]$, where $S_2(\omega)$ is the second-highest of $\theta_0(\omega),\dots,\theta_{n-1}(\omega)$ (the order statistic with zero-based index $n-2$).
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.Auction.payment_formula_strictHighestBid, def:MathEconLib.Auction.commonCDF, thm:MathEconLib.OrderStatisticsSetup.expected_second_highest}
+Insert the closed-form payment $s\,F(s)^{n-1}-\int_{\underline\theta}^{s}F^{n-1}$ into the revenue, use identical distributions to reduce the sum to $n$ times the expectation for bidder $0$, package the types as an order-statistics setup with $F(\underline\theta)=0$ and $F(\overline\theta)=1$, and apply the formula for the expected second-highest value.
+\end{proof}
+
+\section{Strict monotonicity of equilibrium bids}
+
+\begin{definition}\label{def:MathEconLib.Auction.HasPosDensity}\lean{MathEconLib.Auction.HasPosDensity}\leanok
+\uses{def:MathEconLib.Auction.commonCDF}
+Under identical types, positive-density data for the auction is a function $f:\mathbb{R}\to\mathbb{R}$ with $F(v)=\int_{\underline\theta}^{v}f(t)\,dt$ for all $v\in[\underline\theta,\overline\theta]$, $f$ continuous on $[\underline\theta,\overline\theta]$, and $f(v)>0$ for $v\in(\underline\theta,\overline\theta)$.
+\end{definition}
+
+\begin{theorem}[Strict monotonicity]\label{thm:MathEconLib.Auction.strictMonotonicity}\lean{MathEconLib.Auction.strictMonotonicity}\leanok
+\uses{def:MathEconLib.Auction.HasPosDensity, def:MathEconLib.BidderProblem.IsRegular, def:MathEconLib.BidderProblem.HasUniversalIC, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.Auction.commonCDF, def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation, def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}
+Let $n\ge2$ and assume types are independent, identically distributed, bounded and atomless with positive-density data, $0\le\underline\theta$, allocation coordinates in $[0,1]$ and strict-highest-bid allocation. Let $\sigma$ be measurable and let $i$ be a bidder such that the bidder problem of $i$ against opponents playing $\sigma$ is regular and satisfies universal IC over the nonnegative bids $[0,\infty)$. Then $\sigma$ is strictly increasing on $[\underline\theta,\overline\theta]$.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.Auction.q_strat_eq_cdf_pow}
+Regularity makes $\sigma$ monotone, so a failure of strict monotonicity gives $a<b$ with $\sigma$ constant on $[a,b]$. The winning probability is then $F(v_0)^{n-1}$, which jumps at this flat bid because $F^{n-1}$ is strictly increasing on the interior; a type inside $(a,b)$ gains by bidding slightly higher (the cost is continuous), contradicting universal IC.
+\end{proof}
