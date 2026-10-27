@@ -102,6 +102,7 @@ import MathEconLib.Mechanism.Core.SolutionConcepts
 import MathEconLib.Mechanism.Core.Strategic
 import MathEconLib.Preferences.Basic
 import MathEconLib.Preferences.Complete
+import MathEconLib.Preferences.Representation.Basic
 import MathEconLib.Probability.FinDist.Basic
 import MathEconLib.Probability.FinDist.ConditionalOn
 import MathEconLib.Probability.FinDist.Expect
