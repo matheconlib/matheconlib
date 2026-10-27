@@ -29,7 +29,7 @@ theorem unattained : maximizers (inferInstance : Preorder ℕ) Set.univ = ∅ :=
   omega
 
 /-- A preorder that only compares equal alternatives is incomplete on this two-element type. -/
-def incomparable : Preorder (Fin 2) where
+@[instance_reducible] def incomparable : Preorder (Fin 2) where
   le := Eq
   lt := fun a b ↦ a = b ∧ ¬b = a
   le_refl := Eq.refl
@@ -52,7 +52,7 @@ def bundle : ℕ ↪ Set ℕ where
   inj' := Set.singleton_injective
 
 /-- All represented bundles are indifferent. -/
-def pref : Preorder ℕ := Preorder.lift fun _ : ℕ ↦ (0 : ℕ)
+@[instance_reducible] def pref : Preorder ℕ := Preorder.lift fun _ : ℕ ↦ (0 : ℕ)
 
 theorem complete : Std.Total pref.le :=
   ⟨fun _ _ ↦ Or.inl (show (0 : ℕ) ≤ 0 from le_rfl)⟩

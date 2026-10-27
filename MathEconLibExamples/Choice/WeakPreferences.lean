@@ -43,7 +43,7 @@ def utility : Option (Fin 2) → ℤ
   fin_cases i <;> norm_num [utility, value, price]
 
 /-- Utility induces a complete preorder that keeps the two contracts distinct. -/
-def pref : Preorder (Option (Fin 2)) := Preorder.lift utility
+@[instance_reducible] def pref : Preorder (Option (Fin 2)) := Preorder.lift utility
 
 theorem complete : Std.Total pref.le := ⟨fun a b ↦ le_total (utility a) (utility b)⟩
 
@@ -92,7 +92,7 @@ end Contracts
 namespace OutsideTie
 
 /-- Both contracts and nonparticipation yield zero utility. -/
-def pref : Preorder (Option (Fin 2)) := Preorder.lift fun _ ↦ (0 : ℤ)
+@[instance_reducible] def pref : Preorder (Option (Fin 2)) := Preorder.lift fun _ ↦ (0 : ℤ)
 
 theorem complete : Std.Total pref.le := ⟨fun _ _ ↦ Or.inl (show (0 : ℤ) ≤ 0 from le_rfl)⟩
 
@@ -150,7 +150,7 @@ def utility (i : Fin 2) : ℤ := (if i = 0 then 7 else 9) - (if i = 0 then 2 els
 @[simp] theorem utility_eq (i : Fin 2) : utility i = 5 := by
   fin_cases i <;> norm_num [utility]
 
-def pref : Preorder (Fin 2) := Preorder.lift utility
+@[instance_reducible] def pref : Preorder (Fin 2) := Preorder.lift utility
 
 theorem complete : Std.Total pref.le := ⟨fun a b ↦ le_total (utility a) (utility b)⟩
 
@@ -185,7 +185,8 @@ theorem empty_menu : optimalBundles pref bundle ∅ = ∅ := by
   intro hA
   obtain ⟨i, rfl, h, _⟩ := (mem_optimalBundles_iff pref bundle).mp hA
   have hnonempty : (bundle i).Nonempty := by
-    fin_cases i <;> simp [bundle]
+    change (if i = 0 then {0, 1} else {2} : Set (Fin 3)).Nonempty
+    split_ifs <;> simp
   exact hnonempty.not_subset_empty h
 
 end Bundles

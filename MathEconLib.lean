@@ -34,6 +34,7 @@ import MathEconLib.Choice.Matching.Completion
 import MathEconLib.Choice.Matching.Preferences
 import MathEconLib.Choice.Matching.Relationships
 import MathEconLib.Choice.Matching.WeakSubstitutability
+import MathEconLib.Choice.Maximizers
 import MathEconLib.Choice.SubstituteHull
 import MathEconLib.Choice.WeakPreferences
 import MathEconLib.ForMathlib.AbsolutelyContinuous

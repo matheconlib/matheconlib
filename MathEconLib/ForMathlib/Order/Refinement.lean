@@ -3,8 +3,10 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import Mathlib.Data.Prod.Lex
-import Mathlib.Order.Antisymmetrization
+module
+
+public import Mathlib.Order.Prod.Lex.Basic
+public import Mathlib.Order.Antisymmetrization
 
 /-!
 # Linear refinement of a total preorder
@@ -15,18 +17,21 @@ a linear refinement. An explicit priority embedding fixes how distinct indiffere
 are ordered. This construction is noncomputable.
 -/
 
+@[expose] public section
+
 namespace MathEconLib.Order
 
 variable {α β : Type*} [LinearOrder β]
 
 /-- Resolve indifference by a fixed injective priority. Higher priority is preferred.
 The weak preference is compared first, using its Mathlib antisymmetrization. -/
+@[instance_reducible]
 noncomputable def tieBreakOrder (pref : Preorder α) (complete : Std.Total pref.le)
     (priority : α ↪ β) : LinearOrder α := by
   classical
-  letI := pref
-  letI := complete
-  letI : IsPreorder α (· ≤ ·) := inferInstance
+  let := pref
+  let := complete
+  let : IsPreorder α (· ≤ ·) := inferInstance
   exact LinearOrder.lift'
     (fun a : α ↦ toLex (toAntisymmetrization (· ≤ ·) a, priority a))
     (fun _ _ h ↦ priority.injective (congrArg (fun p ↦ (ofLex p).2) h))
@@ -37,9 +42,9 @@ theorem tieBreakOrder_le_iff (pref : Preorder α) (complete : Std.Total pref.le)
     (tieBreakOrder pref complete priority).le a b ↔
       pref.le a b ∧ (AntisymmRel pref.le a b → priority a ≤ priority b) := by
   classical
-  letI := pref
-  letI := complete
-  letI : IsPreorder α (· ≤ ·) := inferInstance
+  let := pref
+  let := complete
+  let : IsPreorder α (· ≤ ·) := inferInstance
   change (toLex (toAntisymmetrization (· ≤ ·) a, priority a) ≤
     toLex (toAntisymmetrization (· ≤ ·) b, priority b)) ↔ _
   rw [Prod.Lex.toLex_le_toLex']
