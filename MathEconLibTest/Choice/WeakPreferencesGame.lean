@@ -16,13 +16,13 @@ best-response definition or implementing that issue's broader interface.
 
 namespace MathEconLibTest.Choice.WeakPreferencesGame
 
-open MathEconLib.Choice MathEconLib.GameTheory
+open MathEconLib.Choice MathEconLib.GameTheory MathEconLib.Preferences
 
 example {I : Type*} {A : I → Type*} {V : Type*} [DecidableEq I] [Preorder V]
     (G : StrategicGame I A V) (a : ∀ i, A i) :
     G.IsNash a ↔ ∀ i, a i ∈
-      maximizers (Preorder.lift fun s ↦ G.payoff i (Function.update a i s)) Set.univ := by
-  simp only [mem_maximizers_lift, Set.mem_univ, true_and, isMaxOn_univ_iff,
+      maximizers (Preference.ofUtility fun s ↦ G.payoff i (Function.update a i s)) Set.univ := by
+  simp only [mem_maximizers_ofUtility, Set.mem_univ, true_and, isMaxOn_univ_iff,
     Function.update_eq_self, StrategicGame.isNash_iff]
 
 end MathEconLibTest.Choice.WeakPreferencesGame

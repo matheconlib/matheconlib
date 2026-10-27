@@ -13,46 +13,74 @@ Import only the choice umbrella, so worked examples cannot supply a missing publ
 
 namespace MathEconLibTest.Choice.WeakPreferencesPublicImport
 
-open MathEconLib.Choice
+open MathEconLib.Choice MathEconLib.Preferences
 
 variable {α β γ : Type*}
 
 example [Preorder β] (value : α → β) {S : Set α} {a : α} :
-    a ∈ maximizers (Preorder.lift value) S ↔ a ∈ S ∧ IsMaxOn value S a :=
-  mem_maximizers_lift value
+    a ∈ maximizers (Preference.ofUtility value) S ↔ a ∈ S ∧ IsMaxOn value S a :=
+  mem_maximizers_ofUtility value
 
-example (pref : Preorder β) (bundle : β ↪ Set α) {Y A : Set α} :
+example [Preorder β] (value : α → β) {S : Set α} {a : α} :
+    a ∈ maximizers (Preference.ofPreorder (Preorder.lift value)) S ↔
+      a ∈ S ∧ IsMaxOn value S a := mem_maximizers_lift value
+
+example (p : Preorder α) {S : Set α} {a : α} :
+    a ∈ maximizers (Preference.ofPreorder p) S ↔ (letI := p; IsGreatest S a) := Iff.rfl
+
+example [Preorder β] (value : α → β) :
+    Preference.ofPreorder (Preorder.lift value) = Preference.ofUtility value := rfl
+
+example (L : LinearOrder α) (x y : α) :
+    (CompletePreference.ofLinearOrder L).le x y ↔ L.le x y := Iff.rfl
+
+example (pref : Preference β) (bundle : β ↪ Set α) {Y A : Set α} :
     A ∈ optimalBundles pref bundle Y ↔
       ∃ b, bundle b = A ∧ bundle b ⊆ Y ∧ ∀ c, bundle c ⊆ Y → pref.le c b :=
   mem_optimalBundles_iff pref bundle
 
-example (pref : Preorder β) (refined : LinearOrder β)
+example (pref : Preference β) (refined : LinearOrder β)
     (hrefine : ∀ a b, refined.le a b → pref.le a b) (bundle : β ↪ Set α) {Y : Set α}
     (hF : {b | bundle b ⊆ Y}.Finite) (hne : ∃ b, bundle b ⊆ Y) :
     ChoiceFunction.ofBundleOrder refined bundle Y ∈ optimalBundles pref bundle Y :=
   ChoiceFunction.ofBundleOrder_mem_optimalBundles_of_finite_feasible pref refined hrefine
     bundle hF hne
 
-example [LinearOrder γ] (pref : Preorder (Option α)) (complete : Std.Total pref.le)
+example [LinearOrder γ] (pref : CompletePreference (Option α))
     (priority : Option α ↪ γ) :
-    (ChoiceFunction.ofWeakBundleOrder pref complete priority
+    (ChoiceFunction.ofWeakBundleOrder pref priority
       ChoiceFunction.optionBundle).UnitDemand :=
   ChoiceFunction.unitDemand_ofOptionLinearOrder
-    (MathEconLib.Order.tieBreakOrder pref complete priority)
+    (pref.tieBreak priority)
 
-example (pref : Preorder α) (complete : Std.Total pref.le) {S : Set α}
+example (pref : CompletePreference α) {S : Set α}
     (hS : S.Finite) (hne : S.Nonempty) : (maximizers pref S).Nonempty :=
-  maximizers_nonempty_of_finite pref complete hS hne
+  maximizers_nonempty_of_finite pref hS hne
 
 example [LinearOrder γ] (pref : LinearOrder β) (priority : β ↪ γ) (bundle : β ↪ Set α) :
-    ChoiceFunction.ofWeakBundleOrder pref.toPreorder ⟨pref.le_total⟩ priority bundle =
+    ChoiceFunction.ofWeakBundleOrder (CompletePreference.ofLinearOrder pref) priority bundle =
       ChoiceFunction.ofBundleOrder pref bundle :=
   ChoiceFunction.ofWeakBundleOrder_linearOrder pref priority bundle
 
-example [DecidableEq α] [LinearOrder γ] (pref : Preorder (Option α))
-    (complete : Std.Total pref.le) (priority : Option α ↪ γ) (A : Finset α) :
-    ChoiceFunction.bestOption (MathEconLib.Order.tieBreakOrder pref complete priority) A ∈
+example [DecidableEq α] [LinearOrder γ] (pref : CompletePreference (Option α))
+    (priority : Option α ↪ γ) (A : Finset α) :
+    ChoiceFunction.bestOption (pref.tieBreak priority) A ∈
       maximizers pref (ChoiceFunction.optionMenu A : Set (Option α)) :=
-  ChoiceFunction.bestOption_mem_maximizers pref complete priority A
+  ChoiceFunction.bestOption_mem_maximizers pref priority A
+
+example (R : Preference α) [Preorder β] (value : α → β) (hu : R.IsRepresentedBy value)
+    {S : Set α} {a : α} :
+    a ∈ maximizers R S ↔ a ∈ S ∧ IsMaxOn value S a := hu.mem_maximizers_iff
+
+example [Finite α] (R : CompletePreference α) :
+    ∃ value : α → ℕ, ∀ (S : Set α) (a : α),
+      a ∈ maximizers R S ↔ a ∈ S ∧ IsMaxOn value S a :=
+  R.exists_nat_utility_maximizers
+
+#print axioms mem_maximizers_ofUtility
+#print axioms Preference.IsRepresentedBy.mem_maximizers_iff
+#print axioms CompletePreference.exists_nat_utility_maximizers
+#print axioms CompletePreference.tieBreak_le_iff
+#print axioms CompletePreference.tieBreak_ofLinearOrder
 
 end MathEconLibTest.Choice.WeakPreferencesPublicImport

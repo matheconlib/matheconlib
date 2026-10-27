@@ -106,6 +106,7 @@ import MathEconLib.Mechanism.Core.Strategic
 import MathEconLib.Preferences
 import MathEconLib.Preferences.Basic
 import MathEconLib.Preferences.Complete
+import MathEconLib.Preferences.Refinement
 import MathEconLib.Preferences.Representation.Basic
 import MathEconLib.Preferences.Representation.Finite
 import MathEconLib.Probability.FinDist.Basic

@@ -16,12 +16,13 @@ An infinite all-tied example has weak optima but no optimum after increasing-pri
 The worked utility and participation examples are imported, not reconstructed.
 -/
 
-open MathEconLib.Choice
+open MathEconLib.Choice MathEconLib.Preferences
 
 namespace MathEconLibTest.Choice.WeakPreferences
 
 /-- The infinite feasible menu of natural numbers has no greatest element. -/
-theorem unattained : maximizers (inferInstance : Preorder ℕ) Set.univ = ∅ := by
+theorem unattained :
+    maximizers (Preference.ofPreorder (inferInstance : Preorder ℕ)) Set.univ = ∅ := by
   ext n
   simp only [Set.mem_empty_iff_false, iff_false]
   intro h
@@ -29,11 +30,9 @@ theorem unattained : maximizers (inferInstance : Preorder ℕ) Set.univ = ∅ :=
   omega
 
 /-- A preorder that only compares equal alternatives is incomplete on this two-element type. -/
-@[instance_reducible] def incomparable : Preorder (Fin 2) where
+@[instance_reducible] def incomparable : Preference (Fin 2) where
   le := Eq
-  lt := fun a b ↦ a = b ∧ ¬b = a
-  le_refl := Eq.refl
-  le_trans := fun _ _ _ hab hbc ↦ hab.trans hbc
+  isPreorder := { refl := Eq.refl, trans := fun _ _ _ hab hbc ↦ hab.trans hbc }
 
 /-- Finiteness alone does not ensure a greatest alternative under incomplete preferences. -/
 theorem incomplete_no_maximizer : maximizers incomparable Set.univ = ∅ := by
@@ -44,6 +43,10 @@ theorem incomplete_no_maximizer : maximizers incomparable Set.univ = ∅ := by
   have hone : (1 : Fin 2) = n := h.2 (Set.mem_univ 1)
   exact (by decide : (0 : Fin 2) ≠ 1) (hzero.trans hone.symm)
 
+/-- Both alternatives are maximal, although `incomplete_no_maximizer` excludes a greatest one. -/
+theorem incomparable_maximal (a : Fin 2) :
+    ∀ x, incomparable.le a x → incomparable.le x a := fun _ h ↦ h.symm
+
 namespace InfiniteTies
 
 /-- Every natural-number singleton is represented, with no represented empty bundle. -/
@@ -52,28 +55,29 @@ def bundle : ℕ ↪ Set ℕ where
   inj' := Set.singleton_injective
 
 /-- All represented bundles are indifferent. -/
-@[instance_reducible] def pref : Preorder ℕ := Preorder.lift fun _ : ℕ ↦ (0 : ℕ)
+@[instance_reducible] def pref : CompletePreference ℕ :=
+  CompletePreference.ofUtility fun _ : ℕ ↦ (0 : ℕ)
 
 theorem complete : Std.Total pref.le :=
   ⟨fun _ _ ↦ Or.inl (show (0 : ℕ) ≤ 0 from le_rfl)⟩
 
 /-- Every singleton is a weak optimum on the infinite menu. -/
-theorem singleton_mem (n : ℕ) : {n} ∈ optimalBundles pref bundle Set.univ :=
-  (mem_optimalBundles_iff pref bundle).mpr
+theorem singleton_mem (n : ℕ) : {n} ∈ optimalBundles pref.toPreference bundle Set.univ :=
+  (mem_optimalBundles_iff pref.toPreference bundle).mpr
     ⟨n, rfl, Set.subset_univ _, fun _ _ ↦ (show (0 : ℕ) ≤ 0 from le_rfl)⟩
 
 /-- Weak preferences attain an optimum despite the infinite feasible family. -/
-theorem optimal_nonempty : (optimalBundles pref bundle Set.univ).Nonempty :=
+theorem optimal_nonempty : (optimalBundles pref.toPreference bundle Set.univ).Nonempty :=
   ⟨{0}, singleton_mem 0⟩
 
 /-- Increasing natural-number priorities have no greatest feasible index. -/
 theorem refined_unattained :
-    maximizers (MathEconLib.Order.tieBreakOrder pref complete
-      (Function.Embedding.refl ℕ)).toPreorder Set.univ = ∅ := by
+    maximizers (Preference.ofPreorder (pref.tieBreak
+      (Function.Embedding.refl ℕ)).toPreorder) Set.univ = ∅ := by
   ext b
   simp only [Set.mem_empty_iff_false, iff_false]
   intro hb
-  have h := (MathEconLib.Order.tieBreakOrder_le_iff pref complete
+  have h := (pref.tieBreak_le_iff
     (Function.Embedding.refl ℕ) (b + 1) b).mp (hb.2 (Set.mem_univ (b + 1)))
   have hnext : b + 1 ≤ b := h.2
     ⟨(show (0 : ℕ) ≤ 0 from le_rfl), (show (0 : ℕ) ≤ 0 from le_rfl)⟩
@@ -81,28 +85,28 @@ theorem refined_unattained :
 
 /-- The existing selector totalizes refinement nonattainment to the empty set. -/
 theorem selected_empty :
-    ChoiceFunction.ofWeakBundleOrder pref complete (Function.Embedding.refl ℕ)
+    ChoiceFunction.ofWeakBundleOrder pref (Function.Embedding.refl ℕ)
       bundle Set.univ = ∅ := by
   ext x
   simp only [ChoiceFunction.ofWeakBundleOrder, ChoiceFunction.mem_ofBundleOrder,
     Set.mem_empty_iff_false, iff_false]
   rintro ⟨b, _, _, hmax⟩
-  have hb : b ∈ maximizers (MathEconLib.Order.tieBreakOrder pref complete
-      (Function.Embedding.refl ℕ)).toPreorder Set.univ :=
+  have hb : b ∈ maximizers (Preference.ofPreorder (pref.tieBreak
+      (Function.Embedding.refl ℕ)).toPreorder) Set.univ :=
     ⟨Set.mem_univ _, fun c _ ↦ hmax c (Set.subset_univ _)⟩
   simp only [refined_unattained, Set.mem_empty_iff_false] at hb
 
 /-- Totalization is not a weak optimum: the empty bundle is not represented. -/
-theorem empty_not_optimal : ∅ ∉ optimalBundles pref bundle Set.univ := by
+theorem empty_not_optimal : ∅ ∉ optimalBundles pref.toPreference bundle Set.univ := by
   intro h
-  obtain ⟨b, heq, _, _⟩ := (mem_optimalBundles_iff pref bundle).mp h
+  obtain ⟨b, heq, _, _⟩ := (mem_optimalBundles_iff pref.toPreference bundle).mp h
   have hmem := congrArg (fun S : Set ℕ ↦ b ∈ S) heq
   simp [bundle] at hmem
 
 /-- Existence of weak optima alone does not guarantee optimality of the refined selection. -/
 theorem selected_not_optimal :
-    ChoiceFunction.ofWeakBundleOrder pref complete (Function.Embedding.refl ℕ)
-      bundle Set.univ ∉ optimalBundles pref bundle Set.univ := by
+    ChoiceFunction.ofWeakBundleOrder pref (Function.Embedding.refl ℕ)
+      bundle Set.univ ∉ optimalBundles pref.toPreference bundle Set.univ := by
   rw [selected_empty]
   exact empty_not_optimal
 
@@ -110,22 +114,26 @@ end InfiniteTies
 
 open MathEconLibExamples.Choice.WeakPreferences
 
-example : {(0 : Fin 2)} ∈ optimalBundles Contracts.pref ChoiceFunction.optionBundle Set.univ :=
+example : {(0 : Fin 2)} ∈
+    optimalBundles Contracts.pref.toPreference ChoiceFunction.optionBundle Set.univ :=
   Contracts.singleton_mem 0
 
 example :
-    ¬(⋃₀ optimalBundles Contracts.pref ChoiceFunction.optionBundle Set.univ).Subsingleton :=
+    ¬(⋃₀ optimalBundles Contracts.pref.toPreference
+      ChoiceFunction.optionBundle Set.univ).Subsingleton :=
   Contracts.union_not_subsingleton
 
-example : ChoiceFunction.ofWeakBundleOrder OutsideTie.pref OutsideTie.complete
+example : ChoiceFunction.ofWeakBundleOrder OutsideTie.pref
     OutsideTie.outsidePriority ChoiceFunction.optionBundle Set.univ = ∅ :=
   OutsideTie.selected_outside
 
-example : ∅ ∈ optimalBundles OutsideTie.pref ChoiceFunction.optionBundle (∅ : Set (Fin 2)) :=
+example : ∅ ∈ optimalBundles OutsideTie.pref.toPreference
+    ChoiceFunction.optionBundle (∅ : Set (Fin 2)) :=
   OutsideTie.empty_mem_empty_menu
 
-example : optimalBundles Bundles.pref Bundles.bundle ∅ = ∅ := Bundles.empty_menu
+example : optimalBundles Bundles.pref.toPreference Bundles.bundle ∅ = ∅ := Bundles.empty_menu
 
+#print axioms mem_maximizers_ofUtility
 #print axioms mem_maximizers_lift
 #print axioms mem_optimalBundles_iff
 #print axioms optimalBundles_nonempty_of_finite_feasible
