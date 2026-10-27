@@ -1,5 +1,7 @@
 import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Auction.IndependentValues
+import MathEconLibTest.Choice.Attainment
+import MathEconLibTest.Choice.AttainmentPublicImport
 import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
