@@ -13,6 +13,9 @@ import Lean.Elab.Tactic.Omega
 Empty and unattained feasible menus distinguish an empty correspondence from the represented
 outside option. A finite incomplete preference shows why existence requires completeness.
 An infinite all-tied example has weak optima but no optimum after increasing-priority refinement.
+The `Option ℕ` regression represents the outside option explicitly and gives it strictly lower
+utility than every contract. Reversing priorities restores attainment on this infinite menu,
+but well-founded priorities alone do not supply a missing weak optimum.
 The worked utility and participation examples are imported, not reconstructed.
 -/
 
@@ -112,6 +115,188 @@ theorem selected_not_optimal :
 
 end InfiniteTies
 
+namespace OutsideOptionNonattainment
+
+/-- Every contract is strictly better than the represented outside option. -/
+def utility : Option ℕ → ℕ
+  | none => 0
+  | some _ => 1
+
+@[instance_reducible] def pref : CompletePreference (Option ℕ) :=
+  CompletePreference.ofUtility utility
+
+/-- Contracts have unbounded increasing priorities; the outside option has priority zero. -/
+def increasingPriority : Option ℕ ↪ ℕ where
+  toFun
+    | none => 0
+    | some n => n + 1
+  inj' := by
+    intro a b h
+    cases a <;> cases b <;> simp_all
+
+/-- The outside option is represented and feasible on the infinite menu. -/
+theorem outside_feasible : ChoiceFunction.optionBundle (none : Option ℕ) ⊆ Set.univ :=
+  Set.subset_univ _
+
+/-- Every contract singleton is a weak optimum, regardless of its priority. -/
+theorem singleton_mem (n : ℕ) :
+    {n} ∈ optimalBundles pref.toPreference ChoiceFunction.optionBundle Set.univ := by
+  refine (mem_optimalBundles_iff pref.toPreference ChoiceFunction.optionBundle).mpr
+    ⟨some n, rfl, Set.subset_univ _, ?_⟩
+  intro c _
+  change utility c ≤ utility (some n)
+  cases c <;> simp [utility]
+
+theorem optimal_nonempty :
+    (optimalBundles pref.toPreference ChoiceFunction.optionBundle Set.univ).Nonempty :=
+  ⟨{0}, singleton_mem 0⟩
+
+/-- The empty bundle is feasible but is strictly worse than any contract. -/
+theorem empty_not_optimal :
+    ∅ ∉ optimalBundles pref.toPreference ChoiceFunction.optionBundle Set.univ := by
+  intro h
+  obtain ⟨b, heq, _, hmax⟩ :=
+    (mem_optimalBundles_iff pref.toPreference ChoiceFunction.optionBundle).mp h
+  cases b with
+  | none =>
+    have h := hmax (some 0) (Set.subset_univ _)
+    change 1 ≤ 0 at h
+    omega
+  | some n =>
+    have hmem := congrArg (fun S : Set ℕ ↦ n ∈ S) heq
+    simp at hmem
+
+/-- No contract wins the increasing-priority tie, and the outside option loses on utility. -/
+theorem refined_unattained :
+    maximizers (Preference.ofPreorder (pref.tieBreak increasingPriority).toPreorder)
+      Set.univ = ∅ := by
+  ext b
+  simp only [Set.mem_empty_iff_false, iff_false]
+  intro hb
+  cases b with
+  | none =>
+    have h := (pref.tieBreak_le_iff increasingPriority (some 0) none).mp
+      (hb.2 (Set.mem_univ (some 0)))
+    have hweak : (1 : ℕ) ≤ 0 := h.1
+    omega
+  | some n =>
+    have h := (pref.tieBreak_le_iff increasingPriority (some (n + 1)) (some n)).mp
+      (hb.2 (Set.mem_univ (some (n + 1))))
+    have hpriority := h.2 ⟨(show (1 : ℕ) ≤ 1 from le_rfl), le_rfl⟩
+    change n + 1 + 1 ≤ n + 1 at hpriority
+    omega
+
+/-- The selector returns the empty set even though the represented outside option is suboptimal. -/
+theorem selected_empty :
+    ChoiceFunction.ofWeakBundleOrder pref increasingPriority
+      ChoiceFunction.optionBundle Set.univ = ∅ := by
+  ext x
+  simp only [ChoiceFunction.ofWeakBundleOrder, ChoiceFunction.mem_ofBundleOrder,
+    Set.mem_empty_iff_false, iff_false]
+  rintro ⟨b, _, _, hmax⟩
+  have hb : b ∈ maximizers
+      (Preference.ofPreorder (pref.tieBreak increasingPriority).toPreorder) Set.univ :=
+    ⟨Set.mem_univ _, fun c _ ↦ hmax c (Set.subset_univ _)⟩
+  simp only [refined_unattained, Set.mem_empty_iff_false] at hb
+
+theorem selected_not_optimal :
+    ChoiceFunction.ofWeakBundleOrder pref increasingPriority
+      ChoiceFunction.optionBundle Set.univ ∉
+        optimalBundles pref.toPreference ChoiceFunction.optionBundle Set.univ := by
+  rw [selected_empty]
+  exact empty_not_optimal
+
+/-- Reversing the same numeric priorities gives the tied contracts a greatest priority. -/
+def decreasingPriority : Option ℕ ↪ ℕᵒᵈ where
+  toFun b := OrderDual.toDual (increasingPriority b)
+  inj' := increasingPriority.injective
+
+/-- Strict improvement in this priority codomain is well-founded. -/
+theorem priority_wellFounded : WellFoundedGT ℕᵒᵈ := inferInstance
+
+/-- An infinite menu can attain a winner: contract zero has the greatest reversed priority. -/
+theorem reversed_selected :
+    ChoiceFunction.ofWeakBundleOrder pref decreasingPriority
+      ChoiceFunction.optionBundle Set.univ = {0} := by
+  apply ChoiceFunction.ofWeakBundleOrder_eq_of_max pref decreasingPriority
+    ChoiceFunction.optionBundle (b := some 0) (Set.subset_univ _)
+  · intro c _
+    change utility c ≤ utility (some 0)
+    cases c <;> simp [utility]
+  · intro c _ h
+    cases c with
+    | none =>
+      have hweak : (1 : ℕ) ≤ 0 := h.2
+      omega
+    | some n =>
+      change 1 ≤ n + 1
+      omega
+
+theorem reversed_selected_optimal :
+    ChoiceFunction.ofWeakBundleOrder pref decreasingPriority
+      ChoiceFunction.optionBundle Set.univ ∈
+        optimalBundles pref.toPreference ChoiceFunction.optionBundle Set.univ := by
+  rw [reversed_selected]
+  exact singleton_mem 0
+
+end OutsideOptionNonattainment
+
+namespace MissingWeakOptimum
+
+open OutsideOptionNonattainment (increasingPriority decreasingPriority)
+
+/-- Utility now strictly increases with the contract index, so there is no weak optimum. -/
+@[instance_reducible] def pref : CompletePreference (Option ℕ) :=
+  CompletePreference.ofUtility increasingPriority
+
+/-- The same well-founded reversed priorities cannot fix nonattainment in the weak preference. -/
+theorem weak_unattained : maximizers pref.toPreference Set.univ = ∅ := by
+  ext b
+  simp only [Set.mem_empty_iff_false, iff_false]
+  intro hb
+  cases b with
+  | none =>
+    have h : (1 : ℕ) ≤ 0 := hb.2 (Set.mem_univ (some 0))
+    omega
+  | some n =>
+    have h : n + 1 + 1 ≤ n + 1 := hb.2 (Set.mem_univ (some (n + 1)))
+    omega
+
+theorem optimal_empty :
+    optimalBundles pref.toPreference ChoiceFunction.optionBundle Set.univ = ∅ := by
+  apply Set.eq_empty_iff_forall_notMem.mpr
+  intro A hA
+  obtain ⟨b, _, _, hmax⟩ :=
+    (mem_optimalBundles_iff pref.toPreference ChoiceFunction.optionBundle).mp hA
+  have hb : b ∈ maximizers pref.toPreference Set.univ :=
+    ⟨Set.mem_univ _, fun c _ ↦ hmax c (Set.subset_univ _)⟩
+  simp only [weak_unattained, Set.mem_empty_iff_false] at hb
+
+theorem refined_unattained :
+    maximizers (Preference.ofPreorder (pref.tieBreak decreasingPriority).toPreorder)
+      Set.univ = ∅ := by
+  ext b
+  simp only [Set.mem_empty_iff_false, iff_false]
+  intro hb
+  have hweak : b ∈ maximizers pref.toPreference Set.univ :=
+    ⟨Set.mem_univ _, fun c hc ↦
+      pref.le_of_tieBreak_le decreasingPriority (hb.2 hc)⟩
+  simp only [weak_unattained, Set.mem_empty_iff_false] at hweak
+
+theorem selected_empty :
+    ChoiceFunction.ofWeakBundleOrder pref decreasingPriority
+      ChoiceFunction.optionBundle Set.univ = ∅ := by
+  ext x
+  simp only [ChoiceFunction.ofWeakBundleOrder, ChoiceFunction.mem_ofBundleOrder,
+    Set.mem_empty_iff_false, iff_false]
+  rintro ⟨b, _, _, hmax⟩
+  have hb : b ∈ maximizers
+      (Preference.ofPreorder (pref.tieBreak decreasingPriority).toPreorder) Set.univ :=
+    ⟨Set.mem_univ _, fun c _ ↦ hmax c (Set.subset_univ _)⟩
+  simp only [refined_unattained, Set.mem_empty_iff_false] at hb
+
+end MissingWeakOptimum
+
 open MathEconLibExamples.Choice.WeakPreferences
 
 example : {(0 : Fin 2)} ∈
@@ -160,5 +345,18 @@ example : optimalBundles Bundles.pref.toPreference Bundles.bundle ∅ = ∅ := B
 #print axioms InfiniteTies.selected_empty
 #print axioms InfiniteTies.empty_not_optimal
 #print axioms InfiniteTies.selected_not_optimal
+#print axioms OutsideOptionNonattainment.singleton_mem
+#print axioms OutsideOptionNonattainment.optimal_nonempty
+#print axioms OutsideOptionNonattainment.empty_not_optimal
+#print axioms OutsideOptionNonattainment.refined_unattained
+#print axioms OutsideOptionNonattainment.selected_empty
+#print axioms OutsideOptionNonattainment.selected_not_optimal
+#print axioms OutsideOptionNonattainment.priority_wellFounded
+#print axioms OutsideOptionNonattainment.reversed_selected
+#print axioms OutsideOptionNonattainment.reversed_selected_optimal
+#print axioms MissingWeakOptimum.weak_unattained
+#print axioms MissingWeakOptimum.optimal_empty
+#print axioms MissingWeakOptimum.refined_unattained
+#print axioms MissingWeakOptimum.selected_empty
 
 end MathEconLibTest.Choice.WeakPreferences
