@@ -110,6 +110,10 @@ The section headings separate these scopes without introducing another module.
 | `Matching.Classical.Marriage.Existence` | The stable-matching existence theorem |
 | `Matching.Contracts.FixedPointConvergence` and `Matching.Classical.Marriage.FixedPointConvergence` | General finite convergence and its marriage specialization |
 | `Matching.Classical.Marriage.DeferredAcceptance`, `.DeferredAcceptanceFixedPoints`, `.DeferredAcceptanceComputable` | Proposal algorithm, fixed-point correctness route and executable refinement |
+| `Matching.PartnerComparisons` | Shared comparisons over optional partners and bilateral blocking |
+| `Matching.Continuum.Basic` | Balanced measured populations, matching maps and measures, marginals and side exchange |
+| `Matching.Continuum.Stability` | Pointwise and distributional stability, outside options and the graph-measure stability bridge |
+| `Matching.Continuum.ToClassical` | Agreement with classical stability under an explicit utility representation |
 
 Marriage preferences and their induced choices belong together. The embedding
 into the contracts model lives in `ToContracts`, with the explicit constructor
@@ -128,6 +132,63 @@ Public names use `ofOptionLinearOrder` for the optional-partner constructor,
 `DeferredAcceptanceComputable` contains the executable refinement. None of these
 organizational steps removes finiteness assumptions. The many-to-one completion
 reduction below is a separate mathematical extension.
+
+## Two-sided continuum foundations
+
+`Matching.Continuum` is the entry point for [#197](https://github.com/matheconlib/matheconlib/issues/197).
+Both populations have mass one and all agents are matched. `MatchingMap` uses a Mathlib
+measure-preserving measurable equivalence; `MatchingMeasure` records a probability measure on
+matched types with the prescribed marginals; one type’s mass may be split among partners.
+The graph construction connects them and commutes with side exchange. Assignments that agree
+almost everywhere give the same matching measure.
+
+Classical preferences and utilities supply adapters to `PartnerComparisons`, which defines
+bilateral blocking once. This is comparison data, with no choice-correspondence framework.
+The pointwise/classical stability bridge requires the adapters to agree, including outside options.
+
+`PartnerUtilities` records both populations' partner and outside-option utilities.
+`MatchingMap.graphMap` sends `a` to `(a, f a)`; pushing the left population forward along it
+produces the matching measure. Left/right label the populations without assigning proposal or
+buyer/seller roles; both atomic and atomless populations are allowed. `MatchingMeasure.product`
+packages Mathlib's independent product and marginal identities as an optional feasible matching.
+Its stability is a separate question. `PartnerUtilities.symm` exchanges partner utilities and
+outside options along with the population labels.
+
+`PointwiseStable` checks every agent and potential blocking pair. `DistributionallyStable`
+checks individual rationality almost everywhere and blocking under the product of the matching
+measure with itself. A pointwise-stable map gives a stable measure when utilities are measurable.
+The uniform-interval example is in `MathEconLibExamples/Matching/Continuum.lean`.
+
+The atomless-circle regression in `MathEconLibTest/Matching/Continuum/Antipodal.lean` matches each
+point to itself and awards utility one only to its antipode (zero otherwise, outside option −1).
+Every agent has a blocking partner, yet the blocking graph has product measure zero. The test
+also proves that arbitrary full-measure subsets of the two populations still contain a blocking
+pair. Thus product-a.e. stability does not imply pointwise stability after deleting null sets of
+agents. The older finite null-type test establishes only the weaker distinction from pointwise
+stability. Both cases are retained.
+
+### Source comparison and regularity
+
+[Greinecker–Kah (2021), §2](https://onlinelibrary.wiley.com/doi/full/10.3982/ECTA16228)
+define blocking to have zero measure under the matching's self-product. Our `Unblocked`
+uses one oriented cross-pair; exchanging the two couples gives the other orientation, so their
+union is null exactly when ours is null. Their balanced model assumes universal acceptability;
+we additionally check outside options.
+
+Their §2 assumes Polish type spaces, Borel probability populations, acyclic strict preferences,
+and open strict-comparison sets in the corresponding triple products. Jointly continuous
+partner utilities suffice for the preference conditions. Our elementary bridges need only
+measurability, so this layer extends the criterion beyond those hypotheses. The antipodal spike
+utilities are measurable but violate openness: moving a preferred antipode even slightly destroys
+strict improvement. The example therefore does not refute their existence or approximation results.
+
+Their general §3 model further uses Polish contract spaces and a continuous, nonempty,
+compact-valued feasible-contract correspondence. Those hypotheses and the relevant preference
+conditions must be supplied when formalizing Theorem 1 (existence) or Theorem 2 (approximation).
+Neither theorem, nor a converse deleting agent-null sets, is proved here.
+
+Existence, approximation, unmatched mass and the separate admissions-cutoff model in
+[#167](https://github.com/matheconlib/matheconlib/issues/167) remain later work.
 
 ## Many-to-one completion reduction
 

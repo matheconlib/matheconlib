@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 module
 
@@ -79,7 +79,7 @@ def BlocksW (μ : M ≃. W) (w : W) (m : M) : Prop :=
 /-- `(m, w)` blocks `μ` if both agents strictly prefer one another to their
 current assignments. -/
 def IsBlockingPair (μ : M ≃. W) (m : M) (w : W) : Prop :=
-  mkt.BlocksM μ m w ∧ mkt.BlocksW μ w m
+  mkt.toPartnerComparisons.Blocks m w (μ m) (μ.symm w)
 
 /-- No blocking pair involves man `m`. -/
 def UnblockedM (μ : M ≃. W) (m : M) : Prop :=
@@ -177,7 +177,8 @@ theorem IsStableMatching.unblockedW
 
 @[simp] theorem isBlockingPair_symm (μ : M ≃. W) (w : W) (m : M) :
     mkt.symm.IsBlockingPair μ.symm w m ↔ mkt.IsBlockingPair μ m w := by
-  exact and_comm
+  simpa only [IsBlockingPair, toPartnerComparisons_symm, PEquiv.symm_symm] using
+    mkt.toPartnerComparisons.blocks_symm m w (μ m) (μ.symm w)
 
 @[simp] theorem unblockedM_symm (μ : M ≃. W) (w : W) :
     mkt.symm.UnblockedM μ.symm w ↔ mkt.UnblockedW μ w := by
@@ -368,7 +369,7 @@ instance : DecidablePred mkt.IsStableMatching := by
   unfold IndividuallyRationalM IndividuallyRationalW
   unfold IndividuallyRationalForM IndividuallyRationalForW
   unfold Unblocked UnblockedM UnblockedW
-  unfold IsBlockingPair BlocksM BlocksW
+  unfold IsBlockingPair PartnerComparisons.Blocks toPartnerComparisons
   unfold leM leW ltM ltW
   infer_instance
 
