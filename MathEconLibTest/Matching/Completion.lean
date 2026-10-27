@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching
-import MathEconLibTest.Choice.CompletionCounterexamples
+module
+
+public import MathEconLib.Matching
+public import MathEconLibTest.Choice.CompletionCounterexamples
 
 /-!
 # Completion-transfer regression checks
@@ -15,6 +17,8 @@ substitutable and whose completion is not a pointwise enlargement. Add
 unit-demand sellers to exercise stable existence in an actual market.
 The false seller ranks `a` above `b`; the true seller accepts `c`.
 -/
+
+@[expose] public section
 
 namespace MathEconLibTest.Matching.Completion
 

@@ -3,7 +3,9 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import Mathlib.Order.FixedPoints
+module
+
+public import Mathlib.Order.FixedPoints
 
 /-!
 # Comparing fixed-point and ambient lattice operations
@@ -13,6 +15,8 @@ lattice. If the ambient join or meet of two fixed points is itself fixed,
 it agrees with their operation in the fixed-point lattice. No closure of
 fixed points under ambient joins or meets is assumed implicitly.
 -/
+
+@[expose] public section
 
 open Function
 
