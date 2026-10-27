@@ -373,7 +373,7 @@ example : optimalBundles Bundles.pref.toPreference Bundles.bundle ∅ = ∅ := B
 #print axioms maximizers_nonempty_of_finite
 #print axioms optimalBundles_nonempty_of_finite
 #print axioms ChoiceFunction.ofWeakBundleOrder_mem_optimalBundles_of_finite
-#print axioms ChoiceFunction.ofWeakBundleOrder_linearOrder
+#print axioms ChoiceFunction.ofWeakBundleOrder_of_linearOrder
 #print axioms ChoiceFunction.bestOption_mem_maximizers
 #print axioms Contracts.union_not_subsingleton
 #print axioms Contracts.selected_eq

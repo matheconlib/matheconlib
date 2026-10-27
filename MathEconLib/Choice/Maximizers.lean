@@ -12,15 +12,44 @@ public import Mathlib.Order.Preorder.Finite
 /-!
 # Feasible maximizers
 
-`maximizers` retains every greatest feasible alternative under an explicit `Preference`.
-Finite existence and fixed tie-breaking use `CompletePreference` to supply completeness.
-Value-induced preferences recover feasible `IsMaxOn` witnesses. No choice rule, matching market,
-or cardinal representation of arbitrary preferences is required.
+Retain every greatest feasible alternative under an explicit `Preference`, including incomplete
+preferences. Finite existence and fixed tie-breaking use `CompletePreference` to supply totality.
+The interface is independent of bundle representations and matching markets.
 
-`mem_maximizers_tieBreak_iff` characterizes fixed-priority refinement on every feasible set.
-Refined attainment means that priority attains a greatest value among weak maximizers.
-Finite nonempty weak-maximizer sets suffice, as do well-founded strict priority improvements
-when weak maximizers already exist.
+## Main definitions
+
+* `maximizers`: the set of Mathlib `IsGreatest` witnesses on the feasible set.
+
+## Main statements
+
+* `mem_maximizers`: feasibility and weak comparison with every feasible alternative.
+* `mem_maximizers_ofUtility`: utility-induced maximizers are precisely feasible `IsMaxOn`
+  witnesses. Mathlib's `IsMaxOn` alone does not require the candidate to be feasible.
+* `Preference.IsRepresentedBy.mem_maximizers_iff`: the same characterization for a supplied
+  ordinal utility representation.
+* `CompletePreference.exists_nat_utility_maximizers`: on a finite carrier, one natural-number
+  utility describes maximizers on every feasible set.
+* `maximizers_nonempty_of_finite`: a finite nonempty feasible set attains under completeness.
+* `mem_maximizers_tieBreak_iff`: refined maximizers are weak maximizers with highest priority
+  among weak maximizers.
+* `maximizers_tieBreak_nonempty_iff`: refined attainment is greatest-value attainment in the
+  priority image of the weak-maximizer set.
+
+## Inputs and attainment
+
+Use `Preference.ofPreorder` for an existing Mathlib preorder and `Preference.ofUtility` for a
+supplied value function into any preordered type. `CompletePreference.ofPreorder` packages an
+order and totality proof; `CompletePreference.ofUtility` uses a total utility preorder. A
+complete preference coerces to `Preference`, with `.toPreference` available for explicit typing.
+These ordinal choice results do not impose cardinal or welfare comparisons across different
+representing utilities.
+
+Finiteness alone is insufficient for incomplete preferences: maximal alternatives need not be
+greatest. On infinite sets, even a complete preference can fail attainment. Fixed tie-breaking
+can also lose attainment when weak maximizers exist but have no greatest priority. A finite
+nonempty weak-maximizer set suffices by `maximizers_tieBreak_nonempty_of_finite`.
+Under `WellFoundedGT` on the priority codomain, refined and weak attainment are equivalent by
+`maximizers_tieBreak_nonempty_iff_of_wellFoundedGT`; original weak attainment remains necessary.
 -/
 
 @[expose] public section

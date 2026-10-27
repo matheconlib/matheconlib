@@ -9,15 +9,32 @@ import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.NormNum
 
 /-!
-# Finite choices with ties
+# Choices with ties
 
-Two contracts give gross values 4 and 6 at prices 3 and 5. Both yield net utility 1;
-the outside option yields 0. The best-bundle family retains both singleton contracts.
-Taking their union violates unit demand; a fixed priority instead selects one singleton.
+Worked bundle and option choices under explicit complete preferences. Tied optima remain
+separate bundles, while fixed priorities select one of them. These are choice examples;
+they make no matching-stability or incentive claims.
 
-When all utilities are zero, the outside option ties with both contracts. Two fixed priorities
-give different participation decisions, both consistent with the same weak preferences.
-These are finite choice examples, not matching stability or incentive results.
+## Main definitions
+
+* `Contracts`: gross values 4 and 6 with payments 3 and 5 give two distinct contracts net utility
+  one, above the outside option's zero. `Contracts.priority` selects the second contract.
+* `OutsideTie`: all utilities are zero. Two priorities implement different participation
+  decisions under the same weak preference.
+* `Bundles`: tied represented consumption bundles can have different sizes.
+* `FiniteFamily`: two singleton bundles are represented on the infinite menu of natural numbers.
+
+## Main statements
+
+* `Contracts.union_not_subsingleton`: taking the union of all tied singleton optima violates
+  unit demand, while `Contracts.selected_eq` identifies one selected singleton.
+* `OutsideTie.selected_outside` and `OutsideTie.selected_contract`: both participation outcomes
+  are compatible with the same weak preference, depending on priority.
+* `FiniteFamily.selected_mem`: a finite nonempty feasible represented family suffices on an
+  infinite menu.
+
+The finite examples have an attained refined optimum. General infinite menus need an explicit
+attainment condition; counterexamples are in `MathEconLibTest.Choice.WeakPreferences`.
 -/
 
 namespace MathEconLibExamples.Choice.WeakPreferences

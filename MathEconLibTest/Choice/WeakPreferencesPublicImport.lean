@@ -60,7 +60,17 @@ example (pref : CompletePreference α) {S : Set α}
 example [LinearOrder γ] (pref : LinearOrder β) (priority : β ↪ γ) (bundle : β ↪ Set α) :
     ChoiceFunction.ofWeakBundleOrder (CompletePreference.ofLinearOrder pref) priority bundle =
       ChoiceFunction.ofBundleOrder pref bundle :=
+  ChoiceFunction.ofWeakBundleOrder_of_linearOrder pref priority bundle
+
+example [LinearOrder γ] (pref : LinearOrder β) (priority : β ↪ γ) (bundle : β ↪ Set α) :
+    ChoiceFunction.ofWeakBundleOrder (CompletePreference.ofLinearOrder pref) priority bundle =
+      ChoiceFunction.ofBundleOrder pref bundle :=
   ChoiceFunction.ofWeakBundleOrder_linearOrder pref priority bundle
+
+example [LinearOrder γ] (pref : LinearOrder β) (priority : β ↪ γ) (bundle : β ↪ Set α) :
+    ChoiceFunction.ofWeakBundleOrder (CompletePreference.ofLinearOrder pref) priority bundle =
+      ChoiceFunction.ofBundleOrder pref bundle := by
+  simp
 
 example [DecidableEq α] [LinearOrder γ] (pref : CompletePreference (Option α))
     (priority : Option α ↪ γ) (A : Finset α) :

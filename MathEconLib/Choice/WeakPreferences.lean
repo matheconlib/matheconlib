@@ -10,28 +10,55 @@ import MathEconLib.Preferences.Refinement
 /-!
 # Choice under weak preferences
 
-Preferences are explicit `Preference` values, with larger elements weakly preferred.
-Strict preference is `Preference.lt`; indifference is `AntisymmRel pref.le`.
-Finite existence and tie-breaking take `CompletePreference`, which carries totality.
+Represent weakly optimal bundles as a correspondence, and select a bundle using a fixed
+injective priority among ties. The public entry point is `MathEconLib.Choice`. Preferences are
+explicit `Preference` values; fixed tie-breaking uses `CompletePreference` to supply totality.
+Larger elements are weakly preferred, `Preference.lt` is strict preference, and
+`AntisymmRel pref.le` is indifference.
 
-`maximizers` retains all greatest feasible alternatives, and `optimalBundles` retains their
-represented bundles as a family of sets. It does not combine tied bundles into their union.
-For value-induced preferences, `mem_maximizers_ofUtility` identifies maximizers with feasible
-`IsMaxOn` witnesses without requiring cardinal representations for arbitrary preferences.
-The definitions allow infinite menus. Refined attainment is characterized by highest priority
-among weak maximizers; finite nonempty weak-maximizer sets or well-founded strict priority
-improvement with existing weak optima suffice.
-An empty correspondence means no greatest feasible alternative exists, not that the empty
-bundle is optimal. It may reflect infeasibility or failure of attainment.
+## Main definitions
 
-`ChoiceFunction.ofWeakBundleOrder` uses a fixed priority to refine preferences and then calls
-the existing `ofBundleOrder`. More generally, any comparison-preserving linear refinement selects
-a weakly optimal bundle when the refined feasible order attains, even on an infinite menu.
-The finite feasible-family results follow from this attainment theorem.
-It inherits the old constructor's empty-set totalization if
-the refined order has no greatest feasible bundle. This selector is noncomputable; it is
-distinct from the correspondence. A weak optimum alone does not ensure refinement attainment.
-Strict preferences recover the existing constructor.
+* `optimalBundles`: the represented bundles of greatest feasible indices. Feasibility means
+  `bundle b ⊆ Y`. Tied bundles remain separate members of this family of sets.
+* `ChoiceFunction.ofWeakBundleOrder`: the noncomputable selector induced by
+  `CompletePreference.tieBreak` and `ChoiceFunction.ofBundleOrder`.
+
+## Main statements
+
+* `mem_optimalBundles_iff`: representation, feasibility, and weak optimality characterize
+  membership in the correspondence.
+* `mem_optimalBundles_tieBreak_iff`: refined optima have highest priority among weak maximizers.
+* `optimalBundles_tieBreak_nonempty_iff`: the refined correspondence attains exactly when
+  priority attains a greatest value on the weakly optimal feasible indices.
+* `optimalBundles_subset_ofBundleOrder`: each strict optimum equals the strict selector's output.
+* `ChoiceFunction.ofBundleOrder_mem_optimalBundles_of_maximizers_nonempty`: any
+  comparison-preserving linear refinement selects a weak optimum when the refined order attains.
+* `ChoiceFunction.ofWeakBundleOrder_mem_optimalBundles_of_finite_maximizers` and
+  `ChoiceFunction.ofWeakBundleOrder_mem_optimalBundles_of_wellFoundedGT`: finite nonempty weak
+  optimum sets or well-founded strict priority improvement with weak attainment suffice.
+* `ChoiceFunction.ofWeakBundleOrder_of_linearOrder`: linear preferences recover strict choice.
+* `ChoiceFunction.bestOption_mem_maximizers`: executable finite option choice is weakly optimal.
+
+## Attainment and participation
+
+All definitions allow infinite menus. A finite menu has finitely many feasible represented
+indices because `bundle` is injective; existence still requires one feasible index. More
+generally, only the weak-maximizer set needs to be finite and nonempty. Under `WellFoundedGT`
+on priorities, weak attainment suffices even when that set is infinite.
+
+An empty correspondence is different from a correspondence containing the empty bundle.
+The former can indicate infeasibility or nonattainment. When no refined greatest feasible index
+exists, the selector returns `∅`; this set need not be represented or weakly optimal. For
+`ChoiceFunction.optionBundle`, it also represents the outside option. Contracts of utility one,
+an outside option of utility zero, and unbounded increasing priorities yield weak optima but
+no refined optimum, so the selector returns `∅` despite the outside option being suboptimal.
+Outside-option participation certificates therefore use the refined order. The infinite-menu
+and outside-tie regressions are in `MathEconLibTest.Choice.WeakPreferences`.
+
+A comparison-preserving linear refinement already implies completeness of the original
+preference: one direction of every pair is comparable in the linear order and is preserved.
+The general refinement theorem does not construct missing comparisons for incomplete inputs.
+Option-induced choice inherits unit demand from `ChoiceFunction.unitDemand_ofOptionLinearOrder`.
 
 -/
 
@@ -210,11 +237,14 @@ theorem ofWeakBundleOrder_mem_optimalBundles_of_finite [LinearOrder γ]
     (hY.finite_subsets.preimage_embedding bundle) hne
 
 /-- For a strict order, fixed tie-breaking recovers the existing choice function. -/
-@[simp] theorem ofWeakBundleOrder_linearOrder [LinearOrder γ] (pref : LinearOrder β)
+@[simp] theorem ofWeakBundleOrder_of_linearOrder [LinearOrder γ] (pref : LinearOrder β)
     (priority : β ↪ γ) (bundle : β ↪ Set α) :
     ofWeakBundleOrder (CompletePreference.ofLinearOrder pref) priority bundle =
       ofBundleOrder pref bundle := by
   simp only [ofWeakBundleOrder, CompletePreference.tieBreak_ofLinearOrder]
+
+/-- Compatibility name for `ofWeakBundleOrder_of_linearOrder`. -/
+alias ofWeakBundleOrder_linearOrder := ofWeakBundleOrder_of_linearOrder
 
 /-- The existing finite outside-option selector chooses a weak maximizer under the refinement. -/
 theorem bestOption_mem_maximizers [DecidableEq α] [LinearOrder γ]

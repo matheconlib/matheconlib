@@ -11,9 +11,28 @@ public import MathEconLib.ForMathlib.Order.Refinement
 /-!
 # Fixed tie-breaking for complete preferences
 
-`CompletePreference.tieBreak` is the preference-facing form of `Order.tieBreakOrder`.
-It uses the supplied complete preference and a fixed injective priority; larger priorities
-resolve indifference. It does not complete missing comparisons or assert attainment on a menu.
+Resolve indifference in an explicit complete preference using a fixed injective priority.
+Larger priorities are preferred within each indifference class. The construction uses
+`MathEconLib.Order.tieBreakOrder` and retains the original carrier.
+
+## Main definitions
+
+* `CompletePreference.tieBreak`: the noncomputable linear order obtained from the complete
+  preference and its priority embedding.
+
+## Main statements
+
+* `tieBreak_le_iff`: refined comparisons preserve weak preference and consult priority only
+  within indifference.
+* `le_of_tieBreak_le`: a refined comparison implies its original weak comparison.
+* `tieBreak_ofLinearOrder`: tie-breaking a linear preference recovers that order.
+
+## Completeness and attainment
+
+The input is `CompletePreference`; the construction does not fill missing comparisons in an
+incomplete preference. It also does not assert attainment on a feasible set. The general
+order criteria are in `MathEconLib.ForMathlib.Order.Refinement`, and their choice-facing forms
+are in `MathEconLib.Choice.Maximizers`.
 -/
 
 @[expose] public section
