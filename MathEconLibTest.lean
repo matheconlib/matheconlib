@@ -26,6 +26,8 @@ import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.PublicImport
+import MathEconLibTest.Matching.SellerParticipation
+import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
 import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core
