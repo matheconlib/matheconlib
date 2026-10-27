@@ -95,6 +95,7 @@ import MathEconLib.Matching.Contracts.WeakSubstitutes
 import MathEconLib.Mechanism
 import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 import MathEconLib.Mechanism.Auctions.Allocation
+import MathEconLib.Mechanism.Choice
 import MathEconLib.Mechanism.Core.Bayesian
 import MathEconLib.Mechanism.Core.BayesianIC
 import MathEconLib.Mechanism.Core.Comap
@@ -116,6 +117,7 @@ import MathEconLib.Probability.FinDist.Measure
 import MathEconLib.Probability.FinDist.Simplex
 import MathEconLib.SingleParameter
 import MathEconLib.SingleParameter.Basic
+import MathEconLib.SingleParameter.Choice
 import MathEconLib.SingleParameter.EnvelopeIC
 import MathEconLib.SingleParameter.IC
 import MathEconLib.SingleParameter.Payment

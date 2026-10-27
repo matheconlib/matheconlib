@@ -5,6 +5,7 @@ Authors: Daniel Lyng
 -/
 module
 
+public import MathEconLibExamples.Choice.Optimality
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
