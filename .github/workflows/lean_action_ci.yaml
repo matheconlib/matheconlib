@@ -3,6 +3,7 @@ name: Lean Action CI
 on:
   push:
     branches: [main]
+    tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch:
@@ -88,13 +89,13 @@ jobs:
         id: docs
         env:
           # Pushes compare with the previous main commit; PRs compare their merge
-          # commit with the base. Manual runs always build documentation.
+          # commit with the base. Manual runs and tag pushes always build documentation.
           BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           REVISION: ${{ steps.revision.outputs.revision }}
         run: |
           run=true
           status=0
-          if [[ $GITHUB_EVENT_NAME != workflow_dispatch ]]; then
+          if [[ $GITHUB_EVENT_NAME != workflow_dispatch && $GITHUB_REF != refs/tags/* ]]; then
             bash scripts/docs-inputs-changed.sh "$BASE" "$GITHUB_SHA" || status=$?
             if [[ $status == 1 ]]; then
               run=false
@@ -203,7 +204,7 @@ jobs:
           path: ${{ runner.temp }}/doc-cache
           key: ${{ steps.restore-doc-cache.outputs.cache-primary-key }}
       - name: Extract signature index
-        run: python3 scripts/extract_signatures.py --no-build --db "$RUNNER_TEMP/doc-artifacts/api-docs.db" --output "$RUNNER_TEMP/doc-artifacts/doc/signatures"
+        run: python3 scripts/extract_signatures.py --no-build --db "$RUNNER_TEMP/doc-artifacts/api-docs.db" --output "$RUNNER_TEMP/doc-artifacts/doc/signatures" --metadata "$RUNNER_TEMP/doc-artifacts/metadata.json"
       - name: Upload API documentation
         uses: actions/upload-artifact@v7
         with:
@@ -226,8 +227,8 @@ jobs:
           name: signature-index
           path: ${{ runner.temp }}/doc-artifacts/doc/signatures
           if-no-files-found: error
-      - name: Publish documentation database and HTML to R2
-        if: github.repository == 'matheconlib/matheconlib' && github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+      - name: Publish documentation to R2
+        if: github.repository == 'matheconlib/matheconlib' && ((github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')) || (startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'))
         env:
           R2_BUCKET: ${{ vars.R2_BUCKET }}
           R2_ENDPOINT_URL: ${{ vars.R2_ENDPOINT_URL }}

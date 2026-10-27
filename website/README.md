@@ -47,12 +47,13 @@ two GitHub Actions repository secrets:
 
 ## API documentation route
 
-The Worker script in `worker/index.js` serves `/docs/` from the R2 bucket
-bound as `DOCS`; every other path is served from `_site`. The Lean CI workflow
-publishes the API HTML and signature index to that bucket from `main`. The
-bucket must exist before the site is deployed. Under `npm run preview:worker`, the route reads Wrangler's
-local R2 simulation, which is empty unless objects are added with
-`wrangler r2 object put --local`.
+The Worker script in `worker/index.js` serves `/docs/` from the R2 bucket bound as `DOCS`; every other path is served from `_site`. The API reference and signature index are linked from the home page and repository README. The Lean CI workflow publishes the API HTML and signature index to that bucket from `main`. The bucket must exist before the site is deployed. Under `npm run preview:worker`, the route reads Wrangler's local R2 simulation, which is empty unless objects are added with `wrangler r2 object put --local`.
+
+The bucket stores the current and previous HTML trees plus `current.json` under `matheconlib/html/`. Main-branch database snapshots live under `matheconlib/snapshots/` and are retained for 90 days by an R2 lifecycle rule. Tagged-release snapshots under `matheconlib/releases/<tag>/` are kept indefinitely. Neither releases nor HTML have a lifecycle expiration rule. Configure snapshot expiration with:
+
+```sh
+npx wrangler r2 bucket lifecycle add matheconlib-docs expire-snapshots matheconlib/snapshots/ --expire-days 90
+```
 
 The working project name and shared metadata are kept in
 `src/_data/site.json`, so the site can be renamed without editing every page.

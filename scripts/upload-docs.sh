@@ -6,8 +6,17 @@ if [[ $# != 1 ]]; then
   echo "Usage: bash scripts/upload-docs.sh OUTPUT_DIR" >&2
   exit 2
 fi
-if [[ ${GITHUB_REF:-} != refs/heads/main || (${GITHUB_EVENT_NAME:-} != push && ${GITHUB_EVENT_NAME:-} != workflow_dispatch) ]]; then
-  echo "R2 publication requires a main-branch push or manual main run" >&2
+release=false
+if [[ ${GITHUB_REF:-} == refs/heads/main && (${GITHUB_EVENT_NAME:-} == push || ${GITHUB_EVENT_NAME:-} == workflow_dispatch) ]]; then
+  :
+elif [[ ${GITHUB_REF:-} == refs/tags/v* && ${GITHUB_EVENT_NAME:-} == push ]]; then
+  if [[ ! ${GITHUB_REF_NAME:-} =~ ^v[0-9][0-9A-Za-z.+-]*$ ]]; then
+    echo "Invalid release tag name: ${GITHUB_REF_NAME:-}" >&2
+    exit 1
+  fi
+  release=true
+else
+  echo "R2 publication requires a main-branch push, manual main run, or v* tag push" >&2
   exit 1
 fi
 : "${R2_BUCKET:?Set the R2_BUCKET repository variable}"
@@ -23,7 +32,10 @@ if [[ ! $revision =~ ^[a-f0-9]{40}$ || ! $GITHUB_RUN_ID =~ ^[0-9]+$ || ! $GITHUB
   echo "Invalid documentation revision or run identity" >&2
   exit 1
 fi
-prefix="matheconlib/$revision/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+prefix="matheconlib/snapshots/$revision/$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT"
+if [[ $release == true ]]; then
+  prefix="matheconlib/releases/$GITHUB_REF_NAME"
+fi
 export AWS_DEFAULT_REGION=auto
 # R2 needs the classic transfer client with recent AWS CLI releases.
 # Keep this configuration out of the user's normal AWS profiles.
@@ -31,6 +43,7 @@ config_dir=$(mktemp -d)
 trap 'rm -rf "$config_dir"' EXIT
 export AWS_CONFIG_FILE="$config_dir/config"
 aws configure set default.s3.preferred_transfer_client classic
+# An R2 lifecycle rule expires snapshots/ after 90 days; releases/ and html/ have no rule.
 for file in api-docs.db.gz lake-manifest.json metadata.json; do
   aws s3 cp "$output_dir/$file" "s3://$R2_BUCKET/$prefix/$file" \
     --endpoint-url "$R2_ENDPOINT_URL" --only-show-errors
@@ -38,6 +51,10 @@ done
 # Metadata is uploaded last so it denotes a complete snapshot.
 if [[ -n ${GITHUB_STEP_SUMMARY:-} ]]; then
   printf 'Database snapshot: `s3://%s/%s/api-docs.db.gz`\n' "$R2_BUCKET" "$prefix" >> "$GITHUB_STEP_SUMMARY"
+fi
+
+if [[ $release == true ]]; then
+  exit 0
 fi
 
 # The website serves the HTML tree named by current.json under /docs/. Each run

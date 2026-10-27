@@ -75,7 +75,7 @@ else:
         calls = self.calls()
         self.assertEqual(calls[0]["args"], ["configure", "set", "default.s3.preferred_transfer_client", "classic"])
         for call, name in zip(calls[1:4], ["api-docs.db.gz", "lake-manifest.json", "metadata.json"]):
-            self.assertEqual(call["args"][3], f's3://test-bucket/matheconlib/{"a" * 40}/123-2/{name}')
+            self.assertEqual(call["args"][3], f's3://test-bucket/matheconlib/snapshots/{"a" * 40}/123-2/{name}')
             self.assertEqual(call["region"], "auto")
         self.assertFalse(Path(calls[0]["config"]).parent.exists())
         self.assertIn("api-docs.db.gz", (self.root / "summary").read_text())
@@ -147,6 +147,27 @@ else:
                            ("workflow_dispatch", "refs/heads/feature")]:
             with self.subTest(event=event, ref=ref):
                 result = self.run_helper(GITHUB_EVENT_NAME=event, GITHUB_REF=ref)
+                self.assertNotEqual(result.returncode, 0)
+                self.assertFalse(self.log.exists())
+
+    def test_release_tag_uploads_only_snapshot(self):
+        result = self.run_helper(GITHUB_REF="refs/tags/v1.2.3", GITHUB_REF_NAME="v1.2.3")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        calls = self.calls()
+        self.assertEqual(len(calls), 4)
+        self.assertEqual(calls[0]["args"], ["configure", "set", "default.s3.preferred_transfer_client", "classic"])
+        for call, name in zip(calls[1:], ["api-docs.db.gz", "lake-manifest.json", "metadata.json"]):
+            self.assertEqual(call["args"], ["s3", "cp", str(self.output / name),
+                             f"s3://test-bucket/matheconlib/releases/v1.2.3/{name}",
+                             "--endpoint-url", "https://example.invalid", "--only-show-errors"])
+        self.assertIn("matheconlib/releases/v1.2.3/api-docs.db.gz", (self.root / "summary").read_text())
+        self.assertNotIn("Published HTML", (self.root / "summary").read_text())
+
+    def test_invalid_or_non_push_release_tags_fail_before_aws(self):
+        for event, tag in [("push", "v1/../x"), ("workflow_dispatch", "v1.2.3"), ("push", "foo")]:
+            with self.subTest(event=event, tag=tag):
+                result = self.run_helper(GITHUB_EVENT_NAME=event, GITHUB_REF=f"refs/tags/{tag}",
+                                         GITHUB_REF_NAME=tag)
                 self.assertNotEqual(result.returncode, 0)
                 self.assertFalse(self.log.exists())
 

@@ -12,6 +12,8 @@ For structures, the header, parent types, and direct fields are shown.
 from __future__ import annotations
 
 import argparse
+import json
+import re
 from contextlib import closing
 import shutil
 import sqlite3
@@ -352,6 +354,7 @@ def write_split(
     max_lines: int,
     show_docs: bool,
     depth: int = 0,
+    revision: str | None = None,
 ) -> list[dict]:
     """Split `root` into per-immediate-child files (recursively if needed).
     Writes README.md as the index. Returns the list of result rows."""
@@ -378,6 +381,8 @@ def write_split(
             "Regenerate via `python3 scripts/extract_signatures.py` "
             "(default mode splits into this directory)."
         )
+    if depth == 0 and revision is not None:
+        index += ["", f"Source revision: `{revision}`"]
     index += [
         "",
         f"**Totals: {grand_decls} declarations across {grand_modules} modules.**",
@@ -439,6 +444,12 @@ def extract(args, db: Path) -> int:
         raise ValueError(f"Database not found at {db}; build docs or supply an existing --db")
     prefix = args.single if args.single is not None else args.root
     single = args.single is not None
+    revision = None
+    if not single and args.metadata is not None:
+        metadata = json.loads(args.metadata.read_text(encoding="utf-8"))
+        revision = metadata.get("revision") if isinstance(metadata, dict) else None
+        if not isinstance(revision, str) or re.fullmatch(r"[0-9a-f]{40}", revision) is None:
+            raise ValueError("Metadata revision must be 40 lowercase hex characters")
     output = args.output.resolve()
     if output == db or output in db.parents:
         raise ValueError("Signature output must not contain the input database")
@@ -451,7 +462,7 @@ def extract(args, db: Path) -> int:
             if single:
                 write_single(conn, prefix, generated, args.docstrings)
             else:
-                write_split(conn, prefix, generated, args.max_lines, args.docstrings)
+                write_split(conn, prefix, generated, args.max_lines, args.docstrings, revision=revision)
             replace_output(generated, output, single)
             print(f"Updated signature output at {output}")
     return 0
@@ -490,6 +501,7 @@ def main() -> int:
         help="In split mode, recursively break up any module whose flat rendering would "
         "exceed this many lines (default: 2000). Set to 0 to disable recursive splitting.",
     )
+    parser.add_argument("--metadata", type=Path, help="Build metadata.json with the source revision (ignored in single mode)")
     parser.add_argument("--db", type=Path, help="Existing api-docs.db (requires --no-build)")
     parser.add_argument(
         "--no-build",

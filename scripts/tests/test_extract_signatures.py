@@ -1,6 +1,7 @@
 """Signature rendering against small doc-gen4 databases."""
 
 import importlib.util
+import json
 from pathlib import Path
 import sqlite3
 import subprocess
@@ -115,6 +116,39 @@ class ExtractionTest(unittest.TestCase):
         self.assertNotIn("MathEconLibTest.external", output)
         self.assertIn("7 declarations across 6 modules", (self.output / "README.md").read_text())
         self.assertIn("2 declarations across 1 modules", (self.output / "Parent/B.md").read_text())
+
+    def test_metadata_revision_is_placed_only_in_top_level_index(self):
+        metadata = self.root / "metadata.json"
+        revision = "a1" * 20
+        metadata.write_text(json.dumps({"revision": revision}))
+        result = self.run_cli("--metadata", str(metadata), "--max-lines", "1")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        index = (self.output / "README.md").read_text()
+        self.assertIn("(default mode splits into this directory).\n\n"
+                      f"Source revision: `{revision}`\n\n**Totals:", index)
+        self.assertEqual(index.count("Source revision:"), 1)
+        for path, content in self.contents().items():
+            if path != Path("README.md"):
+                self.assertNotIn(b"Source revision:", content)
+        result = self.run_cli("--max-lines", "1")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual((self.output / "README.md").read_text(),
+                         index.replace(f"\nSource revision: `{revision}`\n", ""))
+
+    def test_invalid_metadata_revision_does_not_write_output(self):
+        metadata = self.root / "metadata.json"
+        for revision in ["A" * 40, "a" * 39, "g" * 40, "a" * 40 + "\n", None, 123]:
+            with self.subTest(revision=revision):
+                metadata.write_text(json.dumps({"revision": revision}))
+                result = self.run_cli("--metadata", str(metadata))
+                self.assertEqual(result.returncode, 1)
+                self.assertIn("revision must be 40 lowercase hex characters", result.stderr)
+                self.assertFalse(self.output.exists())
+
+    def test_single_mode_ignores_metadata(self):
+        result = self.run_cli("--single", "MathEconLib.Parent", "--metadata", str(self.root / "missing.json"))
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertNotIn("Source revision:", self.output.read_text())
 
     def test_regeneration_is_deterministic(self):
         self.assertEqual(self.run_cli().returncode, 0)
