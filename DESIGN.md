@@ -92,9 +92,9 @@ This also suggests a guideline for module organization. A theorem belongs with t
 
 #### Examples
 
-In its general form, a game-theoretic equilibrium problem comprises (1) the possible profiles, (2) who can deviate, (3) which alternative profiles are considered deviations by an actor, and (4) how that actor evaluates a profile.
+In its general form, a game-theoretic equilibrium problem comprises (1) the possible profiles, (2) who can deviate, (3) which alternative profiles are considered deviations by an actor, (4) how that actor evaluates a profile, and (5) which profiles are admissible equilibrium candidates.
 
-P2 suggests that one should define this basic structure once: _A profile is an equilibrium when no allowed deviation gives the deviator a higher value_.
+P2 suggests that one should define this basic structure once: _A profile is an equilibrium when it is an admissible candidate and no allowed deviation gives the deviator a higher value_.
 
 ```lean
 /-- Profiles evaluated by deviators with specified admissible deviations. -/
@@ -103,20 +103,24 @@ structure EquilibriumProblem (S : Type*) (I : Type*) where
   deviation : I → S → S → Prop
   /-- The deviator's payoff at a profile. -/
   value : I → S → ℝ
+  /-- Whether a profile is an admissible equilibrium candidate. -/
+  valid : S → Prop
 
-/-- No admissible deviation strictly improves the deviator's payoff. -/
-def EquilibriumProblem.IsEquilibrium {S I : Type*}
-    (P : EquilibriumProblem S I) (s : S) : Prop :=
-  ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s
+/-- An admissible candidate at which every admissible deviation weakly lowers the deviator's
+payoff. -/
+structure EquilibriumProblem.IsEquilibrium {S I : Type*}
+    (P : EquilibriumProblem S I) (s : S) : Prop where
+  valid : P.valid s
+  deviation_le : ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s
 ```
 
-Then different equilibrium concepts are specializations of this one underlying structure. For Nash equilibrium in a strategic game, (1) a profile is an action profile; (2) a deviator is a player; (3) an allowed deviation changes only that player’s action; and (4) the value is that player’s payoff.
+Then different equilibrium concepts are specializations of this one underlying structure. For Nash equilibrium in a strategic game, (1) a profile is an action profile; (2) a deviator is a player; (3) an allowed deviation changes only that player’s action; (4) the value is that player’s payoff; and (5) every action profile is a candidate.
 
-For interim Bayesian Nash equilibrium in a finite Bayesian game with positive marginal probability for every type, (1) a profile is a strategy profile; (2) a deviator is a player-type pair; (3) an allowed deviation changes only that player’s action at that type; (4) the value is the corresponding interim expected payoff.
+For interim Bayesian Nash equilibrium in a finite Bayesian game with positive marginal probability for every type, (1) a profile is a strategy profile; (2) a deviator is a player-type pair; (3) an allowed deviation changes only that player’s action at that type; (4) the value is the corresponding interim expected payoff; and (5) every strategy profile is a candidate. Mixed Nash equilibrium, by contrast, admits only profiles under which every player's payoff is integrable, since an expected payoff is otherwise undefined.
 
 Suppose instead each concept is written directly. Nash equilibrium becomes `∀ i a', g.payoff i (update s i a') ≤ g.payoff i s` while interim equilibrium is `∀ i θ a', interim b σ i θ (updateAt σ i θ a') ≤ interim b σ i θ`. While each is fine on its own, proving that an equilibrium is a profile of best responses becomes tedious: The Nash proof unfolds the first quantifier; the interim proof cannot reuse it, because the predicates share no common form, so it is written again against the second quantifier; and so on. Every later result about equilibrium as such, from existence under continuity to the report-deviation characterization, is similarly troublesome.
 
-Applying P2 provides a shared structure such that the deviation is a named field of the specialization. The `IsEquilibrium` predicate is defined using the specialization's `deviation` field.
+Applying P2 provides a shared structure such that the deviation is a named field of the specialization. The `IsEquilibrium` predicate is defined using the specialization's `deviation`, `value`, and `valid` fields.
 
 ### P3. Compose high-level concepts from library primitives
 
