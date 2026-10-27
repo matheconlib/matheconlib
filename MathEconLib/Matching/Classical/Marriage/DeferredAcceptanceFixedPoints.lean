@@ -3,7 +3,9 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
+module
+
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
 
 /-!
 # Classical proposal outcomes and contracts fixed points
@@ -21,6 +23,8 @@ two proof routes share elementary proposal invariants. Their agreement is at
 the level of terminal outcomes; their intermediate states and round counts
 need not agree.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -61,9 +65,9 @@ theorem gsMatchingAt_accepts_only_graph (n : ℕ)
   have hm := (mkt.mem_choiceM_insert_graphOf_iff (hIR.1 m) hnewM).mp hS
   have hw := (mkt.mem_choiceW_insert_graphOf_iff (hIR.2 w) hnewW).mp hB
   by_cases hR : (m, w) ∈ mkt.gsRejected n
-  · letI := mkt.prefW w
+  · let := mkt.prefW w
     exact (lt_asymm (mkt.gs_rejected_below_holding n hR)) hw
-  · letI := mkt.prefM m
+  · let := mkt.prefM m
     have hle : some w ≤ mkt.bestM m (mkt.gsRejected n)ᶜ :=
       mkt.le_bestM_of_mem (mkt.some_mem_menuM.mpr hR)
     exact (not_lt_of_ge hle) hm

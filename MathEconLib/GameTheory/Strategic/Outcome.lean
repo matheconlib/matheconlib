@@ -89,7 +89,7 @@ For a game with stochastic outcomes, this gives a distribution over outcome dist
 `mixedFlattened` gives the corresponding distribution over outcomes. -/
 @[simps] noncomputable def mixed (G : OutcomeGame ι A O) [G.Measurable] [Fintype ι] :
     OutcomeGame ι (fun i ↦ ProbabilityMeasure (A i)) (ProbabilityMeasure O) where
-  outcome a := (ProbabilityMeasure.pi a).map G.measurable_outcome.aemeasurable
+  outcome a := (ProbabilityMeasure.pi a).map G.outcome
 
 /-- The outcome distribution induced by independent mixed actions in a game with stochastic
 outcomes, integrating the conditional outcome distributions over the action profile. -/
@@ -147,7 +147,9 @@ instance [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
     have hbounded := P.isBounded_payoff_range i
     simp_rw [isBounded_iff_forall_norm_le, Set.forall_mem_range] at hbounded ⊢
     refine hbounded.imp fun C hC μ ↦ ?_
-    simpa using norm_integral_le_of_norm_le_const (μ := μ) <| .of_forall hC
+    have h := norm_integral_le_of_norm_le_const (μ := μ) <| .of_forall hC
+    simp only [probReal_univ, mul_one] at h
+    exact h
 
 end PayoffStructure
 

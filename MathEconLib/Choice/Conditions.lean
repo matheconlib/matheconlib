@@ -3,7 +3,9 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Basic
+module
+
+public import MathEconLib.Choice.Basic
 
 /-!
 # Conditions on choice functions
@@ -46,6 +48,8 @@ the sections below state the precise scope of each definition and theorem.
 Further background: Aizerman–Malishevski (1981); Alkan–Gale consistency;
 Aygün–Sönmez (2013); Chambers–Yenmez (2017); Plott (1973).
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 
@@ -150,7 +154,7 @@ theorem not_mem_of_forall_insert_insert
         simpa using hx
     | insert _ _ ih =>
         simpa [Set.union_insert] using h ih
-  rw [← Set.union_diff_cancel hYZ]
+  rw [← Set.union_sdiff_cancel hYZ]
   exact key (Z \ Y) hfin
 
 /-- On a finite domain the single-new-alternative form and `Substitutable`
@@ -434,7 +438,7 @@ theorem PathIndependent.substitutable
   obtain ⟨hxV, hxW⟩ := hx
   have hx :
       x ∈ C (C W ∪ (V \ W)) := by
-    rw [← hpi W (V \ W), Set.union_diff_cancel hWV]
+    rw [← hpi W (V \ W), Set.union_sdiff_cancel hWV]
     exact hxV
   rcases C.choose_subset _ hx with hxCW | hxDiff
   · exact hxCW

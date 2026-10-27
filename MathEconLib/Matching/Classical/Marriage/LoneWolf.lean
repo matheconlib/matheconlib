@@ -3,9 +3,11 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.ToContracts
-import MathEconLib.Matching.Contracts.RuralHospitals
-import Mathlib.Data.Finite.Prod
+module
+
+public import MathEconLib.Matching.Classical.Marriage.ToContracts
+public import MathEconLib.Matching.Contracts.RuralHospitals
+public import Mathlib.Basic.Finite.Prod
 
 /-!
 # The lone-wolf theorem
@@ -14,6 +16,8 @@ The many-to-many rural-hospitals theorem specializes to invariance of the
 matched agents in a marriage market. Both the matched and unmatched formulations
 are supplied for each side; the woman-side results follow by side exchange.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

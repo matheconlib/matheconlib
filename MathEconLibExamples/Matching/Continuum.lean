@@ -3,10 +3,12 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib.Matching.Continuum
-import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
-import Mathlib.MeasureTheory.Order.Group.Lattice
-import Mathlib.Probability.Distributions.Uniform
+module
+
+public import MathEconLib.Matching.Continuum
+public import Mathlib.MeasureTheory.Measure.Lebesgue.Basic
+public import Mathlib.MeasureTheory.Order.Group.Lattice
+public import Mathlib.Probability.Distributions.Uniform
 
 /-!
 # Matching identical points in two uniform populations
@@ -19,6 +21,8 @@ between utility-based pointwise stability and classical marriage stability. A sp
 shows that matching measures need not come from bijections between the supplied type spaces.
 -/
 
+@[expose] public section
+
 namespace MathEconLibExamples.Matching.Continuum
 
 open MeasureTheory
@@ -28,11 +32,11 @@ open MathEconLib.Matching.Continuum
 noncomputable def population : ProbabilityMeasure ℝ :=
   ⟨volume.restrict (Set.Icc 0 1), ⟨by simp⟩⟩
 
-instance : NoAtoms population.toMeasure :=
-  inferInstanceAs (NoAtoms ((volume : Measure ℝ).restrict (Set.Icc 0 1)))
+instance : NullSingletonClass population.toMeasure :=
+  inferInstanceAs (NullSingletonClass ((volume : Measure ℝ).restrict (Set.Icc 0 1)))
 
 /-- Distance-based preferences with an outside option below the identity match. -/
-def utilities : Utilities ℝ ℝ where
+def utilities : PartnerUtilities ℝ ℝ where
   left a b := -|a - b|
   right b a := -|b - a|
   outsideLeft _ := -1
@@ -45,7 +49,7 @@ theorem utilities_measurable : utilities.IsMeasurable :=
 theorem identity_pointwiseStable : (MatchingMap.refl population).PointwiseStable utilities := by
   constructor
   · intro a
-    norm_num [Utilities.IndividuallyRationalPair, MatchingMap.graph, utilities]
+    norm_num [PartnerUtilities.IndividuallyRationalPair, MatchingMap.graphMap, utilities]
   · intro a b h
     have hab := (MatchingMap.isBlockingPair_iff _ _ _ _).mp h
     exact (not_lt_of_ge (neg_nonpos.mpr (abs_nonneg (a - b))))
@@ -65,7 +69,8 @@ open MathEconLib.Matching
 
 /-- Equal population weights on two types. -/
 noncomputable def population : ProbabilityMeasure (Fin 2) :=
-  ⟨(PMF.uniformOfFintype (Fin 2)).toMeasure, inferInstance⟩
+  ⟨Measure.uniformOfFinset (Finset.univ : Finset (Fin 2)),
+    ⟨by norm_num [Measure.uniformOfFinset_apply, ENNReal.div_self]⟩⟩
 
 /-- Both sides rank type 1 above type 0 and either partner above remaining unmatched. -/
 def market : MarriageMarket (Fin 2) (Fin 2) :=
@@ -73,14 +78,14 @@ def market : MarriageMarket (Fin 2) (Fin 2) :=
     fun _ ↦ inferInstanceAs (LinearOrder (WithBot (Fin 2)))⟩
 
 /-- Partner ranks as utilities, with outside-option utility `-1`. -/
-def utilities : Utilities (Fin 2) (Fin 2) :=
+def utilities : PartnerUtilities (Fin 2) (Fin 2) :=
   ⟨fun _ b ↦ b.val, fun _ a ↦ a.val, fun _ ↦ -1, fun _ ↦ -1⟩
 
 /-- The utility and classical descriptions give exactly the same partner comparisons. -/
 theorem represents : market.toPartnerComparisons = utilities.toPartnerComparisons := by
   ext a x y <;> fin_cases x <;> fin_cases y <;>
     norm_num [market, MarriageMarket.toPartnerComparisons, MarriageMarket.ltM, MarriageMarket.ltW,
-      Utilities.toPartnerComparisons, utilities] <;> decide
+      PartnerUtilities.toPartnerComparisons, utilities] <;> decide +revert
 
 /-- The identity assignment has no mutually profitable cross-match. -/
 theorem identity_pointwiseStable : (MatchingMap.refl population).PointwiseStable utilities := by
@@ -102,7 +107,8 @@ namespace SplitMass
 
 /-- One left type with total population mass one. -/
 noncomputable def leftPopulation : ProbabilityMeasure (Fin 1) :=
-  ⟨(PMF.uniformOfFintype (Fin 1)).toMeasure, inferInstance⟩
+  ⟨Measure.uniformOfFinset (Finset.univ : Finset (Fin 1)),
+    ⟨by norm_num [Measure.uniformOfFinset_apply, ENNReal.div_self]⟩⟩
 
 /-- Split the left type's mass equally between the two right types. -/
 noncomputable def matching : MatchingMeasure leftPopulation FiniteBridge.population :=
@@ -112,13 +118,13 @@ noncomputable def matching : MatchingMeasure leftPopulation FiniteBridge.populat
 theorem matching_mass (b : Fin 2) : matching.toMeasure {(0, b)} = (2 : ENNReal)⁻¹ := by
   change (leftPopulation.toMeasure.prod FiniteBridge.population.toMeasure) {(0, b)} = _
   rw [← Set.singleton_prod_singleton, Measure.prod_prod]
-  simp [leftPopulation, FiniteBridge.population, PMF.uniformOfFintype_apply]
+  simp [leftPopulation, FiniteBridge.population]
 
 /-- Indifferent agents with zero outside options make this split assignment stable. -/
 theorem matching_distributionallyStable : matching.DistributionallyStable
     ⟨fun _ _ ↦ 0, fun _ _ ↦ 0, fun _ ↦ 0, fun _ ↦ 0⟩ := by
   simp [MatchingMeasure.DistributionallyStable, MatchingMeasure.IndividuallyRational,
-    MatchingMeasure.Unblocked, Utilities.IndividuallyRationalPair, Utilities.Blocks]
+    MatchingMeasure.Unblocked, PartnerUtilities.IndividuallyRationalPair, PartnerUtilities.Blocks]
 
 /-- There is no bijection from one left type to two right types. -/
 theorem no_matchingMap : ¬Nonempty (MatchingMap leftPopulation FiniteBridge.population) := by

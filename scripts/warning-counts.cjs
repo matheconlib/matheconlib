@@ -19,7 +19,8 @@ function countWarnings(log) {
   // Lake prefixes diagnostics with their severity, including replayed logs.
   const plain = log.replace(/\x1b\[[0-9;]*m/g, '');
   for (const line of plain.split(/\r?\n/)) {
-    const match = /^warning: (?:\.\/)?([^:]+):\d+:\d+:/.exec(line);
+    // Lean 4.35 also emits module-import warnings without line/column numbers.
+    const match = /^warning: (?:\.\/)?([^:]+):(?:\d+:\d+:| imports )/.exec(line);
     if (match && PROJECT_FILE.test(match[1])) {
       counts[match[1]] = (counts[match[1]] || 0) + 1;
     }

@@ -3,7 +3,9 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import Mathlib.Data.Option.Basic
+module
+
+public import Mathlib.Data.Option.Basic
 
 /-!
 # Partner comparisons and bilateral blocking
@@ -13,6 +15,8 @@ This is comparison data only: no order laws, utility representation, population 
 matching algorithm is imposed. Classical linear preferences and partner utilities supply
 adapters to the same bilateral blocking rule. This does not develop choice correspondences.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

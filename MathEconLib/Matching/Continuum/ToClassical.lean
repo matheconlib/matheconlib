@@ -3,8 +3,10 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib.Matching.Classical.Marriage.Basic
-import MathEconLib.Matching.Continuum.Stability
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Basic
+public import MathEconLib.Matching.Continuum.Stability
 
 /-!
 # Agreement with classical marriage stability
@@ -17,6 +19,8 @@ existence theorem is used. Pointwise stability implies distributional stability 
 measurability hypotheses of `PointwiseStable.toMatchingMeasure`.
 -/
 
+@[expose] public section
+
 namespace MathEconLib.Matching.Continuum.MatchingMap
 
 open MeasureTheory
@@ -25,7 +29,7 @@ variable {A B : Type*} [MeasurableSpace A] [MeasurableSpace B]
 variable {μ : ProbabilityMeasure A} {ν : ProbabilityMeasure B}
 
 /-- Forgetting measure structure preserves blocking under the same partner comparisons. -/
-theorem isBlockingPair_iff_classical (f : MatchingMap μ ν) (u : Utilities A B)
+theorem isBlockingPair_iff_classical (f : MatchingMap μ ν) (u : PartnerUtilities A B)
     (mkt : MarriageMarket A B) (hpref : mkt.toPartnerComparisons = u.toPartnerComparisons)
     (a : A) (b : B) :
     f.IsBlockingPair u a b ↔
@@ -34,7 +38,7 @@ theorem isBlockingPair_iff_classical (f : MatchingMap μ ν) (u : Utilities A B)
   rfl
 
 /-- Classical stability and pointwise stability agree for a utility representation of the market. -/
-theorem pointwiseStable_iff_classical (f : MatchingMap μ ν) (u : Utilities A B)
+theorem pointwiseStable_iff_classical (f : MatchingMap μ ν) (u : PartnerUtilities A B)
     (mkt : MarriageMarket A B) (hpref : mkt.toPartnerComparisons = u.toPartnerComparisons) :
     f.PointwiseStable u ↔ mkt.IsStableMatching f.toMeasurableEquiv.toEquiv.toPEquiv := by
   have hIL (a : A) (b : B) : mkt.leM a none (some b) ↔ u.outsideLeft a ≤ u.left a b := by
@@ -50,16 +54,16 @@ theorem pointwiseStable_iff_classical (f : MatchingMap μ ν) (u : Utilities A B
     constructor
     · intro h a
       constructor
-      · exact (hIL a (f a)).mp (by simpa using h.1 a)
+      · exact (hIL a (f a)).mp (by simpa [MarriageMarket.IndividuallyRationalForM] using h.1 a)
       · exact (hIR (f a) a).mp (by
           simpa [MarriageMarket.IndividuallyRationalForW, ← Equiv.toPEquiv_symm] using h.2 (f a))
     · intro h
       constructor
       · intro a
-        simpa using (hIL a (f a)).mpr (h a).1
+        simpa [MarriageMarket.IndividuallyRationalForM] using (hIL a (f a)).mpr (h a).1
       · intro b
-        simpa [← Equiv.toPEquiv_symm, symm] using
-          (hIR b (f.symm b)).mpr (by simpa [graph] using (h (f.symm b)).2)
+        simpa [MarriageMarket.IndividuallyRationalForW, ← Equiv.toPEquiv_symm, symm] using
+          (hIR b (f.symm b)).mpr (by simpa [graphMap] using (h (f.symm b)).2)
   change (_ ∧ _) ↔ (_ ∧ _)
   rw [hi, mkt.unblocked_iff_no_blockingPair]
   simp only [← f.isBlockingPair_iff_classical u mkt hpref, Unblocked]

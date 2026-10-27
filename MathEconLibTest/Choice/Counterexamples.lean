@@ -3,10 +3,12 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
+module
+
 /-
 Matching with contracts: counterexamples for the choice layer.
 -/
-import MathEconLib.Choice.Conditions
+public import MathEconLib.Choice.Conditions
 
 /-!
 # Choice-layer counterexamples
@@ -33,6 +35,8 @@ No finite counterexample exists — that is the content of
 inherently an infinite-domain phenomenon.
 -/
 
+@[expose] public section
+
 namespace MathEconLib.Choice
 
 namespace ChoiceFunction
@@ -48,8 +52,8 @@ noncomputable def infiniteOrEmpty (α : Type*) : ChoiceFunction α := by
       choose_subset := ?_ }
   intro Y
   by_cases hY : Y.Infinite
-  · rw [if_pos hY]
-  · rw [if_neg hY]
+  · rw [ite_eq_left hY]
+  · rw [ite_eq_right hY]
     exact Set.empty_subset Y
 
 /-- On an infinite menu, `infiniteOrEmpty` chooses the entire menu. -/
@@ -59,7 +63,7 @@ theorem infiniteOrEmpty_of_infinite
     infiniteOrEmpty α Y = Y := by
   classical
   change (if Y.Infinite then Y else ∅) = Y
-  exact if_pos hY
+  exact ite_eq_left hY
 
 /-- On a finite menu, `infiniteOrEmpty` chooses nothing. -/
 @[simp]
@@ -68,7 +72,7 @@ theorem infiniteOrEmpty_of_finite
     infiniteOrEmpty α Y = ∅ := by
   classical
   change (if Y.Infinite then Y else ∅) = ∅
-  exact if_neg hY.not_infinite
+  exact ite_eq_right hY.not_infinite
 
 /-- `infiniteOrEmpty` satisfies the single-new-alternative form.
 

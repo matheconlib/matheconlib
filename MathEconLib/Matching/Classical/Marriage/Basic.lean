@@ -3,11 +3,13 @@ Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers, Bo Cowgill
 -/
-import MathEconLib.Matching.Classical.Marriage.Preferences
-import MathEconLib.ForMathlib.Data.PartialMatching
-import Mathlib.Data.Set.Basic
-import Mathlib.Data.Fintype.Defs
-import Mathlib.Order.Basic
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Preferences
+public import MathEconLib.ForMathlib.Data.PartialMatching
+public import Mathlib.Data.Set.Basic
+public import Mathlib.Data.Fintype.Defs
+public import Mathlib.Order.Basic
 
 /-!
 # Marriage matchings, stability, and optimality specifications
@@ -21,6 +23,8 @@ matching-with-contracts model.
 The order on bare `PEquiv` is its extension order; unanimous preference is
 expressed by `MenWeaklyPrefer` and `WomenWeaklyPrefer`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -214,7 +218,7 @@ theorem menWeaklyPrefer_antisymm {μ ν : M ≃. W}
     μ = ν := by
   apply PEquiv.ext
   intro m
-  letI := mkt.prefM m
+  let := mkt.prefM m
   exact le_antisymm (hνμ m) (hμν m)
 
 theorem womenWeaklyPrefer_antisymm {μ ν : M ≃. W}
@@ -232,7 +236,7 @@ theorem womenWeaklyPrefer_of_menWeaklyPrefer {μ ν : M ≃. W}
     (hν : mkt.IsStableMatching ν) (h : mkt.MenWeaklyPrefer μ ν) :
     mkt.WomenWeaklyPrefer ν μ := by
   intro w
-  letI := mkt.prefW w
+  let := mkt.prefW w
   cases hμw : μ.symm w with
   | none => exact hν.1.2 w
   | some m =>
@@ -248,7 +252,7 @@ theorem womenWeaklyPrefer_of_menWeaklyPrefer {μ ν : M ≃. W}
         rw [hnuw] at hlt
         exact (lt_irrefl _ hlt)
       have hm : mkt.BlocksM ν m w := by
-        letI := mkt.prefM m
+        let := mkt.prefM m
         exact lt_of_le_of_ne hmle hmne
       exact hν.2.1 m w ⟨hm, hw⟩
 

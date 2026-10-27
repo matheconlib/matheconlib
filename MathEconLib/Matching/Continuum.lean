@@ -3,9 +3,11 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib.Matching.Continuum.Basic
-import MathEconLib.Matching.Continuum.Stability
-import MathEconLib.Matching.Continuum.ToClassical
+module
+
+public import MathEconLib.Matching.Continuum.Basic
+public import MathEconLib.Matching.Continuum.Stability
+public import MathEconLib.Matching.Continuum.ToClassical
 
 /-!
 # Two-sided continuum matching

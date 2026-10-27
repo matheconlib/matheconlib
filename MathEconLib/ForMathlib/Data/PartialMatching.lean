@@ -3,9 +3,11 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import Mathlib.Data.PEquiv
-import Mathlib.Data.Set.Card
-import Mathlib.Data.Set.Subsingleton
+module
+
+public import Mathlib.Basic.PEquiv
+public import Mathlib.Data.Set.Card
+public import Mathlib.Data.Set.Subsingleton
 
 /-!
 # Partial equivalences and functional relations
@@ -18,6 +20,8 @@ or decidability assumptions are involved.
 The existing `PEquiv` is the only matching structure: these are constructors
 and graph lemmas for it. Its existing order remains the extension order.
 -/
+
+@[expose] public section
 
 universe u v
 
@@ -73,7 +77,7 @@ theorem graph_injective : Function.Injective (graph : (α ≃. β) → Set (α �
 theorem graph_fiber_fst_eq_empty {μ : α ≃. β} {a : α}
     (hμ : μ a = none) : {p ∈ μ.graph | p.1 = a} = ∅ := by
   ext ⟨a', b⟩
-  simp only [Set.mem_setOf_eq, mem_graph, Set.mem_empty_iff_false, iff_false, not_and]
+  simp only [Set.mem_ofPred_eq, mem_graph, Set.mem_empty_iff_false, iff_false, not_and]
   rintro hp rfl
   rw [hμ] at hp
   contradiction

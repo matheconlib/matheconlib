@@ -146,15 +146,49 @@ Classical preferences and utilities supply adapters to `PartnerComparisons`, whi
 bilateral blocking once. This is comparison data, with no choice-correspondence framework.
 The pointwise/classical stability bridge requires the adapters to agree, including outside options.
 
-Utilities include outside options; this is a utility-representable specialization of Greinecker–Kah,
-whose preference relations are more general. `PointwiseStable` checks every agent and potential blocking
-pair; `DistributionallyStable` checks individual rationality almost everywhere and blocking
-under the product of the matching measure with itself. A pointwise-stable map gives a
-stable measure when the utility data are measurable. The example in
-`MathEconLibExamples/Matching/Continuum.lean` applies this to two uniform populations on `[0,1]`.
-Tests also show that blocking among zero-mass types can prevent pointwise stability while
-preserving distributional stability. Existence, approximation, unmatched mass and the separate
-admissions-cutoff model in [#167](https://github.com/matheconlib/matheconlib/issues/167) remain later work.
+`PartnerUtilities` records both populations' partner and outside-option utilities.
+`MatchingMap.graphMap` sends `a` to `(a, f a)`; pushing the left population forward along it
+produces the matching measure. Left/right label the populations without assigning proposal or
+buyer/seller roles; both atomic and atomless populations are allowed. `MatchingMeasure.product`
+packages Mathlib's independent product and marginal identities as an optional feasible matching.
+Its stability is a separate question. `PartnerUtilities.symm` exchanges partner utilities and
+outside options along with the population labels.
+
+`PointwiseStable` checks every agent and potential blocking pair. `DistributionallyStable`
+checks individual rationality almost everywhere and blocking under the product of the matching
+measure with itself. A pointwise-stable map gives a stable measure when utilities are measurable.
+The uniform-interval example is in `MathEconLibExamples/Matching/Continuum.lean`.
+
+The atomless-circle regression in `MathEconLibTest/Matching/Continuum/Antipodal.lean` matches each
+point to itself and awards utility one only to its antipode (zero otherwise, outside option −1).
+Every agent has a blocking partner, yet the blocking graph has product measure zero. The test
+also proves that arbitrary full-measure subsets of the two populations still contain a blocking
+pair. Thus product-a.e. stability does not imply pointwise stability after deleting null sets of
+agents. The older finite null-type test establishes only the weaker distinction from pointwise
+stability. Both cases are retained.
+
+### Source comparison and regularity
+
+[Greinecker–Kah (2021), §2](https://onlinelibrary.wiley.com/doi/full/10.3982/ECTA16228)
+define blocking to have zero measure under the matching's self-product. Our `Unblocked`
+uses one oriented cross-pair; exchanging the two couples gives the other orientation, so their
+union is null exactly when ours is null. Their balanced model assumes universal acceptability;
+we additionally check outside options.
+
+Their §2 assumes Polish type spaces, Borel probability populations, acyclic strict preferences,
+and open strict-comparison sets in the corresponding triple products. Jointly continuous
+partner utilities suffice for the preference conditions. Our elementary bridges need only
+measurability, so this layer extends the criterion beyond those hypotheses. The antipodal spike
+utilities are measurable but violate openness: moving a preferred antipode even slightly destroys
+strict improvement. The example therefore does not refute their existence or approximation results.
+
+Their general §3 model further uses Polish contract spaces and a continuous, nonempty,
+compact-valued feasible-contract correspondence. Those hypotheses and the relevant preference
+conditions must be supplied when formalizing Theorem 1 (existence) or Theorem 2 (approximation).
+Neither theorem, nor a converse deleting agent-null sets, is proved here.
+
+Existence, approximation, unmatched mass and the separate admissions-cutoff model in
+[#167](https://github.com/matheconlib/matheconlib/issues/167) remain later work.
 
 ## Many-to-one completion reduction
 
@@ -243,7 +277,7 @@ refinement remain public: they relate different mathematical objects.
 
 ## Verification
 
-With Lean 4.28.0 and the locked dependencies available, run the repository's
+With Lean 4.35.0 and the locked dependencies available, run the repository's
 normal import checks and `lake build`. The default targets already include the
 production root, API pins and test root. The namespace guard therefore covers
 the new production modules; both counterexample modules and the new client
