@@ -15,8 +15,8 @@ import Mathlib.Analysis.SpecialFunctions.NonIntegrable
 
 A player's type is uniform on `(0, 1]`, their action has no effect, and their payoff is the
 reciprocal of their type. This payoff is nonintegrable. Its Bochner integral is zero and the
-constant strategy satisfies the bare no-profitable-deviation inequalities. The strategy is not a
-Bayesian Nash equilibrium because the incumbent payoff is not integrable.
+constant strategy satisfies deviation optimality. The strategy is not a Bayesian Nash equilibrium
+because the incumbent payoff is not integrable.
 
 A second one-player game has action payoff `-|a⁻¹|`. Uniform randomization on `(0, 1]` is Nash for
 the raw integral-valued mixed extension, but ceases to be Nash when one is added to all payoffs.
@@ -39,7 +39,7 @@ the nonintegrable uniform deviation, whose totalized utility is zero.
 
 * `not_integrable_payoff`: The realized payoff is not integrable under the uniform prior.
 * `exAntePayoff_eq_zero`: The nonintegrable payoff has zero Bochner integral.
-* `strategy_isEquilibrium`: The constant strategy satisfies the admissible-deviation inequalities.
+* `strategy_isDeviationOptimal`: The constant strategy satisfies deviation optimality.
 * `not_isBNE`: The constant strategy is not a Bayesian Nash equilibrium.
 * `Mixed.strategy_isNash`, `Mixed.strategy_not_isNash_shifted`: Raw integral Nash is sensitive to a
   preference-preserving constant shift.
@@ -104,8 +104,8 @@ theorem not_integrable_payoff :
 theorem exAntePayoff_eq_zero : game.exAntePayoff prior () strategy = 0 :=
   integral_undef not_integrable_payoff
 
-/-- Equal action-independent payoffs satisfy the bare equilibrium inequalities. -/
-theorem strategy_isEquilibrium : (game.bneProblem prior).IsEquilibrium strategy := by
+/-- Equal action-independent payoffs satisfy deviation optimality. -/
+theorem strategy_isDeviationOptimal : (game.bneProblem prior).IsDeviationOptimal strategy := by
   intro i s' _hs'
   exact le_rfl
 

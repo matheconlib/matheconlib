@@ -13,18 +13,19 @@ public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Game
 
 A measurable pure strategy profile is a Bayesian Nash equilibrium when every player's realized
 payoff is integrable and every integrable unilateral strategy deviation weakly lowers their ex-ante
-payoff. Deviations may change the action prescribed at every type of the deviating player. The bare
-`bneProblem.IsEquilibrium` supplies only the deviation inequalities and does not require integrable
-incumbent payoffs; `IsBNE` expresses the economic equilibrium concept under a common probability
-prior.
+payoff. Deviations may change the action prescribed at every type of the deviating player.
+Candidate validity in `bneProblem` requires integrable incumbent payoffs; `IsBNE` is its equilibrium
+predicate under a common probability prior.
 
 ## Main definitions
 
-* `BayesianGame.bneProblem`: The equilibrium problem of integrable unilateral strategy deviations.
-* `BayesianGame.IsBNE`: Equilibrium together with incumbent payoff integrability.
+* `BayesianGame.bneProblem`: Integrable candidates and integrable unilateral strategy deviations.
+* `BayesianGame.IsBNE`: Equilibrium under a common probability prior.
 
 ## Main statements
 
+* `BayesianGame.bneProblem_valid_iff`: Candidate validity is incumbent payoff integrability.
+* `BayesianGame.IsBNE.integrable`: Incumbent payoff integrability at equilibrium.
 * `BayesianGame.isBNE_iff`: The unilateral deviation inequalities and integrability requirement.
 
 ## Tags
@@ -46,16 +47,13 @@ variable {I : Type uI} {Θ : I → Type uT} {A : I → Type uA} {V : Type uV}
 
 /-- The equilibrium problem in which admissible deviations preserve opponents' strategies and give
 the deviator an integrable realized payoff. Each player's value is their ex-ante payoff integral.
-
-Its bare `IsEquilibrium` predicate does not require integrable incumbent payoffs and can hold for
-nonintegrable incumbents, whose Bochner integrals are zero. Bayesian Nash equilibrium under a
-common probability prior is `IsBNE`, which additionally requires integrability of every incumbent
-payoff. -/
+Candidates have integrable incumbent payoffs under the common prior. -/
 def bneProblem (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) :
     EquilibriumProblem G.Strategy I V where
   deviation i s s' := (∀ j, j ≠ i → s' j = s j) ∧
     Integrable (fun θ => G.payoff i (G.measurableActionProfile s' θ) θ) μ
   value i s := G.exAntePayoff μ i s
+  valid := G.IncumbentPayoffsIntegrable μ
 
 /-- An admissible deviation preserves opponents' strategies and gives the deviator an integrable
 realized payoff. -/
@@ -69,14 +67,20 @@ realized payoff. -/
 @[simp] lemma bneProblem_value_eq (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i))
     (i : I) (s : G.Strategy) : (G.bneProblem μ).value i s = G.exAntePayoff μ i s := rfl
 
+/-- Valid Bayesian candidates are exactly the profiles with integrable incumbent payoffs. -/
+@[simp] lemma bneProblem_valid_iff (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i))
+    (s : G.Strategy) :
+    (G.bneProblem μ).valid s ↔ G.IncumbentPayoffsIntegrable μ s := Iff.rfl
+
 /-- Pure Bayesian Nash equilibrium: Every integrable unilateral strategy deviation weakly lowers
 ex-ante payoff, and incumbent payoffs are integrable under the common probability prior. -/
-structure IsBNE [LE V] (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) [IsProbabilityMeasure μ]
-    (s : G.Strategy) : Prop where
-  /-- Every admissible unilateral deviation weakly lowers the deviator's expected payoff. -/
-  isEquilibrium : (G.bneProblem μ).IsEquilibrium s
-  /-- Every incumbent realized payoff is integrable under the common prior. -/
-  integrable : G.IncumbentPayoffsIntegrable μ s
+abbrev IsBNE [LE V] (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) [IsProbabilityMeasure μ]
+    (s : G.Strategy) : Prop := (G.bneProblem μ).IsEquilibrium s
+
+/-- Bayesian Nash equilibrium has integrable incumbent payoffs under the common prior. -/
+theorem IsBNE.integrable [LE V] {G : BayesianGame I Θ A V} {μ : Measure (∀ i, Θ i)}
+    [IsProbabilityMeasure μ] {s : G.Strategy} (h : G.IsBNE μ s) :
+    G.IncumbentPayoffsIntegrable μ s := h.valid
 
 /-- Bayesian Nash equilibrium is equivalent to its unilateral deviation inequalities together with
 integrability of all incumbent payoffs. -/
@@ -90,9 +94,9 @@ theorem isBNE_iff [LE V] (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)
       G.IncumbentPayoffsIntegrable μ s := by
   constructor
   · intro h
-    exact ⟨fun i s' hagree hint => h.isEquilibrium i s' ⟨hagree, hint⟩, h.integrable⟩
+    exact ⟨fun i s' hagree hint => h.deviation_le i s' ⟨hagree, hint⟩, h.integrable⟩
   · rintro ⟨h, hint⟩
-    exact ⟨fun i s' hs' => h i s' hs'.1 hs'.2, hint⟩
+    exact ⟨hint, fun i s' hs' => h i s' hs'.1 hs'.2⟩
 
 end MathEconLib.GameTheory.BayesianGame
 

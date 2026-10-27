@@ -15,8 +15,8 @@ mixed extension integrates strategic payoffs against the product of those measur
 real normed space. These integrals represent expected payoffs when the payoff functions are
 integrable; a nonintegrable function has Bochner integral zero. Mixed Nash equilibrium requires
 integrable incumbent payoffs and compares unilateral deviations with integrable deviator payoffs.
-The bare `mixedNashProblem.IsEquilibrium` supplies only the deviation inequalities and can admit
-nonintegrable incumbents; `IsMixedNash` expresses the economic equilibrium concept.
+Candidate validity in `mixedNashProblem` requires integrable incumbent payoffs, so its equilibrium
+predicate expresses mixed Nash equilibrium.
 
 ## Main definitions
 
@@ -24,11 +24,14 @@ nonintegrable incumbents; `IsMixedNash` expresses the economic equilibrium conce
 * `StrategicGame.MixedStrategy` gives profiles of independent action laws.
 * `StrategicGame.mixedExtension` integrates payoffs against independent action laws.
 * `StrategicGame.MixedPayoffsIntegrable` requires integrable incumbent payoffs.
-* `StrategicGame.mixedNashProblem` admits unilateral deviations with integrable deviator payoffs.
+* `StrategicGame.mixedNashProblem` requires integrable incumbents and admits unilateral deviations
+  with integrable deviator payoffs.
 * `StrategicGame.IsMixedNash` is mixed equilibrium with integrable incumbent payoffs.
 
 ## Main statements
 
+* `StrategicGame.mixedNashProblem_valid_iff` characterizes candidate validity by integrability.
+* `StrategicGame.IsMixedNash.integrable` gives integrability of incumbent payoffs.
 * `StrategicGame.isMixedNash_iff` gives integrability and the admissible payoff inequalities.
 * `StrategicGame.isMixedNash_iff_isNash_of_integrable` identifies mixed equilibrium with Nash
   equilibrium of the integral extension when all unilateral payoffs are integrable.
@@ -134,17 +137,15 @@ lemma integrable_payoff_of_bounded [NormedAddCommGroup V] [MeasurableSpace V] [B
   exact G.integrable_payoff_of_bdd i σ C (fun a ↦ hC _ (Set.mem_range_self a))
 
 /-- Players may replace their own probability law when their resulting payoff is integrable; each
-player's value is the payoff integral against the independent action laws.
-
-Its `IsEquilibrium` predicate supplies only the deviation inequalities and can hold for
-nonintegrable incumbent payoffs, whose Bochner integrals are zero. Mixed Nash equilibrium is
-`IsMixedNash`, which additionally requires integrability of every incumbent payoff. -/
+player's value is the payoff integral against the independent action laws. Candidates have
+integrable incumbent payoffs. -/
 def mixedNashProblem [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
     [Fintype I] [DecidableEq I] (G : StrategicGame I A V) :
     EquilibriumProblem (MixedStrategy A) I V where
   deviation i σ σ' := (∃ τ, σ' = Function.update σ i τ) ∧
     Integrable (G.payoff i) (Measure.pi (fun j ↦ (σ' j : Measure (A j))))
   value := G.mixedExtension.payoff
+  valid := G.MixedPayoffsIntegrable
 
 /-- Admissible mixed deviations change one player's law and give that player an integrable
 payoff. -/
@@ -162,15 +163,22 @@ payoff. -/
     G.mixedNashProblem.value i σ = G.mixedExtension.payoff i σ :=
   rfl
 
+/-- Valid mixed candidates are exactly the profiles with integrable incumbent payoffs. -/
+@[simp] lemma mixedNashProblem_valid_iff [NormedAddCommGroup V] [NormedSpace ℝ V]
+    [CompleteSpace V] [Fintype I] [DecidableEq I] (G : StrategicGame I A V)
+    (σ : MixedStrategy A) :
+    G.mixedNashProblem.valid σ ↔ G.MixedPayoffsIntegrable σ := Iff.rfl
+
 /-- The economic mixed Nash equilibrium has integrable incumbent payoffs, and every unilateral
 deviation with integrable deviator payoff gives at most the incumbent expected payoff. -/
-structure IsMixedNash [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+abbrev IsMixedNash [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
     [Fintype I] [DecidableEq I] [LE V] (G : StrategicGame I A V)
-    (σ : MixedStrategy A) : Prop where
-  /-- Every admissible unilateral deviation weakly lowers the deviator's expected payoff. -/
-  isEquilibrium : G.mixedNashProblem.IsEquilibrium σ
-  /-- Every incumbent payoff is integrable under the independent action laws. -/
-  integrable : G.MixedPayoffsIntegrable σ
+    (σ : MixedStrategy A) : Prop := G.mixedNashProblem.IsEquilibrium σ
+
+/-- Mixed Nash equilibrium has integrable incumbent payoffs under the independent action laws. -/
+theorem IsMixedNash.integrable [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
+    [Fintype I] [DecidableEq I] [LE V] {G : StrategicGame I A V} {σ : MixedStrategy A}
+    (h : G.IsMixedNash σ) : G.MixedPayoffsIntegrable σ := h.valid
 
 /-- Mixed equilibrium requires integrable incumbent payoffs and the payoff inequalities for all
 unilateral deviations with integrable deviator payoffs. -/
@@ -182,9 +190,9 @@ unilateral deviations with integrable deviator payoffs. -/
         G.mixedExtension.payoff i (Function.update σ i τ) ≤ G.mixedExtension.payoff i σ := by
   constructor
   · intro h
-    exact ⟨h.integrable, fun i τ hint ↦ h.isEquilibrium i _ ⟨⟨τ, rfl⟩, hint⟩⟩
+    exact ⟨h.integrable, fun i τ hint ↦ h.deviation_le i _ ⟨⟨τ, rfl⟩, hint⟩⟩
   · rintro ⟨hint, h⟩
-    refine ⟨?_, hint⟩
+    refine ⟨hint, ?_⟩
     rintro i σ' ⟨⟨τ, rfl⟩, hτ⟩
     exact h i τ hτ
 
@@ -193,7 +201,7 @@ integrable. -/
 lemma IsMixedNash.of_isNash [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
     [Fintype I] [DecidableEq I] [LE V] {G : StrategicGame I A V} {σ : MixedStrategy A}
     (hσ : G.mixedExtension.IsNash σ) (hint : G.MixedPayoffsIntegrable σ) : G.IsMixedNash σ :=
-  ⟨fun i σ' hdev ↦ hσ i σ' hdev.1, hint⟩
+  ⟨hint, fun i σ' hdev ↦ hσ.deviation_le i σ' hdev.1⟩
 
 /-- When every unilateral payoff is integrable, mixed Nash equilibrium is Nash equilibrium of the
 integral extension. -/
