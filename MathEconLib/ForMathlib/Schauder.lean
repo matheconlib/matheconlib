@@ -35,14 +35,9 @@ The formalisation is based on https://arxiv.org/abs/1902.00827 and
 https://planetmath.org/proofofschauderfixedpointtheorem.
 -/
 
--- Local review proceeds in stages under #191. All five linters are enabled for the Scarf
--- room section below; its review record is in docs/SchauderReview.md. The remaining sections
--- still await review and keep temporary exceptions at the boundary marked below.
-set_option linter.unusedFintypeInType true
-set_option linter.unusedDecidableInType true
-set_option linter.style.show true
-set_option linter.style.refine true
-set_option linter.style.openClassical true
+-- The five linters use their enabled defaults for the reviewed Scarf room section below.
+-- Its review record is in PR #238. Later sections still await review under #191 and keep
+-- temporary exceptions at the boundary marked below.
 
 noncomputable section
 
