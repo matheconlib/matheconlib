@@ -45,15 +45,27 @@ fi
 # partial upload.
 html_root="matheconlib/html"
 html_prefix="$html_root/$revision-$GITHUB_RUN_ID-$GITHUB_RUN_ATTEMPT/"
+# Skip the upload when a newer main commit changes documentation inputs; its own
+# run publishes instead, and a re-run of an older commit cannot roll back.
+latest=$(git ls-remote origin refs/heads/main | cut -f1)
+if [[ $latest != "$revision" ]]; then
+  status=0
+  bash "$(dirname "$0")/docs-inputs-changed.sh" "$revision" "$latest" || status=$?
+  case $status in
+    0)
+      echo "main is now at $latest with documentation changes; leaving the published HTML unchanged"
+      exit 0
+      ;;
+    1) ;;
+    *)
+      echo "Cannot compare $revision with main at $latest" >&2
+      exit 1
+      ;;
+  esac
+fi
 aws configure set default.s3.max_concurrent_requests 32
 aws s3 sync "$output_dir/doc" "s3://$R2_BUCKET/$html_prefix" \
   --endpoint-url "$R2_ENDPOINT_URL" --only-show-errors
-# A re-run for an older commit must not replace newer published documentation.
-latest=$(git ls-remote origin refs/heads/main | cut -f1)
-if [[ $latest != "$revision" ]]; then
-  echo "main is now at $latest; leaving the published HTML unchanged"
-  exit 0
-fi
 previous=$(aws s3 cp "s3://$R2_BUCKET/$html_root/current.json" - \
   --endpoint-url "$R2_ENDPOINT_URL" 2>/dev/null \
   | python3 -c 'import json, sys; print(json.load(sys.stdin)["prefix"])') || previous=

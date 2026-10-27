@@ -20,6 +20,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       revision: ${{ steps.revision.outputs.revision }}
+      docs: ${{ steps.docs.outputs.run }}
     steps:
       - uses: actions/checkout@v5
         with:
@@ -83,6 +84,34 @@ jobs:
       - name: Record built revision
         id: revision
         run: echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+      - name: Decide whether to build documentation
+        id: docs
+        env:
+          # Pushes compare with the previous main commit; PRs compare their merge
+          # commit with the base. Manual runs always build documentation.
+          BASE: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          REVISION: ${{ steps.revision.outputs.revision }}
+        run: |
+          run=true
+          status=0
+          if [[ $GITHUB_EVENT_NAME != workflow_dispatch ]]; then
+            bash scripts/docs-inputs-changed.sh "$BASE" "$GITHUB_SHA" || status=$?
+            if [[ $status == 1 ]]; then
+              run=false
+              echo "No documentation inputs changed."
+            fi
+          fi
+          # A newer main commit that changes documentation inputs supersedes this one.
+          if [[ $run == true && $GITHUB_REF == refs/heads/main && $GITHUB_EVENT_NAME != pull_request ]]; then
+            latest=$(git ls-remote origin refs/heads/main | cut -f1) || true
+            status=0
+            [[ $latest == "$REVISION" ]] || bash scripts/docs-inputs-changed.sh "$REVISION" "$latest" || status=$?
+            if [[ $latest != "$REVISION" && $status == 0 ]]; then
+              run=false
+              echo "main moved to $latest with documentation changes."
+            fi
+          fi
+          echo "run=$run" >> "$GITHUB_OUTPUT"
       - name: Test proof integrity checker
         run: python3 scripts/tests/test_proof_integrity.py
       - name: Check project proof integrity
@@ -118,13 +147,15 @@ jobs:
   # failing the library build. Keep this job out of required checks.
   docs:
     needs: build
+    if: needs.build.outputs.docs == 'true'
     runs-on: ubuntu-latest
     permissions:
       contents: read
     concurrency:
-      # Serialize main publication so pruning never races another upload.
-      group: ${{ github.ref == 'refs/heads/main' && 'docs-publish-main' || format('docs-{0}', github.run_id) }}
-      cancel-in-progress: false
+      # On main, a newer run that builds documentation cancels this one, and only
+      # one publishing job runs at a time, so pruning never races another upload.
+      group: ${{ github.ref == 'refs/heads/main' && needs.build.outputs.docs == 'true' && 'docs-publish-main' || format('docs-{0}', github.run_id) }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v5
         with:
