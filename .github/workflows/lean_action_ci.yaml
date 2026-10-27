@@ -227,6 +227,10 @@ jobs:
           name: signature-index
           path: ${{ runner.temp }}/doc-artifacts/doc/signatures
           if-no-files-found: error
+      - name: Check signatures against the Lean fixture
+        env:
+          DOCGEN_SRC: github
+        run: python3 scripts/tests/docs_e2e.py --cache-dir "$RUNNER_TEMP/doc-fixture-cache"
       - name: Publish documentation to R2
         if: github.repository == 'matheconlib/matheconlib' && ((github.ref == 'refs/heads/main' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')) || (startsWith(github.ref, 'refs/tags/v') && github.event_name == 'push'))
         env:
@@ -237,4 +241,4 @@ jobs:
         run: bash scripts/upload-docs.sh "$RUNNER_TEMP/doc-artifacts"
       - name: Remove temporary documentation outputs
         if: always()
-        run: rm -rf "$RUNNER_TEMP/doc-artifacts" "$RUNNER_TEMP/doc-cache"
+        run: rm -rf "$RUNNER_TEMP/doc-artifacts" "$RUNNER_TEMP/doc-cache" "$RUNNER_TEMP/doc-fixture-cache"

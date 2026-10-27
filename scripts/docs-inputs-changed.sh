@@ -21,6 +21,7 @@ done
 git diff --quiet "$1" "$2" -- \
   MathEconLib.lean ':(glob)MathEconLib/**/*.lean' lean-toolchain lake-manifest.json lakefile.toml \
   scripts/build_docs.py scripts/extract_signatures.py scripts/upload-docs.sh \
+  scripts/tests/fixtures/docs-e2e scripts/tests/docs_e2e.py \
   scripts/docs-inputs-changed.sh .github/workflows/lean_action_ci.yaml
 case $? in
   0) exit 1 ;;

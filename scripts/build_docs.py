@@ -19,7 +19,7 @@ import tempfile
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
-LIBRARY = "MathEconLib"
+DEFAULT_LIBRARY = "MathEconLib"
 DOCGEN_URL = "https://github.com/danlyng/doc-gen4"
 CACHE_VERSION = 3
 DOC_TOOLS = ("doc-gen4", "leansqlite", "MD4Lean", "BibtexQuery", "UnicodeBasic")
@@ -29,8 +29,8 @@ DOCGEN_ENV = {"DOCGEN_BATCH": "1", "DISABLE_EQUATIONS": "1"}
 # libraries need their own batches before the project's HTML is generated.
 BATCH_DEPENDENCIES = """
 target dependencyDocInfo : Unit := do
-  let some root ← findModule? `MathEconLib
-    | error "MathEconLib library root not found"
+  let some root ← findModule? `{library}
+    | error "{library} library root not found"
   let imports ← (← root.transImports.fetch).await
   let mut libraries : Lean.NameSet := {}
   let mut jobs : Array OpaqueJob := #[]
@@ -136,7 +136,7 @@ def snapshot(source: Path, target: Path) -> None:
             dst.execute("PRAGMA journal_mode = DELETE")
 
 
-def validate_database(path: Path) -> dict:
+def validate_database(path: Path, library: str = DEFAULT_LIBRARY) -> dict:
     if not path.is_file():
         raise ValueError(f"Documentation database not found: {path}")
     with closing(open_readonly(path)) as conn:
@@ -146,30 +146,30 @@ def validate_database(path: Path) -> dict:
             raise ValueError("Documentation database has invalid foreign keys")
         modules = [row[0] for row in conn.execute(
             "SELECT name FROM modules WHERE name = ? OR name LIKE ? ORDER BY name",
-            (LIBRARY, LIBRARY + ".%"),
+            (library, library + ".%"),
         )]
         if not modules:
-            raise ValueError(f"Documentation database has no {LIBRARY} modules")
+            raise ValueError(f"Documentation database has no {library} modules")
         return {
             "schema": dict(conn.execute("SELECT key, value FROM schema_meta")),
             "modules": modules,
         }
 
 
-def remove_project_data(build_dir: Path) -> None:
+def remove_project_data(build_dir: Path, library: str = DEFAULT_LIBRARY) -> None:
     """Retain only dependency analysis; always reanalyze checkout modules."""
     db = build_dir / "api-docs.db"
     if db.exists():
         with closing(sqlite3.connect(db)) as conn, conn:
             conn.execute("PRAGMA foreign_keys = ON")
             conn.execute("DELETE FROM modules WHERE name = ? OR name LIKE ?",
-                         (LIBRARY, LIBRARY + ".%"))
+                         (library, library + ".%"))
     data_dir = build_dir / "doc-data"
     if data_dir.exists():
         for path in data_dir.iterdir():
             # The bibliography prepass also creates doc/references.bib. Its
             # cached JSON would skip the prepass after HTML has been removed.
-            if path.name.startswith((LIBRARY + ".", LIBRARY + "--", "references.json")):
+            if path.name.startswith((library + ".", library + "--", "references.json")):
                 if path.is_file():
                     path.unlink()
     shutil.rmtree(build_dir / "doc", ignore_errors=True)
@@ -177,7 +177,7 @@ def remove_project_data(build_dir: Path) -> None:
         path.unlink()
 
 
-def restore_cache(cache: Path, build_dir: Path, expected: dict) -> bool:
+def restore_cache(cache: Path, build_dir: Path, expected: dict, library: str = DEFAULT_LIBRARY) -> bool:
     try:
         if json.loads((cache / "fingerprint.json").read_text()) != json.loads(json.dumps(expected)):
             print("Documentation cache fingerprint changed; rebuilding dependencies.", flush=True)
@@ -185,7 +185,7 @@ def restore_cache(cache: Path, build_dir: Path, expected: dict) -> bool:
         shutil.copytree(cache / "build", build_dir, dirs_exist_ok=True)
         if not (build_dir / "api-docs.db").is_file():
             raise ValueError("cached database is missing")
-        remove_project_data(build_dir)
+        remove_project_data(build_dir, library)
         with closing(open_readonly(build_dir / "api-docs.db")) as conn:
             if conn.execute("PRAGMA quick_check").fetchall() != [("ok",)]:
                 raise ValueError("invalid database")
@@ -217,7 +217,8 @@ def restore_cache(cache: Path, build_dir: Path, expected: dict) -> bool:
         return False
 
 
-def save_cache(build_dir: Path, cache: Path, state: dict, repo: Path) -> None:
+def save_cache(build_dir: Path, cache: Path, state: dict, repo: Path,
+               library: str = DEFAULT_LIBRARY) -> None:
     cache.parent.mkdir(parents=True, exist_ok=True)
     with tempfile.TemporaryDirectory(prefix="doc-cache-", dir=cache.parent) as tmp:
         staged = Path(tmp)
@@ -225,7 +226,7 @@ def save_cache(build_dir: Path, cache: Path, state: dict, repo: Path) -> None:
         saved_build.mkdir()
         snapshot(build_dir / "api-docs.db", saved_build / "api-docs.db")
         shutil.copytree(build_dir / "doc-data", saved_build / "doc-data")
-        remove_project_data(saved_build)
+        remove_project_data(saved_build, library)
         # All HTML completion markers are excluded, even if other facets ran.
         for path in (saved_build / "doc-data").glob("*.docs*"):
             path.unlink()
@@ -239,7 +240,8 @@ def save_cache(build_dir: Path, cache: Path, state: dict, repo: Path) -> None:
         shutil.copytree(staged, cache)
 
 
-def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) -> None:
+def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT,
+               library: str = DEFAULT_LIBRARY) -> None:
     output = output.resolve()
     cache = cache.resolve() if cache else None
     repo = repo.resolve()
@@ -286,15 +288,17 @@ def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) 
         # target that discovers imported libraries through Lake's own graph.
         subprocess.run([lake, "translate-config", "lean"], cwd=workspace, env=env, check=True)
         with (workspace / "lakefile.lean").open("a") as config_file:
-            config_file.write("\n" + BATCH_DEPENDENCIES)
+            config_file.write("\n" + BATCH_DEPENDENCIES.replace("{library}", library))
         docs_manifest = json.loads((workspace / "lake-manifest.json").read_text())
         verify_dependencies(root_manifest, docs_manifest, docgen_rev)
         docgen_toolchain = repo / ".lake/packages/doc-gen4/lean-toolchain"
         if docgen_toolchain.read_text().strip() != (repo / "lean-toolchain").read_text().strip():
             raise ValueError("The doc-gen4 release does not match the project toolchain")
         state = fingerprint(repo, docs_manifest)
+        if library != DEFAULT_LIBRARY:
+            state["library"] = library
         build_dir = workspace / ".lake/build"
-        if cache and restore_cache(cache, build_dir, state):
+        if cache and restore_cache(cache, build_dir, state, library):
             # Clone sources first: restoring build-only package directories before
             # `lake update` would leave non-Git directories at Lake's clone paths.
             for name in DOC_TOOLS:
@@ -302,11 +306,11 @@ def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) 
                 if saved_tool.is_dir():
                     shutil.copytree(saved_tool, repo / ".lake/packages" / name / ".lake/build", dirs_exist_ok=True)
         subprocess.run([lake, "build", "dependencyDocInfo"], cwd=workspace, env=env, check=True)
-        subprocess.run([lake, "build", LIBRARY + ":docs"], cwd=workspace, env=env, check=True)
-        database_info = validate_database(build_dir / "api-docs.db")
-        expected_modules = {LIBRARY} | {
+        subprocess.run([lake, "build", library + ":docs"], cwd=workspace, env=env, check=True)
+        database_info = validate_database(build_dir / "api-docs.db", library)
+        expected_modules = {library} | {
             ".".join(path.relative_to(repo).with_suffix("").parts)
-            for path in (repo / LIBRARY).rglob("*.lean")
+            for path in (repo / library).rglob("*.lean")
         }
         if set(database_info["modules"]) != expected_modules:
             raise ValueError("Documented modules differ from the source tree; regenerate import lists")
@@ -337,7 +341,7 @@ def build_docs(output: Path, cache: Path | None = None, repo: Path = REPO_ROOT) 
                         archive_sha256=sha256(output / "api-docs.db.gz"))
         (output / "metadata.json").write_text(json.dumps(metadata, indent=2) + "\n")
         if cache:
-            save_cache(build_dir, cache, state, repo)
+            save_cache(build_dir, cache, state, repo, library)
     print(f"Exported API documentation and standalone database to {output}", flush=True)
 
 
@@ -345,9 +349,11 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--output-dir", required=True, type=Path, help="Directory for HTML, database, and provenance")
     parser.add_argument("--cache-dir", type=Path, help="Optional dependency documentation cache directory")
+    parser.add_argument("--project", type=Path, default=REPO_ROOT, help="Lake project directory (default: repository root)")
+    parser.add_argument("--library", default=DEFAULT_LIBRARY, help="Library to document (default: MathEconLib)")
     args = parser.parse_args()
     try:
-        build_docs(args.output_dir, args.cache_dir)
+        build_docs(args.output_dir, args.cache_dir, args.project, args.library)
     except (OSError, ValueError, sqlite3.Error, subprocess.CalledProcessError) as error:
         print(f"Error: {error}", file=sys.stderr)
         return 1
