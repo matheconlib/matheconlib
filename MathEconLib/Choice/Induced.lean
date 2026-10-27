@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 /-
 Preference-induced choice, independent of agents and markets.
@@ -35,9 +35,25 @@ the singleton-or-empty bundles. Consequently,
 `ofSingletonSetLinearOrder pref` derives singleton choice directly from
 set preferences.
 
-All definitions work on arbitrary types. If no greatest feasible bundle
-exists, the choice is empty. Consistency is proved for finite menus,
-then for finite alternative types.
+All definitions work on arbitrary types. If no greatest feasible bundle exists, the choice is
+empty. `HasBundleOptimum` names attainment, while `OutsideOptionOptimal` says that the outside
+option is weakly preferred to every available alternative. Empty option choice means either
+nonattainment or outside-option optimality; under attainment it means the latter alone.
+
+Consistency holds at any menu with an attained optimum, hence on finite menus. For option-induced
+choice, consistency on all menus is equivalent to attainment on all menus. Correspondence bridges
+are in `MathEconLib.Choice.Attainment`, keeping this module independent of weak-preference choice.
+
+## Attainment interface
+
+* `ChoiceFunction.HasBundleOptimum`: existence of a greatest feasible represented index.
+* `ChoiceFunction.OutsideOptionOptimal`: every available contract lies below the outside option.
+* `ChoiceFunction.ofOptionLinearOrder_eq_empty_iff`: empty choice is equivalent to nonattainment
+  or outside-option optimality. The latter implies attainment, so the cases are disjoint.
+* `ChoiceFunction.ofOptionLinearOrder_eq_empty_iff_of_hasBundleOptimum`: under attainment,
+  empty choice is equivalent to outside-option optimality.
+* `ChoiceFunction.consistent_ofOptionLinearOrder_iff_hasBundleOptimum`: all-menu IRC is
+  equivalent to attainment on every menu, without a finite-carrier assumption.
 
 Arbitrary bundle preferences need not induce substitutable or
 size-monotone choice. Those properties are proved for the singleton
@@ -536,6 +552,110 @@ instance decidableMem_ofSingletonSetLinearOrder [Fintype α]
     (Y : Set α) [DecidablePred (· ∈ Y)] :
     DecidablePred (· ∈ ofSingletonSetLinearOrder pref Y) :=
   decidableMem_ofOptionLinearOrder (singletonPreference pref) Y
+
+/-! ## Attainment and the outside option
+
+These predicates expose the greatest-element conditions already used by the constructors.
+The outside option is always feasible, so its optimality itself guarantees attainment.
+-/
+
+/-- A greatest feasible represented bundle exists under the supplied linear preference order. -/
+def HasBundleOptimum (pref : LinearOrder β) (bundle : β ↪ Set α) (Y : Set α) : Prop :=
+  letI := pref
+  ∃ b, IsGreatest {c | bundle c ⊆ Y} b
+
+/-- The outside option is weakly preferred to every available alternative. -/
+def OutsideOptionOptimal (pref : LinearOrder (Option α)) (Y : Set α) : Prop :=
+  ∀ x ∈ Y, pref.le (some x) none
+
+/-- A finite menu attains whenever at least one represented bundle is feasible. -/
+theorem HasBundleOptimum.of_finite (pref : LinearOrder β) (bundle : β ↪ Set α)
+    {Y : Set α} (hY : Y.Finite) (hne : ∃ b, bundle b ⊆ Y) :
+    HasBundleOptimum pref bundle Y :=
+  exists_isGreatest_bundle_of_finite pref bundle hY hne
+
+/-- A finite option menu always attains because the outside option is feasible. -/
+theorem hasBundleOptimum_optionBundle_of_finite (pref : LinearOrder (Option α))
+    {Y : Set α} (hY : Y.Finite) : HasBundleOptimum pref optionBundle Y :=
+  HasBundleOptimum.of_finite pref optionBundle hY ⟨none, Set.empty_subset Y⟩
+
+/-- Outside-option optimality is a greatest-element certificate for the feasible outside option. -/
+theorem OutsideOptionOptimal.isGreatest {pref : LinearOrder (Option α)} {Y : Set α}
+    (h : OutsideOptionOptimal pref Y) :
+    letI := pref
+    IsGreatest {o | optionBundle o ⊆ Y} none :=
+  ⟨Set.empty_subset Y, fun o ho ↦ match o with
+    | none => pref.le_refl none
+    | some x => h x (ho (Set.mem_singleton x))⟩
+
+/-- Outside-option optimality supplies an attained optimum, including on infinite menus. -/
+theorem OutsideOptionOptimal.hasBundleOptimum {pref : LinearOrder (Option α)} {Y : Set α}
+    (h : OutsideOptionOptimal pref Y) : HasBundleOptimum pref optionBundle Y :=
+  ⟨none, h.isGreatest⟩
+
+/-- Nonattainment is totalized to empty choice, whether or not the empty bundle is represented. -/
+theorem ofBundleOrder_eq_empty_of_not_hasBundleOptimum (pref : LinearOrder β)
+    (bundle : β ↪ Set α) {Y : Set α} (h : ¬ HasBundleOptimum pref bundle Y) :
+    ofBundleOrder pref bundle Y = ∅ :=
+  Set.eq_empty_iff_forall_notMem.mpr fun _ ⟨b, hb, _, hmax⟩ ↦ h ⟨b, hb, hmax⟩
+
+/-- An optimal outside option is selected, including on infinite menus. -/
+theorem OutsideOptionOptimal.ofOptionLinearOrder_eq_empty {pref : LinearOrder (Option α)}
+    {Y : Set α} (h : OutsideOptionOptimal pref Y) : ofOptionLinearOrder pref Y = ∅ :=
+  ofBundleOrder_eq_of_isGreatest pref optionBundle h.isGreatest
+
+/-- Under attainment, empty option choice means that the outside option is optimal. -/
+theorem ofOptionLinearOrder_eq_empty_iff_of_hasBundleOptimum (pref : LinearOrder (Option α))
+    {Y : Set α} (h : HasBundleOptimum pref optionBundle Y) :
+    ofOptionLinearOrder pref Y = ∅ ↔ OutsideOptionOptimal pref Y :=
+  ⟨fun hempty ↦
+    let ⟨b, hb, hmax⟩ := h
+    have hbnone : b = none := optionBundle.injective
+      ((ofBundleOrder_eq_of_max pref optionBundle hb hmax).symm.trans hempty)
+    fun _ hx ↦ hbnone ▸ hmax (Set.singleton_subset_iff.mpr hx),
+    fun hout ↦ hout.ofOptionLinearOrder_eq_empty⟩
+
+/-- Empty option choice reflects nonattainment or optimal nonparticipation.
+The two cases are disjoint because outside-option optimality implies attainment. -/
+theorem ofOptionLinearOrder_eq_empty_iff (pref : LinearOrder (Option α)) (Y : Set α) :
+    ofOptionLinearOrder pref Y = ∅ ↔
+      ¬ HasBundleOptimum pref optionBundle Y ∨ OutsideOptionOptimal pref Y :=
+  ⟨fun hempty ↦ Classical.byCases
+    (fun hattain : HasBundleOptimum pref optionBundle Y ↦
+      Or.inr ((ofOptionLinearOrder_eq_empty_iff_of_hasBundleOptimum pref hattain).mp hempty))
+    Or.inl,
+    fun h ↦ h.elim (ofBundleOrder_eq_empty_of_not_hasBundleOptimum pref optionBundle)
+      OutsideOptionOptimal.ofOptionLinearOrder_eq_empty⟩
+
+/-- Attainment at the larger menu suffices for bundle IRC, without menu finiteness. -/
+theorem ofBundleOrder_eq_of_choice_subset_of_hasBundleOptimum (pref : LinearOrder β)
+    (bundle : β ↪ Set α) {Y Z : Set α} (hY : HasBundleOptimum pref bundle Y)
+    (hchoice : ofBundleOrder pref bundle Y ⊆ Z) (hZY : Z ⊆ Y) :
+    ofBundleOrder pref bundle Z = ofBundleOrder pref bundle Y :=
+  let ⟨b, hb, hmax⟩ := hY
+  have hselected := ofBundleOrder_eq_of_max pref bundle hb hmax
+  have hbZ : bundle b ⊆ Z := fun _ hx ↦ hchoice (hselected.symm ▸ hx)
+  (ofBundleOrder_eq_of_max pref bundle hbZ (fun _ hc ↦ hmax (hc.trans hZY))).trans
+    hselected.symm
+
+/-- Option-induced choice satisfies IRC on all menus exactly when every menu attains.
+An unattained menu has an acceptable singleton whose choice changes after rejected alternatives
+are deleted; conversely, an attained winner survives every deletion that keeps its bundle. -/
+theorem consistent_ofOptionLinearOrder_iff_hasBundleOptimum (pref : LinearOrder (Option α)) :
+    (ofOptionLinearOrder pref).Consistent ↔ ∀ Y, HasBundleOptimum pref optionBundle Y :=
+  ⟨fun hcons Y ↦ Classical.byContradiction fun hnot ↦
+    have hempty := ofBundleOrder_eq_empty_of_not_hasBundleOptimum pref optionBundle hnot
+    have hout : OutsideOptionOptimal pref Y := fun x hx ↦
+      Classical.byContradiction fun hxnot ↦
+        have hnonempty := nonempty_ofOptionLinearOrder_of_finite pref (Set.finite_singleton x)
+          (Set.mem_singleton x) ((pref.le_total (some x) none).resolve_left hxnot)
+        have heq : ofOptionLinearOrder pref {x} = ∅ :=
+          (hcons (fun z hz ↦ (Set.notMem_empty z (hempty ▸ hz)).elim)
+            (Set.singleton_subset_iff.mpr hx)).trans hempty
+        (Set.not_nonempty_iff_eq_empty.mpr heq) hnonempty
+    hnot hout.hasBundleOptimum,
+    fun h {Y _} hchoice hZY ↦
+      ofBundleOrder_eq_of_choice_subset_of_hasBundleOptimum pref optionBundle (h Y) hchoice hZY⟩
 
 end ChoiceFunction
 
