@@ -43,6 +43,7 @@ the nonintegrable uniform deviation, whose totalized utility is zero.
 * `not_isBNE`: The constant strategy is not a Bayesian Nash equilibrium.
 * `Mixed.strategy_isNash`, `Mixed.strategy_not_isNash_shifted`: Raw integral Nash is sensitive to a
   preference-preserving constant shift.
+* `Mixed.strategy_isDeviationOptimal`: The uniform strategy satisfies deviation optimality.
 * `Mixed.not_isMixedNash`, `Mixed.not_isMixedNash_shifted`: Nonintegrable uniform randomization is
   excluded from both games' mixed equilibria.
 * `Mixed.dirac_zero_isMixedNash_lowered`, `Mixed.dirac_zero_not_isNash_lowered`: Pure zero is a
@@ -191,6 +192,10 @@ theorem strategy_isNash : game.mixedExtension.IsNash strategy := by
   cases i
   rw [payoff_eq_zero]
   exact integral_nonpos (fun a => neg_nonpos.mpr (abs_nonneg _))
+
+/-- Every admissible mixed deviation weakly lowers the incumbent payoff integral. -/
+theorem strategy_isDeviationOptimal : game.mixedNashProblem.IsDeviationOptimal strategy :=
+  fun i σ' h => strategy_isNash.deviation_le i σ' h.1
 
 /-- The pure zero action receives shifted utility one. -/
 lemma shiftedPayoff_dirac_zero :
