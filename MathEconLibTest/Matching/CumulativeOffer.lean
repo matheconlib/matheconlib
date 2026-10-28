@@ -5,8 +5,8 @@ Authors: Scott Duke Kominers
 -/
 module
 
-import MathEconLib.Matching
-import Mathlib.Tactic.FinCases
+public import MathEconLib.Matching
+public import Mathlib.Tactic.FinCases
 
 /-!
 # Cumulative offer boundary examples
