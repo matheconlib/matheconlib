@@ -113,7 +113,7 @@ theorem typeDeviationIC_of_monotone_q
         (fun w hw => hq_mono hx'
           ⟨le_trans hx'.1 hw.1, le_trans hw.2 hx.2⟩ hw.1)
       linarith [hconst, hmono]
-    · push_neg at hle
+    · push Not at hle
       have hle' := le_of_lt hle
       have hconst : ∫ _ in x..x', P.q x' = (x' - x) * P.q x' := by
         rw [intervalIntegral.integral_const, smul_eq_mul]

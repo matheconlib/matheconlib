@@ -3,13 +3,17 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib
+module
+
+public import MathEconLib
 
 /-!
 Client checks through the full public root. These exercise the raw fixed-point
 lattice, its IRC-dependent economic interpretation, structural locality, and
 the agreement of both executable algorithms with their optimal endpoints.
 -/
+
+@[expose] public section
 
 namespace MathEconLibTest.Matching
 

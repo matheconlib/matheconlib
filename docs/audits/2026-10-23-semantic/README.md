@@ -23,7 +23,9 @@ not additional confirmed findings or current design decisions.
   analytic reconstruction of the six confirmed finding groups.
 - [SemanticCounterexamples.lean](../../../MathEconLibTest/Audit/SemanticCounterexamples.lean):
   the twelve original supporting lemmas, preserved once in the canonical test tree.
-- [verification.json](verification.json): original proof limits and separate publication checks.
+- [AxiomChecks.lean](../../../MathEconLibTest/Audit/AxiomChecks.lean): their axiom-report driver,
+  moved into the test tree so the required all-source proof-integrity check can build it.
+- [verification.json](verification.json): original proof limits and initial publication checks.
 
 The original independent reviews were separate automated workstreams. Neither their agreement
 nor this publication supplies the required maintainer review. The original source compilation
@@ -39,8 +41,11 @@ their explicit analytic proofs. The complete repaired auction regressions are in
 
 ## Reproduce
 
-Use a checkout of the published evidence PR commit and its pinned Lean 4.28.0 dependencies.
-From the repository root:
+Use the dependencies pinned by the evidence checkout. The initial publication commit
+[`b12f9a20`](https://github.com/matheconlib/matheconlib/commit/b12f9a20e3c900d93ca5d7cfc31f038166a93b55)
+used Lean/Mathlib 4.28.0; the refreshed branch uses the project's 4.35.0 pins.
+The original audited revision, fingerprints and initial verification record remain historical;
+fresh compatibility checks are recorded on PR #232. From the repository root:
 
 ```sh
 lake exe cache get
@@ -53,7 +58,8 @@ python3 docs/audits/2026-10-23-semantic/areas/auction_models/affiliation-evidenc
 bash scripts/update-imports.sh --check
 bash scripts/check-headers.sh
 lake --no-ansi build
-lake env lean docs/audits/2026-10-23-semantic/AxiomChecks.lean
+python3 scripts/check-proof-integrity.py
+lake env lean MathEconLibTest/Audit/AxiomChecks.lean
 ```
 
 The coverage verifier reads the frozen audited Git objects rather than silently substituting

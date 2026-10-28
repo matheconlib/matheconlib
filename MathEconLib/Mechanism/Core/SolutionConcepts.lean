@@ -17,9 +17,10 @@ rationality requires nonnegative utility when everyone reports truthfully, with 
 normalized to zero. Efficiency requires the outcome at each truthful profile to maximize total
 value over the outcome space.
 
-These properties evaluate a direct mechanism using the valuations in a quasilinear environment,
-which may depend on the full true type profile. Strong budget balance and no deficit constrain
-aggregate transfers at every action profile, for direct or indirect mechanisms.
+The incentive, participation and welfare properties below specialize their economic concepts to
+a quasilinear environment, whose valuations may depend on the full true type profile. Strong budget
+balance and no deficit constrain aggregate transfers at every action profile, for direct or
+indirect mechanisms.
 
 ## Main definitions
 
@@ -56,7 +57,9 @@ namespace DirectMechanism
 
 variable (E : QuasilinearEnvironment I T O) (M : DirectMechanism I T O)
 
-/-- Dominant-strategy incentive compatibility of the reporting mechanism `M` under valuations `E`.
+/-- Quasilinear dominant-strategy incentive compatibility of the reporting mechanism `M` under
+valuations `E`.
+
 For every agent and full true type profile `θ`, reporting `θ i` gives at least as much utility as
 any own report, at any fixed profile of the other agents' reports. The entire true profile `θ` is
 held fixed in the comparison, allowing values to depend on other agents' types. -/
@@ -64,13 +67,14 @@ def IsDSIC [DecidableEq I] : Prop :=
   ∀ i (θ r : Profile T),
     E.utility M i θ r ≤ E.utility M i θ (Function.update r i (θ i))
 
-/-- Ex-post individual rationality of the reporting mechanism `M` under valuations `E`. At every
-true type profile, every agent has nonnegative utility when all agents report truthfully, with
-outside utility normalized to zero. -/
+/-- Quasilinear ex-post individual rationality of the reporting mechanism `M` under valuations `E`.
+At every true type profile, every agent has nonnegative utility when all agents report truthfully,
+with outside utility normalized to zero. -/
 def IsExPostIR : Prop := ∀ i θ, 0 ≤ E.utility M i θ θ
 
-/-- Efficiency of the reporting mechanism `M` under valuations `E`: At every true type profile, the
-outcome selected when everyone reports truthfully maximizes total value over all outcomes in `O`.
+/-- Total-value efficiency of the reporting mechanism `M` under valuations `E`: At every true type
+profile, the outcome selected when everyone reports truthfully maximizes total value over all
+outcomes in `O`.
 Total value is the sum of agents' values, excluding transfers. -/
 def IsEfficient [Fintype I] : Prop :=
   ∀ θ, IsMaxOn (E.totalValue θ) Set.univ (M.outcome θ)

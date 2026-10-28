@@ -3,15 +3,17 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
+module
+
 /-
 Preference-induced choice, independent of agents and markets.
 -/
-import MathEconLib.Choice.Map
-import MathEconLib.Choice.FiniteOption
-import Mathlib.Data.Set.Finite.Lemmas
-import Mathlib.Data.Set.Finite.Powerset
-import Mathlib.Data.Set.Subsingleton
-import Mathlib.Order.Basic
+public import MathEconLib.Choice.Map
+public import MathEconLib.Choice.FiniteOption
+public import Mathlib.Data.Set.Finite.Lemmas
+public import Mathlib.Data.Set.Finite.Powerset
+public import Mathlib.Data.Set.Subsingleton
+public import Mathlib.Order.Basic
 
 /-!
 # Choice from linear preferences over bundles
@@ -46,6 +48,8 @@ specialization.
 Preference comparisons use `pref.le`, with larger elements weakly preferred.
 They are distinct from set inclusion.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 
@@ -106,7 +110,7 @@ theorem mem_ofBundleOrder_iff_exists_isGreatest
     letI := pref
     x ∈ ofBundleOrder pref bundle Y ↔
       ∃ b, IsGreatest {c : β | bundle c ⊆ Y} b ∧ x ∈ bundle b := by
-  letI := pref
+  let := pref
   constructor
   · rintro ⟨b, hb, hx, hmax⟩
     exact ⟨b, ⟨hb, hmax⟩, hx⟩
@@ -120,7 +124,7 @@ theorem ofBundleOrder_eq_of_max
     (hb : bundle b ⊆ Y)
     (hmax : ∀ c, bundle c ⊆ Y → pref.le c b) :
     ofBundleOrder pref bundle Y = bundle b := by
-  letI := pref
+  let := pref
   ext x
   constructor
   · rintro ⟨c, hc, hx, hcmax⟩
@@ -146,7 +150,7 @@ theorem exists_greatest_bundle_of_finite
     (hne : ∃ b, bundle b ⊆ Y) :
     ∃ b, bundle b ⊆ Y ∧
       ∀ c, bundle c ⊆ Y → pref.le c b := by
-  letI := pref
+  let := pref
   have hfinite : {b : β | bundle b ⊆ Y}.Finite :=
     hY.finite_subsets.preimage_embedding bundle
   exact Set.exists_max_image
@@ -173,7 +177,7 @@ theorem ofBundleOrder_eq_of_choice_subset
     (hZY : Z ⊆ Y) :
     ofBundleOrder pref bundle Z =
       ofBundleOrder pref bundle Y := by
-  letI := pref
+  let := pref
   ext x
   constructor
   · rintro ⟨b, hbZ, hxb, hmaxb⟩
@@ -344,7 +348,7 @@ theorem bestOption_eq_some_iff_mem_ofOptionLinearOrder [DecidableEq α]
 theorem unitDemand_ofOptionLinearOrder
     (pref : LinearOrder (Option α)) :
     (ofOptionLinearOrder pref).UnitDemand := by
-  letI := pref
+  let := pref
   intro Y x hx y hy
   have hx' := (mem_ofOptionLinearOrder pref).mp hx
   have hy' := (mem_ofOptionLinearOrder pref).mp hy
@@ -370,7 +374,7 @@ theorem nonempty_ofOptionLinearOrder_of_finite
     {x : α} (hx : x ∈ Y)
     (haccept : pref.le none (some x)) :
     (ofOptionLinearOrder pref Y).Nonempty := by
-  letI := pref
+  let := pref
   have hxY : optionBundle (some x) ⊆ Y := by
     simpa using hx
   obtain ⟨o, ho, hmax⟩ :=

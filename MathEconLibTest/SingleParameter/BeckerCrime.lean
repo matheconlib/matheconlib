@@ -3,8 +3,10 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLibExamples
-import Mathlib.Order.Filter.Extr
+module
+
+public import MathEconLibExamples
+public import Mathlib.Order.Filter.Extr
 
 /-!
 # Becker model audit checks
@@ -15,13 +17,15 @@ integrability, and test the limits of the comparative-statics claims.
 The model and its public declarations are unchanged.
 -/
 
+@[expose] public section
+
 open MathEconLib MathEconLibExamples.SingleParameter MeasureTheory
 
 namespace BeckerCrimeAudit
 
 -- Mathlib's maximization predicate describes optimal actions independently
 -- of the strategy stored in the problem. Both actions are optimal at the cutoff.
-private theorem commit_isMaxOn_iff (lo hi p f v : ℝ) :
+theorem commit_isMaxOn_iff (lo hi p f v : ℝ) :
     IsMaxOn ((crimeProblem lo hi p f).payoff v) Set.univ CrimeDecision.commit ↔
       p * f ≤ v := by
   rw [isMaxOn_iff]
@@ -37,7 +41,7 @@ private theorem commit_isMaxOn_iff (lo hi p f v : ℝ) :
       rw [crimeProblem_payoff_abstain, crimeProblem_payoff_commit]
       exact sub_nonneg.mpr hv
 
-private theorem abstain_isMaxOn_iff (lo hi p f v : ℝ) :
+theorem abstain_isMaxOn_iff (lo hi p f v : ℝ) :
     IsMaxOn ((crimeProblem lo hi p f).payoff v) Set.univ CrimeDecision.abstain ↔
       v ≤ p * f := by
   rw [isMaxOn_iff]
@@ -61,7 +65,7 @@ example (lo hi p f : ℝ) :
     (crimeProblem_strategy_commit_iff ..).mpr le_rfl⟩
 
 -- This is a genuine expectation even without bounded support or finite mean gains.
-private theorem integrable_q (D : ValueDistribution) (lo hi p f : ℝ) :
+theorem integrable_q (D : ValueDistribution) (lo hi p f : ℝ) :
     Integrable (crimeProblem lo hi p f).q (D : Measure ℝ) := by
   have h : (crimeProblem lo hi p f).q =
       (Set.Ici (p * f)).indicator (fun _ : ℝ ↦ (1 : ℝ)) := by
@@ -79,7 +83,7 @@ example (D : ValueDistribution) (lo hi p f : ℝ) :
 -- Positive detection and a strictly higher fine need not give strict deterrence:
 -- no type in this population crosses a cutoff. Its gain also lies outside [0, 2].
 example :
-    let D : ValueDistribution := ⟨Measure.dirac (3 : ℝ), inferInstance⟩
+    let D : ValueDistribution := (Measure.dirac (3 : ℝ)).toProbabilityMeasure
     D.expectedAllocation (crimeProblem 0 2 (1 / 2) 1) = 1 ∧
       D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) = 1 := by
   dsimp only

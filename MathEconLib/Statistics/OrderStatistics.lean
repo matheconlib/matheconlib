@@ -84,7 +84,8 @@ lemma orderStatistics_mono (v : Fin n → α) : Monotone (orderStatistics v) := 
 lemma orderStatistics_mem_range (v : Fin n → α) (k : Fin n) :
     orderStatistics v k ∈ Set.range v := by
   have h1 : orderStatistics v k ∈ (Finset.univ.val.map v |>.sort (· ≤ ·) : Multiset α) := by
-    simpa only [Multiset.mem_coe] using List.getElem_mem (by simp)
+    simpa only [orderStatistics, List.get_eq_getElem, Multiset.mem_coe] using
+      List.getElem_mem (by simp)
   rw [Multiset.sort_eq] at h1
   obtain ⟨i, _, hi⟩ := Multiset.mem_map.mp h1
   grind
@@ -106,7 +107,7 @@ theorem orderStatistics_le_iff (v : Fin n → α) (k : Fin n) (x : α) :
   have hSorted : L.SortedLE := List.sortedLE_iff_pairwise.mpr <| Multiset.pairwise_sort _ _
   rw [show (Finset.univ.filter (v · ≤ x)).card = (L.filter (· ≤ x)).length by
     simpa [show Finset.univ.val.map v = (L : Multiset α) from (Multiset.sort_eq _ _).symm,
-        Multiset.coe_countP, List.countP_eq_length_filter] using
+        Multiset.coe_countP, List.countP_eq_length_filter, Finset.card_def, Finset.filter_val] using
         Multiset.countP_map v Finset.univ.val (· ≤ x) |>.symm]
   rw [orderStatistics]
   constructor
@@ -170,10 +171,6 @@ namespace OrderStatisticsSetup
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} (S : OrderStatisticsSetup Ω n)
 
-/-- The pushforward measure `Measure.map (Xᵢ) ℙ` is a probability measure on `ℝ`. -/
-noncomputable instance (i : Fin n) : IsProbabilityMeasure (Measure.map (S.X i) ℙ) :=
-  Measure.isProbabilityMeasure_map (S.X_measurable i).aemeasurable
-
 /-- The k-th order statistic as a random variable. -/
 noncomputable def val (k : Fin n) (ω : Ω) : ℝ :=
   orderStatistics (fun i => S.X i ω) k
@@ -197,7 +194,7 @@ theorem measurable_val (k : Fin n) : Measurable <| S.val k := by
   intro x
   rw [show S.val k ⁻¹' Set.Iic x =
       {ω | k.val + 1 ≤ #(Finset.univ.filter (S.X · ω ≤ x))} by
-    ext; simpa using orderStatistics_le_iff _ k x]
+    ext; simpa [val] using orderStatistics_le_iff _ k x]
   have h_count : Measurable fun ω : Ω => #(Finset.univ.filter (S.X · ω ≤ x)) := by
     simp_rw [Finset.card_filter]
     exact Finset.measurable_sum _ fun i _ => Measurable.ite ((S.X_measurable i) measurableSet_Iic)
@@ -216,7 +213,7 @@ theorem map_val_absolutelyContinuous (k : Fin n) :
     _ ≤ ∑' j, ℙ (S.X j ⁻¹' A) := measure_iUnion_le _
     _ = ∑' j, (Measure.map (S.X j) ℙ) A := by
       congr 1; ext j; rw [Measure.map_apply (S.X_measurable j) hAmeas]
-    _ = 0 := by simp [fun j => (S.X_hasPDF j).absolutelyContinuous hA]) <| zero_le _
+    _ = 0 := by simp [fun j => (S.X_hasPDF j).absolutelyContinuous hA]) <| bot_le
 
 /-- The k-th order statistic has a density (PDF) w.r.t. Lebesgue measure. -/
 noncomputable instance hasPDF_val (k : Fin n) : HasPDF (S.val k) ℙ volume where
@@ -224,9 +221,10 @@ noncomputable instance hasPDF_val (k : Fin n) : HasPDF (S.val k) ℙ volume wher
   haveLebesgueDecomposition' := inferInstance
   absolutelyContinuous' := S.map_val_absolutelyContinuous k
 
-instance isProbabilityMeasure_map_val (k : Fin n) :
+-- Compatibility name; Mathlib now supplies the instance.
+theorem isProbabilityMeasure_map_val (k : Fin n) :
     IsProbabilityMeasure (Measure.map (S.val k) ℙ) :=
-  Measure.isProbabilityMeasure_map (S.measurable_val k).aemeasurable
+  inferInstance
 
 /-- Tail expectation formula for order statistics.
 
@@ -293,12 +291,12 @@ theorem prob_iInter_inter_iInter_eq (i₀ : Fin n) (T : Finset (Fin n)) (x : ℝ
   set p := ENNReal.ofReal F
   have h_in : ∀ i ∈ T, ℙ (S.X i ⁻¹' A i) = p := by
     intro i hi
-    simp only [A, hi, if_true]
+    simp only [A, hi, ite_true]
     rw [← Measure.map_apply (S.X_measurable i) measurableSet_Iic, (S.X_ident i i₀).map_eq]
     exact (ofReal_cdf _ x).symm
   have h_out : ∀ i ∉ T, ℙ (S.X i ⁻¹' A i) = 1 - p := by
     intro i hi
-    simp only [A, hi, if_false]
+    simp only [A, hi, ite_false]
     rw [show S.X i ⁻¹' Set.Ioi x = (S.X i ⁻¹' Set.Iic x)ᶜ by ext ω; simp [Set.mem_Ioi, Set.mem_Iic,
         not_le], measure_compl ((S.X_measurable i) measurableSet_Iic) (measure_ne_top ℙ _),
         measure_univ]
@@ -338,7 +336,7 @@ theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
   have h_decomp : {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} =
       ⋃ T ∈ Finset.univ.powersetCard l, E T := by
     ext ω
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     constructor
     · intro hω
       exact Set.mem_iUnion₂.mpr ⟨univ.filter (S.X · ω ≤ x), Finset.mem_powersetCard.mpr
@@ -387,7 +385,7 @@ theorem cdf_val (i₀ : Fin n) (k : Fin n) (x : ℝ) :
     show {ω : Ω | k.val + 1 ≤ #(Finset.univ.filter (S.X · ω ≤ x))} =
       ⋃ l ∈ Finset.Icc (k.val + 1) n, {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} by
     ext ω
-    simp only [Set.mem_setOf_eq, Set.mem_iUnion, Finset.mem_Icc, exists_prop]
+    simp only [Set.mem_ofPred_eq, Set.mem_iUnion, Finset.mem_Icc, exists_prop]
     constructor
     · intro h
       exact ⟨_, ⟨h, (Finset.card_filter_le _ _).trans (by simp)⟩, rfl⟩
@@ -616,7 +614,7 @@ theorem expected_val (k : Fin n) (i₀ : Fin n) (a b : ℝ) (hab : a ≤ b)
     filter_upwards [pdf_eq_zero0, pdf_eq_zero1] with ψ h_lo h_hi h_not_mem
     by_cases h : ψ ≤ a
     · rw [h_lo (Set.mem_Iic.mpr h), mul_zero]
-    · push_neg at h
+    · push Not at h
       have hb : b < ψ := by
         by_contra! h'
         exact h_not_mem (Set.mem_Ioc.mpr ⟨h, h'⟩)

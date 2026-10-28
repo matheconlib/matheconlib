@@ -49,7 +49,7 @@ def main():
     lean = (ROOT / "MathEconLibTest/Audit/SemanticCounterexamples.lean").read_text()
     names = re.findall(r"^theorem (\w+)", lean, re.M)
     printed = re.findall(r"^#print axioms MathEconLibTest.SemanticAudit\.(\w+)",
-                         (BASE / "AxiomChecks.lean").read_text(), re.M)
+                         (ROOT / "MathEconLibTest/Audit/AxiomChecks.lean").read_text(), re.M)
     assert len(names) == 12 and names == printed, (names, printed)
     assert not re.search(r"\b(sorry|admit|native_decide)\b", lean)
     print(json.dumps({"result": "SEMANTIC_AUDIT_RECORD_PASSED", "local_links": local_links,

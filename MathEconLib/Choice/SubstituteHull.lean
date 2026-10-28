@@ -3,14 +3,16 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Conditions
-import MathEconLib.ForMathlib.Order.IterateFixedPoint
-import Mathlib.Data.Finite.Prod
-import Mathlib.Data.Fintype.Pigeonhole
-import Mathlib.Data.Fintype.Powerset
-import Mathlib.Logic.Relation
-import Mathlib.Order.Bounds.Basic
-import Mathlib.Order.Closure
+module
+
+public import MathEconLib.Choice.Conditions
+public import MathEconLib.ForMathlib.Order.IterateFixedPoint
+public import Mathlib.Basic.Finite.Prod
+public import Mathlib.Data.Fintype.Pigeonhole
+public import Mathlib.Data.Fintype.Powerset
+public import Mathlib.Logic.Relation
+public import Mathlib.Order.Bounds.Basic
+public import Mathlib.Order.Closure
 
 /-!
 # The substitute hull and accumulating repairs
@@ -52,6 +54,8 @@ closure, and IRC-preservation results below are proved independently.
   and consensus problems*, Social Choice and Welfare 23, 349–382,
   DOI 10.1007/s00355-003-0251-9.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 
@@ -364,7 +368,7 @@ Combined with `SubstituteRepairReachable.eq_substituteHull`, this proves
 termination and schedule independence for maximal strict repair runs. -/
 theorem not_infinite_substituteRepairSteps [Finite X]
     (D : ℕ → ChoiceFunction X) : ¬ ∀ n, SubstituteRepairStep (D n) (D (n + 1)) := by
-  letI : Finite (ChoiceFunction X) := finite_choiceRules
+  let : Finite (ChoiceFunction X) := finite_choiceRules
   intro hstep
   have hstrict : StrictMono D := strictMono_nat_of_lt_succ fun n => (hstep n).lt
   obtain ⟨m, n, hne, heq⟩ := Finite.exists_ne_map_eq_of_infinite D
@@ -394,7 +398,7 @@ theorem exists_iterate_eq_substituteHull_of_repair [Finite X]
     (hnext : ∀ D, (SubstituteRepairTerminal D ∧ next D = D) ∨
       SubstituteRepairStep D (next D)) (C : ChoiceFunction X) :
     ∃ n, next^[n] C = C.substituteHull := by
-  letI : Finite (ChoiceFunction X) := finite_choiceRules
+  let : Finite (ChoiceFunction X) := finite_choiceRules
   have hinfl : ∀ D, D ≤ next D := by
     intro D
     rcases hnext D with ⟨_, heq⟩ | hstep
@@ -423,12 +427,12 @@ theorem substituteRepairReachable_substituteHull [Finite X] (C : ChoiceFunction 
       (SubstituteRepairTerminal D ∧ next D = D) ∨ SubstituteRepairStep D (next D) := by
     by_cases h : ∃ E, SubstituteRepairStep D E
     · right
-      simpa only [next, dif_pos h] using Classical.choose_spec h
+      simpa only [next, dite_eq_left h] using Classical.choose_spec h
     · left
       refine ⟨?_, ?_⟩
       · intro E hstep
         exact h ⟨E, hstep⟩
-      · simp only [next, dif_neg h]
+      · simp only [next, dite_eq_right h]
   obtain ⟨n, hn⟩ := exists_iterate_eq_substituteHull_of_repair next hnext C
   have hreach (n : ℕ) : SubstituteRepairReachable C (next^[n] C) :=
     substituteRepairReachable_iterate next

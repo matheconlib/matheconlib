@@ -16,7 +16,9 @@ maintainer approval or completion.
 ## Auction implementation and regression links
 
 The published baseline [#210 revision `2bbb5b8`](https://github.com/matheconlib/matheconlib/commit/2bbb5b84d04ecafe20d7f8081826d9cce30a60b6)
-is stacked on the Lean 4.35 upgrade and remains unmerged. The review follow-up adds a substantive
+was stacked on the Lean 4.35 upgrade and was merged through
+[`8d9de80`](https://github.com/matheconlib/matheconlib/commit/8d9de809c56cd0080e73536840b875a97e41f6c8).
+The immutable links below retain that reviewed source revision. The review follow-up adds a substantive
 `isBICOn_iff` pin, a version-uniform negative control, and a null-type-only change of beliefs that
 defeats the square positive control. Local verification passes the full 9,220-job build, thirteen
 standard-only axiom reports, three rejected characterization mutations, 11 import-helper tests,
@@ -41,6 +43,6 @@ Pointwise BIC is relative to a selected belief version. The prior fixes conditio
 only almost everywhere. Version-uniform rejection at supported types and null-type version
 dependence of a positive example are different statements and require different tests.
 
-This publication does not assert a merge, close F1's remaining adapter work, or certify the full
+The #210 merge does not close F1's remaining adapter work or certify the full
 continuous symmetric-IPV theorem application still tracked in
 [#47](https://github.com/matheconlib/matheconlib/issues/47).
