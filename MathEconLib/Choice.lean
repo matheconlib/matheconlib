@@ -3,15 +3,17 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Basic
-import MathEconLib.Choice.Conditions
-import MathEconLib.Choice.FiniteOption
-import MathEconLib.Choice.Induced
-import MathEconLib.Choice.Map
-import MathEconLib.Choice.Maximizers
-import MathEconLib.Choice.Matching.Completion
-import MathEconLib.Choice.Matching.Preferences
-import MathEconLib.Choice.Matching.Relationships
-import MathEconLib.Choice.Matching.WeakSubstitutability
-import MathEconLib.Choice.SubstituteHull
-import MathEconLib.Choice.WeakPreferences
+module
+
+public import MathEconLib.Choice.Basic
+public import MathEconLib.Choice.Conditions
+public import MathEconLib.Choice.FiniteOption
+public import MathEconLib.Choice.Induced
+public import MathEconLib.Choice.Map
+public import MathEconLib.Choice.Maximizers
+public import MathEconLib.Choice.Matching.Completion
+public import MathEconLib.Choice.Matching.Preferences
+public import MathEconLib.Choice.Matching.Relationships
+public import MathEconLib.Choice.Matching.WeakSubstitutability
+public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.Choice.WeakPreferences

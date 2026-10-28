@@ -3,9 +3,11 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Contracts.Basic
-import MathEconLib.Choice.Induced
-import MathEconLib.Choice.Map
+module
+
+public import MathEconLib.Matching.Contracts.Basic
+public import MathEconLib.Choice.Induced
+public import MathEconLib.Choice.Map
 
 /-!
 # Many-to-one matching with contracts
@@ -29,6 +31,8 @@ John William Hatfield and Scott Duke Kominers (2025), *The theory of matching
 with contracts*, Handbook of the Economics of Matching 2, 409–487, §6.1.
 https://doi.org/10.1016/bs.hesmat.2025.10.005.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

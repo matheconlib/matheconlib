@@ -3,9 +3,11 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Contracts.ManyToOne
-import MathEconLib.Matching.Contracts.WeakSubstitutes
-import MathEconLib.Matching.Contracts.StableFixedPoints
+module
+
+public import MathEconLib.Matching.Contracts.ManyToOne
+public import MathEconLib.Matching.Contracts.WeakSubstitutes
+public import MathEconLib.Matching.Contracts.StableFixedPoints
 
 /-!
 # Stable outcomes from substitutable completions
@@ -49,6 +51,8 @@ https://doi.org/10.1016/bs.hesmat.2025.10.005.
 The source assumes IRC throughout. Here original IRC and IRC of the same
 substitutable completion are explicit hypotheses.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
