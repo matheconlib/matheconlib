@@ -50,40 +50,36 @@ def market : Process Bool Bool (Fin 3) where
       | some x => if x.val = 2 then 1 else 2)
 
 private theorem first : market.ValidBatch ∅ {0} := by
-  simp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
-    Eligible, Terminal, mem_maximizers, Set.InjOn, Set.Nonempty, Own,
-    market, owner, offers, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder,
-    Preference.ofUtility, Preference.ofPreorder, Preference.lt,
-    Bool.forall_bool, Bool.exists_bool, Subtype.exists, Subtype.forall,
-    Fin.forall_fin_succ, Fin.exists_fin_succ]
+  simp [MathEconLib.Choice.maximizers, IsGreatest, upperBounds,
+    Preference.toPreorder, Subtype.forall, Fin.forall_fin_succ, ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Set.InjOn, Set.Nonempty, Own,
+    market, owner, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
+    Subtype.exists]
 
 private theorem second : market.ValidBatch {0} {2} := by
-  simp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
-    Eligible, Terminal, mem_maximizers, Set.InjOn, Set.Nonempty, Own,
-    market, owner, offers, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder,
-    Preference.ofUtility, Preference.ofPreorder, Preference.lt,
-    Bool.forall_bool, Bool.exists_bool, Subtype.exists, Subtype.forall,
-    Fin.forall_fin_succ, Fin.exists_fin_succ]
+  simp [MathEconLib.Choice.maximizers, IsGreatest, upperBounds,
+    Preference.toPreorder, Subtype.forall, Fin.forall_fin_succ, ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Set.InjOn, Set.Nonempty, Own,
+    market, owner, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
+    Bool.exists_bool, Subtype.exists]
 
 private theorem third : market.ValidBatch ({0} ∪ {2}) {1} := by
-  simp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
-    Eligible, Terminal, mem_maximizers, Set.InjOn, Set.Nonempty, Own,
-    market, owner, offers, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder,
-    Preference.ofUtility, Preference.ofPreorder, Preference.lt,
-    Bool.forall_bool, Bool.exists_bool, Subtype.exists, Subtype.forall,
-    Fin.forall_fin_succ, Fin.exists_fin_succ]
+  simp [MathEconLib.Choice.maximizers, IsGreatest, upperBounds,
+    Preference.toPreorder, Subtype.forall, Fin.forall_fin_succ, ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Set.InjOn, Set.Nonempty, Own,
+    market, owner, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
+    Bool.exists_bool, Subtype.exists]
 
 private theorem together : market.ValidBatch ∅ {0, 1} := by
-  simp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
-    Eligible, Terminal, mem_maximizers, Set.InjOn, Set.Nonempty, Own,
-    market, owner, offers, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder,
-    Preference.ofUtility, Preference.ofPreorder, Preference.lt,
-    Bool.forall_bool, Bool.exists_bool, Subtype.exists, Subtype.forall,
-    Fin.forall_fin_succ, Fin.exists_fin_succ]
+  simp [MathEconLib.Choice.maximizers, IsGreatest, upperBounds,
+    Preference.toPreorder, Subtype.forall, Fin.forall_fin_succ, ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Set.InjOn, Set.Nonempty, Own,
+    market, owner, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
+    Subtype.exists]
 
 /-- The three singleton steps form a productive sequential history. -/
 theorem sequential_run : market.Run [{1}, {2}, {0}] := by
@@ -101,13 +97,10 @@ theorem simultaneous_run : market.Run [{0, 1}] :=
 theorem both_terminal :
     market.Terminal (offers [{1}, {2}, {0}]) ∧
       market.Terminal (offers [{0, 1}]) := by
-  simp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
-    Eligible, Terminal, mem_maximizers, Set.InjOn, Set.Nonempty, Own,
+  simp [Unheld, holdings, remaining, Eligible, Terminal, Set.Nonempty, Own,
     market, owner, offers, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder,
-    Preference.ofUtility, Preference.ofPreorder, Preference.lt,
-    Bool.forall_bool, Bool.exists_bool, Subtype.exists, Subtype.forall,
-    Fin.forall_fin_succ, Fin.exists_fin_succ]
+    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
+    Bool.exists_bool, Subtype.exists, Fin.forall_fin_succ, Fin.exists_fin_succ]
 
 /-- Recalling the first proposal produces two held contracts for its proposer. -/
 theorem sequential_holdings :
