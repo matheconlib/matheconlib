@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Contracts.Basic
-import Mathlib.Order.FixedPoints
+module
+
+public import MathEconLib.Matching.Contracts.Basic
+public import Mathlib.Order.FixedPoints
 
 /-!
 # Stable outcomes as deferred-acceptance fixed points
@@ -42,6 +44,8 @@ for arbitrary agent and contract types under explicit substitutability and
 set-form IRC. The choice-order lattice and its relation to the article's
 preference-order formulation are documented in `Order`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

@@ -3,12 +3,14 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
-import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
-import MathEconLib.Matching.Classical.Marriage.LoneWolf
-import MathEconLib.Matching.Classical.Marriage.StableOrder
+module
+
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
+public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
+public import MathEconLib.Matching.Classical.Marriage.LoneWolf
+public import MathEconLib.Matching.Classical.Marriage.StableOrder
 
 /-!
 # The classical marriage market
@@ -27,4 +29,6 @@ direct proposal algorithm; `Marriage.DeferredAcceptanceFixedPoints` relates
 its terminal outputs to the contracts fixed points; and
 `Marriage.DeferredAcceptanceComputable` supplies executable algorithms.
 -/
+
+@[expose] public section
 

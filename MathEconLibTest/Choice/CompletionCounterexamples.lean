@@ -3,14 +3,16 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
+module
+
 /-
 Matching with contracts: completion need not enlarge choices.
 -/
-import MathEconLib.Choice.Matching.Completion
-import MathEconLib.Choice.Matching.WeakSubstitutability
-import MathEconLib.Choice.SubstituteHull
-import MathEconLibTest.Choice.Counterexamples
-import Mathlib.Tactic.Tauto
+public import MathEconLib.Choice.Matching.Completion
+public import MathEconLib.Choice.Matching.WeakSubstitutability
+public import MathEconLib.Choice.SubstituteHull
+public import MathEconLibTest.Choice.Counterexamples
+public import Mathlib.Tactic.Tauto
 
 /-!
 # A completion outside the pointwise-enlargement characterization
@@ -35,6 +37,8 @@ the characterization cannot be omitted, even on a finite contract type.
 The explicit membership formulas keep the example independent of a
 numerical ranking representation or a general preference constructor.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 
