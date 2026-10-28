@@ -3,9 +3,11 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Matching.Completion
-import MathEconLib.Choice.Matching.WeakSubstitutability
-import MathEconLib.Choice.SubstituteHull
+module
+
+public import MathEconLib.Choice.Matching.Completion
+public import MathEconLib.Choice.Matching.WeakSubstitutability
+public import MathEconLib.Choice.SubstituteHull
 
 /-!
 # Relationships between matching choice conditions
@@ -52,6 +54,8 @@ enlargement, so the characterization states that extra condition explicitly.
   Games and Economic Behavior 102, 56–68,
   https://doi.org/10.1016/j.geb.2016.10.002.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 

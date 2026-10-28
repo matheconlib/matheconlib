@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
-import MathEconLib.ForMathlib.Order.IterateFiniteSet
+module
+
+public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
+public import MathEconLib.ForMathlib.Order.IterateFiniteSet
 
 /-!
 # Classical deferred acceptance with simultaneous proposal rounds
@@ -32,6 +34,8 @@ The definitions here use the existing set-valued preference-choice interface
 and are noncomputable. They specify actual successive proposal rounds; they
 do not define an algorithm to be its already-known optimal endpoint.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

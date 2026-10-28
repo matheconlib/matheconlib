@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.Existence
-import MathEconLib.Matching.Contracts.StableOrder
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Existence
+public import MathEconLib.Matching.Contracts.StableOrder
 
 /-!
 # Both sides' optimal and pessimal stable matchings
@@ -14,6 +16,8 @@ woman-optimal/man-pessimal matchings. All four specifications remain independent
 their coincidences and uniqueness are proved. Graph dictionaries also identify
 the classical and contracts proofs of opposition of interests.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

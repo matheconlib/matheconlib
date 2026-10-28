@@ -3,9 +3,11 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib.Choice.Induced
-import MathEconLib.Choice.Maximizers
-import MathEconLib.Preferences.Refinement
+module
+
+public import MathEconLib.Choice.Induced
+public import MathEconLib.Choice.Maximizers
+public import MathEconLib.Preferences.Refinement
 
 /-!
 # Choice under weak preferences
@@ -61,6 +63,8 @@ The general refinement theorem does not construct missing comparisons for incomp
 Option-induced choice inherits unit demand from `ChoiceFunction.unitDemand_ofOptionLinearOrder`.
 
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 
@@ -258,3 +262,5 @@ theorem bestOption_mem_maximizers [DecidableEq α] [LinearOrder γ]
 end ChoiceFunction
 
 end MathEconLib.Choice
+
+end
