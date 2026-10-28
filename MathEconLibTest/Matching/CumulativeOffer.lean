@@ -21,6 +21,8 @@ and that batch independence needs economic hypotheses. It uses only kernel-check
 finite decisions, not a native decision oracle.
 -/
 
+@[expose] public section
+
 namespace MathEconLibTest.Matching.CumulativeOffer
 
 open MathEconLib.Choice MathEconLib.Preferences
@@ -43,13 +45,33 @@ private def market : Process Bool Bool (Fin 3) where
       | none => (0 : ℕ)
       | some x => if x.val = 2 then 1 else 2)
 
-private theorem first : market.ValidBatch ∅ {0} := by decide
+private theorem first : market.ValidBatch ∅ {0} := by
+  dsimp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Eligible, Terminal, maximizers, IsGreatest, upperBounds, Set.InjOn, Set.Nonempty,
+    market, receiving, owner, offers, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, Preference.ofUtility, Preference.toPreorder, Preference.lt]
+  decide
 
-private theorem second : market.ValidBatch {0} {2} := by decide
+private theorem second : market.ValidBatch {0} {2} := by
+  dsimp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Eligible, Terminal, maximizers, IsGreatest, upperBounds, Set.InjOn, Set.Nonempty,
+    market, receiving, owner, offers, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, Preference.ofUtility, Preference.toPreorder, Preference.lt]
+  decide
 
-private theorem third : market.ValidBatch ({0} ∪ {2}) {1} := by decide
+private theorem third : market.ValidBatch ({0} ∪ {2}) {1} := by
+  dsimp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Eligible, Terminal, maximizers, IsGreatest, upperBounds, Set.InjOn, Set.Nonempty,
+    market, receiving, owner, offers, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, Preference.ofUtility, Preference.toPreorder, Preference.lt]
+  decide
 
-private theorem together : market.ValidBatch ∅ {0, 1} := by decide
+private theorem together : market.ValidBatch ∅ {0, 1} := by
+  dsimp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Eligible, Terminal, maximizers, IsGreatest, upperBounds, Set.InjOn, Set.Nonempty,
+    market, receiving, owner, offers, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, Preference.ofUtility, Preference.toPreorder, Preference.lt]
+  decide
 
 /-- The three singleton steps form a productive sequential history. -/
 theorem sequential_run : market.Run [{1}, {2}, {0}] := by
@@ -66,19 +88,26 @@ theorem simultaneous_run : market.Run [{0, 1}] :=
 /-- Both histories are terminal, so the difference cannot be attributed to stopping early. -/
 theorem both_terminal :
     market.Terminal (offers [{1}, {2}, {0}]) ∧
-      market.Terminal (offers [{0, 1}]) := by decide
+      market.Terminal (offers [{0, 1}]) := by
+  dsimp [ValidBatch, Admissible, Unheld, holdings, remaining, contractPreference,
+    Eligible, Terminal, maximizers, IsGreatest, upperBounds, Set.InjOn, Set.Nonempty,
+    market, receiving, owner, offers, CompletePreference.comap, Preference.comap,
+    CompletePreference.ofUtility, Preference.ofUtility, Preference.toPreorder, Preference.lt]
+  decide
 
 /-- Recalling the first proposal produces two held contracts for its proposer. -/
 theorem sequential_holdings :
     market.holdings (offers [{1}, {2}, {0}]) = {0, 1, 2} := by
   ext x
-  fin_cases x <;> decide
+  fin_cases x <;>
+    dsimp [holdings, offers, market, receiving] <;> decide
 
 /-- Batching the first offers prevents the second contract of proposer false from being offered. -/
 theorem simultaneous_holdings :
     market.holdings (offers [{0, 1}]) = {0, 1} := by
   ext x
-  fin_cases x <;> decide
+  fin_cases x <;>
+    dsimp [holdings, offers, market, receiving] <;> decide
 
 /-- A concrete application of the generic productive-round bound. -/
 example : ([{1}, {2}, {0}] : List (Set (Fin 3))).length ≤ Nat.card (Fin 3) :=
