@@ -49,41 +49,40 @@ def market : Process Bool Bool (Fin 3) where
       | none => (0 : ℕ)
       | some x => if x.val = 2 then 1 else 2)
 
+/-- Expose this market's numerical comparisons before enumerating dependent own contracts. -/
+private theorem admissible_iff (A : Set (Fin 3)) (x : Fin 3) :
+    market.Admissible A x ↔
+      ∃ (s : Bool) (y : {z : Fin 3 // owner z = s}),
+        y.val = x ∧ market.Unheld A s ∧
+          (y.val ∉ A ∧
+            (0 ≤ (if y.val = 2 then 1 else 2 : ℕ) ∧
+              ¬ (if y.val = 2 then 1 else 2 : ℕ) ≤ 0)) ∧
+          ∀ z : {z : Fin 3 // owner z = s},
+            (z.val ∉ A ∧
+              (0 ≤ (if z.val = 2 then 1 else 2 : ℕ) ∧
+                ¬ (if z.val = 2 then 1 else 2 : ℕ) ≤ 0)) →
+            (if z.val = 2 then 1 else 2 : ℕ) ≤
+              (if y.val = 2 then 1 else 2 : ℕ) := Iff.rfl
+
 private theorem first : market.ValidBatch ∅ {0} := by
-  simp [MathEconLib.Choice.mem_maximizers, Set.mem_ofPred_eq,
-    Subtype.forall, Fin.forall_fin_succ, ValidBatch, Admissible, Unheld,
-    holdings, remaining, contractPreference,
-    Set.InjOn, Set.Nonempty, Own,
-    market, owner, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
-    Subtype.exists]
+  simp [ValidBatch, admissible_iff, Unheld, holdings, market, owner,
+    Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
+    Fin.forall_fin_succ]
 
 private theorem second : market.ValidBatch {0} {2} := by
-  simp [MathEconLib.Choice.mem_maximizers, Set.mem_ofPred_eq,
-    Subtype.forall, Fin.forall_fin_succ, ValidBatch, Admissible, Unheld,
-    holdings, remaining, contractPreference,
-    Set.InjOn, Set.Nonempty, Own,
-    market, owner, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
-    Bool.exists_bool, Subtype.exists]
+  simp [ValidBatch, admissible_iff, Unheld, holdings, market, owner,
+    Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
+    Fin.forall_fin_succ]
 
 private theorem third : market.ValidBatch ({0} ∪ {2}) {1} := by
-  simp [MathEconLib.Choice.mem_maximizers, Set.mem_ofPred_eq,
-    Subtype.forall, Fin.forall_fin_succ, ValidBatch, Admissible, Unheld,
-    holdings, remaining, contractPreference,
-    Set.InjOn, Set.Nonempty, Own,
-    market, owner, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
-    Bool.exists_bool, Subtype.exists]
+  simp [ValidBatch, admissible_iff, Unheld, holdings, market, owner,
+    Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
+    Fin.forall_fin_succ]
 
 private theorem together : market.ValidBatch ∅ {0, 1} := by
-  simp [MathEconLib.Choice.mem_maximizers, Set.mem_ofPred_eq,
-    Subtype.forall, Fin.forall_fin_succ, ValidBatch, Admissible, Unheld,
-    holdings, remaining, contractPreference,
-    Set.InjOn, Set.Nonempty, Own,
-    market, owner, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
-    Subtype.exists]
+  simp [ValidBatch, admissible_iff, Unheld, holdings, market, owner,
+    Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
+    Fin.forall_fin_succ]
 
 /-- The three singleton steps form a productive sequential history. -/
 theorem sequential_run : market.Run [{1}, {2}, {0}] := by
@@ -103,7 +102,8 @@ theorem both_terminal :
       market.Terminal (offers [{0, 1}]) := by
   simp [Unheld, holdings, remaining, Eligible, Terminal, Set.Nonempty, Own,
     market, owner, offers, CompletePreference.comap, Preference.comap,
-    CompletePreference.ofUtility, CompletePreference.ofPreorder, Preference.ofPreorder, Preference.lt,
+    CompletePreference.ofUtility, CompletePreference.ofPreorder,
+    Preference.ofPreorder, Preference.lt,
     Bool.exists_bool, Subtype.exists, Fin.forall_fin_succ,
     Fin.exists_fin_succ]
 
