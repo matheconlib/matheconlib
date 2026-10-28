@@ -6,6 +6,12 @@ Authors: Bo Cowgill
 
 import MathEconLibTest.Audit.SemanticCounterexamples
 
+/-!
+# Axiom reports for the semantic audit
+
+Print the transitive axiom dependencies of the twelve preserved supporting statements.
+-/
+
 #print axioms MathEconLibTest.SemanticAudit.zeroDensityEnv_private
 #print axioms MathEconLibTest.SemanticAudit.zeroDensityEnv_independent
 #print axioms MathEconLibTest.SemanticAudit.zeroDensityEnv_ipv
