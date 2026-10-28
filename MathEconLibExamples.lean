@@ -5,6 +5,7 @@ Authors: Daniel Lyng
 -/
 module
 
+public import MathEconLibExamples.GameTheory.Cournot
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
@@ -17,6 +18,7 @@ Concrete economic models illustrate the library's definitions and results.
 
 * Matching pennies has a unique mixed Nash equilibrium: Both players randomize uniformly.
 * Matching pennies has no pure Nash equilibrium.
+* A compact continuous Cournot duopoly has a mixed equilibrium with nonnegative expected profits.
 * A Becker-inspired crime-choice model gives a threshold rule and deterrence results
   for individuals and aggregate crime under a fixed type distribution.
 
