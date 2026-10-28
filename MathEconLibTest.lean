@@ -27,6 +27,9 @@ import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
 import MathEconLibTest.Mechanism.TruthfulNash
 import MathEconLibTest.Namespace
+import MathEconLibTest.Preferences.Basic
+import MathEconLibTest.Preferences.Complete
+import MathEconLibTest.Preferences.PublicImport
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
