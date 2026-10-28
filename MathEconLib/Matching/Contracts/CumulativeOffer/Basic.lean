@@ -38,7 +38,7 @@ namespace MathEconLib.Matching.CumulativeOffer
 
 open MathEconLib.Choice MathEconLib.Preferences
 
-/-- The data of a unit-demand cumulative offer process. Receiving choices need only contract.
+/-- The data of a unit-demand cumulative offer process. Receiving choices need only be contracting.
 Own-menu evaluation supplies buyer support without a separate support field. -/
 structure Process (B S X : Type*) where
   /-- Receiving endpoint. -/
@@ -86,7 +86,7 @@ theorem holdings_ofMarket (M : Market B S X)
     (ofMarket M pref).holdings A = {x | ∃ b, x ∈ M.choiceB b A} := by
   ext x
   change (∃ b, x ∈ M.choiceB b (M.buyerSide b A)) ↔ _
-  simp only [hlocal.1]
+  simp only [hlocal.1, Set.mem_setOf_eq]
 
 /-- No current holding involves this proposer. -/
 def Unheld (A : Set X) (s : S) : Prop :=
@@ -102,7 +102,7 @@ def Eligible (A : Set X) (s : S) : Prop :=
 
 /-- All weakly best remaining acceptable offers of an unheld proposer. -/
 def Admissible (A : Set X) (x : X) : Prop :=
-  ∃ s (y : P.Own s), y.val = x ∧ P.Unheld A s ∧
+  ∃ (s : S) (y : P.Own s), y.val = x ∧ P.Unheld A s ∧
     y ∈ maximizers (P.contractPreference s) (P.remaining A s)
 
 /-- An admissible proposal is fresh. -/

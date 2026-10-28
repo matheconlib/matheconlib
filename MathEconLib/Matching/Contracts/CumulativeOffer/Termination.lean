@@ -7,7 +7,6 @@ module
 
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Policies
 public import Mathlib.Data.Set.Card
-public import Mathlib.Tactic.Omega
 
 /-!
 # Finite termination of cumulative offers
@@ -33,7 +32,7 @@ theorem Run.length_le_ncard [Finite X] {h : List (Set X)} (hr : P.Run h) :
   | @cons h Q _ hQ ih =>
     have hg := Set.ncard_lt_ncard (hQ.ssubset P)
     change h.length + 1 ≤ (offers h ∪ Q).ncard
-    omega
+    exact Nat.succ_le_of_lt (lt_of_le_of_lt ih hg)
 
 /-- No productive run can exceed the number of contracts. -/
 theorem Run.length_le_card [Finite X] {h : List (Set X)} (hr : P.Run h) :
@@ -115,7 +114,7 @@ theorem execute_terminal [Finite X] {π : Policy X} (hp : P.ValidPolicy π) :
     .cons hr (hp _ hr ht)
   have hb := hnext.length_le_card P
   simp only [List.length_cons] at hb
-  omega
+  exact (Nat.not_succ_le_self (Nat.card X)) ((Nat.succ_le_succ hn).trans hb)
 
 /-- The policy-indexed raw output; feasibility is a separate economic theorem. -/
 noncomputable def rawOutcome [Finite X] (π : Policy X) : Set X :=
