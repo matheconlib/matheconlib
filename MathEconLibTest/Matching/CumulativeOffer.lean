@@ -65,22 +65,26 @@ private theorem admissible_iff (A : Set (Fin 3)) (x : Fin 3) :
               (if y.val = 2 then 1 else 2 : ℕ) := Iff.rfl
 
 private theorem first : market.ValidBatch ∅ {0} := by
-  simp [ValidBatch, admissible_iff, Unheld, holdings, market, owner,
+  simp only [ValidBatch, admissible_iff]
+  simp [Unheld, holdings, market, owner,
     Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
 private theorem second : market.ValidBatch {0} {2} := by
-  simp [ValidBatch, admissible_iff, Unheld, holdings, market, owner,
+  simp only [ValidBatch, admissible_iff]
+  simp [Unheld, holdings, market, owner,
     Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
 private theorem third : market.ValidBatch ({0} ∪ {2}) {1} := by
-  simp [ValidBatch, admissible_iff, Unheld, holdings, market, owner,
+  simp only [ValidBatch, admissible_iff]
+  simp [Unheld, holdings, market, owner,
     Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
 private theorem together : market.ValidBatch ∅ {0, 1} := by
-  simp [ValidBatch, admissible_iff, Unheld, holdings, market, owner,
+  simp only [ValidBatch, admissible_iff]
+  simp [Unheld, holdings, market, owner,
     Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
