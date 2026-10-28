@@ -16,8 +16,10 @@ the papers use different state variables. Equality across schedules is a
 theorem, not part of the definition.
 
 Use weak preferences over a proposer's own contracts and the outside option,
-with explicit fixed tie-breaking and unrestricted receiving-side choice
-functions. Reuse `ChoiceFunction`, incidence maps, and stability predicates;
+with unrestricted receiving-side choice functions. Define admissible batches
+relationally before selecting a policy. Policies may use history to select
+proposers and resolve preference ties; fixed tie-breaking is a named
+specialization. Reuse `ChoiceFunction`, incidence maps, and stability predicates;
 bridge to `Market.ofSellerPreferences` through a strict refinement. Do not require substitutability, IRC, LAD, or feasible holdings in
 the process data. These conditions belong to individual results.
 
@@ -70,12 +72,15 @@ public names: Hatfield–Kojima and Hirata–Kasuya are different references.
 Let `X` be contracts, `S` proposers, and `B` receivers, with existing
 `seller : X → S` and `buyer : X → B`. Preferences are complete, transitive weak relations on
 `Option {x : X // seller x = s}`, with `none` the outside option.
-Use a total preorder built from existing relation/order primitives, without
-antisymmetry on distinct tied contracts. Keep the relation explicit; the
-resulting strict refinement, rather than the economic weak preference itself,
+Reuse the `CompletePreference` interface from #253 and the refinement API
+from #206, coordinating with their landing rather than introducing a parallel
+preference foundation. Keep preferences explicit and fixed during a run.
+A fixed strict refinement, rather than the economic weak preference itself,
 can be supplied to the existing linear-order constructor.
 
-Separate fixed tie-breaking from the scheduling policy. For own contracts,
+Separate scheduling from selection among tied best contracts. Both may depend
+on history at the general policy level; neither may override strict economic
+preferences. For the fixed-tie-breaking specialization, for own contracts,
 the refinement ranks x above y exactly when x is strictly preferred, or when
 x and y are indifferent and the fixed tie-break prioritizes x. The full
 refinement includes the outside option. The baseline convention puts the
@@ -114,40 +119,64 @@ an obligation of the matching-valued adapter.
 
 ## Offers, steps, histories, and termination
 
-For a proposer s, let `U_s(A)` be its acceptable contracts outside A.
+For a proposer s, let `U_s(A)` be its strictly acceptable contracts outside A.
 It is eligible when no contract of s belongs to H(A) and U_s(A) is nonempty.
-A valid offer is the tie-break-selected member of the weakly best elements of
-U_s(A), equivalently its unique best member under the specified refinement.
+An admissible offer is a greatest element of U_s(A) under its weak preference:
+it is at least as good as every other remaining acceptable contract.
+This relation allows all tied best contracts; it does not select one.
 
-A productive batch Q is nonempty, contains only valid offers by eligible
-proposers, and contains at most one offer per proposer. The step is
-`A' = A ∪ Q`. All eligibility and best-offer tests in a batch use the same
-pre-step state. Recompute holdings from A'.
+A valid productive batch Q is nonempty, contains only admissible offers by
+eligible proposers, and contains at most one offer per proposer. The step is
+`A' = A ∪ Q`. Every test uses the same pre-step state. Holdings are then
+recomputed from A'. Validity and runs are relational; determinism is additional
+policy data, not part of the definition of a process.
 
-Use sets in the semantic relation. Availability of a best remaining contract
-must be explicit on infinite domains; nonempty does not imply a greatest
-element. Finite contracts supply this fact without finiteness of either agent
-type. Do not interpret a total choice constructor's empty fallback on a
-non-maximizing infinite menu as economic exhaustion.
+A history-dependent policy selects a valid batch at each nonterminal valid
+history. Equivalently it selects a nonempty subset of eligible agents and one
+admissible contract for each selected agent. Use this equivalence as an adapter,
+rather than maintaining two independent process definitions. In the contract-set
+representation, the participating agents are the seller image of the batch.
 
-Provide policies selecting:
+The history determines A, which determines holdings, availability, and
+eligibility. Do not store these as independently mutable policy inputs.
+A state-dependent policy factors through A: two valid histories with the same
+accumulated offers receive the same batch. Provide the lift of a state policy
+to a history policy and the corresponding agreement of runs.
 
-- One eligible proposer (sequential).
-- Every eligible proposer (simultaneous).
-- Any nonempty subset of eligible proposers (general batches).
+Expose the following specializations, combining restrictions where appropriate:
 
-The HKW-style single-contract-order specialization uses one fixed order Γ on X
-both to resolve each proposer's contract ties and to select the first available
-proposal globally. Equivalently, form the union of eligible proposers' weakly
-best remaining acceptable contracts and choose its Γ-first member. This is a
-proposed extension to weak preferences, not an assertion that HKW's original
-model permits ties. A simultaneous batch takes each eligible proposer's
-selected contract using the same fixed tie-break.
+| Policy | Restriction |
+| --- | --- |
+| History-dependent batches | Any valid batch selected from the history |
+| State-dependent batches | The batch depends only on accumulated offers |
+| Simultaneous | Exactly one admissible offer from every eligible agent |
+| Sequential | Exactly one admissible offer overall |
+| Fixed tie-breaking | Each selected agent uses its fixed strict refinement |
+| Fixed contract-order sequential | Choose the highest-priority admissible contract globally |
 
-A policy may depend on the prior history. A fixed scheduling priority order is a convenient
-instance, not the definition of a process. Tie-breaking remains fixed while
-scheduling varies. Require the chosen batch to be valid
-whenever the state is nonterminal.
+Simultaneous and sequential restrictions alone do not resolve preference ties.
+A deterministic constructor supplies the corresponding selector. General
+history-dependent selection includes changing priorities among tied best
+contracts; fixed tie-breaking is the standard specialization for source
+correspondence and scheduling-independence results. Changing scheduling and
+changing tie-breaking are different operations.
+
+The HKW-style fixed-contract-order specialization uses one fixed order Γ on X.
+Form the union of all eligible agents' weakly best remaining acceptable
+contracts, and select its Γ-first member. This simultaneously resolves contract
+ties and selects the proposing agent. Priority never overrides an agent's
+strict preference. Its weak-preference version is an extension, not an assertion
+that HKW's original model permits ties. Also provide a fixed-priority
+simultaneous rule that takes each eligible agent's Γ-first admissible contract.
+
+Use sets in the semantic relation. On infinite domains, eligibility need not
+supply a greatest remaining contract, and a priority order need not attain a
+first element. Policy existence therefore needs explicit attainment hypotheses;
+absence of a valid batch is not automatically economic exhaustion. Finite
+contracts supply the needed attainment without finiteness of either agent type.
+Use #258's attainment and outside-option bridges on the actual own-contract
+menus, including attainment under refinement. Do not interpret a total choice
+constructor's empty fallback as voluntary nonparticipation.
 
 Retain batch labels in a run. Its accumulated-set projection forgets order and
 batch boundaries; it cannot replace the history interface needed for observable
@@ -178,14 +207,15 @@ outcome function. This function still returns a set of contracts.
 
 Promote it to a matching-valued allocation rule only after proving feasibility
 for every report in its stated domain. An independence theorem then permits a
-canonical outcome that suppresses the scheduling-policy parameter while
-retaining the preference refinement. Changing tie-breaking can change the
+canonical outcome on the fixed-refinement specialization that suppresses the
+scheduling-policy parameter while retaining the preference refinement. Changing tie-breaking can change the
 outcome, even for one proposer indifferent between two accepted contracts.
 Independence from scheduling is not independence from tie-breaking. Keep the policy-indexed
 interface available for domains without independence.
 
 Reports vary the proposer preference profile; receiving choices and incidence
-maps are fixed parameters of the relevant mechanism. Reuse the existing
+maps, scheduling rule, and tie-selection rule are fixed parameters of the
+relevant mechanism (a fixed rule may still depend on its input history). Reuse the existing
 mechanism infrastructure, with zero monetary transfers where appropriate.
 An allocation rule alone is not a strategy-proofness theorem: report domains,
 true preferences, outcome evaluation, and deviations belong to
@@ -266,16 +296,18 @@ bundles, potentially destroying feasibility and optimality.
 preference-induced choice, correspondences, selection bridges, and
 utility/transfer examples, coordinated with the preferences-port issue
 [#161](https://github.com/matheconlib/matheconlib/issues/161).
-This work is outside #139. The process may use a small explicit relation and
-refinement interface without adding a general weak-preference constructor to
-the choice module. Do not introduce a parallel preference foundation.
+These general choice results are developed outside #139. The active #253,
+#206, and #258 stack now supplies preference, refinement, and attainment
+interfaces for the process to reuse. Coordinate integration with that stack;
+do not duplicate its definitions or require the whole #200 roadmap to finish.
 
 ## Implementation sequence and acceptance checks
 
 1. **Core and sequential process.** Tentative module
    `Matching/Contracts/CumulativeOffer/Basic.lean`: own-menu holdings,
-   weak-preference/refinement interface, eligibility, valid batches, labeled
-   runs and terminal outcomes.
+   weak preferences, eligibility, relational admissible offers and valid batches,
+   labeled runs and terminal outcomes. Add history policies, state-policy lifts,
+   and sequential, simultaneous, fixed-tie-breaking, and fixed-order adapters.
    `Termination.lean`: finite progress bounds and policy execution.
    Deliver a usable singleton policy and small concrete examples.
 2. **Source specializations.** Tentative `Presentations.lean`: simultaneous
@@ -284,15 +316,20 @@ the choice module. Do not introduce a parallel preference foundation.
 3. **Economic results.** Separate feasibility, stability, optimality and
    independence results, with a source-to-hypothesis table updated as proofs
    land. Split files only where dependencies and size justify it.
-4. **Completion comparison and mechanism adapter.** Complete the relevant
-   #138 bridge, then expose a matching-valued mechanism. Coordinate history
-   interfaces with #141 and report interfaces with #140.
+4. **Mechanism adapter and completion comparison.** Expose a policy-indexed
+   matching-valued mechanism once feasibility holds on its report domain;
+   completion independence is not a prerequisite for this adapter. Complete the
+   separate #138 comparison. Coordinate history interfaces with #141 and report
+   interfaces with #140.
 
 Initial regression examples should exercise empty contracts, all-unacceptable
 contracts, a rejected proposer making a second offer, two contracts between
 the same proposer and receiver, tied acceptable contracts, a tie with the
 outside option, refinement correspondence, re-selection of an earlier rejected contract,
-and infeasible raw holdings under unrestricted choices. A small regular market
+and infeasible raw holdings under unrestricted choices. Exercise state-policy
+lifts, history-dependent scheduling, history-dependent tie selection, and the
+fixed-order adapter. Include an example where sequential and simultaneous
+outcomes differ under unrestricted choices. A small regular market
 should run under both singleton and simultaneous policies. Include a public
 umbrella-import client when Lean files are added.
 
@@ -301,10 +338,16 @@ termination proofs land without silently imposing economic regularity.
 Later acceptance requires named source correspondence proofs and separately
 scoped economic guarantees. A design document does not close #139 or #138.
 
-## Decisions for review
+## Agreed generality and remaining review
 
-- Adopt weak proposer preferences with explicit fixed tie-breaking and arbitrary
-  receiving choices; bridge strict refinements to the existing constructor.
+- Use weak proposer preferences and arbitrary receiving choices. Define valid
+  batches relationally, with history-dependent policies selecting agents and
+  resolving ties. Fixed tie-breaking and strict refinements are specializations.
+- Provide state-dependent, simultaneous, sequential, and fixed-contract-order
+  specializations of the same process; prove their validity and run embeddings.
+- Finite termination applies to all valid productive runs, including policies
+  with history-dependent tie selection. Scheduling independence and classical
+  source correspondence retain their separate fixed-refinement hypotheses.
 - Review the outside-option convention and keep general choice with
   indifferences in #200.
 - Approve own-menu receiver evaluation and explicit locality transport.
