@@ -19,6 +19,7 @@ public import MathEconLib.Matching.Classical.Marriage.StableOrder
 public import MathEconLib.Matching.Classical.Marriage.ToContracts
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Termination
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
 public import MathEconLib.Matching.Contracts.ManyToOne
 public import MathEconLib.Matching.Contracts.RuralHospitals
