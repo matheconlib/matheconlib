@@ -6,6 +6,7 @@ Authors: Daniel Lyng
 module
 
 public import MathEconLibExamples.GameTheory.MatchingPennies
+public import MathEconLibExamples.GameTheory.MatchingPenniesBestResponses
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
 /-!
