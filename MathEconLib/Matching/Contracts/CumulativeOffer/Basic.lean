@@ -86,7 +86,7 @@ theorem holdings_ofMarket (M : Market B S X)
     (ofMarket M pref).holdings A = {x | ∃ b, x ∈ M.choiceB b A} := by
   ext x
   change (∃ b, x ∈ M.choiceB b (M.buyerSide b A)) ↔ _
-  simp only [hlocal.1, Set.mem_setOf_eq]
+  simp only [hlocal.1, Set.mem_ofPred_eq]
 
 /-- No current holding involves this proposer. -/
 def Unheld (A : Set X) (s : S) : Prop :=

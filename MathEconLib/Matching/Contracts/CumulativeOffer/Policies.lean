@@ -176,7 +176,7 @@ theorem fixedOrder_spec [Finite X] (priority : LinearOrder X)
   classical
   refine ⟨(P.exists_priority_offer priority h).choose, ?_,
     (P.exists_priority_offer priority h).choose_spec⟩
-  simp only [fixedOrder, dif_neg h]
+  simp only [fixedOrder, dite_eq_right h]
 
 /-- Fixed contract-order scheduling is valid. -/
 theorem fixedOrder_valid [Finite X] (priority : LinearOrder X) :
@@ -200,7 +200,7 @@ theorem fixedOrder_fixedTieBreaking [Finite X] (priority : LinearOrder X) :
   have ht : ¬ P.Terminal (offers h) := by
     intro ht
     have he : P.fixedOrder priority (offers h) = ∅ := by
-      simp only [fixedOrder, dif_pos ht]
+      simp only [fixedOrder, dite_eq_left ht]
     change x ∈ P.fixedOrder priority (offers h) at hx
     rw [he] at hx
     exact hx

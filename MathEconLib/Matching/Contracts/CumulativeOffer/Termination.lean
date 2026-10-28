@@ -41,7 +41,7 @@ theorem Run.length_le_card [Finite X] {h : List (Set X)} (hr : P.Run h) :
 
 /-- Run a policy for a bounded number of rounds, stopping at economic exhaustion.
 Terminal repetitions do not add empty batches to the history. -/
-noncomputable def execute (π : Policy X) : ℕ → List (Set X)
+noncomputable def execute (P : Process B S X) (π : Policy X) : ℕ → List (Set X)
   | 0 => []
   | n + 1 => by
       classical
@@ -55,14 +55,14 @@ theorem execute_succ_of_terminal (π : Policy X) (n : ℕ)
     (ht : P.Terminal (offers (P.execute π n))) :
     P.execute π (n + 1) = P.execute π n := by
   classical
-  simp only [execute, if_pos ht]
+  simp only [execute, ite_eq_left ht]
 
 /-- A nonterminal execution appends the policy's productive batch. -/
 theorem execute_succ_of_not_terminal (π : Policy X) (n : ℕ)
     (ht : ¬ P.Terminal (offers (P.execute π n))) :
     P.execute π (n + 1) = π (P.execute π n) :: P.execute π n := by
   classical
-  simp only [execute, if_neg ht]
+  simp only [execute, ite_eq_right ht]
 
 /-- Execution of a valid policy produces a valid run. -/
 theorem execute_run {π : Policy X} (hp : P.ValidPolicy π) (n : ℕ) :
