@@ -127,7 +127,12 @@ export PayoffStructure.Measurable (measurable_payoff)
 
 export PayoffStructure.Bounded (isBounded_payoff_range)
 
-/-- Players evaluate outcome distributions by expected utility in a complete real normed space.
+/-- The payoff structure obtained by integrating utilities over outcome distributions.
+
+For real-valued payoffs, using this construction to evaluate lotteries adopts the expected-utility
+model: each player's supplied utility represents lottery preferences through its expectation,
+whenever integrable. This is the von Neumann–Morgenstern interpretation of utility; preference
+axioms and the corresponding representation theorem are not formalized here.
 
 Measurability and continuity instances for expected utility are provided for real-valued
 utilities. -/

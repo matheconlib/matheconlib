@@ -95,7 +95,10 @@ instance [MeasurableSpace V] (G : StrategicGame I A V) [G.Measurable] :
 /-- Independent mixed actions yield the Bochner integral of each strategic payoff.
 
 The integral is an expected payoff when the payoff function is integrable against the independent
-product law; a nonintegrable function has integral zero. -/
+product law; a nonintegrable function has integral zero.
+
+For real-valued payoffs, the economic interpretation uses the expected-utility modeling assumption
+described in `PayoffStructure.expected`. -/
 def mixedExtension [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
     [Fintype I] (G : StrategicGame I A V) :
     StrategicGame I (fun i ↦ ProbabilityMeasure (A i)) V where
