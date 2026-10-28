@@ -9,13 +9,13 @@ public import MathEconLib.Auction.Typeclasses
 public import MathEconLib.Auction.Affiliation.Basic
 
 /-!
-# Supporting lemmas for the 23 October 2026 semantic audit
+# Signal-value environment boundary cases
 
-These twelve statements preserve the original supporting proof content at audit revision
-1d9f8cc233cdaeee0364b51befb84feea657a4da. They certify the zero-density environment,
-the global strict-positivity obstruction and real arithmetic. They do not certify every
-complete probabilistic countermodel or the future repaired signal interfaces. See the audit
-record under docs/audits/2026-10-23-semantic and issue #218.
+The current `SignalValueEnv` admits a zero density with private, independent and affiliated
+signals, and forces globally strictly positive values. These witnesses expose the probability
+normalization and feasible-domain limitations tracked in issues #215 and #216. Repairs should
+replace affected witnesses with regressions for the corrected contracts. See docs/SemanticAudit.md
+for the findings and the full historical evidence archive.
 -/
 
 @[expose] public noncomputable section
@@ -24,7 +24,7 @@ open MeasureTheory Set
 open MathEconLib
 open MathEconLib.Auction.Affiliation
 
-namespace MathEconLibTest.SemanticAudit
+namespace MathEconLibTest.SignalValueBoundaries
 
 noncomputable def zeroDensityEnv : SignalValueEnv 1 where
   x_lo := 0
@@ -74,21 +74,4 @@ theorem cannot_represent_uniform_value_at_zero (E : SignalValueEnv 1) :
     E.v 0 (fun _ ↦ 0) ≠ 0 :=
   ne_of_gt (all_values_strictly_positive E 0 (fun _ ↦ 0))
 
--- Exact real identities establish the continuum-report part, without a bid grid.
-theorem correlated_fp_marginal_payment (b : ℝ) :
-    ((2 * (0 : ℝ) - 1) * b + (2 * (1 : ℝ) - 1) * b) / 2 = 0 := by ring
-
-theorem correlated_fn_marginal_payment (b : ℝ) :
-    ((b - (0 : ℝ)) ^ 2 + (b - (1 : ℝ)) ^ 2) / 2 = b ^ 2 - b + 1 / 2 := by ring
-
-theorem correlated_fn_truth_optimal (s b : ℝ) :
-    -(b - s) ^ 2 ≤ -(s - s) ^ 2 := by nlinarith [sq_nonneg (b - s)]
-
-theorem correlated_fn_formal_deviation :
-    -((0 : ℝ)^2 - 0 + 1 / 2) < -((1 / 2 : ℝ)^2 - 1 / 2 + 1 / 2) := by norm_num
-
-theorem correlated_revenue_mismatch :
-    (((0 : ℝ) * 0 + 1 * 1) / 2) = 1 / 2 ∧
-    (((0 : ℝ) / 2 + 1 / 2) / 2) = 1 / 4 ∧ (1 / 4 : ℝ) ≠ 1 / 2 := by norm_num
-
-end MathEconLibTest.SemanticAudit
+end MathEconLibTest.SignalValueBoundaries
