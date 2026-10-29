@@ -71,11 +71,22 @@ An existing development can qualify. Checking only the theorem's type
 Additional applications of older main results remain post-launch work under
 [#47](https://github.com/matheconlib/matheconlib/issues/47).
 
+## Style and naming
+
+For new and substantially edited Lean code, use Mathlib's
+[style guidelines](https://leanprover-community.github.io/contribute/style.html) and
+[naming conventions](https://leanprover-community.github.io/contribute/naming.html)
+as defaults for source formatting, documentation layout, and declaration names.
+Prefer notation familiar to the mathematical or economic setting. Discuss
+departures when they materially affect readability or consistency.
+
+MathEconLib's documented policies on [namespaces and public APIs](#public-api),
+[citations](#citing-sources), [copyright headers](#copyright-headers), and
+[API stability](#api-stability-pins) take precedence.
+
 ## Citing sources
 
 Use the author–year format shown below as the default, with complete references.
-Detailed formatting guidance is tracked in
-[style conventions (#109)](https://github.com/matheconlib/matheconlib/issues/109).
 
 Contributions may cover selected results or complete papers, subject to our
 integration and review standards. Paper-specific developments may remain downstream,
