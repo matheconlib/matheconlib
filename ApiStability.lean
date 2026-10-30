@@ -283,6 +283,12 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 
 section Affiliation
 
+-- Own-signal strictness uses the environment's closed bounds; rival profiles are arbitrary.
+example : ∀ {n : ℕ} (E : MathEconLib.Auction.Affiliation.SignalValueEnv n)
+    (i : Fin n) (X : Fin n → ℝ),
+    StrictMonoOn (fun t ↦ E.v i (Function.update X i t)) (Set.Icc E.x_lo E.x_hi) :=
+  @MathEconLib.Auction.Affiliation.SignalValueEnv.v_strictMono_own
+
 -- Def 7.2 (affiliation) — definition pin: the exact unfolding of `Affiliated`
 example {n : ℕ} (f : (Fin n → ℝ) → ℝ) :
     MathEconLib.Auction.Affiliation.Affiliated f
