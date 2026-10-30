@@ -105,7 +105,9 @@ given the full profile `X`.
 The fields record the regularity of the value functions from the notes:
 nonnegativity (`v_nonneg`), continuity (`v_continuous`), monotonicity in the
 product/pointwise order (`v_mono`, "nondecreasing"), and strict monotonicity in the
-bidder's own signal with the rivals held fixed (`v_strictMono_own`). -/
+bidder's own signal within `[x_lo, x_hi]`, with the rivals held fixed
+(`v_strictMono_own`). Values remain defined on all real profiles; strictness is not
+required outside the declared interval. -/
 structure SignalValueEnv (n : ℕ) where
   /-- Lower signal bound `x`. -/
   x_lo : ℝ
@@ -128,8 +130,10 @@ structure SignalValueEnv (n : ℕ) where
   v_continuous : ∀ i, Continuous (v i)
   /-- Values are nondecreasing in the product (pointwise) order on profiles. -/
   v_mono : ∀ i, Monotone (v i)
-  /-- Values are strictly increasing in the bidder's own signal, rivals held fixed. -/
-  v_strictMono_own : ∀ i (X : Fin n → ℝ), StrictMono (fun t => v i (Function.update X i t))
+  /-- Values are strictly increasing in the bidder's own signal on `[x_lo, x_hi]`,
+  rivals held fixed. No strictness is required outside this interval. -/
+  v_strictMono_own : ∀ i (X : Fin n → ℝ),
+    StrictMonoOn (fun t => v i (Function.update X i t)) (Set.Icc x_lo x_hi)
 
 /-- **Remark 5** (private-values special case). Bidder `i`'s value depends only on
 its own signal `Xᵢ`: whenever two profiles agree in coordinate `i`, the values
