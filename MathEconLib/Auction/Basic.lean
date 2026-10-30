@@ -263,8 +263,13 @@ def InterimIR (B : ConditionalBeliefs A.typeLaw) : Prop :=
       (insert i s θo) (Function.update (insert i s θo) i s)) (B.opponents i s)) ∧
   ∀ i, ∀ s ∈ A.interval i, 0 ≤ A.conditionalUtility B i s s
 
-/-- Ex-ante individual rationality: every bidder gets nonnegative ex-ante expected utility. -/
+/-- Ex-ante individual rationality with finite expected utility and outside utility zero.
+Every bidder's realized truthful utility is integrable and has nonnegative expectation.
+Integrability is required of net utility, without requiring the allocation and transfer terms
+to be separately integrable. -/
 def ExAnteIR : Prop :=
+  (∀ i, Integrable (fun ω => A.θ i ω * A.rules.outcome (A.θ · ω) i +
+    A.rules.transfer i (A.θ · ω)) ℙ) ∧
   ∀ i, 0 ≤ 𝔼[fun ω => A.θ i ω * A.rules.outcome (A.θ · ω) i +
     A.rules.transfer i (A.θ · ω)]
 
