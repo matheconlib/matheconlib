@@ -11,12 +11,19 @@ public import Mathlib
 /-! # Finite conditional expectations
 
 This file provides elementary infrastructure for conditional expectations
-with respect to a finite, possibly unnormalized density.
+with respect to finite, possibly unnormalized weights.
 
 For a weight function `f : α → ℝ`, a function `g : α → ℝ`, and a finite set
 `A : Finset α`, `condExpOn f g A` is the `f`-weighted average of `g` on `A`:
 
 `(∑ x ∈ A, g x * f x) / (∑ x ∈ A, f x)`.
+
+The formula accepts arbitrary real weights. Its probability interpretation requires
+nonnegative weights and positive total weight on the conditioning set. No global
+unit-mass assumption is needed: positive rescaling cancels between numerator and
+denominator. Zero total weight instead gives Lean's totalized value `0`, not a
+conditional probability model. The comparison theorems exclude this case through
+strict positivity on the support and nonempty conditioning sets.
 
 The definition itself is independent of affiliation.  The comparison
 theorems in this file use affiliation to compare two finite conditioning
@@ -35,13 +42,15 @@ open scoped FinsetFamily
 
 namespace Auction.Affiliation
 
-/-- The conditional expectation of `g` on the finite set `A`, computed using
+/-- The weighted average of `g` on the finite set `A`, computed using
 the possibly unnormalized weights `f`.
 
 The denominator normalizes the restriction of `f` to `A`.  If the total
 weight of `A` is zero, division has Lean's usual value `0`; comparison
-theorems will assume positive weights and a nonempty set whenever a genuine
-conditional average is required. -/
+theorems assume positive weights and a nonempty set whenever a genuine
+conditional average is required. For nonnegative weights and positive total mass,
+this is conditional expectation under the discrete law obtained by normalization;
+it does not condition a separately supplied continuous signal law. -/
 noncomputable def condExpOn {α : Type*} (f g : α → ℝ) (A : Finset α) : ℝ :=
   (∑ x ∈ A, g x * f x) / (∑ x ∈ A, f x)
 
@@ -76,7 +85,7 @@ theorem condExpOn_add_const {α : Type*} (f g : α → ℝ) (A : Finset α) (c :
 
 /-- The cross-multiplied comparison for finite conditional expectations.
 
-Let `f` be an affiliated density that is positive on a finite sublattice `S`,
+Let `f` be affiliated weights that are positive on a finite sublattice `S`,
 and let `g` be a nondecreasing function that is nonnegative on `S`.  Suppose
 that `A` and `B` are subsets of `S` such that, for every `a ∈ A` and `b ∈ B`,
 

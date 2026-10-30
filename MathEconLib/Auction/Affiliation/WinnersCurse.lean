@@ -20,7 +20,7 @@ Fix a bidder `i` and a realized own signal `t`.  Inside a finite support
   for which `x j ≤ t` for every bidder `j`.
 
 The second condition says that bidder `i`'s signal is a (not necessarily
-unique) maximum, so ties count as wins.  For an affiliated density `f` and a
+unique) maximum, so ties count as wins. For affiliated weights `f` and a
 nondecreasing nonnegative value function `g`, the target theorem is
 
 `E_f[g(X) | X_i = t, X_i = max_j X_j] ≤ E_f[g(X) | X_i = t]`.
@@ -39,7 +39,8 @@ is lattice-lower than the own-signal slice and applies
 `FiniteCondExp.lean`.  The own-signal conditional expectation is
 `condExpSlice` from `MonotoneCondExp.lean`.  The proposition's additional
 claim that the inequality is generically strict is outside this first finite
-scope.
+scope. These are conditional averages under the discrete law obtained by
+normalizing the weights on `S`, not conditioning a continuous signal law.
 -/
 
 namespace MathEconLib
@@ -240,6 +241,10 @@ assumptions needed there.  Although Proposition 7.4 is stated for a
 pure-common-value environment, this inequality uses only these two properties
 of bidder `i`'s value, so the formal statement applies to the more general
 interdependent-value environment represented by `SignalValueEnv`.
+
+The averages use the raw weights `E.f` on the finite set `S`. `SignalValueEnv`
+does not itself supply a probability law; this result does not establish a
+conditional-expectation identity for a continuous signal model.
 
 The additional hypothesis that `E.f` is strictly positive on `S` strengthens
 the environment's built-in nonnegativity just where it is needed to normalize

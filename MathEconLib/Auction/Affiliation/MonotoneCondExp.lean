@@ -10,14 +10,16 @@ public import MathEconLib.Auction.Affiliation.FiniteCondExp
 /-! # Lemma 7.3 — Monotone conditional expectations (finite case)
 
 This file proves the finite/discrete case of **Lemma 7.3 (Monotone conditional
-expectations)** from Section 7: if the joint density `f` is affiliated
+expectations)** from Section 7: if the signal weights `f` are affiliated
 (**Def 7.2**) and `g` is a nondecreasing function of the signal profile, then
 the conditional expectation `E[g(X) | Xᵢ = t]` is nondecreasing in `t`.
 
 We work over a finite support `S : Finset (Fin n → ℝ)` closed under the
-pointwise lattice operations (`IsSublattice`), with a density `f` positive
+pointwise lattice operations (`IsSublattice`), with weights `f` positive
 on `S`. The discrete conditional expectation `condExpSlice` is the
 `f`-weighted average of `g` over the slice `{x ∈ S | x i = t}`.
+When `S` has positive total weight, normalization gives a discrete probability
+law; no continuous signal law or continuous conditional-expectation identity is supplied here.
 
 The reusable conditional-expectation comparison is proved in
 `FiniteCondExp.lean`.  Its proof uses the **four functions theorem
@@ -42,7 +44,7 @@ open Finset
 namespace Auction.Affiliation
 
 /-- The discrete conditional expectation `E[g(X) | Xᵢ = t]` of `g` under the
-(unnormalized) density `f` supported on `S`: the `f`-weighted average of `g`
+(possibly unnormalized) weights `f` on `S`: the `f`-weighted average of `g`
 over the slice `{x ∈ S | x i = t}`. When the slice is empty (or its `f`-mass
 vanishes) the convention `division by zero = 0` applies; Lemma 7.3 only ever
 evaluates it at heights `t` realized in `S`, where the mass is positive. -/
@@ -51,7 +53,7 @@ noncomputable def condExpSlice {n : ℕ} (f g : (Fin n → ℝ) → ℝ)
   condExpOn f g (S.filter fun x => x i = t)
 
 /-- **Lemma 7.3 (Monotone conditional expectations), finite case**. Let the
-joint density `f` be affiliated (**Def 7.2**) and positive on the finite
+signal weights `f` be affiliated (**Def 7.2**) and positive on the finite
 sublattice `S` of signal profiles, and let `g` be nondecreasing.  Then the
 discrete conditional expectation `t ↦ E[g(X) | Xᵢ = t]` (`condExpSlice`) is
 nondecreasing on the set of realized heights `{x i | x ∈ S}`.
