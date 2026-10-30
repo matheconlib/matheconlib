@@ -131,7 +131,8 @@ structure SignalValueEnv (n : ℕ) where
   /-- Values are nondecreasing in the product (pointwise) order on profiles. -/
   v_mono : ∀ i, Monotone (v i)
   /-- Values are strictly increasing in the bidder's own signal on `[x_lo, x_hi]`,
-  rivals held fixed. No strictness is required outside this interval. -/
+  rivals held fixed at arbitrary real values, including outside the declared bounds.
+  No own-signal strictness is required outside this interval. -/
   v_strictMono_own : ∀ i (X : Fin n → ℝ),
     StrictMonoOn (fun t => v i (Function.update X i t)) (Set.Icc x_lo x_hi)
 
