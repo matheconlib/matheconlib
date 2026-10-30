@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Ruiz Chen. All rights reserved.
+Copyright (c) 2026 Ruiz Chen, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ruiz Chen
+Authors: Ruiz Chen, Bo Cowgill
 -/
 module
 
@@ -15,7 +15,7 @@ positive-dependence condition of Milgrom–Weber.
 
 It contains three things:
 
-* **Def 7.2** — the `Affiliated` predicate on a joint density `f : (Fin n → ℝ) → ℝ`:
+* **Def 7.2** — the `Affiliated` predicate on weights `f : (Fin n → ℝ) → ℝ`:
   for all signal profiles `x` and `y`,
   `f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y`, where `⊔`/`⊓` are the pointwise
   (componentwise max/min) lattice operations on `Fin n → ℝ`.
@@ -23,11 +23,27 @@ It contains three things:
   per-coordinate factors, then the affiliation inequality holds with equality
   everywhere (`factors_affiliation_eq`), and hence `f` is affiliated
   (`factors_affiliated`). Independence is the boundary (knife-edge) case of the
-  affiliation cone.
+  affiliation cone when a corresponding probability model is supplied.
 * **Def 7.1** — the signal/value environment `SignalValueEnv`, carrying the signal
   bounds, the bidders' value functions, and their regularity (nonnegativity,
   continuity, monotonicity, and strict monotonicity in the bidder's own signal),
   together with the `IsPrivateValues` predicate isolating the private-values case.
+
+Affiliation and factorization here are algebraic. `SignalValueEnv.f` is a nonnegative weight
+function supported on the declared box; no reference measure, measurability,
+normalization or probability law is supplied. Even zero weights are allowed.
+`Factors` and the legacy name `HasIndependentSignals` assert only product
+factorization, not probabilistic independence.
+
+For probability semantics, separately supply a joint probability law and identify
+`f` with its mass function or with a measurable density relative to a specified
+reference measure. A density must have total mass one, or positive finite mass
+followed by explicit normalization. Independence additionally requires a product
+law with the corresponding probability marginals (and a product reference measure
+for a density factorization). Restricting factorized weights to a nonproduct
+finite support can introduce dependence. The finite conditional-average files
+normalize weights on each conditioning set; those averages do not automatically
+describe conditioning a separately supplied continuous signal law.
 -/
 
 namespace MathEconLib
@@ -40,7 +56,7 @@ namespace Auction.Affiliation
 
 /-! ### Def 7.2 — the affiliation predicate -/
 
-/-- **Def 7.2** (affiliation). A joint density `f : (Fin n → ℝ) → ℝ` is *affiliated*
+/-- **Def 7.2** (affiliation). Weights `f : (Fin n → ℝ) → ℝ` are *affiliated*
 when, for every pair of signal profiles `x` and `y`,
 `f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y`.
 
@@ -48,8 +64,8 @@ Here `⊔` and `⊓` are the pointwise lattice operations on `Fin n → ℝ` fro
 Mathlib's `Pi.lattice`, so `(x ⊔ y) i = max (x i) (y i)` and
 `(x ⊓ y) i = min (x i) (y i)`, matching the notes' componentwise `∨`/`∧`.
 
-The predicate is purely the algebraic inequality (positivity-free); that `f` is a
-genuine density is carried separately by the downstream analytic layer. -/
+The predicate is purely the algebraic inequality: it assumes neither positivity
+nor normalization, and does not itself provide a probability law. -/
 def Affiliated {n : ℕ} (f : (Fin n → ℝ) → ℝ) : Prop :=
   ∀ x y : Fin n → ℝ, f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y
 
@@ -57,7 +73,9 @@ def Affiliated {n : ℕ} (f : (Fin n → ℝ) → ℝ) : Prop :=
 
 /-- The factorization predicate used in Remark 6: `f` is the product of its
 per-coordinate factors `g i`, i.e. `f x = ∏ i, g i (x i)` for every profile `x`.
-This encodes (mutual) independence of the signals. -/
+There are no sign, measurability or normalization assumptions on the factors.
+Probabilistic independence requires a separately supplied product probability
+model linked to these weights, as described in the module documentation. -/
 def Factors {n : ℕ} (f : (Fin n → ℝ) → ℝ) (g : Fin n → ℝ → ℝ) : Prop :=
   ∀ x, f x = ∏ i, g i (x i)
 
@@ -75,7 +93,7 @@ of its per-coordinate factors, then the affiliation inequality of Def 7.2 holds
 with *equality* everywhere:
 `f (x ⊔ y) * f (x ⊓ y) = f x * f y` for all `x`, `y`.
 
-This is "Theorem 7.2 holds with equality": independence sits on the boundary of the
+This is "Theorem 7.2 holds with equality": factorization sits on the boundary of the
 affiliation cone. No positivity is needed. -/
 theorem factors_affiliation_eq {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin n → ℝ → ℝ}
     (hf : Factors f g) :
@@ -86,10 +104,10 @@ theorem factors_affiliation_eq {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin 
   rw [Pi.sup_apply, Pi.inf_apply]
   exact mul_sup_inf_eq (g i) (x i) (y i)
 
-/-- **Remark 6** (corollary). A density that factors as a product of its
-per-coordinate factors is affiliated: the `≥` of Def 7.2 follows from the
-equality of `factors_affiliation_eq` via `ge_of_eq`. The IPV environment of
-Section 2 is thus the independent special (boundary) case of affiliation. -/
+/-- **Remark 6** (corollary). Weights that factor as a product of their
+per-coordinate factors are affiliated: the `≥` of Def 7.2 follows from the
+equality of `factors_affiliation_eq` via `ge_of_eq`. This is an algebraic result;
+no probability normalization is required. -/
 theorem factors_affiliated {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin n → ℝ → ℝ}
     (hf : Factors f g) : Affiliated f := by
   intro x y
@@ -113,11 +131,12 @@ structure SignalValueEnv (n : ℕ) where
   x_hi : ℝ
   /-- The signal bounds form a nonempty interval. -/
   x_lo_le_hi : x_lo ≤ x_hi
-  /-- The joint density of the signal profile `X = (X₁,…,Xₙ)`. -/
+  /-- Raw signal weights on profiles `X = (X₁,…,Xₙ)`, without measurability,
+  normalization or a supplied probability law. -/
   f : (Fin n → ℝ) → ℝ
-  /-- The signal density is nonnegative. -/
+  /-- The signal weights are nonnegative. -/
   f_nonneg : ∀ X, 0 ≤ f X
-  /-- The signal density is supported on the box `[x_lo, x_hi]ⁿ`: it vanishes off it.
+  /-- The signal weights are supported on the box `[x_lo, x_hi]ⁿ`: they vanish off it.
   This is what makes the declared signal bounds load-bearing. -/
   f_support : ∀ X : Fin n → ℝ, (∃ i, X i ∉ Set.Icc x_lo x_hi) → f X = 0
   /-- Bidder `i`'s value given the full signal profile `X`. -/
@@ -151,28 +170,29 @@ Remark 6 scope formalized here. -/
 
 /-! ### Welding Def 7.1 to Def 7.2 / Remark 6 -/
 
-/-- The environment's signals are affiliated when their joint density is `Affiliated` (Def 7.2). -/
+/-- The environment's raw signal weights satisfy `Affiliated` (Def 7.2). -/
 def HasAffiliatedSignals {n : ℕ} (E : SignalValueEnv n) : Prop := Affiliated E.f
 
-/-- The environment's signals are independent when the joint density factors as a product of
-per-coordinate marginals (the hypothesis of Remark 6). -/
+/-- Algebraic factorization of the signal weights into per-coordinate functions.
+The name is retained for compatibility; a probability law and its marginals are
+not supplied by this predicate. See `Factors` for the probability interpretation. -/
 def HasIndependentSignals {n : ℕ} (E : SignalValueEnv n) : Prop := ∃ g, Factors E.f g
 
-/-- Remark 6, environment form. Independent signals are affiliated: the independent signal
-structure sits on the boundary of the affiliation cone (`factors_affiliated`). -/
+/-- Remark 6, environment form. Factorized signal weights are affiliated
+(`factors_affiliated`), without requiring a probability interpretation. -/
 theorem HasIndependentSignals.hasAffiliatedSignals {n : ℕ} {E : SignalValueEnv n}
     (h : HasIndependentSignals E) : HasAffiliatedSignals E := by
   obtain ⟨g, hg⟩ := h
   exact factors_affiliated hg
 
-/-- The independent private values (IPV) environment: private values (`IsPrivateValues`,
-values depend only on own signal) together with independent signals. Affiliation and the
-private-values restriction are ORTHOGONAL — affiliation constrains the signal density, private
-values constrain the value maps — so IPV bundles both conditions. -/
+/-- Private values (`IsPrivateValues`) together with algebraically factorized signal weights
+(`HasIndependentSignals`). The conventional IPV name is retained; probabilistic independence
+requires the additional probability model described in the module documentation.
+Affiliation constrains weights, while private values constrain value maps. -/
 def IsIPV {n : ℕ} (E : SignalValueEnv n) : Prop := IsPrivateValues E ∧ HasIndependentSignals E
 
-/-- The IPV environment is the independent special (boundary) case of affiliation: its signals are
-affiliated. Note it is the INDEPENDENCE half (not private values) that yields affiliation. -/
+/-- The factorization half of `IsIPV` yields affiliation of the signal weights;
+the private-values condition is not needed. -/
 theorem IsIPV.hasAffiliatedSignals {n : ℕ} {E : SignalValueEnv n}
     (h : IsIPV E) : HasAffiliatedSignals E :=
   h.2.hasAffiliatedSignals
