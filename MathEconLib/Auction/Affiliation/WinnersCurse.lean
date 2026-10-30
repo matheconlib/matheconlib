@@ -149,7 +149,7 @@ theorem inf_mem_winningSlice {n : ℕ} {S : Finset (Fin n → ℝ)}
 /-! ### The affiliation comparison before normalization -/
 
 /-- The cross-multiplied weighted-sum comparison underlying the finite
-winner's-curse inequality.  For an affiliated density `f` positive on the
+winner's-curse inequality. For affiliated weights `f` positive on the
 finite sublattice `S` and a monotone nonnegative value function `g`, the
 `f`-weighted average numerator over the winning slice, multiplied by the
 mass of the full own-signal slice, is at most the reverse product.
@@ -174,8 +174,8 @@ theorem sum_mul_sum_le_winningSlice_of_affiliated {n : ℕ}
 
 /-! ### Proposition 7.4 — the normalized finite winner's-curse inequality -/
 
-/-- **Proposition 7.4 (Winner's curse), finite case.** Let `f` be an
-affiliated density that is positive on the finite sublattice `S`, and let `g`
+/-- **Proposition 7.4 (Winner's curse), finite case.** Let `f` be affiliated
+weights that are positive on the finite sublattice `S`, and let `g`
 be a nondecreasing nonnegative value function.  Conditional on bidder `i`
 having signal `t`, additionally learning that bidder `i` wins weakly lowers
 the conditional expected value:

@@ -12,8 +12,8 @@ public import MathEconLib.Auction.Affiliation.WinnersCurse
 
 Positive rescaling preserves all three finite conditional-average formulas.
 Zero weights satisfy factorization and affiliation but do not give positive
-conditioning mass. The comparison theorems' positivity, inclusion and nonemptiness
-hypotheses exclude every zero-mass conditioning set.
+conditioning mass. The normalized comparison theorems' positivity, inclusion and
+nonemptiness hypotheses exclude every zero-mass conditioning set.
 -/
 
 @[expose] public noncomputable section

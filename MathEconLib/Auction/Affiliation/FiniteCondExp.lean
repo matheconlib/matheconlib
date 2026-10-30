@@ -22,7 +22,7 @@ The formula accepts arbitrary real weights. Its probability interpretation requi
 nonnegative weights and positive total weight on the conditioning set. No global
 unit-mass assumption is needed: positive rescaling cancels between numerator and
 denominator. Zero total weight instead gives Lean's totalized value `0`, not a
-conditional probability model. The comparison theorems exclude this case through
+conditional probability model. The normalized comparison theorems exclude this case through
 strict positivity on the support and nonempty conditioning sets.
 
 The definition itself is independent of affiliation.  The comparison
