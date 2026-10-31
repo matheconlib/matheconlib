@@ -348,10 +348,40 @@ end Affiliation
 
 /-! ## All-purchase auctions -/
 
+-- All-purchase adapters require explicit access to the raw net-cost auction.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ}, MathEconLib.AllPurchaseBidderModel Ω n → MathEconLib.Auction Ω n :=
+  @MathEconLib.AllPurchaseBidderModel.toNetCostAuction
+
+-- Seller receipts are defined by the monetary mechanism under the supplied strategy.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.AllPurchaseBidderModel Ω n) (β : ℝ → ℝ),
+    A.expectedSellerRevenue β =
+      ∫ ω, A.toMechanism.revenue (fun i ↦ β (A.toNetCostAuction.θ i ω)) := by
+  intros
+  rfl
+
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.AllPurchaseBidderModel Ω n) (β : ℝ → ℝ),
+    A.expectedSellerRevenue β =
+      A.spec.price * ∫ ω, ∑ i, β (A.toNetCostAuction.θ i ω) :=
+  @MathEconLib.AllPurchaseBidderModel.expectedSellerRevenue_eq
+
+-- Bidder net costs retain a distinct, explicitly named API.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.AllPurchaseBidderModel Ω n) (β : ℝ → ℝ),
+    A.expectedNetCost β =
+      ∫ ω, ∑ i, A.spec.toSpec.netCost i (fun j ↦ β (A.toNetCostAuction.θ j ω)) := by
+  intros
+  rfl
+
+
+-- The auxiliary bidder model keeps net costs for the envelope calculations (#239).
+-- Actual seller receipts are supplied by spec.toMechanism.
 -- Revenue decomposition keeps every IC, integrability, and boundary-utility hypothesis.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
-    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    (spec : AllPurchaseBidderSpec A.rules) [A.HasIdenticalTypes]
     [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
     (β : ℝ → ℝ) (_ : Measurable β)
     (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
@@ -371,7 +401,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 -- Boundary form additionally requires zero lowest-type utility.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
-    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    (spec : AllPurchaseBidderSpec A.rules) [A.HasIdenticalTypes]
     [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
     (β : ℝ → ℝ) (_ : Measurable β)
     (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
@@ -390,7 +420,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 -- Bundling gain is a profit-difference identity, with no positivity conclusion.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
-    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    (spec : AllPurchaseBidderSpec A.rules) [A.HasIdenticalTypes]
     [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
     (β : ℝ → ℝ) (_ : Measurable β)
     (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
@@ -435,10 +465,11 @@ example : ∀ φbar c α EB EB2 : ℝ,
 -- Auction welfare bridge needs aggregate quantity and its square to be integrable.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
-    Integrable (A.toAuction.aggregateBid β) volume →
-      Integrable (fun ω ↦ (A.toAuction.aggregateBid β ω) ^ 2) volume →
+    Integrable (A.toNetCostAuction.aggregateBid β) volume →
+      Integrable (fun ω ↦ (A.toNetCostAuction.aggregateBid β ω) ^ 2) volume →
         A.bundledEditionWelfare β c =
-          A.toAuction.expectedEditionValue A.spec β - c * A.toAuction.expectedAggregateBid β :=
+          A.toNetCostAuction.expectedEditionValue A.spec β -
+            c * A.toNetCostAuction.expectedAggregateBid β :=
   @MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq
 
 -- Algebraic welfare-gap identity over supplied values, motivated by Proposition 6.13.

@@ -6,6 +6,7 @@ Authors: Ruiz Chen, Daniel Lyng, Jujian Zhang, Scott Duke Kominers
 module
 
 public import MathEconLib.Auction.Typeclasses
+public import MathEconLib.Auction.AllPurchase.BidderModel
 
 /-!
 # All-purchase payments and the all-pay bid function
@@ -15,8 +16,10 @@ Each edition has scarcity value `φ(B)`, strictly decreasing in total purchases 
 makes net payment `(p - φ(B)) * b i` for `b i` editions. The strictly highest purchaser wins a
 prize; a tie for the highest purchase leaves the prize unawarded.
 
-`MathEconLib.Mechanism.Auctions.AllPurchaseSpec A.rules alloc` describes an auction with this price
-and scarcity function; `IsAllPurchase` states that such parameters exist. The all-pay bid function
+`MathEconLib.Mechanism.Auctions.AllPurchaseBidderSpec A.rules` describes this net-cost bidder
+model. Its `toMechanism` charges gross expenditure and records purchases; its `toSpec.environment`
+values the purchased editions. The scalar model's revenue is net cost, not seller receipts.
+The all-pay bid function
 enters the all-purchase net-payment identity, which expresses equilibrium net expenditure as
 `C(β(v)) = allPayBid(v) - U(lowestType)`.
 

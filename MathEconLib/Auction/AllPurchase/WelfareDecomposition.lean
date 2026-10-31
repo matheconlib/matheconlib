@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Daniel Lyng, Ruiz Chen. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Ruiz Chen, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng, Ruiz Chen
+Authors: Daniel Lyng, Ruiz Chen, Bo Cowgill
 -/
 module
 
@@ -139,53 +139,53 @@ namespace LinearScarcityAuction
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} [NeZero n] [n.AtLeastTwo]
-variable (A : LinearScarcityAuction Ω n) [A.HasIdenticalTypes]
+variable (A : LinearScarcityAuction Ω n) [A.toNetCostAuction.HasIdenticalTypes]
 
 /-- Expected squared aggregate quantity `𝔼[B²]` when every bidder uses strategy `β`, with
-`B = A.toAuction.aggregateBid β`. -/
+`B = A.toNetCostAuction.aggregateBid β`. -/
 noncomputable def expectedAggregateBidSq (β : ℝ → ℝ) : ℝ :=
-  𝔼[fun ω => (A.toAuction.aggregateBid β ω) ^ 2]
+  𝔼[fun ω => (A.toNetCostAuction.aggregateBid β ω) ^ 2]
 
 /-- The bundled edition-welfare moment expression `W^C = (φ̄ − c)·𝔼[B] − α·𝔼[B²]`, where `B` is
 aggregate quantity under the common strategy `β`, `c` is unit production cost, and `φ̄` and `α` are
 the auction's scarcity-value intercept and dilution coefficient. It equals expected edition value
 net of production cost when `B` and `B²` are integrable. -/
 noncomputable def bundledEditionWelfare (β : ℝ → ℝ) (c : ℝ) : ℝ :=
-  (A.φ_bar - c) * A.toAuction.expectedAggregateBid β
+  (A.φ_bar - c) * A.toNetCostAuction.expectedAggregateBid β
     - A.α_coeff * A.expectedAggregateBidSq β
 
-omit [n.AtLeastTwo] [NeZero n] [A.HasIdenticalTypes] in
+omit [n.AtLeastTwo] [NeZero n] [A.toNetCostAuction.HasIdenticalTypes] in
 /-- Under linear scarcity, expected edition value satisfies `𝔼[B·φ(B)] = φ̄·𝔼[B] − α·𝔼[B²]` when
 aggregate quantity `B` under strategy `β` and its square are integrable. -/
 theorem expectedEditionValue_linear (β : ℝ → ℝ)
-    (hB_int : Integrable (A.toAuction.aggregateBid β) ℙ)
-    (hB2_int : Integrable (fun ω => (A.toAuction.aggregateBid β ω) ^ 2) ℙ) :
-    A.toAuction.expectedEditionValue A.spec β
-      = A.φ_bar * A.toAuction.expectedAggregateBid β
+    (hB_int : Integrable (A.toNetCostAuction.aggregateBid β) ℙ)
+    (hB2_int : Integrable (fun ω => (A.toNetCostAuction.aggregateBid β ω) ^ 2) ℙ) :
+    A.toNetCostAuction.expectedEditionValue A.spec β
+      = A.φ_bar * A.toNetCostAuction.expectedAggregateBid β
         - A.α_coeff * A.expectedAggregateBidSq β := by
   unfold Auction.expectedEditionValue Auction.expectedAggregateBid
     expectedAggregateBidSq
-  have hpt : ∀ ω, A.toAuction.aggregateBid β ω *
-      A.spec.φ (A.toAuction.aggregateBid β ω)
-      = A.φ_bar * A.toAuction.aggregateBid β ω
-        - A.α_coeff * (A.toAuction.aggregateBid β ω) ^ 2 := by
+  have hpt : ∀ ω, A.toNetCostAuction.aggregateBid β ω *
+      A.spec.φ (A.toNetCostAuction.aggregateBid β ω)
+      = A.φ_bar * A.toNetCostAuction.aggregateBid β ω
+        - A.α_coeff * (A.toNetCostAuction.aggregateBid β ω) ^ 2 := by
     intro ω
-    show A.toAuction.aggregateBid β ω * A.spec.φ _ = _
-    rw [congr_fun A.scarcity_is_linear (A.toAuction.aggregateBid β ω)]
+    show A.toNetCostAuction.aggregateBid β ω * A.spec.φ _ = _
+    rw [congr_fun A.scarcity_is_linear (A.toNetCostAuction.aggregateBid β ω)]
     ring
   simp_rw [hpt]
   rw [integral_sub (hB_int.const_mul _) (hB2_int.const_mul _),
       integral_const_mul, integral_const_mul]
 
-omit [n.AtLeastTwo] [NeZero n] [A.HasIdenticalTypes] in
+omit [n.AtLeastTwo] [NeZero n] [A.toNetCostAuction.HasIdenticalTypes] in
 /-- When aggregate quantity under strategy `β` and its square are integrable, bundled edition
 welfare equals expected edition value less expected production cost, `𝔼[B·φ(B)] − c·𝔼[B]`. -/
 theorem bundledEditionWelfare_eq (β : ℝ → ℝ) (c : ℝ)
-    (hB_int : Integrable (A.toAuction.aggregateBid β) ℙ)
-    (hB2_int : Integrable (fun ω => (A.toAuction.aggregateBid β ω) ^ 2) ℙ) :
+    (hB_int : Integrable (A.toNetCostAuction.aggregateBid β) ℙ)
+    (hB2_int : Integrable (fun ω => (A.toNetCostAuction.aggregateBid β ω) ^ 2) ℙ) :
     A.bundledEditionWelfare β c
-      = A.toAuction.expectedEditionValue A.spec β
-        - c * A.toAuction.expectedAggregateBid β := by
+      = A.toNetCostAuction.expectedEditionValue A.spec β
+        - c * A.toNetCostAuction.expectedAggregateBid β := by
   unfold bundledEditionWelfare
   rw [A.expectedEditionValue_linear β hB_int hB2_int]
   ring

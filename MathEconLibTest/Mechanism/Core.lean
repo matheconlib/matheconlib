@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Daniel Lyng, Bo Cowgill
 -/
 module
 
@@ -34,7 +34,7 @@ a single outcome, and zero transfers.
   efficiency maximizes total value.
 * `postedPrice_isDSIC` and `postedPrice_isExPostIR`: the buyer optimally reports their type and
   obtains nonnegative utility at the posted price.
-* `twoBidderAllPurchase_payment`: buying one edition each gives each bidder a net payment of four.
+* `twoBidderAllPurchase_payment`: buying one edition each charges each bidder two.
 
 ## Tags
 
@@ -88,8 +88,8 @@ lemma efficiency_scope [Fintype I] (E : QuasilinearEnvironment I Θ O)
 decreasing scarcity schedule support its payment rule and its prize rule awarding the prize to the
 unique highest bidder. -/
 lemma allPurchase_existence [Fintype I]
-    (M : Mechanism I (fun _ => ℝ) O) (alloc : O → I → ℝ) :
-    IsAllPurchase M alloc ↔ Nonempty (AllPurchaseSpec M alloc) := Iff.rfl
+    (M : Mechanism I (fun _ => ℝ) O) (alloc purchases : O → I → ℝ) :
+    IsAllPurchase M alloc purchases ↔ Nonempty (AllPurchaseSpec M alloc purchases) := Iff.rfl
 
 /-- A mechanism with agents indexed by `ℕ`, Boolean actions, a single outcome, and zero
 transfers. -/
@@ -141,7 +141,7 @@ aggregate purchases. The outcome records both purchase quantities. -/
 noncomputable def twoBidderAllPurchase :
     MathEconLib.Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ) where
   outcome b := b
-  transfer i b := -((2 - -(∑ j, b j)) * b i)
+  transfer i b := -(2 * b i)
 
 /-- The prize goes to the bidder strictly exceeding the other bidder's purchases. -/
 noncomputable def twoBidderAllocation (b : Fin 2 → ℝ) (i : Fin 2) : ℝ :=
@@ -150,13 +150,14 @@ noncomputable def twoBidderAllocation (b : Fin 2 → ℝ) (i : Fin 2) : ℝ :=
 /-- Price two and the negative identity scarcity schedule specify the two-bidder all-purchase
 mechanism. -/
 noncomputable def twoBidderAllPurchaseSpec :
-    AllPurchaseSpec twoBidderAllPurchase twoBidderAllocation where
+    AllPurchaseSpec twoBidderAllPurchase twoBidderAllocation id where
   price := 2
   price_pos := by norm_num
   φ := fun total => -total
   φ_continuous := continuous_id.neg
   φ_strictAnti := fun _ _ h => neg_lt_neg h
   usesStrictHighestBidAllocation _ := rfl
+  purchases_eq _ := rfl
   transfer_eq _ _ := rfl
 
 /-- Each bidder's prize allocation lies in the unit interval. -/
@@ -164,9 +165,9 @@ lemma twoBidderAllPurchase_isUnitIntervalAllocation :
     IsUnitIntervalAllocation twoBidderAllPurchase twoBidderAllocation :=
   twoBidderAllPurchaseSpec.isUnitIntervalAllocation
 
-/-- When both bidders buy one edition, each pays four after resale. -/
+/-- When both bidders buy one edition, each pays the seller two. -/
 lemma twoBidderAllPurchase_payment (i : Fin 2) :
-    twoBidderAllPurchase.payment i (fun _ => 1) = 4 := by
+    twoBidderAllPurchase.payment i (fun _ => 1) = 2 := by
   rw [twoBidderAllPurchaseSpec.payment_eq]
   norm_num [twoBidderAllPurchaseSpec]
 
