@@ -56,6 +56,7 @@ public import MathEconLib.ForMathlib.Quasiconvex
 public import MathEconLib.ForMathlib.Schauder
 public import MathEconLib.ForMathlib.StochasticOrder
 public import MathEconLib.GameTheory.Equilibrium.Problem
+public import MathEconLib.GameTheory.Routing.Basic
 public import MathEconLib.GameTheory.Strategic.Basic
 public import MathEconLib.GameTheory.Strategic.Bayesian.Finite
 public import MathEconLib.GameTheory.Strategic.Bayesian.FiniteMeasurable
