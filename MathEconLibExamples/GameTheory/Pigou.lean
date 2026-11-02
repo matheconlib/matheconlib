@@ -46,11 +46,8 @@ namespace MathEconLibExamples.GameTheory.Pigou
 
 /-- One commodity with unit demand on two single-edge paths. The path and edge `false` has constant
 latency `1`; the path and edge `true` has latency equal to its load. -/
-def pigou : RoutingGame Unit Bool Bool where
-  commodity _ := ()
-  edges p := {p}
-  demand _ := 1
-  latency e x := if e then x else 1
+def pigou : RoutingGame Unit Bool Bool :=
+  .ofFinset (fun _ ↦ ()) (fun p ↦ {p}) (fun _ ↦ 1) fun e x ↦ if e then x else 1
 
 /-- All traffic takes the congestible edge. -/
 def wardropFlow : Bool → ℝ := fun p ↦ if p then 1 else 0
@@ -60,15 +57,17 @@ def splitFlow : Bool → ℝ := fun _ ↦ 1 / 2
 
 /-- Each edge carries the flow of its own path. -/
 @[simp] lemma load_eq (f : Bool → ℝ) (e : Bool) : pigou.load f e = f e := by
-  simp only [RoutingGame.load, show ∀ p, pigou.edges p = {p} from fun _ ↦ rfl,
-    Finset.mem_singleton, Finset.filter_eq, Finset.mem_univ, ite_true, Finset.sum_singleton]
+  refine (RoutingGame.load_ofFinset _ _ _ _ f e).trans ?_
+  simp only [Finset.mem_singleton, Finset.filter_eq, Finset.mem_univ, ite_true,
+    Finset.sum_singleton]
 
 /-- Each path's latency is its edge's latency at the path's flow. -/
 @[simp] lemma pathLatency_eq (f : Bool → ℝ) (p : Bool) :
     pigou.pathLatency f p = if p then f p else 1 := by
-  simp only [RoutingGame.pathLatency, show pigou.edges p = {p} from rfl, Finset.sum_singleton,
-    load_eq]
-  rfl
+  refine (RoutingGame.pathLatency_ofFinset _ _ _ _ f p).trans ?_
+  rw [Finset.sum_singleton]
+  have h := load_eq f p
+  cases p <;> simp_all [pigou]
 
 /-- Total latency is the constant edge's flow plus the square of the congestible edge's flow. -/
 lemma cost_eq (f : Bool → ℝ) : pigou.cost f = f false + f true * f true := by
@@ -79,14 +78,14 @@ lemma cost_eq (f : Bool → ℝ) : pigou.cost f = f false + f true * f true := b
 /-- Feasible flows are nonnegative and sum to one. -/
 lemma isFeasible_iff (f : Bool → ℝ) :
     pigou.IsFeasible f ↔ 0 ≤ f false ∧ 0 ≤ f true ∧ f false + f true = 1 := by
-  simp [RoutingGame.IsFeasible, pigou, and_assoc, add_comm]
+  simp [RoutingGame.IsFeasible, pigou, RoutingGame.ofFinset, and_assoc, add_comm]
 
 /-- Pigou's latencies are affine with nonnegative coefficients. -/
 lemma hasAffineLatencies : pigou.HasAffineLatencies := by
   intro e
   cases e
-  · exact ⟨0, 1, le_rfl, zero_le_one, fun x ↦ by simp [pigou]⟩
-  · exact ⟨1, 0, zero_le_one, le_rfl, fun x ↦ by simp [pigou]⟩
+  · exact ⟨0, 1, le_rfl, zero_le_one, fun x ↦ by simp [pigou, RoutingGame.ofFinset]⟩
+  · exact ⟨1, 0, zero_le_one, le_rfl, fun x ↦ by simp [pigou, RoutingGame.ofFinset]⟩
 
 /-- All traffic on the congestible edge is a Wardrop equilibrium: both paths have latency `1`. -/
 theorem isWardrop_wardropFlow : pigou.IsWardrop wardropFlow := by

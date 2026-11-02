@@ -119,18 +119,12 @@ def Road.latency : Road → ℝ → ℝ
   | link, _ => 0
 
 /-- Braess's network with the link, carrying one unit of traffic. -/
-def braess : RoutingGame Unit Route Road where
-  commodity _ := ()
-  edges := Route.roads
-  demand _ := 1
-  latency := Road.latency
+def braess : RoutingGame Unit Route Road :=
+  .ofFinset (fun _ ↦ ()) Route.roads (fun _ ↦ 1) Road.latency
 
 /-- Braess's network without the link, carrying one unit of traffic on the two outer routes. -/
-def braessWithoutLink : RoutingGame Unit OuterRoute Road where
-  commodity _ := ()
-  edges r := r.toRoute.roads
-  demand _ := 1
-  latency := Road.latency
+def braessWithoutLink : RoutingGame Unit OuterRoute Road :=
+  .ofFinset (fun _ ↦ ()) (fun r ↦ r.toRoute.roads) (fun _ ↦ 1) Road.latency
 
 /-- All traffic takes the zigzag route. -/
 def zigzagFlow : Route → ℝ
@@ -163,48 +157,55 @@ lemma sum_outerRoute (g : OuterRoute → ℝ) : ∑ r, g r = g .north + g .south
 lemma load_eq (f : Route → ℝ) (e : Road) :
     braess.load f e = (if e ∈ north.roads then f north else 0) +
       (if e ∈ south.roads then f south else 0) + (if e ∈ zigzag.roads then f zigzag else 0) := by
-  rw [RoutingGame.load, Finset.sum_filter, sum_route]
-  rfl
+  refine (RoutingGame.load_ofFinset _ _ _ _ f e).trans ?_
+  rw [Finset.sum_filter, sum_route]
 
 /-- Each road's load in the network without the link is the flow on the routes through it. -/
 lemma load_eq_withoutLink (f : OuterRoute → ℝ) (e : Road) :
     braessWithoutLink.load f e = (if e ∈ north.roads then f .north else 0) +
       (if e ∈ south.roads then f .south else 0) := by
-  rw [RoutingGame.load, Finset.sum_filter, sum_outerRoute]
+  refine (RoutingGame.load_ofFinset _ _ _ _ f e).trans ?_
+  rw [Finset.sum_filter, sum_outerRoute]
   rfl
+
+/-- A route's latency in the network with the link is the sum of its roads' latencies. -/
+lemma pathLatency_eq_sum (f : Route → ℝ) (r : Route) :
+    braess.pathLatency f r = ∑ e ∈ r.roads, Road.latency e (braess.load f e) :=
+  RoutingGame.pathLatency_ofFinset _ _ _ _ f r
+
+/-- A route's latency in the network without the link is the sum of its roads' latencies. -/
+lemma pathLatency_withoutLink_eq_sum (f : OuterRoute → ℝ) (r : OuterRoute) :
+    braessWithoutLink.pathLatency f r =
+      ∑ e ∈ r.toRoute.roads, Road.latency e (braessWithoutLink.load f e) :=
+  RoutingGame.pathLatency_ofFinset _ _ _ _ f r
 
 /-- The route `W → N → E` has latency equal to the load on `W → N`, plus one. -/
 lemma pathLatency_north (f : Route → ℝ) :
     braess.pathLatency f north = f north + f zigzag + 1 := by
-  simp [RoutingGame.pathLatency, load_eq, show braess.edges = Route.roads from rfl,
-    show braess.latency = Road.latency from rfl, Route.roads, Road.latency]
+  simp [pathLatency_eq_sum, load_eq, Route.roads, Road.latency]
 
 /-- The route `W → S → E` has latency one plus the load on `S → E`. -/
 lemma pathLatency_south (f : Route → ℝ) :
     braess.pathLatency f south = 1 + f south + f zigzag := by
-  simp [RoutingGame.pathLatency, load_eq, show braess.edges = Route.roads from rfl,
-    show braess.latency = Road.latency from rfl, Route.roads, Road.latency]
+  simp [pathLatency_eq_sum, load_eq, Route.roads, Road.latency]
   ring
 
 /-- The zigzag route has latency equal to the loads on `W → N` and `S → E`. -/
 lemma pathLatency_zigzag (f : Route → ℝ) :
     braess.pathLatency f zigzag = f north + f zigzag + (f south + f zigzag) := by
-  simp [RoutingGame.pathLatency, load_eq, show braess.edges = Route.roads from rfl,
-    show braess.latency = Road.latency from rfl, Route.roads, Road.latency]
+  simp [pathLatency_eq_sum, load_eq, Route.roads, Road.latency]
 
 /-- Without the link, the route `W → N → E` has latency equal to its flow, plus one. -/
 lemma pathLatency_withoutLink_north (f : OuterRoute → ℝ) :
     braessWithoutLink.pathLatency f .north = f .north + 1 := by
-  simp [RoutingGame.pathLatency, load_eq_withoutLink,
-    show braessWithoutLink.edges .north = {westNorth, northEast} from rfl,
-    show braessWithoutLink.latency = Road.latency from rfl, Route.roads, Road.latency]
+  simp [pathLatency_withoutLink_eq_sum, load_eq_withoutLink, OuterRoute.toRoute, Route.roads,
+    Road.latency]
 
 /-- Without the link, the route `W → S → E` has latency one plus its flow. -/
 lemma pathLatency_withoutLink_south (f : OuterRoute → ℝ) :
     braessWithoutLink.pathLatency f .south = 1 + f .south := by
-  simp [RoutingGame.pathLatency, load_eq_withoutLink,
-    show braessWithoutLink.edges .south = {westSouth, southEast} from rfl,
-    show braessWithoutLink.latency = Road.latency from rfl, Route.roads, Road.latency]
+  simp [pathLatency_withoutLink_eq_sum, load_eq_withoutLink, OuterRoute.toRoute, Route.roads,
+    Road.latency]
 
 /-- Total latency in the network with the link in terms of the flow on each route. -/
 lemma cost_eq (f : Route → ℝ) :
@@ -221,7 +222,7 @@ lemma cost_eq_withoutLink (f : OuterRoute → ℝ) :
 /-- Feasible flows in the network with the link are nonnegative and sum to one. -/
 lemma isFeasible_iff (f : Route → ℝ) :
     braess.IsFeasible f ↔ (∀ r, 0 ≤ f r) ∧ f north + f south + f zigzag = 1 := by
-  simp [RoutingGame.IsFeasible, braess, sum_route]
+  simp [RoutingGame.IsFeasible, braess, RoutingGame.ofFinset, sum_route]
 
 /-!
 ## Equilibria and the paradox
@@ -231,7 +232,8 @@ lemma isFeasible_iff (f : Route → ℝ) :
 theorem isWardrop_outerSplitFlow : braessWithoutLink.IsWardrop outerSplitFlow := by
   refine (RoutingGame.isWardrop_iff _ _).2 ⟨⟨fun _ ↦ by norm_num [outerSplitFlow], fun _ ↦ ?_⟩,
     fun p q _ _ ↦ ?_⟩
-  · simp [braessWithoutLink, outerSplitFlow, show Fintype.card OuterRoute = 2 from rfl]
+  · simp [braessWithoutLink, RoutingGame.ofFinset, outerSplitFlow,
+      show Fintype.card OuterRoute = 2 from rfl]
   · cases p <;> cases q <;>
       norm_num [pathLatency_withoutLink_north, pathLatency_withoutLink_south, outerSplitFlow]
 
