@@ -9,9 +9,8 @@ import MathEconLib.GameTheory.Strategic.Basic
 /-!
 # Weak-preference maximizers in an existing strategic game
 
-The value-induced maximizer API expresses the existing Nash condition, retaining all tied
-best responses. This checks the shared mathematics behind #177 without introducing a second
-best-response definition or implementing that issue's broader interface.
+The value-induced maximizer API expresses the existing Nash condition while retaining all tied
+best responses.
 -/
 
 namespace MathEconLibTest.Choice.WeakPreferencesGame

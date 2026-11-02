@@ -21,10 +21,6 @@ example [Preorder β] (value : α → β) {S : Set α} {a : α} :
     a ∈ maximizers (Preference.ofUtility value) S ↔ a ∈ S ∧ IsMaxOn value S a :=
   mem_maximizers_ofUtility value
 
-example [Preorder β] (value : α → β) {S : Set α} {a : α} :
-    a ∈ maximizers (Preference.ofPreorder (Preorder.lift value)) S ↔
-      a ∈ S ∧ IsMaxOn value S a := mem_maximizers_lift value
-
 example (p : Preorder α) {S : Set α} {a : α} :
     a ∈ maximizers (Preference.ofPreorder p) S ↔ (letI := p; IsGreatest S a) := Iff.rfl
 
@@ -64,11 +60,6 @@ example [LinearOrder γ] (pref : LinearOrder β) (priority : β ↪ γ) (bundle 
 
 example [LinearOrder γ] (pref : LinearOrder β) (priority : β ↪ γ) (bundle : β ↪ Set α) :
     ChoiceFunction.ofWeakBundleOrder (CompletePreference.ofLinearOrder pref) priority bundle =
-      ChoiceFunction.ofBundleOrder pref bundle :=
-  ChoiceFunction.ofWeakBundleOrder_linearOrder pref priority bundle
-
-example [LinearOrder γ] (pref : LinearOrder β) (priority : β ↪ γ) (bundle : β ↪ Set α) :
-    ChoiceFunction.ofWeakBundleOrder (CompletePreference.ofLinearOrder pref) priority bundle =
       ChoiceFunction.ofBundleOrder pref bundle := by
   simp
 
@@ -89,46 +80,46 @@ example [Finite α] (R : CompletePreference α) :
 
 example [LinearOrder γ] (pref : CompletePreference β) (priority : β ↪ γ)
     {S : Set β} {b : β} :
-    b ∈ maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S ↔
+    b ∈ maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority)) S ↔
       b ∈ maximizers pref.toPreference S ∧
         ∀ c ∈ maximizers pref.toPreference S, priority c ≤ priority b :=
   mem_maximizers_tieBreak_iff pref priority
 
 example [LinearOrder γ] (pref : CompletePreference β) (priority : β ↪ γ)
     (bundle : β ↪ Set α) {Y A : Set α} :
-    A ∈ optimalBundles (Preference.ofPreorder (pref.tieBreak priority).toPreorder) bundle Y ↔
+    A ∈ optimalBundles (CompletePreference.ofLinearOrder (pref.tieBreak priority)) bundle Y ↔
       ∃ b, b ∈ maximizers pref.toPreference {c | bundle c ⊆ Y} ∧ bundle b = A ∧
         ∀ c ∈ maximizers pref.toPreference {d | bundle d ⊆ Y}, priority c ≤ priority b :=
   mem_optimalBundles_tieBreak_iff pref priority bundle
 
 example [LinearOrder γ] (pref : CompletePreference β) (priority : β ↪ γ)
     (bundle : β ↪ Set α) (Y : Set α) :
-    (optimalBundles (Preference.ofPreorder (pref.tieBreak priority).toPreorder) bundle Y).Nonempty ↔
+    (optimalBundles (CompletePreference.ofLinearOrder (pref.tieBreak priority)) bundle Y).Nonempty ↔
       ∃ p, IsGreatest (priority '' maximizers pref.toPreference {b | bundle b ⊆ Y}) p :=
   optimalBundles_tieBreak_nonempty_iff pref priority bundle Y
 
 example (pref : LinearOrder β) (bundle : β ↪ Set α) (Y : Set α) :
-    optimalBundles (Preference.ofPreorder pref.toPreorder) bundle Y ⊆
+    optimalBundles (CompletePreference.ofLinearOrder pref) bundle Y ⊆
       {ChoiceFunction.ofBundleOrder pref bundle Y} :=
   optimalBundles_subset_ofBundleOrder pref bundle Y
 
 example (pref : Preference β) (refined : LinearOrder β)
     (hrefine : ∀ a b, refined.le a b → pref.le a b) (bundle : β ↪ Set α) {Y : Set α}
-    (hne : (maximizers (Preference.ofPreorder refined.toPreorder) {b | bundle b ⊆ Y}).Nonempty) :
+    (hne : (maximizers (CompletePreference.ofLinearOrder refined) {b | bundle b ⊆ Y}).Nonempty) :
     ChoiceFunction.ofBundleOrder refined bundle Y ∈ optimalBundles pref bundle Y :=
   ChoiceFunction.ofBundleOrder_mem_optimalBundles_of_maximizers_nonempty
     pref refined hrefine bundle hne
 
 example [LinearOrder γ] (pref : CompletePreference β) (priority : β ↪ γ)
     (bundle : β ↪ Set α) {Y : Set α} {b : β}
-    (hb : b ∈ maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder)
+    (hb : b ∈ maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority))
       {c | bundle c ⊆ Y}) :
     ChoiceFunction.ofWeakBundleOrder pref priority bundle Y = bundle b :=
   ChoiceFunction.ofWeakBundleOrder_eq_of_mem_maximizers pref priority bundle hb
 
 example [LinearOrder γ] (pref : CompletePreference β) (priority : β ↪ γ)
     (bundle : β ↪ Set α) {Y : Set α}
-    (hne : (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder)
+    (hne : (maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority))
       {b | bundle b ⊆ Y}).Nonempty) :
     ChoiceFunction.ofWeakBundleOrder pref priority bundle Y ∈
       optimalBundles pref.toPreference bundle Y :=
