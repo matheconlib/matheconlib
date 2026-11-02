@@ -5,7 +5,7 @@ Authors: Bolton Bailey
 -/
 module
 
-public import MathEconLib.GameTheory.Strategic.Basic
+public import MathEconLib.GameTheory.Equilibrium.Problem
 public import Mathlib.Algebra.Order.BigOperators.Group.Finset
 public import Mathlib.Basic.Real.Basic
 import Mathlib.Algebra.BigOperators.Ring.Finset
@@ -22,9 +22,9 @@ these games are the nonatomic congestion games.
 
 A Wardrop equilibrium is a feasible flow that routes demand only along paths of minimum latency
 for their commodity. A single driver does not change any load, so a flow is a Wardrop equilibrium
-exactly when, with latencies frozen at that flow, the drivers on each used path play a Nash
-equilibrium by staying put. `RoutingGame.IsWardrop` is defined in this way through
-`StrategicGame.IsNash`, and `RoutingGame.isWardrop_iff` gives the usual minimum-latency condition.
+exactly when, with the flow held fixed, a driver on any used path has no profitable switch.
+`RoutingGame.driverProblem` expresses this as an `EquilibriumProblem` whose deviations leave the
+flow unchanged, and `RoutingGame.isWardrop_iff` gives the usual minimum-latency condition.
 
 The social cost of a flow is total latency. If every latency `ℓ` satisfies the Pigou-type bound
 `y ℓ(x) ≤ y ℓ(y) + β x ℓ(x)` on nonnegative loads, every Wardrop flow `f` and feasible flow `g`
@@ -38,8 +38,8 @@ equilibrium is needed.
 * `RoutingGame`: Paths with commodities and edge sets, demands, and edge latencies.
 * `RoutingGame.IsFeasible`: Nonnegative path flows meeting each commodity's demand.
 * `RoutingGame.load`, `RoutingGame.pathLatency`, and `RoutingGame.cost`.
-* `RoutingGame.frozenGame`: The game of drivers on used paths with latencies frozen at a flow.
-* `RoutingGame.IsWardrop`: Feasible flows at which staying put is a Nash equilibrium.
+* `RoutingGame.driverProblem`: One driver's path choice with the flow held fixed.
+* `RoutingGame.IsWardrop`: Feasible flows that are equilibria for drivers on every used path.
 * `RoutingGame.HasAffineLatencies`: Latencies `a x + b` with `a, b ≥ 0`.
 
 ## Main statements
@@ -121,34 +121,37 @@ lemma cost_eq_sum_edges [Fintype E] (f : P → ℝ) :
     R.cost f = ∑ e, R.load f e * R.latency e (R.load f e) :=
   R.sum_mul_pathLatency f f
 
-/-- With latencies frozen at `f`, the drivers on each used path choose among the paths of their
-commodity, and each driver's payoff is minus the latency of the chosen path. -/
-def frozenGame (f : P → ℝ) :
-    StrategicGame {p // 0 < f p} (fun p ↦ {q // R.commodity q = R.commodity p}) ℝ where
-  payoff p a := -R.pathLatency f (a p)
+/-- The equilibrium problem of one infinitesimal driver. A state is a flow together with the
+driver's path. The driver may switch to a path of the same commodity but cannot change the flow,
+and receives minus the latency of their path. -/
+def driverProblem : EquilibriumProblem ((P → ℝ) × P) Unit ℝ where
+  deviation _ s s' := s'.1 = s.1 ∧ R.commodity s'.2 = R.commodity s.2
+  value _ s := -R.pathLatency s.1 s.2
 
-/-- A Wardrop equilibrium is a feasible flow at which no infinitesimal driver gains by switching
-paths, that is, staying put is a Nash equilibrium of the frozen game. -/
-def IsWardrop [DecidableEq C] [DecidableEq P] (f : P → ℝ) : Prop :=
-  R.IsFeasible f ∧ (R.frozenGame f).IsNash fun p ↦ ⟨p, rfl⟩
+/-- A Wardrop equilibrium is a feasible flow at which no infinitesimal driver on a used path gains
+by switching paths. -/
+def IsWardrop [DecidableEq C] (f : P → ℝ) : Prop :=
+  R.IsFeasible f ∧ ∀ p, 0 < f p → R.driverProblem.IsEquilibrium (f, p)
 
 /-- A Wardrop equilibrium is a feasible flow whose used paths have minimum latency among the paths
 of their commodity. -/
-lemma isWardrop_iff [DecidableEq C] [DecidableEq P] (f : P → ℝ) :
+lemma isWardrop_iff [DecidableEq C] (f : P → ℝ) :
     R.IsWardrop f ↔ R.IsFeasible f ∧
       ∀ p q, 0 < f p → R.commodity q = R.commodity p → R.pathLatency f p ≤ R.pathLatency f q := by
-  simp only [IsWardrop, StrategicGame.isNash_iff, frozenGame, Function.update_self, neg_le_neg_iff]
-  exact and_congr_right fun _ ↦
-    ⟨fun h p q hp hq ↦ h ⟨p, hp⟩ ⟨q, hq⟩, fun h p q ↦ h p q p.2 q.2⟩
+  refine and_congr_right fun _ ↦ ⟨fun h p q hp hq ↦ ?_, fun h p hp _ s hs ↦ ?_⟩
+  · exact neg_le_neg_iff.1 (h p hp () (f, q) ⟨rfl, hq⟩)
+  · obtain ⟨f', q⟩ := s
+    obtain ⟨rfl, hq⟩ := hs
+    exact neg_le_neg_iff.2 (h p q hp hq)
 
 /-- Wardrop equilibria are feasible. -/
-lemma IsWardrop.isFeasible [DecidableEq C] [DecidableEq P] {R : RoutingGame C P E}
+lemma IsWardrop.isFeasible [DecidableEq C] {R : RoutingGame C P E}
     (hf : R.IsWardrop f) : R.IsFeasible f :=
   hf.1
 
 /-- **Variational inequality.** A Wardrop flow costs at most any feasible flow evaluated at the
 Wardrop latencies. -/
-theorem IsWardrop.cost_le [DecidableEq C] [DecidableEq P] [Finite C] {R : RoutingGame C P E}
+theorem IsWardrop.cost_le [DecidableEq C] [Finite C] {R : RoutingGame C P E}
     (hf : R.IsWardrop f) (hg : R.IsFeasible g) :
     R.cost f ≤ ∑ p, g p * R.pathLatency f p := by
   have := Fintype.ofFinite C
@@ -173,7 +176,7 @@ theorem IsWardrop.cost_le [DecidableEq C] [DecidableEq P] [Finite C] {R : Routin
 /-- **Price of anarchy from a Pigou bound.** If every latency satisfies
 `y ℓ(x) ≤ y ℓ(y) + β x ℓ(x)` for nonnegative loads, a Wardrop flow costs at most `(1 - β)⁻¹`
 times any feasible flow. -/
-theorem IsWardrop.one_sub_mul_cost_le [DecidableEq C] [DecidableEq P] [Finite C] [Finite E]
+theorem IsWardrop.one_sub_mul_cost_le [DecidableEq C] [Finite C] [Finite E]
     {R : RoutingGame C P E} (β : ℝ)
     (hβ : ∀ e x y, 0 ≤ x → 0 ≤ y →
       y * R.latency e x ≤ y * R.latency e y + β * (x * R.latency e x))
@@ -195,7 +198,7 @@ def HasAffineLatencies : Prop :=
 
 /-- **Roughgarden–Tardos.** With affine latencies, a Wardrop flow costs at most `4 / 3` times any
 feasible flow. -/
-theorem IsWardrop.cost_le_four_thirds_mul [DecidableEq C] [DecidableEq P] [Finite C] [Finite E]
+theorem IsWardrop.cost_le_four_thirds_mul [DecidableEq C] [Finite C] [Finite E]
     {R : RoutingGame C P E} (hR : R.HasAffineLatencies) (hf : R.IsWardrop f)
     (hg : R.IsFeasible g) :
     R.cost f ≤ 4 / 3 * R.cost g := by
