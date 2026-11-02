@@ -33,51 +33,48 @@ example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
       ∀ i, 0 ≤ 𝔼[fun ω ↦ A.θ i ω * A.rules.outcome (A.θ · ω) i +
         A.rules.transfer i (A.θ · ω)] := Iff.rfl
 
-/-- Uniform probability on the unit interval. -/
-def uniform : Measure ℝ := volume.restrict (Ioc (0 : ℝ) 1)
+/-- The test's state space, carrying uniform probability on `(0, 1]`. -/
+abbrev State := Ioc (0 : ℝ) 1
 
-instance : IsProbabilityMeasure uniform where
-  measure_univ := by simp [uniform]
+instance : MeasureSpace State := Measure.Subtype.measureSpace
 
-lemma ae_mem_uniform : ∀ᵐ v ∂uniform, v ∈ Ioc (0 : ℝ) 1 :=
-  ae_restrict_mem measurableSet_Ioc
+instance : IsProbabilityMeasure (ℙ : Measure State) where
+  measure_univ := by
+    change Measure.comap (Subtype.val : State → ℝ) volume univ = 1
+    rw [comap_subtype_coe_apply measurableSet_Ioc, Set.image_univ, Subtype.range_coe]
+    simp
 
-lemma not_integrable_inv : ¬ Integrable (fun v : ℝ ↦ v⁻¹) uniform := by
+lemma not_integrable_inv : ¬ Integrable (fun v : State ↦ (v : ℝ)⁻¹) ℙ := by
   intro h
   have hinterval : IntervalIntegrable (fun v : ℝ ↦ v⁻¹) volume 0 1 :=
-    (intervalIntegrable_iff_integrableOn_Ioc_of_le (by norm_num : (0 : ℝ) ≤ 1)).mpr h
+    (intervalIntegrable_iff_integrableOn_Ioc_of_le (by norm_num : (0 : ℝ) ≤ 1)).mpr
+      ((integrableOn_iff_comap_subtypeVal measurableSet_Ioc).mpr h)
   norm_num at hinterval
 
-local instance : MeasureSpace ℝ := ⟨uniform⟩
-local instance : IsProbabilityMeasure (ℙ : Measure ℝ) :=
-  inferInstanceAs (IsProbabilityMeasure uniform)
-
 /-- A one-bidder auction with zero allocation, bounded values, and a supplied signed transfer. -/
-def auction (transfer : ℝ → ℝ) : Auction ℝ 1 where
+def auction (transfer : ℝ → ℝ) : Auction State 1 where
   rules := {
     outcome := fun _ _ ↦ 0
     transfer := fun i bids ↦ transfer (bids i) }
   outcome_measurable := fun _ ↦ measurable_const
   θmin := fun _ ↦ 0
   θmax := fun _ ↦ 1
-  θ := fun _ v ↦ max 0 (min 1 v)
-  θ_measurable := fun _ ↦ measurable_const.max (measurable_const.min measurable_id)
+  θ := fun _ v ↦ v
+  θ_measurable := fun _ ↦ measurable_subtype_coe
 
-lemma bounded_types (transfer : ℝ → ℝ) (i : Fin 1) (v : ℝ) :
+lemma bounded_types (transfer : ℝ → ℝ) (i : Fin 1) (v : State) :
     (auction transfer).θ i v ∈ (auction transfer).interval i := by
-  change max 0 (min 1 v) ∈ Icc (0 : ℝ) 1
-  exact ⟨le_max_left _ _, max_le (by norm_num) (min_le_left _ _)⟩
+  exact ⟨v.property.1.le, v.property.2⟩
 
 /-- No allocation and a charge of `1/v` at a positive report `v`. -/
-def reciprocalAuction : Auction ℝ 1 := auction (fun v ↦ -(v⁻¹))
+def reciprocalAuction : Auction State 1 := auction (fun v ↦ -(v⁻¹))
 
 lemma reciprocal_utility_eq_ae (i : Fin 1) :
     (fun v ↦ reciprocalAuction.θ i v *
       reciprocalAuction.rules.outcome (reciprocalAuction.θ · v) i +
         reciprocalAuction.rules.transfer i (reciprocalAuction.θ · v)) =ᵐ[ℙ]
-      (fun v : ℝ ↦ -(v⁻¹)) := by
-  filter_upwards [ae_mem_uniform] with v hv
-  simp [reciprocalAuction, auction, min_eq_right hv.2, max_eq_right hv.1.le]
+      (fun v : State ↦ -((v : ℝ)⁻¹)) := by
+  simp [reciprocalAuction, auction]
 
 lemma not_integrable_reciprocal_utility (i : Fin 1) :
     ¬ Integrable (fun v ↦ reciprocalAuction.θ i v *
@@ -94,9 +91,9 @@ lemma reciprocal_utility_le_neg_one (i : Fin 1) :
     ∀ᵐ v ∂ℙ, reciprocalAuction.θ i v *
       reciprocalAuction.rules.outcome (reciprocalAuction.θ · v) i +
         reciprocalAuction.rules.transfer i (reciprocalAuction.θ · v) ≤ -1 := by
-  filter_upwards [reciprocal_utility_eq_ae i, ae_mem_uniform] with v heq hv
+  filter_upwards [reciprocal_utility_eq_ae i] with v heq
   rw [heq]
-  exact neg_le_neg ((one_le_inv₀ hv.1).mpr hv.2)
+  exact neg_le_neg ((one_le_inv₀ v.property.1).mpr v.property.2)
 
 /-- The former inequality alone accepts the divergent negative payoff. -/
 theorem reciprocal_legacy_comparison :
