@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
-Released under license as described in the file LICENSE.
+Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 
 Migrated from Auctionlib/Mechanism/FirstAndSecondPay.lean in PR #15, commit b51c018.
