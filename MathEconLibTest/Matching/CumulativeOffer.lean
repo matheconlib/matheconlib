@@ -138,5 +138,44 @@ example (P : CumulativeOfferProcess Bool Bool Empty) : P.Terminal ∅ := by
   obtain ⟨x, _⟩ := hs.2
   exact nomatch x.val
 
+
+/-- A concrete policy reproduces the three-round recall history. -/
+def sequentialPolicy : Policy (Fin 3) := fun h =>
+  if h.length = 0 then {0} else if h.length = 1 then {2} else {1}
+
+theorem sequential_follows : Follows sequentialPolicy [{1}, {2}, {0}] := by
+  simp [Follows, sequentialPolicy]
+
+/-- The raw outcome bridge applies even when the terminal held contracts are infeasible. -/
+example : market.rawOutcome sequentialPolicy = {0, 1, 2} :=
+  (sequential_run.heldContracts_eq_rawOutcome market sequential_follows
+    both_terminal.1).symm.trans sequential_heldContracts
+
+/-- A one-round policy stops early; subsequent execution leaves its terminal history intact. -/
+def simultaneousPolicy : Policy (Fin 3) := fun _ => {0, 1}
+
+theorem simultaneous_follows : Follows simultaneousPolicy [{0, 1}] := by
+  simp [Follows, simultaneousPolicy]
+
+example : market.execute simultaneousPolicy (Nat.card (Fin 3)) = [{0, 1}] :=
+  simultaneous_run.execute_card_eq market simultaneous_follows both_terminal.2
+
+example : market.rawOutcome simultaneousPolicy = {0, 1} :=
+  (simultaneous_run.heldContracts_eq_rawOutcome market simultaneous_follows
+    both_terminal.2).symm.trans simultaneous_heldContracts
+
+/-- Uniqueness is policy-specific: the two concrete policies still have different outcomes. -/
+example : market.rawOutcome sequentialPolicy ≠ market.rawOutcome simultaneousPolicy := by
+  rw [← sequential_run.heldContracts_eq_rawOutcome market sequential_follows both_terminal.1,
+    ← simultaneous_run.heldContracts_eq_rawOutcome market simultaneous_follows both_terminal.2,
+    sequential_heldContracts, simultaneous_heldContracts]
+  intro he
+  have hx : (2 : Fin 3) ∈ ({0, 1} : Set (Fin 3)) := he ▸ (by simp)
+  simpa using hx
+
 end MathEconLibTest.Matching.CumulativeOffer
+
+#print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.Run.execute_card_eq
+#print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.Run.eq_of_terminal_of_follows
+#print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.rawOutcome_eq_iff
 
