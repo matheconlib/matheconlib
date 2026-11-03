@@ -1,30 +1,30 @@
 \chapter{Affiliation}
 
-This chapter formalizes the affiliated signal model: the affiliation inequality for a joint signal density, the signal/value environment, and the fact that independent signals are the equality case of affiliation. It then proves finite versions of monotone conditional expectations (Theorem~\ref{thm:MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated}) and the weak winner's curse (Theorem~\ref{thm:MathEconLib.Auction.Affiliation.condExpWinningSlice_le_condExpSlice_of_affiliated}), where conditioning sets are finite sublattices of $\mathbb{R}^n$ and the key tool is the Ahlswede--Daykin four functions theorem.
+This chapter formalizes the affiliated signal model: the affiliation inequality for signal weights, the signal/value environment, and the fact that product-factorized weights are the equality case of affiliation. The weights are algebraic: no reference measure, normalization or probability law is supplied, and the probabilistic notion of independent private values is \texttt{Auction.IsIPV}. It then proves finite versions of monotone conditional expectations (Theorem~\ref{thm:MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated}) and the weak winner's curse (Theorem~\ref{thm:MathEconLib.Auction.Affiliation.condExpWinningSlice_le_condExpSlice_of_affiliated}), where conditioning sets are finite sublattices of $\mathbb{R}^n$ and the key tool is the Ahlswede--Daykin four functions theorem.
 
-\section{Affiliated densities}
+\section{Affiliated weights}
 
 \begin{definition}\label{def:MathEconLib.Auction.Affiliation.Affiliated}
 \lean{MathEconLib.Auction.Affiliation.Affiliated}
 \leanok
-A function $f : \mathbb{R}^n \to \mathbb{R}$ (a joint signal density, with coordinates indexed by $\mathrm{Fin}\,n$) is \emph{affiliated} if
+A function $f : \mathbb{R}^n \to \mathbb{R}$ (signal weights, with coordinates indexed by $\mathrm{Fin}\,n$) is \emph{affiliated} if
 \[
   f(x \vee y)\, f(x \wedge y) \ge f(x)\, f(y) \quad \text{for all } x, y \in \mathbb{R}^n,
 \]
-where $\vee$ and $\wedge$ are the componentwise maximum and minimum. The predicate does not include positivity or integrability of $f$.
+where $\vee$ and $\wedge$ are the componentwise maximum and minimum. The predicate does not include positivity, integrability or normalization of $f$.
 \end{definition}
 
 \begin{definition}\label{def:MathEconLib.Auction.Affiliation.Factors}
 \lean{MathEconLib.Auction.Affiliation.Factors}
 \leanok
-Let $f : \mathbb{R}^n \to \mathbb{R}$ and $g_i : \mathbb{R} \to \mathbb{R}$ for $i < n$. Then $f$ \emph{factors through} $(g_i)$ if $f(x) = \prod_{i} g_i(x_i)$ for every profile $x$. This encodes mutual independence of the signals.
+Let $f : \mathbb{R}^n \to \mathbb{R}$ and $g_i : \mathbb{R} \to \mathbb{R}$ for $i < n$. Then $f$ \emph{factors through} $(g_i)$ if $f(x) = \prod_{i} g_i(x_i)$ for every profile $x$. This is an algebraic factorization; it describes independence only once $f$ is identified with a product probability law.
 \end{definition}
 
 \begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.factors_affiliation_eq}
 \lean{MathEconLib.Auction.Affiliation.factors_affiliation_eq, MathEconLib.Auction.Affiliation.mul_sup_inf_eq}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.Factors}
-(Remark 6, equality form.) If $f$ factors through $(g_i)$, then $f(x \vee y)\, f(x \wedge y) = f(x)\, f(y)$ for all $x, y \in \mathbb{R}^n$. No positivity is assumed.
+If $f$ factors through $(g_i)$, then $f(x \vee y)\, f(x \wedge y) = f(x)\, f(y)$ for all $x, y \in \mathbb{R}^n$. No positivity is assumed.
 \end{theorem}
 
 \begin{proof}
@@ -36,7 +36,7 @@ Expand all four values as products and combine them coordinatewise. For each coo
 \lean{MathEconLib.Auction.Affiliation.factors_affiliated}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.Affiliated, def:MathEconLib.Auction.Affiliation.Factors}
-(Remark 6.) If $f : \mathbb{R}^n \to \mathbb{R}$ factors as $f(x) = \prod_i g_i(x_i)$, then $f$ is affiliated. Independence is the boundary (equality) case of affiliation.
+If $f : \mathbb{R}^n \to \mathbb{R}$ factors as $f(x) = \prod_i g_i(x_i)$, then $f$ is affiliated. Factorization is the boundary (equality) case of affiliation.
 \end{theorem}
 
 \begin{proof}
@@ -66,28 +66,28 @@ For each pair $x, y$, rewrite sums of logarithms as logarithms of products and u
 \begin{definition}\label{def:MathEconLib.Auction.Affiliation.SignalValueEnv}
 \lean{MathEconLib.Auction.Affiliation.SignalValueEnv}
 \leanok
-An $n$-bidder signal/value environment consists of signal bounds $\underline{x} \le \bar{x}$, a joint signal density $f : \mathbb{R}^n \to \mathbb{R}$ with $f \ge 0$ that vanishes whenever some coordinate lies outside $[\underline{x}, \bar{x}]$, and value functions $v_i : \mathbb{R}^n \to \mathbb{R}$ for each bidder $i$. Each $v_i$ is nonnegative, continuous, monotone in the componentwise order, and strictly increasing in bidder $i$'s own signal when the other coordinates are held fixed.
+An $n$-bidder signal/value environment consists of signal bounds $\underline{x} \le \bar{x}$, signal weights $f : \mathbb{R}^n \to \mathbb{R}$ with $f \ge 0$ that vanish whenever some coordinate lies outside $[\underline{x}, \bar{x}]$, and value functions $v_i : \mathbb{R}^n \to \mathbb{R}$ for each bidder $i$. Each $v_i$ is nonnegative, continuous, monotone in the componentwise order, and strictly increasing in bidder $i$'s own signal on $[\underline{x}, \bar{x}]$ when the other coordinates are held fixed. No measurability, normalization or probability law is part of the environment.
 \end{definition}
 
-\begin{definition}\label{def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
-\lean{MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.HasAffiliatedWeights}
+\lean{MathEconLib.Auction.Affiliation.HasAffiliatedWeights}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.Affiliated}
-An environment $E$ has \emph{affiliated signals} if its joint signal density $E.f$ is affiliated.
+An environment $E$ has \emph{affiliated weights} if its signal weights $E.f$ are affiliated.
 \end{definition}
 
-\begin{definition}\label{def:MathEconLib.Auction.Affiliation.HasIndependentSignals}
-\lean{MathEconLib.Auction.Affiliation.HasIndependentSignals}
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.HasFactorizedWeights}
+\lean{MathEconLib.Auction.Affiliation.HasFactorizedWeights}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.Factors}
-An environment $E$ has \emph{independent signals} if there exist $g_i : \mathbb{R} \to \mathbb{R}$ with $E.f(x) = \prod_i g_i(x_i)$ for all profiles $x$.
+An environment $E$ has \emph{factorized weights} if there exist $g_i : \mathbb{R} \to \mathbb{R}$ with $E.f(x) = \prod_i g_i(x_i)$ for all profiles $x$.
 \end{definition}
 
-\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.HasIndependentSignals.hasAffiliatedSignals}
-\lean{MathEconLib.Auction.Affiliation.HasIndependentSignals.hasAffiliatedSignals}
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.HasFactorizedWeights.hasAffiliatedWeights}
+\lean{MathEconLib.Auction.Affiliation.HasFactorizedWeights.hasAffiliatedWeights}
 \leanok
-\uses{def:MathEconLib.Auction.Affiliation.HasIndependentSignals, def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
-(Remark 6, environment form.) If an environment $E$ has independent signals, then it has affiliated signals.
+\uses{def:MathEconLib.Auction.Affiliation.HasFactorizedWeights, def:MathEconLib.Auction.Affiliation.HasAffiliatedWeights}
+If an environment $E$ has factorized weights, then it has affiliated weights.
 \end{theorem}
 
 \begin{proof}
@@ -96,24 +96,24 @@ An environment $E$ has \emph{independent signals} if there exist $g_i : \mathbb{
 Take the factorization witness and apply the factorization theorem.
 \end{proof}
 
-\begin{definition}\label{def:MathEconLib.Auction.Affiliation.IsIPV}
-\lean{MathEconLib.Auction.Affiliation.IsIPV, MathEconLib.Auction.Affiliation.IsPrivateValues}
+\begin{definition}\label{def:MathEconLib.Auction.Affiliation.IsPrivateValuesWithFactorizedWeights}
+\lean{MathEconLib.Auction.Affiliation.IsPrivateValuesWithFactorizedWeights, MathEconLib.Auction.Affiliation.IsPrivateValues}
 \leanok
-\uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.HasIndependentSignals}
-An environment $E$ has \emph{private values} (Remark 5) if for every bidder $i$ and profiles $X, X'$ with $X_i = X'_i$ we have $v_i(X) = v_i(X')$. It is \emph{independent private values} (IPV) if it has private values and independent signals.
+\uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.HasFactorizedWeights}
+An environment $E$ has \emph{private values} if for every bidder $i$ and profiles $X, X'$ with $X_i = X'_i$ we have $v_i(X) = v_i(X')$. It has \emph{private values with factorized weights} if it has private values and factorized weights. Independent private values under a probability law is \texttt{Auction.IsIPV}.
 \end{definition}
 
-\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.IsIPV.hasAffiliatedSignals}
-\lean{MathEconLib.Auction.Affiliation.IsIPV.hasAffiliatedSignals}
+\begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.IsPrivateValuesWithFactorizedWeights.hasAffiliatedWeights}
+\lean{MathEconLib.Auction.Affiliation.IsPrivateValuesWithFactorizedWeights.hasAffiliatedWeights}
 \leanok
-\uses{def:MathEconLib.Auction.Affiliation.IsIPV, def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals}
-Every IPV environment has affiliated signals.
+\uses{def:MathEconLib.Auction.Affiliation.IsPrivateValuesWithFactorizedWeights, def:MathEconLib.Auction.Affiliation.HasAffiliatedWeights}
+Every environment with private values and factorized weights has affiliated weights.
 \end{theorem}
 
 \begin{proof}
 \leanok
-\uses{thm:MathEconLib.Auction.Affiliation.HasIndependentSignals.hasAffiliatedSignals}
-Apply the environment form of Remark 6 to the independence half of IPV; the private-values half plays no role.
+\uses{thm:MathEconLib.Auction.Affiliation.HasFactorizedWeights.hasAffiliatedWeights}
+Apply the previous theorem to the factorization half; the private-values half plays no role.
 \end{proof}
 
 \begin{theorem}\label{thm:open.symmetric_signal_value_model}
@@ -125,11 +125,11 @@ The symmetric variant of Definition~\ref{def:MathEconLib.Auction.Affiliation.Sig
 \begin{definition}\label{def:MathEconLib.Auction.Affiliation.condExpOn}
 \lean{MathEconLib.Auction.Affiliation.condExpOn}
 \leanok
-For a type $\alpha$, weights $f : \alpha \to \mathbb{R}$ (possibly unnormalized), a function $g : \alpha \to \mathbb{R}$ and a finite set $A \subseteq \alpha$, the finite conditional expectation is
+For a type $\alpha$, weights $f : \alpha \to \mathbb{R}$ (possibly unnormalized), a function $g : \alpha \to \mathbb{R}$ and a finite set $A \subseteq \alpha$, the finite weighted average is
 \[
   \mathrm{condExpOn}(f, g, A) = \frac{\sum_{x \in A} g(x) f(x)}{\sum_{x \in A} f(x)}.
 \]
-When the denominator is $0$ the value is $0$, following Lean's convention for division by zero.
+When the denominator is $0$ the value is $0$, following Lean's convention for division by zero. When $f$ is the mass function of a probability law with positive mass on $A$, this is the conditional expectation of $g$ given $A$.
 \end{definition}
 
 \begin{lemma}\label{thm:MathEconLib.Auction.Affiliation.sum_mul_sum_le_of_affiliated}
@@ -179,7 +179,7 @@ Shift $g$ by $-\min_S g$ to make it nonnegative on $S$ and apply the nonnegative
 \lean{MathEconLib.Auction.Affiliation.condExpSlice}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.condExpOn}
-For $f, g : \mathbb{R}^n \to \mathbb{R}$, a finite set $S \subseteq \mathbb{R}^n$, a bidder $i$ and $t \in \mathbb{R}$, let $\mathrm{condExpSlice}(f, g, S, i, t) = \mathrm{condExpOn}(f, g, \{x \in S : x_i = t\})$. This is the discrete conditional expectation $E_f[g(X) \mid X_i = t]$.
+For $f, g : \mathbb{R}^n \to \mathbb{R}$, a finite set $S \subseteq \mathbb{R}^n$, a bidder $i$ and $t \in \mathbb{R}$, let $\mathrm{condExpSlice}(f, g, S, i, t) = \mathrm{condExpOn}(f, g, \{x \in S : x_i = t\})$. When $f$ is a probability mass function this is the discrete conditional expectation $E_f[g(X) \mid X_i = t]$.
 \end{definition}
 
 \begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated}
@@ -215,7 +215,7 @@ For a finite $S \subseteq \mathbb{R}^n$, a bidder $i$ and $t \in \mathbb{R}$, th
 \lean{MathEconLib.Auction.Affiliation.condExpWinningSlice}
 \leanok
 \uses{def:MathEconLib.Auction.Affiliation.condExpOn, def:MathEconLib.Auction.Affiliation.winningSlice}
-Let $\mathrm{condExpWinningSlice}(f, g, S, i, t) = \mathrm{condExpOn}(f, g, \mathrm{winningSlice}(S, i, t))$. This is the discrete conditional expectation $E_f[g(X) \mid X_i = t,\ X_i = \max_j X_j]$.
+Let $\mathrm{condExpWinningSlice}(f, g, S, i, t) = \mathrm{condExpOn}(f, g, \mathrm{winningSlice}(S, i, t))$. When $f$ is a probability mass function this is the discrete conditional expectation $E_f[g(X) \mid X_i = t,\ X_i = \max_j X_j]$.
 \end{definition}
 
 \begin{lemma}\label{thm:MathEconLib.Auction.Affiliation.inf_mem_winningSlice}
@@ -249,7 +249,7 @@ Take $A$ to be the winning slice and $B$ the own-signal slice. $B$ contains $A$,
 \begin{theorem}\label{thm:MathEconLib.Auction.Affiliation.SignalValueEnv.condExpWinningSlice_le_condExpSlice}
 \lean{MathEconLib.Auction.Affiliation.SignalValueEnv.condExpWinningSlice_le_condExpSlice}
 \leanok
-\uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.HasAffiliatedSignals, def:MathEconLib.Auction.Affiliation.condExpWinningSlice, def:MathEconLib.Auction.Affiliation.condExpSlice}
+\uses{def:MathEconLib.Auction.Affiliation.SignalValueEnv, def:MathEconLib.Auction.Affiliation.HasAffiliatedWeights, def:MathEconLib.Auction.Affiliation.condExpWinningSlice, def:MathEconLib.Auction.Affiliation.condExpSlice}
 (Winner's curse, environment form.) Let $E$ be a signal/value environment with affiliated signals, and let $S \subseteq \mathbb{R}^n$ be a finite set closed under componentwise $\vee$ and $\wedge$ with $E.f > 0$ on $S$. For a bidder $i$ and $t \in \mathbb{R}$ such that the winning slice is nonempty,
 \[
   E_{E.f}[v_i(X) \mid X_i = t,\ X_i = \max_j X_j] \le E_{E.f}[v_i(X) \mid X_i = t].
