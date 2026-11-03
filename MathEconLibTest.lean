@@ -1,3 +1,5 @@
+
+
 import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
@@ -25,6 +27,7 @@ import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.CumulativeOffer
+import MathEconLibTest.Matching.CumulativeOfferInvariants
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Mechanism.BayesianIC
 import MathEconLibTest.Mechanism.BayesianICContract
@@ -42,5 +45,3 @@ import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples
 import MathEconLibTest.ValueDistribution.UniformPricing
-
-

@@ -1,5 +1,7 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
+
+
 public import MathEconLib.Auction
 public import MathEconLib.Auction.Affiliation.Basic
 public import MathEconLib.Auction.Affiliation.FiniteCondExp
@@ -89,6 +91,7 @@ public import MathEconLib.Matching.Classical.Marriage.ToContracts
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Basic
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Invariants
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Policies
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Termination
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
@@ -141,5 +144,3 @@ public import MathEconLib.ValueDistribution.TailIntegral
 public import MathEconLib.ValueDistribution.Uniform
 public import MathEconLib.ValueDistribution.UniformPricing
 public import MathEconLib.ValueDistribution.VirtualValue
-
-
