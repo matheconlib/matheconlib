@@ -18,7 +18,7 @@ and a batch has at most one offer per proposer. No restriction on buyer choices'
 
 Every offered contract is strictly acceptable to its proposer. Buyer IRC makes held contracts
 chosen from themselves, independently of substitutability. To conclude the existing
-`Market.IndRational` predicate, the market's seller choices must agree with the process:
+`Market.IndRational` predicate, the market's seller choices must agree with the cumulative offer process:
 we use seller locality and acceptance of strictly acceptable singleton menus. These are
 explicit hypotheses, since `ofMarket` deliberately ignores the market's seller choices.
 Strict preference-induced seller choices satisfy this compatibility on arbitrary contract
@@ -36,9 +36,9 @@ open MathEconLib.Choice MathEconLib.Preferences
 
 variable {B S X : Type*}
 
-namespace Process
+namespace CumulativeOfferProcess
 
-variable (P : Process B S X)
+variable (P : CumulativeOfferProcess B S X)
 
 /-- Strict acceptability relative to the proposer's outside option. -/
 def Acceptable (x : X) : Prop :=
@@ -145,14 +145,14 @@ theorem rawOutcome_injOn [Finite X] (hsub : ∀ b, (P.choiceB b).Substitutable)
     {π : Policy X} (hp : P.ValidPolicy π) : Set.InjOn P.seller (P.rawOutcome π) :=
   (P.execute_run hp _).heldContracts_injOn P hsub
 
-end Process
+end CumulativeOfferProcess
 
 /-- Market-adapted runs satisfy the library's many-to-one feasibility predicate. -/
 theorem manyToOneFeasible_of_run (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s}))
     (hsub : ∀ b, (M.choiceB b).Substitutable)
     {h : List (Set X)} (hr : (ofMarket M pref).Run h) :
-    M.ManyToOneFeasible ((ofMarket M pref).heldContracts (Process.offers h)) :=
+    M.ManyToOneFeasible ((ofMarket M pref).heldContracts (CumulativeOfferProcess.offers h)) :=
   hr.heldContracts_injOn (ofMarket M pref) hsub
 
 /-- Buyer IRC and compatible local seller choices give market individual rationality along
@@ -164,9 +164,9 @@ theorem indRational_of_run (M : Market B S X)
     (hlocal : ∀ s A, M.choiceS s (M.sellerSide s A) = M.choiceS s A)
     (haccept : ∀ x, (ofMarket M pref).Acceptable x → x ∈ M.choiceS (M.seller x) {x})
     {h : List (Set X)} (hr : (ofMarket M pref).Run h) :
-    M.IndRational ((ofMarket M pref).heldContracts (Process.offers h)) := by
+    M.IndRational ((ofMarket M pref).heldContracts (CumulativeOfferProcess.offers h)) := by
   let P := ofMarket M pref
-  let Z := P.heldContracts (Process.offers h)
+  let Z := P.heldContracts (CumulativeOfferProcess.offers h)
   have hfeas := hr.heldContracts_injOn P hsub
   refine ⟨?_, ?_⟩
   · intro b
@@ -193,7 +193,7 @@ theorem indRational_rawOutcome [Finite X] (M : Market B S X)
     (hcons : ∀ b, (M.choiceB b).Consistent)
     (hlocal : ∀ s A, M.choiceS s (M.sellerSide s A) = M.choiceS s A)
     (haccept : ∀ x, (ofMarket M pref).Acceptable x → x ∈ M.choiceS (M.seller x) {x})
-    {π : Process.Policy X} (hp : (ofMarket M pref).ValidPolicy π) :
+    {π : CumulativeOfferProcess.Policy X} (hp : (ofMarket M pref).ValidPolicy π) :
     M.IndRational ((ofMarket M pref).rawOutcome π) :=
   indRational_of_run M pref hsub hcons hlocal haccept ((ofMarket M pref).execute_run hp _)
 
@@ -210,7 +210,7 @@ theorem indRational_ofSellerPreferences_of_run
       (fun s => CompletePreference.ofLinearOrder (pref s))).Run h) :
     (Market.ofSellerPreferences buyer seller choiceB hB pref).IndRational
       ((ofMarket (Market.ofSellerPreferences buyer seller choiceB hB pref)
-        (fun s => CompletePreference.ofLinearOrder (pref s))).heldContracts (Process.offers h)) := by
+        (fun s => CompletePreference.ofLinearOrder (pref s))).heldContracts (CumulativeOfferProcess.offers h)) := by
   apply indRational_of_run _ _ hsub hcons ?_ ?_ hr
   · intro s A
     have hmenu : (fun y : {x : X // seller x = s} => y.val) ⁻¹' {x ∈ A | seller x = s} =

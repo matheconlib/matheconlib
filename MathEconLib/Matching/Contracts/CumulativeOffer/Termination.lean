@@ -20,9 +20,9 @@ be a feasible matching.
 
 @[expose] public section
 
-namespace MathEconLib.Matching.CumulativeOffer.Process
+namespace MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess
 
-variable {B S X : Type*} (P : Process B S X)
+variable {B S X : Type*} (P : CumulativeOfferProcess B S X)
 
 /-- Productive history length is bounded by the number of accumulated offers. -/
 theorem Run.length_le_ncard [Finite X] {h : List (Set X)} (hr : P.Run h) :
@@ -41,7 +41,7 @@ theorem Run.length_le_card [Finite X] {h : List (Set X)} (hr : P.Run h) :
 
 /-- Run a policy for a bounded number of rounds, stopping at economic exhaustion.
 Terminal repetitions do not add empty batches to the history. -/
-noncomputable def execute (P : Process B S X) (π : Policy X) : ℕ → List (Set X)
+noncomputable def execute (P : CumulativeOfferProcess B S X) (π : Policy X) : ℕ → List (Set X)
   | 0 => []
   | n + 1 => by
       classical
@@ -125,5 +125,5 @@ theorem rawOutcome_isOutcome [Finite X] {π : Policy X} (hp : P.ValidPolicy π) 
     P.Outcome (P.rawOutcome π) :=
   ⟨P.execute π (Nat.card X), P.execute_run hp _, P.execute_terminal hp, rfl⟩
 
-end MathEconLib.Matching.CumulativeOffer.Process
+end MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess
 

@@ -42,7 +42,7 @@ formulation of Hatfield–Kominers–Westkamp.
 
 A policy is this library's proposal-selection rule. Histories and batches support the
 generalization to history-dependent scheduling and simultaneous proposals; they do not
-assert equivalence with a particular paper's process. On a finite contract set, a process with fixed preferences and
+assert equivalence with a particular paper's cumulative offer process. On a finite contract set, a cumulative offer process with fixed preferences and
 a valid policy produces a terminal set of held contracts. A mechanism mapping reported preference
 profiles to outcomes is a separate construction.
 
@@ -74,7 +74,7 @@ open MathEconLib.Choice MathEconLib.Preferences
 /-- The data of a unit-demand cumulative offer process. Each buyer chooses a subset of its
 accumulated offers. Restricting each buyer's menu to its own contracts ensures that it can
 hold only contracts involving that buyer. -/
-structure Process (B S X : Type*) where
+structure CumulativeOfferProcess (B S X : Type*) where
   /-- The buyer to whom this contract is proposed. -/
   buyer : X → B
   /-- The seller who proposes this contract. -/
@@ -87,15 +87,15 @@ structure Process (B S X : Type*) where
 variable {B S X : Type*}
 
 /-- Use an existing market's incidence and buyer choices. The supplied preferences determine
-proposals; the market's seller choice functions are not used by this raw process. -/
+proposals; the market's seller choice functions are not used by this raw cumulative offer process. -/
 def ofMarket (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s})) :
-    Process B S X :=
+    CumulativeOfferProcess B S X :=
   ⟨M.buyer, M.seller, M.choiceB, pref⟩
 
-namespace Process
+namespace CumulativeOfferProcess
 
-variable (P : Process B S X)
+variable (P : CumulativeOfferProcess B S X)
 
 /-- A proposing seller's own contracts. -/
 abbrev Own (s : S) := {x : X // P.seller x = s}
@@ -230,5 +230,5 @@ theorem exists_validBatch [Finite X] {A : Set X} (h : ¬ P.Terminal A) :
   obtain ⟨x, hx, _⟩ := he.exists_admissible P (Set.toFinite _)
   exact ⟨{x}, (P.validBatch_singleton_iff A x).2 hx⟩
 
-end Process
+end CumulativeOfferProcess
 end MathEconLib.Matching.CumulativeOffer

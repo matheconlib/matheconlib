@@ -17,7 +17,7 @@ The earlier recall example witnesses the need for substitutability.
 
 open MathEconLib.Choice MathEconLib.Preferences
 open MathEconLib.Matching MathEconLib.Matching.CumulativeOffer
-open Process
+open CumulativeOfferProcess
 
 namespace MathEconLibTest.Matching.CumulativeOfferInvariants
 
@@ -25,7 +25,7 @@ def allChoice : ChoiceFunction (Fin 2) where
   toFun A := A
   choose_subset := fun _ => Set.Subset.rfl
 
-def tied : Process Unit Unit (Fin 2) where
+def tied : CumulativeOfferProcess Unit Unit (Fin 2) where
   buyer _ := ()
   seller _ := ()
   choiceB _ := allChoice
@@ -79,7 +79,7 @@ example (A : Set (Fin 2)) :
   tied.choice_heldContracts_eq consistent A ()
 
 /-- A market whose own-menu choices accept every available contract on both sides.
-The process still offers at most one contract for its only proposer. -/
+The cumulative offer process still offers at most one contract for its only proposer. -/
 def tiedMarket : Market Unit Unit (Fin 2) where
   buyer := tied.buyer
   seller := tied.seller
@@ -120,9 +120,9 @@ example {B S X : Type*} (M : Market B S X)
 
 end MathEconLibTest.Matching.CumulativeOfferInvariants
 
-#print axioms Process.rejected_mono
-#print axioms Process.Run.heldContracts_injOn
-#print axioms Process.Run.acceptable_heldContracts
+#print axioms CumulativeOfferProcess.rejected_mono
+#print axioms CumulativeOfferProcess.Run.heldContracts_injOn
+#print axioms CumulativeOfferProcess.Run.acceptable_heldContracts
 #print axioms indRational_of_run
 #print axioms indRational_rawOutcome
 #print axioms indRational_ofSellerPreferences_of_run
