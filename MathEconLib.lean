@@ -89,6 +89,7 @@ public import MathEconLib.Matching.Classical.Marriage.ToContracts
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Basic
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Invariants
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Policies
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Termination
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
