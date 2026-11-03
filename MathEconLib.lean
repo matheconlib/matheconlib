@@ -1,7 +1,5 @@
 module  -- shake: keep-all --deprecated_module: ignore
 
-
-
 public import MathEconLib.Auction
 public import MathEconLib.Auction.Affiliation.Basic
 public import MathEconLib.Auction.Affiliation.FiniteCondExp
