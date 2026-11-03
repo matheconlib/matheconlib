@@ -85,14 +85,14 @@ lemma condProb_nonneg (d : FinDist α) (e : Set α) [DecidablePred (· ∈ e)] (
 /-- The conditional mass vanishes off the conditioning event. -/
 lemma condProb_eq_zero_of_notMem (d : FinDist α) (e : Set α) [DecidablePred (· ∈ e)]
     {x : α} (hx : x ∉ e) : d.condProb e x = 0 :=
-  if_neg fun h => hx h.1
+  ite_eq_right fun h => hx h.1
 
 /-- On positive event mass, the conditional mass at a point of `e` is `d x / d.probEvent e`. -/
 lemma condProb_eq_of_pos (d : FinDist α) (e : Set α) [DecidablePred (· ∈ e)]
     {x : α} (hx : x ∈ e) (hpos : 0 < d.probEvent e) :
     d.condProb e x = d x / d.probEvent e := by
   unfold condProb
-  rw [if_pos ⟨hx, hpos⟩]
+  rw [ite_eq_left ⟨hx, hpos⟩]
 
 /-- On positive event mass, the conditional mass sums to one. -/
 lemma condProb_sum_one_of_pos (d : FinDist α) (e : Set α) [DecidablePred (· ∈ e)]
@@ -111,7 +111,7 @@ lemma condProb_sum_one_of_pos (d : FinDist α) (e : Set α) [DecidablePred (· �
 lemma condProb_sum_zero_of_not_pos (d : FinDist α) (e : Set α) [DecidablePred (· ∈ e)]
     (hnot : ¬ 0 < d.probEvent e) :
     ∑ x : α, d.condProb e x = 0 := by
-  exact Finset.sum_eq_zero fun x _ => if_neg fun h => hnot h.2
+  exact Finset.sum_eq_zero fun x _ => ite_eq_right fun h => hnot h.2
 
 /-- The conditional distribution on `e` when `e` has positive probability, and the original
 distribution when `e` has zero probability. -/
@@ -138,7 +138,7 @@ lemma conditionalOn_apply (d : FinDist α) (e : Set α) [DecidablePred (· ∈ e
     (hpos : 0 < d.probEvent e) (x : α) :
     (d.conditionalOn e hpos) x = d.condProb e x := by
   unfold conditionalOn conditionalOnOrSelf
-  rw [dif_pos hpos]
+  rw [dite_eq_left hpos]
   rfl
 
 /-- When the conditioning event has positive prior mass, the conditional distribution agrees with
@@ -153,7 +153,7 @@ lemma conditionalOnOrSelf_eq_self_of_zero (d : FinDist α) (e : Set α) [Decidab
     (hzero : d.probEvent e = 0) :
     d.conditionalOnOrSelf e = d := by
   unfold conditionalOnOrSelf
-  exact dif_neg (hzero ▸ lt_irrefl _)
+  exact dite_eq_right (hzero ▸ lt_irrefl _)
 
 /-- **Conditional event probability as a ratio.** On a positive-mass conditioning event `A`, the
 mass that the conditional distribution `d.conditionalOn A` assigns to an event `B` is

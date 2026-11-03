@@ -7,7 +7,7 @@ module
 
 public import MathEconLib.Mechanism.Core.Profile
 public import Mathlib.Algebra.BigOperators.Group.Finset.Basic
-public import Mathlib.Data.Real.Basic
+public import Mathlib.Basic.Real.Basic
 
 /-!
 # Mechanisms and signed transfers
@@ -15,7 +15,8 @@ public import Mathlib.Data.Real.Basic
 A mechanism selects an outcome and a monetary transfer for each agent from a profile of actions.
 Agents may have different action spaces. A positive transfer is money received by the agent, and a
 negative transfer is money paid by the agent. The designer's revenue is the sum of the agents'
-payments.
+payments. These rules do not specify preferences over outcomes and money; quasilinearity is
+an assumption of a utility environment paired with the mechanism.
 
 In a direct mechanism, each agent's action is a report of their type. The reported types determine
 the outcome and transfers; truthful reporting means that every agent reports their own true type.

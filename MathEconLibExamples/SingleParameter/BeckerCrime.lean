@@ -312,7 +312,7 @@ crime rate falls from `1` to `0` when the probability rises from `1/2` to `3/4`.
 At the lower probability, the entire population is exactly at the cutoff and
 chooses to commit the offense, so its probability mass is included. -/
 example :
-    let D : ValueDistribution := ⟨MeasureTheory.Measure.dirac (1 : ℝ), inferInstance⟩
+    let D : ValueDistribution := (MeasureTheory.Measure.dirac (1 : ℝ)).toProbabilityMeasure
     D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) = 1 ∧
       D.expectedAllocation (crimeProblem 0 2 (3 / 4) 2) = 0 := by
   dsimp only

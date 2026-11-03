@@ -148,7 +148,7 @@ lemma mixedExtension_payoff_eq_finiteExpectedPayoff (G : StrategicGame I A V) (i
     G.mixedExtension.payoff i σ = G.finiteExpectedPayoff i (toSimplex σ) := by
   classical
   change (∫ a, G.payoff i a ∂Measure.pi (fun j ↦ (σ j : Measure (A j)))) = _
-  rw [integral_fintype _ (G.integrable_payoff i σ)]
+  rw [integral_fintype (G.integrable_payoff i σ)]
   rw [finiteExpectedPayoff_eq_sum]
   apply Finset.sum_congr rfl
   intro a _
@@ -191,7 +191,7 @@ lemma finiteExpectedPayoff_eq_ofOutcome_mixed_payoff (H : OutcomeGame I A O)
   change (∫ a, P.payoff i (H.outcome a) ∂Measure.pi (fun j ↦
     (toProbability σ j : Measure (A j)))) =
     ∫ o, P.payoff i o ∂((ProbabilityMeasure.pi (toProbability σ)).map
-      H.measurable_outcome.aemeasurable : ProbabilityMeasure O)
+      H.outcome : ProbabilityMeasure O)
   rw [ProbabilityMeasure.toMeasure_map]
   have hmeas : AEStronglyMeasurable (P.payoff i)
       (Measure.map H.outcome (ProbabilityMeasure.pi (toProbability σ))) := by

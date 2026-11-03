@@ -168,9 +168,9 @@ theorem isBNEFin_iff [Preorder V] (s : G.PureStrategy) :
         ∀ j θ_j, (⟨j, θ_j⟩ : Σ k, Θ k) ≠ ⟨i, θ_i⟩ →
           s' j θ_j = s j θ_j := by
       intro j θ_j hne
-      simp only [s', dif_neg hne]
+      simp only [s', dite_eq_right hne]
     have hdeviating_action : s' i θ_i = a_i := by
-      simp only [s', dif_pos rfl]
+      simp only [s', dite_eq_left rfl]
     have hequilibrium_payoff := h ⟨i, θ_i⟩ s' hagree
     have hpayoff_eq : G.interimPayoffActionFin d i θ_i (s' i θ_i) s' =
         G.interimPayoffActionFin d i θ_i a_i s := by
@@ -210,7 +210,7 @@ noncomputable def bayesianToStrategicMorphism :
     · intro j θ_j hne
       have hne' : (⟨j, θ_j⟩ : Σ k, Θ k) ≠ p := hne
       change (if h : (⟨j, θ_j⟩ : Σ k, Θ k) = p then _ else s j θ_j) = s j θ_j
-      rw [dif_neg hne']
+      rw [dite_eq_right hne']
     · subst hσ'
       funext q
       obtain ⟨j, θ_j⟩ := q
@@ -219,10 +219,10 @@ noncomputable def bayesianToStrategicMorphism :
         change (if h : (⟨j, θ_j⟩ : Σ k, Θ k) = ⟨j, θ_j⟩ then
             ((Sigma.mk.inj h).1 ▸ a : A j) else s j θ_j) =
           Function.update (G.toExpandedProfile s) ⟨j, θ_j⟩ a ⟨j, θ_j⟩
-        rw [dif_pos rfl, Function.update_self]
+        rw [dite_eq_left rfl, Function.update_self]
       · change (if h : (⟨j, θ_j⟩ : Σ k, Θ k) = p then _ else s j θ_j) =
           Function.update (G.toExpandedProfile s) p a ⟨j, θ_j⟩
-        rw [dif_neg hjp, Function.update_of_ne hjp]
+        rw [dite_eq_right hjp, Function.update_of_ne hjp]
         rfl
   value_eq := fun _ _ => rfl
 

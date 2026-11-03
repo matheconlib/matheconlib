@@ -120,7 +120,7 @@ theorem aeDifferentiable [HasEnvelopeIC P] :
       countable_singleton _
   filter_upwards [h_exceptional.ae_notMem volume] with v hv hv_interval
   simp only [mem_union, mem_sep_iff, mem_insert_iff, mem_singleton_iff, not_or] at hv
-  push_neg at hv
+  push Not at hv
   have hv_low : P.lowestType < v :=
     lt_of_le_of_ne hv_interval.1 <| Ne.symm hv.2.1
   have hv_high : v < P.highestType :=

@@ -64,10 +64,10 @@ def constantBeliefs : ConditionalBeliefs nullPrior where
   isMarkov _ := inferInstance
   disintegrates i := by
     change (Measure.map (fun θ : Bool → Bool => θ i) (Measure.dirac (profile false))).compProd _ = _
-    rw [Measure.map_dirac (measurable_pi_apply i)]
+    rw [Measure.map_dirac' (measurable_pi_apply i)]
     change (Measure.dirac false).compProd _ =
       (Measure.dirac (profile false)).map (fun θ => (θ i, drop i θ))
-    rw [Measure.map_dirac ((measurable_pi_apply i).prodMk (measurable_drop i))]
+    rw [Measure.map_dirac' ((measurable_pi_apply i).prodMk (measurable_drop i))]
     ext s hs
     rw [Measure.dirac_compProd_apply hs]
     simp only [Kernel.const_apply, Measure.dirac_apply]
@@ -79,10 +79,10 @@ def matchingBeliefs : ConditionalBeliefs nullPrior where
   isMarkov _ := inferInstance
   disintegrates i := by
     change (Measure.map (fun θ : Bool → Bool => θ i) (Measure.dirac (profile false))).compProd _ = _
-    rw [Measure.map_dirac (measurable_pi_apply i)]
+    rw [Measure.map_dirac' (measurable_pi_apply i)]
     change (Measure.dirac false).compProd _ =
       (Measure.dirac (profile false)).map (fun θ => (θ i, drop i θ))
-    rw [Measure.map_dirac ((measurable_pi_apply i).prodMk (measurable_drop i))]
+    rw [Measure.map_dirac' ((measurable_pi_apply i).prodMk (measurable_drop i))]
     ext s hs
     rw [Measure.dirac_compProd_apply hs]
     simp only [Kernel.deterministic_apply, Measure.dirac_apply]
@@ -90,7 +90,7 @@ def matchingBeliefs : ConditionalBeliefs nullPrior where
 
 /-- The type true has zero marginal probability. -/
 example (i : Bool) : marginalType nullPrior i {true} = 0 := by
-  simp [marginalType, nullPrior, profile, Measure.map_dirac (measurable_pi_apply i)]
+  simp [marginalType, nullPrior, profile, Measure.map_dirac' (measurable_pi_apply i)]
 
 /-- Two valid belief versions can give different laws at a null type. -/
 example : constantBeliefs.opponents false true ≠ matchingBeliefs.opponents false true := by
@@ -112,8 +112,8 @@ lemma isIndependentOfOpponents_nullPrior : IsIndependentOfOpponents nullPrior :=
   intro i
   rw [indepFun_iff_map_prod_eq_prod_map_map (measurable_pi_apply i).aemeasurable
     (measurable_drop i).aemeasurable]
-  simp only [nullPrior, Measure.map_dirac ((measurable_pi_apply i).prodMk (measurable_drop i)),
-    Measure.map_dirac (measurable_pi_apply i), Measure.map_dirac (measurable_drop i),
+  simp only [nullPrior, Measure.map_dirac' ((measurable_pi_apply i).prodMk (measurable_drop i)),
+    Measure.map_dirac' (measurable_pi_apply i), Measure.map_dirac' (measurable_drop i),
     Measure.dirac_prod_dirac]
 
 /-- The independent version keeps unconditional opponent beliefs even at the null type true. -/
@@ -146,9 +146,11 @@ def correlatedBeliefs : ConditionalBeliefs correlatedPrior where
   disintegrates i := by
     simp only [marginalType, correlatedPrior,
       Measure.map_add _ _ (measurable_pi_apply i),
-      Measure.map_add _ _ ((measurable_pi_apply i).prodMk (measurable_drop i)), Measure.map_smul,
-      Measure.map_dirac (measurable_pi_apply i),
-      Measure.map_dirac ((measurable_pi_apply i).prodMk (measurable_drop i)), profile,
+      Measure.map_add _ _ ((measurable_pi_apply i).prodMk (measurable_drop i)),
+      Measure.map_smul _ (measurable_pi_apply i).aemeasurable,
+      Measure.map_smul _ ((measurable_pi_apply i).prodMk (measurable_drop i)).aemeasurable,
+      Measure.map_dirac' (measurable_pi_apply i),
+      Measure.map_dirac' ((measurable_pi_apply i).prodMk (measurable_drop i)), profile,
       Measure.compProd_add_left, Measure.compProd_smul_left, matching_disintegrates_dirac]
     rfl
 
@@ -162,8 +164,9 @@ example : correlatedBeliefs.opponents false true {opponents false true} = 1 ∧
     exact Bool.noConfusion hv
   constructor
   · simp [correlatedBeliefs, Kernel.deterministic_apply]
-  · simp only [correlatedPrior, Measure.map_add _ _ (measurable_drop false), Measure.map_smul,
-      Measure.map_dirac (measurable_drop false), Measure.add_apply, Measure.smul_apply,
+  · simp only [correlatedPrior, Measure.map_add _ _ (measurable_drop false),
+      Measure.map_smul _ (measurable_drop false).aemeasurable,
+      Measure.map_dirac' (measurable_drop false), Measure.add_apply, Measure.smul_apply,
       smul_eq_mul]
     change (1 / 2 : ℝ≥0∞) * (Measure.dirac (opponents false false)) {opponents false true} +
       (1 / 2 : ℝ≥0∞) * (Measure.dirac (opponents false true)) {opponents false true} = 1 / 2

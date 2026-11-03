@@ -72,7 +72,7 @@ theorem absolutelyContinuousOnInterval_cdf {μ : Measure ℝ} [IsProbabilityMeas
         · rw [measureReal_def, ← hFm, F.measure_Ioc,
             ENNReal.toReal_ofReal (sub_nonneg.mpr (F.mono hax)), ha, sub_zero]
       rw [intervalIntegral.integral_of_le hax, h1]
-    · push_neg at hax
+    · push Not at hax
       have hFx : F x = 0 := by
         have h1 : F x ≤ F a := F.mono hax.le
         linarith [cdf_nonneg μ x]

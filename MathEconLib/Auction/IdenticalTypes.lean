@@ -33,7 +33,7 @@ theorem expected_sum_erase [HasIdenticalTypes A]
     (hf_int : ∀ j, Integrable (fun ω => f (A.θ j ω)) ℙ) :
     𝔼[fun ω => ∑ j ∈ Finset.univ.erase i, f (A.θ j ω)] =
       (↑(n - 1) : ℝ) * 𝔼[fun ω => f (A.θ 0 ω)] := by
-  rw [integral_finset_sum _ (fun j _ => hf_int j)]
+  rw [integral_finsetSum _ (fun j _ => hf_int j)]
   have hsym : ∀ j, ∫ ω, f (A.θ j ω) ∂ℙ = ∫ ω, f (A.θ 0 ω) ∂ℙ := fun j => by
     rw [← integral_map (A.θ_measurable j).aemeasurable
           hf_meas.aestronglyMeasurable,

@@ -3,9 +3,11 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Contracts.StableOrder
-import MathEconLib.ForMathlib.Order.IterateFixedPoint
-import Mathlib.Data.Fintype.Powerset
+module
+
+public import MathEconLib.Matching.Contracts.StableOrder
+public import MathEconLib.ForMathlib.Order.IterateFixedPoint
+public import Mathlib.Data.Fintype.Powerset
 
 /-!
 # Fixed-point convergence in contracts markets
@@ -13,6 +15,8 @@ import Mathlib.Data.Fintype.Powerset
 Specialize finite-lattice convergence to the contracts deferred-acceptance operator.
 Finiteness belongs to the convergence theorems, not to the market definition.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -47,7 +51,7 @@ theorem exists_iterate_deferredAcceptanceOperator_top (hsub : M.Substitutable) [
     ∃ n, M.deferredAcceptanceOperator^[n] (Set.univ, toDual (∅ : Set X)) =
       OrderHom.gfp (M.deferredAcceptanceOrderHom hsub) := by
   classical
-  letI := Fintype.ofFinite X
+  let := Fintype.ofFinite X
   obtain ⟨n, hn⟩ := OrderHom.exists_iterate_top_eq_gfp (M.deferredAcceptanceOrderHom hsub)
   refine ⟨n, ?_⟩
   -- `⊤ = (univ, toDual ∅)` and
@@ -61,7 +65,7 @@ theorem exists_iterate_deferredAcceptanceOperator_bot (hsub : M.Substitutable) [
     ∃ n, M.deferredAcceptanceOperator^[n] (∅, toDual (Set.univ : Set X)) =
       OrderHom.lfp (M.deferredAcceptanceOrderHom hsub) := by
   classical
-  letI := Fintype.ofFinite X
+  let := Fintype.ofFinite X
   obtain ⟨n, hn⟩ := OrderHom.exists_iterate_bot_eq_lfp (M.deferredAcceptanceOrderHom hsub)
   refine ⟨n, ?_⟩
   have hbot : ((∅, toDual (Set.univ : Set X)) : Set X × (Set X)ᵒᵈ) = ⊥ := rfl

@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.Existence
-import MathEconLib.Matching.Contracts.StableOrder
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Existence
+public import MathEconLib.Matching.Contracts.StableOrder
 
 /-!
 # Both sides' optimal and pessimal stable matchings
@@ -14,6 +16,8 @@ woman-optimal/man-pessimal matchings. All four specifications remain independent
 their coincidences and uniqueness are proved. Graph dictionaries also identify
 the classical and contracts proofs of opposition of interests.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -84,8 +88,8 @@ theorem exists_manOptimal_stableMatching [Finite M] [Finite W] :
     ∃ μ : M ≃. W, mkt.IsStableMatching μ ∧
       ∀ ν : M ≃. W, mkt.IsStableMatching ν →
         ∀ m, mkt.leM m (ν m) (μ m) := by
-  letI := Fintype.ofFinite M
-  letI := Fintype.ofFinite W
+  let := Fintype.ofFinite M
+  let := Fintype.ofFinite W
   exact ⟨mkt.manOptimalMatching,
     mkt.stable_manOptimalMatching,
     fun _ hν m => mkt.le_manOptimalMatching hν m⟩
@@ -167,22 +171,22 @@ theorem exists_womanOptimal_stableMatching [Finite M] [Finite W] :
     ∃ μ : M ≃. W, mkt.IsStableMatching μ ∧
       ∀ ν : M ≃. W, mkt.IsStableMatching ν →
         ∀ w, mkt.leW w (ν.symm w) (μ.symm w) := by
-  letI := Fintype.ofFinite M
-  letI := Fintype.ofFinite W
+  let := Fintype.ofFinite M
+  let := Fintype.ofFinite W
   exact ⟨mkt.womanOptimalMatching, mkt.isWomanOptimal_womanOptimalMatching⟩
 
 omit [Fintype M] [Fintype W] in
 theorem exists_manPessimal_stableMatching [Finite M] [Finite W] :
     ∃ μ : M ≃. W, mkt.IsManPessimal μ := by
-  letI := Fintype.ofFinite M
-  letI := Fintype.ofFinite W
+  let := Fintype.ofFinite M
+  let := Fintype.ofFinite W
   exact ⟨mkt.womanOptimalMatching, mkt.isManPessimal_womanOptimalMatching⟩
 
 omit [Fintype M] [Fintype W] in
 theorem exists_womanPessimal_stableMatching [Finite M] [Finite W] :
     ∃ μ : M ≃. W, mkt.IsWomanPessimal μ := by
-  letI := Fintype.ofFinite M
-  letI := Fintype.ofFinite W
+  let := Fintype.ofFinite M
+  let := Fintype.ofFinite W
   exact ⟨mkt.manOptimalMatching, mkt.isWomanPessimal_manOptimalMatching⟩
 
 /-- The unique stable matching worst for every man. This definition uses

@@ -11,21 +11,8 @@ public import Mathlib.Analysis.RCLike.Lemmas
 import Mathlib.Algebra.Order.Ring.Star
 import Mathlib.Analysis.Convex.PartitionOfUnity
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Subgraph
-import Mathlib.Data.Int.Star
+import Mathlib.Algebra.Order.Star.Int
 import Mathlib.Data.Nat.Nth
-
--- This file is the original auto-formalisation output (see the module doc below) and has not
--- been through the library's review discipline. The Mathlib style linters are scoped off here
--- so that they give a usable signal on the hand-written parts of the library; re-enable them
--- when this file is cleaned up or replaced by an upstreamed version.
--- TODO: 116 linter findings, dominated by unused `Fintype`/`DecidableEq` instance arguments in
--- statements (42 + 29) and `show` used where `change` is meant (29). The 14 `linter.flexible`
--- findings are deliberately left visible: Mathlib forbids scoping that linter off downstream.
-set_option linter.unusedFintypeInType false
-set_option linter.unusedDecidableInType false
-set_option linter.style.show false
-set_option linter.style.refine false
-set_option linter.style.openClassical false
 
 /-!
 # Schauder's fixed point theorem
@@ -47,6 +34,19 @@ file are:
 The formalisation is based on https://arxiv.org/abs/1902.00827 and
 https://planetmath.org/proofofschauderfixedpointtheorem.
 -/
+
+-- This file is the original auto-formalisation output (see the module doc below) and has not
+-- been through the library's review discipline. The Mathlib style linters are scoped off here
+-- so that they give a usable signal on the hand-written parts of the library; re-enable them
+-- when this file is cleaned up or replaced by an upstreamed version.
+-- TODO: 116 linter findings, dominated by unused `Fintype`/`DecidableEq` instance arguments in
+-- statements (42 + 29) and `show` used where `change` is meant (29). The 14 `linter.flexible`
+-- findings are deliberately left visible: Mathlib forbids scoping that linter off downstream.
+set_option linter.unusedFintypeInType false
+set_option linter.unusedDecidableInType false
+set_option linter.style.show false
+set_option linter.style.refine false
+set_option linter.style.openClassical false
 
 noncomputable section
 
@@ -1038,7 +1038,7 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     subst this
     exact Subtype.ext (hx₁.symm ▸ hx₂.symm ▸ rfl)
   -- Construct the max element
-  letI linord := ords i₀
+  let linord := ords i₀
   let x_max : T := @Finset.max' T linord Finset.univ Finset.univ_nonempty
   have hx_max : ∀ y : T, ¬ (ords i₀).lt x_max y :=
     fun y ↦ not_lt.mpr (@Finset.le_max' T linord Finset.univ y (Finset.mem_univ y))
@@ -1052,8 +1052,8 @@ lemma scarf_degree_outside_door {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       · right; left; refine ⟨by simp, ?_⟩
         ext i; simp only [Finset.mem_sdiff, Finset.mem_singleton, Finset.mem_image]
         constructor
-        · rintro ⟨rfl, h⟩; push_neg at h; rfl
-        · intro hi; subst hi; exact ⟨rfl, by push_neg; intro a ha; subst ha; exact hci⟩
+        · rintro ⟨rfl, h⟩; push Not at h; rfl
+        · intro hi; subst hi; exact ⟨rfl, by push Not; intro a ha; subst ha; exact hci⟩
   let w_max : { p // IsScarfVtx ords c i₀ p } := ⟨({x_max}, {i₀}), hscarf⟩
   -- Show v and w_max are adjacent via scarfAdjRel
   have hadj : G.Adj v w_max := by
@@ -1125,7 +1125,7 @@ lemma ordMin_surj_on_tau {n : ℕ} {T : Type} [DecidableEq T]
     (hne : τ.Nonempty) (hdom : isDominant ords τ D) (t : T) (ht : t ∈ τ) :
     ∃ i ∈ D, ordMin ords τ hne i = t := by
   by_contra h
-  push_neg at h
+  push Not at h
   obtain ⟨i₀, hi₀D, hi₀⟩ := hdom t
   have hne_eq := h i₀ hi₀D
   have h1 := ordMin_le ords τ hne i₀ t ht
@@ -1410,7 +1410,7 @@ lemma case2_witness_k1_tau {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     ∀ z ∈ τ, ¬ (ords k₁).lt z y := by
   intro z hz hzy
   apply hk₁_not
-  letI := ords k₁
+  let := ords k₁
   exact lt_of_le_of_lt (@Finset.min'_le T _ τ z hz) hzy
 
 lemma case2_witness_k1_x {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
@@ -1423,7 +1423,7 @@ lemma case2_witness_k1_x {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     ¬ (ords k₁).lt x y := by
   intro hxy
   apply hk₁_not
-  letI := ords k₁
+  let := ords k₁
   exact lt_trans hk₁_lt_x hxy
 
 lemma case2_witness_k1 {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
@@ -1460,7 +1460,7 @@ lemma isDominant_insert_of_max_Mi {n : ℕ} {T : Type} [Fintype T] [DecidableEq 
     have hnotall : ¬ ∀ k ∈ D.erase i, (ords k).lt (ordMin ords τ hnonempty k) y := by
       intro hall
       exact hx_max y hall hcase
-    push_neg at hnotall
+    push Not at hnotall
     obtain ⟨k₁, hk₁, hk₁_not⟩ := hnotall
     have hk₁_not' : ¬ (ords k₁).lt (ordMin ords τ hnonempty k₁) y := by
       rwa [@not_lt T (ords k₁)]
@@ -1594,7 +1594,7 @@ lemma scarf_neighbor_from_collision_index {n : ℕ} {T : Type} [Fintype T] [None
     have hadj := scarfAdjRel_insert τ D hdoor mi hmi_not_mem
     exact ⟨(insert mi τ, D), hscarf, hadj, .inr ⟨mi, hmi_not_mem, rfl, rfl, hmi_in_Mi, hmi_not_lt⟩⟩
   · simp only [inMi] at hMi
-    push_neg at hMi
+    push Not at hMi
     have hMi_empty : ∀ y : T, ∃ k ∈ D.erase i, ¬ (ords k).lt (ordMin ords τ hnonempty k) y := by
       intro y
       obtain ⟨k, hk, hkle⟩ := hMi y
@@ -1676,7 +1676,7 @@ lemma i_mem_pair_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (hqi : isDominant ords τ (D.erase i)) :
     i = a ∨ i = b := by
   by_contra h
-  push_neg at h
+  push Not at h
   obtain ⟨hia, hib⟩ := h
   have ha' : a ∈ D.erase i := Finset.mem_erase.mpr ⟨Ne.symm hia, ha⟩
   have hb' : b ∈ D.erase i := Finset.mem_erase.mpr ⟨Ne.symm hib, hb⟩
@@ -1806,7 +1806,7 @@ lemma ordMin_insert_eq_of_lt {n : ℕ} {T : Type} [DecidableEq T]
   have h := @Finset.min'_insert T (ords k) x τ hne
   have hmr := @min_eq_right T (ords k) _ _ (@le_of_lt T (ords k).toPreorder _ _ hlt)
   convert h.trans hmr using 2
-  ext y; simp [Finset.mem_insert]
+  all_goals first | rfl | (ext y; simp [Finset.mem_insert])
 
 lemma ordMin_conditions_not_outside_ab {n : ℕ} {T : Type} [Fintype T] [DecidableEq T]
     (ords : Fin (n + 1) → LinearOrder T)
@@ -1865,7 +1865,7 @@ lemma ordMin_conditions_index_in_ab {n : ℕ} {T : Type} [Fintype T] [DecidableE
     i ∈ ({a, b} : Finset (Fin (n + 1))) := by
   simp only [Finset.mem_insert, Finset.mem_singleton]
   by_contra h
-  push_neg at h
+  push Not at h
   exact ordMin_conditions_not_outside_ab ords τ D hdoor hnonempty a b ha hb hab hcoll
     i hi h.1 h.2 x hx hdom_ins hx_Mi
 
@@ -2151,7 +2151,7 @@ lemma exists_unique_max {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
     (ords : Fin (n + 1) → LinearOrder T)
     (i₀ : Fin (n + 1)) :
     ∃! x : T, ∀ y : T, ¬ (ords i₀).lt x y := by
-  letI : LinearOrder T := ords i₀
+  let : LinearOrder T := ords i₀
   refine ⟨Finset.max' Finset.univ Finset.univ_nonempty, ?_, ?_⟩
   · intro y
     exact not_lt.mpr (Finset.le_max' _ _ (Finset.mem_univ y))
@@ -2762,11 +2762,11 @@ lemma scarf_degree_one_is_colorful {n : ℕ} {T : Type} [Fintype T] [Nonempty T]
       have := degree_ge_two_of_two_adj G v _ _ hg1 hg2 hdist
       omega
     · -- Subcase B1: c is NOT injective on σ
-      push_neg at hinj
+      push Not at hinj
       have hlt : (σ.image c).card < σ.card := lt_of_le_of_ne (Finset.card_image_le) hinj
       have : ∃ x ∈ σ, ∃ y ∈ σ, x ≠ y ∧ c x = c y := by
         by_contra hall
-        push_neg at hall
+        push Not at hall
         have : Set.InjOn c ↑σ := by
           intro a ha b hb hab
           by_contra hne
@@ -2833,7 +2833,7 @@ lemma scarf_graph_construction (n : ℕ) (T : Type) [Fintype T] [Nonempty T]
   let V := { p : Finset T × Finset (Fin (n + 1)) // IsScarfVtx ords c i₀ p }
   let G : SimpleGraph V := {
     Adj := fun v w ↦ scarfAdjRel v.val w.val
-    symm := fun v w (h : scarfAdjRel v.val w.val) ↦ scarfAdjRel_symm v.val w.val h
+    symm := ⟨fun v w (h : scarfAdjRel v.val w.val) ↦ scarfAdjRel_symm v.val w.val h⟩
     loopless := ⟨fun v (h : scarfAdjRel v.val v.val) ↦ h.1 rfl⟩
   }
   have hDecAdj : DecidableRel G.Adj := by
@@ -3010,7 +3010,7 @@ lemma path_next_not_in_support {V : Type} [Fintype V] [DecidableEq V]
           have hcard : ({p.getVert (i - 1), p.getVert (i + 1), v} : Finset V).card = 3 := by
             rw [Finset.card_insert_of_notMem, Finset.card_pair hv_ne_next.symm]
             simp only [Finset.mem_insert, Finset.mem_singleton]
-            push_neg
+            push Not
             exact ⟨hprev_ne_next, hv_ne_prev.symm⟩
           linarith [Finset.card_le_card hsub]
         have := hdeg w
@@ -3217,9 +3217,9 @@ lemma discrete_simplex_scarf (n : ℕ) (l : ℕ) (hl : 0 < l)
         (x.1 : Fin (n + 1) → ℝ) i < (y.1 : Fin (n + 1) → ℝ) i → (ords i).lt x y) ∧
       -- Order-dominance
       (∀ y : DiscreteSimplex n l, ∃ i ∈ C, ∀ x ∈ σ₀, ¬ (ords i).lt x y) := by
-  haveI : Finite (DiscreteSimplex n l) := discreteSimplex_finite n l hl
-  haveI : Nonempty (DiscreteSimplex n l) := discreteSimplex_nonempty n l hl
-  haveI : Fintype (DiscreteSimplex n l) := Fintype.ofFinite _
+  have : Finite (DiscreteSimplex n l) := discreteSimplex_finite n l hl
+  have : Nonempty (DiscreteSimplex n l) := discreteSimplex_nonempty n l hl
+  have : Fintype (DiscreteSimplex n l) := Fintype.ofFinite _
   obtain ⟨ords, hcompat⟩ := build_coord_compatible_orders n l
   obtain ⟨σ₀, C, hσne, hCne, hcard, hcol, hsurj, hdom⟩ :=
     scarf_on_finite_type n l ords c
@@ -3380,7 +3380,7 @@ lemma construct_dominating_point (n : ℕ) (l : ℕ) (hl : 0 < l)
       simp only [hiC, ite_true, hi0, ite_false, add_zero]
       exact hv_discrete i hiC
     · -- i ∉ C, i = 0
-      subst hi0; simp only [hiC, ite_false, if_true, zero_add]
+      subst hi0; simp only [hiC, ite_false, ite_true, zero_add]
       exact remaining_mass_discrete n l hl C v hv_discrete hv_sum
     · -- i ∉ C, i ≠ 0
       simp only [hiC, ite_false, hi0, add_zero]
@@ -3703,7 +3703,7 @@ lemma exists_convergent_subseq (n : ℕ)
       (φ : ℕ → ℕ), StrictMono φ ∧
       Filter.Tendsto (fun l ↦ (x (φ l) : Fin (n + 1) → ℝ)) Filter.atTop
         (nhds (z : Fin (n + 1) → ℝ)) := by
-  have hcomp : IsCompact (stdSimplex ℝ (Fin (n + 1))) := isCompact_stdSimplex _
+  have hcomp : IsCompact (stdSimplex ℝ (Fin (n + 1))) := isCompact_stdSimplex ℝ _
   have hmem : ∀ m, (x m : Fin (n + 1) → ℝ) ∈ stdSimplex ℝ (Fin (n + 1)) := fun m ↦ (x m).2
   obtain ⟨a, ha, φ, hφ, htend⟩ := hcomp.tendsto_subseq hmem
   exact ⟨⟨a, ha⟩, φ, hφ, htend⟩
@@ -3714,7 +3714,7 @@ lemma exists_const_finset_subseq (n : ℕ) (C : ℕ → Finset (Fin (n + 1))) :
   obtain ⟨C₀, hC₀⟩ := Finite.exists_infinite_fiber C
   -- The preimage {k : ℕ | C k = C₀} is infinite
   let p : ℕ → Prop := fun k ↦ C k = C₀
-  have hp : (setOf p).Infinite := Set.infinite_coe_iff.mp hC₀
+  have hp : (Set.ofPred p).Infinite := Set.infinite_coe_iff.mp hC₀
   -- Use Nat.nth to enumerate it strictly monotonically
   refine ⟨C₀, Nat.nth p, Nat.nth_strictMono hp, fun l ↦ ?_⟩
   exact Nat.nth_mem_of_infinite hp l
@@ -4045,7 +4045,7 @@ lemma eval_map_continuous {E : Type*} [AddCommGroup E] [Module ℝ E]
     [TopologicalSpace E] [IsTopologicalAddGroup E] [ContinuousSMul ℝ E]
     {N : ℕ} (pts : Fin N → E) :
     Continuous (fun w : (stdSimplex ℝ (Fin N)) ↦ ∑ i, (w : Fin N → ℝ) i • pts i) :=
-  continuous_finset_sum _ fun i _ ↦
+  continuous_finsetSum _ fun i _ ↦
     ((continuous_apply i).comp continuous_subtype_val).smul continuous_const
 
 /-! ## Finite covers and partitions of unity -/
@@ -4061,7 +4061,7 @@ lemma finite_cover_of_compact
       K ⊆ ⋃ i : Fin (N + 1), (fun u ↦ pts i + u) '' U := by
   have h_open : ∀ x : E, IsOpen ((fun u ↦ x + u) '' U) := fun x ↦ by
     rw [Set.image_add_left]
-    exact hU_open.preimage (continuous_add_left (-x))
+    exact hU_open.preimage (continuous_const.add continuous_id)
   have h_mem : ∀ x : E, x ∈ (fun u ↦ x + u) '' U :=
     fun x ↦ ⟨0, hU_zero, by simp⟩
   obtain ⟨t, ht_mem, ht_cover⟩ := hK_compact.elim_nhds_subcover

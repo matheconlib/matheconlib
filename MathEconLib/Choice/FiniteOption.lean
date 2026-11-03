@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import Mathlib.Data.Finset.Max
-import Mathlib.Data.Finset.Image
+module
+
+public import Mathlib.Data.Finset.Max
+public import Mathlib.Data.Finset.Image
 
 /-!
 # Best choice from a finite menu with an outside option
@@ -16,6 +18,8 @@ finite: the population of alternatives need not be finite or enumerable.
 This is the common finite selector for the executable classical algorithms.
 Its agreement with preference-induced set choice is stated in `Choice.Induced`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 
@@ -59,27 +63,27 @@ def bestOption (pref : LinearOrder (Option α)) (A : Finset α) : Option α := b
 
 theorem bestOption_mem (pref : LinearOrder (Option α)) (A : Finset α) :
     bestOption pref A ∈ optionMenu A := by
-  letI := pref
+  let := pref
   exact Finset.max'_mem _ _
 
 theorem le_bestOption (pref : LinearOrder (Option α)) (A : Finset α)
     {o : Option α} (ho : o ∈ optionMenu A) :
     pref.le o (bestOption pref A) := by
-  letI := pref
+  let := pref
   exact Finset.le_max' _ _ ho
 
 theorem bestOption_eq_iff (pref : LinearOrder (Option α)) (A : Finset α)
     (o : Option α) :
     bestOption pref A = o ↔
       o ∈ optionMenu A ∧ ∀ p ∈ optionMenu A, pref.le p o := by
-  letI := pref
+  let := pref
   exact Finset.max'_eq_iff _ _ _
 
 /-- The finite selector attains the greatest element under the supplied order. -/
 theorem isGreatest_bestOption (pref : LinearOrder (Option α)) (A : Finset α) :
     letI := pref
     IsGreatest (↑(optionMenu A) : Set (Option α)) (bestOption pref A) := by
-  letI := pref
+  let := pref
   exact ⟨bestOption_mem pref A, fun _ ho => le_bestOption pref A ho⟩
 
 theorem bestOption_mono (pref : LinearOrder (Option α))

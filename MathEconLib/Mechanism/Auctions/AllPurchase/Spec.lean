@@ -2,9 +2,6 @@
 Copyright (c) 2026 Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang
-
-The all-purchase specification is adapted from Auctionlib/Mechanism/AllPurchase.lean,
-introduced in commit 384acbf.
 -/
 module
 
@@ -24,6 +21,9 @@ function `φ` is continuous and strictly decreasing. A positive posted unit pric
 `i` gross expenditure `p * b i` and net payment `(p - φ(B)) * b i` after resale. The bidder's
 transfer is the negative of this net payment. Purchases and resale values are not constrained to be
 nonnegative here.
+
+The all-purchase specification is adapted from Auctionlib/Mechanism/AllPurchase.lean,
+introduced in commit 384acbf.
 
 ## Main definitions
 

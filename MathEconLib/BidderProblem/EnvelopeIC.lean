@@ -73,17 +73,17 @@ theorem hasEnvelopeIC_of_toSingleParameterProblem
 /-- `U` is `1`-Lipschitz on the type interval. -/
 theorem lipschitz [HasEnvelopeIC B] :
     LipschitzOnWith 1 B.U B.typeInterval := by
-  simpa using B.toSingleParameterProblem.lipschitz
+  exact B.toSingleParameterProblem.lipschitz
 
 /-- `q` is monotone on the type interval. -/
 theorem q_monotoneOn [HasEnvelopeIC B] :
     MonotoneOn B.q B.typeInterval := by
-  simpa using B.toSingleParameterProblem.q_monotoneOn
+  exact B.toSingleParameterProblem.q_monotoneOn
 
 /-- `U` has derivative `q` almost everywhere on the type interval. -/
 theorem aeDifferentiable [HasEnvelopeIC B] :
     ∀ᵐ s ∂volume.restrict B.typeInterval, HasDerivAt B.U (B.q s) s := by
-  simpa using B.toSingleParameterProblem.aeDifferentiable
+  exact B.toSingleParameterProblem.aeDifferentiable
 
 /-- Integral representation:
 `U(s) = U(lowestType) + ∫ lowestType..s, q(ψ) dψ`. -/

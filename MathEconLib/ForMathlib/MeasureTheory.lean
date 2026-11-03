@@ -27,7 +27,9 @@ def MeasurableEquiv.piSplitAt {ι : Type*} [DecidableEq ι] (i : ι) (α : ι �
     [∀ i, MeasurableSpace (α i)] :
     ((i : ι) → α i) ≃ᵐ α i × ((j : {j : ι // j ≠ i}) → α j) where
   toEquiv := .piSplitAt i α
-  measurable_toFun := by fun_prop
+  measurable_toFun := by
+    dsimp [Equiv.piSplitAt]
+    fun_prop
   measurable_invFun := measurable_pi_iff.2 fun i ↦ by
     dsimp [Equiv.piSplitAt]
     split_ifs with h
@@ -42,12 +44,6 @@ lemma MeasurableEquiv.piSplitAt_eq_piCongrLeft_trans_piOptionEquivProd
     ((piCongrLeft _ (Equiv.optionSubtypeNe i)).symm.trans <|
       (piOptionEquivProd _).trans prodComm) := by
   ext <;> rfl
-
-@[simp]
-lemma MeasurableEquiv.trans_symm {α β γ : Type*}
-    [MeasurableSpace α] [MeasurableSpace β] [MeasurableSpace γ]
-    (e : α ≃ᵐ β) (e' : β ≃ᵐ γ) : (e.trans e').symm = e'.symm.trans e.symm :=
-  rfl
 
 @[simp]
 lemma MeasurableEquiv.map_trans {α β γ : Type*}
@@ -75,10 +71,10 @@ lemma MeasureTheory.Measure.pi_map_piSplitAt
     (μ : (i : ι) → Measure (α i)) [∀ i, SigmaFinite (μ i)] :
     ((μ i).prod (Measure.pi fun i ↦ μ i.1)).map
       (MeasurableEquiv.piSplitAt i α).symm = Measure.pi μ := by
-  simp_rw [MeasurableEquiv.piSplitAt_eq_piCongrLeft_trans_piOptionEquivProd,
-    MeasurableEquiv.trans_symm, MeasurableEquiv.symm_symm, MeasurableEquiv.map_trans]
-  simp only [ne_eq, Equiv.optionSubtypeNe_apply, Option.casesOn'_some,
-    Option.casesOn'_none, MeasurableEquiv.prodComm_symm, MeasurableEquiv.prodComm_prod]
+  rw [MeasurableEquiv.piSplitAt_eq_piCongrLeft_trans_piOptionEquivProd]
+  erw [MeasurableEquiv.trans_symm, MeasurableEquiv.symm_symm, MeasurableEquiv.trans_symm,
+    MeasurableEquiv.map_trans, MeasurableEquiv.map_trans, MeasurableEquiv.prodComm_symm,
+    MeasurableEquiv.prodComm_prod (μ := μ i) (ν := Measure.pi fun j : {j // j ≠ i} ↦ μ j)]
   refine .trans (congr_arg _ ?_) <| Measure.pi_map_piCongrLeft _ _
   exact Measure.pi_map_piOptionEquivProd fun b ↦ μ ((Equiv.optionSubtypeNe i) b)
 

@@ -3,14 +3,8 @@ name: Lean Action CI
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "website/**"
-      - ".github/workflows/deploy_website.yaml"
   pull_request:
     branches: [main]
-    paths-ignore:
-      - "website/**"
-      - ".github/workflows/deploy_website.yaml"
   workflow_dispatch:
 
 permissions:
@@ -78,6 +72,19 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "Run mk_all: update imports"
           git push
+      - name: Test proof integrity checker
+        run: python3 scripts/tests/test_proof_integrity.py
+      - name: Check project proof integrity
+        id: proof_integrity
+        run: python3 scripts/check-proof-integrity.py --report "$RUNNER_TEMP/proof-integrity/report.json"
+      - name: Save proof integrity report
+        if: always() && !cancelled() && steps.proof_integrity.outcome != '' && steps.proof_integrity.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-integrity
+          path: ${{ runner.temp }}/proof-integrity/report.json
+          if-no-files-found: error
+          retention-days: 90
       # Record after the convenience commit so counts follow the verified code
       # even when CI has advanced the PR head by committing regenerated imports.
       - name: Record library warning counts

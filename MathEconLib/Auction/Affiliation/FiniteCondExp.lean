@@ -135,7 +135,7 @@ theorem sum_mul_sum_le_of_affiliated {n : ℕ}
           mem_coe.1 (hsub.supClosed (mem_coe.2 ha) (mem_coe.2 hb))
         have hinfS : a ⊓ b ∈ S :=
           mem_coe.1 (hsub.infClosed (mem_coe.2 ha) (mem_coe.2 hb))
-        simp only [hF, hGF, if_pos ha, if_pos hb, if_pos hsupS, if_pos hinfS]
+        simp only [hF, hGF, ite_eq_left ha, ite_eq_left hb, ite_eq_left hsupS, ite_eq_left hinfS]
         have hg_le : g a ≤ g (a ⊔ b) := hg le_sup_left
         have hf_le : f a * f b ≤ f (a ⊔ b) * f (a ⊓ b) := hf a b
         calc
@@ -146,12 +146,12 @@ theorem sum_mul_sum_le_of_affiliated {n : ℕ}
           _ = f (a ⊓ b) * (g (a ⊔ b) * f (a ⊔ b)) := by ring
       · have hFb : F b = 0 := by
           simp only [hF]
-          exact if_neg hb
+          exact ite_eq_right hb
         rw [hFb, mul_zero]
         exact mul_nonneg (hF_nonneg _) (hGF_nonneg _)
     · have hGFa : GF a = 0 := by
         simp only [hGF]
-        exact if_neg ha
+        exact ite_eq_right ha
       rw [hGFa, zero_mul]
       exact mul_nonneg (hF_nonneg _) (hGF_nonneg _)
   -- Apply Ahlswede–Daykin to the two finite sets, using the global
@@ -179,19 +179,19 @@ theorem sum_mul_sum_le_of_affiliated {n : ℕ}
   have hsumA_GF : ∑ x ∈ A, GF x = ∑ x ∈ A, g x * f x :=
     sum_congr rfl fun x hx => by
       simp only [hGF]
-      exact if_pos (hAS hx)
+      exact ite_eq_left (hAS hx)
   have hsumB_F : ∑ x ∈ B, F x = ∑ x ∈ B, f x :=
     sum_congr rfl fun x hx => by
       simp only [hF]
-      exact if_pos (hBS hx)
+      exact ite_eq_left (hBS hx)
   have hsumA_F : ∑ x ∈ A, F x = ∑ x ∈ A, f x :=
     sum_congr rfl fun x hx => by
       simp only [hF]
-      exact if_pos (hAS hx)
+      exact ite_eq_left (hAS hx)
   have hsumB_GF : ∑ x ∈ B, GF x = ∑ x ∈ B, g x * f x :=
     sum_congr rfl fun x hx => by
       simp only [hGF]
-      exact if_pos (hBS hx)
+      exact ite_eq_left (hBS hx)
   calc
     (∑ x ∈ A, g x * f x) * ∑ x ∈ B, f x =
         (∑ x ∈ A, GF x) * ∑ x ∈ B, F x := by

@@ -113,11 +113,11 @@ lemma pure_pmf (a b : α) : (FinDist.pure a).pmf b = if a = b then 1 else 0 := r
 
 /-- A point mass assigns probability one to its own outcome. -/
 lemma pure_pmf_self (a : α) : (FinDist.pure a).pmf a = 1 := by
-  rw [pure_pmf, if_pos rfl]
+  rw [pure_pmf, ite_eq_left rfl]
 
 /-- A point mass assigns probability zero to every other outcome. -/
 lemma pure_pmf_of_ne {a b : α} (h : a ≠ b) : (FinDist.pure a).pmf b = 0 := by
-  rw [pure_pmf, if_neg h]
+  rw [pure_pmf, ite_eq_right h]
 
 /-- A distribution assigning probability one to an outcome is the point mass at that outcome. -/
 lemma eq_pure_of_pmf_eq_one {d : FinDist α} {a : α} (h : d.pmf a = 1) :
@@ -174,7 +174,7 @@ lemma eq_pure_pair_of_disjoint_fin_two {d₁ d₂ : FinDist (Fin 2)}
 /-- The support of a point mass is the singleton at that outcome. -/
 lemma support_pure (a : α) : (FinDist.pure a).support = {a} := by
   ext b
-  simp only [support, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_singleton, pure_pmf]
+  rw [support, Finset.mem_filter, pure_pmf]
   split_ifs with hab <;> simp [hab, eq_comm]
 
 end Pure
@@ -213,7 +213,9 @@ lemma support_mixture [DecidableEq α] (t : unitInterval) (d₁ d₂ : FinDist �
     (h₀ : (0 : ℝ) < (t : ℝ)) (h₁ : (t : ℝ) < 1) :
     (FinDist.mixture t d₁ d₂).support = d₁.support ∪ d₂.support := by
   ext a
-  simp only [support, mixture_pmf, Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union]
+  rw [support, support, support, Finset.mem_union, Finset.mem_filter, Finset.mem_filter,
+    Finset.mem_filter, mixture_pmf]
+  simp only [Finset.mem_univ, true_and]
   constructor
   · intro h
     by_contra hcon

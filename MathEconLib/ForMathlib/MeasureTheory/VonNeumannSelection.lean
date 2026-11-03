@@ -55,8 +55,8 @@ theorem MeasurableSet.exists_measurable_selection_ae
     {R : Set (X × A)} (μ : Measure X) [IsFiniteMeasure μ]
     (hR : MeasurableSet R) (hsec : ∀ x, (Prod.mk x ⁻¹' R).Nonempty) :
     ∃ σ : X → A, Measurable σ ∧ ∀ᵐ x ∂μ, (x, σ x) ∈ R := by
-  letI := upgradeStandardBorel X
-  letI := upgradeStandardBorel A
+  let := upgradeStandardBorel X
+  let := upgradeStandardBorel A
   obtain ⟨σ₀, hσ₀_graph, hσ₀_meas⟩ := MeasurableSet.exists_uniformization hR hsec
   have hσ₀_nullMeasurable : NullMeasurable σ₀ μ :=
     nullMeasurable_of_measurable_generateFrom_analyticSet μ hσ₀_meas
@@ -79,10 +79,10 @@ theorem exists_measurable_improving_selection
     measurableSet_lt (hg.comp measurable_fst) hf
   -- The improving set `S` is the projection of a Borel set, hence analytic and null-measurable.
   have hS_null : NullMeasurableSet {x | ∃ a, g x < f x a} μ := by
-    letI := upgradeStandardBorel X
+    let := upgradeStandardBorel X
     have hS_eq : {x | ∃ a, g x < f x a} = Prod.fst '' {p : X × A | g p.1 < f p.1 p.2} := by
       ext x
-      simp only [Set.mem_setOf_eq, Set.mem_image, Prod.exists]
+      simp only [Set.mem_ofPred_eq, Set.mem_image, Prod.exists]
       exact ⟨fun ⟨a, ha⟩ => ⟨x, a, ha, rfl⟩, fun ⟨x', a, ha, hx⟩ => ⟨a, hx ▸ ha⟩⟩
     rw [hS_eq]
     exact (hR_meas.analyticSet_image measurable_fst).nullMeasurableSet μ
@@ -116,7 +116,7 @@ theorem exists_measurable_improving_selection
       μ {x | (x, σ x) ∉ ({p : X × A | g p.1 < f p.1 p.2} ∪ S₀ᶜ ×ˢ (Set.univ : Set A))} = 0 :=
     ae_iff.mp hσ_graph
   refine hS₀_pos.trans_le ?_
-  conv_lhs => rw [← measure_diff_null hbad_null]
+  conv_lhs => rw [← measure_sdiff_null hbad_null]
   refine measure_mono fun x hx => ?_
   exact hsub x hx.1 (not_not.mp hx.2)
 

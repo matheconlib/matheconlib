@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import Mathlib.Order.Monotone.Basic
-import Mathlib.Data.Set.Card
+module
+
+public import Mathlib.Order.Monotone.Basic
+public import Mathlib.Data.Set.Card
 
 /-!
 # Choice functions
@@ -33,6 +35,8 @@ DOI 10.1016/bs.hesmat.2025.10.005, §2.1.1, p. 412. The chapter studies finite
 contract sets; the definition here allows arbitrary types of alternatives.
 -/
 
+@[expose] public section
+
 namespace MathEconLib.Choice
 
 universe u
@@ -51,7 +55,7 @@ namespace ChoiceFunction
 
 instance : FunLike (ChoiceFunction α) (Set α) (Set α) where
   coe := toFun
-  coe_injective' := by
+  coe_injective := by
     rintro ⟨f, _⟩ ⟨g, _⟩ h
     simpa using h
 
@@ -83,7 +87,7 @@ lemma mem_rejected {Y : Set α} {x : α} :
   Iff.rfl
 
 lemma choose_union_rejected (Y : Set α) : C Y ∪ C.rejected Y = Y :=
-  Set.union_diff_cancel (C.choose_subset Y)
+  Set.union_sdiff_cancel (C.choose_subset Y)
 
 end ChoiceFunction
 

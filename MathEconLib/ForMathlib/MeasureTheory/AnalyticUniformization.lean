@@ -72,7 +72,7 @@ lemma listCylinder_append_singleton (t : List ℕ) (m : ℕ) :
     listCylinder (t ++ [m]) = listCylinder t ∩ {β | β t.length = m} := by
   ext β
   simp only [mem_listCylinder, List.length_append, List.length_singleton, mem_inter_iff,
-    mem_setOf_eq]
+    mem_ofPred_eq]
   constructor
   · intro h
     refine ⟨fun k hk => ?_, ?_⟩
@@ -163,7 +163,7 @@ lemma nonempty_inter_listCylinder_leftmostPrefix (hne : K.Nonempty) (n : ℕ) :
     obtain ⟨β, hβK, hβcyl⟩ := ih
     have hβS : β t.length ∈ S :=
       ⟨β, hβK, by rw [listCylinder_append_singleton]; exact ⟨hβcyl, rfl⟩⟩
-    simpa [leftmostPrefix, ← ht, ← hS] using Nat.sInf_mem ⟨β t.length, hβS⟩
+    simpa [leftmostPrefix, ← ht, hS] using Nat.sInf_mem ⟨β t.length, hβS⟩
 
 /-- The `(n + 1)`-st prefix is `t ++ [m]` exactly when the `n`-th prefix is `t`, the set meets the
 `t ++ [m]` cylinder, and it misses the `t ++ [j]` cylinders for all `j < m`. -/
@@ -191,7 +191,7 @@ lemma leftmostPrefix_succ_eq_append_iff (hne : K.Nonempty) {n : ℕ} {t : List �
       exact hsInf_mem
     · intro j hj
       have hjnot : j ∉ S' := Nat.notMem_of_lt_sInf (by rw [hsInf_eq]; exact hj)
-      rw [hS', mem_setOf_eq, Set.not_nonempty_iff_eq_empty] at hjnot
+      rw [hS', mem_ofPred_eq, Set.not_nonempty_iff_eq_empty] at hjnot
       exact hjnot
   · rintro ⟨ht'eq, hmem, hbelow⟩
     subst ht'eq
@@ -202,7 +202,7 @@ lemma leftmostPrefix_succ_eq_append_iff (hne : K.Nonempty) {n : ℕ} {t : List �
       push Not at hlt
       have hbad : K ∩ listCylinder (t' ++ [sInf S']) = ∅ := hbelow _ hlt
       have hgood : sInf S' ∈ S' := Nat.sInf_mem hS'ne
-      rw [hS', mem_setOf_eq, hbad] at hgood
+      rw [hS', mem_ofPred_eq, hbad] at hgood
       exact hgood.ne_empty rfl
     rw [hsInf_eq]
 
@@ -273,13 +273,13 @@ theorem AnalyticSet.exists_uniformization
       refine MeasurableSpace.measurableSet_generateFrom ?_
       have hD_eq_image : D t = π '' listCylinder t := by
         ext x
-        simp only [hDdef, Set.mem_setOf_eq, Set.mem_image]
+        simp only [hDdef, Set.mem_ofPred_eq, Set.mem_image]
         constructor
         · rintro ⟨β, hβK, hβcyl⟩
           exact ⟨β, hβcyl, hβK⟩
         · rintro ⟨β, hβcyl, hβx⟩
           exact ⟨β, hβx, hβcyl⟩
-      rw [Set.mem_setOf_eq, hD_eq_image]
+      rw [Set.mem_ofPred_eq, hD_eq_image]
       exact ((isClosed_listCylinder t).analyticSet).image_of_continuous hπ_cont
     have hE_meas : ∀ (n : ℕ) (t : List ℕ),
         MeasurableSet[𝔄] {x | leftmostPrefix (K x) n = t} := by
@@ -295,7 +295,7 @@ theorem AnalyticSet.exists_uniformization
           exact MeasurableSet.univ
         · have hempty : {x : X | leftmostPrefix (K x) 0 = t} = ∅ := by
             ext x
-            simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+            simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false]
             intro h
             rw [show leftmostPrefix (K x) 0 = [] from rfl] at h
             exact ht h.symm
@@ -317,8 +317,8 @@ theorem AnalyticSet.exists_uniformization
               {x | leftmostPrefix (K x) n = t'} ∩ D (t' ++ [m]) ∩
                 ⋂ (j : ℕ) (_ : j < m), (D (t' ++ [j]))ᶜ := by
             ext x
-            rw [Set.mem_setOf_eq, leftmostPrefix_succ_eq_append_iff (hK_ne x) ht']
-            simp only [Set.mem_inter_iff, Set.mem_setOf_eq, Set.mem_iInter, Set.mem_compl_iff,
+            rw [Set.mem_ofPred_eq, leftmostPrefix_succ_eq_append_iff (hK_ne x) ht']
+            simp only [Set.mem_inter_iff, Set.mem_ofPred_eq, Set.mem_iInter, Set.mem_compl_iff,
               hDdef, and_assoc]
             refine and_congr_right fun _ => and_congr_right fun _ => ?_
             constructor
@@ -332,7 +332,7 @@ theorem AnalyticSet.exists_uniformization
             (MeasurableSet.iInter fun j => MeasurableSet.iInter fun _ => (hD_meas _).compl)
         · have hempty : {x : X | leftmostPrefix (K x) (n + 1) = t} = ∅ := by
             ext x
-            simp only [Set.mem_setOf_eq, Set.mem_empty_iff_false, iff_false]
+            simp only [Set.mem_ofPred_eq, Set.mem_empty_iff_false, iff_false]
             intro h
             exact hlen (h ▸ leftmostPrefix_length (n + 1))
           rw [hempty]
@@ -343,7 +343,7 @@ theorem AnalyticSet.exists_uniformization
       have hunion : (fun x => L x n) ⁻¹' {m} =
           ⋃ (t : List ℕ) (_ : t.getD n 0 = m), {x | leftmostPrefix (K x) (n + 1) = t} := by
         ext x
-        simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_iUnion, Set.mem_setOf_eq]
+        simp only [Set.mem_preimage, Set.mem_singleton_iff, Set.mem_iUnion, Set.mem_ofPred_eq]
         constructor
         · intro h
           exact ⟨leftmostPrefix (K x) (n + 1), h, rfl⟩

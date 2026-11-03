@@ -64,7 +64,7 @@ theorem virtualSurplusWeight_eq_density_mul_virtualValue
 /-- For an atomless distribution, virtual-surplus weight has the familiar CDF
 form `value * density value - (1 - F(value))`. -/
 theorem virtualSurplusWeight_eq_sub_one_sub_cdf
-    (D : ValueDistribution) [NoAtoms (D : Measure ℝ)]
+    (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)]
     (density : ℝ → ℝ) (value : ℝ) :
     D.virtualSurplusWeight density value =
       value * density value - (1 - cdf (D : Measure ℝ) value) := by

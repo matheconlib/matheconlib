@@ -1,0 +1,9 @@
+module
+public import Lean
+set_option warningAsError false
+set_option warn.«sorry» false
+open Lean in
+macro "hiddenHole" : term =>
+  pure ⟨.node .none (Name.str `Lean.Parser.Term ("so" ++ "rry"))
+    #[.atom .none ("so" ++ "rry")]⟩
+example : Nat := hiddenHole

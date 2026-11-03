@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Jujian Zhang, Ruiz Chen, Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Jujian Zhang, Ruiz Chen, Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Jujian Zhang, Ruiz Chen, Scott Duke Kominers
+Authors: Jujian Zhang, Ruiz Chen, Scott Duke Kominers, Bo Cowgill
 -/
 module
 
@@ -13,8 +13,12 @@ public import MathEconLib.Auction.SymmetricIPV
 Under BIC, zero lowest-type utility, and strict-highest-bid allocation in a symmetric IPV auction,
 the expected total revenue equals `𝔼[S₂]` (expected second-highest type).
 
-More generally, two BIC mechanisms with zero lowest-type utility and the same `q` yield the same
-expected revenue, without any efficiency assumption.
+More generally, two symmetric-IPV BIC mechanisms with zero lowest-type utility and the same `q`
+yield the same expected revenue, without any efficiency assumption.
+
+Revenue means realized receipts under the joint type law. Relating it to marginal interim payments
+requires measurable payment rules and integrable realized payments; BIC and bounded allocations
+alone do not supply these conditions.
 -/
 
 namespace MathEconLib
@@ -35,7 +39,7 @@ variable (A : Auction Ω n) [A.IsSymmetricIPV]
 payment is uniquely determined by the common CDF. -/
 lemma payment_formula_strictHighestBid
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility]
+    [IPV.BIC A] [A.HasZeroLowestTypeUtility]
     (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) :
     A.p i s = s * A.commonCDF s ^ (n - 1) -
       ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1) := by
@@ -46,7 +50,8 @@ lemma payment_formula_strictHighestBid
 /-- **Revenue Equivalence Theorem.**
 
 Two BIC symmetric IPV auctions with zero lowest-type utility, the same `q`, same type bounds, and
-identically distributed types yield the same expected total revenue. -/
+identically distributed types yield the same expected total revenue, provided the payment rules
+are measurable and the realized truthful payments are integrable. -/
 theorem revenue_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.IsSymmetricIPV]
@@ -56,15 +61,16 @@ theorem revenue_equivalence
     (hmin : A.lowestType = A₂.lowestType)
     (hmax : A.highestType = A₂.highestType)
     (ident : ∀ i, IdentDistrib (A.θ i) (A₂.θ i) ℙ ℙ)
-    [A.BIC] [A₂.BIC]
+    [IPV.BIC A] [IPV.BIC A₂]
     [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
     (p_meas : ∀ i, Measurable (A₂.p i))
-    (hint₁ : ∀ i, Integrable (fun ω => A.p i (A.θ i ω)) ℙ)
-    (hint₂ : ∀ i, Integrable (fun ω => A₂.p i (A₂.θ i ω)) ℙ) :
+    (payment_meas₁ : ∀ i, Measurable (A.rules.payment i))
+    (payment_meas₂ : ∀ i, Measurable (A₂.rules.payment i))
+    (hint₁ : ∀ i, Integrable (fun ω => A.rules.payment i (A.θ · ω)) ℙ)
+    (hint₂ : ∀ i, Integrable (fun ω => A₂.rules.payment i (A₂.θ · ω)) ℙ) :
     A.expectedRevenue = A₂.expectedRevenue := by
-  simp only [expectedRevenue]
-  rw [integral_finset_sum _ fun i _ => hint₁ i,
-      integral_finset_sum _ fun i _ => hint₂ i]
+  rw [A.expectedRevenue_eq_sum_integral_p payment_meas₁ hint₁,
+    A₂.expectedRevenue_eq_sum_integral_p payment_meas₂ hint₂]
   congr 1
   ext i
   have hθmin : A.θmin i = A₂.θmin i := by simp [hmin]
@@ -81,13 +87,16 @@ theorem revenue_equivalence
     _ = ∫ ω, A₂.p i (A₂.θ i ω) ∂ℙ :=
         ((ident i).comp (p_meas i)).integral_eq
 
-/-- Under strict-highest-bid allocation, BIC, and zero lowest-type utility, the expected total
-revenue equals `𝔼[S₂]`, the expected second-highest order statistic. -/
+/-- Under strict-highest-bid allocation, BIC, and zero lowest-type utility, expected realized
+revenue equals `𝔼[S₂]`, provided payment rules are measurable and truthful payments are
+integrable. -/
 lemma total_revenue
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility] :
+    [IPV.BIC A] [A.HasZeroLowestTypeUtility]
+    (payment_meas : ∀ i, Measurable (A.rules.payment i))
+    (payment_integrable : ∀ i, Integrable (fun ω => A.rules.payment i (A.θ · ω)) ℙ) :
     A.expectedRevenue = 𝔼[A.S₂] := by
-  simp only [expectedRevenue]
+  rw [A.expectedRevenue_eq_sum_integral_p payment_meas payment_integrable]
   let φ : ℝ → ℝ :=
     fun s => s * A.commonCDF s ^ (n - 1) -
       ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1)
@@ -107,55 +116,6 @@ lemma total_revenue
     have hadd := (intervalIntegral.integral_add_adjacent_intervals hii1 hii2).symm
     linarith [intervalIntegral.integral_nonneg (μ := volume) hst
       (fun ψ _ => pow_nonneg (A.commonCDF_nonneg ψ) (n - 1))]
-  rw [integral_finset_sum Finset.univ fun i _ => by
-    refine Integrable.mono'
-      (integrable_const
-        (max |A.lowestType| |A.highestType| + (A.highestType - A.lowestType)))
-      ((hφ_meas.comp (A.θ_measurable i)).aestronglyMeasurable) ?_
-    filter_upwards with ω
-    have hs := HasBoundedTypes.θ_in (A := A) i ω
-    simp only [A.θmin_eq_lowestType, A.θmax_eq_highestType] at hs
-    obtain ⟨hlo, hhi⟩ := hs
-    have hpow_nn t : 0 ≤ A.commonCDF t ^ (n - 1) :=
-      pow_nonneg (A.commonCDF_nonneg t) _
-    have hpow_le1 t : A.commonCDF t ^ (n - 1) ≤ 1 :=
-      pow_le_one₀ (A.commonCDF_nonneg t) (A.commonCDF_le_one t)
-    have hint_nn : 0 ≤ ∫ ψ in A.lowestType..A.θ i ω,
-        A.commonCDF ψ ^ (n - 1) :=
-      intervalIntegral.integral_nonneg hlo fun ψ _ => hpow_nn ψ
-    have hpow_mono' : Monotone (fun ψ => A.commonCDF ψ ^ (n - 1)) :=
-      fun a b hab => pow_le_pow_left₀ (A.commonCDF_nonneg a) (A.commonCDF_mono hab) _
-    have hint_le :
-        ∫ ψ in A.lowestType..A.θ i ω, A.commonCDF ψ ^ (n - 1) ≤
-          A.highestType - A.lowestType := by
-      calc ∫ ψ in A.lowestType..A.θ i ω, A.commonCDF ψ ^ (n - 1)
-          _ ≤ ∫ _ in A.lowestType..A.θ i ω, (1 : ℝ) :=
-            intervalIntegral.integral_mono_on hlo
-              hpow_mono'.intervalIntegrable intervalIntegrable_const
-              (fun ψ _ => hpow_le1 ψ)
-          _ = A.θ i ω - A.lowestType := by simp
-          _ ≤ A.highestType - A.lowestType := by linarith
-    have hmul_le :
-        |A.θ i ω * A.commonCDF (A.θ i ω) ^ (n - 1)| ≤ |A.θ i ω| := by
-      rw [abs_mul, abs_of_nonneg (hpow_nn _)]
-      exact mul_le_of_le_one_right (abs_nonneg _) (hpow_le1 _)
-    have habs_le :
-        |A.θ i ω| ≤ max |A.lowestType| |A.highestType| := by
-      by_cases hnn : 0 ≤ A.θ i ω
-      · calc |A.θ i ω| = A.θ i ω := abs_of_nonneg hnn
-          _ ≤ A.highestType := hhi
-          _ ≤ |A.highestType| := le_abs_self _
-          _ ≤ max |A.lowestType| |A.highestType| := le_max_right _ _
-      · push_neg at hnn
-        calc |A.θ i ω| = -(A.θ i ω) := abs_of_neg hnn
-          _ ≤ -(A.lowestType) := by linarith
-          _ ≤ |-(A.lowestType)| := le_abs_self _
-          _ = |A.lowestType| := abs_neg _
-          _ ≤ max |A.lowestType| |A.highestType| := le_max_left _ _
-    simp only [φ, Real.norm_eq_abs]
-    rw [abs_le]
-    exact ⟨by linarith [neg_abs_le (A.θ i ω * A.commonCDF (A.θ i ω) ^ (n - 1))],
-           by linarith [le_abs_self (A.θ i ω * A.commonCDF (A.θ i ω) ^ (n - 1))]⟩]
   have hsym i : ∫ ω, φ (A.θ i ω) ∂ℙ = ∫ ω, φ (A.θ 0 ω) ∂ℙ := by
     rw [← integral_map (A.θ_measurable i).aemeasurable
           hφ_meas.aestronglyMeasurable,

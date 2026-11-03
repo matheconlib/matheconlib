@@ -216,7 +216,7 @@ refinement remain public: they relate different mathematical objects.
 
 ## Verification
 
-With Lean 4.28.0 and the locked dependencies available, run the repository's
+With Lean 4.35.0 and the locked dependencies available, run the repository's
 normal import checks and `lake build`. The default targets already include the
 production root, API pins and test root. The namespace guard therefore covers
 the new production modules; both counterexample modules and the new client

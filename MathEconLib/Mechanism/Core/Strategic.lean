@@ -69,10 +69,10 @@ weakly dominant in the utility game at every true type profile. -/
 lemma IsDSIC.isDominant (h : IsDSIC E M) (θ : Profile T) (i : I) :
     StrategicGame.Strategy.IsDominant (G := E.utilityGame M θ) (θ i) := by
   intro s
-  rw [StrategicGame.Strategy.le_iff']
-  intro r
-  simpa only [QuasilinearEnvironment.utilityGame_payoff, Function.update_idem] using
-    h i θ (Function.update r i s)
+  refine StrategicGame.Strategy.le_iff'.2 fun r ↦ ?_
+  have := h i θ (Function.update r i s)
+  erw [Function.update_idem] at this
+  exact this
 
 /-- A direct mechanism is dominant-strategy incentive compatible when every agent's truthful report
 is weakly dominant in the utility game at every true type profile. -/

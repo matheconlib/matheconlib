@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import Mathlib.Algebra.Order.BigOperators.Group.Finset
-import Mathlib.Data.Set.Card
+module
+
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+public import Mathlib.Data.Set.Card
 
 /-!
 # Cardinalities of finite fibers
@@ -13,6 +15,8 @@ A finite set is partitioned by the fibers of any map. Only the set being
 counted is required to be finite; neither the domain nor the codomain needs
 a finiteness instance.
 -/
+
+@[expose] public section
 
 open scoped BigOperators
 
