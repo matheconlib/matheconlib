@@ -19,11 +19,11 @@ Higher elements in that supplied order have priority. All constructors preserve 
 
 @[expose] public section
 
-namespace MathEconLib.Matching.CumulativeOffer.Process
+namespace MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess
 
 open MathEconLib.Choice MathEconLib.Preferences
 
-variable {B S X : Type*} (P : Process B S X)
+variable {B S X : Type*} (P : CumulativeOfferProcess B S X)
 
 /-- A deterministic history-dependent batch rule. -/
 abbrev Policy (X : Type*) := List (Set X) → Set X
@@ -210,5 +210,5 @@ theorem fixedOrder_fixedTieBreaking [Finite X] (priority : LinearOrder X) :
   have hxe : x = z := Set.mem_singleton_iff.mp hx
   exact hxe.symm ▸ hbest y hy
 
-end MathEconLib.Matching.CumulativeOffer.Process
+end MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess
 

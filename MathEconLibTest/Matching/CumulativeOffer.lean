@@ -16,7 +16,7 @@ contract 1. Buyer false accepts contracts 0 and 1 only together; buyer true acce
 contract 2. Sequential offers 0, 2, 1 recall contract 0, leaving infeasible held contracts.
 Simultaneous offers 0 and 1 terminate immediately with feasible held contracts.
 
-This checks that the raw process allows recall, that feasibility is not built in,
+This checks that the raw cumulative offer process allows recall, that feasibility is not built in,
 and that batch independence needs economic hypotheses. It uses only kernel-checked
 finite decisions, not a native decision oracle.
 -/
@@ -27,7 +27,7 @@ namespace MathEconLibTest.Matching.CumulativeOffer
 
 open MathEconLib.Choice MathEconLib.Preferences
 open MathEconLib.Matching.CumulativeOffer
-open Process
+open CumulativeOfferProcess
 
 def buyerChoice (b : Bool) : ChoiceFunction (Fin 3) where
   toFun Y := {x | x ∈ Y ∧ if b then x = 2
@@ -40,7 +40,7 @@ def buyerChoice (b : Bool) : ChoiceFunction (Fin 3) where
 
 def proposingSeller (x : Fin 3) : Bool := x == 1
 
-def market : Process Bool Bool (Fin 3) where
+def market : CumulativeOfferProcess Bool Bool (Fin 3) where
   buyer x := x == 2
   seller := proposingSeller
   choiceB := buyerChoice
@@ -133,7 +133,7 @@ example (priority : LinearOrder (Fin 3)) :
   market.rawOutcome_isOutcome ((market.fixedOrder_valid priority).lift market)
 
 /-- Empty contracts exhaust immediately, with no assumption on buyer choice functions. -/
-example (P : Process Bool Bool Empty) : P.Terminal ∅ := by
+example (P : CumulativeOfferProcess Bool Bool Empty) : P.Terminal ∅ := by
   intro s hs
   obtain ⟨x, _⟩ := hs.2
   exact nomatch x.val
