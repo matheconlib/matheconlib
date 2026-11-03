@@ -66,8 +66,9 @@ theorem held_of_held_of_subset (hsub : ∀ b, (P.choiceB b).Substitutable)
     {A D : Set X} (hAD : A ⊆ D) {x : X}
     (hx : x ∈ P.holdings D) (hxA : x ∈ A) : x ∈ P.holdings A := by
   apply (P.mem_holdings_iff).2
-  exact (hsub (P.buyer x)).mem_of_subset
-    (fun _ hy => ⟨hAD hy.1, hy.2⟩) ((P.mem_holdings_iff).1 hx) ⟨hxA, rfl⟩
+  have hmenus : {y ∈ A | P.buyer y = P.buyer x} ⊆
+      {y ∈ D | P.buyer y = P.buyer x} := fun _ hy => ⟨hAD hy.1, hy.2⟩
+  exact (hsub (P.buyer x)).mem_of_subset hmenus ((P.mem_holdings_iff).1 hx) ⟨hxA, rfl⟩
 
 /-- Rejections persist under expansion of accumulated offers. Neither IRC nor finiteness is used. -/
 theorem rejected_mono (hsub : ∀ b, (P.choiceB b).Substitutable) :
@@ -169,7 +170,7 @@ theorem indRational_of_run (M : Market B S X)
   have hfeas := hr.holdings_injOn P hsub
   refine ⟨?_, ?_⟩
   · intro b
-    rw [M.choiceB_buyerSide (hcons b)]
+    rw [← M.choiceB_buyerSide (hcons b) Z]
     exact P.choice_holdings_eq hcons _ b
   · intro s
     apply Set.Subset.antisymm (M.choiceS_subset_sellerSide s _)
@@ -230,6 +231,5 @@ theorem indRational_ofSellerPreferences_of_run
     · intro y hy
       have he : y = ⟨x, rfl⟩ := Subtype.ext (Set.mem_singleton_iff.mp hy)
       rw [he]
-      exact (pref (seller x)).le_refl _
 
 end MathEconLib.Matching.CumulativeOffer
