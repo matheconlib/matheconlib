@@ -1,5 +1,12 @@
-import MathEconLib.Matching.Contracts.StableOrder
-import MathEconLib.ForMathlib.Data.SetFiber
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.Matching.Contracts.StableOrder
+public import MathEconLib.ForMathlib.Data.SetFiber
 
 /-!
 # Rural hospitals
@@ -27,6 +34,8 @@ a finite contract type and derives IRC from substitutability and finite-menu
 size monotonicity. The conclusion concerns contract counts, not equality of
 partner sets or total quantities represented by those contracts.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

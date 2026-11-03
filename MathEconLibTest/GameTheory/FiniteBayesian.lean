@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2026 Daniel Lyng. All rights reserved.
-Released under license as described in the file LICENSE.
+Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Daniel Lyng
 -/
 module
@@ -88,8 +88,8 @@ example (a : Action true) :
     intro h
     have hv := congrArg Fin.val h
     norm_num [thetaZero] at hv
-  change ¬ 0 < (FinDist.pure thetaZero).marginalD true ⟨1, by decide⟩
-  rw [FinDist.marginalD_pure, if_neg hn]
+  change ¬ 0 < (FinDist.pure thetaZero).marginalD true (⟨1, by decide⟩ : Theta true)
+  erw [FinDist.marginalD_pure, ite_eq_right hn]
   exact lt_irrefl 0
 
 /-- Both players maximize payoff at the only positive-probability type. -/

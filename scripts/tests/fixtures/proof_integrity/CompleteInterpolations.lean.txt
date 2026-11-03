@@ -1,0 +1,12 @@
+module
+public import Init
+set_option warningAsError false
+set_option warn.«sorry» false
+example : String := s! "{(by exact 1 : Nat)}"
+example : String := s! /- nested /- comment -/ -/ "{(by exact 2 : Nat)}"
+example : String := s!
+  "{(by exact 3 : Nat)}"
+example : Nat := dbg_trace "{(by exact 4 : Nat)}"; 0
+example : String := "{(by sorry : Nat)} admit native_decide"
+example : String := r###"sorry " {admit} native_decide"###
+example : True := by trivial

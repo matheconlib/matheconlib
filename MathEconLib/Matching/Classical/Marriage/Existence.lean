@@ -1,5 +1,12 @@
-import MathEconLib.Matching.Classical.Marriage.ToContracts
-import MathEconLib.Matching.Contracts.StableFixedPoints
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.Matching.Classical.Marriage.ToContracts
+public import MathEconLib.Matching.Contracts.StableFixedPoints
 
 /-!
 # Stable matching existence via contracts
@@ -8,6 +15,8 @@ The embedding into contracts carries stable contracts outcomes back to stable
 marriage matchings. The general contracts fixed-point theorem therefore proves
 existence for finite marriage markets.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -19,7 +28,7 @@ namespace MarriageMarket
 
 variable {M : Type u} {W : Type v}
 variable (mkt : MarriageMarket M W)
-variable [Fintype M] [Fintype W]
+variable [Finite M] [Finite W]
 
 /-- Existence of a stable marriage matching. -/
 theorem exists_stableMatching :

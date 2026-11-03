@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
 public import MathEconLib.SingleParameter.EnvelopeIC
@@ -85,8 +90,7 @@ theorem typeDeviationIC_of_monotone_q
         x * P.q x - P.U P.lowestType - ∫ w in P.lowestType..x, P.q w) :
     HasTypeDeviationIC P where
   typeDeviationIC x hx x' hx' := by
-    show x * P.q x' - P.payment (P.strategy x') ≤
-      x * P.q x - P.payment (P.strategy x)
+    rw [payoff_eq, payoff_eq, ← q_eq, ← q_eq]
     have hbounds : P.lowestType ≤ P.highestType := le_trans hx.1 hx.2
     have hlow : P.lowestType ∈ P.typeInterval := ⟨le_refl _, hbounds⟩
     have hintegrable : IntervalIntegrable P.q volume x' x :=
@@ -109,7 +113,7 @@ theorem typeDeviationIC_of_monotone_q
         (fun w hw => hq_mono hx'
           ⟨le_trans hx'.1 hw.1, le_trans hw.2 hx.2⟩ hw.1)
       linarith [hconst, hmono]
-    · push_neg at hle
+    · push Not at hle
       have hle' := le_of_lt hle
       have hconst : ∫ _ in x..x', P.q x' = (x' - x) * P.q x' := by
         rw [intervalIntegral.integral_const, smul_eq_mul]

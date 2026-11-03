@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Daniel Lyng, Ruiz Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Daniel Lyng, Ruiz Chen
+-/
 module
 
 public import MathEconLib.Auction.AllPurchase.LinearScarcity

@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill, Moran Koren. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill, Moran Koren
+-/
 module
 
 import MathEconLib.BidderProblem
@@ -21,6 +26,9 @@ fail to compile as part of the ordinary `lake build`. It belongs to the
 separate `MathEconLibTest` library so compile-time checks are not part of the
 production `MathEconLib` import graph.
 -/
+
+-- This module only contains `example`s, which are never public.
+set_option linter.privateModule false
 
 open MathEconLib
 

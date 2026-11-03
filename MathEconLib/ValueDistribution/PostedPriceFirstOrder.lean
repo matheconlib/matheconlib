@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
 public import MathEconLib.ValueDistribution.PostedPrice
@@ -42,7 +47,7 @@ CDF at every price.
 The unconditional acquisition cost is constant in price and therefore does
 not enter the derivative. -/
 theorem hasDerivAt_sellerProfit_postedPriceProblem
-    (D : ValueDistribution) [NoAtoms (D : Measure ℝ)]
+    (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)]
     (lowestType highestType : ℝ) (density : ℝ → ℝ)
     (continuationValue acquisitionCost price : ℝ)
     (hcdf : HasDerivAt (cdf (D : Measure ℝ)) (density price) price) :
@@ -72,7 +77,7 @@ weight.
 This is a necessary condition. It does not assert that a price satisfying the
 condition is globally or locally optimal. -/
 theorem netVirtualSurplus_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem
-    (D : ValueDistribution) [NoAtoms (D : Measure ℝ)]
+    (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)]
     (lowestType highestType : ℝ) (density : ℝ → ℝ)
     (continuationValue acquisitionCost price : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)
@@ -106,7 +111,7 @@ theorem netVirtualSurplus_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProble
 /-- At an interior locally optimal posted price with nonzero density, virtual
 value equals the seller's continuation value. -/
 theorem virtualValue_eq_continuationValue_of_isLocalMaxOn_sellerProfit_postedPriceProblem
-    (D : ValueDistribution) [NoAtoms (D : Measure ℝ)]
+    (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)]
     (lowestType highestType : ℝ) (density : ℝ → ℝ)
     (continuationValue acquisitionCost price : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)
@@ -132,7 +137,7 @@ theorem virtualValue_eq_continuationValue_of_isLocalMaxOn_sellerProfit_postedPri
 /-- With zero continuation value, an interior locally optimal posted price
 has virtual value zero whenever the density there is nonzero. -/
 theorem virtualValue_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem
-    (D : ValueDistribution) [NoAtoms (D : Measure ℝ)]
+    (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)]
     (lowestType highestType : ℝ) (density : ℝ → ℝ)
     (acquisitionCost price : ℝ)
     (hprice : price ∈ Ioo lowestType highestType)

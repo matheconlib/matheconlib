@@ -1,0 +1,5 @@
+module
+public import Init
+#eval (2 + 2 = 4)
+#eval (⟨1, by decide⟩ : Fin 3)
+example : Fin 3 := ⟨1, by decide⟩

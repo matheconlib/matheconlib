@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng
+-/
 module
 
 public import MathEconLib.Auction.AllPurchase.Basic
@@ -166,7 +171,7 @@ theorem expected_scarcity_linear
     ring
   simp_rw [hφ]
   have hS_int : Integrable (fun ω => ∑ j ∈ univ.erase i, β (A.θ j ω)) ℙ :=
-    integrable_finset_sum _ (fun j _ => hβ_int j)
+    integrable_finsetSum _ (fun j _ => hβ_int j)
   rw [integral_add (integrable_const _) (hS_int.const_mul _),
       integral_const_mul, integral_const, probReal_univ, one_smul]
   rw [A.expected_sum_erase β hβ_meas i hβ_int]
@@ -216,7 +221,7 @@ theorem p_strat_eq_allPurchaseNetCost
       fun ω => congr_fun A.scarcity_is_linear _]
     exact (integrable_const _).sub
       ((integrable_const_add_iff.mpr
-        (integrable_finset_sum _ fun j _ => hβ_int j)).const_mul _)
+        (integrable_finsetSum _ fun j _ => hβ_int j)).const_mul _)
   rw [integral_add (integrable_const _) (hφ_int.const_mul _),
     integral_const, probReal_univ, one_smul, integral_const_mul]
   ring

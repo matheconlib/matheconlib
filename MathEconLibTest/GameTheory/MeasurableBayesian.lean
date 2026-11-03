@@ -1,6 +1,6 @@
 /-
 Copyright (c) 2026 Daniel Lyng. All rights reserved.
-Released under license as described in the file LICENSE.
+Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Daniel Lyng
 -/
 module
@@ -50,7 +50,7 @@ def prior : Measure (Unit → ℝ) := (gaussianReal 0 1).map (fun x _ => x)
 
 /-- The Gaussian type prior has total mass one. -/
 instance : IsProbabilityMeasure prior :=
-  Measure.isProbabilityMeasure_map (measurable_pi_lambda _ fun _ => measurable_id).aemeasurable
+  inferInstanceAs (IsProbabilityMeasure ((gaussianReal 0 1).map fun x (_ : Unit) => x))
 
 /-- A selected version of conditional opponent beliefs for the Gaussian prior. -/
 def beliefs : ConditionalBeliefs prior := canonicalBeliefs prior

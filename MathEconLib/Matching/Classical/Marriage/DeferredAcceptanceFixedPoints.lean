@@ -1,4 +1,11 @@
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
 
 /-!
 # Classical proposal outcomes and contracts fixed points
@@ -16,6 +23,8 @@ two proof routes share elementary proposal invariants. Their agreement is at
 the level of terminal outcomes; their intermediate states and round counts
 need not agree.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -56,9 +65,9 @@ theorem gsMatchingAt_accepts_only_graph (n : ℕ)
   have hm := (mkt.mem_choiceM_insert_graphOf_iff (hIR.1 m) hnewM).mp hS
   have hw := (mkt.mem_choiceW_insert_graphOf_iff (hIR.2 w) hnewW).mp hB
   by_cases hR : (m, w) ∈ mkt.gsRejected n
-  · letI := mkt.prefW w
+  · let := mkt.prefW w
     exact (lt_asymm (mkt.gs_rejected_below_holding n hR)) hw
-  · letI := mkt.prefM m
+  · let := mkt.prefM m
     have hle : some w ≤ mkt.bestM m (mkt.gsRejected n)ᶜ :=
       mkt.le_bestM_of_mem (mkt.some_mem_menuM.mpr hR)
     exact (not_lt_of_ge hle) hm
@@ -102,16 +111,20 @@ optimality is not used in this argument. -/
 theorem stateOf_graphOf_gsMatchingAt_eq_gfp (n : ℕ)
     (hn : IsFixedPt mkt.gsStep (mkt.gsRejected n)) :
     mkt.toContractsMarket.stateOf (mkt.graphOf (mkt.gsMatchingAt (mkt.gsRejected n) hn)) =
-      OrderHom.gfp (mkt.toContractsMarket.deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket) := by
+      OrderHom.gfp
+        (mkt.toContractsMarket.deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket) := by
   have hfixed := mkt.isFixedPt_stateOf_graphOf_gsMatchingAt n hn
-  apply le_antisymm (mkt.toContractsMarket.le_gfp_deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket hfixed)
+  apply le_antisymm (mkt.toContractsMarket.le_gfp_deferredAcceptanceOrderHom
+    mkt.substitutable_toContractsMarket hfixed)
   apply mkt.toContractsMarket.le_of_sellerChosen_outcomeOf
     mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
-    (mkt.toContractsMarket.isFixedPt_gfp_deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket) hfixed
+    (mkt.toContractsMarket.isFixedPt_gfp_deferredAcceptanceOrderHom
+      mkt.substitutable_toContractsMarket) hfixed
   rw [mkt.outcomeOf_stateOf_graphOf_gsMatchingAt n hn]
   change mkt.toContractsMarket.SellerChosen
     (mkt.graphOf (mkt.gsMatchingAt (mkt.gsRejected n) hn))
-    (mkt.toContractsMarket.sellerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket)
+    (mkt.toContractsMarket.sellerOptimal
+      mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket)
   rw [← mkt.graphOf_manOptimalMatching]
   apply mkt.sellerChosen_graphOf_of_individuallyRationalM
     (mkt.individuallyRational_gsMatchingAt (mkt.gsRejected n) hn).1
@@ -123,26 +136,30 @@ theorem stateOf_graphOf_gsMatchingAt_eq_gfp (n : ℕ)
 theorem graphOf_gsMatchingAt_eq_sellerOptimal_via_fixedPoints (n : ℕ)
     (hn : IsFixedPt mkt.gsStep (mkt.gsRejected n)) :
     mkt.graphOf (mkt.gsMatchingAt (mkt.gsRejected n) hn) =
-      mkt.toContractsMarket.sellerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket := by
+      mkt.toContractsMarket.sellerOptimal
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket := by
   calc
     mkt.graphOf (mkt.gsMatchingAt (mkt.gsRejected n) hn) =
         mkt.toContractsMarket.outcomeOf
           (mkt.toContractsMarket.stateOf (mkt.graphOf (mkt.gsMatchingAt (mkt.gsRejected n) hn))) :=
       (mkt.outcomeOf_stateOf_graphOf_gsMatchingAt n hn).symm
     _ = mkt.toContractsMarket.outcomeOf
-        (OrderHom.gfp (mkt.toContractsMarket.deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket)) :=
+        (OrderHom.gfp
+          (mkt.toContractsMarket.deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket)) :=
       congrArg mkt.toContractsMarket.outcomeOf (mkt.stateOf_graphOf_gsMatchingAt_eq_gfp n hn)
     _ = _ := rfl
 
 theorem graphOf_galeShapley_eq_sellerOptimal_via_fixedPoints :
     mkt.graphOf mkt.galeShapley =
-      mkt.toContractsMarket.sellerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
+      mkt.toContractsMarket.sellerOptimal
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
   mkt.graphOf_gsMatchingAt_eq_sellerOptimal_via_fixedPoints
     mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
 
 theorem stateOf_graphOf_galeShapley_eq_gfp :
     mkt.toContractsMarket.stateOf (mkt.graphOf mkt.galeShapley) =
-      OrderHom.gfp (mkt.toContractsMarket.deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket) :=
+      OrderHom.gfp
+        (mkt.toContractsMarket.deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket) :=
   mkt.stateOf_graphOf_gsMatchingAt_eq_gfp
     mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
 
@@ -164,16 +181,20 @@ theorem womanGaleShapley_eq_womanProposingDeferredAcceptance_via_fixedPoints :
 
 theorem graphOf_womanGaleShapley_eq_buyerOptimal_via_fixedPoints :
     mkt.graphOf mkt.womanGaleShapley =
-      mkt.toContractsMarket.buyerOptimal mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket := by
+      mkt.toContractsMarket.buyerOptimal
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket := by
   rw [mkt.womanGaleShapley_eq_womanProposingDeferredAcceptance_via_fixedPoints]
   exact mkt.graphOf_womanOptimalMatching
 
 theorem stateOf_graphOf_womanGaleShapley_eq_lfp :
     mkt.toContractsMarket.stateOf (mkt.graphOf mkt.womanGaleShapley) =
-      OrderHom.lfp (mkt.toContractsMarket.deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket) := by
+      OrderHom.lfp
+        (mkt.toContractsMarket.deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket) := by
   rw [mkt.graphOf_womanGaleShapley_eq_buyerOptimal_via_fixedPoints]
-  exact mkt.toContractsMarket.stateOf_outcomeOf mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
-    (mkt.toContractsMarket.isFixedPt_lfp_deferredAcceptanceOrderHom mkt.substitutable_toContractsMarket)
+  exact mkt.toContractsMarket.stateOf_outcomeOf
+    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
+    (mkt.toContractsMarket.isFixedPt_lfp_deferredAcceptanceOrderHom
+      mkt.substitutable_toContractsMarket)
 
 /-- Some generalized seller-proposing iterate carries the classical terminal
 graph. This compares outcomes, without aligning the round indices. -/
@@ -191,7 +212,8 @@ theorem exists_generalized_woman_round_eq_womanGaleShapley_via_fixedPoints :
 
 /-- Classical stability inherited from the contracts fixed-point theorem. -/
 theorem stable_galeShapley_via_fixedPoints : mkt.IsStableMatching mkt.galeShapley :=
-  mkt.stable_gsMatchingAt_via_fixedPoints mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
+  mkt.stable_gsMatchingAt_via_fixedPoints
+    mkt.galeShapleyRoundBound mkt.galeShapleyRoundBound_terminal
 
 theorem isManOptimal_galeShapley_via_fixedPoints : mkt.IsManOptimal mkt.galeShapley := by
   rw [mkt.galeShapley_eq_deferredAcceptance_via_fixedPoints]

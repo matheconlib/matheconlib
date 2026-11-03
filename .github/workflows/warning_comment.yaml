@@ -1,0 +1,33 @@
+name: Comment on library warning counts
+
+on:
+  workflow_run:
+    workflows: [Lean Action CI]
+    types: [completed]
+
+permissions:
+  contents: read
+  actions: read
+  pull-requests: write
+
+concurrency:
+  group: library-warning-comment-${{ github.event.workflow_run.head_repository.full_name }}-${{ github.event.workflow_run.head_branch }}
+  cancel-in-progress: false
+
+jobs:
+  comment:
+    if: (github.event.workflow_run.event == 'pull_request' || (contains(fromJSON('["push", "workflow_dispatch"]'), github.event.workflow_run.event) && github.event.workflow_run.head_branch == 'main')) && github.event.workflow_run.conclusion != 'cancelled'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # workflow_run checks out trusted default-branch code. Never use the PR ref
+      # or restore its build cache in this job, which has permission to comment.
+      - uses: actions/checkout@v5
+        with:
+          persist-credentials: false
+      - name: Compare saved counts and update PR comments
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { processRun } = require('./scripts/warning-counts.cjs');
+            await processRun({ github, context, core });

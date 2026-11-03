@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
 public import MathEconLib.ValueDistribution.PostedPrice
@@ -125,7 +130,7 @@ private theorem intervalIntegral_q_postedPriceProblem_mul
       apply intervalIntegral.integral_congr_ae
       filter_upwards [hnull] with value hne hmem
       rw [uIoc_of_le hprice.1] at hmem
-      rw [postedPriceProblem_q, if_neg (not_le.mpr (lt_of_le_of_ne hmem.2 hne))]
+      rw [postedPriceProblem_q, ite_eq_right (not_le.mpr (lt_of_le_of_ne hmem.2 hne))]
       ring
     simpa using hzero
   have hupper :
@@ -136,7 +141,7 @@ private theorem intervalIntegral_q_postedPriceProblem_mul
     intro value hvalue
     rw [uIcc_of_le hprice.2] at hvalue
     dsimp only
-    rw [postedPriceProblem_q, if_pos hvalue.1]
+    rw [postedPriceProblem_q, ite_eq_left hvalue.1]
     ring
   rw [← intervalIntegral.integral_add_adjacent_intervals hlowerint hupperint,
     hlower, hupper, zero_add]
@@ -189,7 +194,8 @@ private theorem intervalIntegrable_q_mul_netVirtualSurplus
   have hae :
       density =ᵐ[volume.restrict (uIoc lowestType highestType)] D.realDensity := by
     apply ae_restrict_of_ae_restrict_of_subset uIoc_subset_uIcc
-    simpa [uIcc_of_le horder] using hdensity
+    simp only [uIcc_of_le horder]
+    exact hdensity
   apply hcanonical.congr_ae
   filter_upwards [hae] with value hvalue
   simp [virtualSurplusWeight, hvalue]
@@ -219,7 +225,7 @@ private theorem intervalIntegrable_netVirtualSurplus
   apply hweighted.congr_ae
   filter_upwards [ae_restrict_mem measurableSet_uIoc] with value hvalue
   rw [uIoc_of_le horder] at hvalue
-  rw [postedPriceProblem_q, if_pos hvalue.1.le]
+  rw [postedPriceProblem_q, ite_eq_left hvalue.1.le]
   simp
 
 /-! ## Comparing cutoff integrals -/

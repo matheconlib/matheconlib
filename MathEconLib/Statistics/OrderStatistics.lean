@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Jujian Zhang. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jujian Zhang
+-/
 module
 
 public import Mathlib
@@ -79,7 +84,8 @@ lemma orderStatistics_mono (v : Fin n → α) : Monotone (orderStatistics v) := 
 lemma orderStatistics_mem_range (v : Fin n → α) (k : Fin n) :
     orderStatistics v k ∈ Set.range v := by
   have h1 : orderStatistics v k ∈ (Finset.univ.val.map v |>.sort (· ≤ ·) : Multiset α) := by
-    simpa only [Multiset.mem_coe] using List.getElem_mem (by simp)
+    simpa only [orderStatistics, List.get_eq_getElem, Multiset.mem_coe] using
+      List.getElem_mem (by simp)
   rw [Multiset.sort_eq] at h1
   obtain ⟨i, _, hi⟩ := Multiset.mem_map.mp h1
   grind
@@ -101,9 +107,9 @@ theorem orderStatistics_le_iff (v : Fin n → α) (k : Fin n) (x : α) :
   have hSorted : L.SortedLE := List.sortedLE_iff_pairwise.mpr <| Multiset.pairwise_sort _ _
   rw [show (Finset.univ.filter (v · ≤ x)).card = (L.filter (· ≤ x)).length by
     simpa [show Finset.univ.val.map v = (L : Multiset α) from (Multiset.sort_eq _ _).symm,
-        Multiset.coe_countP, List.countP_eq_length_filter] using
+        Multiset.coe_countP, List.countP_eq_length_filter, Finset.card_def, Finset.filter_val] using
         Multiset.countP_map v Finset.univ.val (· ≤ x) |>.symm]
-  show L.get ⟨k, by omega⟩ ≤ x ↔ k.val + 1 ≤ (L.filter (· ≤ x)).length
+  rw [orderStatistics]
   constructor
   · intro hle
     have h_take_sat : ∀ a ∈ L.take (k.val + 1), a ≤ x := by
@@ -165,10 +171,6 @@ namespace OrderStatisticsSetup
 variable {Ω : Type*} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} (S : OrderStatisticsSetup Ω n)
 
-/-- The pushforward measure `Measure.map (Xᵢ) ℙ` is a probability measure on `ℝ`. -/
-noncomputable instance (i : Fin n) : IsProbabilityMeasure (Measure.map (S.X i) ℙ) :=
-  Measure.isProbabilityMeasure_map (S.X_measurable i).aemeasurable
-
 /-- The k-th order statistic as a random variable. -/
 noncomputable def val (k : Fin n) (ω : Ω) : ℝ :=
   orderStatistics (fun i => S.X i ω) k
@@ -192,7 +194,7 @@ theorem measurable_val (k : Fin n) : Measurable <| S.val k := by
   intro x
   rw [show S.val k ⁻¹' Set.Iic x =
       {ω | k.val + 1 ≤ #(Finset.univ.filter (S.X · ω ≤ x))} by
-    ext; simpa using orderStatistics_le_iff _ k x]
+    ext; simpa [val] using orderStatistics_le_iff _ k x]
   have h_count : Measurable fun ω : Ω => #(Finset.univ.filter (S.X · ω ≤ x)) := by
     simp_rw [Finset.card_filter]
     exact Finset.measurable_sum _ fun i _ => Measurable.ite ((S.X_measurable i) measurableSet_Iic)
@@ -211,7 +213,7 @@ theorem map_val_absolutelyContinuous (k : Fin n) :
     _ ≤ ∑' j, ℙ (S.X j ⁻¹' A) := measure_iUnion_le _
     _ = ∑' j, (Measure.map (S.X j) ℙ) A := by
       congr 1; ext j; rw [Measure.map_apply (S.X_measurable j) hAmeas]
-    _ = 0 := by simp [fun j => (S.X_hasPDF j).absolutelyContinuous hA]) <| zero_le _
+    _ = 0 := by simp [fun j => (S.X_hasPDF j).absolutelyContinuous hA]) <| bot_le
 
 /-- The k-th order statistic has a density (PDF) w.r.t. Lebesgue measure. -/
 noncomputable instance hasPDF_val (k : Fin n) : HasPDF (S.val k) ℙ volume where
@@ -219,9 +221,10 @@ noncomputable instance hasPDF_val (k : Fin n) : HasPDF (S.val k) ℙ volume wher
   haveLebesgueDecomposition' := inferInstance
   absolutelyContinuous' := S.map_val_absolutelyContinuous k
 
-instance isProbabilityMeasure_map_val (k : Fin n) :
+-- Compatibility name; Mathlib now supplies the instance.
+theorem isProbabilityMeasure_map_val (k : Fin n) :
     IsProbabilityMeasure (Measure.map (S.val k) ℙ) :=
-  Measure.isProbabilityMeasure_map (S.measurable_val k).aemeasurable
+  inferInstance
 
 /-- Tail expectation formula for order statistics.
 
@@ -250,11 +253,10 @@ theorem expected_val_eq_sub_integral_cdf (k : Fin n) {a b : ℝ} (hab : a ≤ b)
   have val_int' : Integrable (fun ω => b - S.val k ω) ℙ := (integrable_const b).sub val_int
   have val_nonneg : 0 ≤ᵐ[ℙ] fun ω => b - S.val k ω := by
     filter_upwards [val_bdd] with ω ⟨_, hb⟩
-    show 0 ≤ b - S.val k ω
+    rw [Pi.zero_apply]
     linarith
   have val_bdd : (fun ω => b - S.val k ω) ≤ᵐ[ℙ] fun _ => b - a := by
     filter_upwards [val_bdd] with ω ⟨ha, _⟩
-    show b - S.val k ω ≤ b - a
     linarith
   have eq1 := val_int'.integral_eq_integral_Ioc_meas_le val_nonneg val_bdd
   have eq2 t : Measure.real ℙ {ω : Ω | t ≤ b - S.val k ω} =
@@ -271,7 +273,7 @@ theorem expected_val_eq_sub_integral_cdf (k : Fin n) {a b : ℝ} (hab : a ≤ b)
   linarith
 
 /-- For a fixed subset `T ⊆ Fin n`, the probability that exactly `T`'s indices
-satisfy `X_i ω ≤ x` (and the rest satisfy `X_i ω > x`) equals `F(x)^|T| · (1 - F(x))^{n - |T|}`.-/
+satisfy `X_i ω ≤ x` (and the rest satisfy `X_i ω > x`) equals `F(x)^|T| · (1 - F(x))^{n - |T|}`. -/
 theorem prob_iInter_inter_iInter_eq (i₀ : Fin n) (T : Finset (Fin n)) (x : ℝ) :
     Measure.real ℙ
       ((⋂ i ∈ T, {ω : Ω | S.X i ω ≤ x}) ∩ (⋂ i ∉ T, {ω : Ω | ¬ S.X i ω ≤ x})) =
@@ -289,12 +291,12 @@ theorem prob_iInter_inter_iInter_eq (i₀ : Fin n) (T : Finset (Fin n)) (x : ℝ
   set p := ENNReal.ofReal F
   have h_in : ∀ i ∈ T, ℙ (S.X i ⁻¹' A i) = p := by
     intro i hi
-    simp only [A, hi, if_true]
+    simp only [A, hi, ite_true]
     rw [← Measure.map_apply (S.X_measurable i) measurableSet_Iic, (S.X_ident i i₀).map_eq]
     exact (ofReal_cdf _ x).symm
   have h_out : ∀ i ∉ T, ℙ (S.X i ⁻¹' A i) = 1 - p := by
     intro i hi
-    simp only [A, hi, if_false]
+    simp only [A, hi, ite_false]
     rw [show S.X i ⁻¹' Set.Ioi x = (S.X i ⁻¹' Set.Iic x)ᶜ by ext ω; simp [Set.mem_Ioi, Set.mem_Iic,
         not_le], measure_compl ((S.X_measurable i) measurableSet_Iic) (measure_ne_top ℙ _),
         measure_univ]
@@ -313,7 +315,7 @@ theorem prob_iInter_inter_iInter_eq (i₀ : Fin n) (T : Finset (Fin n)) (x : ℝ
   simpa [Finset.card_sdiff] using by ring
 
 /-- Binomial probability formula: for `n` i.i.d. random variables, the probability that
-exactly `l` of them fall in `Set.Iic x` equals `C(n,l) · F(x)^l · (1-F(x))^{n-l}`.-/
+exactly `l` of them fall in `Set.Iic x` equals `C(n,l) · F(x)^l · (1-F(x))^{n-l}`. -/
 theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
     Measure.real ℙ {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} =
       (n.choose l : ℝ) * cdf (Measure.map (S.X i₀) ℙ) x ^ l *
@@ -334,7 +336,7 @@ theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
   have h_decomp : {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} =
       ⋃ T ∈ Finset.univ.powersetCard l, E T := by
     ext ω
-    simp only [Set.mem_setOf_eq]
+    simp only [Set.mem_ofPred_eq]
     constructor
     · intro hω
       exact Set.mem_iUnion₂.mpr ⟨univ.filter (S.X · ω ≤ x), Finset.mem_powersetCard.mpr
@@ -359,8 +361,7 @@ theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
       Measure.real ℙ (E T) = F ^ l * (1 - F) ^ (n - l) := by
     intro T hT
     have hT_card := (Finset.mem_powersetCard.mp hT).2
-    show Measure.real ℙ
-        ((⋂ i ∈ T, {ω : Ω | S.X i ω ≤ x}) ∩ (⋂ i ∉ T, {ω : Ω | ¬ S.X i ω ≤ x})) = _
+    simp only [E]
     rw [S.prob_iInter_inter_iInter_eq i₀ T x, hT_card]
   delta Measure.real at h_each
   rw [Finset.sum_congr rfl h_each, Finset.sum_const,
@@ -371,7 +372,7 @@ theorem prob_count_eq (i₀ : Fin n) (l : ℕ) (x : ℝ) :
 For `n` i.i.d. random variables with common CDF `F`, the CDF of the `(k+1)`-smallest
 (0-indexed `k`) is:
   `P(X_{(k+1)} ≤ x) = ∑_{l=k+1}^{n} C(n,l) · F(x)^l · (1 − F(x))^{n−l}`
-where `F = cdf (Measure.map (X₀) ℙ)`-/
+where `F = cdf (Measure.map (X₀) ℙ)` -/
 theorem cdf_val (i₀ : Fin n) (k : Fin n) (x : ℝ) :
     cdf (Measure.map (S.val k) ℙ) x =
     ∑ l ∈ Finset.Icc (k.val + 1) n,
@@ -384,7 +385,7 @@ theorem cdf_val (i₀ : Fin n) (k : Fin n) (x : ℝ) :
     show {ω : Ω | k.val + 1 ≤ #(Finset.univ.filter (S.X · ω ≤ x))} =
       ⋃ l ∈ Finset.Icc (k.val + 1) n, {ω : Ω | #(Finset.univ.filter (S.X · ω ≤ x)) = l} by
     ext ω
-    simp only [Set.mem_setOf_eq, Set.mem_iUnion, Finset.mem_Icc, exists_prop]
+    simp only [Set.mem_ofPred_eq, Set.mem_iUnion, Finset.mem_Icc, exists_prop]
     constructor
     · intro h
       exact ⟨_, ⟨h, (Finset.card_filter_le _ _).trans (by simp)⟩, rfl⟩
@@ -398,7 +399,7 @@ theorem cdf_val (i₀ : Fin n) (k : Fin n) (x : ℝ) :
   exact Finset.sum_congr rfl (fun l _ => S.prob_count_eq i₀ l x)
 
 /-- The derivative of the binomial tail sum `B(p) = Σ_{l=k+1}^{n} C(n,l) p^l (1-p)^{n-l}`
-telescopes to `B'(p) = n!/(k!(n-1-k)!) · p^k · (1-p)^{n-1-k}`.-/
+telescopes to `B'(p) = n!/(k!(n-1-k)!) · p^k · (1-p)^{n-1-k}`. -/
 theorem hasDerivAt_binomial_tail_sum (k : Fin n) (p : ℝ) :
     HasDerivAt
       (fun q : ℝ => ∑ l ∈ Finset.Icc (k.val + 1) n, n.choose l * q ^ l * (1 - q) ^ (n - l))
@@ -433,10 +434,7 @@ theorem hasDerivAt_binomial_tail_sum (k : Fin n) (p : ℝ) :
         linarith [Nat.choose_succ_right_eq n l]
     have h_exp1 : n - 1 - (l - 1) = n - l := by omega
     have h_exp2 : n - 1 - l = n - l - 1 := by omega
-    show n.choose l * (l * p ^ (l - 1) * (1 - p) ^ (n - l) +
-        p ^ l * ((n - l : ℕ) * (1 - p) ^ (n - l - 1) * (-1))) =
-      n * ((n - 1).choose (l - 1) * p ^ (l - 1) * (1 - p) ^ (n - 1 - (l - 1)) -
-             (n - 1).choose l * p ^ l * (1 - p) ^ (n - 1 - l))
+    simp only [g]
     rw [h_exp1, h_exp2]
     have h_id1r : (n.choose l : ℝ) * l = n * (n - 1).choose (l - 1) := by
       exact_mod_cast h_id1
@@ -445,7 +443,6 @@ theorem hasDerivAt_binomial_tail_sum (k : Fin n) (p : ℝ) :
     linear_combination
       h_id1r * (p ^ (l - 1) * (1 - p) ^ (n - l)) -
       h_id2r * (p ^ l * (1 - p) ^ (n - l - 1))
-
   have eq2 := HasDerivAt.fun_sum eq1
   suffices ∑ l ∈ Finset.Icc (k.val + 1) n, n * (g (l - 1) - g l) =
       n ! / (k.val ! * (n - 1 - k.val) !) *
@@ -501,7 +498,7 @@ theorem identDistrib_val
 /--
 If the common distribution has density `f` w.r.t. Lebesgue measure, then the
 `(k+1)`-smallest order statistic has density:
-  `f_{X_{(k+1)}}(x) = n! / (k! · (n-1-k)!) · F(x)^k · (1-F(x))^{n-1-k} · f(x)`-/
+  `f_{X_{(k+1)}}(x) = n! / (k! · (n-1-k)!) · F(x)^k · (1-F(x))^{n-1-k} · f(x)` -/
 theorem pdf_val (i₀ : Fin n) (k : Fin n) :
     pdf (S.val k) ℙ volume =ᵐ[volume] fun x =>
     ENNReal.ofReal (n ! / (k ! * (n - 1 - k.val) !) *
@@ -531,11 +528,7 @@ theorem pdf_val (i₀ : Fin n) (k : Fin n) :
       (mul_nonneg (Nat.cast_nonneg' _) (Nat.cast_nonneg' _)))
       (pow_nonneg (cdf_nonneg _ _) _))
       (pow_nonneg (sub_nonneg.mpr (cdf_le_one _ _)) _)
-  show (Measure.map (S.val k) ℙ).rnDeriv volume x =
-    ENNReal.ofReal (n ! / (k ! * (n - 1 - k.val) !) *
-      cdf (Measure.map (S.X i₀) ℙ) x ^ k.val *
-      (1 - cdf (Measure.map (S.X i₀) ℙ) x) ^ (n - 1 - k.val)) *
-      (Measure.map (S.X i₀) ℙ).rnDeriv volume x
+  simp only [pdf_def]
   rw [← ENNReal.ofReal_toReal hfk.ne, eq0, ENNReal.ofReal_mul hw_nn, ENNReal.ofReal_toReal hf0.ne]
 
 -- theorem absolutelyContinuousOnInterval_cdf (i₀ : Fin n) (a s : ℝ)
@@ -621,7 +614,7 @@ theorem expected_val (k : Fin n) (i₀ : Fin n) (a b : ℝ) (hab : a ≤ b)
     filter_upwards [pdf_eq_zero0, pdf_eq_zero1] with ψ h_lo h_hi h_not_mem
     by_cases h : ψ ≤ a
     · rw [h_lo (Set.mem_Iic.mpr h), mul_zero]
-    · push_neg at h
+    · push Not at h
       have hb : b < ψ := by
         by_contra! h'
         exact h_not_mem (Set.mem_Ioc.mpr ⟨h, h'⟩)

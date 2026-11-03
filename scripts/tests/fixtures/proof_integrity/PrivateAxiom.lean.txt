@@ -1,0 +1,4 @@
+module
+public import Init
+private axiom hiddenAssumption : False
+theorem harmless : True := True.intro

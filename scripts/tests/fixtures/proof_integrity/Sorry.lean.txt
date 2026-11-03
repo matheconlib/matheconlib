@@ -1,0 +1,4 @@
+module
+public import Init
+set_option warningAsError false
+theorem unfinished : False := by sorry

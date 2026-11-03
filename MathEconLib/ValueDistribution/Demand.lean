@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
 public import MathEconLib.ValueDistribution.Basic
@@ -97,7 +102,7 @@ theorem probAtLeast_eq_one_sub_cdf_of_singleton_eq_zero
 
 /-- For an atomless distribution, demand is one minus the CDF. -/
 theorem probAtLeast_eq_one_sub_cdf
-    (D : ValueDistribution) [NoAtoms (D : Measure ℝ)] (price : ℝ) :
+    (D : ValueDistribution) [NullSingletonClass (D : Measure ℝ)] (price : ℝ) :
     D.probAtLeast price = 1 - cdf (D : Measure ℝ) price := by
   apply D.probAtLeast_eq_one_sub_cdf_of_singleton_eq_zero price
   simp [ProbabilityMeasure.coeFn_def]

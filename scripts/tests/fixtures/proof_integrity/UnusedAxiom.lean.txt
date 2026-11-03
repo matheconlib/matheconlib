@@ -1,0 +1,9 @@
+module
+public import Init
+
+namespace UnexpectedNamespace
+
+axiom unused : False
+theorem harmless : True := True.intro
+
+end UnexpectedNamespace

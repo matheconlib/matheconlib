@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Bo Cowgill
+-/
 module
 
 public import MathEconLib.BidderProblem.EnvelopeIC
@@ -166,7 +171,7 @@ theorem typeDeviationIC_of_monotone_q
       SingleParameterProblem.HasTypeDeviationIC B.toSingleParameterProblem :=
     SingleParameterProblem.typeDeviationIC_of_monotone_q
       B.toSingleParameterProblem
-      (by simpa using hq_mono)
+      (by exact hq_mono)
       (by
         intro s hs
         simpa using hcost s hs)

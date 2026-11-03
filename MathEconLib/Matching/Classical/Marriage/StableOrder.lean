@@ -1,5 +1,12 @@
-import MathEconLib.Matching.Classical.Marriage.Optimality
-import Mathlib.Order.CompleteLattice.Basic
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Optimality
+public import Mathlib.Order.CompleteLattice.Basic
 
 /-!
 # The lattice of stable marriage matchings
@@ -13,6 +20,8 @@ all men weakly prefer `ν` to `μ`, equivalently that all women weakly prefer
 `μ` to `ν`. Thus top is man-optimal/woman-pessimal and bottom is
 woman-optimal/man-pessimal. Exchanging the two sides reverses the order.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -73,7 +82,8 @@ noncomputable def graphEquiv :
 the same carrier through the graph and fixed-point correspondences. -/
 noncomputable def fixedPointEquiv :
     mkt.StableMatching ≃
-      mkt.toContractsMarket.StableOutcomes mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
+      mkt.toContractsMarket.StableOutcomes
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket :=
   (graphEquiv mkt).trans
     (mkt.toContractsMarket.stableEquivFixedPoints
       mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket)
@@ -106,13 +116,15 @@ noncomputable instance : CompleteLattice mkt.StableMatching := by
 /-- The carrier equivalence preserves the transported lattice order. -/
 noncomputable def fixedPointOrderIso :
     mkt.StableMatching ≃o
-      mkt.toContractsMarket.StableOutcomes mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket where
+      mkt.toContractsMarket.StableOutcomes
+        mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket where
   toEquiv := fixedPointEquiv mkt
   map_rel_iff' := Iff.rfl
 
 @[simp] theorem outcome_fixedPointEquiv (μ : mkt.StableMatching) :
     (fixedPointEquiv mkt μ).outcome = mkt.graphOf μ.matching := by
-  change (mkt.toContractsMarket.ofStable mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
+  change (mkt.toContractsMarket.ofStable
+    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
     ((mkt.isStableMatching_iff_stable_graphOf μ.matching).mp μ.isStable)).outcome = _
   exact mkt.toContractsMarket.outcome_ofStable
     mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket _

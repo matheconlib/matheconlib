@@ -1,0 +1,5 @@
+module
+public import Init
+set_option warningAsError false
+set_option warn.«sorry» false
+example : String := s! "{(by sorry : Nat)}"

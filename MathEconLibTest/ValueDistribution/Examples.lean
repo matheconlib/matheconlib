@@ -1,8 +1,13 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
-import MathEconLib.ValueDistribution
-import Mathlib.Probability.Distributions.Cauchy
-import Mathlib.Probability.UniformOn
+public import MathEconLib.ValueDistribution
+public import Mathlib.Probability.Distributions.Cauchy
+public import Mathlib.Probability.UniformOn
 
 /-!
 # Representative Value Distributions
@@ -12,6 +17,8 @@ instantiated by standard distribution classes without adding parallel
 probability constructions to the production library. It also exercises the
 demand API on finite-support atomic and unbounded atomless distributions.
 -/
+
+@[expose] public section
 
 noncomputable section
 
@@ -40,7 +47,7 @@ example :
   norm_num
 
 local instance :
-    NoAtoms ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) :=
+    NullSingletonClass ((uniformUnitIntervalDistribution : ValueDistribution) : Measure ℝ) :=
   ValueDistribution.uniformInterval_noAtoms 0 1 (by norm_num)
 
 /-- Uniform virtual-surplus weight is the affine function `2 * value - 1`. -/
@@ -166,11 +173,9 @@ example (price : ℝ) :
 the uniform probability measure on `Bool`. -/
 def twoPointDistribution : ValueDistribution :=
   ValueDistribution.ofRandomVariable
-    (⟨ProbabilityTheory.uniformOn Set.univ, inferInstance⟩ :
-      ProbabilityMeasure Bool)
+    (ProbabilityTheory.uniformOn Set.univ : Measure Bool).toProbabilityMeasure
     (fun selected => if selected then 1 else 0)
-    (measurable_of_finite fun selected : Bool =>
-      if selected then (1 : ℝ) else 0).aemeasurable
+    (measurable_of_finite _).aemeasurable
 
 /-- Its support is contained in the finite set `{0, 1}`. -/
 example :
@@ -215,21 +220,21 @@ example :
 /-- The standard Cauchy distribution, a standard unbounded real-valued
 probability distribution supplied by mathlib. -/
 def standardCauchyDistribution : ValueDistribution :=
-  ⟨Probability.cauchyMeasure 0 1, inferInstance⟩
+  ⟨ProbabilityTheory.cauchyMeasure 0 1, inferInstance⟩
 
 /-- The standard Cauchy distribution is atomless because its nonzero-scale
 measure has a density with respect to atomless Lebesgue measure. -/
 local instance :
-    NoAtoms (standardCauchyDistribution : Measure ℝ) := by
-  change NoAtoms (Probability.cauchyMeasure 0 1)
-  rw [Probability.cauchyMeasure_of_scale_ne_zero 0 (by norm_num)]
+    NullSingletonClass (standardCauchyDistribution : Measure ℝ) := by
+  change NullSingletonClass (ProbabilityTheory.cauchyMeasure 0 1)
+  rw [ProbabilityTheory.cauchyMeasure_of_scale_ne_zero 0 (by norm_num)]
   infer_instance
 
 /-- The transparent `ValueDistribution` abbreviation leaves the underlying
 mathlib measure unchanged. -/
 example :
     (standardCauchyDistribution : Measure ℝ) =
-      Probability.cauchyMeasure 0 1 :=
+      ProbabilityTheory.cauchyMeasure 0 1 :=
   rfl
 
 /-- The reusable atomless identity applies even without bounded support. -/

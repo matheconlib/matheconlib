@@ -1,5 +1,13 @@
-import MathEconLib.Matching.Classical.Marriage.ToContracts
-import MathEconLib.Matching.Contracts.RuralHospitals
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.Matching.Classical.Marriage.ToContracts
+public import MathEconLib.Matching.Contracts.RuralHospitals
+public import Mathlib.Basic.Finite.Prod
 
 /-!
 # The lone-wolf theorem
@@ -8,6 +16,8 @@ The many-to-many rural-hospitals theorem specializes to invariance of the
 matched agents in a marriage market. Both the matched and unmatched formulations
 are supplied for each side; the woman-side results follow by side exchange.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -19,42 +29,42 @@ namespace MarriageMarket
 
 variable {M : Type u} {W : Type v}
 variable (mkt : MarriageMarket M W)
-variable [Fintype M] [Fintype W]
+variable [Finite M] [Finite W]
 
 /-! ## Lone wolf -/
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem sellerSide_graphOf_eq_empty {μ : M ≃. W} {m : M}
     (hμ : μ m = none) :
     mkt.toContractsMarket.sellerSide m (mkt.graphOf μ) = ∅ :=
   PEquiv.graph_fiber_fst_eq_empty hμ
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem sellerSide_graphOf_eq_singleton {μ : M ≃. W}
     {m : M} {w : W} (hμ : μ m = some w) :
     mkt.toContractsMarket.sellerSide m (mkt.graphOf μ) = {(m, w)} :=
   PEquiv.graph_fiber_fst_eq_singleton hμ
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem ncard_sellerSide_graphOf_eq_zero_iff
     (μ : M ≃. W) (m : M) :
     (mkt.toContractsMarket.sellerSide m (mkt.graphOf μ)).ncard = 0 ↔
       μ m = none :=
   μ.ncard_graph_fiber_fst_eq_zero_iff m
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem buyerSide_graphOf_eq_empty {μ : M ≃. W} {w : W}
     (hμ : μ.symm w = none) :
     mkt.toContractsMarket.buyerSide w (mkt.graphOf μ) = ∅ :=
   PEquiv.graph_fiber_snd_eq_empty hμ
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem buyerSide_graphOf_eq_singleton {μ : M ≃. W}
     {m : M} {w : W} (hμ : μ.symm w = some m) :
     mkt.toContractsMarket.buyerSide w (mkt.graphOf μ) = {(m, w)} :=
   PEquiv.graph_fiber_snd_eq_singleton hμ
 
-omit [Fintype M] [Fintype W] in
+omit [Finite M] [Finite W] in
 theorem ncard_buyerSide_graphOf_eq_zero_iff (μ : M ≃. W) (w : W) :
     (mkt.toContractsMarket.buyerSide w (mkt.graphOf μ)).ncard = 0 ↔
       μ.symm w = none :=
@@ -65,7 +75,8 @@ theorem eq_none_iff_of_stable {μ ν : M ≃. W}
     (hμ : mkt.IsStableMatching μ) (hν : mkt.IsStableMatching ν) (m : M) :
     μ m = none ↔ ν m = none := by
   have hcard := mkt.toContractsMarket.ncard_sellerSide_eq_of_stable
-    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket mkt.sizeMonotone_toContractsMarket
+    mkt.substitutable_toContractsMarket mkt.consistent_toContractsMarket
+    mkt.sizeMonotone_toContractsMarket
     ((mkt.isStableMatching_iff_stable_graphOf μ).mp hμ)
     ((mkt.isStableMatching_iff_stable_graphOf ν).mp hν) m
   rw [← mkt.ncard_sellerSide_graphOf_eq_zero_iff μ m,

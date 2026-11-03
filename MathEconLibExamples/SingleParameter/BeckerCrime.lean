@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
 public import MathEconLib.SingleParameter.IC
@@ -31,6 +36,9 @@ a local correspondence between crime and purchase decisions.
 
 Gary S. Becker (1968), *Crime and Punishment: An Economic Approach*,
 *Journal of Political Economy* **76**(2), 169–217.
+Section II.B.3, pp. 176–177, especially the expected-utility formula in
+footnote 16. The binary action space, risk neutrality, and tie-breaking rule
+are choices of this example.
 [DOI: 10.1086/259394](https://doi.org/10.1086/259394).
 -/
 
@@ -259,6 +267,8 @@ does not model a policy-induced change in the population's gains.
 
 Because individuals choose to commit at the cutoff, the crime rate includes
 any probability mass at `p * f`. No density or atomlessness is assumed.
+The offense indicator is measurable and bounded, hence integrable under any
+probability distribution of gains. No moment bound on those gains is needed.
 -/
 
 /-- The aggregate crime rate is the probability that the net gain is at least
@@ -302,7 +312,7 @@ crime rate falls from `1` to `0` when the probability rises from `1/2` to `3/4`.
 At the lower probability, the entire population is exactly at the cutoff and
 chooses to commit the offense, so its probability mass is included. -/
 example :
-    let D : ValueDistribution := ⟨MeasureTheory.Measure.dirac (1 : ℝ), inferInstance⟩
+    let D : ValueDistribution := (MeasureTheory.Measure.dirac (1 : ℝ)).toProbabilityMeasure
     D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) = 1 ∧
       D.expectedAllocation (crimeProblem 0 2 (3 / 4) 2) = 0 := by
   dsimp only

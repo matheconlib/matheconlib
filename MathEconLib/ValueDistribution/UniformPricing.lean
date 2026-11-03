@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
 public import MathEconLib.ValueDistribution.PostedPrice
@@ -232,7 +237,7 @@ theorem uniformInterval_virtualValue_eq_continuationValue_of_interior
   exact virtualValue_eq_continuationValue_of_isLocalMaxOn_sellerProfit_postedPriceProblem
     (uniformInterval a b hab) a b (fun _ : ℝ ↦ 1 / (b - a))
     continuationValue 0 ((b + continuationValue) / 2) hpeak
-    (uniformInterval_hasDerivAt_cdf a b hab _ hpeak) hmax.localize
+    (uniformInterval_hasDerivAt_cdf a b hab _ hpeak) hmax.isLocalMaxOn
     (by simp [ne_of_gt (sub_pos.mpr hab)])
 
 /-! ## Comparative statics of the maximizing price -/
