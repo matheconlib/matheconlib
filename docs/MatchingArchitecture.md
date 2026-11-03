@@ -58,7 +58,7 @@ represented feasible bundle retains the existing empty fallback.
 
 ## Module organization
 
-There are eleven substantive modules beneath `Choice/`, exported by the public
+There are fourteen substantive modules beneath `Choice/`, exported by the public
 `MathEconLib.Choice` root. General results are in the parent folder. The
 `Matching` subfolder holds constructions and conditions that additionally use
 a map from alternatives to matching partners; it does not require a market.
@@ -75,6 +75,9 @@ a map from alternatives to matching partners; it does not require a market.
 | `Matching.Completion` | Completion, substitutable completability, the joint IRC-completion condition and elementary facts |
 | `Matching.Relationships` | Contraction, hull characterizations and completion implications |
 | `Matching.SubstituteEnvelope` | Feasible-menu rejection bound, greatest substitutable completion, and hull–envelope sandwich |
+| `PathIndependentMinorant` | Greatest path-independent minorant on arbitrary alternative types |
+| `Matching.PathIndependentEnvelope` | Greatest consistent substitutable completion and path-independent sandwich |
+| `Matching.CompletionEvidence` | Rejection-evidence characterization and obstruction theorem |
 | `Matching.Preferences` | Feasible-bundle constructors and preference-induced completion results |
 
 The shared predicates are defined once in `Conditions`; matching vocabulary
@@ -238,5 +241,5 @@ The review-to-commit record is in [PR103ReviewChanges.md](PR103ReviewChanges.md)
 
 `Matching.SubstituteEnvelope` extends the existing hull characterization to arbitrary
 substitutable completions. See [SubstitutableCompletionFollowup.md](SubstitutableCompletionFollowup.md)
-for the precise scope, proofs, and remaining path-independent-envelope and
+for the precise scope, proofs, and remaining finite-certificate and
 law-of-aggregate-demand formalization tasks.

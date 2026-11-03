@@ -26,16 +26,17 @@ open MathEconLib.Choice MathEconLib.Choice.ChoiceFunction
 
 namespace MathEconLib.Examples.Choice.SubstituteEnvelope
 
-def priority : ChoiceFunction Bool where
-  toFun Y := if true ∈ Y then {true} else Y
-  choose_subset := by
-    intro Y x hx
-    change x ∈ (if true ∈ Y then {true} else Y) at hx
-    by_cases h : true ∈ Y
-    · rw [if_pos h] at hx
-      rw [Set.mem_singleton_iff.mp hx]
-      exact h
-    · simpa only [if_neg h] using hx
+noncomputable def priority : ChoiceFunction Bool := by
+  classical
+  exact {
+    toFun := fun Y => if true ∈ Y then {true} else Y
+    choose_subset := by
+      intro Y x hx
+      by_cases h : true ∈ Y
+      · rw [ite_eq_left h] at hx
+        rw [Set.mem_singleton_iff.mp hx]
+        exact h
+      · simpa only [ite_eq_right h] using hx }
 
 def allChoice : ChoiceFunction Bool where
   toFun Y := Y
@@ -114,13 +115,15 @@ theorem strict_enlargement : false ∈ allChoice Set.univ ∧ false ∉ priority
   simp [allChoice, priority]
 
 /-- Complementary contracts are chosen only when both are available. -/
-def complements : ChoiceFunction Bool where
-  toFun Y := if false ∈ Y ∧ true ∈ Y then Y else ∅
-  choose_subset := by
-    intro Y
-    split_ifs
-    · exact Set.Subset.rfl
-    · exact Set.empty_subset Y
+noncomputable def complements : ChoiceFunction Bool := by
+  classical
+  exact {
+    toFun := fun Y => if false ∈ Y ∧ true ∈ Y then Y else ∅
+    choose_subset := by
+      intro Y
+      split_ifs
+      · exact Set.Subset.rfl
+      · exact Set.empty_subset Y }
 
 /-- One singleton rejection certifies failure of substitutable completability. -/
 theorem complements_not_completable : ¬ complements.SubstitutablyCompletable id := by
