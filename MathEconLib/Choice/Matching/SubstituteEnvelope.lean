@@ -78,7 +78,7 @@ theorem isCompletionOf_of_le_of_le_substituteEnvelope
     rwa [heq] at h
   · right
     simp only [Set.InjOn] at hfeas
-    push_neg at hfeas
+    push Not at hfeas
     obtain ⟨x, hx, y, hy, heq, hne⟩ := hfeas
     exact ⟨x, hx, y, hy, hne, heq⟩
 
@@ -103,11 +103,13 @@ theorem substituteEnvelope_isCompletionOf_of_substitutablyCompletable
       hIRC hCU ((substituteEnvelope counterparty C).choose_subset Y)
     apply Set.Subset.antisymm _ hCU
     intro x hx
-    have h := hx.2 _ ((substituteEnvelope counterparty C).choose_subset Y) hfeas hx
+    have h : x ∈ C (substituteEnvelope counterparty C Y) :=
+      hx.2 (substituteEnvelope counterparty C Y)
+        ((substituteEnvelope counterparty C).choose_subset Y) hfeas hx
     rwa [heq] at h
   · right
     simp only [Set.InjOn] at hfeas
-    push_neg at hfeas
+    push Not at hfeas
     obtain ⟨x, hx, y, hy, heq, hne⟩ := hfeas
     exact ⟨x, hx, y, hy, hne, heq⟩
 
@@ -152,9 +154,10 @@ theorem unilaterallySubstitutable_iff_le_substituteEnvelope
       ((hUS.substituteHull_isCompletionOf hIRC hfeasible hfinite).le_substituteEnvelope
         (substituteHull_substitutable C))
   · intro hCU
-    exact (isCompletionOf_of_le_of_le_substituteEnvelope hIRC hCU le_rfl)
-      .unilaterallySubstitutable_of_le
-        (substituteEnvelope_substitutable counterparty C) hCU hIRC hfeasible
+    have hcomp : C.IsCompletionOf counterparty (substituteEnvelope counterparty C) :=
+      isCompletionOf_of_le_of_le_substituteEnvelope hIRC hCU le_rfl
+    exact hcomp.unilaterallySubstitutable_of_le
+      (substituteEnvelope_substitutable counterparty C) hCU hIRC hfeasible
 
 /-- The sandwich describes enlarging completions only. It holds even
 without feasibility or finite-valuedness of the original IRC rule. -/
