@@ -42,8 +42,9 @@ formulation of Hatfield–Kominers–Westkamp.
 
 A policy is this library's proposal-selection rule. Histories and batches support the
 generalization to history-dependent scheduling and simultaneous proposals; they do not
-assert equivalence with a particular paper's cumulative offer process. On a finite contract set, a cumulative offer process with fixed preferences and
-a valid policy produces a terminal set of held contracts. A mechanism mapping reported preference
+assert equivalence with a particular paper's cumulative offer process. On a finite contract
+set, a cumulative offer process with fixed preferences and a valid policy produces a terminal
+set of held contracts. A mechanism mapping reported preference
 profiles to outcomes is a separate construction.
 
 ## References
