@@ -12,24 +12,27 @@ public import MathEconLib.Choice.Maximizers
 # Cumulative offer processes
 
 Unit-demand sellers propose to buyers choosing from their accumulated own-contract menus.
-The process retains rejected contracts and does not assume substitutability, IRC, or
-feasibility of holdings. Preferences are fixed complete weak preferences over own contracts
-and the outside option. Only strictly acceptable contracts may be proposed.
+The cumulative offer process retains the possibility of recalling rejected contracts
+and does not assume substitutability, IRC, or feasibility of held contract sets. Seller
+preferences are fixed complete weak preferences over own contracts and the outside option.
+Only (strictly) acceptable contracts may be proposed [this is WLOG].
 
 Admissibility is relational: every weakly best remaining acceptable contract is allowed.
-A productive batch contains at most one proposal per seller, all evaluated before the round.
+A proposal batch contains at most one proposal per seller, all evaluated before the round.
 Policies, including fixed tie-breaking, specialize these runs in the policy module.
 
-Histories are lists of batches in reverse chronological order. Their accumulated offers and
-holdings are derived data. The raw terminal output is a set, without a feasibility claim.
+Histories are lists of proposed-contract batches in reverse chronological order.
+Their accumulated offers and held contract sets are derived data. The raw terminal output
+is a set of contracts, without a feasibility requirement.
 
 ## References
-
++
 John William Hatfield and Fuhito Kojima (2010), *Substitutes and Stability for Matching
 with Contracts*, Journal of Economic Theory 145(5), 1704–1723, §2.3.
 https://doi.org/10.1016/j.jet.2010.01.007.
-This module generalizes the sequential process to weak preferences and batches. Source
-correspondence, stability, and incentive theorems are separate work under #139.
+This module generalizes the sequential cumulative offer process to accommodate weak preferences and
+batched proposals. Source correspondence, stability, and incentive theorems are separate work
+under #139.
 -/
 
 @[expose] public section
@@ -38,7 +41,7 @@ namespace MathEconLib.Matching.CumulativeOffer
 
 open MathEconLib.Choice MathEconLib.Preferences
 
-/-- The data of a unit-demand cumulative offer process. Receiving choices need only be contracting.
+/-- The data of a unit-demand cumulative offer process. Receiver choices need only be contracting.
 Own-menu evaluation supplies buyer support without a separate support field. -/
 structure Process (B S X : Type*) where
   /-- Receiving endpoint. -/
@@ -196,4 +199,3 @@ theorem exists_validBatch [Finite X] {A : Set X} (h : ¬ P.Terminal A) :
 
 end Process
 end MathEconLib.Matching.CumulativeOffer
-
