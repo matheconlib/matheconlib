@@ -125,5 +125,71 @@ theorem rawOutcome_isOutcome [Finite X] {π : Policy X} (hp : P.ValidPolicy π) 
     P.Outcome (P.rawOutcome π) :=
   ⟨P.execute π (Nat.card X), P.execute_run hp _, P.execute_terminal hp, rfl⟩
 
+/-- Every valid history following a policy is reproduced by executing that many rounds.
+No global validity assumption on the policy or finiteness assumption is needed. -/
+theorem Run.execute_length {π : Policy X} {h : List (Set X)} (hr : P.Run h) :
+    Follows π h → P.execute π h.length = h := by
+  induction hr with
+  | nil => intro _; rfl
+  | @cons h Q _ hQ ih =>
+    intro hf
+    have he := ih hf.1
+    have ht : ¬ P.Terminal (offers (P.execute π h.length)) := by
+      rw [he]
+      exact hQ.not_terminal P
+    rw [List.length_cons, P.execute_succ_of_not_terminal π h.length ht, he, ← hf.2]
+
+/-- Once execution is terminal, any additional number of rounds leaves the history unchanged. -/
+theorem execute_add_of_terminal (π : Policy X) (n : ℕ)
+    (ht : P.Terminal (offers (P.execute π n))) (k : ℕ) :
+    P.execute π (n + k) = P.execute π n := by
+  induction k with
+  | zero => simp only [Nat.add_zero]
+  | succ k ih =>
+    have hterminal : P.Terminal (offers (P.execute π (n + k))) := by
+      rw [ih]
+      exact ht
+    rw [Nat.add_succ, P.execute_succ_of_terminal π (n + k) hterminal, ih]
+
+/-- Any terminal run following a fixed policy is the finite execution of that policy.
+This is uniqueness for one policy, not independence across different proposal policies. -/
+theorem Run.execute_card_eq [Finite X] {π : Policy X} {h : List (Set X)}
+    (hr : P.Run h) (hf : Follows π h) (ht : P.Terminal (offers h)) :
+    P.execute π (Nat.card X) = h := by
+  obtain ⟨k, hk⟩ := Nat.exists_eq_add_of_le (hr.length_le_card P)
+  have he := hr.execute_length P hf
+  have hterminal : P.Terminal (offers (P.execute π h.length)) := by
+    rw [he]
+    exact ht
+  rw [hk, P.execute_add_of_terminal π h.length hterminal k, he]
+
+/-- Terminal runs following the same deterministic policy have identical batch histories. -/
+theorem Run.eq_of_terminal_of_follows [Finite X] {π : Policy X}
+    {h k : List (Set X)} (hr : P.Run h) (kr : P.Run k)
+    (hf : Follows π h) (kf : Follows π k)
+    (ht : P.Terminal (offers h)) (kt : P.Terminal (offers k)) : h = k :=
+  (hr.execute_card_eq P hf ht).symm.trans (kr.execute_card_eq P kf kt)
+
+/-- The held contracts of any terminal run following a policy equal its selected raw outcome. -/
+theorem Run.heldContracts_eq_rawOutcome [Finite X] {π : Policy X}
+    {h : List (Set X)} (hr : P.Run h) (hf : Follows π h)
+    (ht : P.Terminal (offers h)) :
+    P.heldContracts (offers h) = P.rawOutcome π := by
+  unfold rawOutcome
+  rw [hr.execute_card_eq P hf ht]
+
+/-- A valid finite policy's raw outcome is exactly the outcome of a terminal run following it.
+The unrestricted `Outcome` relation may still contain outcomes from other policies. -/
+theorem rawOutcome_eq_iff [Finite X] {π : Policy X} (hp : P.ValidPolicy π) (Z : Set X) :
+    P.rawOutcome π = Z ↔
+      ∃ h, P.Run h ∧ Follows π h ∧ P.Terminal (offers h) ∧
+        P.heldContracts (offers h) = Z := by
+  constructor
+  · intro hZ
+    exact ⟨P.execute π (Nat.card X), P.execute_run hp _, P.execute_follows π _,
+      P.execute_terminal hp, hZ⟩
+  · rintro ⟨h, hr, hf, ht, hZ⟩
+    exact (hr.heldContracts_eq_rawOutcome P hf ht).symm.trans hZ
+
 end MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess
 
