@@ -2,9 +2,9 @@
 Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
-
-Migrated from Auctionlib/Mechanism/FirstAndSecondPay.lean in PR #15, commit b51c018.
 -/
+
+/- Migrated from Auctionlib/Mechanism/FirstAndSecondPay.lean in PR #15, commit b51c018. -/
 module
 
 public import MathEconLib.Mechanism.Auctions.Allocation
@@ -166,8 +166,8 @@ theorem IsFirstAndSecondPay.payment_eq (i : Fin n) (b : Fin n → ℝ)
     [Decidable (IsWinner b i ∨ IsRunnerUp b i)] :
     M.payment i b = if IsWinner b i ∨ IsRunnerUp b i then b i else 0 := by
   by_cases h : IsWinner b i ∨ IsRunnerUp b i
-  · rw [if_pos h]; exact hM.payment_of_pay i b h
-  · rw [if_neg h]; exact hM.payment_of_lose i b h
+  · rw [ite_eq_left h]; exact hM.payment_of_pay i b h
+  · rw [ite_eq_right h]; exact hM.payment_of_lose i b h
 
 /-- The winner pays their own bid. -/
 theorem payment_of_isWinner {i : Fin n} {b : Fin n → ℝ} (h : IsWinner b i) :
@@ -277,7 +277,7 @@ complement of the winner. -/
 theorem NoTies.exists_isRunnerUp [Nontrivial (Fin n)] (hb : NoTies b) :
     ∃ i, IsRunnerUp b i := by
   obtain ⟨j₀, hj₀⟩ := exists_ne hb.winner
-  haveI : Nonempty {j : Fin n // j ≠ hb.winner} := ⟨⟨j₀, hj₀⟩⟩
+  have : Nonempty {j : Fin n // j ≠ hb.winner} := ⟨⟨j₀, hj₀⟩⟩
   obtain ⟨r, hr⟩ := Finite.exists_max fun j : {j : Fin n // j ≠ hb.winner} => b j.1
   refine ⟨r.1, ⟨hb.winner, hb.isWinner_winner r.1 r.2⟩, fun j k hj hk => ?_⟩
   have key : ∀ m, b r.1 < b m → m = hb.winner := by
@@ -381,8 +381,8 @@ noncomputable def firstAndSecondPay (n : ℕ) :
 /-- The canonical implementation realizes the first-and-second-pay specification. -/
 theorem firstAndSecondPay_spec : IsFirstAndSecondPay (firstAndSecondPay n) where
   allocation _ := rfl
-  payment_of_pay _ _ h := by simp [Mechanism.payment, firstAndSecondPay, if_pos h]
-  payment_of_lose _ _ h := by simp [Mechanism.payment, firstAndSecondPay, if_neg h]
+  payment_of_pay _ _ h := by simp [Mechanism.payment, firstAndSecondPay, ite_eq_left h]
+  payment_of_lose _ _ h := by simp [Mechanism.payment, firstAndSecondPay, ite_eq_right h]
 
 /-- The allocation of each bidder is measurable, as needed to use these rules in an `Auction`. -/
 theorem firstAndSecondPay_allocation_measurable (i : Fin n) :
