@@ -1,0 +1,33 @@
+.art-stage {
+  container-type: inline-size;
+  width: 100%;
+  max-width: 630px;
+  margin: 3rem 0 0;
+}
+.art-stack {
+  --art-cell: 15px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+@supports (width: 1cqw) {
+  .art-stack {
+    /* All pieces share a scale, even when the longest unit must shrink. */
+    --art-cell: min(15px, calc(100cqw / var(--longest-unit)));
+  }
+}
+.art-composition {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: flex-start;
+  column-gap: var(--art-cell);
+  row-gap: calc(var(--art-cell) / 2);
+  min-width: 0;
+}
+.art-unit {
+  display: block;
+  flex: 0 0 auto;
+  width: calc(var(--unit-cells) * var(--art-cell));
+  height: var(--art-cell);
+}

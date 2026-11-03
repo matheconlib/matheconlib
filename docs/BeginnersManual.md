@@ -15,6 +15,10 @@ Its runnable snippets are collected in
 which `lake build` compiles, so a snippet that stops working turns the build
 red rather than quietly rotting in the prose.
 
+The [research walkthrough in Part 9](#part-9--a-research-walkthrough-higher-fines-and-aggregate-crime)
+has its own checked client,
+[`MathEconLibTest/Manual/BeckerResearch.lean`](../MathEconLibTest/Manual/BeckerResearch.lean).
+
 The [8 October 2026 walkthrough record](BeginnersManualVerification.md) records
 the tested revision, fresh-checkout build, exercise checks, and environment limits.
 
@@ -45,6 +49,7 @@ The material is arranged so that nothing is used before it is explained.
 | [6](#part-6--traps-for-beginners) | Traps that cost beginners hours | — |
 | [7](#part-7--reference-tables) | Lookup tables | it is reference material |
 | [8](#part-8--exercises) | Exercises, with full solutions | — |
+| [9](#part-9--a-research-walkthrough-higher-fines-and-aggregate-crime) | Derive a policy comparison using an existing model | — |
 | [A](#appendix-a--glossary-of-auction-theory-terms) | Economics vocabulary | you are an economist |
 | [B](#appendix-b--how-matheconlib-is-organised) | The library's architecture | you only want the Lean |
 
@@ -52,7 +57,7 @@ A practical suggestion: do Part 0 at the computer, read Parts 1–3 away from it
 
 ### A note on the code
 
-Every Lean snippet here was compiled against `MathEconLib` at Lean `v4.28.0`. Where a snippet is meant to fail, it was checked that it fails, and the error quoted is the real one. If something does not typecheck for you, the likeliest cause is that the library or the Lean version has moved on. Please let us know.
+Every Lean snippet here was compiled against `MathEconLib` at Lean `v4.35.0`. Where a snippet is meant to fail, it was checked that it fails, and the error quoted is the real one. If something does not typecheck for you, the likeliest cause is that the library or the Lean version has moved on. Please let us know.
 
 ### ✍️ A note on the hands-on blocks
 
@@ -94,7 +99,7 @@ brew install elan-init
 
 Or let the VS Code extension install it when it notices Lean is missing.
 
-You never pick a Lean version by hand. Each project pins its own in a file called `lean-toolchain` (this one says `leanprover/lean4:v4.28.0`), and `elan` reads that file and fetches the matching version automatically. Mathlib is pinned to a matching revision in `lake-manifest.json`.
+You never pick a Lean version by hand. Each project pins its own in a file called `lean-toolchain` (this one says `leanprover/lean4:v4.35.0`), and `elan` reads that file and fetches the matching version automatically. Mathlib is pinned to a matching revision in `lake-manifest.json`.
 
 This is why you must **open the project folder, not a lone file**: outside the folder there is no `lean-toolchain`, and elan will download whatever is newest for no reason.
 
@@ -103,13 +108,11 @@ This is why you must **open the project folder, not a lone file**: outside the f
 If you do not already have a checkout, clone it first:
 
 ```bash
-git clone https://github.com/AxiomMath/auctionlib.git
-cd auctionlib
+git clone https://github.com/matheconlib/matheconlib.git
+cd matheconlib
 ```
 
-The repository currently requires team access. Until it is public, authenticate
-Git with an account that has access, or use GitHub's SSH clone URL. Use the
-current repository URL shown on GitHub after the planned transfer.
+The repository is public. Cloning over HTTPS does not require GitHub credentials.
 
 **File → Open Folder**, and select the repository root (the folder containing `lakefile.toml`). Not the folder above it, not a single file inside it. VS Code will ask whether you trust the authors; say yes, or nothing will run.
 
@@ -204,6 +207,25 @@ If you cannot remember an abbreviation, **hover the mouse over the symbol** anyw
 | First setup running for many minutes | Dependency sources or cached artifacts may still be downloading. Check which command is running: `lake exe cache get` fetches the cache; `lake build` checks the project |
 
 
+
+#### Recovering an interrupted Mathlib download
+
+If `lake exe cache get` fails with a network error while cloning Mathlib,
+check the connection before retrying. When `.lake/packages/mathlib` is absent,
+you can fetch just the pinned release instead of its full Git history:
+
+```bash
+git -c http.version=HTTP/1.1 clone --depth 1 --branch v4.35.0 \
+  https://github.com/leanprover-community/mathlib4 .lake/packages/mathlib
+git -C .lake/packages/mathlib rev-parse HEAD
+```
+
+This command targets the current `v4.35.0` dependency. Before continuing, the
+printed commit must match the `mathlib` entry's `rev` in `lake-manifest.json`
+(currently `56a005855ea17e0b0958f73ec801ae140b0a1679`). For a different checkout,
+use its matching release. Leave `lean-toolchain` and `lake-manifest.json` unchanged.
+Then rerun `lake exe cache get`. After it succeeds, continue with import regeneration
+and `lake build`.
 
 ### ✍️ Hands-on 0 — your first file, and the loop
 
@@ -532,7 +554,7 @@ Lean answers `fun x ↦ 1 / 2 : ℝ → ℝ`. Two things to notice. The type is 
 
 That last pattern is exactly how `winProb := fun _ => 1 / 2` works in Part 3: a bidder whose chance of winning is one half no matter what they bid.
 
-> **`=>` or `↦`?** Both are accepted and mean the same thing. `MathEconLib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Basic.lean` almost entirely `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
+> **`=>` or `↦`?** Both are accepted and mean the same thing. `MathEconLib` uses both, with `=>` the more common: as of this writing, 414 `fun` arrows written `=>` against 268 written `↦`. The split runs by file rather than by rule, with `GameTheory/Strategic/Basic.lean` predominantly `↦` and `Statistics/OrderStatistics.lean` almost entirely `=>`. No linter enforces either, so match whichever the file you are editing already uses. One wrinkle: the project sets `pp.unicode.fun = true` in `lakefile.toml`, so Lean *prints* `↦` in the InfoView whatever you typed. Do not be thrown when your `=>` comes back as `↦`.
 
 ### 2.3 Symbols you will meet
 
@@ -1213,11 +1235,11 @@ None of that is about auctions, and none of it has appeared so far in this manua
 
 The matching `end` at the bottom of the file closes that section.
 
-The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/NashExistence.lean`](../MathEconLib/GameTheory/NashExistence.lean), which uses both:
+The distinction between the two kinds of import is worth a moment, because it is a real design choice rather than a formality. Look at [`GameTheory/Strategic/Existence.lean`](../MathEconLib/GameTheory/Strategic/Existence.lean), which uses both:
 
 ```lean
-public import MathEconLib.GameTheory.Basic
-public import Mathlib.Analysis.Convex.Quasiconvex
+public import MathEconLib.ForMathlib.Quasiconvex
+public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 
 import MathEconLib.ForMathlib.Kakutani
 import Mathlib.MeasureTheory.Measure.Prokhorov
@@ -1231,7 +1253,7 @@ Two practical notes. First, none of this applies to the scratch files you have b
 
 ### ✍️ Hands-on 4.0 — see the two kinds of import
 
-Open [`GameTheory/NashExistence.lean`](../MathEconLib/GameTheory/NashExistence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
+Open [`GameTheory/Strategic/Existence.lean`](../MathEconLib/GameTheory/Strategic/Existence.lean) and read the header. Predict, before scrolling: which of those imports are mentioned in the *statements* of its theorems, and which are used only inside proofs? Then check.
 
 Now scroll to the bottom of [`BidderProblem/Basic.lean`](../MathEconLib/BidderProblem/Basic.lean). The bare `end` closes the `@[expose] public section`; `end MathEconLib` closes the project namespace. Everything in the public section is available to importers under `MathEconLib`.
 
@@ -1952,6 +1974,136 @@ The second rule repays understanding rather than mere obedience. `native_decide`
 
 ---
 
+## Part 9 — A research walkthrough: higher fines and aggregate crime
+
+Can a higher fine increase crime in the existing risk-neutral model? We will derive a
+policy comparison from the library's expected-sanction theorem, then apply it to a
+population. This small extension shows how a researcher can assemble a further result
+from an existing formalization.
+
+The [canonical Becker example](../MathEconLibExamples/SingleParameter/BeckerCrime.lean)
+already defines the choices and proves optimality. A person with net gain `v` commits
+when `p * f ≤ v`, where `p` is the detection probability and `f` is the fine. The model
+selects committing at equality. Under risk neutrality, only the expected sanction
+`p * f` enters this comparison.
+
+### 9.1 Import the model and state the comparison
+
+Paste the following Lean blocks, in order, into one scratch file inside your checkout.
+The complete checked client is
+[`MathEconLibTest/Manual/BeckerResearch.lean`](../MathEconLibTest/Manual/BeckerResearch.lean);
+it is included in the default build. We import the existing model rather than defining
+its choices, payoffs, or optimal strategy again.
+
+```lean
+import MathEconLibExamples.SingleParameter.BeckerCrime
+
+open MathEconLib MathEconLibExamples.SingleParameter
+
+namespace Manual.BeckerResearch
+```
+
+Let `D` be the distribution of net gains in a population. The same `D` appears on both
+sides of our comparison; we hold the population's gains and the detection probability
+fixed. `D.expectedAllocation` is the expected offense indicator, hence the crime rate.
+No density or atomlessness assumption is needed.
+
+For the policy interpretation, `p` is in `[0, 1]` and fines are nonnegative. The proof
+needs only `0 ≤ p` and `f₁ ≤ f₂`, so its statement uses those weaker assumptions. The
+interval endpoints `lo` and `hi` are parameters of the underlying choice problem; its
+cutoff strategy is defined at every real gain. This population comparison does not
+require `D` to be supported on that interval.
+
+### 9.2 Reuse a theorem, then discharge its assumption
+
+The existing theorem says that increasing `p * f` weakly reduces aggregate crime.
+`apply` reduces our goal to its expected-sanction comparison. Mathlib's multiplication
+lemma proves that comparison from the two hypotheses:
+
+```lean
+/-- For a fixed distribution and nonnegative detection probability, a higher fine weakly
+reduces the aggregate crime rate. -/
+theorem aggregateCrime_antitone_in_fine
+    (D : ValueDistribution) (lo hi p f₁ f₂ : ℝ)
+    (hp : 0 ≤ p) (hf : f₁ ≤ f₂) :
+    D.expectedAllocation (crimeProblem lo hi p f₂) ≤
+      D.expectedAllocation (crimeProblem lo hi p f₁) := by
+  apply crimeProblem_expectedAllocation_antitone_in_expectedSanction
+  exact mul_le_mul_of_nonneg_left hf hp
+```
+
+The goal after `apply` is `p * f₁ ≤ p * f₂`. There is no new integration proof: the
+imported theorem already handles the population average, including mass at a cutoff.
+`antitone` means that the outcome weakly decreases as the argument increases.
+
+### 9.3 Apply the result to a policy and a population
+
+With detection probability `1/2`, raising the fine from `2` to `3` weakly reduces crime
+for every fixed distribution `D`. `norm_num` verifies the numerical assumptions:
+
+```lean
+example (D : ValueDistribution) :
+    D.expectedAllocation (crimeProblem 0 2 (1 / 2) 3) ≤
+      D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) := by
+  apply aggregateCrime_antitone_in_fine
+  all_goals norm_num
+```
+
+For a concrete population, put all probability mass at net gain `1`. This is the Dirac
+measure at `1`; `inferInstance` supplies its probability-measure property. At fine `2`,
+everyone is exactly at the cutoff and commits. At fine `3`, everyone abstains. The
+existing cutoff-probability identity calculates both crime rates:
+
+```lean
+example :
+    let D : ValueDistribution := ⟨MeasureTheory.Measure.dirac (1 : ℝ), inferInstance⟩
+    D.expectedAllocation (crimeProblem 0 2 (1 / 2) 2) = 1 ∧
+      D.expectedAllocation (crimeProblem 0 2 (1 / 2) 3) = 0 := by
+  dsimp only
+  rw [crimeProblem_expectedAllocation_eq_probAtLeast,
+    crimeProblem_expectedAllocation_eq_probAtLeast]
+  norm_num [ValueDistribution.probAtLeast, MeasureTheory.ProbabilityMeasure.coeFn_def]
+```
+
+### 9.4 Check the boundary and the scope
+
+A weak inequality does not promise a strict reduction. When detection probability is
+zero, changing the fine leaves the crime rate unchanged:
+
+```lean
+example (D : ValueDistribution) (lo hi f₁ f₂ : ℝ) :
+    D.expectedAllocation (crimeProblem lo hi 0 f₂) =
+      D.expectedAllocation (crimeProblem lo hi 0 f₁) := by
+  rw [crimeProblem_expectedAllocation_eq_probAtLeast,
+    crimeProblem_expectedAllocation_eq_probAtLeast]
+  simp
+```
+
+Close the namespace and inspect the derived theorem's trusted assumptions:
+
+```lean
+end Manual.BeckerResearch
+
+#print axioms Manual.BeckerResearch.aggregateCrime_antitone_in_fine
+```
+
+Lean reports only `propext`, `Classical.choice`, and `Quot.sound`. To build the checked
+client from the repository root, run:
+
+```bash
+lake build MathEconLibTest.Manual.BeckerResearch
+```
+
+The result holds within the imported model: risk-neutral binary choice with an
+exogenous detection probability and a fixed distribution of net gains. It does not
+compare enforcement costs, model changes in detection or gains induced by the policy,
+or establish an optimal fine. Changing those assumptions would require stating the
+new model and checking which existing results still apply. Even within this model,
+a positive detection probability alone does not guarantee strict deterrence: the
+population may put no mass between the old and new cutoffs.
+
+---
+
 ## Appendix A — Glossary of auction-theory terms
 
 Enough to read the library. Not a substitute for a course.
@@ -2034,6 +2186,6 @@ The rest of the library:
 | `Mechanism/` | allocation and payment rules |
 | `Auction/` | auctions with a probabilistic environment; revenue equivalence, symmetric private values, affiliation, all-purchase auctions |
 | `BidderProblem/` | the single-bidder view and the IC hierarchy |
-| `GameTheory/` | existence of Nash equilibria for continuous games |
+| `GameTheory/` | strategic games, Nash existence, and finite/measurable Bayesian equilibrium |
 | `ForMathlib/` | general mathematics and potential Mathlib contributions — Kakutani and Schauder fixed points, measure-theoretic lemmas |
 | `Statistics/` | order statistics |

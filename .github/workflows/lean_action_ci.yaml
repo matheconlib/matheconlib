@@ -3,14 +3,8 @@ name: Lean Action CI
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "website/**"
-      - ".github/workflows/deploy_website.yaml"
   pull_request:
     branches: [main]
-    paths-ignore:
-      - "website/**"
-      - ".github/workflows/deploy_website.yaml"
   workflow_dispatch:
 
 permissions:
@@ -26,14 +20,21 @@ jobs:
           # can commit back to it. Fork PRs and pushes: default checkout, which for
           # a PR is the merge ref - i.e. the contributor's code merged onto main.
           ref: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) && github.event.pull_request.head.ref || '' }}
+      - name: Check copyright headers
+        run: bash scripts/check-headers.sh
       - name: Test import regeneration helper
         run: python3 scripts/tests/test_update_imports.py
-      - name: Cache Lean build artifacts
+      - name: Test warning reporting helper
+        run: node --test scripts/tests/test_warning_counts.cjs
+      - name: Cache project build artifacts
         uses: actions/cache@v5
         with:
-          path: .lake
-          key: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
-          restore-keys: lake-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
+          # Mathlib has its own cache. Archiving all of .lake duplicates its large
+          # dependency build and can exhaust runner disk space during cache save.
+          path: .lake/build
+          # Use a separate namespace so old whole-.lake archives are not restored.
+          key: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
       - name: Set up Lean and Mathlib
         uses: leanprover/lean-action@v1
         with:
@@ -43,6 +44,7 @@ jobs:
           test: false
           lint: false
           use-github-cache: false
+          use-mathlib-cache: true
           mk_all-check: false
       - name: Regenerate import lists (same-repo PRs only)
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
@@ -56,7 +58,11 @@ jobs:
             exit 1
           fi
       - name: Build library, API pins, and namespace tests
-        run: lake build
+        id: lean_build
+        run: |
+          mkdir -p "$RUNNER_TEMP/library-warnings"
+          set -o pipefail
+          lake --rehash --no-ansi build 2>&1 | tee "$RUNNER_TEMP/library-warnings/build.log"
       - name: Commit verified import lists (same-repo PRs only)
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
@@ -66,3 +72,33 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git commit -m "Run mk_all: update imports"
           git push
+      - name: Test proof integrity checker
+        run: python3 scripts/tests/test_proof_integrity.py
+      - name: Check project proof integrity
+        id: proof_integrity
+        run: python3 scripts/check-proof-integrity.py --report "$RUNNER_TEMP/proof-integrity/report.json"
+      - name: Save proof integrity report
+        if: always() && !cancelled() && steps.proof_integrity.outcome != '' && steps.proof_integrity.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-integrity
+          path: ${{ runner.temp }}/proof-integrity/report.json
+          if-no-files-found: error
+          retention-days: 90
+      # Record after the convenience commit so counts follow the verified code
+      # even when CI has advanced the PR head by committing regenerated imports.
+      - name: Record library warning counts
+        if: always() && !cancelled()
+        env:
+          BUILD_OUTCOME: ${{ steps.lean_build.outcome }}
+          REPORT_DIRECTORY: ${{ runner.temp }}/library-warnings
+        run: node scripts/warning-counts.cjs
+      - name: Save library warning counts
+        if: always() && !cancelled()
+        uses: actions/upload-artifact@v4
+        with:
+          name: library-warning-counts
+          path: ${{ runner.temp }}/library-warnings/snapshot.json
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 90
