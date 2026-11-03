@@ -12,9 +12,13 @@ the greatest-completion characterization, the feasible-contraction formulation
 of unilateral substitutability, and the hull–envelope sandwich. These scripts
 must pass the repository build and proof-integrity checks before merging.
 
-The path-independent envelope, rejection-evidence axiom, and demand impossibility
-below are mathematical specifications with proofs, not claims of completed Lean
-formalization. They are included here so the follow-on PR records the entire
+The general path-independent minorant, path-independent envelope, and rejection-evidence
+characterization now have Lean proof scripts in `Choice/PathIndependentMinorant.lean`,
+`Choice/Matching/PathIndependentEnvelope.lean`, and `Choice/Matching/CompletionEvidence.lean`.
+The concrete clients in `MathEconLibExamples/Choice/SubstituteEnvelope.lean` apply greatestness,
+the sandwich, and a rejection obstruction. Validation of these additions is pending.
+The finite obstruction bound and four-contract demand impossibility remain mathematical
+specifications with proofs, not claims of completed Lean formalization. They are included here so the follow-on PR records the entire
 research development rather than silently dropping its remaining components.
 
 ## Conventions
@@ -85,7 +89,7 @@ original choice (under the stated feasibility and finite-valuedness hypotheses).
 
 ## 3. Rejection-evidence axiom for general completability
 
-Assume C is feasible-valued and satisfies IRC. For any menu Y and any collection
+Assume C satisfies IRC. Feasible-valuedness is not needed. For any menu Y and any collection
 of feasible sub-menus V_i ⊆ Y, put R = ⋃_i (V_i \ C(V_i)). Then substitutable
 completability is equivalent to
 
@@ -190,10 +194,10 @@ alone decides whether a demand-monotone completion exists.
 
 ## Remaining formalization checks
 
-- Formalize the rejection-evidence axiom and finite obstruction certificate.
-- Formalize the general path-independent minorant and P_C completion theorem.
+- Validate the formalized rejection-evidence axiom; formalize the finite obstruction bound.
+- Validate the formalized general path-independent minorant and P_C completion theorem.
 - Formalize the four-contract example and its universal nonexistence result.
-- Add concrete checked applications of the envelope theorem and sandwich theorem.
+- Validate the added concrete applications of the envelope, sandwich, and obstruction theorems.
 - Build all targets, regenerate/verify imports, and run proof-integrity checks.
 
 No changes to the manuscript, market definition, completion predicates, or
