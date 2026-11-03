@@ -70,6 +70,14 @@ Browse the [source tree](MathEconLib/) for individual modules and their statemen
 
 Worked demonstrations live in [`MathEconLibExamples/`](MathEconLibExamples/); reusable developments live in the core library, with API and regression checks in [`MathEconLibTest/`](MathEconLibTest/).
 
+The all-purchase welfare API includes actual expected edition welfare, its variance penalty,
+and an editions-only Cournot Nash equilibrium with nonnegative purchases; see
+`MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean`.
+
+The interior all-purchase pricing results connect actual expected quantity and seller profit
+to the distribution-based all-pay moment under explicit strategy conditions. They do not
+establish equilibrium existence at other prices. See `docs/AuctionReferences.md` for sources.
+
 ## Contributing
 
 Contributions of definitions, proofs, worked applications, and documentation are welcome. Start with the [design principles](DESIGN.md) and [contribution guidelines](CONTRIBUTING.md), which explain where developments belong and when a design discussion is needed.
@@ -81,11 +89,3 @@ Have you built something using MathEconLib, or would you like to get involved? R
 ## License
 
 MathEconLib is released under the [Apache License 2.0](LICENSE).
-
-The all-purchase welfare API includes actual expected edition welfare, its variance penalty,
-and an editions-only Cournot Nash equilibrium with nonnegative purchases; see
-`MathEconLib/Auction/AllPurchase/WelfareDecomposition.lean`.
-
-The interior all-purchase pricing results connect actual expected quantity and seller profit
-to the distribution-based all-pay moment under explicit strategy conditions. They do not
-establish equilibrium existence at other prices. See `docs/AuctionReferences.md` for sources.

@@ -19,3 +19,6 @@ inside a `module`. The default test target builds this file and records the resu
 #print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.prize_aware_best_response
 #print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.welfare_gap
 #print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.variance_penalty
+
+#print axioms MathEconLib.Auction.integrable_comp_type_of_monotoneOn
+#print axioms MathEconLib.LinearScarcityAuction.interior_regime_strategy_eq_strategyInterior

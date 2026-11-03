@@ -301,13 +301,13 @@ theorem cournotProfile_isNash [NeZero n] (hp : A.spec.price ≤ A.φ_bar) :
       rw [Function.update_of_ne (Finset.ne_of_mem_erase hj)]
       rfl
     rw [heq]
-    simp only [Function.update_same, Finset.sum_const, Finset.card_erase_of_mem
+    simp only [Function.update_self, Finset.sum_const, Finset.card_erase_of_mem
       (Finset.mem_univ i), Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    rw [Nat.cast_sub (NeZero.one_le n), Nat.cast_one]
+    rw [Nat.cast_sub (NeZero.one_le (n := n)), Nat.cast_one]
     ring
   change (Function.update (A.cournotProfile hp) i x i : ℝ) *
       (A.spec.φ (∑ j, (Function.update (A.cournotProfile hp) i x j : ℝ)) - A.spec.price) ≤ _
-  rw [Function.update_same, htotal]
+  rw [Function.update_self, htotal]
   simpa [editionsOnlyGame, cournotProfile, nsmul_eq_mul] using
     (A.cournotPurchaseLinear_best_response hp).2 (x : ℝ) x.property
 

@@ -96,7 +96,7 @@ theorem hasPDF_value (i : Fin 2) : HasPDF (value i) ℙ volume := by
   exact ValueDistribution.uniformInterval_absolutelyContinuous 0 2 (by norm_num)
 
 /-- Every value law is atomless. -/
-instance noAtoms_value (i : Fin 2) : NoAtoms (Measure.map (value i) ℙ) := by
+instance noAtoms_value (i : Fin 2) : NullSingletonClass (Measure.map (value i) ℙ) := by
   rw [map_value]
   exact ValueDistribution.uniformInterval_noAtoms 0 2 (by norm_num)
 

@@ -200,10 +200,8 @@ end Auction
 
 namespace LinearScarcityAuction
 
-variable [n.AtLeastTwo]
 variable (A : LinearScarcityAuction Ω n)
-variable [A.HasIdenticalTypes] [A.HasIndependentTypes]
-variable [A.HasBoundedTypes] [A.HasAtomlessTypes]
+variable [A.HasIdenticalTypes] [A.HasBoundedTypes]
 
 /-- Substantive assumptions for an interior strategy at representative bidder `i`.
 Integrability follows from measurable monotone bids and bounded types, so is not a field.
@@ -229,6 +227,8 @@ theorem IsInteriorRegimeStrategy.integrable {β : ℝ → ℝ} {i : Fin n}
     (h : A.IsInteriorRegimeStrategy β i) (j : Fin n) :
     Integrable (fun ω => β (A.θ j ω)) ℙ :=
   A.toAuction.integrable_comp_type_of_monotoneOn β h.measurable h.strictMonoOn.monotoneOn j
+
+variable [n.AtLeastTwo] [A.HasIndependentTypes] [A.HasAtomlessTypes]
 
 /-- Interior purchases in terms of the distribution-based all-pay bid. The lowest-type
 utility condition forces `β(lowestType) = −K/(2α)`, and strict monotonicity selects the
