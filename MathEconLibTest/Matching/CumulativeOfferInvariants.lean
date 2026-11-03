@@ -53,6 +53,7 @@ theorem first_admissible : tied.Admissible ∅ 0 := by
     · change (0 : ℕ) ≤ 1 ∧ ¬ (1 : ℕ) ≤ 0
       omega
     · intro y _
+      change (1 : ℕ) ≤ 1
       exact le_rfl
 
 theorem first_run : tied.Run [{0}] :=
