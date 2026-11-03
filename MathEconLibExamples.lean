@@ -5,6 +5,8 @@ Authors: Daniel Lyng
 -/
 module
 
+public import MathEconLibExamples.AllPurchase.UniformTwoBidder
+
 public import MathEconLibExamples.AllPurchase.Welfare
 
 public import MathEconLibExamples.GameTheory.MatchingPennies

@@ -1,25 +1,37 @@
 /-
 Copyright (c) 2026 Ruiz Chen, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ruiz Chen, Bo Cowgill
+Authors: Ruiz Chen, Bo Cowgill, Scott Duke Kominers
 -/
 module
 
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
+public import MathEconLib.Auction.AllPurchase.ExplicitSolutions
+public import MathEconLib.Auction.AllPurchase.RevenueDecomposition
 public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 
 /-!
-# Algebraic pricing formulas for all-purchase auctions
+# Interior quantity and pricing in all-purchase auctions
 
-Motivated by Propositions 6.8 and 6.12 (§6.7.2) in Scott's notes. For real parameters
-`φbar`, `α`, `c`, and `M`, and `n : ℕ`, define
+For real parameters `φbar`, `α`, `c`, and `M`, and `n : ℕ`, define
 `Q(p) = n(φbar − p)/(α(n+1)) + 2nM/((n+1)√α)`,
 `Π(p) = (p − c) · Q(p)`, and `p* = (φbar + c + 2√α·M)/2`.
 
 For `α > 0` and `n ≥ 1`, `p*` uniquely maximizes the defined `Π` over all real prices.
-Identifying `Q` and `Π` with auction equilibrium quantity and seller profit, and
-`M` with `𝔼[√(b^{AP}(V))]`, remains unproved. Auction feasibility and economic
-global optimality remain open in [#46](https://github.com/matheconlib/matheconlib/issues/46).
+For a linear-scarcity auction with independent identical bounded atomless types, the
+interior-regime assumptions identify `M` with the distribution-based moment
+`𝔼[√(b^{AP}(V))]`, `Q` with expected aggregate purchases, and `Π` with actual bundled
+profit at the posted price. The common strategy is measurable and strictly increasing,
+purchases are integrable, and the representative bidder satisfies type-deviation IC
+and the interior lowest-type utility condition. The quadratic root and the quantity
+formula are derived from these assumptions.
+
+The optimal value is an upper bound for the profit of each such auction, with equality
+exactly when its posted price is `p*`. This does not construct an auction equilibrium at
+another price or compare interior and boundary regimes.
+
+This is part of MathEconLib's all-purchase analysis, whose economic-theory research write-up is
+pending. See `docs/AuctionReferences.md` for provenance and citation guidance.
 
 ## Main results
 
@@ -27,6 +39,12 @@ global optimality remain open in [#46](https://github.com/matheconlib/matheconli
 * `AllPurchase.sellerProfitInterior_eq_at_optimal_iff`: `Π(p) = Π(p*) ↔ p = p*`.
 * `AllPurchase.optimalPriceInterior_in_interior_regime`: for arbitrary parameters,
   `φbar − p* > (n−1)√α·M ↔ φbar − c > 2n√α·M`.
+* `LinearScarcityAuction.expectedAggregateBid_eq_interiorMeanQuantity`: the quantity
+  formula from interior incentives and the self-consistency equation.
+* `LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior`: actual bundled profit
+  equals the defined profit formula at the auction's posted price.
+* `LinearScarcityAuction.bundledProfit_le_interior_optimum`: the corresponding upper bound,
+  with equality characterized by `bundledProfit_eq_interior_optimum_iff`.
 
 For `b = n/(α(n+1)) > 0` and `Φ = φbar + 2√α·M`,
 `Π(p) = b · (p − c) · (Φ − p)` and `Π(p*) − Π(p) = b · (p − p*)²`.
@@ -40,8 +58,9 @@ namespace AllPurchase
 
 open Real
 
-/-- The quantity formula `Q(p) = n(φbar − p)/(α(n+1)) + 2nM/((n+1)√α)`,
-motivated by Proposition 6.8. Its auction equilibrium interpretation remains unproved. -/
+/-- The quantity formula `Q(p) = n(φbar − p)/(α(n+1)) + 2nM/((n+1)√α)`.
+`LinearScarcityAuction.expectedAggregateBid_eq_interiorMeanQuantity` identifies it with
+expected aggregate purchases under the stated interior-regime assumptions. -/
 noncomputable def interiorMeanQuantity (φbar α M : ℝ) (n : ℕ) (p : ℝ) : ℝ :=
   (n : ℝ) * (φbar - p) / (α * ((n : ℝ) + 1)) +
     2 * (n : ℝ) * M / (((n : ℝ) + 1) * sqrt α)
@@ -142,6 +161,251 @@ theorem optimalPriceInterior_in_interior_regime
 
 end AllPurchase
 
+/-! ### Distribution-based moment and aggregate purchases -/
+
+open Real MeasureTheory ProbabilityTheory Set Finset
+
+variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
+variable {n : ℕ} [NeZero n]
+
+namespace Auction
+
+variable (A : Auction Ω n) [A.HasIdenticalTypes]
+
+/-- The square-root all-pay moment `M = 𝔼[√(b^{AP}(V₀))]`. It uses only the common
+type distribution, its lower endpoint, and the number of bidders; no purchase strategy
+or posted-price specification enters the definition. As with other Bochner integrals,
+the definition is totalized; the interior-auction results below establish integrability. -/
+noncomputable def expectedSqrtAllPayBid : ℝ :=
+  𝔼[fun ω => sqrt (A.allPayBid (A.θ 0 ω))]
+
+/-- The square-root all-pay moment is nonnegative. -/
+theorem expectedSqrtAllPayBid_nonneg : 0 ≤ A.expectedSqrtAllPayBid := by
+  exact integral_nonneg fun _ => sqrt_nonneg _
+
+/-- Identical type distributions and an integrable measurable common strategy identify
+expected aggregate purchases with `n` times the representative bidder's mean purchase. -/
+theorem expectedAggregateBid_eq_mul_mean
+    (β : ℝ → ℝ) (hβ_meas : Measurable β)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ) :
+    A.expectedAggregateBid β = (n : ℝ) * 𝔼[fun ω => β (A.θ 0 ω)] := by
+  unfold expectedAggregateBid aggregateBid
+  rw [integral_finsetSum _ (fun j _ => hβ_int j)]
+  have hsym : ∀ j, 𝔼[fun ω => β (A.θ j ω)] = 𝔼[fun ω => β (A.θ 0 ω)] :=
+    fun j => A.integral_comp_type_eq β hβ_meas j 0
+  simp_rw [hsym]
+  rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+
+end Auction
+
+namespace LinearScarcityAuction
+
+variable [n.AtLeastTwo]
+variable (A : LinearScarcityAuction Ω n)
+variable [A.HasIdenticalTypes] [A.HasIndependentTypes]
+variable [A.HasBoundedTypes] [A.HasAtomlessTypes]
+
+/-- Substantive assumptions for an interior strategy at representative bidder `i`.
+Integrability follows from measurable monotone bids and bounded types, so is not a field.
+This is an explicit proposition, not a typeclass or an equilibrium-existence assertion. -/
+structure IsInteriorRegimeStrategy (β : ℝ → ℝ) (i : Fin n) : Prop where
+  /-- The common strategy is measurable. -/
+  measurable : Measurable β
+  /-- Bids strictly increase on the common type interval. -/
+  strictMonoOn : StrictMonoOn β (Icc A.lowestType A.highestType)
+  /-- The representative bidder has no profitable deviation to another type's bid. -/
+  typeDeviationIC :
+    (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC
+  /-- The quadratic cost lies in the interior regime. -/
+  K_neg : A.K_linear β < 0
+  /-- Lowest-type utility has the interior normalization. -/
+  lowestTypeUtility : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+    (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
+      (A.K_linear β) ^ 2 / (4 * A.α_coeff)
+
+variable {A} in
+omit [n.AtLeastTwo] [A.HasIndependentTypes] [A.HasAtomlessTypes] in
+/-- Interior strategy assumptions imply integrability for every bidder. -/
+theorem IsInteriorRegimeStrategy.integrable {β : ℝ → ℝ} {i : Fin n}
+    (h : A.IsInteriorRegimeStrategy β i) (j : Fin n) :
+    Integrable (fun ω => β (A.θ j ω)) ℙ :=
+  A.toAuction.integrable_comp_type_of_monotoneOn β h.measurable h.strictMonoOn.monotoneOn j
+
+/-- Interior purchases in terms of the distribution-based all-pay bid. The lowest-type
+utility condition forces `β(lowestType) = −K/(2α)`, and strict monotonicity selects the
+upper quadratic root. Thus no separate root-selection or all-pay-nonnegativity premise
+is needed. The incentive condition concerns deviations to other types' prescribed bids. -/
+theorem interior_regime_strategy_eq_strategyInterior
+    (β : ℝ → ℝ) (i : Fin n) (h : A.IsInteriorRegimeStrategy β i)
+    (v : ℝ) (hv : v ∈ Icc A.lowestType A.highestType) :
+    β v = AllPurchase.strategyInterior A.α_coeff (-(A.K_linear β))
+      (A.toAuction.allPayBid v) := by
+  let P : InteriorRegimeProblem := {
+    A.toQuadraticCostProblem β h.measurable h.integrable i with
+    K_neg := h.K_neg
+    U_lowestType_eq := h.lowestTypeUtility
+  }
+  let : BidderProblem.HasTypeDeviationIC P.toBidderProblem := h.typeDeviationIC
+  let := h.typeDeviationIC
+  have hmem (w : ℝ) (hw : w ∈ Icc A.lowestType A.highestType) :
+      w ∈ P.typeInterval := by
+    change w ∈ Icc (A.θmin i) (A.θmax i)
+    simpa only [Auction.θmin_eq_lowestType, Auction.θmax_eq_highestType] using hw
+  have hAP (w : ℝ) (hw : w ∈ Icc A.lowestType A.highestType) :
+      P.allPayBid w = A.toAuction.allPayBid w := by
+    exact A.toAuction.toBidderProblem_allPayBid_eq
+      A.spec.usesStrictHighestBidAllocation h.strictMonoOn h.measurable i hw
+  have hα_ne : A.α_coeff ≠ 0 := ne_of_gt A.α_pos
+  have hsquare (w : ℝ) (hw : w ∈ Icc A.lowestType A.highestType) :
+      A.α_coeff * (β w + A.K_linear β / (2 * A.α_coeff)) ^ 2 =
+        A.toAuction.allPayBid w := by
+    have hquad := P.interior_regime_quadratic w (hmem w hw)
+    rw [hAP w hw] at hquad
+    change A.α_coeff * (β w) ^ 2 + A.K_linear β * β w =
+      A.toAuction.allPayBid w - (A.K_linear β) ^ 2 / (4 * A.α_coeff) at hquad
+    have hcomplete :
+        A.α_coeff * (β w + A.K_linear β / (2 * A.α_coeff)) ^ 2 =
+          A.α_coeff * (β w) ^ 2 + A.K_linear β * β w +
+            (A.K_linear β) ^ 2 / (4 * A.α_coeff) := by
+      field_simp
+      ring
+    linarith
+  have hlo_mem : A.lowestType ∈ Icc A.lowestType A.highestType :=
+    ⟨le_rfl, hv.1.trans hv.2⟩
+  have hlo_sq := hsquare A.lowestType hlo_mem
+  rw [A.toAuction.allPayBid_lowestType] at hlo_sq
+  have hlo_zero : β A.lowestType + A.K_linear β / (2 * A.α_coeff) = 0 := by
+    have hsq : (β A.lowestType + A.K_linear β / (2 * A.α_coeff)) ^ 2 = 0 :=
+      (mul_eq_zero.mp hlo_sq).resolve_left hα_ne
+    exact pow_eq_zero_iff two_ne_zero |>.mp hsq
+  have hroot : -(A.K_linear β) / (2 * A.α_coeff) ≤ β v := by
+    have := h.strictMonoOn.monotoneOn hlo_mem hv hv.1
+    rw [neg_div]
+    linarith
+  have hAP_nn : 0 ≤ P.allPayBid v := by
+    rw [hAP v hv, ← hsquare v hv]
+    exact mul_nonneg A.α_pos.le (sq_nonneg _)
+  have hstrategy := P.interior_regime_strategy v (hmem v hv) hAP_nn hroot
+  rw [hAP v hv] at hstrategy
+  change β v = AllPurchase.strategyInterior A.α_coeff (-(A.K_linear β))
+    (A.toAuction.allPayBid v) at hstrategy
+  exact hstrategy
+
+/-- Expanded square-root version of the canonical interior strategy formula. -/
+theorem interior_regime_strategy_eq_allPayBid
+    (β : ℝ → ℝ) (i : Fin n) (h : A.IsInteriorRegimeStrategy β i)
+    (v : ℝ) (hv : v ∈ Icc A.lowestType A.highestType) :
+    β v = -(A.K_linear β) / (2 * A.α_coeff) +
+      sqrt (A.toAuction.allPayBid v) / sqrt A.α_coeff := by
+  simpa only [AllPurchase.strategyInterior, sqrt_div' _ A.α_pos.le] using
+    A.interior_regime_strategy_eq_strategyInterior β i h v hv
+
+variable (β : ℝ → ℝ) (h : A.IsInteriorRegimeStrategy β 0)
+
+include h
+
+/-- The distribution-based square-root all-pay bid is integrable under the interior
+assumptions: the strategy formula expresses it as a constant multiple of an integrable
+purchase plus a constant. -/
+theorem integrable_sqrt_allPayBid_of_interior (j : Fin n) :
+    Integrable (fun ω => sqrt (A.toAuction.allPayBid (A.θ j ω))) ℙ := by
+  have hs_ne : sqrt A.α_coeff ≠ 0 := ne_of_gt (sqrt_pos.mpr A.α_pos)
+  have hfun : (fun ω => sqrt (A.toAuction.allPayBid (A.θ j ω))) =
+      (fun ω => sqrt A.α_coeff *
+        (β (A.θ j ω) + A.K_linear β / (2 * A.α_coeff))) := by
+    funext ω
+    have hmem : A.θ j ω ∈ Icc A.lowestType A.highestType := by
+      simpa only [Auction.θmin_eq_lowestType, Auction.θmax_eq_highestType] using
+        (Auction.HasBoundedTypes.θ_in (A := A.toAuction) j ω)
+    have h := A.interior_regime_strategy_eq_allPayBid β 0 h (A.θ j ω) hmem
+    have hdiv : β (A.θ j ω) + A.K_linear β / (2 * A.α_coeff) =
+        sqrt (A.toAuction.allPayBid (A.θ j ω)) / sqrt A.α_coeff := by
+      rw [neg_div] at h
+      linarith
+    simpa only [mul_comm] using ((eq_div_iff hs_ne).mp hdiv).symm
+  rw [hfun]
+  exact ((h.integrable j).add (integrable_const _)).const_mul _
+
+/-- Taking expectations of the interior strategy and solving
+`K = p − φbar + α(n−1)μ` determines the representative bidder's mean purchase. -/
+theorem meanPurchase_eq_interior :
+    A.meanPurchase β =
+      (A.φ_bar - A.spec.price) / (A.α_coeff * ((n : ℝ) + 1)) +
+        2 * A.toAuction.expectedSqrtAllPayBid / (((n : ℝ) + 1) * sqrt A.α_coeff) := by
+  have hs_int := A.integrable_sqrt_allPayBid_of_interior β h 0
+  have hfun : (fun ω => β (A.θ 0 ω)) =
+      (fun ω => -(A.K_linear β) / (2 * A.α_coeff) +
+        sqrt (A.toAuction.allPayBid (A.θ 0 ω)) / sqrt A.α_coeff) := by
+    funext ω
+    apply A.interior_regime_strategy_eq_allPayBid β 0 h
+    simpa only [Auction.θmin_eq_lowestType, Auction.θmax_eq_highestType] using
+      (Auction.HasBoundedTypes.θ_in (A := A.toAuction) 0 ω)
+  have hmean : A.meanPurchase β = -(A.K_linear β) / (2 * A.α_coeff) +
+      A.toAuction.expectedSqrtAllPayBid / sqrt A.α_coeff := by
+    unfold meanPurchase
+    rw [hfun, integral_add (integrable_const _) (hs_int.div_const _),
+      integral_const, probReal_univ, one_smul, integral_div]
+    rfl
+  have hα_ne : A.α_coeff ≠ 0 := ne_of_gt A.α_pos
+  have hs_ne : sqrt A.α_coeff ≠ 0 := ne_of_gt (sqrt_pos.mpr A.α_pos)
+  have hn1_ne : (n : ℝ) + 1 ≠ 0 := ne_of_gt (by positivity : (0 : ℝ) < n + 1)
+  unfold K_linear at hmean
+  field_simp [hα_ne, hs_ne, hn1_ne] at hmean ⊢
+  nlinarith
+
+/-- Under the interior incentive and baseline-utility assumptions, expected aggregate
+purchases equal the quantity formula at the actual posted price, with the moment taken
+from the type distribution's all-pay bid. Only the representative bidder's IC and
+baseline utility are needed because all bidders use the common strategy. -/
+theorem expectedAggregateBid_eq_interiorMeanQuantity :
+    A.toAuction.expectedAggregateBid β =
+      AllPurchase.interiorMeanQuantity A.φ_bar A.α_coeff
+        A.toAuction.expectedSqrtAllPayBid n A.spec.price := by
+  rw [A.toAuction.expectedAggregateBid_eq_mul_mean β h.measurable h.integrable]
+  change (n : ℝ) * A.meanPurchase β = _
+  rw [A.meanPurchase_eq_interior β h]
+  unfold AllPurchase.interiorMeanQuantity
+  ring
+
+/-- Actual bundled profit at the auction's posted price is the interior profit formula
+with the distribution-based square-root all-pay moment. This is an identification for
+the supplied auction and strategy, not an existence statement at other prices. -/
+theorem bundledProfit_eq_sellerProfitInterior (c : ℝ) :
+    A.toAuction.bundledProfit A.spec β c =
+      AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
+        A.toAuction.expectedSqrtAllPayBid n A.spec.price := by
+  unfold Auction.bundledProfit AllPurchase.sellerProfitInterior
+  rw [A.expectedAggregateBid_eq_interiorMeanQuantity β h]
+
+/-- The algebraic interior optimum bounds the actual profit of a supplied interior
+auction. This does not assert the existence of an equilibrium at the optimizing price. -/
+theorem bundledProfit_le_interior_optimum (c : ℝ) :
+    A.toAuction.bundledProfit A.spec β c ≤
+      AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
+        A.toAuction.expectedSqrtAllPayBid n
+        (AllPurchase.optimalPriceInterior A.φ_bar c A.α_coeff
+          A.toAuction.expectedSqrtAllPayBid) := by
+  rw [A.bundledProfit_eq_sellerProfitInterior β h c]
+  exact AllPurchase.sellerProfitInterior_le_at_optimal A.α_pos
+    (by have := Nat.AtLeastTwo.prop (n := n); omega) A.spec.price
+
+/-- An interior auction attains the algebraic optimum exactly when its actual posted
+price equals the candidate price. No cross-price auction family is assumed. -/
+theorem bundledProfit_eq_interior_optimum_iff (c : ℝ) :
+    A.toAuction.bundledProfit A.spec β c =
+        AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
+          A.toAuction.expectedSqrtAllPayBid n
+          (AllPurchase.optimalPriceInterior A.φ_bar c A.α_coeff
+            A.toAuction.expectedSqrtAllPayBid) ↔
+      A.spec.price = AllPurchase.optimalPriceInterior A.φ_bar c A.α_coeff
+        A.toAuction.expectedSqrtAllPayBid := by
+  rw [A.bundledProfit_eq_sellerProfitInterior β h c]
+  exact AllPurchase.sellerProfitInterior_eq_at_optimal_iff A.α_pos
+    (by have := Nat.AtLeastTwo.prop (n := n); omega) A.spec.price
+
+end LinearScarcityAuction
+
 end
 
 end MathEconLib
+

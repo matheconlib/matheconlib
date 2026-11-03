@@ -25,6 +25,13 @@ nonnegative here.
 The all-purchase specification is adapted from Auctionlib/Mechanism/AllPurchase.lean,
 introduced in commit 384acbf.
 
+## Sources and provenance
+
+This formalizes the all-purchase format Scott Duke Kominers observed in NFT sales; see the
+[sale provenance](https://x.com/tiffatronn/status/1928904850022265170).
+The economic-theory research write-up is pending; the current reference is the MathEconLib Lean
+development. See `docs/AuctionReferences.md` for the source map and citation guidance.
+
 ## Main definitions
 
 * `AllPurchaseSpec`: a positive posted price and a continuous, strictly decreasing resale-value
@@ -100,3 +107,4 @@ theorem isUnitIntervalAllocation (spec : AllPurchaseSpec M alloc) :
 end AllPurchaseSpec
 
 end MathEconLib.Mechanism.Auctions
+

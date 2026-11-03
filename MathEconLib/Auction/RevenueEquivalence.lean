@@ -19,6 +19,19 @@ yield the same expected revenue, without any efficiency assumption.
 Revenue means realized receipts under the joint type law. Relating it to marginal interim payments
 requires measurable payment rules and integrable realized payments; BIC and bounded allocations
 alone do not supply these conditions.
+
+## References
+
+Vijay Krishna (2010), *Auction Theory*, 2nd ed., Academic Press:
+
+* §3.1, Proposition 3.1, p. 28: revenue equivalence for symmetric increasing equilibria
+  of standard auctions. `Auction.revenue_equivalence` expresses the sufficient common-allocation
+  condition directly through the interim functions `q`; this formulation also allows
+  common allocation rules that are not efficient.
+* §2.4, equations (2.6)–(2.7), pp. 18–19: expected revenue as the expected second-highest
+  value, corresponding to `Auction.total_revenue`.
+
+See the [auction reference map](../../docs/AuctionReferences.md) for the scope of these matches.
 -/
 
 namespace MathEconLib
@@ -51,7 +64,9 @@ lemma payment_formula_strictHighestBid
 
 Two BIC symmetric IPV auctions with zero lowest-type utility, the same `q`, same type bounds, and
 identically distributed types yield the same expected total revenue, provided the payment rules
-are measurable and the realized truthful payments are integrable. -/
+are measurable and the realized truthful payments are integrable.
+
+See Krishna (2010), §§2.4 and 3.1, and `docs/AuctionReferences.md`. -/
 theorem revenue_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.IsSymmetricIPV]
@@ -89,7 +104,9 @@ theorem revenue_equivalence
 
 /-- Under strict-highest-bid allocation, BIC, and zero lowest-type utility, expected realized
 revenue equals `𝔼[S₂]`, provided payment rules are measurable and truthful payments are
-integrable. -/
+integrable.
+
+See Krishna (2010), §§2.4 and 3.1, and `docs/AuctionReferences.md`. -/
 lemma total_revenue
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     [IPV.BIC A] [A.HasZeroLowestTypeUtility]
@@ -144,3 +161,4 @@ end Auction
 end
 
 end MathEconLib
+
