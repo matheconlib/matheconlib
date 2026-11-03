@@ -594,6 +594,11 @@ theorem revenue_decomposition_boundary_of_isBoundaryRegime
 
 /-! #### Corollary 6.11 — LinearScarcity specialization -/
 
+/-- The symmetric per-bidder editions-only Cournot candidate. It is a feasible purchase when
+the posted price does not exceed the scarcity intercept. -/
+noncomputable def cournotPurchaseLinear : ℝ :=
+  (A.φ_bar - A.spec.price) / (A.α_coeff * ((n : ℝ) + 1))
+
 /-- Interior stationary Cournot candidate for total editions-only purchases under linear scarcity:
 `B^{ed-only} = n(φ̄ − p)/(α(n+1))`.
 
@@ -601,8 +606,7 @@ For payoff `bᵢ · (φ̄ − αB − p)`, symmetric first-order conditions give
 `α > 0`, it is positive when `φ̄ > p`, zero when `φ̄ = p`, and negative when `φ̄ < p`; in the last
 case it is infeasible for a game with nonnegative purchases. -/
 noncomputable def cournotQuantityLinear : ℝ :=
-  (n : ℝ) * (A.φ_bar - A.spec.price) /
-    (A.α_coeff * ((n : ℝ) + 1))
+  (n : ℝ) * A.cournotPurchaseLinear
 
 omit [n.AtLeastTwo] in
 /-- **Corollary 6.11 for `LinearScarcityAuction` in boundary regime.**
@@ -652,3 +656,4 @@ end LinearScarcityAuction
 end
 
 end MathEconLib
+
