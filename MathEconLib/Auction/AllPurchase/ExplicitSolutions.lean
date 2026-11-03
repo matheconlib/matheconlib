@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng
+-/
 module
 
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
@@ -229,8 +234,8 @@ theorem boundary_regime_strategy_auction
     β v = strategyBoundary A.α_coeff (A.K_linear β)
       ((A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
   let P := A.toQuadraticCostProblem β hβ_meas hβ_int i
-  letI : BidderProblem.HasTypeDeviationIC P.toBidderProblem := hIC
-  letI : BidderProblem.IsBoundaryRegime P.toBidderProblem := hBR
+  let : BidderProblem.HasTypeDeviationIC P.toBidderProblem := hIC
+  let : BidderProblem.IsBoundaryRegime P.toBidderProblem := hBR
   change P.strategy v = _
   exact P.boundary_regime_strategy hK v hv h_bAP_nn h_strat_nn
 
@@ -259,7 +264,7 @@ theorem interior_regime_strategy_auction
     K_neg := hK_neg
     U_lowestType_eq := hU_eq
   }
-  letI : BidderProblem.HasTypeDeviationIC P.toBidderProblem := hIC
+  let : BidderProblem.HasTypeDeviationIC P.toBidderProblem := hIC
   change P.strategy v = _
   exact P.interior_regime_strategy v hv h_bAP_nn h_strat_ge
 
@@ -268,3 +273,4 @@ end LinearScarcityAuction
 end
 
 end MathEconLib
+

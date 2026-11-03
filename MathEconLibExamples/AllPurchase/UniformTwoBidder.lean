@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
 module
 
 public import MathEconLib.Auction.AllPurchase
@@ -192,6 +197,15 @@ theorem interior_utility :
   change (1 : ℝ) / 36 = (-(1 : ℝ) / 3) ^ 2 / (4 * 1)
   norm_num
 
+/-- The concrete strategy satisfies the public interior-regime contract without an
+independent integrability premise. -/
+theorem interior_strategy : model.IsInteriorRegimeStrategy strategy 0 where
+  measurable := strategy_measurable
+  strictMonoOn := strategy_strictMonoOn
+  typeDeviationIC := typeDeviationIC 0
+  K_neg := K_neg
+  lowestTypeUtility := interior_utility
+
 /-- The common all-pay benchmark bid is `v²/4`. -/
 theorem allPayBid_eq (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
     model.allPayBid v = v ^ 2 / 4 := by
@@ -217,8 +231,7 @@ theorem expectedSqrtAllPayBid_eq : model.toAuction.expectedSqrtAllPayBid = 1 / 2
 
 /-- Applying the interior quantity theorem gives expected aggregate purchases `4/3`. -/
 theorem expectedAggregateBid_eq : model.expectedAggregateBid strategy = 4 / 3 := by
-  have h := model.expectedAggregateBid_eq_interiorMeanQuantity strategy strategy_measurable
-    strategy_strictMonoOn strategy_integrable (typeDeviationIC 0) K_neg interior_utility
+  have h := model.expectedAggregateBid_eq_interiorMeanQuantity strategy interior_strategy
   rw [expectedSqrtAllPayBid_eq] at h
   change model.expectedAggregateBid strategy =
     MathEconLib.AllPurchase.interiorMeanQuantity 3 1 (1 / 2) 2 2 at h
@@ -227,8 +240,7 @@ theorem expectedAggregateBid_eq : model.expectedAggregateBid strategy = 4 / 3 :=
 
 /-- Applying the auction-to-profit bridge gives profit `8/3` at production cost `0`. -/
 theorem bundledProfit_eq : model.bundledProfit model.spec strategy 0 = 8 / 3 := by
-  have h := model.bundledProfit_eq_sellerProfitInterior strategy strategy_measurable
-    strategy_strictMonoOn strategy_integrable (typeDeviationIC 0) K_neg interior_utility 0
+  have h := model.bundledProfit_eq_sellerProfitInterior strategy interior_strategy 0
   rw [expectedSqrtAllPayBid_eq] at h
   change model.bundledProfit model.spec strategy 0 =
     MathEconLib.AllPurchase.sellerProfitInterior 3 1 0 (1 / 2) 2 2 at h
@@ -251,8 +263,7 @@ theorem bundledProfit_eq_interior_optimum :
         model.toAuction.expectedSqrtAllPayBid 2
         (MathEconLib.AllPurchase.optimalPriceInterior
           model.φ_bar 0 model.α_coeff model.toAuction.expectedSqrtAllPayBid) := by
-  exact (model.bundledProfit_eq_interior_optimum_iff strategy strategy_measurable
-    strategy_strictMonoOn strategy_integrable (typeDeviationIC 0) K_neg interior_utility 0).2
+  exact (model.bundledProfit_eq_interior_optimum_iff strategy interior_strategy 0).2
       postedPrice_eq_optimal
 
 /-! ## Edition welfare at privately optimal purchases -/
@@ -332,7 +343,7 @@ theorem expected_edition_welfare :
 
 /-- The editions-only Cournot benchmark buys `2/3` units in total. -/
 theorem cournotQuantity_eq : model.cournotQuantityLinear = 2 / 3 := by
-  change (2 : ℝ) * (3 - 2) / (1 * (2 + 1)) = 2 / 3
+  change (2 : ℝ) * ((3 - 2) / (1 * (2 + 1))) = 2 / 3
   norm_num
 
 /-- A type's prize-aware purchase is at least the editions-only quantity `1/3` exactly when

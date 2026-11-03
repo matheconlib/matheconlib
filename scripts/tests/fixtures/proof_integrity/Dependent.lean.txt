@@ -1,0 +1,4 @@
+module
+public import Init
+import BadDependency
+public theorem inherited : False := unfinishedDependency

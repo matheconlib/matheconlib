@@ -1,5 +1,12 @@
-import MathEconLib.Choice.Induced
-import MathEconLib.Choice.Matching.Relationships
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.Choice.Induced
+public import MathEconLib.Choice.Matching.Relationships
 
 /-!
 # Choice from matching preferences and its completions
@@ -28,16 +35,19 @@ relationships are in `MathEconLib.Choice.Matching.Relationships`.
 
 ## Intended applications
 
-The five completion corollaries are helpers for the planned many-to-one
+The five completion corollaries are helpers for planned many-to-one
 matching-with-contracts applications, including cadet–branch matching, in
-https://github.com/AxiomMath/auctionlib/issues/38. They are not yet used by a
-formalized many-to-one market application. For bundle preferences, unilateral
+https://github.com/matheconlib/matheconlib/issues/38. The market-level reduction is in
+`MathEconLib.Matching.Contracts.Completion`. For bundle preferences, unilateral
 substitutability remains an explicit hypothesis; finite preference maximization
 supplies IRC, and the feasible-bundle representation supplies at most one
-contract per partner. The many-to-one market specialization and the reduction
-from suitable completions to stable-market outcomes remain future work.
+contract per partner. The many-to-one preference constructor is in
+`MathEconLib.Matching.Contracts.ManyToOne`; the market reduction requires
+IRC of the original choices and the chosen substitutable completions.
 
 -/
+
+@[expose] public section
 
 /-! ## Feasible bundles and induced choice -/
 
@@ -89,8 +99,8 @@ def feasibleBundleEmbedding (counterparty : α → A) :
 /-- Choice induced by preferences over counterparty-feasible bundles.
 
 A represented bundle is available at a menu when it is contained in
-that menu. If no greatest available bundle exists, the choice is empty,
-as in `ofBundleOrder`. -/
+that menu. If no greatest available bundle exists, then the choice is
+empty, as in `ofBundleOrder`. -/
 def ofFeasibleBundleOrder
     (counterparty : α → A)
     (pref : LinearOrder (FeasibleBundle counterparty)) :

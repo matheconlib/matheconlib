@@ -1,5 +1,12 @@
-import MathEconLib.ForMathlib.Order.IterateFixedPoint
-import Mathlib.Data.Set.Card
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.ForMathlib.Order.IterateFixedPoint
+public import Mathlib.Data.Set.Card
 
 /-!
 # A finite bound for inflationary set iteration
@@ -9,6 +16,8 @@ within `Fintype.card X` updates from the empty set. Each nonstationary step
 adds an element, so no monotonicity of the update map is required. This
 provides a computable fuel bound for proposal/rejection algorithms.
 -/
+
+@[expose] public section
 
 open Function
 

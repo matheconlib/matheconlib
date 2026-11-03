@@ -1,4 +1,11 @@
-import MathEconLib.Choice.Conditions
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.Choice.Conditions
 
 /-!
 # Completion and substitutable completability
@@ -31,6 +38,8 @@ preference-induced choice are in
 `MathEconLib.Choice.Matching.Preferences`.
 -/
 
+@[expose] public section
+
 namespace MathEconLib.Choice
 
 namespace ChoiceFunction
@@ -57,10 +66,10 @@ assumes IRC throughout (p. 413). Existence reductions use
 def SubstitutablyCompletable : Prop :=
   ∃ C' : ChoiceFunction X, C.IsCompletionOf counterparty C' ∧ C'.Substitutable
 
-/-- A completion satisfying both substitutability and IRC.
+/-- A completion satisfying both the substitutability condition and IRC.
 The existential witnesses must be the same choice function: separate
 existence of a substitutable completion and a consistent completion is
-not the hypothesis needed for stable-outcome existence. -/
+not the hypothesis needed for existence of stable outcomes. -/
 def HasConsistentSubstitutableCompletion : Prop :=
   ∃ C' : ChoiceFunction X,
     C.IsCompletionOf counterparty C' ∧ C'.Substitutable ∧ C'.Consistent
@@ -178,7 +187,8 @@ completion is chosen from its singleton menu by substitutability, and on
 that menu the completion agrees with the original choice.
 
 This is the support lemma needed to assemble individual completions into
-a `Market`; it does not assume that completions already satisfy support. -/
+a `Market`; it does not assume that completions already satisfy a support
+condition. -/
 theorem IsCompletionOf.preserves_support {counterparty : X → A}
     {C D : ChoiceFunction X} (hCD : C.IsCompletionOf counterparty D)
     (hD : D.Substitutable) {P : Set X} (hC : ∀ Y, C Y ⊆ P) :

@@ -1,0 +1,16 @@
+module
+public import Init
+
+namespace Fixture
+
+/- The words sorry and axiom in comments are not proof holes. /-
+Nested comments can mention admit too.
+-/ -/
+def description : String := "sorry, admit, axiom"
+noncomputable def chosen {α : Type} (h : Nonempty α) : α := Classical.choice h
+theorem ext (p q : Prop) (h : p ↔ q) : p = q := propext h
+theorem quotient (a b : Nat) :
+    Quot.mk (fun _ _ : Nat => True) a = Quot.mk (fun _ _ : Nat => True) b :=
+  Quot.sound True.intro
+
+end Fixture

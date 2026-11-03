@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
 module
 
 public import MathEconLibExamples.AllPurchase.Basic
@@ -45,7 +50,7 @@ theorem aggregate_memLp : MemLp (model.toAuction.aggregateBid purchase) 2 ℙ :=
   exact memLp_const _
 
 theorem cournot_quantity : model.cournotQuantityLinear = (2 : ℝ) / 3 := by
-  change (2 : ℝ) * (3 - 2) / (1 * (2 + 1)) = 2 / 3
+  change (2 : ℝ) * ((3 - 2) / (1 * (2 + 1))) = 2 / 3
   norm_num
 
 theorem cournot_profile_best_response :
@@ -61,6 +66,11 @@ theorem cournot_profile_best_response :
     (1 / 3) * (3 - 2 * (1 / 3) - 2) at h
   norm_num at h
   exact h
+
+/-- The example uses the library's strategic-game Nash predicate. -/
+theorem cournot_profile_isNash :
+    model.editionsOnlyGame.IsNash (model.cournotProfile (by norm_num [model, auction])) :=
+  model.cournotProfile_isNash _
 
 theorem expected_welfare : model.bundledEditionWelfare purchase 0 = (14 : ℝ) / 9 := by
   rw [model.bundledEditionWelfare_eq_integral purchase 0 aggregate_memLp]

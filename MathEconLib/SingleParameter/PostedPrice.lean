@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
 public import MathEconLib.SingleParameter.Payment
@@ -177,7 +182,7 @@ theorem postedPriceProblem_hasZeroLowestTypeUtility
   change (postedPriceProblem lowestType highestType price).U lowestType = 0
   rw [postedPriceProblem_U]
   by_cases hbuy : price ≤ lowestType
-  · rw [if_pos hbuy]
+  · rw [ite_eq_left hbuy]
     linarith
   · simp [hbuy]
 

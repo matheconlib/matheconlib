@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Ruiz Chen, Daniel Lyng. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Ruiz Chen, Daniel Lyng
+-/
 module
 
 public import MathEconLib.Auction.AllPurchase.Basic
@@ -140,7 +145,7 @@ lemma bidThreshold_strictMono_eq
     rcases Set.mem_insert_iff.mp hw with rfl | ⟨hw_mem, hw_lt⟩
     · exact hv.1
     · by_contra h
-      push_neg at h  -- h : v < w
+      push Not at h  -- h : v < w
       linarith [hβ_mono hv hw_mem h]
   · -- lower bound: v ≤ sSup, by approximation from below
     rcases eq_or_lt_of_le hv.1 with heq | hlt
@@ -310,7 +315,7 @@ lemma integral_t_i_eq_integral_p_strat
     have hYX_indep :
         IndepFun (∑ j ∈ Finset.univ.erase i, fun ω => β (A.θ j ω))
                  (fun ω => β (A.θ i ω)) ℙ :=
-      hβθ_indep.indepFun_finset_sum_of_notMem hβθ_meas (Finset.notMem_erase i _)
+      hβθ_indep.indepFun_finsetSum_of_notMem hβθ_meas (Finset.notMem_erase i _)
     -- (∑ j ∈ s, (fun ω => f j ω)) ω = ∑ j ∈ s, f j ω, so the sum-of-functions equals Y.
     have hY_pw : (∑ j ∈ Finset.univ.erase i, fun ω => β (A.θ j ω)) = Y := by
       ext ω; simp [Y, Finset.sum_apply]
@@ -380,7 +385,7 @@ lemma expectedNetPayment_eq
   have step1 : A.expectedNetPayment β =
       ∑ i, 𝔼[fun ω => A.rules.payment i (fun j => β (A.θ j ω))] := by
     simp only [expectedNetPayment]
-    exact integral_finset_sum _ (fun i _ => ht_int i)
+    exact integral_finsetSum _ (fun i _ => ht_int i)
   rw [step1]
   -- Step 2: show each per-bidder integral equals `expectedAllPayBid − lowestTypeUtility β`.
   have per_bidder : ∀ i,
@@ -395,7 +400,7 @@ lemma expectedNetPayment_eq
     have hθ_mem' : ∀ ω, A.θ i ω ∈ Icc A.lowestType A.highestType := fun ω => by
       have := HasBoundedTypes.θ_in (A := A) i ω
       simpa [A.θmin_eq_lowestType, A.θmax_eq_highestType] using this
-    letI := hIC i
+    let := hIC i
     have pointwise : ∀ ω,
         A.p_strat β i (β (A.θ i ω)) =
           A.allPayBid (A.θ i ω) -
@@ -420,12 +425,7 @@ lemma expectedNetPayment_eq
     rw [integral_sub (hallPayBid_int i) (integrable_const _)]
     rw [integral_const, probReal_univ, smul_eq_mul, one_mul]
     -- (e) IdentDistrib: 𝔼[A.allPayBid(θᵢ)] = 𝔼[A.allPayBid(θ₀)] = expectedAllPayBid
-    have hident : ∫ ω, A.allPayBid (A.θ i ω) ∂ℙ = ∫ ω, A.allPayBid (A.θ 0 ω) ∂ℙ := by
-      rw [← integral_map (A.θ_measurable i).aemeasurable
-            hallPayBid_meas.aestronglyMeasurable,
-          (HasIdenticalTypes.θ_identical i 0).map_eq,
-          integral_map (A.θ_measurable 0).aemeasurable
-            hallPayBid_meas.aestronglyMeasurable]
+    have hident := A.integral_comp_type_eq A.allPayBid hallPayBid_meas i 0
     rw [hident, hU_sym i]
     rfl
   -- Step 3: sum n equal copies
@@ -463,7 +463,7 @@ theorem revenue_decomposition
         A.expectedEditionValue spec β := by
   have hnet_int : Integrable
       (fun ω => ∑ i, A.rules.payment i (fun j => β (A.θ j ω))) ℙ :=
-    integrable_finset_sum _ (fun i _ => ht_int i)
+    integrable_finsetSum _ (fun i _ => ht_int i)
   rw [A.sellerGrossRevenue_eq_netPayment_add_editionValue spec β
         hnet_int hedition_int,
       A.expectedNetPayment_eq spec β hβ_meas hβ_mono hIC ht_int
@@ -591,6 +591,11 @@ theorem revenue_decomposition_boundary_of_isBoundaryRegime
 
 /-! #### Linear-scarcity profit comparison -/
 
+/-- The symmetric per-bidder editions-only Cournot candidate. It is a feasible purchase when
+the posted price does not exceed the scarcity intercept. -/
+noncomputable def cournotPurchaseLinear : ℝ :=
+  (A.φ_bar - A.spec.price) / (A.α_coeff * ((n : ℝ) + 1))
+
 /-- Interior stationary Cournot candidate for total editions-only purchases under linear scarcity:
 `B^{ed-only} = n(φ̄ − p)/(α(n+1))`.
 
@@ -598,8 +603,7 @@ For payoff `bᵢ · (φ̄ − αB − p)`, symmetric first-order conditions give
 `α > 0`, it is positive when `φ̄ > p`, zero when `φ̄ = p`, and negative when `φ̄ < p`; in the last
 case it is infeasible for a game with nonnegative purchases. -/
 noncomputable def cournotQuantityLinear : ℝ :=
-  (n : ℝ) * (A.φ_bar - A.spec.price) /
-    (A.α_coeff * ((n : ℝ) + 1))
+  (n : ℝ) * A.cournotPurchaseLinear
 
 omit [n.AtLeastTwo] in
 /-- **Boundary-regime profit comparison under linear scarcity.**
@@ -649,3 +653,4 @@ end LinearScarcityAuction
 end
 
 end MathEconLib
+

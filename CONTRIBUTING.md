@@ -9,7 +9,7 @@ core files. Small, well-scoped additions to `ForMathlib/` can be suitable first
 contributions; the folder also contains substantial results.
 
 For a small documentation task, start with
-[documenting the BidderProblem umbrella (#118)](https://github.com/AxiomMath/auctionlib/issues/118).
+[documenting the BidderProblem umbrella (#118)](https://github.com/matheconlib/matheconlib/issues/118).
 The issue gives the starting file, expected result, and build check.
 
 ## Design first for core layers
@@ -69,17 +69,33 @@ An existing development can qualify. Checking only the theorem's type
 (a "signature pin") does not.
 
 Additional applications of older main results remain post-launch work under
-[#47](https://github.com/AxiomMath/auctionlib/issues/47).
+[#47](https://github.com/matheconlib/matheconlib/issues/47).
+
+## Style and naming
+
+For new and substantially edited Lean code, use Mathlib's
+[style guidelines](https://leanprover-community.github.io/contribute/style.html) and
+[naming conventions](https://leanprover-community.github.io/contribute/naming.html)
+as defaults for source formatting, documentation layout, and declaration names.
+Prefer notation familiar to the mathematical or economic setting. Discuss
+departures when they materially affect readability or consistency.
+
+MathEconLib's documented policies on [namespaces and public APIs](#public-api),
+[citations](#citing-sources), [copyright headers](#copyright-headers), and
+[API stability](#api-stability-pins) take precedence.
 
 ## Citing sources
 
 Use the author–year format shown below as the default, with complete references.
-Detailed formatting guidance is tracked in
-[style conventions (#109)](https://github.com/AxiomMath/auctionlib/issues/109).
 
-For work based on a paper or book, give the author, year, title, and DOI or stable
-link in the module documentation. Include the theorem or section number when
-available, and explain any adaptations or differences in scope. For example:
+Contributions may cover selected results or complete papers, subject to our
+integration and review standards. Paper-specific developments may remain downstream,
+with reusable components contributed here following the [placement guidance](#examples-and-tests).
+
+For work based on a paper or book, give the author, year, and title in the module
+documentation, and include a DOI or stable link when available. Include the theorem
+or section number when available. State which source results are covered, any
+adapted assumptions, and important omissions, as in the example below:
 
 ```lean
 /-!
@@ -99,6 +115,18 @@ Gary S. Becker (1968), *Crime and Punishment: An Economic Approach*,
 
 Standard textbook examples do not need to be cited. Sources without a DOI can use
 a stable link. For ported Lean code, record its source and preserve author credit.
+
+## Copyright headers
+
+Every Lean file starts with the Mathlib-style header below; CI checks it. Add your name to the copyright and `Authors` lines of a file you contribute to substantially.
+
+```lean
+/-
+Copyright (c) 2026 Your Name. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Your Name
+-/
+```
 
 ## Public API
 
@@ -120,9 +148,9 @@ the same short name routinely co-occur, distinguish the carrier names too.
 Every PR must satisfy:
 
 - `lake build` is green.
-- No `sorry`, `admit`, or `native_decide` anywhere in the change.
-- `#print axioms` on new main results shows only `propext`, `Classical.choice`,
-  and `Quot.sound`.
+- The proof integrity check passes: no `sorry`, `admit`, or `native_decide` in
+  project code, and compiled declarations use only `propext`, `Classical.choice`,
+  and `Quot.sound` as axioms.
 - Both library and test imports are regenerated and verified with
   `bash scripts/update-imports.sh`.
 
@@ -133,11 +161,60 @@ lake exe cache get                 # first checkout, or after a dependency/toolc
 git add path/to/NewFile.lean        # if adding a Lean file
 bash scripts/update-imports.sh      # regenerate both root import files, then verify them
 lake build                         # includes API pins and MathEconLibTest/Manual/HandsOn.lean
+python3 scripts/check-proof-integrity.py
 ```
 
 Omit the `git add` line if you have not added a file. Include changes to
 `MathEconLib.lean` and `MathEconLibTest.lean` in your commit.
 Use `bash scripts/update-imports.sh --check` to verify imports without changing files.
+
+CI runs the proof integrity check as a failing step in the build job. It builds
+every project Lean source, including files missing from umbrella imports, then
+examines compiled declarations and their transitive axiom dependencies. Private
+declarations and unused custom axioms are included. It also elaborates each source
+and applies the same axiom collector to anonymous-example environments retained in
+Lean's info trees. This covers `example`s and their auxiliary proofs discarded from
+compiled files, even inside interpolated strings or generated by macros with warnings disabled. The
+text scan provides early diagnostics; comments and literal strings are harmless.
+
+The local report is `.lake/proof-integrity/report.json`; CI saves it as the
+`proof-integrity` artifact, including failures. It lists the sources, their hashes,
+and a declaration reaching each forbidden axiom, including separate source
+elaboration counts and violations. Dependencies in `.lake` and the
+checker itself are excluded as audit roots; dependencies used by project
+declarations are still followed. This checks proof assumptions, not whether an
+economic definition or theorem statement is correct.
+
+To test the checker, run `python3 scripts/tests/test_proof_integrity.py`. Its
+deliberately invalid fixtures use `.lean.txt` filenames and are compiled only
+inside temporary test projects.
+
+### Build warnings
+
+Contributions should avoid introducing new compiler or linter warnings. Fix new
+warnings where practical; otherwise explain in the PR why they are needed. Keep
+any linter suppression narrow and justified.
+
+CI's warning-count comparison is informational; an increase does not fail CI.
+All verification requirements above still apply.
+
+## Lean and Mathlib upgrades
+
+The pins on `main` define the supported Lean/Mathlib combination. Upgrade work
+is voluntary, with no fixed schedule or maximum version lag.
+
+1. Open a focused PR stating the current and proposed versions and the reason
+   for upgrading. Use the Lean version required by the chosen Mathlib revision.
+   Keep `lean-toolchain`, the Mathlib requirement in `lakefile.toml`, and Lake's
+   generated `lake-manifest.json` consistent.
+2. Include the proof, import, and setup-documentation adaptations needed for the
+   migration. Keep unrelated refactors and new features separate. Changes to
+   public statements still follow the [API stability policy](#api-stability-pins).
+3. Follow the [verification bar](#verification-bar) from a fresh checkout of the
+   proposed revision, restoring its matching Mathlib cache and building all default
+   targets. Record the tested commit and results in the PR, review any new warnings
+   under the [warning policy](#build-warnings), and confirm applicable CI passes on
+   the latest revision before merging.
 
 ## API stability pins
 
@@ -156,6 +233,40 @@ New layers pin their own public API next to themselves in `MathEconLibTest/` (se
 while a layer is young. Once a layer has downstream users inside the library, its
 pins are promoted into `ApiStability.lean`; from then on its statements follow the
 design-first rule.
+
+## Branches and stacked PRs
+
+Start a short-lived topic branch from current `main`; ordinary PRs target `main`.
+For dependent work, branch from the parent and target its branch so the child diff
+shows only the dependent change. Each PR description names its base and links its
+parent and any known children.
+
+For example, a shared lemma and its application can be reviewed separately:
+
+| PR | Head branch | Base branch | Description |
+| --- | --- | --- | --- |
+| A | `envelope-lemma` | `main` | Shared lemma; child: B |
+| B | `envelope-example` | `envelope-lemma` | Application; depends on A |
+
+1. Merge A first and fetch current `main`. Keep a reference to the last parent
+   commit contained in B until the child is refreshed.
+2. Refresh B onto `main` and retarget its PR to `main`. After a squash merge,
+   replay only B's commits, using [git rebase --onto](https://git-scm.com/docs/git-rebase)
+   with that parent commit as the boundary. Coordinate any rewrite of a shared
+   branch; use `--force-with-lease` when pushing rewritten history. Check that B's
+   diff contains only its intended application before deleting the parent branch.
+3. After a refresh or conflict resolution, rerun the import checks and `lake build`
+   from the [verification bar](#verification-bar), and wait for applicable CI on
+   the latest revision. Verify against current `main` before merging: an old
+   green check can predate changes to build requirements. CI currently runs only
+   for PRs targeting `main`; check children locally until they are retargeted.
+4. Leave a brief update naming the new base, conflicts resolved, substantive
+   changes, and check results. Request another review when statements, APIs,
+   implementation, or guidance changed substantively; carry forward
+   earlier feedback and confirm that required changes are addressed.
+
+The [stack-review guidance](docs/REVIEWING.md#how-to-write-the-review) explains
+where to put shared feedback and which PR owns a blocker.
 
 ## Review
 

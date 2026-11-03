@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
 import MathEconLibExamples.AllPurchase.Welfare
 
 /-!
@@ -12,3 +17,6 @@ inside a `module`. The default test target builds this file and records the resu
 #print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_best_response
 #print axioms MathEconLib.LinearScarcityAuction.bundledEditionWelfare_le_firstBest
 #print axioms MathEconLib.Examples.AllPurchase.Welfare.welfare_gap
+
+#print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_payoff_gap
+#print axioms MathEconLib.LinearScarcityAuction.cournotProfile_isNash

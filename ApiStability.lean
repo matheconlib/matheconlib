@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Daniel Lyng, Bo Cowgill, Ruiz Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Daniel Lyng, Bo Cowgill, Ruiz Chen
+-/
 import MathEconLib
 
 /-!
@@ -184,6 +189,23 @@ example : ∀ (B : MathEconLib.BidderProblem),
 
 /-! ## MathEconLib.Auction — payment and revenue equivalence -/
 
+-- Auction BIC specializes quasilinear conditional IC, with no IPV hypothesis.
+example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.Auction Ω n)
+    (B : MathEconLib.GameTheory.BayesianPrior.ConditionalBeliefs A.typeLaw) :
+    A.BIC B = MathEconLib.Mechanism.DirectMechanism.Quasilinear.IsBICOn
+      (MathEconLib.Auction.valuationEnvironment n) A.rules A.typeLaw B A.interval := rfl
+
+-- IPV specializes the same general predicate to constant opponent beliefs.
+example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.Auction Ω n) [A.IsIPV]
+    [h : MathEconLib.Auction.IPV.BIC A] : A.BIC A.independentBeliefs := h.conditional_bic
+
+-- Revenue is realized revenue under the joint prior, including correlated type laws.
+example {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.Auction Ω n) :
+    A.expectedRevenue = ∫ ω, A.rules.revenue (A.θ · ω) := rfl
+
 -- Truthful opponents give winning probability F(s)^(n−1) under strict-highest-bid allocation.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
@@ -209,13 +231,14 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
     {n : ℕ} (A : MathEconLib.Auction Ω n) {Ω₂ : Type} [MeasureSpace Ω₂]
     [IsProbabilityMeasure (volume : Measure Ω₂)] (A₂ : MathEconLib.Auction Ω₂ n)
     (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
-    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)) [A.BIC] [A₂.BIC] (i j : Fin n),
+    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)) [A.IsIPV] [A₂.IsIPV]
+    [MathEconLib.Auction.IPV.BIC A] [MathEconLib.Auction.IPV.BIC A₂] (i j : Fin n),
     A.θmin i = A₂.θmin j → A.θmax i = A₂.θmax j → A.q i = A₂.q j →
       A.U i (A.θmin i) = A₂.U j (A₂.θmin j) →
         ∀ {s : ℝ}, s ∈ A.interval i → A.p i s = A₂.p j s :=
   @MathEconLib.Auction.payment_equivalence
 
--- Revenue Equivalence Theorem for symmetric IPV auctions (Krishna 2010, Proposition 3.1)
+-- Revenue equivalence now requires measurable rules and integrable realized payments.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : MathEconLib.Auction Ω n) [A.IsSymmetricIPV]
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
@@ -226,18 +249,21 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
       A.lowestType = A₂.lowestType →
         A.highestType = A₂.highestType →
           (∀ i : Fin n, IdentDistrib (A.θ i) (A₂.θ i) volume volume) →
-            ∀ [A.BIC] [A₂.BIC] [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility],
+            ∀ [MathEconLib.Auction.IPV.BIC A] [MathEconLib.Auction.IPV.BIC A₂]
+              [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility],
               (∀ i : Fin n, Measurable (A₂.p i)) →
-                (∀ i : Fin n, Integrable (fun ω => A.p i (A.θ i ω)) volume) →
-                  (∀ i : Fin n, Integrable (fun ω => A₂.p i (A₂.θ i ω)) volume) →
-                    A.expectedRevenue = A₂.expectedRevenue :=
+                (∀ i : Fin n, Measurable (A.rules.payment i)) →
+                  (∀ i : Fin n, Measurable (A₂.rules.payment i)) →
+                    (∀ i : Fin n, Integrable (fun ω => A.rules.payment i (A.θ · ω)) volume) →
+                      (∀ i : Fin n, Integrable (fun ω => A₂.rules.payment i (A₂.θ · ω)) volume) →
+                        A.expectedRevenue = A₂.expectedRevenue :=
   @MathEconLib.Auction.revenue_equivalence
 
 -- Strict-highest-bid allocation already supplies the unit-interval allocation bound.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : MathEconLib.Auction Ω n) [A.IsSymmetricIPV]
     (_ : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility] (i : Fin n) {s : ℝ},
+    [MathEconLib.Auction.IPV.BIC A] [A.HasZeroLowestTypeUtility] (i : Fin n) {s : ℝ},
     s ∈ A.interval i →
       A.p i s = s * A.commonCDF s ^ (n - 1) -
         ∫ ψ in A.lowestType..s, A.commonCDF ψ ^ (n - 1) :=
@@ -247,7 +273,9 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [n.AtLeastTwo] (A : MathEconLib.Auction Ω n) [A.IsSymmetricIPV]
     (_ : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
-    [A.BIC] [A.HasZeroLowestTypeUtility],
+    [MathEconLib.Auction.IPV.BIC A] [A.HasZeroLowestTypeUtility]
+    (_ : ∀ i, Measurable (A.rules.payment i))
+    (_ : ∀ i, Integrable (fun ω => A.rules.payment i (A.θ · ω)) volume),
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @MathEconLib.Auction.total_revenue
 
@@ -397,14 +425,7 @@ example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
     [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
-    (β : ℝ → ℝ) (_ : Measurable β)
-    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
-    (_ : ∀ j, Integrable (fun ω => β (A.θ j ω)) volume)
-    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).HasTypeDeviationIC)
-    (_ : A.K_linear β < 0)
-    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
-      (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType =
-        (A.K_linear β) ^ 2 / (4 * A.α_coeff)) (c : ℝ),
+    (β : ℝ → ℝ) (_ : A.IsInteriorRegimeStrategy β 0) (c : ℝ),
     A.toAuction.bundledProfit A.spec β c =
       MathEconLib.AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
         A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
@@ -414,14 +435,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
     [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
-    (β : ℝ → ℝ) (_ : Measurable β)
-    (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
-    (_ : ∀ j, Integrable (fun ω => β (A.θ j ω)) volume)
-    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).HasTypeDeviationIC)
-    (_ : A.K_linear β < 0)
-    (_ : (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
-      (A.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType =
-        (A.K_linear β) ^ 2 / (4 * A.α_coeff)),
+    (β : ℝ → ℝ) (_ : A.IsInteriorRegimeStrategy β 0),
     A.toAuction.expectedAggregateBid β =
       MathEconLib.AllPurchase.interiorMeanQuantity A.φ_bar A.α_coeff
         A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
