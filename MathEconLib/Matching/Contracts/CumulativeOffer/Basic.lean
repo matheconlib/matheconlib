@@ -196,3 +196,4 @@ theorem exists_validBatch [Finite X] {A : Set X} (h : ¬ P.Terminal A) :
 
 end Process
 end MathEconLib.Matching.CumulativeOffer
+

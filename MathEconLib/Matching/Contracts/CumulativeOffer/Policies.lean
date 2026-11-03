@@ -211,3 +211,4 @@ theorem fixedOrder_fixedTieBreaking [Finite X] (priority : LinearOrder X) :
   exact hxe.symm ▸ hbest y hy
 
 end MathEconLib.Matching.CumulativeOffer.Process
+

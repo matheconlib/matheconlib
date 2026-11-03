@@ -126,3 +126,4 @@ theorem rawOutcome_isOutcome [Finite X] {π : Policy X} (hp : P.ValidPolicy π) 
   ⟨P.execute π (Nat.card X), P.execute_run hp _, P.execute_terminal hp, rfl⟩
 
 end MathEconLib.Matching.CumulativeOffer.Process
+

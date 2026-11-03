@@ -67,7 +67,7 @@ private theorem admissible_iff (A : Set (Fin 3)) (x : Fin 3) :
 private theorem first : market.ValidBatch ∅ {0} := by
   simp only [ValidBatch, admissible_iff]
   simp [Unheld, holdings, market, owner,
-    Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
+    Set.InjOn, Set.Nonempty, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
 private theorem second : market.ValidBatch {0} {2} := by
@@ -85,7 +85,7 @@ private theorem third : market.ValidBatch ({0} ∪ {2}) {1} := by
 private theorem together : market.ValidBatch ∅ {0, 1} := by
   simp only [ValidBatch, admissible_iff]
   simp [Unheld, holdings, market, owner,
-    Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
+    Set.InjOn, Set.Nonempty, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
 /-- The three singleton steps form a productive sequential history. -/
@@ -139,3 +139,4 @@ example (P : Process Bool Bool Empty) : P.Terminal ∅ := by
   exact nomatch x.val
 
 end MathEconLibTest.Matching.CumulativeOffer
+
