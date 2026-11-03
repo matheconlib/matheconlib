@@ -142,6 +142,18 @@ noncomputable def complements : ChoiceFunction Bool := by
       · exact Set.Subset.rfl
       · exact Set.empty_subset Y }
 
+theorem complements_apply_of_both {Y : Set Bool} (h : false ∈ Y ∧ true ∈ Y) :
+    complements Y = Y := by
+  classical
+  change (if false ∈ Y ∧ true ∈ Y then Y else ∅) = Y
+  exact ite_eq_left h
+
+theorem complements_apply_of_not_both {Y : Set Bool} (h : ¬ (false ∈ Y ∧ true ∈ Y)) :
+    complements Y = ∅ := by
+  classical
+  change (if false ∈ Y ∧ true ∈ Y then Y else ∅) = ∅
+  exact ite_eq_right h
+
 /-- One singleton rejection certifies failure of substitutable completability. -/
 theorem complements_not_completable : ¬ complements.SubstitutablyCompletable id := by
   classical
@@ -152,14 +164,12 @@ theorem complements_not_completable : ¬ complements.SubstitutablyCompletable id
     subst x
     refine ⟨{true}, Set.subset_univ _, ?_, ?_⟩
     · exact fun _ _ _ _ h => h
-    · change true ∈ ({true} : Set Bool) ∧
-        true ∉ (if false ∈ ({true} : Set Bool) ∧ true ∈ ({true} : Set Bool)
-          then ({true} : Set Bool) else ∅)
+    · rw [ChoiceFunction.mem_rejected,
+        complements_apply_of_not_both (Y := {true}) (by simp)]
       simp
   · exact fun _ _ _ _ h => h
-  · change true ∈ (if false ∈ (Set.univ : Set Bool) ∧ true ∈ (Set.univ : Set Bool)
-        then (Set.univ : Set Bool) else ∅)
-    simp
+  · rw [complements_apply_of_both ⟨Set.mem_univ false, Set.mem_univ true⟩]
+    exact Set.mem_univ true
   · exact Set.mem_singleton true
 
 end MathEconLib.Examples.Choice.SubstituteEnvelope
