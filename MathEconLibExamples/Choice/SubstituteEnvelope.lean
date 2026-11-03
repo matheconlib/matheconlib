@@ -44,15 +44,30 @@ def allChoice : ChoiceFunction Bool where
 
 def partner (_ : Bool) : Unit := ()
 
+theorem priority_apply_of_mem {Y : Set Bool} (h : true ∈ Y) : priority Y = {true} := by
+  classical
+  change (if true ∈ Y then {true} else Y) = {true}
+  exact ite_eq_left h
+
+theorem priority_apply_of_not_mem {Y : Set Bool} (h : true ∉ Y) : priority Y = Y := by
+  classical
+  change (if true ∈ Y then {true} else Y) = Y
+  exact ite_eq_right h
+
 theorem priority_pathIndependent : priority.PathIndependent := by
   intro Y Z
-  by_cases hY : true ∈ Y <;> by_cases hZ : true ∈ Z <;>
-    simp [priority, hY, hZ]
+  by_cases hY : true ∈ Y
+  · rw [priority_apply_of_mem hY,
+      priority_apply_of_mem (Set.mem_union_left Z hY),
+      priority_apply_of_mem (Set.mem_union_left Z (Set.mem_singleton true))]
+  · rw [priority_apply_of_not_mem hY]
 
 theorem allChoice_pathIndependent : allChoice.PathIndependent := fun _ _ => rfl
 
 theorem priority_singleton (x : Bool) : priority {x} = {x} := by
-  cases x <;> simp [priority]
+  cases x
+  · exact priority_apply_of_not_mem (by simp)
+  · exact priority_apply_of_mem (Set.mem_singleton true)
 
 /-- Feasible sub-menus containing a given contract are its singleton menu. -/
 theorem envelope_eq_allChoice : substituteEnvelope partner priority = allChoice := by
@@ -112,7 +127,9 @@ theorem priority_rejectionEvidence : priority.RejectionEvidence partner :=
 
 /-- The completion adds the lower-ranked contract at the full menu. -/
 theorem strict_enlargement : false ∈ allChoice Set.univ ∧ false ∉ priority Set.univ := by
-  simp [allChoice, priority]
+  change false ∈ (Set.univ : Set Bool) ∧ false ∉ priority Set.univ
+  rw [priority_apply_of_mem (Set.mem_univ true)]
+  simp
 
 /-- Complementary contracts are chosen only when both are available. -/
 noncomputable def complements : ChoiceFunction Bool := by
@@ -127,6 +144,7 @@ noncomputable def complements : ChoiceFunction Bool := by
 
 /-- One singleton rejection certifies failure of substitutable completability. -/
 theorem complements_not_completable : ¬ complements.SubstitutablyCompletable id := by
+  classical
   apply not_substitutablyCompletable_of_rejectionEvidence
     (Y := Set.univ) (R := {true}) (x := true)
   · intro x hx
@@ -134,9 +152,14 @@ theorem complements_not_completable : ¬ complements.SubstitutablyCompletable id
     subst x
     refine ⟨{true}, Set.subset_univ _, ?_, ?_⟩
     · exact fun _ _ _ _ h => h
-    · simp [ChoiceFunction.rejected, complements]
+    · change true ∈ ({true} : Set Bool) ∧
+        true ∉ (if false ∈ ({true} : Set Bool) ∧ true ∈ ({true} : Set Bool)
+          then ({true} : Set Bool) else ∅)
+      simp
   · exact fun _ _ _ _ h => h
-  · simp [complements]
+  · change true ∈ (if false ∈ (Set.univ : Set Bool) ∧ true ∈ (Set.univ : Set Bool)
+        then (Set.univ : Set Bool) else ∅)
+    simp
   · exact Set.mem_singleton true
 
 end MathEconLib.Examples.Choice.SubstituteEnvelope
