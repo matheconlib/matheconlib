@@ -58,6 +58,14 @@ identical distributions, symmetry, density, boundedness, or atomlessness.
 Those remain separate hypotheses or the existing stronger `IsSymmetricIPV`
 convenience bundle.
 
+`Auction.Affiliation.SignalValueEnv` separately carries value maps and raw signal
+weights. Its `IsPrivateValuesWithFactorizedWeights` predicate combines
+`IsPrivateValues` with `HasFactorizedWeights`; these weight predicates do not supply
+a probability law. `HasAffiliatedWeights` likewise imposes an algebraic condition
+on the weights. Scalar-auction BIC and revenue-equivalence arguments use
+`Auction.IsIPV` / `Auction.HasIndependentTypes`, which require mutual independence
+under the auction's probability model.
+
 `A.independentBeliefs` constructs constant opponent beliefs from independence
 and proves that they disintegrate the actual joint prior. `Auction.IPV.BIC A`
 is a convenience class containing exactly `A.BIC A.independentBeliefs`.

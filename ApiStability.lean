@@ -279,22 +279,22 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @MathEconLib.Auction.total_revenue
 
-/-! ## Affiliation (§7) -/
+/-! ## Affiliation -/
 
 section Affiliation
 
--- Def 7.2 (affiliation) — definition pin: the exact unfolding of `Affiliated`
+-- Definition pin: the exact unfolding of `Affiliated`
 example {n : ℕ} (f : (Fin n → ℝ) → ℝ) :
     MathEconLib.Auction.Affiliation.Affiliated f
       ↔ ∀ x y : Fin n → ℝ, f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y :=
   Iff.rfl
 
--- Remark 6: independent (factorized) densities are affiliated
+-- Factorized weights are affiliated
 example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin n → ℝ → ℝ},
     MathEconLib.Auction.Affiliation.Factors f g → MathEconLib.Auction.Affiliation.Affiliated f :=
   @MathEconLib.Auction.Affiliation.factors_affiliated
 
--- Affiliation ⇔ log-supermodularity for positive densities (Remark 5)
+-- Affiliation ⇔ log-supermodularity for positive weights
 example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ},
     (∀ x : Fin n → ℝ, 0 < f x) →
       (MathEconLib.Auction.Affiliation.Affiliated f ↔
@@ -302,7 +302,7 @@ example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ},
           Real.log (f x) + Real.log (f y) ≤ Real.log (f (x ⊔ y)) + Real.log (f (x ⊓ y))) :=
   @MathEconLib.Auction.Affiliation.affiliated_iff_logSupermodular
 
--- FKG-style four-sum inequality for affiliated densities (§7, key lemma)
+-- FKG-style four-sum inequality for affiliated weights
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →
@@ -313,7 +313,7 @@ example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n �
                 (∑ x ∈ B, g x * f x) * ∑ x ∈ A, f x :=
   @MathEconLib.Auction.Affiliation.sum_mul_sum_le_of_affiliated
 
--- Conditional expectations increase along the sup/inf ordering of events (§7)
+-- Conditional expectations increase along the sup/inf ordering of events
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →
@@ -324,7 +324,7 @@ example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n �
                 MathEconLib.Auction.Affiliation.condExpOn f g B :=
   @MathEconLib.Auction.Affiliation.condExpOn_le_condExpOn_of_affiliated
 
--- Lemma 7.3: the sliced conditional expectation is monotone in the conditioning signal
+-- The sliced conditional expectation is monotone in the conditioning signal
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →
@@ -333,7 +333,7 @@ example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S : Finset (Fin n → �
             ↑(Finset.image (fun x => x i) S) :=
   @MathEconLib.Auction.Affiliation.monotoneOn_condExpSlice_of_affiliated
 
--- Winner's curse: conditioning on winning lowers the conditional expectation (§7)
+-- Winner's curse: conditioning on winning lowers the conditional expectation
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →

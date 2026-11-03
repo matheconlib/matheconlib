@@ -7,12 +7,11 @@ module
 
 public import MathEconLib.Auction.Affiliation.FiniteCondExp
 
-/-! # Lemma 7.3 — Monotone conditional expectations (finite case)
+/-! # Monotone conditional expectations (finite case)
 
-This file proves the finite/discrete case of **Lemma 7.3 (Monotone conditional
-expectations)** from Section 7: if the signal weights `f` are affiliated
-(**Def 7.2**) and `g` is a nondecreasing function of the signal profile, then
-the conditional expectation `E[g(X) | Xᵢ = t]` is nondecreasing in `t`.
+This file proves monotonicity of finite conditional expectations: if the signal
+weights `f` are affiliated (`Affiliated`) and `g` is a nondecreasing function of the
+signal profile, then the conditional expectation `E[g(X) | Xᵢ = t]` is nondecreasing in `t`.
 
 We work over a finite support `S : Finset (Fin n → ℝ)` closed under the
 pointwise lattice operations (`IsSublattice`), with weights `f` positive
@@ -26,13 +25,12 @@ The reusable conditional-expectation comparison is proved in
 (Ahlswede–Daykin inequality)** on the distributive lattice `Fin n → ℝ`.
 This file verifies that the slices at heights `t ≤ t'` satisfy the required
 supremum and infimum conditions, then applies that comparison directly.
-`WinnersCurse.lean` uses the same finite comparison for Proposition 7.4.
+`WinnersCurse.lean` uses the same finite comparison for the winner's-curse inequality.
 This approach avoids the Holley/FOSD route entirely.
 
 The continuous case (affiliation ⇒ monotone likelihood ratio ⇒ first-order
-stochastic dominance ⇒ monotone conditional expectations) is future work;
-**Prop 7.4** (winner's curse), **Thm 7.5**, and **Thm 7.7** (linkage
-principle) build on this lemma.
+stochastic dominance ⇒ monotone conditional expectations) and the linkage principle
+are future work.
 -/
 
 namespace MathEconLib
@@ -46,14 +44,15 @@ namespace Auction.Affiliation
 /-- The discrete conditional expectation `E[g(X) | Xᵢ = t]` of `g` under the
 (possibly unnormalized) weights `f` on `S`: the `f`-weighted average of `g`
 over the slice `{x ∈ S | x i = t}`. When the slice is empty (or its `f`-mass
-vanishes) the convention `division by zero = 0` applies; Lemma 7.3 only ever
-evaluates it at heights `t` realized in `S`, where the mass is positive. -/
+vanishes) the convention `division by zero = 0` applies.
+`monotoneOn_condExpSlice_of_affiliated` assumes positive weights and only evaluates
+it at heights `t` realized in `S`, where the mass is positive. -/
 noncomputable def condExpSlice {n : ℕ} (f g : (Fin n → ℝ) → ℝ)
     (S : Finset (Fin n → ℝ)) (i : Fin n) (t : ℝ) : ℝ :=
   condExpOn f g (S.filter fun x => x i = t)
 
-/-- **Lemma 7.3 (Monotone conditional expectations), finite case**. Let the
-signal weights `f` be affiliated (**Def 7.2**) and positive on the finite
+/-- **Monotone conditional expectations, finite case.** Let the
+signal weights `f` be affiliated (`Affiliated`) and positive on the finite
 sublattice `S` of signal profiles, and let `g` be nondecreasing.  Then the
 discrete conditional expectation `t ↦ E[g(X) | Xᵢ = t]` (`condExpSlice`) is
 nondecreasing on the set of realized heights `{x i | x ∈ S}`.
