@@ -3,11 +3,13 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
+module
+
 /-
 Matching with contracts: weakened substitutability conditions.
 -/
-import MathEconLib.Matching.Contracts.Basic
-import MathEconLib.Choice.Matching.Relationships
+public import MathEconLib.Matching.Contracts.Basic
+public import MathEconLib.Choice.Matching.Relationships
 
 /-!
 # Buyer weak substitutes and completion hypotheses
@@ -45,6 +47,8 @@ obtain stable outcomes in the original market.
   matchings with contracts*, Economics Letters 145, 230–234,
   https://doi.org/10.1016/j.econlet.2016.06.029.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

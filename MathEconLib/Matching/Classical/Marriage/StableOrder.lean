@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.Optimality
-import Mathlib.Order.CompleteLattice.Basic
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Optimality
+public import Mathlib.Order.CompleteLattice.Basic
 
 /-!
 # The lattice of stable marriage matchings
@@ -18,6 +20,8 @@ all men weakly prefer `ν` to `μ`, equivalently that all women weakly prefer
 `μ` to `ν`. Thus top is man-optimal/woman-pessimal and bottom is
 woman-optimal/man-pessimal. Exchanging the two sides reverses the order.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

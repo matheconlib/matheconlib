@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.Basic
-import MathEconLib.Matching.Contracts.Basic
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Basic
+public import MathEconLib.Matching.Contracts.Basic
 
 /-!
 # Embedding marriage markets in the contracts model
@@ -19,6 +21,8 @@ The choice/preference dictionary records exactly the needed side-specific
 rationality hypothesis. Stable-matching existence via the contracts theorem
 is proved separately in `Marriage.Existence`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

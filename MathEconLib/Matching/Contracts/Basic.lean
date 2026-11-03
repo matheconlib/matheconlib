@@ -3,13 +3,15 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
+module
+
 /-
 Matching with contracts, Layer 1: two-sided markets and stability.
 -/
-import MathEconLib.Choice.Conditions
+public import MathEconLib.Choice.Conditions
 
-import Mathlib.Data.Set.Basic
-import Mathlib.Data.Set.Insert
+public import Mathlib.Data.Set.Basic
+public import Mathlib.Data.Set.Insert
 
 /-!
 # Two-sided matching markets with contracts
@@ -70,6 +72,8 @@ regularity separately and allow arbitrary agent and contract types.
 `blocks_singleton_iff` provide stable rewriting interfaces, so downstream
 proofs need not unfold the predicates by hand.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

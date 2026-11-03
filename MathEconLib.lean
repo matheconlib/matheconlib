@@ -1,129 +1,131 @@
-import MathEconLib.Auction
-import MathEconLib.Auction.Affiliation.Basic
-import MathEconLib.Auction.Affiliation.FiniteCondExp
-import MathEconLib.Auction.Affiliation.LogSupermodular
-import MathEconLib.Auction.Affiliation.MonotoneCondExp
-import MathEconLib.Auction.Affiliation.WinnersCurse
-import MathEconLib.Auction.AllPurchase
-import MathEconLib.Auction.AllPurchase.Basic
-import MathEconLib.Auction.AllPurchase.ExplicitSolutions
-import MathEconLib.Auction.AllPurchase.LinearScarcity
-import MathEconLib.Auction.AllPurchase.OptimalPricing
-import MathEconLib.Auction.AllPurchase.RevenueDecomposition
-import MathEconLib.Auction.AllPurchase.UniformDistribution
-import MathEconLib.Auction.AllPurchase.WelfareDecomposition
-import MathEconLib.Auction.Basic
-import MathEconLib.Auction.IdenticalTypes
-import MathEconLib.Auction.RevenueEquivalence
-import MathEconLib.Auction.StrictMonotonicity
-import MathEconLib.Auction.SymmetricIPV
-import MathEconLib.Auction.Typeclasses
-import MathEconLib.Auction.ValueDistribution
-import MathEconLib.BidderProblem
-import MathEconLib.BidderProblem.Basic
-import MathEconLib.BidderProblem.EnvelopeIC
-import MathEconLib.BidderProblem.TypeDeviationIC
-import MathEconLib.BidderProblem.UniversalIC
-import MathEconLib.Choice
-import MathEconLib.Choice.Basic
-import MathEconLib.Choice.Conditions
-import MathEconLib.Choice.FiniteOption
-import MathEconLib.Choice.Induced
-import MathEconLib.Choice.Map
-import MathEconLib.Choice.Matching.Completion
-import MathEconLib.Choice.Matching.Preferences
-import MathEconLib.Choice.Matching.Relationships
-import MathEconLib.Choice.Matching.WeakSubstitutability
-import MathEconLib.Choice.SubstituteHull
-import MathEconLib.ForMathlib.AbsolutelyContinuous
-import MathEconLib.ForMathlib.ApproximateSelection
-import MathEconLib.ForMathlib.Data.PartialMatching
-import MathEconLib.ForMathlib.Data.SetFiber
-import MathEconLib.ForMathlib.FinsetUpdate
-import MathEconLib.ForMathlib.IndepFun
-import MathEconLib.ForMathlib.Kakutani
-import MathEconLib.ForMathlib.MeasureTheory
-import MathEconLib.ForMathlib.MeasureTheory.AnalyticNullMeasurable
-import MathEconLib.ForMathlib.MeasureTheory.AnalyticUniformization
-import MathEconLib.ForMathlib.MeasureTheory.VonNeumannSelection
-import MathEconLib.ForMathlib.Order.FixedPointLattice
-import MathEconLib.ForMathlib.Order.IterateFiniteSet
-import MathEconLib.ForMathlib.Order.IterateFixedPoint
-import MathEconLib.ForMathlib.ProbabilityMeasure
-import MathEconLib.ForMathlib.Quasiconvex
-import MathEconLib.ForMathlib.Schauder
-import MathEconLib.ForMathlib.StochasticOrder
-import MathEconLib.GameTheory.Equilibrium.Problem
-import MathEconLib.GameTheory.Strategic.Basic
-import MathEconLib.GameTheory.Strategic.Bayesian.Finite
-import MathEconLib.GameTheory.Strategic.Bayesian.FiniteMeasurable
-import MathEconLib.GameTheory.Strategic.Bayesian.Game
-import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Beliefs
-import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Comap
-import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Game
-import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Interim
-import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.InterimConverse
-import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
-import MathEconLib.GameTheory.Strategic.Existence
-import MathEconLib.GameTheory.Strategic.Mixed
-import MathEconLib.GameTheory.Strategic.Mixed.Finite
-import MathEconLib.GameTheory.Strategic.Outcome
-import MathEconLib.Matching
-import MathEconLib.Matching.Classical.Marriage
-import MathEconLib.Matching.Classical.Marriage.Basic
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
-import MathEconLib.Matching.Classical.Marriage.Existence
-import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
-import MathEconLib.Matching.Classical.Marriage.LoneWolf
-import MathEconLib.Matching.Classical.Marriage.Optimality
-import MathEconLib.Matching.Classical.Marriage.Preferences
-import MathEconLib.Matching.Classical.Marriage.StableOrder
-import MathEconLib.Matching.Classical.Marriage.ToContracts
-import MathEconLib.Matching.Contracts.Basic
-import MathEconLib.Matching.Contracts.Completion
-import MathEconLib.Matching.Contracts.FixedPointConvergence
-import MathEconLib.Matching.Contracts.ManyToOne
-import MathEconLib.Matching.Contracts.RuralHospitals
-import MathEconLib.Matching.Contracts.StableFixedPoints
-import MathEconLib.Matching.Contracts.StableOrder
-import MathEconLib.Matching.Contracts.WeakSubstitutes
-import MathEconLib.Mechanism
-import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
-import MathEconLib.Mechanism.Auctions.Allocation
-import MathEconLib.Mechanism.Core.Bayesian
-import MathEconLib.Mechanism.Core.BayesianIC
-import MathEconLib.Mechanism.Core.Comap
-import MathEconLib.Mechanism.Core.Environment
-import MathEconLib.Mechanism.Core.Mechanism
-import MathEconLib.Mechanism.Core.Profile
-import MathEconLib.Mechanism.Core.SolutionConcepts
-import MathEconLib.Mechanism.Core.Strategic
-import MathEconLib.Probability.FinDist.Basic
-import MathEconLib.Probability.FinDist.ConditionalOn
-import MathEconLib.Probability.FinDist.Expect
-import MathEconLib.Probability.FinDist.Measure
-import MathEconLib.Probability.FinDist.Simplex
-import MathEconLib.SingleParameter
-import MathEconLib.SingleParameter.Basic
-import MathEconLib.SingleParameter.EnvelopeIC
-import MathEconLib.SingleParameter.IC
-import MathEconLib.SingleParameter.Payment
-import MathEconLib.SingleParameter.PostedPrice
-import MathEconLib.SingleParameter.Revelation
-import MathEconLib.Statistics.OrderStatistics
-import MathEconLib.ValueDistribution
-import MathEconLib.ValueDistribution.Basic
-import MathEconLib.ValueDistribution.Demand
-import MathEconLib.ValueDistribution.Density
-import MathEconLib.ValueDistribution.ExpectedPayment
-import MathEconLib.ValueDistribution.PostedPrice
-import MathEconLib.ValueDistribution.PostedPriceFirstOrder
-import MathEconLib.ValueDistribution.PostedPriceOptimality
-import MathEconLib.ValueDistribution.SellerProfit
-import MathEconLib.ValueDistribution.SingleParameter
-import MathEconLib.ValueDistribution.TailIntegral
-import MathEconLib.ValueDistribution.Uniform
-import MathEconLib.ValueDistribution.UniformPricing
-import MathEconLib.ValueDistribution.VirtualValue
+module  -- shake: keep-all --deprecated_module: ignore
+
+public import MathEconLib.Auction
+public import MathEconLib.Auction.Affiliation.Basic
+public import MathEconLib.Auction.Affiliation.FiniteCondExp
+public import MathEconLib.Auction.Affiliation.LogSupermodular
+public import MathEconLib.Auction.Affiliation.MonotoneCondExp
+public import MathEconLib.Auction.Affiliation.WinnersCurse
+public import MathEconLib.Auction.AllPurchase
+public import MathEconLib.Auction.AllPurchase.Basic
+public import MathEconLib.Auction.AllPurchase.ExplicitSolutions
+public import MathEconLib.Auction.AllPurchase.LinearScarcity
+public import MathEconLib.Auction.AllPurchase.OptimalPricing
+public import MathEconLib.Auction.AllPurchase.RevenueDecomposition
+public import MathEconLib.Auction.AllPurchase.UniformDistribution
+public import MathEconLib.Auction.AllPurchase.WelfareDecomposition
+public import MathEconLib.Auction.Basic
+public import MathEconLib.Auction.IdenticalTypes
+public import MathEconLib.Auction.RevenueEquivalence
+public import MathEconLib.Auction.StrictMonotonicity
+public import MathEconLib.Auction.SymmetricIPV
+public import MathEconLib.Auction.Typeclasses
+public import MathEconLib.Auction.ValueDistribution
+public import MathEconLib.BidderProblem
+public import MathEconLib.BidderProblem.Basic
+public import MathEconLib.BidderProblem.EnvelopeIC
+public import MathEconLib.BidderProblem.TypeDeviationIC
+public import MathEconLib.BidderProblem.UniversalIC
+public import MathEconLib.Choice
+public import MathEconLib.Choice.Basic
+public import MathEconLib.Choice.Conditions
+public import MathEconLib.Choice.FiniteOption
+public import MathEconLib.Choice.Induced
+public import MathEconLib.Choice.Map
+public import MathEconLib.Choice.Matching.Completion
+public import MathEconLib.Choice.Matching.Preferences
+public import MathEconLib.Choice.Matching.Relationships
+public import MathEconLib.Choice.Matching.WeakSubstitutability
+public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.ForMathlib.AbsolutelyContinuous
+public import MathEconLib.ForMathlib.ApproximateSelection
+public import MathEconLib.ForMathlib.Data.PartialMatching
+public import MathEconLib.ForMathlib.Data.SetFiber
+public import MathEconLib.ForMathlib.FinsetUpdate
+public import MathEconLib.ForMathlib.IndepFun
+public import MathEconLib.ForMathlib.Kakutani
+public import MathEconLib.ForMathlib.MeasureTheory
+public import MathEconLib.ForMathlib.MeasureTheory.AnalyticNullMeasurable
+public import MathEconLib.ForMathlib.MeasureTheory.AnalyticUniformization
+public import MathEconLib.ForMathlib.MeasureTheory.VonNeumannSelection
+public import MathEconLib.ForMathlib.Order.FixedPointLattice
+public import MathEconLib.ForMathlib.Order.IterateFiniteSet
+public import MathEconLib.ForMathlib.Order.IterateFixedPoint
+public import MathEconLib.ForMathlib.ProbabilityMeasure
+public import MathEconLib.ForMathlib.Quasiconvex
+public import MathEconLib.ForMathlib.Schauder
+public import MathEconLib.ForMathlib.StochasticOrder
+public import MathEconLib.GameTheory.Equilibrium.Problem
+public import MathEconLib.GameTheory.Strategic.Basic
+public import MathEconLib.GameTheory.Strategic.Bayesian.Finite
+public import MathEconLib.GameTheory.Strategic.Bayesian.FiniteMeasurable
+public import MathEconLib.GameTheory.Strategic.Bayesian.Game
+public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Beliefs
+public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Comap
+public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Game
+public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Interim
+public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.InterimConverse
+public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
+public import MathEconLib.GameTheory.Strategic.Existence
+public import MathEconLib.GameTheory.Strategic.Mixed
+public import MathEconLib.GameTheory.Strategic.Mixed.Finite
+public import MathEconLib.GameTheory.Strategic.Outcome
+public import MathEconLib.Matching
+public import MathEconLib.Matching.Classical.Marriage
+public import MathEconLib.Matching.Classical.Marriage.Basic
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
+public import MathEconLib.Matching.Classical.Marriage.Existence
+public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
+public import MathEconLib.Matching.Classical.Marriage.LoneWolf
+public import MathEconLib.Matching.Classical.Marriage.Optimality
+public import MathEconLib.Matching.Classical.Marriage.Preferences
+public import MathEconLib.Matching.Classical.Marriage.StableOrder
+public import MathEconLib.Matching.Classical.Marriage.ToContracts
+public import MathEconLib.Matching.Contracts.Basic
+public import MathEconLib.Matching.Contracts.Completion
+public import MathEconLib.Matching.Contracts.FixedPointConvergence
+public import MathEconLib.Matching.Contracts.ManyToOne
+public import MathEconLib.Matching.Contracts.RuralHospitals
+public import MathEconLib.Matching.Contracts.StableFixedPoints
+public import MathEconLib.Matching.Contracts.StableOrder
+public import MathEconLib.Matching.Contracts.WeakSubstitutes
+public import MathEconLib.Mechanism
+public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
+public import MathEconLib.Mechanism.Auctions.Allocation
+public import MathEconLib.Mechanism.Core.Bayesian
+public import MathEconLib.Mechanism.Core.BayesianIC
+public import MathEconLib.Mechanism.Core.Comap
+public import MathEconLib.Mechanism.Core.Environment
+public import MathEconLib.Mechanism.Core.Mechanism
+public import MathEconLib.Mechanism.Core.Profile
+public import MathEconLib.Mechanism.Core.SolutionConcepts
+public import MathEconLib.Mechanism.Core.Strategic
+public import MathEconLib.Probability.FinDist.Basic
+public import MathEconLib.Probability.FinDist.ConditionalOn
+public import MathEconLib.Probability.FinDist.Expect
+public import MathEconLib.Probability.FinDist.Measure
+public import MathEconLib.Probability.FinDist.Simplex
+public import MathEconLib.SingleParameter
+public import MathEconLib.SingleParameter.Basic
+public import MathEconLib.SingleParameter.EnvelopeIC
+public import MathEconLib.SingleParameter.IC
+public import MathEconLib.SingleParameter.Payment
+public import MathEconLib.SingleParameter.PostedPrice
+public import MathEconLib.SingleParameter.Revelation
+public import MathEconLib.Statistics.OrderStatistics
+public import MathEconLib.ValueDistribution
+public import MathEconLib.ValueDistribution.Basic
+public import MathEconLib.ValueDistribution.Demand
+public import MathEconLib.ValueDistribution.Density
+public import MathEconLib.ValueDistribution.ExpectedPayment
+public import MathEconLib.ValueDistribution.PostedPrice
+public import MathEconLib.ValueDistribution.PostedPriceFirstOrder
+public import MathEconLib.ValueDistribution.PostedPriceOptimality
+public import MathEconLib.ValueDistribution.SellerProfit
+public import MathEconLib.ValueDistribution.SingleParameter
+public import MathEconLib.ValueDistribution.TailIntegral
+public import MathEconLib.ValueDistribution.Uniform
+public import MathEconLib.ValueDistribution.UniformPricing
+public import MathEconLib.ValueDistribution.VirtualValue

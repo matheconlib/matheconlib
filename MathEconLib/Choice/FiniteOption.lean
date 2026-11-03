@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import Mathlib.Data.Finset.Max
-import Mathlib.Data.Finset.Image
+module
+
+public import Mathlib.Data.Finset.Max
+public import Mathlib.Data.Finset.Image
 
 /-!
 # Best choice from a finite menu with an outside option
@@ -16,6 +18,8 @@ finite: the population of alternatives need not be finite or enumerable.
 This is the common finite selector for the executable classical algorithms.
 Its agreement with preference-induced set choice is stated in `Choice.Induced`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 
