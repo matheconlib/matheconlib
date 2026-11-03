@@ -69,7 +69,7 @@ theorem cournot_profile_best_response :
 
 /-- The example uses the library's strategic-game Nash predicate. -/
 theorem cournot_profile_isNash :
-    model.editionsOnlyGame.IsNash (model.cournotProfile (by norm_num [model, auction])) :=
+    model.editionsOnlyGame.IsNash (model.cournotProfile (by change (2 : ℝ) ≤ 3; norm_num)) :=
   model.cournotProfile_isNash _
 
 theorem expected_welfare : model.bundledEditionWelfare purchase 0 = (14 : ℝ) / 9 := by

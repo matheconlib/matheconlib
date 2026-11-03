@@ -1,7 +1,7 @@
 /-
 Copyright (c) 2026 Ruiz Chen, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ruiz Chen, Bo Cowgill
+Authors: Ruiz Chen, Bo Cowgill, Scott Duke Kominers
 -/
 module
 
@@ -200,8 +200,10 @@ end Auction
 
 namespace LinearScarcityAuction
 
+variable [n.AtLeastTwo]
 variable (A : LinearScarcityAuction Ω n)
-variable [A.HasIdenticalTypes] [A.HasBoundedTypes]
+variable [A.HasIdenticalTypes] [A.HasIndependentTypes]
+variable [A.HasBoundedTypes] [A.HasAtomlessTypes]
 
 /-- Substantive assumptions for an interior strategy at representative bidder `i`.
 Integrability follows from measurable monotone bids and bounded types, so is not a field.
@@ -222,13 +224,12 @@ structure IsInteriorRegimeStrategy (β : ℝ → ℝ) (i : Fin n) : Prop where
       (A.K_linear β) ^ 2 / (4 * A.α_coeff)
 
 variable {A} in
+omit [n.AtLeastTwo] [A.HasIndependentTypes] [A.HasAtomlessTypes] in
 /-- Interior strategy assumptions imply integrability for every bidder. -/
 theorem IsInteriorRegimeStrategy.integrable {β : ℝ → ℝ} {i : Fin n}
     (h : A.IsInteriorRegimeStrategy β i) (j : Fin n) :
     Integrable (fun ω => β (A.θ j ω)) ℙ :=
   A.toAuction.integrable_comp_type_of_monotoneOn β h.measurable h.strictMonoOn.monotoneOn j
-
-variable [n.AtLeastTwo] [A.HasIndependentTypes] [A.HasAtomlessTypes]
 
 /-- Interior purchases in terms of the distribution-based all-pay bid. The lowest-type
 utility condition forces `β(lowestType) = −K/(2α)`, and strict monotonicity selects the
@@ -244,8 +245,8 @@ theorem interior_regime_strategy_eq_strategyInterior
     K_neg := h.K_neg
     U_lowestType_eq := h.lowestTypeUtility
   }
-  letI : BidderProblem.HasTypeDeviationIC P.toBidderProblem := h.typeDeviationIC
-  letI := h.typeDeviationIC
+  let : BidderProblem.HasTypeDeviationIC P.toBidderProblem := h.typeDeviationIC
+  let := h.typeDeviationIC
   have hmem (w : ℝ) (hw : w ∈ Icc A.lowestType A.highestType) :
       w ∈ P.typeInterval := by
     change w ∈ Icc (A.θmin i) (A.θmax i)

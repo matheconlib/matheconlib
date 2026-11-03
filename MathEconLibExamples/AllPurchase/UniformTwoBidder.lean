@@ -311,10 +311,10 @@ theorem aggregate_variance : variance (model.aggregateBid strategy) ℙ = 1 / 6 
       (independent_values.indepFun (by decide : (0 : Fin 2) ≠ 1)),
       variance_value, variance_value]
     norm_num
-  rw [aggregate_formula,
-    variance_const_add
-      (measurable_const.mul ((measurable_value 0).add (measurable_value 1))).aestronglyMeasurable,
-    variance_const_mul, hsum]
+  have hm : AEStronglyMeasurable
+      (fun ω => (1 / 2 : ℝ) * (value 0 ω + value 1 ω)) ℙ :=
+    (measurable_const.mul ((measurable_value 0).add (measurable_value 1))).aestronglyMeasurable
+  rw [aggregate_formula, variance_const_add hm (1 / 3), variance_const_mul, hsum]
   norm_num
 
 /-- The second moment of actual aggregate purchases is `35/18`. -/
