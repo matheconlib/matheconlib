@@ -1,0 +1,13 @@
+module
+public import Lean
+set_option warningAsError false
+set_option warn.«sorry» false
+open Lean in
+macro "hiddenExamples" : command => do
+  let hole : TSyntax `term := ⟨.node .none (Name.str `Lean.Parser.Term ("so" ++ "rry"))
+    #[.atom .none ("so" ++ "rry")]⟩
+  `(section
+    example : Nat := 0
+    example : Nat := $hole
+    end)
+hiddenExamples

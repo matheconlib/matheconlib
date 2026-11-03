@@ -1,14 +1,182 @@
 ---
-layout: layouts/base.njk
+layout: false
 title: Page not found
 permalink: /404.html
 eleventyExcludeFromCollections: true
 ---
-<section class="not-found">
-  <div class="shell">
-    <p class="kicker">404</p>
-    <h1>This page has not been formalized.</h1>
-    <p>The address may have changed, or the page may not exist.</p>
-    <a class="button button-primary" href="{{ '/' | url }}">Return home</a>
-  </div>
-</section>
+{# Match the homepage's standalone layout and visual style. #}
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} · {{ site.name }}</title>
+  <meta name="description" content="This page could not be found. Return to {{ site.name }} or browse the documentation.">
+  <meta name="robots" content="noindex">
+  <meta name="color-scheme" content="light dark">
+  <link rel="icon" href="{{ '/assets/favicon-mexists.svg' | url }}?v=2" type="image/svg+xml" sizes="any">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <style>
+
+  :root {
+    --ground: #FFFFFF;
+    --ink: #16201D;
+    --muted: #5B6763;
+    --accent: #1B6B5E;
+    --accent-ink: #145247;
+    --accent-soft: #DDEDE7;
+    --rule: #E9ECEA;
+    --rule-strong: #A9B4AF;
+    --code-bg: #F7F8F7;
+    --todo: #A2632A;
+    --note-bg: #FFFCF6;
+    --note-rule: #EAD8B6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #111614;
+      --ink: #E4EAE7;
+      --muted: #97A29D;
+      --accent: #63C2A9;
+      --accent-ink: #8ADBC5;
+      --accent-soft: #1A2E29;
+      --rule: #26302C;
+      --rule-strong: #3E4B46;
+      --code-bg: #1A211E;
+      --todo: #D9A059;
+      --note-bg: #2A2318;
+      --note-rule: #5A4A2A;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground: #111614;
+    --ink: #E4EAE7;
+    --muted: #97A29D;
+    --accent: #63C2A9;
+    --accent-ink: #8ADBC5;
+    --accent-soft: #1A2E29;
+    --rule: #26302C;
+    --rule-strong: #3E4B46;
+    --code-bg: #1A211E;
+    --todo: #D9A059;
+    --note-bg: #2A2318;
+    --note-rule: #5A4A2A;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+    font-size: 17px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; border-bottom: 1px solid var(--rule-strong); }
+  a:hover { color: var(--accent-ink); border-bottom-color: var(--accent); }
+  a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  code {
+    font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace;
+    font-size: 0.88em;
+  }
+  code { background: var(--code-bg); padding: 0.1em 0.35em; border-radius: 3px; }
+  a > code { color: inherit; }
+
+  .page { max-width: 44rem; margin: 0 auto; padding: 0 1.25rem 5rem; }
+
+  header.top {
+    display: flex; flex-wrap: wrap; align-items: center; gap: 0.6rem 1.6rem;
+    padding: 1.6rem 0 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .wordmark {
+    display: inline-flex; align-items: center; gap: 0.65rem;
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600; font-size: 1.2rem; letter-spacing: -0.01em;
+    color: var(--ink); border: 0;
+  }
+  .wordmark-mark {
+    display: grid; place-items: center;
+    width: 2.2rem; height: 2.2rem;
+    background: var(--ink); color: var(--ground);
+    font-size: 1.2rem; line-height: 1; letter-spacing: -0.1em;
+  }
+  nav.top ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 0.2rem 1.2rem; }
+  nav.top a { font-size: 0.92rem; color: var(--muted); border: 0; }
+  nav.top a:hover { color: var(--accent); }
+
+  h1 {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-weight: 600; font-size: 3rem; line-height: 1.05;
+    letter-spacing: -0.02em;
+    margin: 2.8rem 0 0.4rem;
+  }
+  .tagline {
+    font-family: "IBM Plex Serif", Georgia, serif;
+    font-size: 1.5rem; line-height: 1.3; font-weight: 400;
+    color: var(--muted); margin: 0; text-wrap: balance; max-width: 34rem;
+  }
+  .lede { font-size: 1.25rem; line-height: 1.5; margin: 0 0 1.1rem; max-width: 40rem; }
+
+  footer {
+    margin-top: 4rem; padding-top: 1.2rem; border-top: 1px solid var(--rule);
+    font-size: 0.88rem; color: var(--muted);
+    display: flex; flex-wrap: wrap; gap: 0.4rem 1.6rem;
+  }
+  footer a { color: var(--muted); border-bottom-color: var(--rule); }
+
+  .page { min-height: 100vh; display: flex; flex-direction: column; padding-bottom: 2rem; }
+  main { flex: 1; padding-top: clamp(3.5rem, 10vh, 6rem); }
+  .error-code { margin: 0 0 1rem; color: var(--accent); font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace; font-size: 0.9rem; letter-spacing: 0.08em; }
+  h1 { margin: 0 0 1.25rem; max-width: 38rem; font-size: clamp(2.1rem, 7vw, 3rem); line-height: 1.15; text-wrap: balance; overflow-wrap: anywhere; }
+  h1 .apology { font-family: "IBM Plex Mono", "SFMono-Regular", Menlo, Consolas, monospace; font-weight: 500; color: var(--accent); }
+  .lede { color: var(--muted); max-width: 32rem; }
+  .recovery-links { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem 1.5rem; margin: 2rem 0 0; }
+  .home-link { display: inline-block; border: 1px solid var(--rule-strong); padding: 0.55rem 0.9rem; border-radius: 3px; color: var(--accent-ink); background: var(--accent-soft); font-weight: 500; }
+  .home-link:hover { border-color: var(--accent); }
+  .help { margin: 2rem 0 0; max-width: 34rem; color: var(--muted); font-size: 0.92rem; }
+  .skip-link { position: absolute; top: 0.5rem; left: 0.5rem; transform: translateY(-200%); padding: 0.5rem 0.75rem; background: var(--ground); z-index: 1; }
+  .skip-link:focus { transform: translateY(0); }
+  {% include "404/art.css.njk" %}
+  </style>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="page">
+  <header class="top">
+    <a class="wordmark" href="{{ '/' | url }}" aria-label="{{ site.name }} home">
+      <span class="wordmark-mark" aria-hidden="true">M∃</span>
+      <span>{{ site.name }}</span>
+    </a>
+    <nav class="top" aria-label="Primary navigation">
+      <ul>
+        <li><a href="{{ '/' | url }}#about">About</a></li>
+        <li><a href="{{ '/' | url }}#vision">Scope</a></li>
+        <li><a href="{{ '/' | url }}#docs">Docs</a></li>
+        <li><a href="{{ '/' | url }}#contribute">Contribute</a></li>
+        <li><a href="{{ '/' | url }}#people">People</a></li>
+        <li><a href="{{ site.repository }}">GitHub</a></li>
+      </ul>
+    </nav>
+  </header>
+  <main id="main" tabindex="-1">
+    <p class="error-code">404 · PAGE NOT FOUND</p>
+    <h1><span class="apology">Sorry</span> — the page you are looking for has not yet been formalized.</h1>
+    <p class="lede">The address may have changed, or the page may not exist.</p>
+    <div class="recovery-links">
+      <a class="home-link" href="{{ '/' | url }}">Return home <span aria-hidden="true">→</span></a>
+      <a href="{{ '/' | url }}#docs">Browse the documentation</a>
+    </div>
+    <p class="help">Followed a broken link? <a href="{{ site.issues }}">Let us know on GitHub</a>.</p>
+    {% include "404/art.njk" %}
+  </main>
+  <footer>
+    <span>{{ site.name }}</span>
+    <span>Machine-checked foundations for economics.</span>
+    <a href="{{ site.repository }}/tree/{{ site.sourceBranch }}/website">Site source</a>
+  </footer>
+</div>
+</body>
+</html>

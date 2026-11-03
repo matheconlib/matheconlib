@@ -1,8 +1,15 @@
 /-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+/-
 Matching with contracts: weakened substitutability conditions.
 -/
-import MathEconLib.Matching.Contracts.Basic
-import MathEconLib.Choice.Matching.Relationships
+public import MathEconLib.Matching.Contracts.Basic
+public import MathEconLib.Choice.Matching.Relationships
 
 /-!
 # Buyer weak substitutes and completion hypotheses
@@ -27,9 +34,9 @@ feasibility, and finite-valued buyer choice. Neither the contract type nor the
 agent types need be finite for this implication. Its finite-contract
 specialization is also provided below.
 
-These are hypotheses and choice-level implications for a future market
-reduction; they do not yet assert existence under weak substitutability.
-Sellers' unit demand and regularity belong in that reduction theorem.
+These are hypotheses and choice-level implications. The market reduction in
+`Contracts/Completion.lean` combines them with seller unit demand and IRC to
+obtain stable outcomes in the original market.
 
 ## References
 
@@ -40,6 +47,8 @@ Sellers' unit demand and regularity belong in that reduction theorem.
   matchings with contracts*, Economics Letters 145, 230–234,
   https://doi.org/10.1016/j.econlet.2016.06.029.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

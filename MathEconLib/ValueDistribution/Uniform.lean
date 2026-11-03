@@ -1,3 +1,8 @@
+/-
+Copyright (c) 2026 Bo Cowgill. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Bo Cowgill
+-/
 module
 
 public import MathEconLib.ValueDistribution.Demand
@@ -70,7 +75,7 @@ theorem uniformInterval_absolutelyContinuous (a b : ℝ) (hab : a < b) :
 
 /-- A uniform distribution on a real interval has no point masses. -/
 instance uniformInterval_noAtoms (a b : ℝ) (hab : a < b) :
-    NoAtoms ((uniformInterval a b hab : ValueDistribution) : Measure ℝ) where
+    NullSingletonClass ((uniformInterval a b hab : ValueDistribution) : Measure ℝ) where
   measure_singleton point :=
     (uniformInterval_absolutelyContinuous a b hab) (measure_singleton point)
 

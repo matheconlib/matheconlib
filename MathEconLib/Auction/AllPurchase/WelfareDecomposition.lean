@@ -1,7 +1,13 @@
+/-
+Copyright (c) 2026 Daniel Lyng, Ruiz Chen. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Daniel Lyng, Ruiz Chen, Scott Duke Kominers
+-/
 module
 
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
 public import MathEconLib.Auction.AllPurchase.RevenueDecomposition
+public import MathEconLib.GameTheory.Strategic.Basic
 public import Mathlib.Probability.Moments.Variance
 
 /-!
@@ -173,8 +179,7 @@ open MeasureTheory ProbabilityTheory Set Finset
 namespace LinearScarcityAuction
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
-variable {n : ℕ} [NeZero n] [n.AtLeastTwo]
-variable (A : LinearScarcityAuction Ω n) [A.HasIdenticalTypes]
+variable {n : ℕ} (A : LinearScarcityAuction Ω n)
 
 /-- Expected squared aggregate quantity `𝔼[B²]` when every bidder uses strategy `β`, with
 `B = A.toAuction.aggregateBid β`. -/
@@ -189,7 +194,6 @@ noncomputable def bundledEditionWelfare (β : ℝ → ℝ) (c : ℝ) : ℝ :=
   (A.φ_bar - c) * A.toAuction.expectedAggregateBid β
     - A.α_coeff * A.expectedAggregateBidSq β
 
-omit [n.AtLeastTwo] [NeZero n] [A.HasIdenticalTypes] in
 /-- Under linear scarcity, expected edition value satisfies `𝔼[B·φ(B)] = φ̄·𝔼[B] − α·𝔼[B²]` when
 aggregate quantity `B` under strategy `β` and its square are integrable. -/
 theorem expectedEditionValue_linear (β : ℝ → ℝ)
@@ -212,7 +216,6 @@ theorem expectedEditionValue_linear (β : ℝ → ℝ)
   rw [integral_sub (hB_int.const_mul _) (hB2_int.const_mul _),
       integral_const_mul, integral_const_mul]
 
-omit [n.AtLeastTwo] [NeZero n] [A.HasIdenticalTypes] in
 /-- When aggregate quantity under strategy `β` and its square are integrable, bundled edition
 welfare equals expected edition value less expected production cost, `𝔼[B·φ(B)] − c·𝔼[B]`. -/
 theorem bundledEditionWelfare_eq (β : ℝ → ℝ) (c : ℝ)
@@ -225,19 +228,7 @@ theorem bundledEditionWelfare_eq (β : ℝ → ℝ) (c : ℝ)
   rw [A.expectedEditionValue_linear β hB_int hB2_int]
   ring
 
-end LinearScarcityAuction
-
 /-! ## Feasible Cournot benchmark and expected-welfare decomposition -/
-
-namespace LinearScarcityAuction
-
-variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
-variable {n : ℕ} (A : LinearScarcityAuction Ω n)
-
-/-- The symmetric per-bidder editions-only Cournot candidate. It is a feasible purchase when
-the posted price does not exceed the scarcity intercept. -/
-noncomputable def cournotPurchaseLinear : ℝ :=
-  (A.φ_bar - A.spec.price) / (A.α_coeff * ((n : ℝ) + 1))
 
 /-- At a price below the scarcity intercept, the symmetric Cournot purchase is nonnegative. -/
 theorem cournotPurchaseLinear_nonneg (hp : A.spec.price ≤ A.φ_bar) :
@@ -249,32 +240,73 @@ theorem cournotPurchaseLinear_nonneg (hp : A.spec.price ≤ A.φ_bar) :
 /-- Total purchases at the symmetric Cournot profile equal the previously defined quantity. -/
 theorem cournotQuantityLinear_eq_total :
     A.cournotQuantityLinear = (n : ℝ) * A.cournotPurchaseLinear := by
-  unfold cournotQuantityLinear cournotPurchaseLinear
+  rfl
+
+/-- Completing the square gives the exact loss from any real unilateral deviation. The
+price restriction is needed only for feasibility of the symmetric nonnegative profile. -/
+theorem cournotPurchaseLinear_payoff_gap (x : ℝ) :
+    A.cournotPurchaseLinear *
+        (A.spec.φ ((n : ℝ) * A.cournotPurchaseLinear) - A.spec.price) -
+      x * (A.spec.φ (x + ((n : ℝ) - 1) * A.cournotPurchaseLinear) - A.spec.price) =
+        A.α_coeff * (x - A.cournotPurchaseLinear) ^ 2 := by
+  have hden : A.α_coeff * ((n : ℝ) + 1) ≠ 0 :=
+    ne_of_gt (mul_pos A.α_pos (by positivity))
+  have hstationary :
+      A.cournotPurchaseLinear * (A.α_coeff * ((n : ℝ) + 1)) =
+        A.φ_bar - A.spec.price := div_mul_cancel₀ _ hden
+  simp_rw [congr_fun A.scarcity_is_linear]
+  rw [show A.φ_bar = A.spec.price +
+    A.cournotPurchaseLinear * (A.α_coeff * ((n : ℝ) + 1)) by linarith]
   ring
 
-/-- The symmetric editions-only Cournot profile is feasible and admits no profitable
-nonnegative unilateral deviation. Each buyer receives `x · (φ(total) − p)`; the contest prize
-is absent. The deviation inequality follows by completing the square, rather than merely
-checking a first-order condition. -/
+/-- Compatibility certificate: feasibility and no profitable nonnegative unilateral deviation. -/
 theorem cournotPurchaseLinear_best_response [NeZero n] (hp : A.spec.price ≤ A.φ_bar) :
     0 ≤ A.cournotPurchaseLinear ∧
       ∀ x : ℝ, 0 ≤ x →
         x * (A.spec.φ (x + ((n : ℝ) - 1) * A.cournotPurchaseLinear) - A.spec.price) ≤
           A.cournotPurchaseLinear *
             (A.spec.φ ((n : ℝ) * A.cournotPurchaseLinear) - A.spec.price) := by
-  refine ⟨A.cournotPurchaseLinear_nonneg hp, ?_⟩
-  intro x _hx
-  have hden : A.α_coeff * ((n : ℝ) + 1) ≠ 0 := by
-    exact ne_of_gt (mul_pos A.α_pos (by positivity))
-  have hstationary :
-      A.cournotPurchaseLinear * (A.α_coeff * ((n : ℝ) + 1)) =
-        A.φ_bar - A.spec.price := by
-    exact div_mul_cancel₀ _ hden
-  simp_rw [congr_fun A.scarcity_is_linear]
-  rw [show A.φ_bar = A.spec.price +
-    A.cournotPurchaseLinear * (A.α_coeff * ((n : ℝ) + 1)) by linarith]
-  have hsq := mul_nonneg A.α_pos.le (sq_nonneg (x - A.cournotPurchaseLinear))
-  nlinarith only [hsq]
+  refine ⟨A.cournotPurchaseLinear_nonneg hp, fun x _ => ?_⟩
+  have h := A.cournotPurchaseLinear_payoff_gap x
+  have hnonneg := mul_nonneg A.α_pos.le (sq_nonneg (x - A.cournotPurchaseLinear))
+  linarith
+
+/-- Editions-only Cournot game. Purchases are nonnegative; there is no contest prize.
+This action restriction does not change the bundled auction's real deviation space. -/
+noncomputable def editionsOnlyGame :
+    GameTheory.StrategicGame (Fin n) (fun _ => {x : ℝ // 0 ≤ x}) ℝ where
+  payoff i b := (b i : ℝ) * (A.spec.φ (∑ j, (b j : ℝ)) - A.spec.price)
+
+/-- The feasible symmetric editions-only Cournot profile. -/
+noncomputable def cournotProfile (hp : A.spec.price ≤ A.φ_bar) :
+    Fin n → {x : ℝ // 0 ≤ x} :=
+  fun _ => ⟨A.cournotPurchaseLinear, A.cournotPurchaseLinear_nonneg hp⟩
+
+/-- The symmetric Cournot profile is a Nash equilibrium of the editions-only game. -/
+theorem cournotProfile_isNash [NeZero n] (hp : A.spec.price ≤ A.φ_bar) :
+    A.editionsOnlyGame.IsNash (A.cournotProfile hp) := by
+  rw [GameTheory.StrategicGame.isNash_iff]
+  intro i x
+  have htotal : (∑ j, (Function.update (A.cournotProfile hp) i x j : ℝ)) =
+      (x : ℝ) + ((n : ℝ) - 1) * A.cournotPurchaseLinear := by
+    rw [← Finset.sum_erase_add _ _ (Finset.mem_univ i)]
+    have heq : (∑ j ∈ Finset.univ.erase i,
+        (Function.update (A.cournotProfile hp) i x j : ℝ)) =
+        ∑ _j ∈ Finset.univ.erase i, A.cournotPurchaseLinear := by
+      apply Finset.sum_congr rfl
+      intro j hj
+      rw [Function.update_of_ne (Finset.ne_of_mem_erase hj)]
+      rfl
+    rw [heq]
+    simp only [Function.update_same, Finset.sum_const, Finset.card_erase_of_mem
+      (Finset.mem_univ i), Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
+    rw [Nat.cast_sub (NeZero.one_le n), Nat.cast_one]
+    ring
+  change (Function.update (A.cournotProfile hp) i x i : ℝ) *
+      (A.spec.φ (∑ j, (Function.update (A.cournotProfile hp) i x j : ℝ)) - A.spec.price) ≤ _
+  rw [Function.update_same, htotal]
+  simpa [editionsOnlyGame, cournotProfile, nsmul_eq_mul] using
+    (A.cournotPurchaseLinear_best_response hp).2 (x : ℝ) x.property
 
 /-- Square-integrable aggregate purchases make bundled edition welfare the expectation of
 realized edition value net of production cost. This is edition welfare; it excludes the prize's

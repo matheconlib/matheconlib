@@ -1,5 +1,12 @@
-import MathEconLib.Matching.Classical.Marriage.Optimality
-import MathEconLib.Matching.Contracts.FixedPointConvergence
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Optimality
+public import MathEconLib.Matching.Contracts.FixedPointConvergence
 
 /-!
 # Fixed-point convergence in marriage markets
@@ -10,6 +17,8 @@ with the man- and woman-optimal stable matchings. The classical
 deferred-acceptance algorithm and its executable refinement are in
 `Classical.Marriage.DeferredAcceptance` and `Classical.Marriage.DeferredAcceptanceComputable`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

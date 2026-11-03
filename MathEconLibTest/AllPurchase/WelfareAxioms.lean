@@ -12,3 +12,6 @@ inside a `module`. The default test target builds this file and records the resu
 #print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_best_response
 #print axioms MathEconLib.LinearScarcityAuction.bundledEditionWelfare_le_firstBest
 #print axioms MathEconLib.Examples.AllPurchase.Welfare.welfare_gap
+
+#print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_payoff_gap
+#print axioms MathEconLib.LinearScarcityAuction.cournotProfile_isNash

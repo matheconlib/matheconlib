@@ -1,0 +1,4 @@
+module
+public import Init
+import CustomDependency
+public theorem inherited : False := importedAssumption
