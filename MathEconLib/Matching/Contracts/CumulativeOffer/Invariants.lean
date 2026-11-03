@@ -12,11 +12,11 @@ public import MathEconLib.Matching.Contracts.ManyToOne
 # Feasibility and individual rationality of cumulative offers
 
 Substitutability makes rejected contracts remain rejected as accumulated offers grow.
-Consequently every valid batched run holds at most one contract per proposer: old holdings
-cannot be recalled, new offers come from unheld proposers, and a batch has at most one offer
-per proposer. No restriction on buyer choices' off-run counterparty feasibility is needed.
+Consequently every valid batched run holds at most one contract per proposer: previously
+rejected contracts cannot be recalled, new offers come from proposers with no held contract,
+and a batch has at most one offer per proposer. No restriction on buyer choices' off-run counterparty feasibility is needed.
 
-Every offered contract is strictly acceptable to its proposer. Buyer IRC makes holdings
+Every offered contract is strictly acceptable to its proposer. Buyer IRC makes held contracts
 chosen from themselves, independently of substitutability. To conclude the existing
 `Market.IndRational` predicate, the market's seller choices must agree with the process:
 we use seller locality and acceptance of strictly acceptable singleton menus. These are
@@ -45,8 +45,8 @@ def Acceptable (x : X) : Prop :=
   (P.pref (P.seller x)).lt none (some ⟨x, rfl⟩)
 
 /-- A contract is held precisely when its own buyer chooses it from that buyer's offer menu. -/
-theorem mem_holdings_iff {A : Set X} {x : X} :
-    x ∈ P.holdings A ↔ x ∈ P.choiceB (P.buyer x) {y ∈ A | P.buyer y = P.buyer x} := by
+theorem mem_heldContracts_iff {A : Set X} {x : X} :
+    x ∈ P.heldContracts A ↔ x ∈ P.choiceB (P.buyer x) {y ∈ A | P.buyer y = P.buyer x} := by
   constructor
   · rintro ⟨b, hx⟩
     have hb := ((P.choiceB b).choose_subset _ hx).2
@@ -64,48 +64,48 @@ theorem Admissible.acceptable {A : Set X} {x : X} (h : P.Admissible A x) :
 /-- A previously offered contract held after menu expansion was already held before it. -/
 theorem held_of_held_of_subset (hsub : ∀ b, (P.choiceB b).Substitutable)
     {A D : Set X} (hAD : A ⊆ D) {x : X}
-    (hx : x ∈ P.holdings D) (hxA : x ∈ A) : x ∈ P.holdings A := by
-  apply (P.mem_holdings_iff).2
+    (hx : x ∈ P.heldContracts D) (hxA : x ∈ A) : x ∈ P.heldContracts A := by
+  apply (P.mem_heldContracts_iff).2
   have hmenus : {y ∈ A | P.buyer y = P.buyer x} ⊆
       {y ∈ D | P.buyer y = P.buyer x} := fun _ hy => ⟨hAD hy.1, hy.2⟩
-  exact (hsub (P.buyer x)).mem_of_subset hmenus ((P.mem_holdings_iff).1 hx) ⟨hxA, rfl⟩
+  exact (hsub (P.buyer x)).mem_of_subset hmenus ((P.mem_heldContracts_iff).1 hx) ⟨hxA, rfl⟩
 
 /-- Rejections persist under expansion of accumulated offers. Neither IRC nor finiteness is used. -/
 theorem rejected_mono (hsub : ∀ b, (P.choiceB b).Substitutable) :
-    Monotone (fun A => A \ P.holdings A) := by
+    Monotone (fun A => A \ P.heldContracts A) := by
   intro A D hAD x hx
   exact ⟨hAD hx.1, fun hheld => hx.2 (P.held_of_held_of_subset hsub hAD hheld hx.1)⟩
 
-/-- After a batch, every holding is either an old holding or a new proposal. -/
-theorem holdings_union_subset (hsub : ∀ b, (P.choiceB b).Substitutable) (A Q : Set X) :
-    P.holdings (A ∪ Q) ⊆ P.holdings A ∪ Q := by
+/-- After a batch, every held contract is either an previously held contract or a new proposal. -/
+theorem heldContracts_union_subset (hsub : ∀ b, (P.choiceB b).Substitutable) (A Q : Set X) :
+    P.heldContracts (A ∪ Q) ⊆ P.heldContracts A ∪ Q := by
   intro x hx
-  rcases P.holdings_subset (A ∪ Q) hx with hxA | hxQ
+  rcases P.heldContracts_subset (A ∪ Q) hx with hxA | hxQ
   · exact Or.inl (P.held_of_held_of_subset hsub Set.subset_union_left hx hxA)
   · exact Or.inr hxQ
 
-/-- Substitutability and a valid batch preserve at most one holding per proposer. -/
-theorem ValidBatch.holdings_injOn (hsub : ∀ b, (P.choiceB b).Substitutable)
-    {A Q : Set X} (hQ : P.ValidBatch A Q) (hA : Set.InjOn P.seller (P.holdings A)) :
-    Set.InjOn P.seller (P.holdings (A ∪ Q)) := by
+/-- Substitutability and a valid batch preserve at most one held contract per proposer. -/
+theorem ValidBatch.heldContracts_injOn (hsub : ∀ b, (P.choiceB b).Substitutable)
+    {A Q : Set X} (hQ : P.ValidBatch A Q) (hA : Set.InjOn P.seller (P.heldContracts A)) :
+    Set.InjOn P.seller (P.heldContracts (A ∪ Q)) := by
   intro x hx y hy hxy
-  rcases P.holdings_union_subset hsub A Q hx with hx | hx
-  · rcases P.holdings_union_subset hsub A Q hy with hy | hy
+  rcases P.heldContracts_union_subset hsub A Q hx with hx | hx
+  · rcases P.heldContracts_union_subset hsub A Q hy with hy | hy
     · exact hA hx hy hxy
     · exact ((hQ.2.1 y hy).eligible P).1 x hx hxy |>.elim
-  · rcases P.holdings_union_subset hsub A Q hy with hy | hy
+  · rcases P.heldContracts_union_subset hsub A Q hy with hy | hy
     · exact ((hQ.2.1 x hx).eligible P).1 y hy hxy.symm |>.elim
     · exact hQ.2.2 hx hy hxy
 
-/-- Every valid run has at most one holding per proposer under buyer substitutability.
+/-- Every valid run has at most one held contract per proposer under buyer substitutability.
 Buyer choices may select multiple contracts with a proposer off the run. -/
-theorem Run.holdings_injOn (hsub : ∀ b, (P.choiceB b).Substitutable)
-    {h : List (Set X)} (hr : P.Run h) : Set.InjOn P.seller (P.holdings (offers h)) := by
+theorem Run.heldContracts_injOn (hsub : ∀ b, (P.choiceB b).Substitutable)
+    {h : List (Set X)} (hr : P.Run h) : Set.InjOn P.seller (P.heldContracts (offers h)) := by
   induction hr with
   | nil =>
     intro x hx
-    exact (P.holdings_subset ∅ hx).elim
-  | cons _ hQ ih => exact hQ.holdings_injOn P hsub ih
+    exact (P.heldContracts_subset ∅ hx).elim
+  | cons _ hQ ih => exact hQ.heldContracts_injOn P hsub ih
 
 /-- Every contract offered during a valid run is strictly acceptable to its proposer. -/
 theorem Run.acceptable_offers {h : List (Set X)} (hr : P.Run h) :
@@ -119,31 +119,31 @@ theorem Run.acceptable_offers {h : List (Set X)} (hr : P.Run h) :
     · exact (hQ.2.1 x hx).acceptable P
 
 /-- Held contracts inherit proposer acceptability, with no buyer regularity assumptions. -/
-theorem Run.acceptable_holdings {h : List (Set X)} (hr : P.Run h) :
-    ∀ x ∈ P.holdings (offers h), P.Acceptable x :=
-  fun x hx => hr.acceptable_offers P x (P.holdings_subset _ hx)
+theorem Run.acceptable_heldContracts {h : List (Set X)} (hr : P.Run h) :
+    ∀ x ∈ P.heldContracts (offers h), P.Acceptable x :=
+  fun x hx => hr.acceptable_offers P x (P.heldContracts_subset _ hx)
 
-/-- A buyer's part of aggregate holdings is exactly that buyer's choice from its own offers. -/
-theorem buyer_holdings_eq (A : Set X) (b : B) :
-    {x ∈ P.holdings A | P.buyer x = b} = P.choiceB b {x ∈ A | P.buyer x = b} := by
+/-- A buyer's part of aggregate held contracts is exactly that buyer's choice from its own offers. -/
+theorem buyer_heldContracts_eq (A : Set X) (b : B) :
+    {x ∈ P.heldContracts A | P.buyer x = b} = P.choiceB b {x ∈ A | P.buyer x = b} := by
   ext x
   constructor
   · rintro ⟨hx, hb⟩
-    simpa only [hb] using (P.mem_holdings_iff).1 hx
+    simpa only [hb] using (P.mem_heldContracts_iff).1 hx
   · intro hx
     exact ⟨⟨b, hx⟩, ((P.choiceB b).choose_subset _ hx).2⟩
 
-/-- Buyer IRC makes each buyer choose its holdings from those holdings. -/
-theorem choice_holdings_eq (hcons : ∀ b, (P.choiceB b).Consistent) (A : Set X) (b : B) :
-    P.choiceB b {x ∈ P.holdings A | P.buyer x = b} =
-      {x ∈ P.holdings A | P.buyer x = b} := by
-  rw [P.buyer_holdings_eq]
+/-- Buyer IRC makes each buyer choose its held contracts from those held contracts. -/
+theorem choice_heldContracts_eq (hcons : ∀ b, (P.choiceB b).Consistent) (A : Set X) (b : B) :
+    P.choiceB b {x ∈ P.heldContracts A | P.buyer x = b} =
+      {x ∈ P.heldContracts A | P.buyer x = b} := by
+  rw [P.buyer_heldContracts_eq]
   exact (hcons b).idempotent _
 
-/-- Every finite valid policy produces seller-feasible holdings under substitutability. -/
+/-- Every finite valid policy produces seller-feasible held contracts under substitutability. -/
 theorem rawOutcome_injOn [Finite X] (hsub : ∀ b, (P.choiceB b).Substitutable)
     {π : Policy X} (hp : P.ValidPolicy π) : Set.InjOn P.seller (P.rawOutcome π) :=
-  (P.execute_run hp _).holdings_injOn P hsub
+  (P.execute_run hp _).heldContracts_injOn P hsub
 
 end Process
 
@@ -152,8 +152,8 @@ theorem manyToOneFeasible_of_run (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s}))
     (hsub : ∀ b, (M.choiceB b).Substitutable)
     {h : List (Set X)} (hr : (ofMarket M pref).Run h) :
-    M.ManyToOneFeasible ((ofMarket M pref).holdings (Process.offers h)) :=
-  hr.holdings_injOn (ofMarket M pref) hsub
+    M.ManyToOneFeasible ((ofMarket M pref).heldContracts (Process.offers h)) :=
+  hr.heldContracts_injOn (ofMarket M pref) hsub
 
 /-- Buyer IRC and compatible local seller choices give market individual rationality along
 valid runs. Seller compatibility is only required on strictly acceptable singleton menus. -/
@@ -164,14 +164,14 @@ theorem indRational_of_run (M : Market B S X)
     (hlocal : ∀ s A, M.choiceS s (M.sellerSide s A) = M.choiceS s A)
     (haccept : ∀ x, (ofMarket M pref).Acceptable x → x ∈ M.choiceS (M.seller x) {x})
     {h : List (Set X)} (hr : (ofMarket M pref).Run h) :
-    M.IndRational ((ofMarket M pref).holdings (Process.offers h)) := by
+    M.IndRational ((ofMarket M pref).heldContracts (Process.offers h)) := by
   let P := ofMarket M pref
-  let Z := P.holdings (Process.offers h)
-  have hfeas := hr.holdings_injOn P hsub
+  let Z := P.heldContracts (Process.offers h)
+  have hfeas := hr.heldContracts_injOn P hsub
   refine ⟨?_, ?_⟩
   · intro b
     rw [← M.choiceB_buyerSide (hcons b) Z]
-    exact P.choice_holdings_eq hcons _ b
+    exact P.choice_heldContracts_eq hcons _ b
   · intro s
     apply Set.Subset.antisymm (M.choiceS_subset_sellerSide s _)
     intro x hx
@@ -183,7 +183,7 @@ theorem indRational_of_run (M : Market B S X)
       · intro hy
         simpa only [Set.mem_singleton_iff.mp hy] using hx
     rw [← hlocal s Z, hsingle, ← hx.2]
-    exact haccept x (hr.acceptable_holdings P x hx.1)
+    exact haccept x (hr.acceptable_heldContracts P x hx.1)
 
 /-- A finite valid policy inherits market individual rationality under the same local
 compatibility conditions. The policy may use history and batches. -/
@@ -210,7 +210,7 @@ theorem indRational_ofSellerPreferences_of_run
       (fun s => CompletePreference.ofLinearOrder (pref s))).Run h) :
     (Market.ofSellerPreferences buyer seller choiceB hB pref).IndRational
       ((ofMarket (Market.ofSellerPreferences buyer seller choiceB hB pref)
-        (fun s => CompletePreference.ofLinearOrder (pref s))).holdings (Process.offers h)) := by
+        (fun s => CompletePreference.ofLinearOrder (pref s))).heldContracts (Process.offers h)) := by
   apply indRational_of_run _ _ hsub hcons ?_ ?_ hr
   · intro s A
     have hmenu : (fun y : {x : X // seller x = s} => y.val) ⁻¹' {x ∈ A | seller x = s} =

@@ -118,7 +118,7 @@ theorem execute_terminal [Finite X] {π : Policy X} (hp : P.ValidPolicy π) :
 
 /-- The policy-indexed raw output; feasibility is a separate economic theorem. -/
 noncomputable def rawOutcome [Finite X] (π : Policy X) : Set X :=
-  P.holdings (offers (P.execute π (Nat.card X)))
+  P.heldContracts (offers (P.execute π (Nat.card X)))
 
 /-- The finite policy construction realizes the terminal outcome relation. -/
 theorem rawOutcome_isOutcome [Finite X] {π : Policy X} (hp : P.ValidPolicy π) :

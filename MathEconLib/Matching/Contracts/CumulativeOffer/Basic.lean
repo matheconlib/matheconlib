@@ -12,24 +12,57 @@ public import MathEconLib.Choice.Maximizers
 # Cumulative offer processes
 
 Unit-demand sellers propose to buyers choosing from their accumulated own-contract menus.
-The process retains rejected contracts and does not assume substitutability, IRC, or
-feasibility of holdings. Preferences are fixed complete weak preferences over own contracts
-and the outside option. Only strictly acceptable contracts may be proposed.
+The cumulative offer process retains the possibility of recalling rejected contracts
+and does not assume substitutability, IRC, or feasibility of held contract sets. Seller
+preferences are fixed complete weak preferences over own contracts and the outside option.
+Only (strictly) acceptable contracts may be proposed [this is WLOG].
 
 Admissibility is relational: every weakly best remaining acceptable contract is allowed.
-A productive batch contains at most one proposal per seller, all evaluated before the round.
+A proposal batch contains at most one proposal per seller, all evaluated before the round.
 Policies, including fixed tie-breaking, specialize these runs in the policy module.
 
-Histories are lists of batches in reverse chronological order. Their accumulated offers and
-holdings are derived data. The raw terminal output is a set, without a feasibility claim.
+Histories are lists of proposed-contract batches in reverse chronological order.
+Their accumulated offers and held contract sets are derived data. The raw terminal output
+is a set of contracts, without a feasibility requirement.
+
+## Terminology
+
+We retain the market API's `seller` and `buyer` names: sellers propose contracts and buyers
+hold contracts chosen from their accumulated offers. These roles correspond to doctors and
+hospitals in Hatfield–Milgrom and Hatfield–Kojima, and workers and firms in the labor-market
+formulation of Hatfield–Kominers–Westkamp.
+
+- `offers h` is the cumulative set of contracts proposed during history `h`, including
+  contracts subsequently rejected.
+- `heldContracts A` is the set currently chosen by buyers from those accumulated offers.
+  Holding a contract is provisional; it is not a final acceptance or a feasible matching.
+- `NoHeldContract A s` says that no buyer currently holds a contract involving seller `s`.
+- `remaining A s` consists of seller `s`'s unoffered strictly acceptable contracts.
+- `Admissible A x` permits a weakly best remaining contract of a seller with no held contract.
+
+A policy is this library's proposal-selection rule. Histories and batches support the
+generalization to history-dependent scheduling and simultaneous proposals; they do not
+assert equivalence with a particular paper's process. On a finite contract set, a process with fixed preferences and
+a valid policy produces a terminal set of held contracts. A mechanism mapping reported preference
+profiles to outcomes is a separate construction.
 
 ## References
 
 John William Hatfield and Fuhito Kojima (2010), *Substitutes and Stability for Matching
 with Contracts*, Journal of Economic Theory 145(5), 1704–1723, §2.3.
 https://doi.org/10.1016/j.jet.2010.01.007.
-This module generalizes the sequential process to weak preferences and batches. Source
-correspondence, stability, and incentive theorems are separate work under #139.
+This module generalizes the sequential cumulative offer process to accommodate weak preferences and
+batched proposals. Source correspondence, stability, and incentive theorems are separate work
+under #139.
+
+Hatfield and Milgrom (2005), *Matching with Contracts*, American Economic Review 95(4),
+913–935, §§II–III. https://doi.org/10.1257/0002828054825466.
+Their cumulative offers include past offers, from which hospitals hold chosen contracts.
+
+Hatfield, Kominers, and Westkamp, *Stability, Strategy-Proofness, and Cumulative Offer
+Mechanisms*, July 30, 2015 working-paper version, §§2.3 and 3 (published in Review of Economic
+Studies 88(3), 2021, 1457–1502, https://doi.org/10.1093/restud/rdaa052).
+The proposal condition refers to a proposer having no contract currently held.
 -/
 
 @[expose] public section
@@ -38,14 +71,15 @@ namespace MathEconLib.Matching.CumulativeOffer
 
 open MathEconLib.Choice MathEconLib.Preferences
 
-/-- The data of a unit-demand cumulative offer process. Receiving choices need only be contracting.
-Own-menu evaluation supplies buyer support without a separate support field. -/
+/-- The data of a unit-demand cumulative offer process. Each buyer chooses a subset of its
+accumulated offers. Restricting each buyer's menu to its own contracts ensures that it can
+hold only contracts involving that buyer. -/
 structure Process (B S X : Type*) where
-  /-- Receiving endpoint. -/
+  /-- The buyer to whom this contract is proposed. -/
   buyer : X → B
-  /-- Proposing endpoint. -/
+  /-- The seller who proposes this contract. -/
   seller : X → S
-  /-- Receiving-side choice, with no economic regularity assumptions. -/
+  /-- Buyer choice from accumulated offers, without substitutability or IRC assumptions. -/
   choiceB : B → ChoiceFunction X
   /-- Fixed weak preferences over own contracts and nonparticipation. -/
   pref : ∀ s, CompletePreference (Option {x : X // seller x = s})
@@ -63,46 +97,48 @@ namespace Process
 
 variable (P : Process B S X)
 
-/-- An agent's own contracts. -/
+/-- A proposing seller's own contracts. -/
 abbrev Own (s : S) := {x : X // P.seller x = s}
 
 /-- The weak preference restricted to contracts. -/
 def contractPreference (s : S) : CompletePreference (P.Own s) :=
   (P.pref s).comap some
 
-/-- Buyer holdings, computed from accumulated offers on that buyer's own menu. -/
-def holdings (A : Set X) : Set X :=
+/-- Contracts currently held by buyers: each buyer chooses from all contracts proposed to it.
+Previously rejected contracts remain in this menu; rejection need not be permanent. -/
+def heldContracts (A : Set X) : Set X :=
   {x | ∃ b, x ∈ P.choiceB b {y ∈ A | P.buyer y = b}}
 
-/-- Holdings always belong to the accumulated offers. -/
-theorem holdings_subset (A : Set X) : P.holdings A ⊆ A := by
+/-- Held contracts always belong to the accumulated offers. -/
+theorem heldContracts_subset (A : Set X) : P.heldContracts A ⊆ A := by
   rintro x ⟨b, hx⟩
   exact ((P.choiceB b).choose_subset _ hx).1
 
-/-- Under market locality, own-menu and global-menu holdings agree. -/
-theorem holdings_ofMarket (M : Market B S X)
+/-- Under market locality, own-menu and global-menu held contracts agree. -/
+theorem heldContracts_ofMarket (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s}))
     (hlocal : M.Local) (A : Set X) :
-    (ofMarket M pref).holdings A = {x | ∃ b, x ∈ M.choiceB b A} := by
+    (ofMarket M pref).heldContracts A = {x | ∃ b, x ∈ M.choiceB b A} := by
   ext x
   change (∃ b, x ∈ M.choiceB b (M.buyerSide b A)) ↔ _
   simp only [hlocal.1, Set.mem_ofPred_eq]
 
-/-- No current holding involves this proposer. -/
-def Unheld (A : Set X) (s : S) : Prop :=
-  ∀ x ∈ P.holdings A, P.seller x ≠ s
+/-- No contract involving this seller is currently held by any buyer. -/
+def NoHeldContract (A : Set X) (s : S) : Prop :=
+  ∀ x ∈ P.heldContracts A, P.seller x ≠ s
 
 /-- Unoffered own contracts strictly preferred to nonparticipation. -/
 def remaining (A : Set X) (s : S) : Set (P.Own s) :=
   {x | x.val ∉ A ∧ (P.pref s).lt none (some x)}
 
-/-- Eligibility records economic availability, not attainment of a best offer. -/
+/-- A seller is eligible to propose if no contract involving it is currently held and it has
+an unoffered strictly acceptable contract. Eligibility does not assert attainment of a best offer. -/
 def Eligible (A : Set X) (s : S) : Prop :=
-  P.Unheld A s ∧ (P.remaining A s).Nonempty
+  P.NoHeldContract A s ∧ (P.remaining A s).Nonempty
 
-/-- All weakly best remaining acceptable offers of an unheld proposer. -/
+/-- All weakly best remaining acceptable offers of an proposer with no held contract. -/
 def Admissible (A : Set X) (x : X) : Prop :=
-  ∃ (s : S) (y : P.Own s), y.val = x ∧ P.Unheld A s ∧
+  ∃ (s : S) (y : P.Own s), y.val = x ∧ P.NoHeldContract A s ∧
     y ∈ maximizers (P.contractPreference s) (P.remaining A s)
 
 /-- An admissible proposal is fresh. -/
@@ -110,14 +146,14 @@ theorem Admissible.not_mem {A : Set X} {x : X} (h : P.Admissible A x) : x ∉ A 
   rcases h with ⟨s, y, rfl, _, hy⟩
   exact hy.1.1
 
-/-- The owner of an admissible proposal is eligible. -/
+/-- The seller proposing an admissible contract is eligible. -/
 theorem Admissible.eligible {A : Set X} {x : X} (h : P.Admissible A x) :
     P.Eligible A (P.seller x) := by
   rcases h with ⟨s, y, rfl, hu, hy⟩
   rw [y.property]
   exact ⟨hu, y, hy.1⟩
 
-/-- Economic exhaustion: every unheld proposer has no remaining acceptable contract.
+/-- Economic exhaustion: every proposer with no held contract has no remaining acceptable contract.
 On infinite domains this differs from inability to find a greatest remaining contract. -/
 def Terminal (A : Set X) : Prop := ∀ s, ¬ P.Eligible A s
 
@@ -176,7 +212,7 @@ inductive Run : List (Set X) → Prop
 
 /-- The terminal outcome relation does not select a schedule or assert feasibility. -/
 def Outcome (Z : Set X) : Prop :=
-  ∃ h, P.Run h ∧ P.Terminal (offers h) ∧ Z = P.holdings (offers h)
+  ∃ h, P.Run h ∧ P.Terminal (offers h) ∧ Z = P.heldContracts (offers h)
 
 /-- Finite remaining menus supply an admissible contract for an eligible agent. -/
 theorem Eligible.exists_admissible {A : Set X} {s : S} (h : P.Eligible A s)
@@ -196,4 +232,3 @@ theorem exists_validBatch [Finite X] {A : Set X} (h : ¬ P.Terminal A) :
 
 end Process
 end MathEconLib.Matching.CumulativeOffer
-

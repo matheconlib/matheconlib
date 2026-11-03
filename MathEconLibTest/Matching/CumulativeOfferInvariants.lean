@@ -11,7 +11,7 @@ import MathEconLibTest.Matching.CumulativeOffer
 
 The positive example has two tied acceptable contracts for one proposer. The buyer
 chooses every available contract, so its off-run choices are not counterparty feasible.
-Nevertheless valid runs and finite policies have feasible, acceptable holdings.
+Nevertheless valid runs and finite policies have feasible, acceptable held contracts.
 The earlier recall example witnesses the need for substitutability.
 -/
 
@@ -48,7 +48,7 @@ theorem not_counterparty_feasible : ¬ Set.InjOn tied.seller (tied.choiceB () Se
 theorem first_admissible : tied.Admissible ∅ 0 := by
   refine ⟨(), ⟨0, rfl⟩, rfl, ?_, ?_⟩
   · intro x hx
-    exact (tied.holdings_subset ∅ hx).elim
+    exact (tied.heldContracts_subset ∅ hx).elim
   · refine ⟨⟨by simp, ?_⟩, ?_⟩
     · change (0 : ℕ) ≤ 1 ∧ ¬ (1 : ℕ) ≤ 0
       omega
@@ -60,12 +60,12 @@ theorem first_run : tied.Run [{0}] :=
   Run.cons Run.nil ((tied.validBatch_singleton_iff ∅ 0).2 first_admissible)
 
 /-- The invariant applies even though the buyer fails off-run counterparty feasibility. -/
-example : Set.InjOn tied.seller (tied.holdings (offers [{0}])) :=
-  first_run.holdings_injOn tied substitutable
+example : Set.InjOn tied.seller (tied.heldContracts (offers [{0}])) :=
+  first_run.heldContracts_injOn tied substitutable
 
 /-- Weak ties do not weaken strict acceptability relative to nonparticipation. -/
-example : ∀ x ∈ tied.holdings (offers [{0}]), tied.Acceptable x :=
-  first_run.acceptable_holdings tied
+example : ∀ x ∈ tied.heldContracts (offers [{0}]), tied.Acceptable x :=
+  first_run.acceptable_heldContracts tied
 
 /-- Any valid history-dependent batch policy inherits seller feasibility. -/
 example {π : Policy (Fin 2)} (hp : tied.ValidPolicy π) :
@@ -74,9 +74,9 @@ example {π : Policy (Fin 2)} (hp : tied.ValidPolicy π) :
 
 /-- Buyer IRC is used independently of the feasibility argument. -/
 example (A : Set (Fin 2)) :
-    tied.choiceB () {x ∈ tied.holdings A | tied.buyer x = ()} =
-      {x ∈ tied.holdings A | tied.buyer x = ()} :=
-  tied.choice_holdings_eq consistent A ()
+    tied.choiceB () {x ∈ tied.heldContracts A | tied.buyer x = ()} =
+      {x ∈ tied.heldContracts A | tied.buyer x = ()} :=
+  tied.choice_heldContracts_eq consistent A ()
 
 /-- A market whose own-menu choices accept every available contract on both sides.
 The process still offers at most one contract for its only proposer. -/
@@ -89,7 +89,7 @@ def tiedMarket : Market Unit Unit (Fin 2) where
   seller_eq_of_mem := by intro s Y x _; cases s; rfl
 
 /-- A concrete application concludes the existing market individual-rationality predicate. -/
-theorem first_indRational : tiedMarket.IndRational (tied.holdings (offers [{0}])) := by
+theorem first_indRational : tiedMarket.IndRational (tied.heldContracts (offers [{0}])) := by
   apply indRational_of_run tiedMarket tied.pref substitutable consistent ?_ ?_ first_run
   · intro s A
     cases s
@@ -101,8 +101,8 @@ theorem first_indRational : tiedMarket.IndRational (tied.holdings (offers [{0}])
 /-- The recalled-contract example cannot satisfy buyer substitutability. -/
 example : ¬ ∀ b, (CumulativeOffer.market.choiceB b).Substitutable := by
   intro hsub
-  have hf := CumulativeOffer.sequential_run.holdings_injOn CumulativeOffer.market hsub
-  rw [CumulativeOffer.sequential_holdings] at hf
+  have hf := CumulativeOffer.sequential_run.heldContracts_injOn CumulativeOffer.market hsub
+  rw [CumulativeOffer.sequential_heldContracts] at hf
   have he : (0 : Fin 3) = 2 := hf (by simp) (by simp) rfl
   exact (by decide : (0 : Fin 3) ≠ 2) he
 
@@ -115,14 +115,14 @@ example {B S X : Type*} (M : Market B S X)
     (hlocal : ∀ s A, M.choiceS s (M.sellerSide s A) = M.choiceS s A)
     (haccept : ∀ x, (ofMarket M pref).Acceptable x → x ∈ M.choiceS (M.seller x) {x})
     {h : List (Set X)} (hr : (ofMarket M pref).Run h) :
-    M.IndRational ((ofMarket M pref).holdings (offers h)) :=
+    M.IndRational ((ofMarket M pref).heldContracts (offers h)) :=
   indRational_of_run M pref hsub hcons hlocal haccept hr
 
 end MathEconLibTest.Matching.CumulativeOfferInvariants
 
 #print axioms Process.rejected_mono
-#print axioms Process.Run.holdings_injOn
-#print axioms Process.Run.acceptable_holdings
+#print axioms Process.Run.heldContracts_injOn
+#print axioms Process.Run.acceptable_heldContracts
 #print axioms indRational_of_run
 #print axioms indRational_rawOutcome
 #print axioms indRational_ofSellerPreferences_of_run

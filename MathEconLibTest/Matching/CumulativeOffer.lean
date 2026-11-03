@@ -13,8 +13,8 @@ public import Mathlib.Tactic.FinCases
 
 Three contracts: proposer false prefers contract 0 to contract 2; proposer true has
 contract 1. Buyer false accepts contracts 0 and 1 only together; buyer true accepts
-contract 2. Sequential offers 0, 2, 1 recall contract 0, leaving infeasible holdings.
-Simultaneous offers 0 and 1 terminate immediately with feasible holdings.
+contract 2. Sequential offers 0, 2, 1 recall contract 0, leaving infeasible held contracts.
+Simultaneous offers 0 and 1 terminate immediately with feasible held contracts.
 
 This checks that the raw process allows recall, that feasibility is not built in,
 and that batch independence needs economic hypotheses. It uses only kernel-checked
@@ -29,21 +29,21 @@ open MathEconLib.Choice MathEconLib.Preferences
 open MathEconLib.Matching.CumulativeOffer
 open Process
 
-def receiving (b : Bool) : ChoiceFunction (Fin 3) where
+def buyerChoice (b : Bool) : ChoiceFunction (Fin 3) where
   toFun Y := {x | x ∈ Y ∧ if b then x = 2
     else (0 : Fin 3) ∈ Y ∧ (1 : Fin 3) ∈ Y ∧ (x = 0 ∨ x = 1)}
   choose_subset := fun _ _ hx => hx.1
 
-@[simp] theorem receiving_apply (b : Bool) (Y : Set (Fin 3)) :
-    receiving b Y = {x | x ∈ Y ∧ if b then x = 2
+@[simp] theorem buyerChoice_apply (b : Bool) (Y : Set (Fin 3)) :
+    buyerChoice b Y = {x | x ∈ Y ∧ if b then x = 2
       else (0 : Fin 3) ∈ Y ∧ (1 : Fin 3) ∈ Y ∧ (x = 0 ∨ x = 1)} := rfl
 
-def owner (x : Fin 3) : Bool := x == 1
+def proposingSeller (x : Fin 3) : Bool := x == 1
 
 def market : Process Bool Bool (Fin 3) where
   buyer x := x == 2
-  seller := owner
-  choiceB := receiving
+  seller := proposingSeller
+  choiceB := buyerChoice
   pref _ := CompletePreference.ofUtility
     (fun o => match o with
       | none => (0 : ℕ)
@@ -52,12 +52,12 @@ def market : Process Bool Bool (Fin 3) where
 /-- Expose this market's numerical comparisons before enumerating dependent own contracts. -/
 private theorem admissible_iff (A : Set (Fin 3)) (x : Fin 3) :
     market.Admissible A x ↔
-      ∃ (s : Bool) (y : {z : Fin 3 // owner z = s}),
-        y.val = x ∧ market.Unheld A s ∧
+      ∃ (s : Bool) (y : {z : Fin 3 // proposingSeller z = s}),
+        y.val = x ∧ market.NoHeldContract A s ∧
           (y.val ∉ A ∧
             (0 ≤ (if y.val = 2 then 1 else 2 : ℕ) ∧
               ¬ (if y.val = 2 then 1 else 2 : ℕ) ≤ 0)) ∧
-          ∀ z : {z : Fin 3 // owner z = s},
+          ∀ z : {z : Fin 3 // proposingSeller z = s},
             (z.val ∉ A ∧
               (0 ≤ (if z.val = 2 then 1 else 2 : ℕ) ∧
                 ¬ (if z.val = 2 then 1 else 2 : ℕ) ≤ 0)) →
@@ -66,25 +66,25 @@ private theorem admissible_iff (A : Set (Fin 3)) (x : Fin 3) :
 
 private theorem first : market.ValidBatch ∅ {0} := by
   simp only [ValidBatch, admissible_iff]
-  simp [Unheld, holdings, market, owner,
+  simp [NoHeldContract, heldContracts, market, proposingSeller,
     Set.InjOn, Set.Nonempty, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
 private theorem second : market.ValidBatch {0} {2} := by
   simp only [ValidBatch, admissible_iff]
-  simp [Unheld, holdings, market, owner,
+  simp [NoHeldContract, heldContracts, market, proposingSeller,
     Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
 private theorem third : market.ValidBatch ({0} ∪ {2}) {1} := by
   simp only [ValidBatch, admissible_iff]
-  simp [Unheld, holdings, market, owner,
+  simp [NoHeldContract, heldContracts, market, proposingSeller,
     Set.InjOn, Set.Nonempty, Bool.exists_bool, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
 private theorem together : market.ValidBatch ∅ {0, 1} := by
   simp only [ValidBatch, admissible_iff]
-  simp [Unheld, holdings, market, owner,
+  simp [NoHeldContract, heldContracts, market, proposingSeller,
     Set.InjOn, Set.Nonempty, Subtype.exists, Subtype.forall,
     Fin.forall_fin_succ]
 
@@ -104,24 +104,24 @@ theorem simultaneous_run : market.Run [{0, 1}] :=
 theorem both_terminal :
     market.Terminal (offers [{1}, {2}, {0}]) ∧
       market.Terminal (offers [{0, 1}]) := by
-  simp [Unheld, holdings, remaining, Eligible, Terminal, Set.Nonempty, Own,
-    market, owner, offers, CompletePreference.comap, Preference.comap,
+  simp [NoHeldContract, heldContracts, remaining, Eligible, Terminal, Set.Nonempty, Own,
+    market, proposingSeller, offers, CompletePreference.comap, Preference.comap,
     CompletePreference.ofUtility, CompletePreference.ofPreorder,
     Preference.ofPreorder, Preference.lt,
     Bool.exists_bool, Subtype.exists, Fin.forall_fin_succ,
     Fin.exists_fin_succ]
 
 /-- Recalling the first proposal produces two held contracts for its proposer. -/
-theorem sequential_holdings :
-    market.holdings (offers [{1}, {2}, {0}]) = {0, 1, 2} := by
+theorem sequential_heldContracts :
+    market.heldContracts (offers [{1}, {2}, {0}]) = {0, 1, 2} := by
   ext x
-  fin_cases x <;> simp [holdings, offers, market, Bool.exists_bool]
+  fin_cases x <;> simp [heldContracts, offers, market, Bool.exists_bool]
 
 /-- Batching the first offers prevents the second contract of proposer false from being offered. -/
-theorem simultaneous_holdings :
-    market.holdings (offers [{0, 1}]) = {0, 1} := by
+theorem simultaneous_heldContracts :
+    market.heldContracts (offers [{0, 1}]) = {0, 1} := by
   ext x
-  fin_cases x <;> simp [holdings, offers, market, Bool.exists_bool]
+  fin_cases x <;> simp [heldContracts, offers, market, Bool.exists_bool]
 
 /-- A concrete application of the generic productive-round bound. -/
 example : ([{1}, {2}, {0}] : List (Set (Fin 3))).length ≤ Nat.card (Fin 3) :=
@@ -132,7 +132,7 @@ example (priority : LinearOrder (Fin 3)) :
     market.Outcome (market.rawOutcome (liftStatePolicy (market.fixedOrder priority))) :=
   market.rawOutcome_isOutcome ((market.fixedOrder_valid priority).lift market)
 
-/-- Empty contracts exhaust immediately, with no assumption on receiving choices. -/
+/-- Empty contracts exhaust immediately, with no assumption on buyer choice functions. -/
 example (P : Process Bool Bool Empty) : P.Terminal ∅ := by
   intro s hs
   obtain ⟨x, _⟩ := hs.2
