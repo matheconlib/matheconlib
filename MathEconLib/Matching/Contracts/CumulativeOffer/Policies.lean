@@ -61,8 +61,8 @@ def Simultaneous (π : Policy X) : Prop :=
   ∀ h, P.Run h → ∀ s, P.Eligible (offers h) s →
     ∃ x ∈ π h, P.seller x = s
 
-/-- Selected proposals have greatest priority among their owner's admissible proposals.
-This fixes tie selection, not the scheduling of different owners. -/
+/-- Selected proposals have greatest priority among the proposing seller's admissible proposals.
+This fixes tie selection, not the scheduling of different sellers. -/
 def FixedTieBreaking (priority : LinearOrder X) (π : Policy X) : Prop :=
   ∀ h, P.Run h → ∀ x ∈ π h, ∀ y, P.Admissible (offers h) y →
     P.seller y = P.seller x → priority.le y x
@@ -78,21 +78,21 @@ theorem follows_lift_cons (σ : StatePolicy X) (Q : Set X) (h : List (Set X)) :
       Follows (liftStatePolicy σ) h ∧ Q = σ (offers h) := Iff.rfl
 
 /-- All currently admissible contracts of a specified proposer. -/
-def agentOffers (A : Set X) (s : S) : Set X :=
+def admissibleProposals (A : Set X) (s : S) : Set X :=
   {x | P.Admissible A x ∧ P.seller x = s}
 
 /-- Eligible agents have a nonempty admissible set when contracts are finite. -/
-theorem agentOffers_nonempty [Finite X] {A : Set X} {s : S}
-    (h : P.Eligible A s) : (P.agentOffers A s).Nonempty :=
+theorem admissibleProposals_nonempty [Finite X] {A : Set X} {s : S}
+    (h : P.Eligible A s) : (P.admissibleProposals A s).Nonempty :=
   h.exists_admissible P (Set.toFinite _)
 
 /-- Highest-priority admissible offer of an eligible agent on a finite contract type. -/
 noncomputable def selectOffer [Finite X] (priority : LinearOrder X)
     (A : Set X) (s : S) (h : P.Eligible A s) : X :=
   (maximizers_nonempty_of_finite (CompletePreference.ofLinearOrder priority)
-    (Set.toFinite (P.agentOffers A s)) (P.agentOffers_nonempty h)).choose
+    (Set.toFinite (P.admissibleProposals A s)) (P.admissibleProposals_nonempty h)).choose
 
-/-- The selection is admissible, belongs to its owner, and has greatest admissible priority. -/
+/-- The selection is admissible, involves the specified seller, and has greatest admissible priority. -/
 theorem selectOffer_spec [Finite X] (priority : LinearOrder X)
     (A : Set X) (s : S) (h : P.Eligible A s) :
     P.Admissible A (P.selectOffer priority A s h) ∧
@@ -100,7 +100,7 @@ theorem selectOffer_spec [Finite X] (priority : LinearOrder X)
       ∀ y, P.Admissible A y → P.seller y = s →
         priority.le y (P.selectOffer priority A s h) := by
   have hm := (maximizers_nonempty_of_finite (CompletePreference.ofLinearOrder priority)
-    (Set.toFinite (P.agentOffers A s)) (P.agentOffers_nonempty h)).choose_spec
+    (Set.toFinite (P.admissibleProposals A s)) (P.admissibleProposals_nonempty h)).choose_spec
   exact ⟨hm.1.1, hm.1.2, fun y hy hs => hm.2 ⟨hy, hs⟩⟩
 
 /-- A subset of eligible agents submits one fixed-priority proposal each. -/
