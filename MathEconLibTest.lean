@@ -1,4 +1,5 @@
 import MathEconLibTest.Auction.CorrelatedValues
+import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
 import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
@@ -41,4 +42,5 @@ import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples
 import MathEconLibTest.ValueDistribution.UniformPricing
+
 
