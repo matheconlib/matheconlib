@@ -14,6 +14,8 @@ Positive rescaling preserves all three finite conditional-average formulas.
 Zero weights satisfy factorization and affiliation but do not give positive
 conditioning mass. The normalized comparison theorems' positivity, inclusion and
 nonemptiness hypotheses exclude every zero-mass conditioning set.
+Deprecated names retain the old predicate types and theorem dot notation while
+warning callers to migrate to the canonical weight names.
 -/
 
 @[expose] public noncomputable section
@@ -66,5 +68,61 @@ theorem zero_mass_excludes_comparison {α : Type*} {f : α → ℝ} {S A : Finse
   have hpositive := sum_pos_on_of_pos hpos hAS hA
   rw [hmass] at hpositive
   exact lt_irrefl _ hpositive
+
+-- Each legacy name still compiles and warns with its canonical replacement.
+-- Match stable warning text only; errors pass through the guards and fail compilation.
+/--
+warning: `MathEconLib.Auction.Affiliation.HasIndependentSignals` has been deprecated:
+Use `MathEconLib.Auction.Affiliation.HasFactorizedWeights` instead
+-/
+#guard_msgs (warning, whitespace := lax, substring := true) in
+example {n : ℕ} (E : SignalValueEnv n) : HasIndependentSignals E ↔ HasFactorizedWeights E :=
+  Iff.rfl
+
+/--
+warning: `MathEconLib.Auction.Affiliation.HasAffiliatedSignals` has been deprecated:
+Use `MathEconLib.Auction.Affiliation.HasAffiliatedWeights` instead
+-/
+#guard_msgs (warning, whitespace := lax, substring := true) in
+example {n : ℕ} (E : SignalValueEnv n) : HasAffiliatedSignals E ↔ HasAffiliatedWeights E :=
+  Iff.rfl
+
+/--
+warning: `MathEconLib.Auction.Affiliation.IsIPV` has been deprecated:
+Use `MathEconLib.Auction.Affiliation.IsPrivateValuesWithFactorizedWeights` instead
+-/
+#guard_msgs (warning, whitespace := lax, substring := true) in
+example {n : ℕ} (E : SignalValueEnv n) :
+    Auction.Affiliation.IsIPV E ↔ IsPrivateValuesWithFactorizedWeights E :=
+  Iff.rfl
+
+/--
+warning: `MathEconLib.Auction.Affiliation.HasIndependentSignals.hasAffiliatedSignals`
+has been deprecated:
+Use `MathEconLib.Auction.Affiliation.HasFactorizedWeights.hasAffiliatedWeights` instead
+-/
+#guard_msgs (warning, whitespace := lax, substring := true) in
+example {n : ℕ} {E : SignalValueEnv n} (h : HasFactorizedWeights E) : HasAffiliatedWeights E :=
+  HasIndependentSignals.hasAffiliatedSignals h
+
+/--
+warning: `MathEconLib.Auction.Affiliation.IsIPV.hasAffiliatedSignals` has been deprecated:
+Use `MathEconLib.Auction.Affiliation.IsPrivateValuesWithFactorizedWeights.hasAffiliatedWeights` instead
+-/
+#guard_msgs (warning, whitespace := lax, substring := true) in
+example {n : ℕ} {E : SignalValueEnv n} (h : IsPrivateValuesWithFactorizedWeights E) :
+    HasAffiliatedWeights E :=
+  Auction.Affiliation.IsIPV.hasAffiliatedSignals h
+
+-- Check unchanged legacy predicate types and theorem dot notation together.
+set_option linter.deprecated false in
+example {n : ℕ} {E : SignalValueEnv n} (h : HasIndependentSignals E) :
+    HasAffiliatedSignals E :=
+  h.hasAffiliatedSignals
+
+set_option linter.deprecated false in
+example {n : ℕ} {E : SignalValueEnv n} (h : Auction.Affiliation.IsIPV E) :
+    HasAffiliatedSignals E :=
+  h.hasAffiliatedSignals
 
 end MathEconLibTest.SignalWeights

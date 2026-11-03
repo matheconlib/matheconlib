@@ -201,6 +201,38 @@ theorem IsPrivateValuesWithFactorizedWeights.hasAffiliatedWeights {n : ℕ} {E :
     (h : IsPrivateValuesWithFactorizedWeights E) : HasAffiliatedWeights E :=
   h.2.hasAffiliatedWeights
 
+/-! ### Deprecated compatibility names
+
+Keep these aliases through the release introducing the weight-based names. They may be removed
+in the following release; new code should use the canonical names above.
+-/
+
+/-- Deprecated name for affiliation of the environment's raw signal weights. -/
+@[deprecated HasAffiliatedWeights (since := "2026-11-03")]
+abbrev HasAffiliatedSignals {n : ℕ} (E : SignalValueEnv n) : Prop := HasAffiliatedWeights E
+
+/-- Deprecated name for algebraic factorization of the environment's signal weights. -/
+@[deprecated HasFactorizedWeights (since := "2026-11-03")]
+abbrev HasIndependentSignals {n : ℕ} (E : SignalValueEnv n) : Prop := HasFactorizedWeights E
+
+/-- Deprecated name for private values with factorized raw signal weights. -/
+@[deprecated IsPrivateValuesWithFactorizedWeights (since := "2026-11-03")]
+abbrev IsIPV {n : ℕ} (E : SignalValueEnv n) : Prop := IsPrivateValuesWithFactorizedWeights E
+
+set_option linter.deprecated false in
+/-- Deprecated name for affiliation implied by factorized weights. -/
+@[deprecated HasFactorizedWeights.hasAffiliatedWeights (since := "2026-11-03")]
+theorem HasIndependentSignals.hasAffiliatedSignals {n : ℕ} {E : SignalValueEnv n}
+    (h : HasIndependentSignals E) : HasAffiliatedSignals E :=
+  HasFactorizedWeights.hasAffiliatedWeights h
+
+set_option linter.deprecated false in
+/-- Deprecated name for affiliation implied by private values with factorized weights. -/
+@[deprecated IsPrivateValuesWithFactorizedWeights.hasAffiliatedWeights (since := "2026-11-03")]
+theorem IsIPV.hasAffiliatedSignals {n : ℕ} {E : SignalValueEnv n}
+    (h : IsIPV E) : HasAffiliatedSignals E :=
+  IsPrivateValuesWithFactorizedWeights.hasAffiliatedWeights h
+
 end Auction.Affiliation
 
 end

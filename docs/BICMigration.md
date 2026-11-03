@@ -66,6 +66,23 @@ on the weights. Scalar-auction BIC and revenue-equivalence arguments use
 `Auction.IsIPV` / `Auction.HasIndependentTypes`, which require mutual independence
 under the auction's probability model.
 
+The following names in `Auction.Affiliation` remain available as `@[deprecated]`
+aliases, dated 2026-11-03. These names were already public on `main`, so callers
+can migrate over one release cycle while new code uses the canonical names.
+
+| Deprecated name | Canonical name |
+| --- | --- |
+| `HasIndependentSignals` | `HasFactorizedWeights` |
+| `IsIPV` | `IsPrivateValuesWithFactorizedWeights` |
+| `HasAffiliatedSignals` | `HasAffiliatedWeights` |
+| `HasIndependentSignals.hasAffiliatedSignals` | `HasFactorizedWeights.hasAffiliatedWeights` |
+| `IsIPV.hasAffiliatedSignals` | `IsPrivateValuesWithFactorizedWeights.hasAffiliatedWeights` |
+
+Retain these aliases through the release that introduces the canonical names;
+they may be removed in the following release. In particular, the deprecated
+`Auction.Affiliation.IsIPV` retains its algebraic meaning and does not supply
+the probabilistic independence required by `Auction.IsIPV`.
+
 `A.independentBeliefs` constructs constant opponent beliefs from independence
 and proves that they disintegrate the actual joint prior. `Auction.IPV.BIC A`
 is a convenience class containing exactly `A.BIC A.independentBeliefs`.
