@@ -118,6 +118,12 @@ public import MathEconLib.SingleParameter.IC
 public import MathEconLib.SingleParameter.Payment
 public import MathEconLib.SingleParameter.PostedPrice
 public import MathEconLib.SingleParameter.Revelation
+public import MathEconLib.SocialChoice.Arrow
+public import MathEconLib.SocialChoice.Basic
+public import MathEconLib.SocialChoice.Defs
+public import MathEconLib.SocialChoice.Dictatorship
+public import MathEconLib.SocialChoice.Majority
+public import MathEconLib.SocialChoice.May
 public import MathEconLib.Statistics.OrderStatistics
 public import MathEconLib.ValueDistribution
 public import MathEconLib.ValueDistribution.Basic
