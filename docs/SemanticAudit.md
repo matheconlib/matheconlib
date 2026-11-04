@@ -14,15 +14,15 @@ tracks preservation and migration evidence.
 The first two repairs were merged in
 [#210](https://github.com/matheconlib/matheconlib/pull/210), through
 [`8d9de80`](https://github.com/matheconlib/matheconlib/commit/8d9de809c56cd0080e73536840b875a97e41f6c8).
-The remaining design and implementation work belongs to the linked issues.
+The table records subsequent repairs and links the remaining work.
 
 | Finding | Minimal witness and intended distinction | Repair |
 | --- | --- | --- |
 | F1: marginal beliefs used for interim incentives and participation | Perfectly correlated Bernoulli types make unconditional opponent averages misclassify both incentive compatibility and interim IR. Hold the true type and its conditional beliefs fixed while comparing reports. | #210 supplies the quasilinear conditional-belief API and its IPV specialization. The conditional all-purchase adapter remains in [#212](https://github.com/matheconlib/matheconlib/issues/212). |
 | F2: revenue averages already-marginalized payments | With diagonal Bernoulli reports and one payment `b₀ * b₁`, actual revenue is `1/2`, while the old expression gives `1/4`. Integrate realized joint payments; an unconditional marginal-payment bridge needs independence and integrability. | Implemented in #210; follow-up [#213](https://github.com/matheconlib/matheconlib/issues/213). |
 | F3: atomlessness checks only bidder zero | One uniform type and one constant type satisfy the old field while the second marginal has an atom. Quantify over every bidder, or explicitly require a common law. | [#214](https://github.com/matheconlib/matheconlib/issues/214). Identical-law assumptions protect the inspected symmetric consumers. |
-| F4: raw signal weights need not define a probability law | The zero density with exponential values satisfies `SignalValueEnv`, independence, IPV and affiliation, but has total mass zero. Distinguish the algebraic weight layer from a measurable, normalized probability environment. | [#215](https://github.com/matheconlib/matheconlib/issues/215). |
-| F5: global value conditions constrain infeasible profiles | Global nonnegativity and strict own monotonicity force strictly positive values everywhere, excluding `v(x) = x` at zero on `[0,1]`. Global private-value comparisons also constrain off-support extensions. State the intended conditions on feasible profiles. | [#216](https://github.com/matheconlib/matheconlib/issues/216). |
+| F4: raw signal weights need not define a probability law | The one-bidder zero-weight environment has total mass zero and satisfies `HasFactorizedWeights`, `HasAffiliatedWeights` and `IsPrivateValuesWithFactorizedWeights`. | [#268](https://github.com/matheconlib/matheconlib/pull/268) clarifies the algebraic API and its distinction from a probability law. The probability-law wrapper and density bridge remain in [#215](https://github.com/matheconlib/matheconlib/issues/215). |
+| F5: global value conditions constrain infeasible profiles | The former global own-signal strictness requirement, together with global nonnegativity, excluded `v(x) = x` at zero on `[0,1]`. Global private-value comparisons also constrain off-support extensions. | [#267](https://github.com/matheconlib/matheconlib/pull/267) restricts own-signal strictness to the declared interval and checks the clamped private-value example. The off-support private-values question remains in [#216](https://github.com/matheconlib/matheconlib/issues/216). |
 | F6: pointwise density predicates depend on null-set values | Changing a uniform-square density at a single point preserves its probability law but can break pointwise product factorization and affiliation. Distinguish algebraic predicates on a representative from properties of the represented law. | [#217](https://github.com/matheconlib/matheconlib/issues/217). |
 
 The algebraic affiliation predicate and finite weighted-average results retain
@@ -40,12 +40,15 @@ repaired mechanism API is explicitly its quasilinear specialization. See
   incentives, profitable deviations, belief-version dependence and realized
   revenue, including an independent positive control.
 - [SignalValueBoundaries.lean](../MathEconLibTest/Auction/SignalValueBoundaries.lean)
-  retains seven supporting proofs: the zero-density environment's private-value,
-  independence, IPV, affiliation and zero-mass properties, and the strict-positive
-  value obstruction. These witnesses record current limitations. The F4/F5
-  repairs should replace affected witnesses with tests of the corrected contracts.
+  retains `zeroDensityEnv_mass`, which checks that an admissible zero-weight
+  environment has integral zero.
+  [SignalWeights.lean](../MathEconLibTest/Auction/SignalWeights.lean) checks
+  zero-weight factorization and affiliation.
+- [SignalValueEnv.lean](../MathEconLibTest/Auction/SignalValueEnv.lean) checks
+  that a clamped private value equals the bidder's own signal throughout the
+  declared interval, including at zero.
 
-The seven signal proofs do not formalize the complete atomlessness or
+The maintained tests do not formalize the complete atomlessness or
 density-version countermodels, or the off-support private-values example. Those
 arguments are recorded in the linked issues and full archive. Finite Python
 enumerations establish only their encoded cases. The original audit's build
@@ -53,8 +56,8 @@ covered the library and umbrella; later full-project builds are separate checks.
 The audit's independent workstreams were automated and do not replace maintainer
 review of the findings or repair contracts.
 
-Run `lake build MathEconLibTest.Auction.SignalValueBoundaries` for the focused
-signal tests. The default `lake build` includes all three modules above, and
+Run `lake build MathEconLibTest.Auction.SignalValueBoundaries` for the mass witness.
+The default `lake build` includes all the modules above, and
 `python3 scripts/check-proof-integrity.py` checks their transitive axiom dependencies.
 
 ## Full historical archive
