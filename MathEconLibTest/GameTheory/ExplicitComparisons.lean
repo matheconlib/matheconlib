@@ -21,7 +21,7 @@ open MathEconLib.GameTheory
 
 namespace MathEconLibTest.GameTheory.ExplicitComparisons
 
-universe u v w x
+universe u v w x y z
 
 variable {S : Type u} {I : Type v} {X : Type w} {V : Type x}
 
@@ -71,6 +71,78 @@ example : naturalProblem.IsEquilibriumWith (fun _ x y ↦ y ≤ x) 0 :=
 
 example : ¬ naturalProblem.IsEquilibrium 0 :=
   fun h ↦ (by decide : ¬ (1 : Nat) ≤ 0) (h () 1 trivial)
+
+/-! Ordered recovery also recovers both existing transport routes with only an `LE` instance. -/
+
+example {T : Type y} {J : Type z} [LE X]
+    (P : EquilibriumProblem S I X) (Q : EquilibriumProblem T J X)
+    (f : GameMorphism P Q) {s : S} (h : P.IsEquilibrium s) :
+    Q.IsEquilibrium (f.toFun s) :=
+  (Q.isEquilibriumWith_le_iff (f.toFun s)).1
+    (f.transportWith (fun _ x y ↦ x ≤ y) (fun _ x y ↦ x ≤ y)
+      (fun _ _ _ _ hxy ↦ hxy) ((P.isEquilibriumWith_le_iff s).2 h))
+
+example {T : Type y} {J : Type z} [LE X]
+    (P : EquilibriumProblem S I X) (Q : EquilibriumProblem T J X)
+    (f : GameComorphism P Q) {s : S} (h : Q.IsEquilibrium (f.toFun s)) :
+    P.IsEquilibrium s :=
+  (P.isEquilibriumWith_le_iff s).1
+    (f.pullbackWith (fun _ x y ↦ x ≤ y) (fun _ x y ↦ x ≤ y)
+      (fun _ _ _ _ hxy ↦ hxy) ((Q.isEquilibriumWith_le_iff (f.toFun s)).2 h))
+
+/-! Two players use different comparisons; transport selects the player named `true`. -/
+
+/-- The second player evaluates the natural action; the first always receives zero. -/
+def indexedProblem : EquilibriumProblem Nat Bool Nat where
+  deviation _ _ _ := True
+  value i n := if i then n else 0
+
+/-- The active player minimizes its reward, while the constant-payoff player compares equality. -/
+def indexedComparison (i : Bool) (x y : Nat) : Prop := if i then y ≤ x else x = y
+
+/-- Zero is optimal for the active player, and the other player is indifferent. -/
+theorem indexed_zero_isEquilibriumWith :
+    indexedProblem.IsEquilibriumWith indexedComparison 0 := by
+  intro i n _
+  cases i <;> simp [indexedComparison, indexedProblem]
+
+example : naturalProblem.IsEquilibriumWith (fun _ x y ↦ y ≤ x ∨ x = 0) 0 := by
+  let f : GameMorphism indexedProblem naturalProblem := {
+    toFun := id
+    deviatorMap := fun _ ↦ true
+    deviation_lifts := fun _ _ t _ ↦ ⟨t, trivial, rfl⟩
+    value_eq := fun _ _ ↦ rfl }
+  apply f.transportWith indexedComparison (fun _ x y ↦ y ≤ x ∨ x = 0)
+  · intro _ _ _ _ h
+    exact Or.inl h
+  · exact indexed_zero_isEquilibriumWith
+
+example : naturalProblem.IsEquilibriumWith (fun _ x y ↦ y ≤ x ∨ x = 0) 0 := by
+  let f : GameComorphism naturalProblem indexedProblem := {
+    toFun := id
+    deviatorMap := fun _ ↦ true
+    deviation_maps := fun _ _ _ _ ↦ trivial
+    value_eq := fun _ _ ↦ rfl }
+  apply f.pullbackWith (fun _ x y ↦ y ≤ x ∨ x = 0) indexedComparison
+  · intro _ _ _ _ h
+    exact Or.inl h
+  · exact indexed_zero_isEquilibriumWith
+
+/-! Comparability is needed only on admissible pairs, without global order or reflexivity. -/
+
+/-- Only the successor is an admissible deviation. -/
+def successorProblem : EquilibriumProblem Nat Unit Nat where
+  deviation _ s t := t = s + 1
+  value _ n := n
+
+example (s : Nat) :
+    successorProblem.IsEquilibriumWith (fun _ x y ↦ x = y + 1) s ↔
+      ∀ i t, successorProblem.deviation i s t →
+        ¬ (s = t + 1 ∧ ¬ t = s + 1) :=
+  successorProblem.isEquilibriumWith_iff_no_strictImprovement
+    (fun _ x y ↦ x = y + 1) s (fun _ _ ht ↦ Or.inl ht)
+
+example : ¬ ((0 : Nat) = 3 + 1 ∨ (3 : Nat) = 0 + 1) := by decide
 
 end MathEconLibTest.GameTheory.ExplicitComparisons
 
