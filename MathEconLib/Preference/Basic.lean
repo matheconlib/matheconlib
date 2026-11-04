@@ -12,39 +12,19 @@ public import Mathlib.SetTheory.Cardinal.Order
 /-!
 # Preference relations: basic API
 
-How completeness, transitivity and antisymmetry interact with the strict part `StrictPart R` and
-indifference `Indiff R`, and the bridges to Mathlib's order classes.
+How completeness, transitivity and antisymmetry interact with `StrictPart R` and `Indiff R`.
 
 ## Main statements
 
-* `IsComplete.isReflexive`: a complete relation is reflexive.
-* `IsTransitive.strictPart`, `IsTransitive.indiff`: the strict part and indifference of a
-  transitive relation are transitive.
-* `IsTransitive.strictPart_of_rel_of_strictPart`, `IsTransitive.strictPart_of_strictPart_of_rel`:
-  `x ≿ y ≻ z` and `x ≻ y ≿ z` give `x ≻ z`.
-* `equivalence_indiff`: indifference of a reflexive and transitive relation is an equivalence.
-* `IsComplete.not_rel_iff`: for a complete relation, `¬ y ≿ x ↔ x ≻ y`.
-* `IsComplete.rel_iff_eq_or_strictPart`: for a complete antisymmetric relation,
-  `x ≿ y ↔ x = y ∨ x ≻ y`.
-* `isPreferenceRelation_iff_isPreorder_and_total`, `isLinearPreference_iff_isLinearOrder`: the
-  bridges to Mathlib's `IsPreorder`, `Std.Total` and `IsLinearOrder`.
-* `exists_isLinearPreference_strictPart`: for distinct `x` and `y` there is a linear preference
-  with `x ≻ y`.
-
-## Implementation notes
-
-Each lemma assumes only the properties its proof uses. Osborne and Rubinstein state these facts for
-preference relations; most need transitivity alone.
+* `IsTransitive.strictPart`, `IsTransitive.indiff`: both derived relations are transitive.
+* `equivalence_indiff`: indifference of a reflexive transitive relation is an equivalence.
+* `IsComplete.rel_iff_eq_or_strictPart`: if also antisymmetric, `x ≿ y ↔ x = y ∨ x ≻ y`.
+* `isLinearPreference_iff_isLinearOrder`: the bridge to Mathlib's `IsLinearOrder`.
+* `exists_isLinearPreference_strictPart`: any `x ≠ y` are ranked `x ≻ y` by a linear preference.
 
 ## References
 
-Martin J. Osborne and Ariel Rubinstein (2023), *Models in Microeconomic Theory*, expanded second
-edition, Open Book Publishers, Section 1.1.
-[DOI: 10.11647/OBP.0361](https://doi.org/10.11647/OBP.0361).
-
-## Tags
-
-preference relation, strict preference, indifference, total preorder
+* M. J. Osborne, A. Rubinstein, *Models in Microeconomic Theory* (2023), Section 1.1
 -/
 
 @[expose] public section
@@ -54,8 +34,6 @@ namespace MathEconLib.Preference
 universe u
 
 variable {X : Type u} {R : X → X → Prop} {x y z : X}
-
-/-! ### Completeness and reflexivity -/
 
 /-- A complete relation is reflexive (Mathlib's `Std.Total.to_refl`). -/
 theorem IsComplete.isReflexive (h : IsComplete R) : IsReflexive R :=
@@ -70,62 +48,48 @@ theorem IsPreferenceRelation.refl (h : IsPreferenceRelation R) (x : X) : R x x :
 theorem IsPreferenceRelation.isReflexive (h : IsPreferenceRelation R) : IsReflexive R :=
   h.isComplete.isReflexive
 
-/-! ### The strict part -/
-
 theorem StrictPart.asymm (h : StrictPart R x y) : ¬ StrictPart R y x := fun h' => h.2 h'.1
 
 theorem StrictPart.ne (h : StrictPart R x y) : x ≠ y := by
   rintro rfl
   exact strictPart_irrefl R x h
 
-/-- The strict part of a relation is asymmetric (Mathlib's `Std.Asymm`). -/
 instance : Std.Asymm (StrictPart R) := ⟨fun _ _ h => h.asymm⟩
 
-/-- The strict part of `≤` is `<`. -/
 @[simp] theorem strictPart_le {α : Type*} [Preorder α] : StrictPart (X := α) (· ≤ ·) = (· < ·) :=
   funext₂ fun _ _ => propext lt_iff_le_not_ge.symm
 
-/-- The strict part of `≥` is `>`. -/
 @[simp] theorem strictPart_ge {α : Type*} [Preorder α] :
     StrictPart (fun x y : α => y ≤ x) = (fun x y => y < x) :=
   funext₂ fun _ _ => propext lt_iff_le_not_ge.symm
-
-/-! ### Transitivity -/
 
 /-- The strict part of a transitive relation is transitive. -/
 theorem IsTransitive.strictPart (h : IsTransitive R) : IsTransitive (StrictPart R) :=
   isTransitive_iff.2 fun _ _ _ hxy hyz =>
     ⟨h.trans hxy.1 hyz.1, fun hzx => hxy.2 (h.trans hyz.1 hzx)⟩
 
-/-- Indifference derived from a transitive relation is transitive (Mathlib's
-`AntisymmRel.trans`). -/
+/-- Indifference derived from a transitive relation is transitive. -/
 theorem IsTransitive.indiff (h : IsTransitive R) : IsTransitive (Indiff R) :=
   have := h.toIsTrans
   isTransitive_of_isTrans
 
-/-- For a transitive relation, `x ≿ y` and `y ≻ z` give `x ≻ z`. -/
 theorem IsTransitive.strictPart_of_rel_of_strictPart (h : IsTransitive R) (hxy : R x y)
     (hyz : StrictPart R y z) : StrictPart R x z :=
   ⟨h.trans hxy hyz.1, fun hzx => hyz.2 (h.trans hzx hxy)⟩
 
-/-- For a transitive relation, `x ≻ y` and `y ≿ z` give `x ≻ z`. -/
 theorem IsTransitive.strictPart_of_strictPart_of_rel (h : IsTransitive R)
     (hxy : StrictPart R x y) (hyz : R y z) : StrictPart R x z :=
   ⟨h.trans hxy.1 hyz, fun hzx => hxy.2 (h.trans hyz hzx)⟩
 
-/-- Indifference derived from a reflexive and transitive relation is an equivalence relation
-(Mathlib's `AntisymmRel.setoid`). -/
+/-- Indifference derived from a reflexive and transitive relation is an equivalence relation. -/
 theorem equivalence_indiff (hr : IsReflexive R) (ht : IsTransitive R) :
     Equivalence (Indiff R) :=
   have : IsPreorder X R := { toRefl := hr, toIsTrans := ht }
   (AntisymmRel.setoid X R).iseqv
 
-/-- Indifference derived from a preference relation is an equivalence relation. -/
 theorem IsPreferenceRelation.equivalence_indiff (h : IsPreferenceRelation R) :
     Equivalence (Indiff R) :=
   MathEconLib.Preference.equivalence_indiff h.isReflexive h.isTransitive
-
-/-! ### Completeness and the strict part -/
 
 theorem IsComplete.not_rel_iff (h : IsComplete R) : ¬ R y x ↔ StrictPart R x y :=
   ⟨fun hn => ⟨(h.total x y).resolve_right hn, hn⟩, fun hs => hs.2⟩
@@ -147,13 +111,10 @@ theorem IsComplete.strictPart_or_indiff_or_strictPart (h : IsComplete R) (x y : 
   · exact Or.inr (Or.inr ⟨hyx, hxy⟩)
   · exact ((h.total x y).elim hxy hyx).elim
 
-/-! ### Antisymmetry -/
-
 theorem IsAntisymmetric.eq_of_indiff (h : IsAntisymmetric R) (hxy : Indiff R x y) : x = y :=
   h.antisymm hxy.1 hxy.2
 
-/-- For a reflexive antisymmetric relation, indifference is equality (Mathlib's
-`antisymmRel_iff_eq`). -/
+/-- For a reflexive antisymmetric relation, indifference is equality. -/
 theorem IsAntisymmetric.indiff_iff_eq (h : IsAntisymmetric R) (hr : IsReflexive R) :
     Indiff R x y ↔ x = y :=
   have : Std.Antisymm R := h
@@ -179,16 +140,13 @@ theorem IsComplete.rel_iff_eq_or_strictPart (hC : IsComplete R) (hA : IsAntisymm
     · exact hC.rel_refl x
     · exact h.1
 
-/-- Osborne and Rubinstein's antisymmetry (Definition 1.4): `x ≠ y` and `x ≿ y` exclude
-`y ≿ x`. -/
+/-- Antisymmetry in Osborne and Rubinstein's form (Definition 1.4). -/
 theorem isAntisymmetric_iff_not_rel_of_ne :
     IsAntisymmetric R ↔ ∀ x y, x ≠ y → R x y → ¬ R y x :=
   ⟨fun h x y hne hxy hyx => hne (h.antisymm hxy hyx),
     fun h => isAntisymmetric_iff.2 fun x y hxy hyx => by
       by_contra hne
       exact h x y hne hxy hyx⟩
-
-/-! ### Bridges to Mathlib's order classes -/
 
 theorem IsPreferenceRelation.isPreorder (h : IsPreferenceRelation R) : IsPreorder X R :=
   { toRefl := h.isReflexive, toIsTrans := h.isTransitive }
@@ -206,15 +164,11 @@ theorem IsLinearPreference.isLinearOrder (h : IsLinearPreference R) : IsLinearOr
 theorem isLinearPreference_iff_isLinearOrder : IsLinearPreference R ↔ IsLinearOrder X R :=
   ⟨IsLinearPreference.isLinearOrder, fun h => ⟨⟨h.toTotal, h.toIsTrans⟩, h.toAntisymm⟩⟩
 
-/-- `≥` on a linear order is a linear preference. -/
 @[simp] theorem isLinearPreference_ge {α : Type*} [LinearOrder α] :
     IsLinearPreference (fun x y : α => y ≤ x) :=
   ⟨isPreferenceRelation_ge, isAntisymmetric_iff.2 fun _ _ hxy hyx => le_antisymm hyx hxy⟩
 
-/-! ### Existence of linear preferences -/
-
-/-- For any two distinct alternatives `x` and `y` of any type there is a linear preference that
-ranks `x` above `y`. -/
+/-- For distinct alternatives `x` and `y` there is a linear preference with `x ≻ y`. -/
 theorem exists_isLinearPreference_strictPart (hxy : x ≠ y) :
     ∃ R : X → X → Prop, IsLinearPreference R ∧ StrictPart R x y := by
   classical
@@ -230,22 +184,17 @@ theorem exists_isLinearPreference_strictPart (hxy : x ≠ y) :
 
 end MathEconLib.Preference
 
-/-! ### Worked examples -/
-
 section Examples
 
 open MathEconLib.Preference
 
-/-- The cyclic relation `0 ≿ 1 ≿ 2 ≿ 0` (each alternative also related to itself) on `Fin 3` is
-complete but not transitive. -/
+/-- The cyclic relation `0 ≿ 1 ≿ 2 ≿ 0` on `Fin 3` is complete but not transitive. -/
 example : IsComplete (fun x y : Fin 3 => x = y ∨ y = x + 1) ∧
     ¬ IsTransitive (fun x y : Fin 3 => x = y ∨ y = x + 1) := by
   refine ⟨isComplete_iff.2 (by decide), fun h => ?_⟩
   have := h.trans (x := 0) (y := 1) (z := 2) (by decide) (by decide)
   revert this; decide
 
-/-- `IsComplete.rel_iff_eq_or_strictPart` needs antisymmetry: universal indifference on `Bool`
-has `true ≿ false` but neither `true = false` nor `true ≻ false`. -/
 example : (fun _ _ : Bool => True) true false ∧
     ¬ (true = false ∨ StrictPart (fun _ _ : Bool => True) true false) := by
   simp [StrictPart]
