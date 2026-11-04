@@ -97,12 +97,15 @@ public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 public import MathEconLib.Mechanism.Auctions.Allocation
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
+public import MathEconLib.Mechanism.Core.BayesianUtility
 public import MathEconLib.Mechanism.Core.Comap
 public import MathEconLib.Mechanism.Core.Environment
 public import MathEconLib.Mechanism.Core.Mechanism
 public import MathEconLib.Mechanism.Core.Profile
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import MathEconLib.Mechanism.Core.Strategic
+public import MathEconLib.Mechanism.Core.Utility
+public import MathEconLib.Mechanism.Core.UtilityCompatibility
 public import MathEconLib.Probability.FinDist.Basic
 public import MathEconLib.Probability.FinDist.ConditionalOn
 public import MathEconLib.Probability.FinDist.Expect
