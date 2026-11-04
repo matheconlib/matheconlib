@@ -30,6 +30,7 @@ import MathEconLibTest.Mechanism.Core
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
 import MathEconLibTest.Mechanism.TruthfulNash
+import MathEconLibTest.Mechanism.Utility
 import MathEconLibTest.Namespace
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.SingleParameter.BeckerCrime
