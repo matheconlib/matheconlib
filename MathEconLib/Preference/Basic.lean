@@ -57,9 +57,10 @@ variable {X : Type u} {R : X → X → Prop} {x y z : X}
 
 /-! ### Completeness and reflexivity -/
 
-/-- A complete relation is reflexive. -/
+/-- A complete relation is reflexive (Mathlib's `Std.Total.to_refl`). -/
 theorem IsComplete.isReflexive (h : IsComplete R) : IsReflexive R :=
-  isReflexive_iff.2 fun x => (h.total x x).elim id id
+  have := h.toTotal
+  isReflexive_of_refl
 
 theorem IsComplete.rel_refl (h : IsComplete R) (x : X) : R x x := h.isReflexive.refl x
 
@@ -96,9 +97,11 @@ theorem IsTransitive.strictPart (h : IsTransitive R) : IsTransitive (StrictPart 
   isTransitive_iff.2 fun _ _ _ hxy hyz =>
     ⟨h.trans hxy.1 hyz.1, fun hzx => hxy.2 (h.trans hyz.1 hzx)⟩
 
-/-- Indifference derived from a transitive relation is transitive. -/
+/-- Indifference derived from a transitive relation is transitive (Mathlib's
+`AntisymmRel.trans`). -/
 theorem IsTransitive.indiff (h : IsTransitive R) : IsTransitive (Indiff R) :=
-  isTransitive_iff.2 fun _ _ _ hxy hyz => ⟨h.trans hxy.1 hyz.1, h.trans hyz.2 hxy.2⟩
+  have := h.toIsTrans
+  isTransitive_of_isTrans
 
 /-- For a transitive relation, `x ≿ y` and `y ≻ z` give `x ≻ z`. -/
 theorem IsTransitive.strictPart_of_rel_of_strictPart (h : IsTransitive R) (hxy : R x y)
@@ -110,12 +113,12 @@ theorem IsTransitive.strictPart_of_strictPart_of_rel (h : IsTransitive R)
     (hxy : StrictPart R x y) (hyz : R y z) : StrictPart R x z :=
   ⟨h.trans hxy.1 hyz, fun hzx => hxy.2 (h.trans hyz hzx)⟩
 
-/-- Indifference derived from a reflexive and transitive relation is an equivalence relation. -/
+/-- Indifference derived from a reflexive and transitive relation is an equivalence relation
+(Mathlib's `AntisymmRel.setoid`). -/
 theorem equivalence_indiff (hr : IsReflexive R) (ht : IsTransitive R) :
-    Equivalence (Indiff R) where
-  refl x := ⟨hr.refl x, hr.refl x⟩
-  symm h := h.symm
-  trans h₁ h₂ := ht.indiff.trans h₁ h₂
+    Equivalence (Indiff R) :=
+  have : IsPreorder X R := { toRefl := hr, toIsTrans := ht }
+  (AntisymmRel.setoid X R).iseqv
 
 /-- Indifference derived from a preference relation is an equivalence relation. -/
 theorem IsPreferenceRelation.equivalence_indiff (h : IsPreferenceRelation R) :
@@ -149,9 +152,13 @@ theorem IsComplete.strictPart_or_indiff_or_strictPart (h : IsComplete R) (x y : 
 theorem IsAntisymmetric.eq_of_indiff (h : IsAntisymmetric R) (hxy : Indiff R x y) : x = y :=
   h.antisymm hxy.1 hxy.2
 
+/-- For a reflexive antisymmetric relation, indifference is equality (Mathlib's
+`antisymmRel_iff_eq`). -/
 theorem IsAntisymmetric.indiff_iff_eq (h : IsAntisymmetric R) (hr : IsReflexive R) :
     Indiff R x y ↔ x = y :=
-  ⟨h.eq_of_indiff, fun hxy => hxy ▸ ⟨hr.refl x, hr.refl x⟩⟩
+  have : Std.Antisymm R := h
+  have : Std.Refl R := hr
+  antisymmRel_iff_eq
 
 /-- For a complete antisymmetric relation, distinct alternatives are strictly ranked. -/
 theorem IsComplete.strictPart_or_strictPart (hC : IsComplete R) (hA : IsAntisymmetric R)
