@@ -20,10 +20,6 @@ example {α β : Type*} [LinearOrder β] (r : Preorder α) (htotal : Std.Total r
     (priority : α ↪ β) {a b : α} (h : (tieBreakOrder r htotal priority).le a b) : r.le a b :=
   le_of_tieBreakOrder_le (r := r) (htotal := htotal) priority h
 
-example {α β : Type*} [LinearOrder β] (r : Preorder α) (htotal : Std.Total r.le)
-    (priority : α ↪ β) {a b : α} (h : (tieBreakOrder r htotal priority).le a b) : r.le a b :=
-  tieBreakOrder_le r htotal priority h
-
 example {α β : Type*} [LinearOrder β] (pref : Preorder α) (complete : Std.Total pref.le)
     (priority : α ↪ β) {S : Set α} {a : α} :
     @IsGreatest α (tieBreakOrder pref complete priority).toLE S a ↔

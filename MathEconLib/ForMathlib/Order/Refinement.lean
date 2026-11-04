@@ -86,9 +86,6 @@ theorem le_of_tieBreakOrder_le (r : Preorder α) (htotal : Std.Total r.le)
     r.le a b :=
   ((tieBreakOrder_le_iff r htotal priority a b).mp h).1
 
-/-- Compatibility name for `le_of_tieBreakOrder_le`. -/
-alias tieBreakOrder_le := le_of_tieBreakOrder_le
-
 /-- A greatest element of the refinement is an original greatest element with highest priority
 among all original greatest elements. Neither set needs to be finite. -/
 theorem isGreatest_tieBreakOrder_iff (r : Preorder α) (htotal : Std.Total r.le)

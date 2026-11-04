@@ -25,7 +25,8 @@ namespace MathEconLibTest.Choice.WeakPreferences
 
 /-- The infinite feasible menu of natural numbers has no greatest element. -/
 theorem unattained :
-    maximizers (Preference.ofPreorder (inferInstance : Preorder ℕ)) Set.univ = ∅ := by
+    maximizers (CompletePreference.ofLinearOrder (inferInstance : LinearOrder ℕ)).toPreference
+      Set.univ = ∅ := by
   ext n
   simp only [Set.mem_empty_iff_false, iff_false]
   intro h
@@ -33,7 +34,7 @@ theorem unattained :
   omega
 
 /-- A preorder that only compares equal alternatives is incomplete on this two-element type. -/
-@[instance_reducible] def incomparable : Preference (Fin 2) where
+def incomparable : Preference (Fin 2) where
   le := Eq
   isPreorder := { refl := Eq.refl, trans := fun _ _ _ hab hbc ↦ hab.trans hbc }
 
@@ -58,11 +59,8 @@ def bundle : ℕ ↪ Set ℕ where
   inj' := Set.singleton_injective
 
 /-- All represented bundles are indifferent. -/
-@[instance_reducible] def pref : CompletePreference ℕ :=
+def pref : CompletePreference ℕ :=
   CompletePreference.ofUtility fun _ : ℕ ↦ (0 : ℕ)
-
-theorem complete : Std.Total pref.le :=
-  ⟨fun _ _ ↦ Or.inl (show (0 : ℕ) ≤ 0 from le_rfl)⟩
 
 /-- Every singleton is a weak optimum on the infinite menu. -/
 theorem singleton_mem (n : ℕ) : {n} ∈ optimalBundles pref.toPreference bundle Set.univ :=
@@ -75,8 +73,8 @@ theorem optimal_nonempty : (optimalBundles pref.toPreference bundle Set.univ).No
 
 /-- Increasing natural-number priorities have no greatest feasible index. -/
 theorem refined_unattained :
-    maximizers (Preference.ofPreorder (pref.tieBreak
-      (Function.Embedding.refl ℕ)).toPreorder) Set.univ = ∅ := by
+    maximizers (CompletePreference.ofLinearOrder (pref.tieBreak
+      (Function.Embedding.refl ℕ))).toPreference Set.univ = ∅ := by
   ext b
   simp only [Set.mem_empty_iff_false, iff_false]
   intro hb
@@ -116,7 +114,7 @@ def utility : Option ℕ → ℕ
   | none => 0
   | some _ => 1
 
-@[instance_reducible] def pref : CompletePreference (Option ℕ) :=
+def pref : CompletePreference (Option ℕ) :=
   CompletePreference.ofUtility utility
 
 /-- Contracts have unbounded increasing priorities; the outside option has priority zero. -/
@@ -162,7 +160,7 @@ theorem empty_not_optimal :
 
 /-- No contract wins the increasing-priority tie, and the outside option loses on utility. -/
 theorem refined_unattained :
-    maximizers (Preference.ofPreorder (pref.tieBreak increasingPriority).toPreorder)
+    maximizers (CompletePreference.ofLinearOrder (pref.tieBreak increasingPriority)).toPreference
       Set.univ = ∅ := by
   ext b
   simp only [Set.mem_empty_iff_false, iff_false]
@@ -241,7 +239,7 @@ namespace MissingWeakOptimum
 open OutsideOptionNonattainment (increasingPriority decreasingPriority)
 
 /-- Utility now strictly increases with the contract index, so there is no weak optimum. -/
-@[instance_reducible] def pref : CompletePreference (Option ℕ) :=
+def pref : CompletePreference (Option ℕ) :=
   CompletePreference.ofUtility increasingPriority
 
 /-- The same well-founded reversed priorities cannot fix nonattainment in the weak preference. -/
@@ -268,7 +266,7 @@ theorem optimal_empty :
   simp only [weak_unattained, Set.mem_empty_iff_false] at hb
 
 theorem refined_unattained :
-    maximizers (Preference.ofPreorder (pref.tieBreak decreasingPriority).toPreorder)
+    maximizers (CompletePreference.ofLinearOrder (pref.tieBreak decreasingPriority)).toPreference
       Set.univ = ∅ := by
   apply Set.eq_empty_iff_forall_notMem.mpr
   exact fun b hb ↦
@@ -296,16 +294,16 @@ theorem weak_max (o : Option (Fin 2)) :
 
 /-- The outside option wins only with the priority that ranks it highest. -/
 theorem outside_refined :
-    none ∈ maximizers (Preference.ofPreorder
-      (OutsideTie.pref.tieBreak OutsideTie.outsidePriority).toPreorder)
+    none ∈ maximizers (CompletePreference.ofLinearOrder
+      (OutsideTie.pref.tieBreak OutsideTie.outsidePriority))
       {b | ChoiceFunction.optionBundle b ⊆ (Set.univ : Set (Fin 2))} :=
   (mem_maximizers_tieBreak_iff OutsideTie.pref OutsideTie.outsidePriority).mpr
     ⟨weak_max none, fun o _ ↦
       (show OutsideTie.outsidePriority o ≤ (2 : Fin 3) from Fin.le_last _)⟩
 
 theorem contract_refined :
-    some (1 : Fin 2) ∈ maximizers (Preference.ofPreorder
-      (OutsideTie.pref.tieBreak Contracts.priority).toPreorder)
+    some (1 : Fin 2) ∈ maximizers (CompletePreference.ofLinearOrder
+      (OutsideTie.pref.tieBreak Contracts.priority))
       {b | ChoiceFunction.optionBundle b ⊆ (Set.univ : Set (Fin 2))} :=
   (mem_maximizers_tieBreak_iff OutsideTie.pref Contracts.priority).mpr
     ⟨weak_max (some 1), fun o _ ↦
@@ -314,8 +312,8 @@ theorem contract_refined :
 /-- Weak optimality of the outside option does not imply it wins the refined participation
 decision. -/
 theorem outside_not_refined :
-    none ∉ maximizers (Preference.ofPreorder
-      (OutsideTie.pref.tieBreak Contracts.priority).toPreorder)
+    none ∉ maximizers (CompletePreference.ofLinearOrder
+      (OutsideTie.pref.tieBreak Contracts.priority))
       {b | ChoiceFunction.optionBundle b ⊆ (Set.univ : Set (Fin 2))} := by
   exact fun h ↦
     (by decide : ¬ Contracts.priority (some 1) ≤ Contracts.priority none)
@@ -364,7 +362,6 @@ example : ∅ ∈ optimalBundles OutsideTie.pref.toPreference
 example : optimalBundles Bundles.pref.toPreference Bundles.bundle ∅ = ∅ := Bundles.empty_menu
 
 #print axioms mem_maximizers_ofUtility
-#print axioms mem_maximizers_lift
 #print axioms mem_optimalBundles_iff
 #print axioms optimalBundles_nonempty_of_finite_feasible
 #print axioms ChoiceFunction.ofBundleOrder_mem_optimalBundles_of_finite_feasible

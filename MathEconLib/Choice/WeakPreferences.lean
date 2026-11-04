@@ -54,8 +54,7 @@ exists, the selector returns `∅`; this set need not be represented or weakly o
 `ChoiceFunction.optionBundle`, it also represents the outside option. Contracts of utility one,
 an outside option of utility zero, and unbounded increasing priorities yield weak optima but
 no refined optimum, so the selector returns `∅` despite the outside option being suboptimal.
-Outside-option participation certificates therefore use the refined order. The infinite-menu
-and outside-tie regressions are in `MathEconLibTest.Choice.WeakPreferences`.
+Outside-option participation certificates therefore use the refined order.
 
 A comparison-preserving linear refinement already implies completeness of the original
 preference: one direction of every pair is comparable in the linear order and is preserved.
@@ -93,7 +92,7 @@ theorem optimalBundles_nonempty_iff (pref : Preference β) (bundle : β ↪ Set 
 /-- Refined optimal bundles are represented by weakly optimal indices with highest priority. -/
 theorem mem_optimalBundles_tieBreak_iff [LinearOrder γ] (pref : CompletePreference β)
     (priority : β ↪ γ) (bundle : β ↪ Set α) {Y A : Set α} :
-    A ∈ optimalBundles (Preference.ofPreorder (pref.tieBreak priority).toPreorder) bundle Y ↔
+    A ∈ optimalBundles (CompletePreference.ofLinearOrder (pref.tieBreak priority)) bundle Y ↔
       ∃ b, b ∈ maximizers pref.toPreference {c | bundle c ⊆ Y} ∧ bundle b = A ∧
         ∀ c ∈ maximizers pref.toPreference {d | bundle d ⊆ Y}, priority c ≤ priority b := by
   exact ⟨fun ⟨b, hb, heq⟩ ↦
@@ -105,7 +104,7 @@ theorem mem_optimalBundles_tieBreak_iff [LinearOrder γ] (pref : CompletePrefere
 /-- The refined correspondence is nonempty exactly when priority attains on weak optima. -/
 theorem optimalBundles_tieBreak_nonempty_iff [LinearOrder γ] (pref : CompletePreference β)
     (priority : β ↪ γ) (bundle : β ↪ Set α) (Y : Set α) :
-    (optimalBundles (Preference.ofPreorder (pref.tieBreak priority).toPreorder) bundle Y).Nonempty ↔
+    (optimalBundles (CompletePreference.ofLinearOrder (pref.tieBreak priority)) bundle Y).Nonempty ↔
       ∃ p, IsGreatest (priority '' maximizers pref.toPreference {b | bundle b ⊆ Y}) p :=
   (optimalBundles_nonempty_iff _ bundle Y).trans
     (maximizers_tieBreak_nonempty_iff pref priority _)
@@ -114,7 +113,7 @@ theorem optimalBundles_tieBreak_nonempty_iff [LinearOrder γ] (pref : CompletePr
 If attainment fails, the correspondence is empty and the inclusion remains valid. -/
 theorem optimalBundles_subset_ofBundleOrder (pref : LinearOrder β) (bundle : β ↪ Set α)
     (Y : Set α) :
-    optimalBundles (Preference.ofPreorder pref.toPreorder) bundle Y ⊆
+    optimalBundles (CompletePreference.ofLinearOrder pref) bundle Y ⊆
       {ChoiceFunction.ofBundleOrder pref bundle Y} :=
   fun _ ⟨_, hb, heq⟩ ↦ Set.mem_singleton_iff.mpr
     (heq.symm.trans (ChoiceFunction.ofBundleOrder_eq_of_isGreatest pref bundle hb).symm)
@@ -146,7 +145,7 @@ The hypothesis concerns the refined order; weak attainment alone does not suffic
 theorem ofBundleOrder_mem_optimalBundles_of_maximizers_nonempty
     (pref : Preference β) (refined : LinearOrder β)
     (hrefine : ∀ a b, refined.le a b → pref.le a b) (bundle : β ↪ Set α) {Y : Set α}
-    (hne : (maximizers (Preference.ofPreorder refined.toPreorder) {b | bundle b ⊆ Y}).Nonempty) :
+    (hne : (maximizers (CompletePreference.ofLinearOrder refined) {b | bundle b ⊆ Y}).Nonempty) :
     ofBundleOrder refined bundle Y ∈ optimalBundles pref bundle Y := by
   obtain ⟨b, hb⟩ := hne
   rw [ofBundleOrder_eq_of_isGreatest refined bundle hb]
@@ -168,11 +167,11 @@ theorem ofBundleOrder_mem_optimalBundles_of_finite_feasible
 /-- Failure of refined attainment makes the strict constructor return its empty-set totalization. -/
 theorem ofBundleOrder_eq_empty_of_maximizers_eq_empty (pref : LinearOrder β)
     (bundle : β ↪ Set α) {Y : Set α}
-    (h : maximizers (Preference.ofPreorder pref.toPreorder) {b | bundle b ⊆ Y} = ∅) :
+    (h : maximizers (CompletePreference.ofLinearOrder pref) {b | bundle b ⊆ Y} = ∅) :
     ofBundleOrder pref bundle Y = ∅ := by
   apply Set.eq_empty_iff_forall_notMem.mpr
   exact fun _ ⟨b, hb, _, hmax⟩ ↦ Set.notMem_empty b
-    (h ▸ (show b ∈ maximizers (Preference.ofPreorder pref.toPreorder) {c | bundle c ⊆ Y}
+    (h ▸ (show b ∈ maximizers (CompletePreference.ofLinearOrder pref) {c | bundle c ⊆ Y}
       from ⟨hb, hmax⟩))
 
 /-- Select a bundle with a fixed priority among ties, using the existing strict constructor.
@@ -185,7 +184,7 @@ noncomputable def ofWeakBundleOrder [LinearOrder γ] (pref : CompletePreference 
 /-- A refined maximizer identifies the selected bundle on any menu. -/
 theorem ofWeakBundleOrder_eq_of_mem_maximizers [LinearOrder γ] (pref : CompletePreference β)
     (priority : β ↪ γ) (bundle : β ↪ Set α) {Y : Set α} {b : β}
-    (hb : b ∈ maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder)
+    (hb : b ∈ maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority))
       {c | bundle c ⊆ Y}) :
     ofWeakBundleOrder pref priority bundle Y = bundle b :=
   ofBundleOrder_eq_of_isGreatest (pref.tieBreak priority) bundle hb
@@ -193,7 +192,7 @@ theorem ofWeakBundleOrder_eq_of_mem_maximizers [LinearOrder γ] (pref : Complete
 /-- Fixed tie-breaking selects a weak optimum when the refined feasible order attains. -/
 theorem ofWeakBundleOrder_mem_optimalBundles_of_maximizers_nonempty [LinearOrder γ]
     (pref : CompletePreference β) (priority : β ↪ γ) (bundle : β ↪ Set α) {Y : Set α}
-    (hne : (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder)
+    (hne : (maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority))
       {b | bundle b ⊆ Y}).Nonempty) :
     ofWeakBundleOrder pref priority bundle Y ∈ optimalBundles pref.toPreference bundle Y :=
   ofBundleOrder_mem_optimalBundles_of_maximizers_nonempty pref.toPreference
@@ -246,9 +245,6 @@ theorem ofWeakBundleOrder_mem_optimalBundles_of_finite [LinearOrder γ]
     ofWeakBundleOrder (CompletePreference.ofLinearOrder pref) priority bundle =
       ofBundleOrder pref bundle := by
   simp only [ofWeakBundleOrder, CompletePreference.tieBreak_ofLinearOrder]
-
-/-- Compatibility name for `ofWeakBundleOrder_of_linearOrder`. -/
-alias ofWeakBundleOrder_linearOrder := ofWeakBundleOrder_of_linearOrder
 
 /-- The existing finite outside-option selector chooses a weak maximizer under the refinement. -/
 theorem bestOption_mem_maximizers [DecidableEq α] [LinearOrder γ]
