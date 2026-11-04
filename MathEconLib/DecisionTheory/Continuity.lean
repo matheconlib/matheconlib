@@ -14,19 +14,27 @@ public import MathEconLib.Preference.Basic
 A relation `≿` over lotteries is *continuous in mixtures* if whenever `p ≻ q ≻ r` some mixture
 `α · p ⊕ (1 − α) · r` with `0 < α < 1` is indifferent to `q`. The property can be required for all
 lotteries (`IsMixtureContinuous`) or only for lotteries in a set `S` (`IsMixtureContinuousOn S`).
-Osborne and Rubinstein's Definition 3.2 is `IsMixtureContinuousOn degenerate`.
+Osborne and Rubinstein's Definition 3.2 is `IsMixtureContinuousOn degenerate`. It is defined for
+lotteries over a finite set of prizes as distributions `FinDist Z`, and in the namespace `Lottery`
+for finitely supported lotteries over any set of prizes; `Lottery.ofFinDist` transfers one to the
+other (`isMixtureContinuousOn_iff_lottery`).
 
 ## Main definitions
 
 * `MathEconLib.DecisionTheory.IsMixtureContinuousOn S R`: for `p`, `q`, `r ∈ S` with `p ≻ q ≻ r`,
-  there is `α ∈ (0, 1)` with `q ∼ α · p ⊕ (1 − α) · r`.
+  there is `α ∈ (0, 1)` with `q ∼ α · p ⊕ (1 − α) · r`, for `FinDist Z`.
 * `MathEconLib.DecisionTheory.IsMixtureContinuous R`: the same for all lotteries.
+* `MathEconLib.DecisionTheory.Lottery.IsMixtureContinuousOn`, `Lottery.IsMixtureContinuous`: the
+  same for `Lottery Z`.
 
 ## Main statements
 
-* `IsMixtureContinuousOn.mono`, `IsMixtureContinuous.isMixtureContinuousOn`: restriction.
-* `isMixtureContinuousOn_of_not_exists`: the property holds vacuously when no three lotteries of
-  `S` are strictly ranked.
+* `isMixtureContinuousOn_iff_lottery`, `isMixtureContinuous_iff_lottery`: the two definitions
+  agree under `Lottery.ofFinDist`.
+* `Lottery.IsMixtureContinuousOn.mono`, `Lottery.IsMixtureContinuous.isMixtureContinuousOn`:
+  restriction.
+* `Lottery.isMixtureContinuousOn_of_not_exists`: the property holds vacuously when no three
+  lotteries of `S` are strictly ranked.
 
 ## Implementation notes
 
@@ -48,9 +56,11 @@ continuity axiom, Archimedean axiom, expected utility, lottery
 
 namespace MathEconLib.DecisionTheory
 
-open Convexity MathEconLib.Preference Lottery
+open Convexity MathEconLib.Preference
 
 universe u
+
+namespace Lottery
 
 variable {Z : Type u} {R : Lottery Z → Lottery Z → Prop} {S S' : Set (Lottery Z)}
 
@@ -58,7 +68,7 @@ variable {Z : Type u} {R : Lottery Z → Lottery Z → Prop} {S S' : Set (Lotter
 number `α` with `0 < α < 1` such that `q ∼ α · p ⊕ (1 − α) · r`. -/
 def IsMixtureContinuousOn (S : Set (Lottery Z)) (R : Lottery Z → Lottery Z → Prop) : Prop :=
   ∀ p ∈ S, ∀ q ∈ S, ∀ r ∈ S, StrictPart R p q → StrictPart R q r →
-    ∃ α : Set.Icc (0 : ℝ) 1, 0 < (α : ℝ) ∧ (α : ℝ) < 1 ∧ Indiff R q (mix α p r)
+    ∃ α : unitInterval, 0 < (α : ℝ) ∧ (α : ℝ) < 1 ∧ Indiff R q (mix α p r)
 
 /-- `≿` is *continuous in mixtures*: for any lotteries `p ≻ q ≻ r` there is a number `α` with
 `0 < α < 1` such that `q ∼ α · p ⊕ (1 − α) · r`. -/
@@ -67,12 +77,12 @@ def IsMixtureContinuous (R : Lottery Z → Lottery Z → Prop) : Prop :=
 
 theorem isMixtureContinuousOn_iff : IsMixtureContinuousOn S R ↔
     ∀ p ∈ S, ∀ q ∈ S, ∀ r ∈ S, StrictPart R p q → StrictPart R q r →
-      ∃ α : Set.Icc (0 : ℝ) 1, 0 < (α : ℝ) ∧ (α : ℝ) < 1 ∧ Indiff R q (mix α p r) :=
+      ∃ α : unitInterval, 0 < (α : ℝ) ∧ (α : ℝ) < 1 ∧ Indiff R q (mix α p r) :=
   Iff.rfl
 
 theorem isMixtureContinuous_iff : IsMixtureContinuous R ↔
     ∀ p q r : Lottery Z, StrictPart R p q → StrictPart R q r →
-      ∃ α : Set.Icc (0 : ℝ) 1, 0 < (α : ℝ) ∧ (α : ℝ) < 1 ∧ Indiff R q (mix α p r) :=
+      ∃ α : unitInterval, 0 < (α : ℝ) ∧ (α : ℝ) < 1 ∧ Indiff R q (mix α p r) :=
   ⟨fun h p q r => h p trivial q trivial r trivial, fun h p _ q _ r _ => h p q r⟩
 
 theorem IsMixtureContinuousOn.mono (h : IsMixtureContinuousOn S R) (hS : S' ⊆ S) :
@@ -89,13 +99,50 @@ theorem isMixtureContinuousOn_of_not_exists
     IsMixtureContinuousOn S R :=
   fun p hp q hq r hr hpq hqr => absurd ⟨p, hp, q, hq, r, hr, hpq, hqr⟩ h
 
+end Lottery
+
+/-! ### Lotteries over a finite set of prizes -/
+
+section FinDist
+
+open MathEconLib.Probability
+
+variable {Z : Type u} [Fintype Z] {R : FinDist Z → FinDist Z → Prop} {S : Set (FinDist Z)}
+
+/-- `≿` is *continuous in mixtures on `S`*: for any `p`, `q`, `r ∈ S` with `p ≻ q ≻ r` there is a
+number `α` with `0 < α < 1` such that `q ∼ α · p ⊕ (1 − α) · r`. -/
+def IsMixtureContinuousOn (S : Set (FinDist Z)) (R : FinDist Z → FinDist Z → Prop) : Prop :=
+  ∀ p ∈ S, ∀ q ∈ S, ∀ r ∈ S, StrictPart R p q → StrictPart R q r →
+    ∃ α : unitInterval, 0 < (α : ℝ) ∧ (α : ℝ) < 1 ∧ Indiff R q (FinDist.mixture α p r)
+
+/-- `≿` is *continuous in mixtures*: for any lotteries `p ≻ q ≻ r` there is a number `α` with
+`0 < α < 1` such that `q ∼ α · p ⊕ (1 − α) · r`. -/
+def IsMixtureContinuous (R : FinDist Z → FinDist Z → Prop) : Prop :=
+  IsMixtureContinuousOn Set.univ R
+
+/-- Continuity in mixtures on `S` is continuity of the same relation on lotteries, on the image of
+`S`. -/
+theorem isMixtureContinuousOn_iff_lottery : IsMixtureContinuousOn S R ↔
+    Lottery.IsMixtureContinuousOn (Lottery.ofFinDist '' S) (Lottery.ofFinDist.symm ⁻¹'o R) := by
+  simp only [IsMixtureContinuousOn, Lottery.IsMixtureContinuousOn, Set.forall_mem_image,
+    ← Lottery.ofFinDist_mixture, strictPart_iff, indiff_iff, Order.Preimage,
+    Equiv.symm_apply_apply]
+
+theorem isMixtureContinuous_iff_lottery :
+    IsMixtureContinuous R ↔ Lottery.IsMixtureContinuous (Lottery.ofFinDist.symm ⁻¹'o R) := by
+  rw [IsMixtureContinuous, Lottery.IsMixtureContinuous, isMixtureContinuousOn_iff_lottery,
+    Set.image_univ, Equiv.range_eq_univ]
+
+end FinDist
+
 end MathEconLib.DecisionTheory
 
 /-! ### Worked examples -/
 
 section Examples
 
-open MathEconLib.DecisionTheory MathEconLib.DecisionTheory.Lottery MathEconLib.Preference Convexity
+open MathEconLib.DecisionTheory (Lottery)
+open MathEconLib.DecisionTheory.Lottery MathEconLib.Preference Convexity
 
 /-- Universal indifference is continuous in mixtures (vacuously: nothing is strictly preferred). -/
 example : IsMixtureContinuous fun _ _ : Lottery (Fin 3) => True :=

@@ -12,6 +12,7 @@ public import Mathlib.Tactic.FieldSimp
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
 public import Mathlib.Tactic.Ring
+public import MathEconLib.Probability.FinDist.Basic
 
 /-!
 # Lotteries
@@ -19,7 +20,8 @@ public import Mathlib.Tactic.Ring
 A *lottery* over a set `Z` of prizes assigns a probability to each prize, positive for finitely many
 prizes and `0` for all others, the probabilities summing to `1`: Mathlib's `StdSimplex ℝ Z`. The
 lotteries form a convex space (Mathlib's `ConvexSpace ℝ (StdSimplex ℝ Z)`), whose convex
-combinations are the compound lotteries.
+combinations are the compound lotteries. On a finite set of prizes the lotteries are MathEconLib's
+distributions `FinDist Z`, to which `Lottery.ofFinDist` transfers them.
 
 Comments use Osborne and Rubinstein's notation: `[z]` is the lottery that yields `z` for sure, and
 `α · p ⊕ (1 − α) · q` the compound lottery that is `p` with probability `α` and `q` otherwise.
@@ -34,6 +36,11 @@ Comments use Osborne and Rubinstein's notation: `[z]` is the lottery that yields
 * `MathEconLib.DecisionTheory.Lottery.degenerate`: the set of degenerate lotteries `[z]`.
 * `MathEconLib.DecisionTheory.Lottery.binary`: the set of lotteries `α · a ⊕ (1 − α) · b` over two
   prizes, which may coincide.
+* `MathEconLib.DecisionTheory.Lottery.ofFinDist`: for finite `Z`, the equivalence
+  `FinDist Z ≃ Lottery Z` that keeps every probability; it takes `FinDist.pure` to `[z]` and
+  `FinDist.mixture` to `mix`.
+* `MathEconLib.DecisionTheory.degenerate`, `MathEconLib.DecisionTheory.binary`: the degenerate and
+  binary lotteries as distributions `FinDist Z`.
 
 ## Main statements
 
@@ -47,13 +54,16 @@ Comments use Osborne and Rubinstein's notation: `[z]` is the lottery that yields
   never yields `z`.
 * `exists_iConvexComb_update_eq_mix`: replacing the `k`-th lottery of a compound lottery by `x`
   gives `α_k · x ⊕ (1 − α_k) · r` for a lottery `r` that does not depend on `x`.
+* `image_ofFinDist_degenerate`, `image_ofFinDist_binary`: `ofFinDist` maps the degenerate and
+  binary distributions onto the degenerate and binary lotteries.
 
 ## Implementation notes
 
 * `Lottery Z` is an `abbrev`, so all of Mathlib's `StdSimplex` API applies (`single`, `map`,
-  `iConvexComb`, `restrict`, `IsAffineMap`, …).
-* Probabilities are elements of `Set.Icc (0 : ℝ) 1` (Mathlib's `unitInterval`); `mix` allows `0`
-  and `1`.
+  `iConvexComb`, `restrict`, `IsAffineMap`, …). The proofs use it; the main theorems of
+  `DecisionTheory` are stated on `FinDist Z` and deduced through `ofFinDist`.
+* Probabilities are elements of Mathlib's `unitInterval`, as in `FinDist.mixture`; `mix` allows
+  `0` and `1`.
 * Lotteries with countably infinite support are not covered; they are Mathlib's `PMF`.
 
 ## References
@@ -88,24 +98,25 @@ variable {Z : Type u} {I : Type v}
 
 /-- The compound lottery `α · p ⊕ (1 − α) · q`: the lottery `p` with probability `α` and the
 lottery `q` with probability `1 − α`, for `0 ≤ α ≤ 1`. -/
-noncomputable def mix (α : Set.Icc (0 : ℝ) 1) (p q : Lottery Z) : Lottery Z :=
-  convexCombPair (α : ℝ) (1 - α) α.2.1 (sub_nonneg.2 α.2.2) (add_sub_cancel _ _) p q
+noncomputable def mix (α : unitInterval) (p q : Lottery Z) : Lottery Z :=
+  convexCombPair (α : ℝ) (1 - α) (unitInterval.nonneg α) (unitInterval.one_sub_nonneg α)
+    (add_sub_cancel _ _) p q
 
-variable {α : Set.Icc (0 : ℝ) 1} {p q r : Lottery Z}
+variable {α : unitInterval} {p q r : Lottery Z}
 
-theorem mix_def (α : Set.Icc (0 : ℝ) 1) (p q : Lottery Z) :
-    mix α p q =
-      convexCombPair (α : ℝ) (1 - α) α.2.1 (sub_nonneg.2 α.2.2) (add_sub_cancel _ _) p q :=
+theorem mix_def (α : unitInterval) (p q : Lottery Z) :
+    mix α p q = convexCombPair (α : ℝ) (1 - α) (unitInterval.nonneg α)
+      (unitInterval.one_sub_nonneg α) (add_sub_cancel _ _) p q :=
   rfl
 
 /-- The probability of `z` under `α · p ⊕ (1 − α) · q` is `α p(z) + (1 − α) q(z)`. -/
 @[simp]
-theorem weights_mix (α : Set.Icc (0 : ℝ) 1) (p q : Lottery Z) (z : Z) :
+theorem weights_mix (α : unitInterval) (p q : Lottery Z) (z : Z) :
     (mix α p q).weights z = α * p.weights z + (1 - α) * q.weights z := by
   simp [mix]
 
 @[simp]
-theorem mix_self (α : Set.Icc (0 : ℝ) 1) (p : Lottery Z) : mix α p p = p := by
+theorem mix_self (α : unitInterval) (p : Lottery Z) : mix α p p = p := by
   ext z; simp only [weights_mix]; ring
 
 theorem mix_of_coe_eq_one (h : (α : ℝ) = 1) (p q : Lottery Z) : mix α p q = p := by
@@ -121,16 +132,16 @@ theorem mix_one (p q : Lottery Z) : mix 1 p q = p := mix_of_coe_eq_one rfl p q
 theorem mix_zero (p q : Lottery Z) : mix 0 p q = q := mix_of_coe_eq_zero rfl p q
 
 /-- `α · p ⊕ (1 − α) · q` is `(1 − α) · q ⊕ α · p`. -/
-theorem mix_comm (α : Set.Icc (0 : ℝ) 1) (p q : Lottery Z) :
-    mix α p q = mix ⟨1 - α, Set.mem_Icc.2 ⟨sub_nonneg.2 α.2.2, sub_le_self _ α.2.1⟩⟩ q p := by
-  ext z; simp only [weights_mix]; ring
+theorem mix_comm (α : unitInterval) (p q : Lottery Z) :
+    mix α p q = mix (unitInterval.symm α) q p := by
+  ext z; simp only [weights_mix, unitInterval.coe_symm_eq]; ring
 
 /-- For `β < α` with `α − β < 1`, `α · a ⊕ (1 − α) · b` is the mixture of `[a]`, with probability
 `t = α − β`, and some `β' · a ⊕ (1 − β') · b`; and `β · a ⊕ (1 − β) · b` is the same mixture with
 `[b]` in place of `[a]`. -/
-theorem mix_mix_single (a b : Z) {α β : Set.Icc (0 : ℝ) 1} (hβα : (β : ℝ) < α)
+theorem mix_mix_single (a b : Z) {α β : unitInterval} (hβα : (β : ℝ) < α)
     (hα : (α : ℝ) - β < 1) :
-    ∃ (t β' : Set.Icc (0 : ℝ) 1), (t : ℝ) = α - β ∧
+    ∃ (t β' : unitInterval), (t : ℝ) = α - β ∧
       mix α (.single a) (.single b) = mix t (.single a) (mix β' (.single a) (.single b)) ∧
       mix β (.single a) (.single b) = mix t (.single b) (mix β' (.single a) (.single b)) := by
   have h1 : (0 : ℝ) < 1 - (α - β) := by linarith
@@ -154,10 +165,10 @@ theorem weights_iConvexComb_apply (w : StdSimplex ℝ I) (f : I → Lottery Z) (
 
 /-- Compounding is affine in the weights: `(α · w ⊕ (1 − α) · w')`-compounding of `f` is the
 mixture of the `w`- and `w'`-compounds of `f`. -/
-theorem iConvexComb_mix (α : Set.Icc (0 : ℝ) 1) (w w' : StdSimplex ℝ I) (f : I → Lottery Z) :
+theorem iConvexComb_mix (α : unitInterval) (w w' : StdSimplex ℝ I) (f : I → Lottery Z) :
     (mix α w w').iConvexComb f = mix α (w.iConvexComb f) (w'.iConvexComb f) := by
   have h := (StdSimplex.affineMapMk (R := ℝ) f).isAffineMap.map_convexCombPair
-    α.2.1 (sub_nonneg.2 α.2.2) (add_sub_cancel _ _) w w'
+    (unitInterval.nonneg α) (unitInterval.one_sub_nonneg α) (add_sub_cancel _ _) w w'
   simpa only [StdSimplex.affineMapMk_apply, mix] using h
 
 /-! ### Decompositions -/
@@ -244,7 +255,7 @@ def degenerate : Set (Lottery Z) := Set.range StdSimplex.single
 
 /-- The lotteries `α · a ⊕ (1 − α) · b` over two prizes `a`, `b` (which may coincide). -/
 def binary : Set (Lottery Z) :=
-  Set.range fun x : Set.Icc (0 : ℝ) 1 × Z × Z => mix x.1 (.single x.2.1) (.single x.2.2)
+  Set.range fun x : unitInterval × Z × Z => mix x.1 (.single x.2.1) (.single x.2.2)
 
 theorem mem_degenerate : p ∈ degenerate ↔ ∃ z, StdSimplex.single z = p := Iff.rfl
 
@@ -253,11 +264,11 @@ theorem single_mem_degenerate (z : Z) : (StdSimplex.single z : Lottery Z) ∈ de
   ⟨z, rfl⟩
 
 theorem mem_binary :
-    p ∈ binary ↔ ∃ (α : Set.Icc (0 : ℝ) 1) (a b : Z), mix α (.single a) (.single b) = p :=
+    p ∈ binary ↔ ∃ (α : unitInterval) (a b : Z), mix α (.single a) (.single b) = p :=
   ⟨fun ⟨x, hx⟩ => ⟨x.1, x.2.1, x.2.2, hx⟩, fun ⟨α, a, b, h⟩ => ⟨(α, a, b), h⟩⟩
 
 @[simp]
-theorem mix_mem_binary (α : Set.Icc (0 : ℝ) 1) (a b : Z) :
+theorem mix_mem_binary (α : unitInterval) (a b : Z) :
     mix α (.single a) (.single b) ∈ (binary : Set (Lottery Z)) :=
   ⟨(α, a, b), rfl⟩
 
@@ -266,7 +277,71 @@ theorem degenerate_subset_binary : (degenerate : Set (Lottery Z)) ⊆ binary := 
   rintro _ ⟨z, rfl⟩
   exact ⟨(1, z, z), mix_one _ _⟩
 
+/-! ### Lotteries over a finite set as distributions -/
+
+section FinDist
+
+open MathEconLib.Probability
+
+variable [Fintype Z]
+
+/-- On a finite set of prizes, the distribution `d : FinDist Z` as a lottery, with the same
+probabilities. -/
+noncomputable def ofFinDist : FinDist Z ≃ Lottery Z where
+  toFun d := ⟨Finsupp.equivFunOnFinite.symm d.pmf, fun z => d.nonneg z, by
+    simp [Finsupp.sum_fintype]⟩
+  invFun p := ⟨p.weights, fun z => p.nonneg z, by simp⟩
+  left_inv d := by ext z; simp
+  right_inv p := StdSimplex.ext (Finsupp.equivFunOnFinite_symm_coe p.weights)
+
+@[simp]
+theorem weights_ofFinDist (d : FinDist Z) (z : Z) : (ofFinDist d).weights z = d z :=
+  congrFun (Finsupp.coe_equivFunOnFinite_symm d.pmf) z
+
+@[simp]
+theorem ofFinDist_symm_apply (p : Lottery Z) (z : Z) : ofFinDist.symm p z = p.weights z := by
+  simp [ofFinDist]; rfl
+
+@[simp]
+theorem ofFinDist_pure [DecidableEq Z] (z : Z) : ofFinDist (FinDist.pure z) = .single z := by
+  ext y; simp [Finsupp.single_apply]
+
+@[simp]
+theorem ofFinDist_mixture (α : unitInterval) (d₁ d₂ : FinDist Z) :
+    ofFinDist (FinDist.mixture α d₁ d₂) = mix α (ofFinDist d₁) (ofFinDist d₂) := by
+  ext z; simpa using FinDist.mixture_pmf α d₁ d₂ z
+
+end FinDist
+
 end Lottery
+
+section FinDist
+
+open MathEconLib.Probability
+
+variable {Z : Type u} [Fintype Z] [DecidableEq Z]
+
+/-- The degenerate lotteries `[z]`, `z ∈ Z`, as distributions. -/
+def degenerate : Set (FinDist Z) := Set.range FinDist.pure
+
+/-- The lotteries `α · a ⊕ (1 − α) · b` over two prizes `a`, `b` (which may coincide), as
+distributions. -/
+def binary : Set (FinDist Z) :=
+  Set.range fun x : unitInterval × Z × Z =>
+    FinDist.mixture x.1 (FinDist.pure x.2.1) (FinDist.pure x.2.2)
+
+@[simp]
+theorem image_ofFinDist_degenerate :
+    Lottery.ofFinDist '' degenerate = Lottery.degenerate (Z := Z) := by
+  simp only [degenerate, Lottery.degenerate, ← Set.range_comp, Function.comp_def,
+    Lottery.ofFinDist_pure]
+
+@[simp]
+theorem image_ofFinDist_binary : Lottery.ofFinDist '' binary = Lottery.binary (Z := Z) := by
+  simp only [binary, Lottery.binary, ← Set.range_comp, Function.comp_def,
+    Lottery.ofFinDist_mixture, Lottery.ofFinDist_pure]
+
+end FinDist
 
 end MathEconLib.DecisionTheory
 
@@ -288,7 +363,7 @@ example (b : Fin 3) : mix ⟨0.6, by norm_num, by norm_num⟩ (.single b) (.sing
 
 /-- The compound lottery `α · p ⊕ (1 − α) · q` of `p = 0.6 · W ⊕ 0.4 · L` and a lottery `q` with
 `q(W) = 0.2` yields `W` with probability `0.6α + 0.2(1 − α)`. -/
-example (α : Set.Icc (0 : ℝ) 1) (q : Lottery (Fin 3)) (hq : q.weights 0 = 0.2) :
+example (α : unitInterval) (q : Lottery (Fin 3)) (hq : q.weights 0 = 0.2) :
     (mix α (mix ⟨0.6, by norm_num, by norm_num⟩ (.single 0) (.single 2)) q).weights 0 =
       α * 0.6 + (1 - α) * 0.2 := by
   simp [hq]
@@ -297,7 +372,7 @@ example (p q : Lottery (Fin 2)) : mix 0 p q = q := mix_zero p q
 
 /-- A binary lottery has at most two prizes in its support (so the uniform lottery on three prizes
 is not binary). -/
-example (p : Lottery (Fin 3)) (hp : p ∈ binary) : p.weights.support.card ≤ 2 := by
+example (p : Lottery (Fin 3)) (hp : p ∈ Lottery.binary) : p.weights.support.card ≤ 2 := by
   classical
   obtain ⟨α, a, b, rfl⟩ := mem_binary.1 hp
   calc (mix α (.single a) (.single b)).weights.support.card
