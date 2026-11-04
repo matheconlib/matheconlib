@@ -17,7 +17,7 @@ A rule with a dictator is Pareto and IIA on every domain (Osborne and Rubinstein
 
 namespace MathEconLib.SocialChoice
 
-open MathEconLib.Preference
+open MathEconLib.Preferences
 
 universe u v
 

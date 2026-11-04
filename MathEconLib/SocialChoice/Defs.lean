@@ -5,7 +5,7 @@ Authors: Ritik Jain
 -/
 module
 
-public import MathEconLib.Preference.Profile
+public import MathEconLib.Preferences.Profile
 public import Mathlib.Data.Fintype.Card
 
 /-!
@@ -23,7 +23,7 @@ Social welfare functions and their axioms, each on an explicit domain `D` of pro
 
 namespace MathEconLib.SocialChoice
 
-open MathEconLib.Preference
+open MathEconLib.Preferences
 
 universe u v
 
@@ -99,7 +99,7 @@ end MathEconLib.SocialChoice
 
 section Examples
 
-open MathEconLib.Preference MathEconLib.SocialChoice
+open MathEconLib.Preferences MathEconLib.SocialChoice
 
 example : supporters (fun (_ : Fin 2) (a b : Bool) => b ≤ a) true false = Finset.univ := by
   ext i

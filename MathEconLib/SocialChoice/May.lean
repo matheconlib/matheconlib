@@ -35,7 +35,7 @@ positively responsive on the linear profiles if and only if it is majority rule 
 
 namespace MathEconLib.SocialChoice
 
-open MathEconLib.Preference
+open MathEconLib.Preferences
 
 universe u v
 
@@ -205,7 +205,7 @@ end MathEconLib.SocialChoice
 
 section Examples
 
-open MathEconLib.Preference MathEconLib.SocialChoice
+open MathEconLib.Preferences MathEconLib.SocialChoice
 
 example (F : SocialWelfareFunction (Fin 3) Bool)
     (hF : ∀ P ∈ linearProfiles (Fin 3) Bool, IsComplete (F P))

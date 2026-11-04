@@ -6,7 +6,9 @@ Authors: Ritik Jain
 module
 
 public import MathEconLib.SocialChoice.Defs
-public import MathEconLib.Preference.Basic
+public import MathEconLib.Preferences.Relation
+public import Mathlib.Order.Prod.Lex.Basic
+public import Mathlib.SetTheory.Cardinal.Order
 
 /-!
 # Aggregating preferences: basic properties
@@ -29,7 +31,7 @@ Linear profiles, supporters, and independence of irrelevant alternatives on line
 
 namespace MathEconLib.SocialChoice
 
-open MathEconLib.Preference
+open MathEconLib.Preferences
 
 universe u v
 
@@ -148,14 +150,14 @@ theorem IsIIAOn.strictPart_iff_of_strictPart_iff (hF : IsIIAOn F D) (hD : D ⊆ 
   have h' : ∀ i, StrictPart (P i) y x ↔ StrictPart (Q i) y x := fun i => by
     rw [strictPart_iff_not_strictPart_of_mem_linearProfiles (hD hP) hxy,
       strictPart_iff_not_strictPart_of_mem_linearProfiles (hD hQ) hxy, h i]
-  rw [MathEconLib.Preference.strictPart_iff, MathEconLib.Preference.strictPart_iff,
+  rw [MathEconLib.Preferences.strictPart_iff, MathEconLib.Preferences.strictPart_iff,
     hF.iff_of_strictPart_iff hD hP hQ hxy h, hF.iff_of_strictPart_iff hD hP hQ (Ne.symm hxy) h']
 
 end MathEconLib.SocialChoice
 
 section Examples
 
-open MathEconLib.Preference MathEconLib.SocialChoice
+open MathEconLib.Preferences MathEconLib.SocialChoice
 
 example : Profile.ofUtilities (fun (i : Fin 2) (b : Bool) => if (i = 0) = b then 1 else 0)
     ∈ linearProfiles (Fin 2) Bool :=

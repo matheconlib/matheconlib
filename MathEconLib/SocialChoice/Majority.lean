@@ -6,6 +6,7 @@ Authors: Ritik Jain
 module
 
 public import MathEconLib.SocialChoice.Basic
+public import Mathlib.Data.Fin.VecNotation
 public import Mathlib.Tactic.FinCases
 
 /-!
@@ -29,7 +30,7 @@ Properties of simple majority rule `majority`, and the Condorcet paradox.
 
 namespace MathEconLib.SocialChoice
 
-open MathEconLib.Preference
+open MathEconLib.Preferences
 
 universe u v
 
@@ -39,7 +40,7 @@ variable {N : Type u} {X : Type v} [Fintype N] {D : Set (Profile N X)} {P Q : Pr
 /-- Strict majority: strictly more agents prefer `x` to `y` than `y` to `x`. -/
 @[simp] theorem strictPart_majority_iff :
     StrictPart (majority P) x y ↔ (supporters P y x).card < (supporters P x y).card := by
-  rw [MathEconLib.Preference.strictPart_iff, majority_apply, majority_apply, not_le]
+  rw [MathEconLib.Preferences.strictPart_iff, majority_apply, majority_apply, not_le]
   exact ⟨fun h => h.2, fun h => ⟨h.le, h⟩⟩
 
 @[simp]
@@ -61,9 +62,9 @@ theorem isNeutralOn_majority (D : Set (Profile N X)) : IsNeutralOn (majority (X 
 theorem isIIAOn_majority (D : Set (Profile N X)) : IsIIAOn (majority (X := X)) D := by
   intro P _ Q _ x y h
   have hxy : supporters P x y = supporters Q x y := by
-    ext i; simp only [mem_supporters, MathEconLib.Preference.strictPart_iff, (h i).1, (h i).2]
+    ext i; simp only [mem_supporters, MathEconLib.Preferences.strictPart_iff, (h i).1, (h i).2]
   have hyx : supporters P y x = supporters Q y x := by
-    ext i; simp only [mem_supporters, MathEconLib.Preference.strictPart_iff, (h i).1, (h i).2]
+    ext i; simp only [mem_supporters, MathEconLib.Preferences.strictPart_iff, (h i).1, (h i).2]
   rw [majority_apply, majority_apply, hxy, hyx]
 
 /-- Majority rule is Pareto on every domain when there is at least one agent. -/
@@ -131,7 +132,7 @@ end MathEconLib.SocialChoice
 
 section Examples
 
-open MathEconLib.Preference MathEconLib.SocialChoice
+open MathEconLib.Preferences MathEconLib.SocialChoice
 
 example : ∃ P ∈ linearProfiles (Fin 3) (Fin 3), ¬ IsTransitive (majority P) :=
   exists_mem_linearProfiles_not_isTransitive_majority (a := 0) (b := 1) (c := 2)

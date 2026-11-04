@@ -32,7 +32,7 @@ relation is a preference relation at every linear profile is dictatorial on the 
 
 namespace MathEconLib.SocialChoice
 
-open MathEconLib.Preference
+open MathEconLib.Preferences
 
 universe u v
 
@@ -281,7 +281,7 @@ end MathEconLib.SocialChoice
 
 section Examples
 
-open MathEconLib.Preference MathEconLib.SocialChoice
+open MathEconLib.Preferences MathEconLib.SocialChoice
 
 /-- By Arrow's theorem, majority rule on `Fin 3` is not always a preference relation. -/
 example : ¬ ∀ P ∈ linearProfiles (Fin 3) (Fin 3), IsPreferenceRelation (majority P) := by
