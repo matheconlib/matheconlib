@@ -6,7 +6,7 @@ Authors: Ritik Jain
 module
 
 public import MathEconLib.DecisionTheory.Lottery
-public import MathEconLib.Preference.Basic
+public import MathEconLib.Preferences.Relation
 
 /-!
 # Continuity of preferences over lotteries
@@ -27,7 +27,7 @@ A relation `≿` over lotteries is *continuous in mixtures* on `S` if, for `p �
 
 namespace MathEconLib.DecisionTheory
 
-open Convexity MathEconLib.Preference
+open Convexity MathEconLib.Preferences
 
 universe u
 
@@ -103,7 +103,7 @@ end MathEconLib.DecisionTheory
 section Examples
 
 open MathEconLib.DecisionTheory (Lottery)
-open MathEconLib.DecisionTheory.Lottery MathEconLib.Preference Convexity
+open MathEconLib.DecisionTheory.Lottery MathEconLib.Preferences Convexity
 
 example : IsMixtureContinuous fun _ _ : Lottery (Fin 3) => True :=
   isMixtureContinuousOn_of_not_exists fun ⟨_, _, _, _, _, _, h, _⟩ => h.2 trivial

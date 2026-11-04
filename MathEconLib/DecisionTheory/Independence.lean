@@ -6,7 +6,7 @@ Authors: Ritik Jain
 module
 
 public import MathEconLib.DecisionTheory.Lottery
-public import MathEconLib.Preference.Basic
+public import MathEconLib.Preferences.Relation
 
 /-!
 # The independence property
@@ -33,7 +33,7 @@ public import MathEconLib.Preference.Basic
 
 namespace MathEconLib.DecisionTheory
 
-open Convexity MathEconLib.Preference
+open Convexity MathEconLib.Preferences
 
 universe u
 
@@ -78,14 +78,14 @@ theorem IsIndependentOn.strictPart_iff (hPQ : IsIndependentOn P Q R) (hQP : IsIn
     {p q : Lottery Z} (hp : p ∈ P) (hq : q ∈ Q) (r : Lottery Z) {α : unitInterval}
     (hα : 0 < (α : ℝ)) :
     StrictPart R p q ↔ StrictPart R (mix α p r) (mix α q r) := by
-  rw [Preference.strictPart_iff, Preference.strictPart_iff, hPQ.rel_iff hp hq r hα,
+  rw [Preferences.strictPart_iff, Preferences.strictPart_iff, hPQ.rel_iff hp hq r hα,
     hQP.rel_iff hq hp r hα]
 
 theorem IsIndependentOn.indiff_iff (hPQ : IsIndependentOn P Q R) (hQP : IsIndependentOn Q P R)
     {p q : Lottery Z} (hp : p ∈ P) (hq : q ∈ Q) (r : Lottery Z) {α : unitInterval}
     (hα : 0 < (α : ℝ)) :
     Indiff R p q ↔ Indiff R (mix α p r) (mix α q r) := by
-  rw [Preference.indiff_iff, Preference.indiff_iff, hPQ.rel_iff hp hq r hα,
+  rw [Preferences.indiff_iff, Preferences.indiff_iff, hPQ.rel_iff hp hq r hα,
     hQP.rel_iff hq hp r hα]
 
 /-! ### Monotonicity -/
@@ -238,7 +238,7 @@ end MathEconLib.DecisionTheory
 section Examples
 
 open MathEconLib.DecisionTheory (Lottery)
-open MathEconLib.DecisionTheory.Lottery MathEconLib.Preference Convexity
+open MathEconLib.DecisionTheory.Lottery MathEconLib.Preferences Convexity
 
 /-- Ranking lotteries by the probability of the prize `0` satisfies independence. -/
 example : IsIndependent fun p q : Lottery (Fin 2) => q.weights 0 ≤ p.weights 0 := by

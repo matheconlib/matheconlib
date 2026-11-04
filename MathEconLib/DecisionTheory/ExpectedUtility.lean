@@ -7,7 +7,7 @@ module
 
 public import MathEconLib.DecisionTheory.Independence
 public import MathEconLib.DecisionTheory.Continuity
-public import MathEconLib.Preference.Utility
+public import MathEconLib.Preferences.Representation.Relation
 public import Mathlib.Data.Fintype.Lattice
 public import Mathlib.Tactic.LinearCombination
 public import MathEconLib.Probability.FinDist.Expect
@@ -36,7 +36,7 @@ independent (von Neumann–Morgenstern).
 
 namespace MathEconLib.DecisionTheory
 
-open Convexity MathEconLib.Preference
+open Convexity MathEconLib.Preferences
 
 universe u v
 
@@ -414,7 +414,7 @@ end MathEconLib.DecisionTheory
 section Examples
 
 open MathEconLib.DecisionTheory (Lottery)
-open MathEconLib.DecisionTheory.Lottery MathEconLib.Preference Convexity
+open MathEconLib.DecisionTheory.Lottery MathEconLib.Preferences Convexity
 
 example : expectedUtility (fun x : ℝ => x)
     (mix ⟨0.25, by norm_num, by norm_num⟩ (.single 3000) (.single 0)) = 750 := by
