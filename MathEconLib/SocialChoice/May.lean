@@ -12,44 +12,23 @@ public import Mathlib.Logic.Equiv.Basic
 /-!
 # May's theorem
 
-With two alternatives, a social welfare function whose social relation is complete at every
-linear profile is anonymous, neutral and positively responsive on the linear profiles if and only
-if it is majority rule there.
+With two alternatives, a rule complete at every linear profile is anonymous, neutral and
+positively responsive on the linear profiles if and only if it is majority rule there.
 
 ## Main statements
 
 * `eqOn_majority_of_isAnonymousOn_of_isNeutralOn_of_isPositivelyResponsiveOn`: **May's theorem**.
-* `isAnonymousOn_and_isNeutralOn_and_isPositivelyResponsiveOn_iff_eqOn_majority`: the
-  characterization, with its converse.
+* `isAnonymousOn_and_isNeutralOn_and_isPositivelyResponsiveOn_iff_eqOn_majority`: with converse.
 
 ## Implementation notes
 
-* Two alternatives are two distinct elements `a`, `b` of an arbitrary type with
-  `∀ z, z = a ∨ z = b`.
-* The domain is the linear profiles. May's domain also allows indifference.
-* Positive responsiveness (`IsPositivelyResponsiveOn`) lets several agents move towards `x` at
-  once; May's condition moves one agent. On two alternatives the two agree, by repeating May's
-  step.
-* Osborne and Rubinstein's Problem 1 of Chapter 20 assumes an odd number of agents and uses their
-  Definition 20.5 of positive responsiveness; neither is used here.
-* The proof: on two alternatives a linear profile is determined by the set of agents who prefer
-  `a`, so by anonymity the social relation depends only on the number of these agents; neutrality
-  exchanges the two numbers, and positive responsiveness, applied once to a profile in which the
-  supporters of `x` grow from the smaller number to the larger, breaks the tie.
+* The domain is the linear profiles; May's domain also allows indifference.
 
 ## References
 
-Kenneth O. May (1952), *A set of independent necessary and sufficient conditions for simple
-majority decision*, Econometrica **20**(4), 680–684.
-[DOI: 10.2307/1907651](https://doi.org/10.2307/1907651).
-
-Martin J. Osborne and Ariel Rubinstein (2023), *Models in Microeconomic Theory*, expanded second
-edition, Open Book Publishers, Chapter 20, Problem 1.
-[DOI: 10.11647/OBP.0361](https://doi.org/10.11647/OBP.0361).
-
-## Tags
-
-May's theorem, majority rule, anonymity, neutrality, positive responsiveness
+* K. O. May, *A set of independent necessary and sufficient conditions for simple majority
+  decision*, Econometrica **20** (1952), 680–684
+* M. J. Osborne, A. Rubinstein, *Models in Microeconomic Theory* (2023), Chapter 20, Problem 1
 -/
 
 @[expose] public section
@@ -64,8 +43,7 @@ variable {N : Type u} {X : Type v} [Fintype N] {F : SocialWelfareFunction N X} {
   {P Q : Profile N X}
 
 omit [Fintype N] in
-/-- On two alternatives, an agent's linear preference is determined by whether she prefers `x`
-to `y`. -/
+/-- On two alternatives, a linear preference is determined by whether `x ≻ y`. -/
 private theorem eq_of_strictPart_iff_of_two (hxy : x ≠ y) (hX : ∀ z, z = x ∨ z = y)
     (hP : P ∈ linearProfiles N X) (hQ : Q ∈ linearProfiles N X) {i j : N}
     (h : StrictPart (P i) x y ↔ StrictPart (Q j) x y) : P i = Q j := by
@@ -78,8 +56,7 @@ private theorem eq_of_strictPart_iff_of_two (hxy : x ≠ y) (hX : ∀ z, z = x �
       strictPart_iff_not_strictPart_of_mem_linearProfiles hQ hxy, h]
   · simp
 
-/-- On two alternatives, by anonymity the social relation depends only on the number of agents
-who prefer `x` to `y`. -/
+/-- By anonymity, the social relation depends only on the number of supporters of `x`. -/
 private theorem eq_of_card_supporters_eq (hxy : x ≠ y) (hX : ∀ z, z = x ∨ z = y)
     (hA : IsAnonymousOn F (linearProfiles N X)) (hP : P ∈ linearProfiles N X)
     (hQ : Q ∈ linearProfiles N X) (h : (supporters P x y).card = (supporters Q x y).card) :
@@ -111,8 +88,7 @@ private theorem eq_of_card_supporters_eq (hxy : x ≠ y) (hX : ∀ z, z = x ∨ 
       exact this.symm)
   rw [hQσ, hA σ hP (permuteAgents_mem_linearProfiles hP σ)]
 
-/-- Relabelling by the transposition of the two alternatives: neutrality reverses the social
-comparison, and the supporters of `x` become those of `y`. -/
+/-- Swapping `x` and `y` reverses the social comparison and the supporters. -/
 private theorem neutral_swap [DecidableEq X] (hN : IsNeutralOn F (linearProfiles N X))
     (hP : P ∈ linearProfiles N X) :
     (F (Profile.relabel (Equiv.swap x y) P) x y ↔ F P y x) ∧
@@ -183,9 +159,8 @@ private theorem indiff_of_card_eq (hxy : x ≠ y) (hX : ∀ z, z = x ∨ z = y)
   · exact ⟨h, hF'.1 h⟩
   · exact ⟨hF'.2 h, h⟩
 
-/-- **May's theorem.** With two alternatives, a social welfare function whose social relation is
-complete at every linear profile, and which is anonymous, neutral and positively responsive on the
-linear profiles, is majority rule on the linear profiles. -/
+/-- **May's theorem**: on two alternatives, an anonymous, neutral, positively responsive rule
+that is complete on linear profiles is majority rule there. -/
 theorem eqOn_majority_of_isAnonymousOn_of_isNeutralOn_of_isPositivelyResponsiveOn {a b : X}
     (hab : a ≠ b) (hX : ∀ z, z = a ∨ z = b)
     (hF : ∀ P ∈ linearProfiles N X, IsComplete (F P))
@@ -210,9 +185,7 @@ theorem eqOn_majority_of_isAnonymousOn_of_isNeutralOn_of_isPositivelyResponsiveO
   · exact pair hab.symm fun z => (hX z).symm
   · exact ⟨fun _ => majority_self P _, fun _ => (hF P hP).isReflexive.refl _⟩
 
-/-- May's characterization of majority rule: with two alternatives, a social welfare function
-whose social relation is complete at every linear profile is anonymous, neutral and positively
-responsive on the linear profiles if and only if it agrees with majority rule there. -/
+/-- May's characterization: on two alternatives, the three axioms hold iff the rule is majority. -/
 theorem isAnonymousOn_and_isNeutralOn_and_isPositivelyResponsiveOn_iff_eqOn_majority {a b : X}
     (hab : a ≠ b) (hX : ∀ z, z = a ∨ z = b)
     (hF : ∀ P ∈ linearProfiles N X, IsComplete (F P)) :
@@ -234,7 +207,6 @@ section Examples
 
 open MathEconLib.Preference MathEconLib.SocialChoice
 
-/-- May's theorem on `Bool` with three agents. -/
 example (F : SocialWelfareFunction (Fin 3) Bool)
     (hF : ∀ P ∈ linearProfiles (Fin 3) Bool, IsComplete (F P))
     (hA : IsAnonymousOn F (linearProfiles (Fin 3) Bool))
@@ -244,8 +216,7 @@ example (F : SocialWelfareFunction (Fin 3) Bool)
   eqOn_majority_of_isAnonymousOn_of_isNeutralOn_of_isPositivelyResponsiveOn (a := true)
     (b := false) (by decide) (fun z => by cases z <;> simp) hF hA hN hR
 
-/-- The converse direction: majority rule on `Bool` is anonymous, neutral and positively
-responsive on the linear profiles. -/
+/-- The converse direction, on `Bool` with four agents. -/
 example : IsAnonymousOn (majority (N := Fin 4) (X := Bool)) (linearProfiles _ _) ∧
     IsNeutralOn (majority (N := Fin 4) (X := Bool)) (linearProfiles _ _) ∧
     IsPositivelyResponsiveOn (majority (N := Fin 4) (X := Bool)) (linearProfiles _ _) :=

@@ -11,33 +11,18 @@ public import MathEconLib.Preference.Basic
 /-!
 # Aggregating preferences: basic properties
 
-Linear profiles, and independence of irrelevant alternatives on them.
+Linear profiles, supporters, and independence of irrelevant alternatives on linear profiles.
 
 ## Main statements
 
-* On `linearProfiles`, for `x ≠ y`: `x ≿ᵢ y` is `x ≻ᵢ y`, `y ≿ᵢ x` is `¬ x ≻ᵢ y`, and every agent
-  strictly prefers `x` to `y` or `y` to `x`.
-* `permuteAgents_mem_linearProfiles`, `relabel_mem_linearProfiles`: the linear profiles are
-  closed under permuting the agents and relabelling the alternatives.
-* `card_supporters_add_card_supporters`: on a linear profile, the supporters of `x` against `y`
-  and of `y` against `x` partition the agents.
-* `card_supporters_permuteAgents`, `supporters_relabel`: how the supporters move under the two
-  symmetries.
-* `exists_mem_linearProfiles_strictPart_of_lt`: for every family of ranks `r i : X → ℕ` there is
-  a linear profile in which agent `i` strictly prefers `a` to `b` whenever `r i b < r i a`.
-* `IsIIAOn.iff_of_strictPart_iff`, `IsIIAOn.strictPart_iff_of_strictPart_iff`: on linear
-  profiles, independence of irrelevant alternatives implies Osborne and Rubinstein's form, which
-  compares only the strict preferences `x ≻ᵢ y`.
+* `card_supporters_add_card_supporters`: on a linear profile, for `x ≠ y`, supporters of `x` and
+  of `y` partition the agents.
+* `exists_mem_linearProfiles_strictPart_of_lt`: every family of ranks has a linear profile.
+* `IsIIAOn.iff_of_strictPart_iff`: on linear profiles, IIA implies Osborne and Rubinstein's form.
 
 ## References
 
-Martin J. Osborne and Ariel Rubinstein (2023), *Models in Microeconomic Theory*, expanded second
-edition, Open Book Publishers, Sections 20.2–20.3.
-[DOI: 10.11647/OBP.0361](https://doi.org/10.11647/OBP.0361).
-
-## Tags
-
-social welfare function, linear profile, independence of irrelevant alternatives
+* M. J. Osborne, A. Rubinstein, *Models in Microeconomic Theory* (2023), Sections 20.2–20.3
 -/
 
 @[expose] public section
@@ -50,8 +35,6 @@ universe u v
 
 variable {N : Type u} {X : Type v} {F G : SocialWelfareFunction N X} {D D' : Set (Profile N X)}
   {P Q : Profile N X} {x y : X}
-
-/-! ### Linear profiles -/
 
 theorem rel_iff_strictPart_of_mem_linearProfiles (hP : P ∈ linearProfiles N X) (hxy : x ≠ y)
     (i : N) : P i x y ↔ StrictPart (P i) x y := by
@@ -91,8 +74,7 @@ theorem eq_of_mem_linearProfiles_of_strictPart_iff (hP : P ∈ linearProfiles N 
   · rw [rel_iff_strictPart_of_mem_linearProfiles hP hab, h a b,
       ← rel_iff_strictPart_of_mem_linearProfiles hQ hab]
 
-/-- Every family of ranks is respected by a linear profile: there is `P ∈ linearProfiles N X` in
-which agent `i` strictly prefers `a` to `b` whenever `r i a > r i b`. -/
+/-- Some linear profile has `a ≻ᵢ b` whenever `r i b < r i a`. -/
 theorem exists_mem_linearProfiles_strictPart_of_lt (r : N → X → ℕ) :
     ∃ P ∈ linearProfiles N X, ∀ i a b, r i b < r i a → StrictPart (P i) a b := by
   classical
@@ -105,8 +87,6 @@ theorem exists_mem_linearProfiles_strictPart_of_lt (r : N → X → ℕ) :
     fun i a b h => ?_⟩
   rw [Profile.ofUtilities_apply, strictPart_utilityRel_iff]
   exact Prod.Lex.toLex_lt_toLex.2 (Or.inl h)
-
-/-! ### Supporters -/
 
 section Supporters
 
@@ -125,7 +105,6 @@ theorem disjoint_supporters (P : Profile N X) (x y : X) :
     Disjoint (supporters P x y) (supporters P y x) :=
   Finset.disjoint_left.2 fun _ h₁ h₂ => (mem_supporters.1 h₁).asymm (mem_supporters.1 h₂)
 
-/-- On a linear profile, for `x ≠ y`, every agent strictly prefers `x` to `y` or `y` to `x`. -/
 theorem supporters_union_supporters [DecidableEq N] (hP : P ∈ linearProfiles N X) (hxy : x ≠ y) :
     supporters P x y ∪ supporters P y x = Finset.univ :=
   Finset.eq_univ_of_forall fun i =>
@@ -139,8 +118,7 @@ theorem card_supporters_add_card_supporters (hP : P ∈ linearProfiles N X) (hxy
   rw [← Finset.card_union_of_disjoint (disjoint_supporters P x y),
     supporters_union_supporters hP hxy, Finset.card_univ]
 
-/-- If every member of `S` strictly prefers `x` to `y` and every other agent strictly prefers `y`
-to `x`, the supporters of `x` against `y` are `S`. -/
+/-- If exactly the members of `S` prefer `x` to `y`, the supporters of `x` against `y` are `S`. -/
 theorem supporters_eq_of_forall {S : Finset N} (h₁ : ∀ i ∈ S, StrictPart (P i) x y)
     (h₂ : ∀ i ∉ S, StrictPart (P i) y x) : supporters P x y = S := by
   ext i
@@ -151,11 +129,8 @@ theorem supporters_eq_of_forall {S : Finset N} (h₁ : ∀ i ∈ S, StrictPart (
 
 end Supporters
 
-/-! ### Independence of irrelevant alternatives through strict preferences -/
-
-/-- On linear profiles, independence of irrelevant alternatives implies Osborne and Rubinstein's
-form (Definition 20.7): for `x ≠ y`, if each agent strictly prefers `x` to `y` at `P` exactly when
-she does at `Q`, society compares `x` with `y` the same way. -/
+/-- On linear profiles, IIA implies Osborne and Rubinstein's form (Definition 20.7), which compares
+only the strict preferences `x ≻ᵢ y`. -/
 theorem IsIIAOn.iff_of_strictPart_iff (hF : IsIIAOn F D) (hD : D ⊆ linearProfiles N X)
     (hP : P ∈ D) (hQ : Q ∈ D) (hxy : x ≠ y)
     (h : ∀ i, StrictPart (P i) x y ↔ StrictPart (Q i) x y) : F P x y ↔ F Q x y :=
@@ -178,24 +153,18 @@ theorem IsIIAOn.strictPart_iff_of_strictPart_iff (hF : IsIIAOn F D) (hD : D ⊆ 
 
 end MathEconLib.SocialChoice
 
-/-! ### Worked examples -/
-
 section Examples
 
 open MathEconLib.Preference MathEconLib.SocialChoice
 
-/-- The profile of two agents with opposite preferences over `Bool` (agent `0` ranks `true`
-first) is a linear profile. -/
 example : Profile.ofUtilities (fun (i : Fin 2) (b : Bool) => if (i = 0) = b then 1 else 0)
     ∈ linearProfiles (Fin 2) Bool :=
   ⟨Profile.isPreferenceRelation_ofUtilities _, Profile.isStrict_ofUtilities (by decide)⟩
 
-/-- Universal indifference is not a linear profile: it is not antisymmetric. -/
 example : (fun (_ : Fin 1) (_ _ : Bool) => True) ∉ linearProfiles (Fin 1) Bool :=
   fun h => Bool.noConfusion ((h.2 0).antisymm (x := true) (y := false) trivial trivial)
 
-/-- Under external preferences (a constant rule, Osborne and Rubinstein's Example 20.4) society
-ignores the profile. -/
+/-- A constant rule (Osborne and Rubinstein's Example 20.4) ignores the profile. -/
 example (R : Bool → Bool → Prop) (P : Profile (Fin 2) Bool) :
     (Function.const _ R : SocialWelfareFunction (Fin 2) Bool) P = R :=
   rfl

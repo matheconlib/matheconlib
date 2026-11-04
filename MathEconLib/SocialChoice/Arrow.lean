@@ -13,51 +13,19 @@ public import Mathlib.Data.Finset.Card
 /-!
 # Arrow's impossibility theorem
 
-With finitely many agents and at least three alternatives, a social welfare function whose social
-relation is a preference relation at every linear profile, and which satisfies the Pareto property
-and independence of irrelevant alternatives on the linear profiles, has a dictator there.
+With finitely many agents and three distinct alternatives, a Pareto and IIA rule whose social
+relation is a preference relation at every linear profile is dictatorial on the linear profiles.
 
 ## Main statements
 
-* `isDictatorialOn_of_isParetoOn_of_isIIAOn`: **Arrow's impossibility theorem**, for three
-  distinct alternatives `a`, `b`, `c`.
-* `isParetoOn_and_isIIAOn_iff_isDictatorialOn`: Osborne and Rubinstein's Proposition 20.1: on the
-  linear profiles, the Pareto property and independence of irrelevant alternatives hold if and
-  only if the rule is dictatorial.
-* `isDictatorialOn_of_isParetoOn_of_isIIAOn_of_two_lt_card`: the theorem for a finite type of at
-  least three alternatives.
-
-## Implementation notes
-
-* The proof is Sen's, by decisive coalitions, not Osborne and Rubinstein's (Geanakoplos's
-  pivotal-agent argument). A coalition `G` is decisive for `x` against `y` if society strictly
-  prefers `x` to `y` whenever every member of `G` does. (1) Field expansion: if `G` is decisive
-  for `x` against `y` at the profiles where everyone outside `G` prefers `y` to `x`, it is
-  decisive for every pair; this uses a third alternative, transitivity, Pareto and independence.
-  (2) Contraction: a coalition decisive for every pair, with at least two members, has a proper
-  part decisive for every pair; this uses completeness. (3) The set of all agents is decisive
-  (Pareto), so some single agent is, and she is a dictator.
-* The alternatives form an arbitrary type `X`, not necessarily finite, with three distinct
-  elements. The agents are finite (`[Finite N]`), as Arrow's theorem requires.
-* The social relation is assumed to be a preference relation only at linear profiles
-  (`∀ P ∈ linearProfiles N X, IsPreferenceRelation (F P)`); Osborne and Rubinstein's preference
-  aggregation functions satisfy this by definition.
+* `isDictatorialOn_of_isParetoOn_of_isIIAOn`: **Arrow's impossibility theorem**.
+* `isParetoOn_and_isIIAOn_iff_isDictatorialOn`: Osborne and Rubinstein's Proposition 20.1.
 
 ## References
 
-Kenneth J. Arrow (1951), *Social Choice and Individual Values*, Wiley, Chapter V. Arrow's original
-conditions are positive association and non-imposition rather than the Pareto property.
-
-Amartya K. Sen (1970), *Collective Choice and Social Welfare*, Holden-Day, Chapter 3* (the proof
-by decisive coalitions).
-
-Martin J. Osborne and Ariel Rubinstein (2023), *Models in Microeconomic Theory*, expanded second
-edition, Open Book Publishers, Proposition 20.1.
-[DOI: 10.11647/OBP.0361](https://doi.org/10.11647/OBP.0361).
-
-## Tags
-
-Arrow's impossibility theorem, social welfare function, dictator, decisive coalition
+* K. J. Arrow, *Social Choice and Individual Values*, Wiley (1951)
+* A. K. Sen, *Collective Choice and Social Welfare*, Holden-Day (1970), Chapter 3* (the proof)
+* M. J. Osborne, A. Rubinstein, *Models in Microeconomic Theory* (2023), Proposition 20.1
 -/
 
 @[expose] public section
@@ -70,12 +38,10 @@ universe u v
 
 variable {N : Type u} {X : Type v} {F : SocialWelfareFunction N X}
 
-/-- Closes a comparison of two ranks written with `if … then … else`, from the hypotheses that
-decide the conditions. -/
+/-- Closes a comparison of two ranks written with `if … then … else`. -/
 local macro "rank_tac" : tactic => `(tactic| (split_ifs <;> first | omega | contradiction))
 
-/-- `G` is decisive for `x` against `y`: at every linear profile at which every member of `G`
-strictly prefers `x` to `y`, society strictly prefers `x` to `y`. -/
+/-- `G` is decisive for `x` against `y`: if all of `G` prefer `x` to `y`, so does society. -/
 private def Decisive (F : SocialWelfareFunction N X) (G : Set N) (x y : X) : Prop :=
   ∀ P ∈ linearProfiles N X, (∀ i ∈ G, StrictPart (P i) x y) → StrictPart (F P) x y
 
@@ -89,8 +55,7 @@ private theorem weaklyDecisive_of_decisive {G : Set N} {x y : X} (h : Decisive F
     WeaklyDecisive F G x y :=
   fun P hP hG _ => h P hP hG
 
-/-- Field expansion to the right: weakly decisive for `a` against `b` gives decisive for `a`
-against any third `c`. -/
+/-- Field expansion: weakly decisive for `a` against `b` gives decisive for `a` against `c`. -/
 private theorem decisive_left_of_weaklyDecisive
     (hF : ∀ P ∈ linearProfiles N X, IsPreferenceRelation (F P))
     (hPar : IsParetoOn F (linearProfiles N X)) (hIIA : IsIIAOn F (linearProfiles N X))
@@ -121,8 +86,7 @@ private theorem decisive_left_of_weaklyDecisive
     · exact ⟨fun h => ((hr i c a (by rw [ra, rc]; rank_tac)).asymm h).elim,
         fun h => (hs h).elim⟩
 
-/-- Field expansion to the left: weakly decisive for `a` against `b` gives decisive for any third
-`c` against `b`. -/
+/-- Field expansion: weakly decisive for `a` against `b` gives decisive for `c` against `b`. -/
 private theorem decisive_right_of_weaklyDecisive
     (hF : ∀ P ∈ linearProfiles N X, IsPreferenceRelation (F P))
     (hPar : IsParetoOn F (linearProfiles N X)) (hIIA : IsIIAOn F (linearProfiles N X))
@@ -153,8 +117,7 @@ private theorem decisive_right_of_weaklyDecisive
     · exact ⟨fun h => ((hr i b c (by rw [rb, rc]; rank_tac)).asymm h).elim,
         fun h => (hs h).elim⟩
 
-/-- Field expansion: with a third alternative for every pair, a coalition weakly decisive for one
-pair is decisive for every pair. -/
+/-- Field expansion: a coalition weakly decisive for one pair is decisive for every pair. -/
 private theorem decisive_of_weaklyDecisive
     (hF : ∀ P ∈ linearProfiles N X, IsPreferenceRelation (F P))
     (hPar : IsParetoOn F (linearProfiles N X)) (hIIA : IsIIAOn F (linearProfiles N X))
@@ -237,10 +200,8 @@ private theorem decisive_singleton_or_decisive_erase [DecidableEq N]
         rcases hjG with hjG | hjG <;> rank_tac)
       exact ⟨fun h => (hPj.asymm h).elim, fun h => (hQj.asymm h).elim⟩
 
-/-- **Arrow's impossibility theorem.** With finitely many agents and three distinct alternatives,
-a social welfare function whose social relation is a preference relation at every linear profile,
-and which satisfies the Pareto property and independence of irrelevant alternatives on the linear
-profiles, has a dictator on the linear profiles. -/
+/-- **Arrow's impossibility theorem**: a Pareto, IIA rule with transitive complete social relations
+on linear profiles, with finitely many agents and three alternatives, is dictatorial. -/
 theorem isDictatorialOn_of_isParetoOn_of_isIIAOn [Finite N] {a b c : X} (hab : a ≠ b)
     (hac : a ≠ c) (hbc : b ≠ c) (hF : ∀ P ∈ linearProfiles N X, IsPreferenceRelation (F P))
     (hPar : IsParetoOn F (linearProfiles N X)) (hIIA : IsIIAOn F (linearProfiles N X)) :
@@ -297,10 +258,8 @@ theorem isDictatorialOn_of_isParetoOn_of_isIIAOn [Finite N] {a b c : X} (hab : a
     · exact ⟨fun h' => ((hi y x (Ne.symm hxy) P hP (by simpa using h)).2 h').elim,
         fun h' => (h.2 h').elim⟩
 
-/-- Osborne and Rubinstein's Proposition 20.1: with finitely many agents and three distinct
-alternatives, a social welfare function whose social relation is a preference relation at every
-linear profile satisfies the Pareto property and independence of irrelevant alternatives on the
-linear profiles if and only if it is dictatorial there. -/
+/-- Osborne and Rubinstein's **Proposition 20.1**: on linear profiles, Pareto and IIA hold iff the
+rule is dictatorial. -/
 theorem isParetoOn_and_isIIAOn_iff_isDictatorialOn [Finite N] {a b c : X} (hab : a ≠ b)
     (hac : a ≠ c) (hbc : b ≠ c) (hF : ∀ P ∈ linearProfiles N X, IsPreferenceRelation (F P)) :
     IsParetoOn F (linearProfiles N X) ∧ IsIIAOn F (linearProfiles N X) ↔
@@ -324,9 +283,7 @@ section Examples
 
 open MathEconLib.Preference MathEconLib.SocialChoice
 
-/-- Majority rule with three agents and three alternatives is Pareto and independent of irrelevant
-alternatives but not dictatorial on the linear profiles: by Arrow's theorem its social relation is
-not always a preference relation (the Condorcet paradox). -/
+/-- By Arrow's theorem, majority rule on `Fin 3` is not always a preference relation. -/
 example : ¬ ∀ P ∈ linearProfiles (Fin 3) (Fin 3), IsPreferenceRelation (majority P) := by
   intro hF
   obtain ⟨i, hi⟩ := isDictatorialOn_of_isParetoOn_of_isIIAOn (N := Fin 3) (a := (0 : Fin 3))
