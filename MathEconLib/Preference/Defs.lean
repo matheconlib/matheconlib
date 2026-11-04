@@ -159,8 +159,9 @@ theorem IsLinearPreference.isAntisymmetric (h : IsLinearPreference R) : IsAntisy
 
 /-! ### Basic cases -/
 
+/-- The strict part is irreflexive (Mathlib's `irrefl`, through `IsNonstrictStrictOrder`). -/
 @[simp] theorem strictPart_irrefl (R : X → X → Prop) (x : X) : ¬ StrictPart R x x :=
-  fun h => h.2 h.1
+  irrefl x
 
 theorem isComplete_of_total [h : Std.Total R] : IsComplete R := h
 

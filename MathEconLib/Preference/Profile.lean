@@ -6,6 +6,7 @@ Authors: Ritik Jain
 module
 
 public import MathEconLib.Preference.Utility
+public import MathEconLib.Mechanism.Core.Profile
 public import Mathlib.Logic.Equiv.Defs
 
 /-!
@@ -35,8 +36,9 @@ every agent's relation is a preference relation, or is antisymmetric, is a separ
 
 ## Implementation notes
 
-A profile is a plain function type (an `abbrev`) with the agents and alternatives as explicit
-parameters, so that structures built on the same society share them without casts.
+A profile is `MathEconLib.Mechanism.Profile` with every agent's input a relation on `X` (an
+`abbrev`), with the agents and alternatives as explicit parameters, so that structures built on the
+same society share them without casts.
 
 ## References
 
@@ -58,7 +60,8 @@ universe u v w
 
 /-- A profile: one relation over the alternatives `X` for each agent `i : N`; `P i x y` reads
 "agent `i` finds `x` at least as good as `y`". -/
-abbrev Profile (N : Type u) (X : Type v) : Type (max u v) := N → X → X → Prop
+abbrev Profile (N : Type u) (X : Type v) : Type (max u v) :=
+  Mechanism.Profile fun _ : N => X → X → Prop
 
 namespace Profile
 
