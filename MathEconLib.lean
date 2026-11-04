@@ -66,6 +66,7 @@ public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Game
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Interim
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.InterimConverse
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
+public import MathEconLib.GameTheory.Strategic.Bayesian.Outcome
 public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
