@@ -1,23 +1,23 @@
 /-
-Copyright (c) 2026 Ruiz Chen. All rights reserved.
+Copyright (c) 2026 Ruiz Chen, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ruiz Chen
+Authors: Ruiz Chen, Bo Cowgill
 -/
 module
 
 public import MathEconLib.Auction.Affiliation.Basic
 public import Mathlib
 
-/-! # Affiliation as log-supermodularity (Section 7)
+/-! # Affiliation as log-supermodularity
 
 This file records the standard logarithmic reformulation of the affiliation
-inequality of **Def 7.2**: for a strictly positive density
+inequality: for strictly positive weights
 `f : (Fin n → ℝ) → ℝ`, affiliation is equivalent to *log-supermodularity*
 of `f` with respect to the pointwise lattice structure on `Fin n → ℝ`,
 
 `log (f x) + log (f y) ≤ log (f (x ⊔ y)) + log (f (x ⊓ y))`.
 
-This is the notes' remark that affiliation is exactly the MTP₂
+Affiliation is exactly the MTP₂
 (multivariate totally positive of order 2) / log-supermodularity condition:
 `log f` is supermodular, so "raising some coordinates never decreases the
 marginal impact of raising others". The equivalence is a direct consequence
@@ -31,8 +31,8 @@ namespace MathEconLib
 
 namespace Auction.Affiliation
 
-/-- **Def 7.2, logarithmic form** (MTP₂ / log-supermodularity). For a strictly
-positive density `f`, affiliation is equivalent to supermodularity of `log ∘ f`
+/-- **Logarithmic form of affiliation** (MTP₂ / log-supermodularity). For strictly
+positive weights `f`, affiliation is equivalent to supermodularity of `log ∘ f`
 with respect to the pointwise lattice operations on `Fin n → ℝ`:
 
 `log (f x) + log (f y) ≤ log (f (x ⊔ y)) + log (f (x ⊓ y))` for all `x`, `y`.
