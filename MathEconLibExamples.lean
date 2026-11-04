@@ -6,6 +6,7 @@ Authors: Daniel Lyng
 module
 
 public import MathEconLibExamples.GameTheory.MatchingPennies
+public import MathEconLibExamples.Matching.DistributiveMarriage
 public import MathEconLibExamples.Preferences.Finite
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
@@ -20,6 +21,8 @@ Concrete economic models illustrate the library's definitions and results.
 * Matching pennies has no pure Nash equilibrium.
 * A Becker-inspired crime-choice model gives a threshold rule and deterrence results
   for individuals and aggregate crime under a fixed type distribution.
+* A two-couple marriage market has distinct stable outcomes whose lattice join,
+  meet, and intrinsic ideal representations are checked explicitly.
 
 ## Tags
 
