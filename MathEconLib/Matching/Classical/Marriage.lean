@@ -5,13 +5,17 @@ Authors: Scott Duke Kominers
 -/
 module
 
+public import MathEconLib.Matching.Classical.Marriage.CountingBounds
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
 public import MathEconLib.Matching.Classical.Marriage.Distributive
 public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
+public import MathEconLib.Matching.Classical.Marriage.OrderIdeals
+public import MathEconLib.Matching.Classical.Marriage.RankInput
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
+public import MathEconLib.Matching.Classical.Marriage.Truncation
 
 /-!
 # The classical marriage market
