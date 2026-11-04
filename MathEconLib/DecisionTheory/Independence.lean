@@ -11,61 +11,22 @@ public import MathEconLib.Preference.Basic
 /-!
 # The independence property
 
-A relation `≿` over lotteries satisfies the *independence property* if mixing two lotteries with a
-common third lottery does not change their ranking: `p ≿ q` if and only if
-`α · p ⊕ (1 − α) · r ≿ α · q ⊕ (1 − α) · r`, for every lottery `r` and every `α ∈ (0, 1]`.
-
-The property can be required for all pairs of lotteries (`IsIndependent`), or only for `p` in a set
-`P` and `q` in a set `Q` (`IsIndependentOn P Q`), as `MonotoneOn` restricts `Monotone`. It is
-defined for lotteries over a finite set of prizes as distributions `FinDist Z`, and in the
-namespace `Lottery` for finitely supported lotteries over any set of prizes; `Lottery.ofFinDist`
-transfers one to the other (`isIndependentOn_iff_lottery`).
-
-## Main definitions
-
-* `MathEconLib.DecisionTheory.IsIndependentOn P Q R`: for `p ∈ P`, `q ∈ Q`, every `r` and
-  `α ∈ (0, 1]`, `p ≿ q ↔ α · p ⊕ (1 − α) · r ≿ α · q ⊕ (1 − α) · r`, for `FinDist Z`.
-* `MathEconLib.DecisionTheory.IsIndependent R`: the same for all lotteries.
-* `MathEconLib.DecisionTheory.Lottery.IsIndependentOn`, `Lottery.IsIndependent`: the same for
-  `Lottery Z`.
+`≿` is *independent on `(P, Q)`* if `p ≿ q ↔ α · p ⊕ (1 − α) · r ≿ α · q ⊕ (1 − α) · r` for
+`p ∈ P`, `q ∈ Q`, every lottery `r` and `0 < α ≤ 1`.
 
 ## Main statements
 
-* `isIndependentOn_iff_lottery`, `isIndependent_iff_lottery`: the two definitions agree under
-  `Lottery.ofFinDist`.
-* `Lottery.IsIndependentOn.mono`, `Lottery.IsIndependent.isIndependentOn`: restriction to smaller
-  sets.
-* `Lottery.IsIndependentOn.strictPart_iff`, `Lottery.IsIndependentOn.indiff_iff`: with both
-  orientations, strict preference and indifference are transferred too.
-* `Lottery.IsIndependentOn.strictPart_mix_iff` (Lemma 3.1): if `≿` satisfies independence between
-  degenerate lotteries and `[a] ≻ [b]`, then `α · a ⊕ (1 − α) · b ≻ β · a ⊕ (1 − β) · b` if and
-  only if `α > β`; `Lottery.IsIndependentOn.rel_mix_iff`: for a complete `≿`, `≿` between such
-  lotteries is `≥` between the probabilities of `a`.
-* `Lottery.IsIndependentOn.indiff_iConvexComb`: for a preference relation with independence between
-  degenerate and binary lotteries in both orientations, if every prize `z` is indifferent to a
-  binary lottery `m z`, and `m` fixes the prizes of a finite set `T` containing the supports of
-  all `m z`, then every lottery `p` is indifferent to the compound lottery `∑_z p(z) · m z` (the
-  replacement step of the proof of Proposition 3.2).
+* `Lottery.IsIndependentOn.strictPart_mix_iff`: **Lemma 3.1**, monotonicity in the probability.
+* `Lottery.IsIndependentOn.indiff_iConvexComb`: replacing prizes by indifferent binary lotteries.
 
 ## Implementation notes
 
-* `IsIndependentOn P Q R` has `p ∈ P` on the left of `≿`. Osborne and Rubinstein's Definition 3.4
-  is `IsIndependentOn degenerate binary R`; their proof of Proposition 3.2 also uses the other
-  orientation, `IsIndependentOn binary degenerate R`, which the theorems here assume explicitly.
-  For `IsIndependent` the two orientations coincide.
-* `α = 1` is allowed and trivial (`1 · p ⊕ 0 · r = p`). `α = 0` is excluded: for a reflexive `≿`
-  it would make any two lotteries indifferent.
-* Completeness and transitivity are not part of the property; theorems that use them assume them.
+* Osborne and Rubinstein's Definition 3.4 is `IsIndependentOn degenerate binary`; their proof of
+  Proposition 3.2 also uses `IsIndependentOn binary degenerate`, assumed here explicitly.
 
 ## References
 
-Martin J. Osborne and Ariel Rubinstein (2023), *Models in Microeconomic Theory*, expanded second
-edition, Open Book Publishers, Section 3.2 (Definition 3.4, Lemma 3.1) and Section 3.3 (proof of
-Proposition 3.2). [DOI: 10.11647/OBP.0361](https://doi.org/10.11647/OBP.0361).
-
-## Tags
-
-independence axiom, expected utility, monotonicity, lottery
+* M. J. Osborne, A. Rubinstein, *Models in Microeconomic Theory* (2023), Sections 3.2 and 3.3
 -/
 
 @[expose] public section
@@ -80,15 +41,13 @@ namespace Lottery
 
 variable {Z : Type u} {R : Lottery Z → Lottery Z → Prop} {P Q P' Q' : Set (Lottery Z)}
 
-/-- `≿` satisfies the *independence property on `(P, Q)`*: for every `p ∈ P`, `q ∈ Q`, every
-lottery `r` and every `α` with `0 < α ≤ 1`, `p ≿ q` if and only if
-`α · p ⊕ (1 − α) · r ≿ α · q ⊕ (1 − α) · r`. -/
+/-- The *independence property on `(P, Q)`*: `p ≿ q ↔ α · p ⊕ (1 − α) · r ≿ α · q ⊕ (1 − α) · r`
+for `p ∈ P`, `q ∈ Q` and `0 < α ≤ 1`. -/
 def IsIndependentOn (P Q : Set (Lottery Z)) (R : Lottery Z → Lottery Z → Prop) : Prop :=
   ∀ p ∈ P, ∀ q ∈ Q, ∀ (r : Lottery Z) (α : unitInterval), 0 < (α : ℝ) →
     (R p q ↔ R (mix α p r) (mix α q r))
 
-/-- `≿` satisfies the *independence property*: for all lotteries `p`, `q`, `r` and every `α` with
-`0 < α ≤ 1`, `p ≿ q` if and only if `α · p ⊕ (1 − α) · r ≿ α · q ⊕ (1 − α) · r`. -/
+/-- The *independence property* on all lotteries. -/
 def IsIndependent (R : Lottery Z → Lottery Z → Prop) : Prop :=
   IsIndependentOn Set.univ Set.univ R
 
@@ -115,7 +74,6 @@ theorem IsIndependent.isIndependentOn (h : IsIndependent R) (P Q : Set (Lottery 
     IsIndependentOn P Q R :=
   h.mono (Set.subset_univ P) (Set.subset_univ Q)
 
-/-- With both orientations, independence transfers the strict preference. -/
 theorem IsIndependentOn.strictPart_iff (hPQ : IsIndependentOn P Q R) (hQP : IsIndependentOn Q P R)
     {p q : Lottery Z} (hp : p ∈ P) (hq : q ∈ Q) (r : Lottery Z) {α : unitInterval}
     (hα : 0 < (α : ℝ)) :
@@ -123,7 +81,6 @@ theorem IsIndependentOn.strictPart_iff (hPQ : IsIndependentOn P Q R) (hQP : IsIn
   rw [Preference.strictPart_iff, Preference.strictPart_iff, hPQ.rel_iff hp hq r hα,
     hQP.rel_iff hq hp r hα]
 
-/-- With both orientations, independence transfers indifference. -/
 theorem IsIndependentOn.indiff_iff (hPQ : IsIndependentOn P Q R) (hQP : IsIndependentOn Q P R)
     {p q : Lottery Z} (hp : p ∈ P) (hq : q ∈ Q) (r : Lottery Z) {α : unitInterval}
     (hα : 0 < (α : ℝ)) :
@@ -133,10 +90,8 @@ theorem IsIndependentOn.indiff_iff (hPQ : IsIndependentOn P Q R) (hQP : IsIndepe
 
 /-! ### Monotonicity -/
 
-/-- **Lemma 3.1.** If `≿` satisfies independence between degenerate lotteries and `[a] ≻ [b]`, then
-`α · a ⊕ (1 − α) · b ≻ β · a ⊕ (1 − β) · b` if and only if `α > β`. Osborne and Rubinstein
-assume a preference relation with the independence property of Definition 3.4, which implies this
-hypothesis (`degenerate_subset_binary`); completeness and transitivity are not used. -/
+/-- **Lemma 3.1**: if `[a] ≻ [b]`, then `α · a ⊕ (1 − α) · b ≻ β · a ⊕ (1 − β) · b` iff `α > β`.
+-/
 theorem IsIndependentOn.strictPart_mix_iff (hI : IsIndependentOn degenerate degenerate R) {a b : Z}
     (hab : StrictPart R (.single a) (.single b)) (α β : unitInterval) :
     (β : ℝ) < α ↔ StrictPart R (mix α (.single a) (.single b)) (mix β (.single a) (.single b)) := by
@@ -157,8 +112,7 @@ theorem IsIndependentOn.strictPart_mix_iff (hI : IsIndependentOn degenerate dege
   · exact (key β α hlt).asymm h
   · exact strictPart_irrefl R _ (by rwa [Subtype.ext heq] at h)
 
-/-- **Monotonicity.** If `≿` is complete, satisfies independence between degenerate lotteries and
-`[a] ≻ [b]`, then `α · a ⊕ (1 − α) · b ≿ β · a ⊕ (1 − β) · b` if and only if `α ≥ β`. -/
+/-- For complete `≿` with `[a] ≻ [b]`, `α · a ⊕ (1 − α) · b ≿ β · a ⊕ (1 − β) · b` iff `α ≥ β`. -/
 theorem IsIndependentOn.rel_mix_iff (hI : IsIndependentOn degenerate degenerate R)
     (hC : IsComplete R) {a b : Z} (hab : StrictPart R (.single a) (.single b))
     (α β : unitInterval) :
@@ -167,11 +121,8 @@ theorem IsIndependentOn.rel_mix_iff (hI : IsIndependentOn degenerate degenerate 
 
 /-! ### Replacing prizes by indifferent lotteries -/
 
-/-- **Replacement.** Let `≿` be a preference relation that satisfies independence between
-degenerate and binary lotteries in both orientations. Let `m z` be a binary lottery indifferent to
-`[z]` for each prize `z`, with `m t = [t]` for the prizes `t` of a finite set `T` that contains
-the supports of all `m z`. Then every lottery `p` is indifferent to the compound lottery
-`∑_z p(z) · m z`. -/
+/-- If each `[z]` is indifferent to a binary lottery `m z` (with `m` fixing a finite `T` holding
+all supports), then `p ∼ ∑_z p(z) · m z`. -/
 theorem IsIndependentOn.indiff_iConvexComb (hR : IsPreferenceRelation R)
     (hDB : IsIndependentOn degenerate binary R) (hBD : IsIndependentOn binary degenerate R)
     (m : Z → Lottery Z) (T : Finset Z) (hm : ∀ z, Indiff R (.single z) (m z))
@@ -180,12 +131,11 @@ theorem IsIndependentOn.indiff_iConvexComb (hR : IsPreferenceRelation R)
     Indiff R p (p.iConvexComb m) := by
   classical
   have htrans : IsTransitive (Indiff R) := hR.isTransitive.indiff
-  -- `m` fixes every lottery supported in `T`
   have hfix : ∀ q : Lottery Z, (∀ y, q.weights y ≠ 0 → y ∈ T) → q.iConvexComb m = q := by
     intro q hq
     rw [iConvexComb_congr (g := StdSimplex.single) fun y hy => hT y (hq y hy),
       StdSimplex.iConvexComb_single]
-  -- strong induction on the number of prizes of `p` outside `T`
+  -- Induction on the number of prizes of `p` outside `T`.
   suffices H : ∀ n : ℕ, ∀ p : Lottery Z,
       (p.weights.support.filter (· ∉ T)).card ≤ n → Indiff R p (p.iConvexComb m) from
     H _ p le_rfl
@@ -218,7 +168,6 @@ theorem IsIndependentOn.indiff_iConvexComb (hR : IsPreferenceRelation R)
         rw [hpr]
         exact ⟨(hDB.rel_iff (single_mem_degenerate z) (hmB z) r hα).1 (hm z).1,
           (hBD.rel_iff (hmB z) (single_mem_degenerate z) r hα).1 (hm z).2⟩
-      -- `q` has fewer prizes outside `T`
       have hcard : (q.weights.support.filter (· ∉ T)).card ≤ n := by
         have hsub : q.weights.support.filter (· ∉ T) ⊆
             (p.weights.support.filter (· ∉ T)).erase z := by
@@ -258,20 +207,16 @@ open MathEconLib.Probability
 
 variable {Z : Type u} [Fintype Z] {R : FinDist Z → FinDist Z → Prop} {P Q : Set (FinDist Z)}
 
-/-- `≿` satisfies the *independence property on `(P, Q)`*: for every `p ∈ P`, `q ∈ Q`, every
-lottery `r` and every `α` with `0 < α ≤ 1`, `p ≿ q` if and only if
-`α · p ⊕ (1 − α) · r ≿ α · q ⊕ (1 − α) · r`. -/
+/-- The *independence property on `(P, Q)`*, for distributions. -/
 def IsIndependentOn (P Q : Set (FinDist Z)) (R : FinDist Z → FinDist Z → Prop) : Prop :=
   ∀ p ∈ P, ∀ q ∈ Q, ∀ (r : FinDist Z) (α : unitInterval), 0 < (α : ℝ) →
     (R p q ↔ R (FinDist.mixture α p r) (FinDist.mixture α q r))
 
-/-- `≿` satisfies the *independence property*: for all lotteries `p`, `q`, `r` and every `α` with
-`0 < α ≤ 1`, `p ≿ q` if and only if `α · p ⊕ (1 − α) · r ≿ α · q ⊕ (1 − α) · r`. -/
+/-- The *independence property* on all distributions. -/
 def IsIndependent (R : FinDist Z → FinDist Z → Prop) : Prop :=
   IsIndependentOn Set.univ Set.univ R
 
-/-- Independence on `(P, Q)` is independence of the same relation on lotteries, on the images of
-`P` and `Q`. -/
+/-- Independence on `(P, Q)` is independence on lotteries on the images of `P` and `Q`. -/
 theorem isIndependentOn_iff_lottery : IsIndependentOn P Q R ↔
     Lottery.IsIndependentOn (Lottery.ofFinDist '' P) (Lottery.ofFinDist '' Q)
       (Lottery.ofFinDist.symm ⁻¹'o R) := by
@@ -295,8 +240,7 @@ section Examples
 open MathEconLib.DecisionTheory (Lottery)
 open MathEconLib.DecisionTheory.Lottery MathEconLib.Preference Convexity
 
-/-- Ranking lotteries by the probability of the prize `0` satisfies independence: mixing both
-sides with `r` adds `(1 − α) r(0)` to both probabilities and scales the rest by `α > 0`. -/
+/-- Ranking lotteries by the probability of the prize `0` satisfies independence. -/
 example : IsIndependent fun p q : Lottery (Fin 2) => q.weights 0 ≤ p.weights 0 := by
   rw [isIndependent_iff]
   intro p q r α hα
@@ -305,8 +249,6 @@ example : IsIndependent fun p q : Lottery (Fin 2) => q.weights 0 ≤ p.weights 0
   · intro h; nlinarith
   · intro h; nlinarith
 
-/-- Monotonicity applied: with `[0] ≻ [1]`, the lottery `0.7 · 0 ⊕ 0.3 · 1` is strictly preferred to
-`0.2 · 0 ⊕ 0.8 · 1`. -/
 example (R : Lottery (Fin 2) → Lottery (Fin 2) → Prop)
     (hI : IsIndependentOn degenerate degenerate R)
     (h01 : StrictPart R (.single 0) (.single 1)) :
@@ -314,7 +256,7 @@ example (R : Lottery (Fin 2) → Lottery (Fin 2) → Prop)
       (mix ⟨0.2, by norm_num, by norm_num⟩ (.single 0) (.single 1)) :=
   (hI.strictPart_mix_iff h01 _ _).1 (by norm_num)
 
-/-- Why `α = 0` is excluded: `0 · p ⊕ 1 · r = 0 · q ⊕ 1 · r` for all `p` and `q`. -/
+/-- Why `α = 0` is excluded. -/
 example (p q r : Lottery (Fin 2)) : mix 0 p r = mix 0 q r := by simp
 
 end Examples

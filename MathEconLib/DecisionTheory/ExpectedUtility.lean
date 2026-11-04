@@ -15,66 +15,21 @@ public import MathEconLib.Probability.FinDist.Expect
 /-!
 # Expected utility
 
-The *expected utility* of a lottery `p` with respect to a function `v : Z → ℝ` (the Bernoulli
-function) is `U(p) = ∑_z p(z) v(z)`. A relation `≿` over lotteries is *consistent with expected
-utility* if some `U` of this form represents it. Such relations satisfy independence and
-continuity, and their Bernoulli function is unique up to a positive affine transformation.
-Conversely, on a finite set of prizes, a continuous and independent preference relation is
-consistent with expected utility: the expected utility theorem of von Neumann and Morgenstern.
-
-The main statements are about lotteries over a finite set of prizes as distributions `FinDist Z`,
-whose expected utility is `FinDist.expect`. The namespace `Lottery` has the same definitions and
-statements for finitely supported lotteries over any set of prizes, without finiteness where the
-proof does not use it; the statements on `FinDist Z` are deduced from them through
-`Lottery.ofFinDist`.
-
-## Main definitions
-
-* `MathEconLib.DecisionTheory.HasExpectedUtility R`: for some `v : Z → ℝ`, `p ↦ p.expect v`
-  represents `R`. That `v` is a Bernoulli function for `R` is
-  `Represents (fun p => p.expect v) R`.
-* `MathEconLib.DecisionTheory.Lottery.expectedUtility v p`: `∑_z p(z) v(z)` for `p : Lottery Z`;
-  `Lottery.HasExpectedUtility R`: some `Lottery.expectedUtility v` represents `R`.
+The *expected utility* of a lottery `p` for `v : Z → ℝ` is `∑_z p(z) v(z)`. On a finite set of
+prizes, a preference relation has an expected utility representation iff it is continuous and
+independent (von Neumann–Morgenstern).
 
 ## Main statements
 
-* `isIndependent_of_represents`, `isMixtureContinuous_of_represents` (Proposition 3.1): a relation
-  consistent with expected utility satisfies independence and continuity, for all lotteries.
-* `represents_expect_mul_add`, `exists_eq_mul_add_of_represents` (the Comment after
-  Proposition 3.2): `a v + b` with `a > 0` is a Bernoulli function whenever `v` is, and any two
-  Bernoulli functions for the same relation are related in this way.
-* `hasExpectedUtility_of_isIndependentOn` (Proposition 3.2): a preference relation that is
-  continuous on degenerate lotteries and satisfies independence between degenerate and binary
-  lotteries, in both orientations, is consistent with expected utility.
-* `hasExpectedUtility_iff_isMixtureContinuous_and_isIndependent`: a preference relation is
-  consistent with expected utility if and only if it is continuous in mixtures and independent.
-* `Lottery.expectedUtility_single`, `Lottery.expectedUtility_mix`,
-  `Lottery.expectedUtility_iConvexComb`, `Lottery.isAffineMap_expectedUtility`: `U([z]) = v(z)` and
-  `U` is affine.
-* The same statements for `Lottery Z`, in the namespace `Lottery`: Proposition 3.1 and the
-  Comment for any set of prizes, Proposition 3.2 and the equivalence for a finite one.
-
-## Implementation notes
-
-* `Lottery.expectedUtility v p` is Mathlib's `p.iConvexComb v` into `ℝ`, the affine extension
-  `StdSimplex.affineMapMk v` of `v`; `Lottery.expectedUtility_eq_sum` gives the sum, and
-  `Lottery.expectedUtility_ofFinDist` equates it with `FinDist.expect`.
-* `hasExpectedUtility_of_isIndependentOn` assumes Osborne and Rubinstein's Definition 3.2
-  (continuity among degenerate lotteries) and Definition 3.4 (independence with a degenerate
-  lottery on the left) together with its mirror image, which their proof also uses.
+* `isIndependent_of_represents`, `isMixtureContinuous_of_represents`: **Proposition 3.1**.
+* `exists_eq_mul_add_of_represents`: Bernoulli functions are unique up to positive affine maps.
+* `hasExpectedUtility_of_isIndependentOn`: **Proposition 3.2**.
+* `hasExpectedUtility_iff_isMixtureContinuous_and_isIndependent`: the expected utility theorem.
 
 ## References
 
-Martin J. Osborne and Ariel Rubinstein (2023), *Models in Microeconomic Theory*, expanded second
-edition, Open Book Publishers, Section 3.3 (Definition 3.5, Propositions 3.1 and 3.2, and the
-Comment after Proposition 3.2). [DOI: 10.11647/OBP.0361](https://doi.org/10.11647/OBP.0361).
-
-John von Neumann and Oskar Morgenstern (1947), *Theory of Games and Economic Behavior*, second
-edition, Princeton University Press, pages 15–29 and 617–628.
-
-## Tags
-
-expected utility, von Neumann–Morgenstern, Bernoulli function, independence axiom, lottery
+* M. J. Osborne, A. Rubinstein, *Models in Microeconomic Theory* (2023), Section 3.3
+* J. von Neumann, O. Morgenstern, *Theory of Games and Economic Behavior*, 2nd ed. (1947)
 -/
 
 @[expose] public section
@@ -89,12 +44,10 @@ namespace Lottery
 
 variable {Z : Type u} {I : Type v} {R : Lottery Z → Lottery Z → Prop} {v w : Z → ℝ}
 
-/-- The *expected utility* `U(p) = ∑_z p(z) v(z)` of the lottery `p` with respect to the Bernoulli
-function `v : Z → ℝ` (Mathlib's `p.iConvexComb v`). -/
+/-- The *expected utility* `U(p) = ∑_z p(z) v(z)` for the Bernoulli function `v`. -/
 noncomputable def expectedUtility (v : Z → ℝ) (p : Lottery Z) : ℝ := p.iConvexComb v
 
-/-- `≿` is *consistent with expected utility*: some expected utility function
-`U(p) = ∑_z p(z) v(z)` represents it. -/
+/-- `≿` is *consistent with expected utility*: some `expectedUtility v` represents it. -/
 def HasExpectedUtility (R : Lottery Z → Lottery Z → Prop) : Prop :=
   ∃ v : Z → ℝ, Represents (expectedUtility v) R
 
@@ -104,7 +57,6 @@ theorem hasExpectedUtility_iff :
     HasExpectedUtility R ↔ ∃ v : Z → ℝ, Represents (expectedUtility v) R :=
   Iff.rfl
 
-/-- `U(p) = ∑_z p(z) v(z)`. -/
 theorem expectedUtility_eq_sum (v : Z → ℝ) (p : Lottery Z) :
     expectedUtility v p = p.weights.sum fun z a => a * v z := by
   simp [expectedUtility]
@@ -113,13 +65,11 @@ theorem expectedUtility_eq_sum_fintype [Fintype Z] (v : Z → ℝ) (p : Lottery 
     expectedUtility v p = ∑ z, p.weights z * v z := by
   rw [expectedUtility_eq_sum, Finsupp.sum_fintype _ _ (fun _ => zero_mul _)]
 
-/-- `U([z]) = v(z)`. -/
 @[simp]
 theorem expectedUtility_single (v : Z → ℝ) (z : Z) :
     expectedUtility v (.single z) = v z := by
   simp [expectedUtility]
 
-/-- `U(α · p ⊕ (1 − α) · q) = α U(p) + (1 − α) U(q)`. -/
 @[simp]
 theorem expectedUtility_mix (v : Z → ℝ) (α : unitInterval) (p q : Lottery Z) :
     expectedUtility v (mix α p q) = α * expectedUtility v p + (1 - α) * expectedUtility v q := by
@@ -129,7 +79,6 @@ theorem expectedUtility_mix (v : Z → ℝ) (α : unitInterval) (p q : Lottery Z
   rw [expectedUtility, mix, h]
   simp [expectedUtility]
 
-/-- The expected utility of a compound lottery is the weighted sum of the expected utilities. -/
 theorem expectedUtility_iConvexComb (v : Z → ℝ) (w : StdSimplex ℝ I) (f : I → Lottery Z) :
     expectedUtility v (w.iConvexComb f) = w.weights.sum fun i a => a * expectedUtility v (f i) := by
   have h := (StdSimplex.affineMapMk (R := ℝ) v).isAffineMap.map_iConvexComb w f
@@ -137,11 +86,9 @@ theorem expectedUtility_iConvexComb (v : Z → ℝ) (w : StdSimplex ℝ I) (f : 
   rw [expectedUtility, h]
   simp [expectedUtility, StdSimplex.affineMapMk_apply]
 
-/-- Expected utility is affine on lotteries. -/
 theorem isAffineMap_expectedUtility (v : Z → ℝ) : IsAffineMap ℝ (expectedUtility v) :=
   (StdSimplex.affineMapMk (R := ℝ) v).isAffineMap
 
-/-- The expected utility for `a v + b` is `a U + b`. -/
 theorem expectedUtility_mul_add (v : Z → ℝ) (a b : ℝ) (p : Lottery Z) :
     expectedUtility (fun z => a * v z + b) p = a * expectedUtility v p + b := by
   rw [expectedUtility_eq_sum, expectedUtility_eq_sum]
@@ -156,8 +103,7 @@ theorem expectedUtility_const (b : ℝ) (p : Lottery Z) :
 
 /-! ### Expected utility implies independence and continuity -/
 
-/-- **Proposition 3.1 (independence).** A relation represented by an expected utility function
-satisfies the independence property for all lotteries. -/
+/-- **Proposition 3.1**: a relation with expected utility is independent. -/
 theorem isIndependent_of_represents (h : Represents (expectedUtility v) R) : IsIndependent R := by
   rw [isIndependent_iff]
   intro p q r α hα
@@ -166,8 +112,7 @@ theorem isIndependent_of_represents (h : Represents (expectedUtility v) R) : IsI
   · intro hle; nlinarith
   · intro hle; exact le_of_mul_le_mul_left (by linarith) hα
 
-/-- **Proposition 3.1 (continuity).** A relation represented by an expected utility function is
-continuous in mixtures, for all lotteries. -/
+/-- **Proposition 3.1**: a relation with expected utility is continuous in mixtures. -/
 theorem isMixtureContinuous_of_represents (h : Represents (expectedUtility v) R) :
     IsMixtureContinuous R := by
   rw [isMixtureContinuous_iff]
@@ -191,23 +136,19 @@ theorem HasExpectedUtility.isMixtureContinuous (h : HasExpectedUtility R) :
 
 /-! ### Uniqueness of the Bernoulli function -/
 
-/-- **Section 3.3, Comment.** If `v` is a Bernoulli function for `≿`, so is `a v + b` for every
-`a > 0` and every `b`. -/
+/-- If `v` is a Bernoulli function for `≿`, so is `a v + b` for `a > 0`. -/
 theorem represents_expectedUtility_mul_add (h : Represents (expectedUtility v) R) {a : ℝ}
     (ha : 0 < a) (b : ℝ) : Represents (expectedUtility fun z => a * v z + b) R := by
   intro p q
   rw [expectedUtility_mul_add, expectedUtility_mul_add]
   exact h.affine ha b p q
 
-/-- **Section 3.3, Comment.** Two Bernoulli functions `v`, `w` for the same relation differ by a
-positive affine transformation: `w = a v + b` for some `a > 0` and `b`. Osborne and Rubinstein omit
-the proof. -/
+/-- Two Bernoulli functions for one relation satisfy `w = a v + b` for some `a > 0` and `b`. -/
 theorem exists_eq_mul_add_of_represents (hv : Represents (expectedUtility v) R)
     (hw : Represents (expectedUtility w) R) :
     ∃ a > (0 : ℝ), ∃ b : ℝ, ∀ z, w z = a * v z + b := by
-  -- If `v` is constant, so is `w`. Otherwise fix `v b < v a`; for each `z`,
-  -- `(v a − v b)(w z − w b) = (w a − w b)(v z − v b)` follows from two lotteries with equal
-  -- `v`-utility, which then have equal `w`-utility.
+  -- If `v` is constant, so is `w`. Otherwise fix `v b < v a` and compare, for each `z`, two
+  -- lotteries with equal `v`-utility, which then have equal `w`-utility.
   have K : ∀ p q, expectedUtility v p = expectedUtility v q →
       expectedUtility w p = expectedUtility w q :=
     fun p q hpq => hw.indiff_iff.1 (hv.indiff_iff.2 hpq)
@@ -225,8 +166,7 @@ theorem exists_eq_mul_add_of_represents (hv : Represents (expectedUtility v) R)
         mul_div_cancel_left₀ _ hd.ne']
       ring
     rcases le_or_gt (v b) (v z) with hbz | hzb
-    · -- `ε · [z] ⊕ (1 − ε) · [b]` and `η · [a] ⊕ (1 − η) · [b]` have equal `v`-utility
-      have hs : 0 < (v z - v b) + (v a - v b) := by linarith
+    · have hs : 0 < (v z - v b) + (v a - v b) := by linarith
       let ε : unitInterval := ⟨(v a - v b) / ((v z - v b) + (v a - v b)),
         unitInterval.div_mem hd.le hs.le (by linarith)⟩
       let η : unitInterval := ⟨(v z - v b) / ((v z - v b) + (v a - v b)),
@@ -240,8 +180,7 @@ theorem exists_eq_mul_add_of_represents (hv : Represents (expectedUtility v) R)
           (v z - v b) / ((v z - v b) + (v a - v b)) * (w a - w b) := by linarith
       rw [div_mul_eq_mul_div, div_mul_eq_mul_div, div_left_inj' hs.ne'] at h1
       linear_combination h1
-    · -- `t · [z] ⊕ (1 − t) · [a]` and `[b]` have equal `v`-utility
-      have he : 0 < v a - v z := by linarith
+    · have he : 0 < v a - v z := by linarith
       let t : unitInterval := ⟨(v a - v b) / (v a - v z),
         unitInterval.div_mem hd.le he.le (by linarith)⟩
       have h := K (mix t (.single z) (.single a)) (.single b) (by
@@ -262,11 +201,8 @@ theorem exists_eq_mul_add_of_represents (hv : Represents (expectedUtility v) R)
 
 /-! ### The expected utility theorem -/
 
-/-- **Proposition 3.2 (von Neumann and Morgenstern).** Let `Z` be a finite set of prizes and `≿` a
-preference relation over lotteries on `Z` that is continuous on degenerate lotteries and satisfies
-the independence property between degenerate and binary lotteries, in both orientations. Then `≿`
-is consistent with expected utility. Osborne and Rubinstein's Definition 3.4 states one
-orientation; their proof uses both. -/
+/-- **Proposition 3.2**: on finite `Z`, a preference continuous on degenerate lotteries and
+independent between degenerate and binary ones, both ways, has expected utility. -/
 theorem hasExpectedUtility_of_isIndependentOn [Finite Z] (hR : IsPreferenceRelation R)
     (hC : IsMixtureContinuousOn degenerate R) (hDB : IsIndependentOn degenerate binary R)
     (hBD : IsIndependentOn binary degenerate R) : HasExpectedUtility R := by
@@ -276,7 +212,8 @@ theorem hasExpectedUtility_of_isIndependentOn [Finite Z] (hR : IsPreferenceRelat
   have htrans : IsTransitive (Indiff R) := hR.isTransitive.indiff
   have hDD : IsIndependentOn degenerate degenerate R :=
     hDB.mono subset_rfl degenerate_subset_binary
-  -- a best prize `a` and a worst prize `b`
+  -- With a best prize `a` and a worst `b`, each `p` is indifferent to `mix (U p) [a] [b]`, and
+  -- monotonicity ranks these mixtures by `U`.
   have hRZ : IsPreferenceRelation fun x y : Z => R (.single x) (.single y) :=
     ⟨isComplete_iff.2 fun x y => hR.total _ _,
       isTransitive_iff.2 fun _ _ _ h₁ h₂ => hR.trans h₁ h₂⟩
@@ -287,7 +224,6 @@ theorem hasExpectedUtility_of_isIndependentOn [Finite Z] (hR : IsPreferenceRelat
   have hRb : ∀ z, R (.single z) (.single b) := fun z => (hu z b).2 (hb z)
   by_cases hab : StrictPart R (.single a) (.single b)
   · have hne : a ≠ b := fun h => hab.ne (by rw [h])
-    -- every prize is indifferent to a mixture of `a` and `b` (the only use of continuity)
     have hex : ∀ z, ∃ t : unitInterval,
         Indiff R (.single z) (mix t (.single a) (.single b)) := by
       intro z
@@ -323,9 +259,7 @@ theorem hasExpectedUtility_of_isIndependentOn [Finite Z] (hR : IsPreferenceRelat
       rcases hs with rfl | rfl
       · exact hma
       · exact hmb
-    -- `p ∼ ∑_z p(z) · m z`, by independence
     have hrepl := hDB.indiff_iConvexComb hR hBD m {a, b} hm (fun z => mix_mem_binary _ _ _) hmT hT
-    -- the compound lottery is a mixture of `a` and `b` with probability `U(p)`
     let U : Lottery Z → ℝ := expectedUtility fun z => (tv z : ℝ)
     have hU : ∀ p, (U p) ∈ unitInterval := by
       intro p
@@ -348,7 +282,6 @@ theorem hasExpectedUtility_of_isIndependentOn [Finite Z] (hR : IsPreferenceRelat
       simp only [e]
       rw [Finsupp.sum_add, ← Finsupp.mul_sum, ← Finsupp.mul_sum, p.total]
       ring
-    -- by monotonicity, `p ≿ q` if and only if `U q ≤ U p`
     refine ⟨fun z => (tv z : ℝ), fun p q => ?_⟩
     have hp := hrepl p
     have hq := hrepl q
@@ -359,8 +292,7 @@ theorem hasExpectedUtility_of_isIndependentOn [Finite Z] (hR : IsPreferenceRelat
       exact hmono.1 (hR.trans (hR.trans hp.2 hpq) hq.1)
     · intro hle
       exact hR.trans (hR.trans hp.1 (hmono.2 hle)) hq.2
-  · -- all prizes are indifferent, hence all lotteries are
-    have hba : R (.single b) (.single a) := by
+  · have hba : R (.single b) (.single a) := by
       by_contra h; exact hab ⟨hRb a, h⟩
     have hm : ∀ z, Indiff R (.single z) (.single b) :=
       fun z => ⟨hRb z, hR.trans hba (hRa z)⟩
@@ -378,9 +310,8 @@ theorem hasExpectedUtility_of_isIndependentOn [Finite Z] (hR : IsPreferenceRelat
     rw [iConvexComb_const] at hp hq
     exact hR.trans hp.1 hq.2
 
-/-- **The expected utility theorem.** On a finite set of prizes, a preference relation over
-lotteries is consistent with expected utility if and only if it is continuous in mixtures and
-satisfies the independence property. -/
+/-- **The expected utility theorem**: on finite `Z`, a preference has expected utility iff it is
+continuous in mixtures and independent. -/
 theorem hasExpectedUtility_iff_isMixtureContinuous_and_isIndependent [Finite Z]
     (hR : IsPreferenceRelation R) :
     HasExpectedUtility R ↔ IsMixtureContinuous R ∧ IsIndependent R :=
@@ -389,7 +320,6 @@ theorem hasExpectedUtility_iff_isMixtureContinuous_and_isIndependent [Finite Z]
       (hI.isIndependentOn _ _) (hI.isIndependentOn _ _)⟩
 
 open MathEconLib.Probability in
-/-- The expected utility of the lottery defined by a distribution is its expectation. -/
 @[simp]
 theorem expectedUtility_ofFinDist [Fintype Z] (v : Z → ℝ) (d : FinDist Z) :
     expectedUtility v (ofFinDist d) = d.expect v := by
@@ -405,13 +335,10 @@ open MathEconLib.Probability
 
 variable {Z : Type u} [Fintype Z] {R : FinDist Z → FinDist Z → Prop} {v w : Z → ℝ}
 
-/-- `≿` is *consistent with expected utility*: for some Bernoulli function `v : Z → ℝ`, the
-expected utility `U(p) = ∑_z p(z) v(z)` (`p.expect v`) represents it. -/
+/-- `≿` is *consistent with expected utility*: some `p ↦ p.expect v` represents it. -/
 def HasExpectedUtility (R : FinDist Z → FinDist Z → Prop) : Prop :=
   ∃ v : Z → ℝ, Represents (fun p : FinDist Z => p.expect v) R
 
-/-- `v` is a Bernoulli function for `≿` exactly when it is one for the same relation on
-lotteries. -/
 theorem represents_expect_iff_lottery : Represents (fun p : FinDist Z => p.expect v) R ↔
     Represents (Lottery.expectedUtility v) (Lottery.ofFinDist.symm ⁻¹'o R) := by
   simp only [Represents, Lottery.ofFinDist.surjective.forall, Order.Preimage,
@@ -421,15 +348,13 @@ theorem hasExpectedUtility_iff_lottery :
     HasExpectedUtility R ↔ Lottery.HasExpectedUtility (Lottery.ofFinDist.symm ⁻¹'o R) :=
   exists_congr fun _ => represents_expect_iff_lottery
 
-/-- **Proposition 3.1 (independence).** A relation represented by an expected utility function
-satisfies the independence property for all lotteries. -/
+/-- **Proposition 3.1**: a relation with expected utility is independent. -/
 theorem isIndependent_of_represents (h : Represents (fun p : FinDist Z => p.expect v) R) :
     IsIndependent R :=
   isIndependent_iff_lottery.2
     (Lottery.isIndependent_of_represents (represents_expect_iff_lottery.1 h))
 
-/-- **Proposition 3.1 (continuity).** A relation represented by an expected utility function is
-continuous in mixtures, for all lotteries. -/
+/-- **Proposition 3.1**: a relation with expected utility is continuous in mixtures. -/
 theorem isMixtureContinuous_of_represents (h : Represents (fun p : FinDist Z => p.expect v) R) :
     IsMixtureContinuous R :=
   isMixtureContinuous_iff_lottery.2
@@ -442,28 +367,22 @@ theorem HasExpectedUtility.isMixtureContinuous (h : HasExpectedUtility R) :
     IsMixtureContinuous R :=
   let ⟨_, hv⟩ := h; isMixtureContinuous_of_represents hv
 
-/-- **Section 3.3, Comment.** If `v` is a Bernoulli function for `≿`, so is `a v + b` for every
-`a > 0` and every `b`. -/
+/-- If `v` is a Bernoulli function for `≿`, so is `a v + b` for `a > 0`. -/
 theorem represents_expect_mul_add (h : Represents (fun p : FinDist Z => p.expect v) R) {a : ℝ}
     (ha : 0 < a) (b : ℝ) :
     Represents (fun p : FinDist Z => p.expect fun z => a * v z + b) R :=
   represents_expect_iff_lottery.2
     (Lottery.represents_expectedUtility_mul_add (represents_expect_iff_lottery.1 h) ha b)
 
-/-- **Section 3.3, Comment.** Two Bernoulli functions `v`, `w` for the same relation differ by a
-positive affine transformation: `w = a v + b` for some `a > 0` and `b`. Osborne and Rubinstein omit
-the proof. -/
+/-- Two Bernoulli functions for one relation satisfy `w = a v + b` for some `a > 0` and `b`. -/
 theorem exists_eq_mul_add_of_represents (hv : Represents (fun p : FinDist Z => p.expect v) R)
     (hw : Represents (fun p : FinDist Z => p.expect w) R) :
     ∃ a > (0 : ℝ), ∃ b : ℝ, ∀ z, w z = a * v z + b :=
   Lottery.exists_eq_mul_add_of_represents (represents_expect_iff_lottery.1 hv)
     (represents_expect_iff_lottery.1 hw)
 
-/-- **Proposition 3.2 (von Neumann and Morgenstern).** Let `Z` be a finite set of prizes and `≿` a
-preference relation over lotteries on `Z` that is continuous on degenerate lotteries and satisfies
-the independence property between degenerate and binary lotteries, in both orientations. Then `≿`
-is consistent with expected utility. Osborne and Rubinstein's Definition 3.4 states one
-orientation; their proof uses both. -/
+/-- **Proposition 3.2**: a preference continuous on degenerate lotteries and independent between
+degenerate and binary ones, both ways, has expected utility. -/
 theorem hasExpectedUtility_of_isIndependentOn [DecidableEq Z] (hR : IsPreferenceRelation R)
     (hC : IsMixtureContinuousOn degenerate R) (hDB : IsIndependentOn degenerate binary R)
     (hBD : IsIndependentOn binary degenerate R) : HasExpectedUtility R := by
@@ -475,9 +394,8 @@ theorem hasExpectedUtility_of_isIndependentOn [DecidableEq Z] (hR : IsPreference
     (Lottery.hasExpectedUtility_of_isIndependentOn ⟨isComplete_of_total, isTransitive_of_isTrans⟩
       hC hDB hBD)
 
-/-- **The expected utility theorem.** On a finite set of prizes, a preference relation over
-lotteries is consistent with expected utility if and only if it is continuous in mixtures and
-satisfies the independence property. -/
+/-- **The expected utility theorem**: a preference has expected utility iff it is continuous in
+mixtures and independent. -/
 theorem hasExpectedUtility_iff_isMixtureContinuous_and_isIndependent
     (hR : IsPreferenceRelation R) :
     HasExpectedUtility R ↔ IsMixtureContinuous R ∧ IsIndependent R := by
@@ -502,10 +420,7 @@ example : expectedUtility (fun x : ℝ => x)
     (mix ⟨0.25, by norm_num, by norm_num⟩ (.single 3000) (.single 0)) = 750 := by
   simp; norm_num
 
-/-- The Allais lotteries: under every Bernoulli function, `U(L₁) − U(R₁)` is a quarter of
-`U(L₂) − U(R₂)`, with `L₁ = 0.2 · 4000 ⊕ 0.8 · 0`, `R₁ = 0.25 · 3000 ⊕ 0.75 · 0`,
-`L₂ = 0.8 · 4000 ⊕ 0.2 · 0`, `R₂ = [3000]`; so no expected utility relation has `L₁ ≻ R₁` and
-`R₂ ≻ L₂`. -/
+/-- The Allais paradox: `U(L₁) − U(R₁)` is a quarter of `U(L₂) − U(R₂)` for every `v`. -/
 example (v : ℝ → ℝ) :
     expectedUtility v (mix ⟨0.2, by norm_num, by norm_num⟩ (.single 4000) (.single 0)) -
       expectedUtility v (mix ⟨0.25, by norm_num, by norm_num⟩ (.single 3000) (.single 0)) =
@@ -513,14 +428,11 @@ example (v : ℝ → ℝ) :
       expectedUtility v (.single 3000)) / 4 := by
   simp; ring
 
-/-- The relation "more probability on the prize `0` is better" has the Bernoulli function
-`1_{z = 0}`, so it satisfies independence (Proposition 3.1). -/
 example : IsIndependent (UtilityRel fun p : Lottery (Fin 2) =>
     expectedUtility (fun z => if z = 0 then 1 else 0) p) :=
   isIndependent_of_represents (represents_utilityRel _)
 
-/-- `−v` is not a Bernoulli function for the relation of `v`: for `v = id` on `Fin 2` it reverses
-`[1] ≻ [0]`. -/
+/-- `−v` is not a Bernoulli function for the relation of `v`. -/
 example : ¬ Represents (expectedUtility fun z : Fin 2 => -1 * (z : ℝ) + 0)
     (UtilityRel (expectedUtility fun z : Fin 2 => (z : ℝ))) := by
   intro h
