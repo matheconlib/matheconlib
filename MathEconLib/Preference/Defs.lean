@@ -10,40 +10,19 @@ public import Mathlib.Order.Antisymmetrization
 /-!
 # Preference relations: definitions
 
-A preference relation on a type `X` of alternatives is a relation `R : X → X → Prop`, where `R x y`
-reads "`x` is at least as good as `y`". Its properties are separate predicates, not fields, so every
-theorem states the properties it uses.
+A preference relation on `X` is a relation `R : X → X → Prop`; `R x y` reads "`x` is at least as
+good as `y`". Its properties are `def`s for Mathlib's classes, not instances, so each theorem
+states the ones it uses.
 
 ## Main definitions
 
-* `MathEconLib.Preference.IsComplete R`: any two alternatives are comparable.
-* `MathEconLib.Preference.IsReflexive R`: every alternative is related to itself.
-* `MathEconLib.Preference.IsTransitive R`: `R x y` and `R y z` give `R x z`.
-* `MathEconLib.Preference.IsAntisymmetric R`: `R x y` and `R y x` give `x = y`.
-* `MathEconLib.Preference.IsPreferenceRelation R`: complete and transitive.
-* `MathEconLib.Preference.IsLinearPreference R`: an antisymmetric preference relation.
-* `MathEconLib.Preference.StrictPart R`: the strict preference `x ≻ y`, `R x y ∧ ¬ R y x`.
-* `MathEconLib.Preference.Indiff R`: indifference `x ∼ y`, `R x y ∧ R y x`.
-
-## Implementation notes
-
-* The four properties are Mathlib's `Std.Total`, `Std.Refl`, `IsTrans` and `Std.Antisymm` under
-  economic names. They are `def`s, not `abbrev`s, so a hypothesis `h : IsComplete R` is not found by
-  type-class search; `isComplete_iff_total` and its siblings pass to Mathlib's classes.
-* `IsAntisymmetric` is Mathlib's form. Osborne and Rubinstein's Definition 1.4 (`x ≠ y` and `R x y`
-  exclude `R y x`) is equivalent: `isAntisymmetric_iff_not_rel_of_ne`.
-* `Indiff` is an `abbrev` of Mathlib's `AntisymmRel`, so that API applies. Mathlib has no named
-  strict part of an arbitrary relation, hence `StrictPart`.
+* `IsComplete`, `IsReflexive`, `IsTransitive`, `IsAntisymmetric`: properties of a relation.
+* `IsPreferenceRelation`: complete and transitive; `IsLinearPreference`: also antisymmetric.
+* `StrictPart`, `Indiff`: strict preference `x ≻ y` and indifference `x ∼ y`.
 
 ## References
 
-Martin J. Osborne and Ariel Rubinstein (2023), *Models in Microeconomic Theory*, expanded second
-edition, Open Book Publishers, Section 1.1 (Definitions 1.1–1.4).
-[DOI: 10.11647/OBP.0361](https://doi.org/10.11647/OBP.0361).
-
-## Tags
-
-preference relation, complete, transitive, strict preference, indifference
+* M. J. Osborne, A. Rubinstein, *Models in Microeconomic Theory* (2023), Section 1.1
 -/
 
 @[expose] public section
@@ -54,8 +33,6 @@ universe u
 
 variable {X : Type u} {R : X → X → Prop} {x y z : X}
 
-/-! ### Properties of a relation -/
-
 /-- `R` is complete: for all `x` and `y`, `R x y` or `R y x` (Mathlib's `Std.Total R`). -/
 def IsComplete (R : X → X → Prop) : Prop := Std.Total R
 
@@ -65,30 +42,23 @@ def IsReflexive (R : X → X → Prop) : Prop := Std.Refl R
 /-- `R` is transitive: `R x y` and `R y z` imply `R x z` (Mathlib's `IsTrans X R`). -/
 def IsTransitive (R : X → X → Prop) : Prop := IsTrans X R
 
-/-- `R` is antisymmetric: `R x y` and `R y x` imply `x = y` (`Std.Antisymm R`): no two distinct
-alternatives are indifferent. -/
+/-- `R` is antisymmetric: `R x y` and `R y x` imply `x = y` (`Std.Antisymm R`). -/
 def IsAntisymmetric (R : X → X → Prop) : Prop := Std.Antisymm R
 
 /-- `R` is a preference relation: it is complete and transitive. -/
 def IsPreferenceRelation (R : X → X → Prop) : Prop := IsComplete R ∧ IsTransitive R
 
-/-- `R` is a linear preference: an antisymmetric preference relation (Mathlib's
-`IsLinearOrder X R`, see `isLinearPreference_iff_isLinearOrder`). -/
+/-- `R` is a linear preference: an antisymmetric preference relation. -/
 def IsLinearPreference (R : X → X → Prop) : Prop := IsPreferenceRelation R ∧ IsAntisymmetric R
-
-/-! ### Derived relations -/
 
 /-- The strict part `≻` of `R`: `x ≻ y` if `R x y` and not `R y x`. -/
 def StrictPart (R : X → X → Prop) (x y : X) : Prop := R x y ∧ ¬ R y x
 
-/-- Indifference `∼` derived from `R`: `x ∼ y` if `R x y` and `R y x` (Mathlib's
-`AntisymmRel R`). -/
+/-- Indifference `∼` derived from `R`: `x ∼ y` if `R x y` and `R y x` (`AntisymmRel R`). -/
 abbrev Indiff (R : X → X → Prop) : X → X → Prop := AntisymmRel R
 
 instance [DecidableRel R] : DecidableRel (StrictPart R) :=
   fun x y => inferInstanceAs (Decidable (R x y ∧ ¬ R y x))
-
-/-! ### Unfolding lemmas and bridges to Mathlib's classes -/
 
 theorem isComplete_iff : IsComplete R ↔ ∀ x y, R x y ∨ R y x :=
   ⟨fun h => h.total, fun h => ⟨h⟩⟩
@@ -121,10 +91,7 @@ theorem isTransitive_iff_isTrans : IsTransitive R ↔ IsTrans X R := Iff.rfl
 
 theorem isAntisymmetric_iff_antisymm : IsAntisymmetric R ↔ Std.Antisymm R := Iff.rfl
 
-/-- The strict part of `R` is the strict relation of `R` in Mathlib's sense. -/
 instance : IsNonstrictStrictOrder X R (StrictPart R) := ⟨fun _ _ => Iff.rfl⟩
-
-/-! ### Projections -/
 
 theorem IsComplete.total (h : IsComplete R) (x y : X) : R x y ∨ R y x :=
   Std.Total.total (self := h) x y
@@ -157,9 +124,6 @@ theorem IsLinearPreference.isPreferenceRelation (h : IsLinearPreference R) :
 
 theorem IsLinearPreference.isAntisymmetric (h : IsLinearPreference R) : IsAntisymmetric R := h.2
 
-/-! ### Basic cases -/
-
-/-- The strict part is irreflexive (Mathlib's `irrefl`, through `IsNonstrictStrictOrder`). -/
 @[simp] theorem strictPart_irrefl (R : X → X → Prop) (x : X) : ¬ StrictPart R x x :=
   irrefl x
 
@@ -171,7 +135,6 @@ theorem isReflexive_of_refl [h : Std.Refl R] : IsReflexive R := h
 
 theorem isAntisymmetric_of_antisymm [h : Std.Antisymm R] : IsAntisymmetric R := h
 
-/-- `≥` on a linear order is a preference relation. -/
 @[simp] theorem isPreferenceRelation_ge {α : Type*} [LinearOrder α] :
     IsPreferenceRelation (fun x y : α => y ≤ x) :=
   ⟨isComplete_iff.2 fun x y => le_total y x,
@@ -183,13 +146,10 @@ theorem StrictPart.not_rel (h : StrictPart R x y) : ¬ R y x := h.2
 
 end MathEconLib.Preference
 
-/-! ### Worked examples -/
-
 section Examples
 
 open MathEconLib.Preference
 
-/-- `≥` on the natural numbers is a preference relation ("more is better"). -/
 example : IsPreferenceRelation (fun x y : ℕ => y ≤ x) :=
   ⟨isComplete_iff.2 fun x y => le_total y x,
     isTransitive_iff.2 fun _ _ _ hxy hyz => le_trans hyz hxy⟩
@@ -200,11 +160,9 @@ example (x y : ℕ) : StrictPart (fun x y : ℕ => y ≤ x) x y ↔ y < x :=
 example (x y : ℕ) : Indiff (fun x y : ℕ => y ≤ x) x y ↔ x = y :=
   ⟨fun h => le_antisymm h.2 h.1, fun h => h ▸ ⟨le_rfl, le_rfl⟩⟩
 
-/-- The empty relation is transitive but not complete. -/
 example : IsTransitive (fun _ _ : ℕ => False) ∧ ¬ IsComplete (fun _ _ : ℕ => False) :=
   ⟨isTransitive_iff.2 fun _ _ _ h => h.elim, fun h => (h.total 0 0).elim id id⟩
 
-/-- Universal indifference is a preference relation that is not antisymmetric. -/
 example : IsPreferenceRelation (fun _ _ : Bool => True) ∧
     ¬ IsAntisymmetric (fun _ _ : Bool => True) :=
   ⟨⟨isComplete_iff.2 fun _ _ => Or.inl trivial, isTransitive_iff.2 fun _ _ _ _ _ => trivial⟩,
