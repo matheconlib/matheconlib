@@ -5,7 +5,7 @@ Authors: Ritik Jain
 -/
 module
 
-import MathEconLib.Preferences.Profile
+import MathEconLib.Preferences
 import Mathlib.Data.Fin.VecNotation
 
 /-!
