@@ -3,7 +3,9 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Basic
+module
+
+public import MathEconLib.Choice.Basic
 
 /-!
 # Conditions on choice functions
@@ -46,6 +48,8 @@ the sections below state the precise scope of each definition and theorem.
 Further background: Aizerman–Malishevski (1981); Alkan–Gale consistency;
 Aygün–Sönmez (2013); Chambers–Yenmez (2017); Plott (1973).
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 

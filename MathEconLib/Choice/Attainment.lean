@@ -3,14 +3,15 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib.Choice.WeakPreferences
+module
+
+public import MathEconLib.Choice.WeakPreferences
 
 /-!
 # Attainment and optimal-bundle correspondences
 
 Relate the strict-choice predicates from `Choice.Induced` to the shared optimum correspondence.
 This module imports weak-preference choice; the strict constructors do not depend on it.
-The public entry point is `MathEconLib.Choice`.
 
 ## Main statements
 
@@ -23,6 +24,8 @@ Apply these bridges to the priority-refined order to describe the selected parti
 Weak correspondence nonemptiness alone does not imply refined attainment, and weak optimality of
 the empty bundle alone does not determine which tied option a priority selects.
 -/
+
+public section
 
 namespace MathEconLib.Choice.ChoiceFunction
 
@@ -52,3 +55,5 @@ theorem outsideOptionOptimal_iff_empty_mem_optimalBundles (pref : LinearOrder (O
       fun x hx ↦ hbnone ▸ hmax (some x) (Set.singleton_subset_iff.mpr hx)⟩
 
 end MathEconLib.Choice.ChoiceFunction
+
+end

@@ -25,24 +25,24 @@ example (s : S) (Y : Set X) :
         ((Subtype.val : {x : X // seller x = s} → X) ⁻¹' Y) := Iff.rfl
 
 example (s : S) (Y : Set X) :
-    Market.Declines seller pref s Y ↔
+    Market.SellerDeclines seller pref s Y ↔
       ∀ x : {x : X // seller x = s}, (x : X) ∈ Y → (pref s).le (some x) none :=
-  Market.declines_iff seller pref s Y
+  Market.sellerDeclines_iff seller pref s Y
 
 example (s : S) (Y : Set X) :
     (Market.ofSellerPreferences buyer seller choiceB hB pref).choiceS s Y = ∅ ↔
-      ¬ Market.HasSellerOptimum seller pref s Y ∨ Market.Declines seller pref s Y :=
+      ¬ Market.HasSellerOptimum seller pref s Y ∨ Market.SellerDeclines seller pref s Y :=
   Market.choiceS_ofSellerPreferences_eq_empty_iff buyer seller choiceB hB pref s Y
 
 example (s : S) {Y : Set X} (h : Market.HasSellerOptimum seller pref s Y) :
     (Market.ofSellerPreferences buyer seller choiceB hB pref).choiceS s Y = ∅ ↔
-      Market.Declines seller pref s Y :=
+      Market.SellerDeclines seller pref s Y :=
   Market.choiceS_ofSellerPreferences_eq_empty_iff_of_hasSellerOptimum
     buyer seller choiceB hB pref s h
 
 example (s : S) {Y : Set X} (h : Market.HasSellerOptimum seller pref s Y) :
     ((Market.ofSellerPreferences buyer seller choiceB hB pref).choiceS s Y).Nonempty ↔
-      ¬ Market.Declines seller pref s Y :=
+      ¬ Market.SellerDeclines seller pref s Y :=
   Market.choiceS_ofSellerPreferences_nonempty_iff_of_hasSellerOptimum
     buyer seller choiceB hB pref s h
 

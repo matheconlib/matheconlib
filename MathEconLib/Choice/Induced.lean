@@ -3,15 +3,17 @@ Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers, Bo Cowgill
 -/
+module
+
 /-
 Preference-induced choice, independent of agents and markets.
 -/
-import MathEconLib.Choice.Map
-import MathEconLib.Choice.FiniteOption
-import Mathlib.Data.Set.Finite.Lemmas
-import Mathlib.Data.Set.Finite.Powerset
-import Mathlib.Data.Set.Subsingleton
-import Mathlib.Order.Basic
+public import MathEconLib.Choice.Map
+public import MathEconLib.Choice.FiniteOption
+public import Mathlib.Data.Set.Finite.Lemmas
+public import Mathlib.Data.Set.Finite.Powerset
+public import Mathlib.Data.Set.Subsingleton
+public import Mathlib.Order.Basic
 
 /-!
 # Choice from linear preferences over bundles
@@ -41,8 +43,7 @@ option is weakly preferred to every available alternative. Empty option choice m
 nonattainment or outside-option optimality; under attainment it means the latter alone.
 
 Consistency holds at any menu with an attained optimum, hence on finite menus. For option-induced
-choice, consistency on all menus is equivalent to attainment on all menus. Correspondence bridges
-are in `MathEconLib.Choice.Attainment`, keeping this module independent of weak-preference choice.
+choice, consistency on all menus is equivalent to attainment on all menus.
 
 ## Attainment interface
 
@@ -62,6 +63,8 @@ specialization.
 Preference comparisons use `pref.le`, with larger elements weakly preferred.
 They are distinct from set inclusion.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 

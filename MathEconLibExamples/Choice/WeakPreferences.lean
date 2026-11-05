@@ -3,8 +3,10 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib.Choice.WeakPreferences
-import Mathlib.Logic.Equiv.Fin.Basic
+module
+
+public import MathEconLib.Choice.WeakPreferences
+public import Mathlib.Logic.Equiv.Fin.Basic
 import Mathlib.Tactic.FinCases
 import Mathlib.Tactic.NormNum
 
@@ -34,8 +36,10 @@ they make no matching-stability or incentive claims.
   infinite menu.
 
 The finite examples have an attained refined optimum. General infinite menus need an explicit
-attainment condition; counterexamples are in `MathEconLibTest.Choice.WeakPreferences`.
+attainment condition.
 -/
+
+@[expose] public section
 
 namespace MathEconLibExamples.Choice.WeakPreferences
 
@@ -60,10 +64,8 @@ def utility : Option (Fin 2) → ℤ
   fin_cases i <;> norm_num [utility, value, price]
 
 /-- Utility induces a complete preorder that keeps the two contracts distinct. -/
-@[instance_reducible] def pref : CompletePreference (Option (Fin 2)) :=
+def pref : CompletePreference (Option (Fin 2)) :=
   CompletePreference.ofUtility utility
-
-theorem complete : Std.Total pref.le := ⟨fun a b ↦ le_total (utility a) (utility b)⟩
 
 /-- Fixed priority: contract 1, then contract 0, then the outside option. -/
 def priority : Option (Fin 2) ↪ Fin 3 := (finSuccEquiv 2).symm.toEmbedding
@@ -112,10 +114,8 @@ end Contracts
 namespace OutsideTie
 
 /-- Both contracts and nonparticipation yield zero utility. -/
-@[instance_reducible] def pref : CompletePreference (Option (Fin 2)) :=
+def pref : CompletePreference (Option (Fin 2)) :=
   CompletePreference.ofUtility fun _ ↦ (0 : ℤ)
-
-theorem complete : Std.Total pref.le := ⟨fun _ _ ↦ Or.inl (show (0 : ℤ) ≤ 0 from le_rfl)⟩
 
 /-- Fixed priority puts nonparticipation above the contracts. -/
 def outsidePriority : Option (Fin 2) ↪ Fin 3 := finSuccEquivLast.symm.toEmbedding
@@ -172,9 +172,7 @@ def utility (i : Fin 2) : ℤ := (if i = 0 then 7 else 9) - (if i = 0 then 2 els
 @[simp] theorem utility_eq (i : Fin 2) : utility i = 5 := by
   fin_cases i <;> norm_num [utility]
 
-@[instance_reducible] def pref : CompletePreference (Fin 2) := CompletePreference.ofUtility utility
-
-theorem complete : Std.Total pref.le := ⟨fun a b ↦ le_total (utility a) (utility b)⟩
+def pref : CompletePreference (Fin 2) := CompletePreference.ofUtility utility
 
 /-- Both different bundles remain in the correspondence. -/
 theorem bundle_mem (i : Fin 2) : bundle i ∈ optimalBundles pref.toPreference bundle Set.univ :=
@@ -231,3 +229,5 @@ theorem selected_mem :
 end FiniteFamily
 
 end MathEconLibExamples.Choice.WeakPreferences
+
+end

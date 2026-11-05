@@ -3,11 +3,13 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.Preferences
-import MathEconLib.ForMathlib.Data.PartialMatching
-import Mathlib.Data.Set.Basic
-import Mathlib.Data.Fintype.Defs
-import Mathlib.Order.Basic
+module
+
+public import MathEconLib.Matching.Classical.Marriage.Preferences
+public import MathEconLib.ForMathlib.Data.PartialMatching
+public import Mathlib.Data.Set.Basic
+public import Mathlib.Data.Fintype.Defs
+public import Mathlib.Order.Basic
 
 /-!
 # Marriage matchings, stability, and optimality specifications
@@ -21,6 +23,8 @@ matching-with-contracts model.
 The order on bare `PEquiv` is its extension order; unanimous preference is
 expressed by `MenWeaklyPrefer` and `WomenWeaklyPrefer`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

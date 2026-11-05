@@ -76,11 +76,6 @@ require the candidate to belong to the feasible set. -/
 theorem mem_maximizers_ofUtility [Preorder β] (value : α → β) {S : Set α} {a : α} :
     a ∈ maximizers (Preference.ofUtility value) S ↔ a ∈ S ∧ IsMaxOn value S a := Iff.rfl
 
-/-- The Mathlib lifted-order form of `mem_maximizers_ofUtility`, using explicit conversion. -/
-theorem mem_maximizers_lift [Preorder β] (value : α → β) {S : Set α} {a : α} :
-    a ∈ maximizers (Preference.ofPreorder (Preorder.lift value)) S ↔
-      a ∈ S ∧ IsMaxOn value S a := mem_maximizers_ofUtility value
-
 theorem maximizers_subset (pref : Preference α) (S : Set α) : maximizers pref S ⊆ S :=
   fun _ h ↦ h.1
 
@@ -105,7 +100,7 @@ theorem maximizers_nonempty_of_finite (pref : CompletePreference α)
 /-- Refinement retains precisely the weak maximizers with highest priority among weak maximizers. -/
 theorem mem_maximizers_tieBreak_iff [LinearOrder β] (pref : CompletePreference α)
     (priority : α ↪ β) {S : Set α} {a : α} :
-    a ∈ maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S ↔
+    a ∈ maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority)) S ↔
       a ∈ maximizers pref.toPreference S ∧
         ∀ b ∈ maximizers pref.toPreference S, priority b ≤ priority a :=
   Order.isGreatest_tieBreakOrder_iff pref.toPreference.toPreorder pref.isTotal priority
@@ -113,7 +108,7 @@ theorem mem_maximizers_tieBreak_iff [LinearOrder β] (pref : CompletePreference 
 /-- Refined maximizers exist exactly when priorities attain a greatest value on weak maximizers. -/
 theorem maximizers_tieBreak_nonempty_iff [LinearOrder β] (pref : CompletePreference α)
     (priority : α ↪ β) (S : Set α) :
-    (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S).Nonempty ↔
+    (maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority)) S).Nonempty ↔
       ∃ p, IsGreatest (priority '' maximizers pref.toPreference S) p :=
   Order.exists_isGreatest_tieBreakOrder_iff pref.toPreference.toPreorder pref.isTotal priority S
 
@@ -121,7 +116,7 @@ theorem maximizers_tieBreak_nonempty_iff [LinearOrder β] (pref : CompletePrefer
 theorem maximizers_tieBreak_nonempty_of_finite [LinearOrder β] (pref : CompletePreference α)
     (priority : α ↪ β) {S : Set α} (hfinite : (maximizers pref.toPreference S).Finite)
     (hne : (maximizers pref.toPreference S).Nonempty) :
-    (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S).Nonempty :=
+    (maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority)) S).Nonempty :=
   Order.exists_isGreatest_tieBreakOrder_of_finite
     pref.toPreference.toPreorder pref.isTotal priority hfinite hne
 
@@ -129,14 +124,14 @@ theorem maximizers_tieBreak_nonempty_of_finite [LinearOrder β] (pref : Complete
 theorem maximizers_tieBreak_nonempty_of_wellFoundedGT [LinearOrder β] [WellFoundedGT β]
     (pref : CompletePreference α) (priority : α ↪ β) {S : Set α}
     (hne : (maximizers pref.toPreference S).Nonempty) :
-    (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S).Nonempty :=
+    (maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority)) S).Nonempty :=
   Order.exists_isGreatest_tieBreakOrder_of_wellFoundedGT
     pref.toPreference.toPreorder pref.isTotal priority hne
 
 /-- With well-founded strict priority improvement, refined and weak attainment are equivalent. -/
 theorem maximizers_tieBreak_nonempty_iff_of_wellFoundedGT [LinearOrder β] [WellFoundedGT β]
     (pref : CompletePreference α) (priority : α ↪ β) (S : Set α) :
-    (maximizers (Preference.ofPreorder (pref.tieBreak priority).toPreorder) S).Nonempty ↔
+    (maximizers (CompletePreference.ofLinearOrder (pref.tieBreak priority)) S).Nonempty ↔
       (maximizers pref.toPreference S).Nonempty :=
   Order.exists_isGreatest_tieBreakOrder_iff_of_wellFoundedGT
     pref.toPreference.toPreorder pref.isTotal priority S

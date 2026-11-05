@@ -3,9 +3,11 @@ Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers, Bo Cowgill
 -/
-import MathEconLib.Matching.Contracts.Basic
-import MathEconLib.Choice.Induced
-import MathEconLib.Choice.Map
+module
+
+public import MathEconLib.Matching.Contracts.Basic
+public import MathEconLib.Choice.Induced
+public import MathEconLib.Choice.Map
 
 /-!
 # Many-to-one matching with contracts
@@ -23,16 +25,16 @@ It does not assume (seller-)feasibility of buyer choices, so it also represents
 completed markets. IRC of the induced seller choices is proved for finite
 contract types; unit demand is well-defined without finiteness hypotheses.
 
-`HasSellerOptimum` and `Declines` apply the strict choice predicates to a seller's own-contract
-subtype menu. The latter means that the outside option is optimal under the supplied order and
-itself guarantees attainment. An empty seller choice can also result from nonattainment.
+`HasSellerOptimum` and `SellerDeclines` apply the strict choice predicates to a seller's
+own-contract subtype menu. The latter means that the outside option is optimal under the supplied
+order and itself guarantees attainment. An empty seller choice can also result from nonattainment.
 
 ## Participation statements
 
 * `choiceS_ofSellerPreferences_eq_empty_iff`: empty seller choice reflects nonattainment or
   optimal nonparticipation on the seller's own available contracts.
 * `choiceS_ofSellerPreferences_eq_empty_iff_of_hasSellerOptimum`: under attainment, empty seller
-  choice is equivalent to `Declines`.
+  choice is equivalent to `SellerDeclines`.
 * `choiceS_ofSellerPreferences_nonempty_iff_of_hasSellerOptimum`: under attainment, a seller
   participates exactly when the outside option is not optimal.
 * `hasSellerOptimum_of_finite_ownMenu`: only the seller's own menu needs to be finite.
@@ -46,6 +48,8 @@ John William Hatfield and Scott Duke Kominers (2025), *The theory of matching
 with contracts*, Handbook of the Economics of Matching 2, 409–487, §6.1.
 https://doi.org/10.1016/bs.hesmat.2025.10.005.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 
@@ -115,21 +119,21 @@ def HasSellerOptimum (seller : X → S)
 
 /-- The outside option is optimal among a seller's own available contracts.
 This describes the supplied preference, independently of totalized empty choice. -/
-def Declines (seller : X → S)
+def SellerDeclines (seller : X → S)
     (pref : ∀ s, LinearOrder (Option {x : X // seller x = s})) (s : S) (Y : Set X) : Prop :=
   ChoiceFunction.OutsideOptionOptimal (pref s)
     ((Subtype.val : {x : X // seller x = s} → X) ⁻¹' Y)
 
 /-- Declining compares only contracts owned by this seller and present in the menu. -/
-theorem declines_iff (seller : X → S)
+theorem sellerDeclines_iff (seller : X → S)
     (pref : ∀ s, LinearOrder (Option {x : X // seller x = s})) (s : S) (Y : Set X) :
-    Declines seller pref s Y ↔
+    SellerDeclines seller pref s Y ↔
       ∀ x : {x : X // seller x = s}, (x : X) ∈ Y → (pref s).le (some x) none := Iff.rfl
 
 /-- An optimal outside option is an attained seller optimum, even on an infinite menu. -/
-theorem Declines.hasSellerOptimum {seller : X → S}
+theorem SellerDeclines.hasSellerOptimum {seller : X → S}
     {pref : ∀ s, LinearOrder (Option {x : X // seller x = s})} {s : S} {Y : Set X}
-    (h : Declines seller pref s Y) : HasSellerOptimum seller pref s Y :=
+    (h : SellerDeclines seller pref s Y) : HasSellerOptimum seller pref s Y :=
   ChoiceFunction.OutsideOptionOptimal.hasBundleOptimum h
 
 /-- Finiteness of the seller's own available contracts suffices; other menus may be infinite. -/
@@ -164,7 +168,7 @@ theorem consistent_choiceS_ofSellerPreferences [Finite X] (s : S) :
 /-- Empty seller choice is caused by nonattainment or optimal nonparticipation. -/
 theorem choiceS_ofSellerPreferences_eq_empty_iff (s : S) (Y : Set X) :
     (ofSellerPreferences buyer seller choiceB hB pref).choiceS s Y = ∅ ↔
-      ¬ HasSellerOptimum seller pref s Y ∨ Declines seller pref s Y :=
+      ¬ HasSellerOptimum seller pref s Y ∨ SellerDeclines seller pref s Y :=
   (Set.image_eq_empty (f := fun x : {x : X // seller x = s} ↦ (x : X))).trans
     (ChoiceFunction.ofOptionLinearOrder_eq_empty_iff (pref s) _)
 
@@ -172,7 +176,7 @@ theorem choiceS_ofSellerPreferences_eq_empty_iff (s : S) (Y : Set X) :
 theorem choiceS_ofSellerPreferences_eq_empty_iff_of_hasSellerOptimum (s : S) {Y : Set X}
     (h : HasSellerOptimum seller pref s Y) :
     (ofSellerPreferences buyer seller choiceB hB pref).choiceS s Y = ∅ ↔
-      Declines seller pref s Y :=
+      SellerDeclines seller pref s Y :=
   (Set.image_eq_empty (f := fun x : {x : X // seller x = s} ↦ (x : X))).trans
     (ChoiceFunction.ofOptionLinearOrder_eq_empty_iff_of_hasBundleOptimum (pref s) h)
 
@@ -180,14 +184,14 @@ theorem choiceS_ofSellerPreferences_eq_empty_iff_of_hasSellerOptimum (s : S) {Y 
 theorem choiceS_ofSellerPreferences_nonempty_iff_of_hasSellerOptimum (s : S) {Y : Set X}
     (h : HasSellerOptimum seller pref s Y) :
     ((ofSellerPreferences buyer seller choiceB hB pref).choiceS s Y).Nonempty ↔
-      ¬ Declines seller pref s Y :=
+      ¬ SellerDeclines seller pref s Y :=
   Set.nonempty_iff_ne_empty.trans
     (not_congr (choiceS_ofSellerPreferences_eq_empty_iff_of_hasSellerOptimum
       buyer seller choiceB hB pref s h))
 
 /-- Preference for the outside option implies empty choice without a separate attainment premise. -/
-theorem choiceS_ofSellerPreferences_eq_empty_of_declines (s : S) {Y : Set X}
-    (h : Declines seller pref s Y) :
+theorem choiceS_ofSellerPreferences_eq_empty_of_sellerDeclines (s : S) {Y : Set X}
+    (h : SellerDeclines seller pref s Y) :
     (ofSellerPreferences buyer seller choiceB hB pref).choiceS s Y = ∅ :=
   (choiceS_ofSellerPreferences_eq_empty_iff_of_hasSellerOptimum
     buyer seller choiceB hB pref s h.hasSellerOptimum).mpr h

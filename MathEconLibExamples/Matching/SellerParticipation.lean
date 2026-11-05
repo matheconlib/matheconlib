@@ -3,7 +3,9 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
-import MathEconLib.Matching.Contracts.ManyToOne
+module
+
+public import MathEconLib.Matching.Contracts.ManyToOne
 
 /-!
 # Seller participation with and without attainment
@@ -29,6 +31,8 @@ Reversing the ranks makes the outside option greatest, giving an attained empty 
 
 These statements concern seller choice and make no stability or equilibrium claim.
 -/
+
+@[expose] public section
 
 namespace MathEconLibExamples.Matching.SellerParticipation
 
@@ -92,7 +96,7 @@ theorem increasing_unattained (s : Bool) :
     | some x => Nat.not_succ_le_self (ownIndex s x + 1)
         (@hmax (some (contract s (ownIndex s x + 1))) (Set.subset_univ _))
 
-theorem increasing_not_declines (s : Bool) : ¬ Market.Declines seller increasing s Set.univ :=
+theorem increasing_not_declines (s : Bool) : ¬ Market.SellerDeclines seller increasing s Set.univ :=
   fun h ↦ Nat.not_succ_le_self 0 (h (contract s 0) (Set.mem_univ _))
 
 /-- Empty seller choice can result from nonattainment rather than a preference to stay out. -/
@@ -102,15 +106,15 @@ theorem increasing_empty (s : Bool) : increasingMarket.choiceS s Set.univ = ∅ 
 
 /-- With reversed ranks, the outside option is preferred to all own available contracts. -/
 theorem outside_declines (s : Bool) (Y : Set Contract) :
-    Market.Declines seller outsideFirst s Y := fun x _ ↦ Nat.zero_le (ownIndex s x + 1)
+    Market.SellerDeclines seller outsideFirst s Y := fun x _ ↦ Nat.zero_le (ownIndex s x + 1)
 
 theorem outside_attains (s : Bool) (Y : Set Contract) :
     Market.HasSellerOptimum seller outsideFirst s Y := (outside_declines s Y).hasSellerOptimum
 
 /-- Here empty choice is certified by optimal nonparticipation, even on the infinite full menu. -/
 theorem outside_empty (s : Bool) (Y : Set Contract) : decliningMarket.choiceS s Y = ∅ :=
-  Market.choiceS_ofSellerPreferences_eq_empty_of_declines buyer seller buyerChoice buyerSupport
-    outsideFirst s (outside_declines s Y)
+  Market.choiceS_ofSellerPreferences_eq_empty_of_sellerDeclines buyer seller buyerChoice
+    buyerSupport outsideFirst s (outside_declines s Y)
 
 /-- One contract for seller false, together with every contract belonging to seller true. -/
 def mixedMenu : Set Contract := insert (false, 0) {x | seller x = true}
@@ -131,7 +135,7 @@ theorem mixed_attains : Market.HasSellerOptimum seller increasing false mixedMen
   Market.hasSellerOptimum_of_finite_ownMenu seller increasing false
     (mixed_ownMenu_eq.symm ▸ Set.finite_singleton _)
 
-theorem mixed_not_declines : ¬ Market.Declines seller increasing false mixedMenu :=
+theorem mixed_not_declines : ¬ Market.SellerDeclines seller increasing false mixedMenu :=
   fun h ↦ Nat.not_succ_le_self 0 (h (contract false 0) (Or.inl rfl))
 
 /-- Finite own-menu attainment certifies participation on this infinite global menu. -/
@@ -153,11 +157,13 @@ theorem mixed_choice_eq : increasingMarket.choiceS false mixedMenu = {(false, 0)
 
 /-- An unrelated seller's contracts give no available own contract to compare with staying out. -/
 theorem foreign_declines (s : Bool) :
-    Market.Declines seller increasing s {x | seller x ≠ s} :=
+    Market.SellerDeclines seller increasing s {x | seller x ≠ s} :=
   fun x hx ↦ (hx x.property).elim
 
 theorem foreign_empty (s : Bool) : increasingMarket.choiceS s {x | seller x ≠ s} = ∅ :=
-  Market.choiceS_ofSellerPreferences_eq_empty_of_declines buyer seller buyerChoice buyerSupport
-    increasing s (foreign_declines s)
+  Market.choiceS_ofSellerPreferences_eq_empty_of_sellerDeclines buyer seller buyerChoice
+    buyerSupport increasing s (foreign_declines s)
 
 end MathEconLibExamples.Matching.SellerParticipation
+
+end
