@@ -90,6 +90,7 @@ public import MathEconLib.Matching.Classical.Marriage.ToContracts
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
+public import MathEconLib.Matching.Contracts.JointPreservation
 public import MathEconLib.Matching.Contracts.ManyToOne
 public import MathEconLib.Matching.Contracts.RuralHospitals
 public import MathEconLib.Matching.Contracts.StableFixedPoints

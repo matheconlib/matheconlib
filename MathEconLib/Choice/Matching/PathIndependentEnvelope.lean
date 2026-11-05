@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers and Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 module
 
@@ -45,6 +45,34 @@ theorem IsCompletionOf.le_pathIndependentEnvelope
     D ≤ pathIndependentEnvelope counterparty C :=
   le_pathIndependentMinorant (hsub.pathIndependent hIRC)
     (hcomp.le_substituteEnvelope hsub)
+
+/-- A bound below the substitute envelope has a canonical path-independent completion
+whenever it contains any path-independent completion of the original rule. The IRC
+hypothesis is on the witnessing completion. -/
+theorem pathIndependentMinorant_isCompletionOf_of_le_substituteEnvelope {K : ChoiceFunction X}
+    (hKU : K ≤ substituteEnvelope counterparty C) (hcomp : C.IsCompletionOf counterparty D)
+    (hD : D.PathIndependent) (hDK : D ≤ K) :
+    C.IsCompletionOf counterparty K.pathIndependentMinorant := by
+  classical
+  let P := K.pathIndependentMinorant
+  have hDP : D ≤ P := le_pathIndependentMinorant hD hDK
+  have hPU : P ≤ substituteEnvelope counterparty C :=
+    (pathIndependentMinorant_le K).trans hKU
+  intro Y
+  by_cases hfeas : Set.InjOn counterparty (P Y)
+  · left
+    have hDY : D Y = C Y := hcomp.eq_of_injOn (hfeas.mono (hDP Y))
+    have hDF : D (P Y) = D Y := hD.consistent (hDP Y) (P.choose_subset Y)
+    have hCF : C (P Y) = C Y := (hcomp.eq_of_injOn_menu hfeas).symm.trans (hDF.trans hDY)
+    apply Set.Subset.antisymm _ (hDY ▸ hDP Y)
+    intro x hx
+    have hxC := (hPU Y hx).2 (P Y) (P.choose_subset Y) hfeas hx
+    rwa [hCF] at hxC
+  · right
+    simp only [Set.InjOn] at hfeas
+    push Not at hfeas
+    obtain ⟨x, hx, y, hy, heq, hne⟩ := hfeas
+    exact ⟨x, hx, y, hy, hne, heq⟩
 
 /-- If a substitutable IRC completion exists, the path-independent envelope is one. -/
 theorem pathIndependentEnvelope_isCompletionOf
