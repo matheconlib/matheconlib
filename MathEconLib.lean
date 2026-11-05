@@ -102,6 +102,11 @@ public import MathEconLib.Mechanism.Core.Mechanism
 public import MathEconLib.Mechanism.Core.Profile
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import MathEconLib.Mechanism.Core.Strategic
+public import MathEconLib.Preferences
+public import MathEconLib.Preferences.Basic
+public import MathEconLib.Preferences.Complete
+public import MathEconLib.Preferences.Representation.Basic
+public import MathEconLib.Preferences.Representation.Finite
 public import MathEconLib.Probability.FinDist.Basic
 public import MathEconLib.Probability.FinDist.ConditionalOn
 public import MathEconLib.Probability.FinDist.Expect
