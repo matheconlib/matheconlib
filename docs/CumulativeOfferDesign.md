@@ -73,8 +73,7 @@ Let `X` be contracts, `S` proposers, and `B` receivers, with existing
 `seller : X → S` and `buyer : X → B`. Preferences are complete, transitive weak relations on
 `Option {x : X // seller x = s}`, with `none` the outside option.
 Reuse the `CompletePreference` interface from #253 and the refinement API
-from #206, coordinating with their landing rather than introducing a parallel
-preference foundation. Keep preferences explicit and fixed during a run.
+from #206. Keep preferences explicit and fixed during a run.
 A fixed strict refinement, rather than the economic weak preference itself,
 can be supplied to the existing linear-order constructor.
 
@@ -119,11 +118,19 @@ an obligation of the matching-valued adapter.
 
 ## Offers, steps, histories, and termination
 
-For a proposer s, let `U_s(A)` be its strictly acceptable contracts outside A.
-It is eligible when no contract of s belongs to H(A) and U_s(A) is nonempty.
-An admissible offer is a greatest element of U_s(A) under its weak preference:
-it is at least as good as every other remaining acceptable contract.
-This relation allows all tied best contracts; it does not select one.
+For proposer s, distinguish the full unoffered own-contract menu from its
+strictly acceptable subset. Write `a ≺_s b` when s strictly prefers b to a.
+
+```text
+Own_s = {x : X // seller x = s}
+Y_s(A) = {x : Own_s | x.val ∉ A}
+U_s(A) = {x ∈ Y_s(A) | none ≺_s some x}
+```
+
+A seller is eligible when no contract of theirs belongs to `H(A)` and
+`U_s(A)` is nonempty. An admissible offer is a greatest element of `U_s(A)`
+under the seller's weak preference. The relation allows all tied best
+contracts. Eligibility makes no assertion that a best contract exists.
 
 A valid productive batch Q is nonempty, contains only admissible offers by
 eligible proposers, and contains at most one offer per proposer. The step is
@@ -169,14 +176,38 @@ strict preference. Its weak-preference version is an extension, not an assertion
 that HKW's original model permits ties. Also provide a fixed-priority
 simultaneous rule that takes each eligible agent's Γ-first admissible contract.
 
-Use sets in the semantic relation. On infinite domains, eligibility need not
-supply a greatest remaining contract, and a priority order need not attain a
-first element. Policy existence therefore needs explicit attainment hypotheses;
-absence of a valid batch is not automatically economic exhaustion. Finite
-contracts supply the needed attainment without finiteness of either agent type.
-Use #258's attainment and outside-option bridges on the actual own-contract
-menus, including attainment under refinement. Do not interpret a total choice
-constructor's empty fallback as voluntary nonparticipation.
+**Attainment and nonparticipation.** Use
+[#258](https://github.com/matheconlib/matheconlib/pull/258) on the full menu
+`Y_s(A)`. For a compatible fixed strict refinement `R_s`,
+`HasBundleOptimum R_s optionBundle (Y_s(A))` says that a greatest option exists
+among `none` and the contracts in that menu. Since the refinement places
+`none` ahead of contracts tied with it, `OutsideOptionOptimal R_s (Y_s(A))`
+is equivalent to `U_s(A) = ∅`. Thus terminality says that the outside option
+is optimal for every **unheld** proposer.
+
+The strict constructor returns empty choice either because the optimum is
+unattained or because the outside option is optimal. An optimal outside option
+itself certifies attainment. Only under attainment does emptiness characterize
+optimal nonparticipation. At the market interface,
+`Market.HasSellerOptimum` and `Market.SellerDeclines` on the global menu
+`Aᶜ` refer to the same own-menu conditions: restricting `Aᶜ` to seller s
+gives `Y_s(A)`.
+
+Keep attainment at the selection boundary. On an infinite menu there may be
+no weak best offer, or there may be weak best offers without a greatest
+priority among them. In the second case relational admissibility still
+allows those offers, but the fixed refinement does not select one. An
+eligible seller with an attained refined optimum can supply a singleton
+step; a fixed-refinement simultaneous selector needs this for every eligible
+seller. Finiteness of `Y_s(A)` suffices for that seller, even when the
+contract type is infinite.
+
+At a nonterminal state, global fixed-order scheduling requires a
+greatest-priority member of the union of admissible proposals. This can fail
+even if every eligible seller has an attained refined optimum. A finite
+contract type supplies both attainment conditions without finiteness of either
+agent type. Neither failure to select an offer nor absence of a valid batch
+proves economic exhaustion.
 
 Retain batch labels in a run. Its accumulated-set projection forgets order and
 batch boundaries; it cannot replace the history interface needed for observable
@@ -296,10 +327,10 @@ bundles, potentially destroying feasibility and optimality.
 preference-induced choice, correspondences, selection bridges, and
 utility/transfer examples, coordinated with the preferences-port issue
 [#161](https://github.com/matheconlib/matheconlib/issues/161).
-These general choice results are developed outside #139. The active #253,
-#206, and #258 stack now supplies preference, refinement, and attainment
-interfaces for the process to reuse. Coordinate integration with that stack;
-do not duplicate its definitions or require the whole #200 roadmap to finish.
+These general choice results are developed outside #139. The preference,
+refinement, and attainment interfaces from #253, #206, and #258 are now on
+`main`. Reuse them without duplicating their definitions or waiting for
+the rest of #200.
 
 ## Implementation sequence and acceptance checks
 
@@ -332,6 +363,12 @@ fixed-order adapter. Include an example where sequential and simultaneous
 outcomes differ under unrestricted choices. A small regular market
 should run under both singleton and simultaneous policies. Include a public
 umbrella-import client when Lean files are added.
+
+For the attainment bridge, also check a finite own menu inside an infinite
+contract type, an eligible seller with no weak best offer, and an eligible
+seller with weak best offers but no winner under the fixed priority. Both
+infinite cases remain nonterminal; only the latter has relationally
+admissible offers for that seller.
 
 For the first implementation, correctness means that the definitions and
 termination proofs land without silently imposing economic regularity.
