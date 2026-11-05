@@ -37,6 +37,10 @@ public import MathEconLib.Choice.Matching.Preferences
 public import MathEconLib.Choice.Matching.Relationships
 public import MathEconLib.Choice.Matching.WeakSubstitutability
 public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.DecisionTheory.Continuity
+public import MathEconLib.DecisionTheory.ExpectedUtility
+public import MathEconLib.DecisionTheory.Independence
+public import MathEconLib.DecisionTheory.Lottery
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
 public import MathEconLib.ForMathlib.Data.PartialMatching
@@ -102,6 +106,14 @@ public import MathEconLib.Mechanism.Core.Mechanism
 public import MathEconLib.Mechanism.Core.Profile
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import MathEconLib.Mechanism.Core.Strategic
+public import MathEconLib.Preferences
+public import MathEconLib.Preferences.Basic
+public import MathEconLib.Preferences.Complete
+public import MathEconLib.Preferences.Profile
+public import MathEconLib.Preferences.Relation
+public import MathEconLib.Preferences.Representation.Basic
+public import MathEconLib.Preferences.Representation.Finite
+public import MathEconLib.Preferences.Representation.Relation
 public import MathEconLib.Probability.FinDist.Basic
 public import MathEconLib.Probability.FinDist.ConditionalOn
 public import MathEconLib.Probability.FinDist.Expect
