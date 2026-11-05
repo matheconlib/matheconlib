@@ -3,6 +3,8 @@ import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
 import MathEconLibTest.Auction.SignalValueEnv
 import MathEconLibTest.Auction.SignalWeights
+import MathEconLibTest.Choice.Attainment
+import MathEconLibTest.Choice.AttainmentPublicImport
 import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
@@ -27,6 +29,8 @@ import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.PublicImport
+import MathEconLibTest.Matching.SellerParticipation
+import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
 import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core
