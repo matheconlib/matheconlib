@@ -31,8 +31,11 @@ layers. This applies to extensions of existing foundations such as `Preferences`
 and `Choice`.
 
 Record the canonical API, one representative downstream theorem and its assumptions,
-and the direction of any new imports. When a contribution arrives as a PR, agree on
-that scope with the contributor before requesting a refactor or downstream port.
+and the direction of any new imports. During PR review, if the downstream theorem
+exposes an unresolved choice about a shared abstraction, a public representation,
+or an import between layers, ask for a design issue or link an existing one that
+covers the question. Agree on the scope there with the contributor before
+requesting a refactor or downstream port.
 
 Leaf contributions — new theorems in existing chapters, documentation, applications
 built on the existing layers — can go straight to a PR.
