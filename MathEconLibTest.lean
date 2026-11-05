@@ -14,6 +14,7 @@ import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.ConditionalBeliefs
+import MathEconLibTest.GameTheory.ExplicitComparisons
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
 import MathEconLibTest.GameTheory.MatchingPennies
