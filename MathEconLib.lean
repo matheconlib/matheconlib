@@ -102,6 +102,14 @@ public import MathEconLib.Mechanism.Core.Mechanism
 public import MathEconLib.Mechanism.Core.Profile
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import MathEconLib.Mechanism.Core.Strategic
+public import MathEconLib.Preferences
+public import MathEconLib.Preferences.Basic
+public import MathEconLib.Preferences.Complete
+public import MathEconLib.Preferences.Profile
+public import MathEconLib.Preferences.Relation
+public import MathEconLib.Preferences.Representation.Basic
+public import MathEconLib.Preferences.Representation.Finite
+public import MathEconLib.Preferences.Representation.Relation
 public import MathEconLib.Probability.FinDist.Basic
 public import MathEconLib.Probability.FinDist.ConditionalOn
 public import MathEconLib.Probability.FinDist.Expect
@@ -114,6 +122,12 @@ public import MathEconLib.SingleParameter.IC
 public import MathEconLib.SingleParameter.Payment
 public import MathEconLib.SingleParameter.PostedPrice
 public import MathEconLib.SingleParameter.Revelation
+public import MathEconLib.SocialChoice.Arrow
+public import MathEconLib.SocialChoice.Basic
+public import MathEconLib.SocialChoice.Defs
+public import MathEconLib.SocialChoice.Dictatorship
+public import MathEconLib.SocialChoice.Majority
+public import MathEconLib.SocialChoice.May
 public import MathEconLib.Statistics.OrderStatistics
 public import MathEconLib.ValueDistribution
 public import MathEconLib.ValueDistribution.Basic
