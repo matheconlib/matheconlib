@@ -7,3 +7,5 @@ logs/
 
 reports/
 .lake/
+/docbuild/
+__pycache__/

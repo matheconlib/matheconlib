@@ -2,7 +2,7 @@
 
 MathEconLib is an effort to build a shared formal foundation for economics in [Lean 4](https://lean-lang.org/), with the long-term scope of microeconomic theory, macroeconomic theory, and econometrics. Current development focuses on microeconomic theory and its mathematical foundations, building on [Mathlib](https://github.com/leanprover-community/mathlib4).
 
-[Project website](https://mathecon.dev) · [Beginner's manual](docs/BeginnersManual.md) · [Documentation](docs/) · [Contributing](CONTRIBUTING.md)
+[Project website](https://mathecon.dev) · [Beginner's manual](docs/BeginnersManual.md) · [Documentation](docs/) · [API reference](https://mathecon.dev/docs/) · [Contributing](CONTRIBUTING.md)
 
 ## Getting started
 
@@ -59,7 +59,7 @@ The library is organized around shared definitions and results that economic mod
 | Pricing | [Single-parameter choice](MathEconLib/SingleParameter/), [value distributions, posted-price optimality, and comparative statics](MathEconLib/ValueDistribution/) |
 | Mathematical foundations | [Probability](MathEconLib/Probability/), [order statistics](MathEconLib/Statistics/), and supporting [analysis, order, and fixed-point results](MathEconLib/ForMathlib/) |
 
-Browse the [source tree](MathEconLib/) for individual modules and their statements, or see [the architecture overview](docs/BeginnersManual.md#appendix-b--how-matheconlib-is-organised) for how the pieces fit together.
+Browse the [source tree](MathEconLib/) for individual modules and their statements, or see [the architecture overview](docs/BeginnersManual.md#appendix-b--how-matheconlib-is-organised) for how the pieces fit together. See the [API reference](https://mathecon.dev/docs/) for generated documentation of every public declaration and the [signature index](https://mathecon.dev/docs/signatures/README.md) for a plain-Markdown listing of declaration signatures by module.
 
 ## Selected examples and applications
 
