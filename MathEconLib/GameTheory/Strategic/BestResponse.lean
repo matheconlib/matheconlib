@@ -57,16 +57,20 @@ theorem isNash_iff_mem_bestResponses (G : StrategicGame I A V) (a : ∀ i, A i) 
     G.IsNash a ↔ ∀ i, a i ∈ G.bestResponses i a := by
   change G.nashProblem.IsEquilibrium a ↔ _
   rw [G.nashProblem.isEquilibrium_iff_mem_ofValue]
+  have hv : G.nashProblem.valid a := trivial
+  simp only [hv, true_and]
   apply forall_congr'
   intro i
   rw [nashMenu_eq_range_update, ChoiceFunction.mem_ofValue, isMaxOn_iff, mem_bestResponses]
   constructor
   · intro h t
-    simpa only [nashProblem, Function.update_eq_self] using h.2 _ ⟨t, rfl⟩
+    simpa only [nashProblem, EquilibriumProblem.ofDeviation_value, Function.update_eq_self]
+      using h.2 _ ⟨t, rfl⟩
   · intro h
     refine ⟨⟨a i, by simp⟩, ?_⟩
     rintro _ ⟨t, rfl⟩
-    simpa only [nashProblem, Function.update_eq_self] using h t
+    simpa only [nashProblem, EquilibriumProblem.ofDeviation_value, Function.update_eq_self]
+      using h t
 
 /-- Changing the player's incumbent action leaves the best-response set unchanged. -/
 @[simp] theorem bestResponses_update (G : StrategicGame I A V) (i : I) (a : ∀ j, A j)
