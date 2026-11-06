@@ -5,7 +5,8 @@ Authors: Scott Duke Kominers
 -/
 module
 
-public import MathEconLib.Matching.Contracts.CumulativeOffer.Basic
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Attainment
+public import Mathlib.Order.WithBot
 
 /-!
 # Cumulative offer policies
@@ -21,7 +22,7 @@ Higher elements in that supplied order have priority. All constructors preserve 
 
 namespace MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess
 
-open MathEconLib.Choice MathEconLib.Preferences
+open MathEconLib.Choice MathEconLib.Choice.ChoiceFunction MathEconLib.Preferences
 
 variable {B S X : Type*} (P : CumulativeOfferProcess B S X)
 
@@ -102,6 +103,48 @@ theorem selectOffer_spec [Finite X] (priority : LinearOrder X)
   have hm := (maximizers_nonempty_of_finite (CompletePreference.ofLinearOrder priority)
     (Set.toFinite (P.admissibleProposals A s)) (P.admissibleProposals_nonempty h)).choose_spec
   exact ⟨hm.1.1, hm.1.2, fun y hy hs => hm.2 ⟨hy, hs⟩⟩
+
+/-- Lift the contract order to option priorities, ranking the outside option first at a tie. -/
+def proposalPriority (s : S) : Option (P.Own s) ↪ WithTop X :=
+  (Function.Embedding.subtype (fun x : X ↦ P.seller x = s)).optionMap
+
+/-- The proposal order compares the seller's preference first and contract priority at a tie. -/
+@[instance_reducible]
+noncomputable def proposalOrder (priority : LinearOrder X) (s : S) :
+    LinearOrder (Option (P.Own s)) :=
+  letI := priority
+  (P.pref s).tieBreak (P.proposalPriority s)
+
+private theorem admissible_val_iff (A : Set X) {s : S} (x : P.Own s) :
+    P.Admissible A x.val ↔
+      P.NoHeldContract A s ∧ x ∈ maximizers (P.contractPreference s) (P.remaining A s) := by
+  constructor
+  · rintro ⟨t, y, hy, hheld, hbest⟩
+    have hts : t = s := y.property.symm.trans ((congrArg P.seller hy).trans x.property)
+    subst t
+    have hyx : y = x := Subtype.ext hy
+    subst y
+    exact ⟨hheld, hbest⟩
+  · rintro ⟨hheld, hbest⟩
+    exact ⟨s, x, rfl, hheld, hbest⟩
+
+/-- For an eligible seller, strict option choice on the unoffered menu selects the same
+contract as the finite policy. -/
+theorem ofOptionLinearOrder_proposalOrder_eq_singleton_selectOffer [Finite X]
+    (priority : LinearOrder X) (A : Set X) (s : S) (h : P.Eligible A s) :
+    Subtype.val '' ofOptionLinearOrder (P.proposalOrder priority s) (P.unofferedOwnMenu A s) =
+      {P.selectOffer priority A s h} := by
+  let := priority
+  obtain ⟨had, hs, hmax⟩ := P.selectOffer_spec priority A s h
+  let x : P.Own s := ⟨P.selectOffer priority A s h, hs⟩
+  have hxbest := ((P.admissible_val_iff A x).mp had).2
+  have hx : x ∈ ofOptionLinearOrder (P.proposalOrder priority s) (P.unofferedOwnMenu A s) := by
+    refine (P.mem_tieBreak_optionChoice_iff A s (P.proposalPriority s) (fun _ ↦ le_top) x).mpr
+      ⟨hxbest, fun y hy ↦ ?_⟩
+    change (y.val : WithTop X) ≤ (x.val : WithTop X)
+    exact WithTop.coe_le_coe.mpr (hmax y.val ((P.admissible_val_iff A y).mpr ⟨h.1, hy⟩) y.property)
+  rw [(unitDemand_ofOptionLinearOrder (P.proposalOrder priority s) _).eq_singleton_of_mem hx,
+    Set.image_singleton]
 
 /-- A subset of eligible agents submits one fixed-priority proposal each. -/
 noncomputable def selectedBatch [Finite X] (priority : LinearOrder X)
