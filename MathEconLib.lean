@@ -27,6 +27,7 @@ public import MathEconLib.BidderProblem.EnvelopeIC
 public import MathEconLib.BidderProblem.TypeDeviationIC
 public import MathEconLib.BidderProblem.UniversalIC
 public import MathEconLib.Choice
+public import MathEconLib.Choice.Attainment
 public import MathEconLib.Choice.Basic
 public import MathEconLib.Choice.Conditions
 public import MathEconLib.Choice.FiniteOption

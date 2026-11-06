@@ -178,4 +178,3 @@ end MathEconLibTest.Matching.CumulativeOffer
 #print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.Run.execute_card_eq
 #print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.Run.eq_of_terminal_of_follows
 #print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.rawOutcome_eq_iff
-

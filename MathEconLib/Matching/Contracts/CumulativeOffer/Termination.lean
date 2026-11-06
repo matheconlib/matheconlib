@@ -192,4 +192,3 @@ theorem rawOutcome_eq_iff [Finite X] {π : Policy X} (hp : P.ValidPolicy π) (Z 
     exact (hr.heldContracts_eq_rawOutcome P hf ht).symm.trans hZ
 
 end MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess
-

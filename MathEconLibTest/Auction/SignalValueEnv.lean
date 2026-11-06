@@ -10,8 +10,8 @@ public import MathEconLib.Auction.Affiliation.WinnersCurse
 /-!
 # Bounded private values in a signal/value environment
 
-Independent uniform signals on `[0, 1]` have values equal to their own signals on
-the declared box. Clamping the values outside the interval preserves global
+The environment uses product unit-interval signal weights and private values equal
+to each bidder's own signal on the declared box. Clamping outside the interval preserves global
 nonnegativity, continuity and monotonicity, but not global strict monotonicity.
 -/
 
@@ -21,7 +21,7 @@ open MathEconLib Auction.Affiliation Set
 
 namespace MathEconLibTest.SignalValueEnv
 
-/-- Independent unit-interval signals with bounded private values. -/
+/-- Product unit-interval signal weights with bounded private values. -/
 def environment (n : ℕ) : SignalValueEnv n where
   x_lo := 0
   x_hi := 1
@@ -54,13 +54,14 @@ theorem private_values (n : ℕ) : IsPrivateValues (environment n) := by
   change max 0 (min 1 (X i)) = max 0 (min 1 (Y i))
   rw [h]
 
-theorem independent_signals (n : ℕ) : HasIndependentSignals (environment n) :=
+theorem independent_signals (n : ℕ) : HasFactorizedWeights (environment n) :=
   ⟨fun _ t ↦ if t ∈ Icc (0 : ℝ) 1 then 1 else 0, fun _ ↦ rfl⟩
 
-example (n : ℕ) : IsIPV (environment n) := ⟨private_values n, independent_signals n⟩
+example (n : ℕ) : IsPrivateValuesWithFactorizedWeights (environment n) :=
+  ⟨private_values n, independent_signals n⟩
 
-example (n : ℕ) : HasAffiliatedSignals (environment n) :=
-  (independent_signals n).hasAffiliatedSignals
+example (n : ℕ) : HasAffiliatedWeights (environment n) :=
+  (independent_signals n).hasAffiliatedWeights
 
 -- The clamped extension would fail the old global strictness requirement.
 example : ¬ StrictMono (fun t : ℝ ↦ (environment 1).v 0 (fun _ ↦ t)) := by

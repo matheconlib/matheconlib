@@ -43,4 +43,3 @@ Larger utilities are better: a utility `u` represents `R` when `x ≼[R] y ↔ u
 
 preference, complete preference, tie-breaking, ordinal utility, finite representation
 -/
-
