@@ -26,6 +26,9 @@ After subtracting one from the action payoff, pure zero is a mixed Nash equilibr
 integrable deviation has utility at most negative one. The raw integral extension instead prefers
 the nonintegrable uniform deviation, whose totalized utility is zero.
 
+In a two-player game, a deviation keeps the deviator's payoff integrable and makes the opponent's
+payoff nonintegrable. The deviation is still compared and rules out mixed Nash equilibrium.
+
 ## Main definitions
 
 * `uniform`, `prior`: The uniform type distribution and induced one-player profile distribution.
@@ -34,6 +37,9 @@ the nonintegrable uniform deviation, whose totalized utility is zero.
 * `Mixed.game`, `Mixed.shiftedGame`, `Mixed.loweredGame`: Negative reciprocal utility and its
   constant shifts.
 * `Mixed.strategy`: Uniform action randomization.
+* `OpponentDeviation.game`: A two-player game with reciprocal utility for the opponent.
+* `OpponentDeviation.incumbent`, `OpponentDeviation.deviated`: Both players choose action one,
+  and the deviator's unilateral switch to uniform randomization.
 
 ## Main statements
 
@@ -48,6 +54,12 @@ the nonintegrable uniform deviation, whose totalized utility is zero.
   excluded from both games' mixed equilibria.
 * `Mixed.dirac_zero_isMixedNash_lowered`, `Mixed.dirac_zero_not_isNash_lowered`: Pure zero is a
   mixed equilibrium when nonintegrable deviations are excluded from comparison.
+* `OpponentDeviation.incumbent_valid`: Both incumbent payoffs are integrable.
+* `OpponentDeviation.deviation_admissible`: The deviator's payoff remains integrable.
+* `OpponentDeviation.opponent_not_integrable`, `OpponentDeviation.deviated_not_valid`: The
+  deviation makes the opponent's payoff nonintegrable and the resulting profile invalid.
+* `OpponentDeviation.payoff_lt_deviated`, `OpponentDeviation.incumbent_not_isMixedNash`: The
+  admissible deviation strictly raises payoff and rules out mixed Nash equilibrium.
 
 ## Tags
 
@@ -275,6 +287,96 @@ theorem dirac_zero_not_isNash_lowered :
   norm_num at hle
 
 end Mixed
+
+namespace OpponentDeviation
+
+/-- Player `false` prefers actions other than one; player `true` receives their reciprocal. -/
+def game : StrategicGame Bool (fun _ => ℝ) ℝ where
+  payoff i a := if i then (a false)⁻¹ else if a false = 1 then 0 else 1
+
+/-- Both players choose action one with probability one. -/
+def incumbent : StrategicGame.MixedStrategy (fun _ : Bool => ℝ) :=
+  fun _ => ⟨Measure.dirac 1, inferInstance⟩
+
+/-- Player `false` switches to uniform randomization on `(0, 1]`. -/
+def deviated : StrategicGame.MixedStrategy (fun _ : Bool => ℝ) :=
+  Function.update incumbent false ⟨uniform, inferInstance⟩
+
+/-- The deviator's incumbent action equals one almost surely. -/
+lemma incumbent_false_eq_one :
+    ∀ᵐ a ∂Measure.pi (fun j => (incumbent j : Measure ℝ)), a false = 1 := by
+  apply (measurePreserving_eval (fun j => (incumbent j : Measure ℝ))
+    false).quasiMeasurePreserving.ae (p := fun t : ℝ => t = 1)
+  simp [incumbent]
+
+/-- The deviator's action law after the deviation is uniform on `(0, 1]`. -/
+lemma deviated_false_measurePreserving :
+    MeasurePreserving (Function.eval false)
+      (Measure.pi (fun j => (deviated j : Measure ℝ))) uniform := by
+  convert measurePreserving_eval (fun j => (deviated j : Measure ℝ)) false using 1
+  rfl
+
+/-- The deviator receives payoff one almost surely after switching to uniform randomization. -/
+lemma deviated_payoff_eq_one :
+    game.payoff false =ᵐ[Measure.pi (fun j => (deviated j : Measure ℝ))] fun _ => 1 := by
+  have hne : ∀ᵐ t ∂uniform, t ≠ (1 : ℝ) :=
+    ae_restrict_of_ae (volume.ae_ne 1)
+  filter_upwards [deviated_false_measurePreserving.quasiMeasurePreserving.ae hne] with a ha
+  simp [game, ha]
+
+/-- Both players' payoffs are integrable at the pure incumbent profile. -/
+theorem incumbent_valid : game.mixedNashProblem.valid incumbent := by
+  intro i
+  cases i
+  · apply (integrable_const (0 : ℝ)).congr
+    filter_upwards [incumbent_false_eq_one] with a ha
+    simp [game, ha]
+  · apply (integrable_const (1 : ℝ)).congr
+    filter_upwards [incumbent_false_eq_one] with a ha
+    simp [game, ha]
+
+/-- Uniform randomization is a unilateral deviation with an integrable payoff for the deviator. -/
+theorem deviation_admissible : game.mixedNashProblem.deviation false incumbent deviated := by
+  refine ⟨⟨⟨uniform, inferInstance⟩, rfl⟩, ?_⟩
+  exact (integrable_const (1 : ℝ)).congr deviated_payoff_eq_one.symm
+
+/-- The opponent's reciprocal payoff is nonintegrable after the unilateral deviation. -/
+theorem opponent_not_integrable :
+    ¬ Integrable (game.payoff true) (Measure.pi (fun j => (deviated j : Measure ℝ))) := by
+  intro h
+  have hint : Integrable (fun t : ℝ => t⁻¹) uniform :=
+    (deviated_false_measurePreserving.integrable_comp measurable_inv.aestronglyMeasurable).mp h
+  have hinterval : IntervalIntegrable (fun t : ℝ => t⁻¹) volume 0 1 :=
+    (intervalIntegrable_iff_integrableOn_Ioc_of_le (by norm_num : (0 : ℝ) ≤ 1)).mpr hint
+  norm_num at hinterval
+
+/-- The deviated profile fails validity because the opponent's payoff is nonintegrable. -/
+theorem deviated_not_valid : ¬ game.mixedNashProblem.valid deviated :=
+  fun h => opponent_not_integrable (h true)
+
+/-- Uniform randomization strictly raises the deviator's expected payoff from zero to one. -/
+theorem payoff_lt_deviated :
+    game.mixedExtension.payoff false incumbent < game.mixedExtension.payoff false deviated := by
+  have hinc : game.mixedExtension.payoff false incumbent = 0 := by
+    change (∫ a, game.payoff false a ∂Measure.pi (fun j => (incumbent j : Measure ℝ))) = 0
+    calc
+      _ = ∫ _, (0 : ℝ) ∂Measure.pi (fun j => (incumbent j : Measure ℝ)) := by
+        apply integral_congr_ae
+        filter_upwards [incumbent_false_eq_one] with a ha
+        simp [game, ha]
+      _ = 0 := by simp
+  have hdev : game.mixedExtension.payoff false deviated = 1 := by
+    change (∫ a, game.payoff false a ∂Measure.pi (fun j => (deviated j : Measure ℝ))) = 1
+    rw [integral_congr_ae deviated_payoff_eq_one]
+    simp
+  rw [hinc, hdev]
+  norm_num
+
+/-- The profitable admissible deviation rules out mixed Nash equilibrium at the valid incumbent. -/
+theorem incumbent_not_isMixedNash : ¬ game.IsMixedNash incumbent :=
+  fun h => h.not_lt deviation_admissible payoff_lt_deviated
+
+end OpponentDeviation
 
 end MathEconLibTest.GameTheory.Integrability
 
