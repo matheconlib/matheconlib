@@ -5,6 +5,7 @@ Authors: Scott Duke Kominers
 -/
 module
 
+public import MathEconLib.Choice.Attainment
 public import MathEconLib.Choice.Basic
 public import MathEconLib.Choice.Conditions
 public import MathEconLib.Choice.FiniteOption
