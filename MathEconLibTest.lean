@@ -1,6 +1,7 @@
 import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
+import MathEconLibTest.Auction.SignalValueBoundaries
 import MathEconLibTest.Auction.SignalValueEnv
 import MathEconLibTest.Auction.SignalWeights
 import MathEconLibTest.Choice.Attainment
