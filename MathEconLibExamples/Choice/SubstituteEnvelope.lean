@@ -119,7 +119,7 @@ theorem allChoice_greatest_consistent :
     IsGreatest {D : ChoiceFunction Bool |
       priority.IsCompletionOf partner D ∧ D.Substitutable ∧ D.Consistent} allChoice := by
   rw [← pathEnvelope_eq_allChoice]
-  exact isGreatest_pathIndependentEnvelope priority_pathIndependent.consistent priority_completable
+  exact isGreatest_pathIndependentEnvelope priority_completable
 
 theorem priority_rejectionEvidence : priority.RejectionEvidence partner :=
   (substitutablyCompletable_iff_rejectionEvidence priority_pathIndependent.consistent).1
