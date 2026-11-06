@@ -55,7 +55,7 @@ example (i : Fin 2) (τ : FinDist (Fin 2)) :
 example (i : Fin 2) (σ : FinDist (Fin 2)) :
     biasedAction ∈ matchingPennies.finiteMixedExtension.bestResponses i
       (Function.update uniformProfile i σ) := by
-  simp only [bestResponses_uniform_opponent_eq_univ, Set.mem_univ]
+  simp only [StrategicGame.bestResponses_update, bestResponses_uniform_eq_univ, Set.mem_univ]
 
 example : biasedAction heads = 3 / 4 ∧ biasedAction tails = 1 / 4 :=
   biasedAction_probabilities
@@ -68,7 +68,6 @@ example : matchingPennies.IsFiniteMixedNash uniformProfile := uniform_isNash_of_
 #print axioms StrategicGame.bestResponses_update
 #print axioms EquilibriumProblem.isEquilibrium_iff_mem_ofValue
 #print axioms bestResponses_uniform_eq_univ
-#print axioms bestResponses_uniform_opponent_eq_univ
 #print axioms biasedAction_probabilities
 #print axioms biasedAction_mem_bestResponses
 #print axioms uniform_isNash_of_bestResponses

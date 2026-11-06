@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
 import MathEconLib.Choice
-import MathEconLib.GameTheory.Choice
+import MathEconLib.GameTheory.Strategic.BestResponse
 
 /-!
 # Weak-preference maximizers in an existing strategic game

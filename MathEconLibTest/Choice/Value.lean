@@ -61,6 +61,11 @@ example :
     ⟨some 1, ⟨Set.subset_univ _, fun _ _ ↦ (show (0 : ℕ) ≤ 0 from le_rfl)⟩, rfl⟩⟩
 
 example {α β : Type*} (pref : LinearOrder β) (bundle : β ↪ Set α) (Y : Set α) :
+    ChoiceFunction.ofBundleOrder pref bundle Y =
+      ⋃₀ (optimalBundles (CompletePreference.ofLinearOrder pref) bundle Y) :=
+  ChoiceFunction.ofBundleOrder_eq_sUnion_optimalBundles pref bundle Y
+
+example {α β : Type*} (pref : LinearOrder β) (bundle : β ↪ Set α) (Y : Set α) :
     letI := pref
     ChoiceFunction.ofBundleOrder pref bundle Y =
       ⋃₀ (bundle '' ChoiceFunction.ofValue (id : β → β) {b | bundle b ⊆ Y}) :=
@@ -69,6 +74,7 @@ example {α β : Type*} (pref : LinearOrder β) (bundle : β ↪ Set α) (Y : Se
 #print axioms ChoiceFunction.ofValue
 #print axioms ChoiceFunction.mem_ofValue
 #print axioms optimalBundles_eq_image_ofValue
+#print axioms ChoiceFunction.ofBundleOrder_eq_sUnion_optimalBundles
 #print axioms ChoiceFunction.ofBundleOrder_eq_sUnion_image_ofValue
 
 end MathEconLibTest.Choice.Value

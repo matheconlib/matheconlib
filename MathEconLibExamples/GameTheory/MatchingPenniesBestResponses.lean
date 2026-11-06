@@ -5,7 +5,7 @@ Authors: Bo Cowgill
 -/
 module
 
-public import MathEconLib.GameTheory.Choice
+public import MathEconLib.GameTheory.Strategic.BestResponse
 public import MathEconLibExamples.GameTheory.MatchingPennies
 
 /-!
@@ -44,12 +44,6 @@ theorem bestResponses_uniform_eq_univ (i : Fin 2) :
   Set.eq_univ_iff_forall.mpr fun τ ↦
     (StrategicGame.mem_bestResponses _ i uniformProfile τ).mpr fun τ' ↦
       le_of_eq ((payoff_uniform_opponent i τ').trans (payoff_uniform_opponent i τ).symm)
-
-/-- The best-response set stays universal when the player's own incumbent action is changed. -/
-theorem bestResponses_uniform_opponent_eq_univ (i : Fin 2) (σ : FinDist (Fin 2)) :
-    matchingPennies.finiteMixedExtension.bestResponses i (Function.update uniformProfile i σ) =
-      Set.univ := by
-  simpa only [StrategicGame.bestResponses_update] using bestResponses_uniform_eq_univ i
 
 /-- A mixed, biased action: probability three quarters on heads and one quarter on tails. -/
 def biasedAction : FinDist (Fin 2) :=
