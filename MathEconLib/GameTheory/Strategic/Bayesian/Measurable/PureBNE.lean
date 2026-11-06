@@ -49,8 +49,8 @@ variable {I : Type uI} {Θ : I → Type uT} {A : I → Type uA} {V : Type uV}
 the deviator an integrable realized payoff.
 
 Each player's value is their ex-ante payoff integral. Valid candidates have integrable incumbent
-payoffs under any measure `μ`.W hen `μ` is a probability measure, its equilibrium predicate is
-Bayesian Nash equilibrium `IsBNE`. -/
+payoffs under the supplied measure `μ`. When `μ` is a probability measure, its equilibrium
+predicate is Bayesian Nash equilibrium `IsBNE`. -/
 def bneProblem (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) :
     EquilibriumProblem G.Strategy I V where
   deviation i s s' := (∀ j, j ≠ i → s' j = s j) ∧
