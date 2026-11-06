@@ -3,7 +3,7 @@
 This development follows the choice/completion material originating in #103 and
 the many-to-one market reduction in #174. The mathematical objects belong in
 `MathEconLib.Choice`, even when they additionally use a counterparty map; they do
-not require a market. Existing public declarations remain unchanged.
+not require a market.
 
 ## Status and integration
 
@@ -119,14 +119,25 @@ IRC: if the union's choice from Y lies in V ⊆ Y, each constituent's choice doe
 too, so IRC of each constituent identifies its choices from V and Y. Thus P_C
 is path independent on arbitrary carriers and is the greatest such minorant.
 
-If C satisfies IRC, then
+For any original choice rule C, without assuming IRC,
 
     C has a substitutable IRC completion ⇔ P_C is a completion.
 
 When these conditions hold, P_C is the greatest substitutable IRC completion.
 Proof: any such completion D is path independent and lies below U_C, so
-D ≤ P_C ≤ U_C. If P_C(Y) is feasible, D(Y) = C(Y) ⊆ P_C(Y). IRC and the
-envelope test on the feasible set P_C(Y) give P_C(Y) = C(Y).
+D ≤ P_C ≤ U_C. If P_C(Y) is feasible, D(Y) = C(Y) ⊆ P_C(Y).
+IRC of D gives D(P_C(Y)) = D(Y). Since P_C(Y) is a feasible menu,
+completion gives C(P_C(Y)) = D(P_C(Y)) = C(Y). The envelope test now
+implies P_C(Y) ⊆ C(P_C(Y)) = C(Y), proving equality. Thus IRC is required
+of the witnessing completion D, not of C. This argument works on arbitrary
+contract types.
+
+The three public results `pathIndependentEnvelope_isCompletionOf`,
+`hasConsistentSubstitutableCompletion_iff_pathIndependentEnvelope_isCompletionOf`,
+and `isGreatest_pathIndependentEnvelope` consequently no longer take an
+original-rule IRC argument. Callers should omit that argument; the completion
+predicate and conclusions are unchanged. The separate substitute-envelope and
+sandwich theorems retain their stated IRC assumptions.
 
 For feasible finite-valued IRC C satisfying unilateral substitutability, the
 path-independent enlarging completions are exactly the path-independent D with
@@ -200,5 +211,5 @@ alone decides whether a demand-monotone completion exists.
 - Validate the added concrete applications of the envelope, sandwich, and obstruction theorems.
 - Build all targets, regenerate/verify imports, and run proof-integrity checks.
 
-No changes to the manuscript, market definition, completion predicates, or
-existing public theorem statements are part of this follow-on.
+No changes to the manuscript, market definition, or completion predicates are
+part of this follow-on. The public theorem generalizations are listed in Section 4.
