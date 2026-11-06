@@ -46,8 +46,11 @@ variable {I : Type uI} {Θ : I → Type uT} {A : I → Type uA} {V : Type uV}
   [∀ i, MeasurableSpace (Θ i)] [∀ i, MeasurableSpace (A i)]
 
 /-- The equilibrium problem in which admissible deviations preserve opponents' strategies and give
-the deviator an integrable realized payoff. Each player's value is their ex-ante payoff integral.
-Candidates have integrable incumbent payoffs under the common prior. -/
+the deviator an integrable realized payoff.
+
+Each player's value is their ex-ante payoff integral. Valid candidates have integrable incumbent
+payoffs under any measure `μ`.W hen `μ` is a probability measure, its equilibrium predicate is
+Bayesian Nash equilibrium `IsBNE`. -/
 def bneProblem (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) :
     EquilibriumProblem G.Strategy I V where
   deviation i s s' := (∀ j, j ≠ i → s' j = s j) ∧
@@ -72,7 +75,7 @@ realized payoff. -/
     (s : G.Strategy) :
     (G.bneProblem μ).valid s ↔ G.IncumbentPayoffsIntegrable μ s := Iff.rfl
 
-/-- Pure Bayesian Nash equilibrium: Every integrable unilateral strategy deviation weakly lowers
+/-- **Pure Bayesian Nash equilibrium**: Every integrable unilateral strategy deviation weakly lowers
 ex-ante payoff, and incumbent payoffs are integrable under the common probability prior. -/
 abbrev IsBNE [LE V] (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) [IsProbabilityMeasure μ]
     (s : G.Strategy) : Prop := (G.bneProblem μ).IsEquilibrium s
