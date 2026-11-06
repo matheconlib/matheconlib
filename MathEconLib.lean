@@ -89,6 +89,7 @@ public import MathEconLib.Matching.Classical.Marriage.StableOrder
 public import MathEconLib.Matching.Classical.Marriage.ToContracts
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Attainment
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Basic
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Policies
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Termination
