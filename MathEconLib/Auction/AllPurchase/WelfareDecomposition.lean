@@ -233,9 +233,8 @@ theorem bundledEditionWelfare_eq (β : ℝ → ℝ) (c : ℝ)
 /-- At a price below the scarcity intercept, the symmetric Cournot purchase is nonnegative. -/
 theorem cournotPurchaseLinear_nonneg (hp : A.spec.price ≤ A.φ_bar) :
     0 ≤ A.cournotPurchaseLinear := by
-  unfold cournotPurchaseLinear
-  exact div_nonneg (sub_nonneg.mpr hp)
-    (mul_nonneg A.α_pos.le (by positivity))
+  exact Competition.Cournot.symmetricQuantity_nonneg n A.φ_bar A.α_coeff A.spec.price
+    A.α_pos hp
 
 /-- Total purchases at the symmetric Cournot profile equal the previously defined quantity. -/
 theorem cournotQuantityLinear_eq_total :
@@ -249,15 +248,8 @@ theorem cournotPurchaseLinear_payoff_gap (x : ℝ) :
         (A.spec.φ ((n : ℝ) * A.cournotPurchaseLinear) - A.spec.price) -
       x * (A.spec.φ (x + ((n : ℝ) - 1) * A.cournotPurchaseLinear) - A.spec.price) =
         A.α_coeff * (x - A.cournotPurchaseLinear) ^ 2 := by
-  have hden : A.α_coeff * ((n : ℝ) + 1) ≠ 0 :=
-    ne_of_gt (mul_pos A.α_pos (by positivity))
-  have hstationary :
-      A.cournotPurchaseLinear * (A.α_coeff * ((n : ℝ) + 1)) =
-        A.φ_bar - A.spec.price := div_mul_cancel₀ _ hden
-  simp_rw [congr_fun A.scarcity_is_linear]
-  rw [show A.φ_bar = A.spec.price +
-    A.cournotPurchaseLinear * (A.α_coeff * ((n : ℝ) + 1)) by linarith]
-  ring
+  simpa only [cournotPurchaseLinear, congr_fun A.scarcity_is_linear] using
+    Competition.Cournot.symmetricQuantity_payoff_gap n A.φ_bar A.α_coeff A.spec.price A.α_pos x
 
 /-- Compatibility certificate: feasibility and no profitable nonnegative unilateral deviation. -/
 theorem cournotPurchaseLinear_best_response [NeZero n] (hp : A.spec.price ≤ A.φ_bar) :
@@ -282,31 +274,21 @@ noncomputable def cournotProfile (hp : A.spec.price ≤ A.φ_bar) :
     Fin n → {x : ℝ // 0 ≤ x} :=
   fun _ => ⟨A.cournotPurchaseLinear, A.cournotPurchaseLinear_nonneg hp⟩
 
+/-- The editions-only game is the shared linear Cournot game, with the posted price as
+marginal charge. Production cost remains a separate parameter in welfare accounting. -/
+theorem editionsOnlyGame_eq_cournotGame :
+    A.editionsOnlyGame = Competition.Cournot.game n A.φ_bar A.α_coeff A.spec.price := by
+  unfold editionsOnlyGame Competition.Cournot.game Competition.Cournot.unconstrainedGame
+    GameTheory.StrategicGame.comapActions
+  congr 1
+  funext i q
+  simp only [Competition.Cournot.profit, congr_fun A.scarcity_is_linear]
+
 /-- The symmetric Cournot profile is a Nash equilibrium of the editions-only game. -/
 theorem cournotProfile_isNash [NeZero n] (hp : A.spec.price ≤ A.φ_bar) :
     A.editionsOnlyGame.IsNash (A.cournotProfile hp) := by
-  rw [GameTheory.StrategicGame.isNash_iff]
-  intro i x
-  have htotal : (∑ j, (Function.update (A.cournotProfile hp) i x j : ℝ)) =
-      (x : ℝ) + ((n : ℝ) - 1) * A.cournotPurchaseLinear := by
-    rw [← Finset.sum_erase_add _ _ (Finset.mem_univ i)]
-    have heq : (∑ j ∈ Finset.univ.erase i,
-        (Function.update (A.cournotProfile hp) i x j : ℝ)) =
-        ∑ _j ∈ Finset.univ.erase i, A.cournotPurchaseLinear := by
-      apply Finset.sum_congr rfl
-      intro j hj
-      rw [Function.update_of_ne (Finset.ne_of_mem_erase hj)]
-      rfl
-    rw [heq]
-    simp only [Function.update_self, Finset.sum_const, Finset.card_erase_of_mem
-      (Finset.mem_univ i), Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    rw [Nat.cast_sub (NeZero.one_le (n := n)), Nat.cast_one]
-    ring
-  change (Function.update (A.cournotProfile hp) i x i : ℝ) *
-      (A.spec.φ (∑ j, (Function.update (A.cournotProfile hp) i x j : ℝ)) - A.spec.price) ≤ _
-  rw [Function.update_self, htotal]
-  simpa [editionsOnlyGame, cournotProfile, nsmul_eq_mul] using
-    (A.cournotPurchaseLinear_best_response hp).2 (x : ℝ) x.property
+  rw [A.editionsOnlyGame_eq_cournotGame]
+  exact Competition.Cournot.symmetricProfile_isNash n A.φ_bar A.α_coeff A.spec.price A.α_pos hp
 
 /-- Square-integrable aggregate purchases make bundled edition welfare the expectation of
 realized edition value net of production cost. This is edition welfare; it excludes the prize's
