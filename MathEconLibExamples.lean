@@ -7,6 +7,7 @@ module
 
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.Matching.DistributiveMarriage
+public import MathEconLibExamples.Matching.UnbalancedMarriage
 public import MathEconLibExamples.Preferences.Finite
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
