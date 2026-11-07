@@ -311,4 +311,3 @@ end Auction.Affiliation
 end
 
 end MathEconLib
-
