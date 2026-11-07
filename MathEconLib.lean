@@ -37,6 +37,7 @@ public import MathEconLib.Choice.Matching.Preferences
 public import MathEconLib.Choice.Matching.Relationships
 public import MathEconLib.Choice.Matching.WeakSubstitutability
 public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.Decision.RiskAversion
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
 public import MathEconLib.ForMathlib.Data.PartialMatching
