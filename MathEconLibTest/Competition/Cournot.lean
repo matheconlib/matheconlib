@@ -18,7 +18,7 @@ example : symmetricQuantity 2 2 1 1 = 1 / 3 := by norm_num [symmetricQuantity]
 example (i : Fin 2) : profit 2 1 1 i (fun _ => symmetricQuantity 2 2 1 1) = 1 / 9 := by
   norm_num [profit, symmetricQuantity, Fin.sum_univ_two]
 
--- Restrict to capacity one using Nash transport, without another optimization proof.
+-- Restrict to capacity 1 using Nash transport, without another optimization proof.
 example : ((game 2 2 1 1).comapActions
     (fun _ (q : Set.Icc (0 : ℝ) 1) => (⟨q.val, q.property.1⟩ : {q : ℝ // 0 ≤ q}))).IsNash
       (fun _ => (⟨1 / 3, by norm_num, by norm_num⟩ : Set.Icc (0 : ℝ) 1)) := by
