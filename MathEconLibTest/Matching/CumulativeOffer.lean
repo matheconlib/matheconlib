@@ -171,10 +171,11 @@ example : market.rawOutcome sequentialPolicy ≠ market.rawOutcome simultaneousP
     sequential_heldContracts, simultaneous_heldContracts]
   intro he
   have hx : (2 : Fin 3) ∈ ({0, 1} : Set (Fin 3)) := he ▸ (by simp)
-  simpa using hx
+  simp at hx
 
 end MathEconLibTest.Matching.CumulativeOffer
 
 #print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.Run.execute_card_eq
-#print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.Run.eq_of_terminal_of_follows
+#print axioms
+  MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.Run.eq_of_terminal_of_follows
 #print axioms MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess.rawOutcome_eq_iff

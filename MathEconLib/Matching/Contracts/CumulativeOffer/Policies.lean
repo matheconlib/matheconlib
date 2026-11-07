@@ -93,7 +93,8 @@ noncomputable def selectOffer [Finite X] (priority : LinearOrder X)
   (maximizers_nonempty_of_finite (CompletePreference.ofLinearOrder priority)
     (Set.toFinite (P.admissibleProposals A s)) (P.admissibleProposals_nonempty h)).choose
 
-/-- The selection is admissible, involves the specified seller, and has greatest admissible priority. -/
+/-- The selection is admissible, involves the specified seller, and has greatest admissible
+priority. -/
 theorem selectOffer_spec [Finite X] (priority : LinearOrder X)
     (A : Set X) (s : S) (h : P.Eligible A s) :
     P.Admissible A (P.selectOffer priority A s h) ∧

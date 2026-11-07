@@ -88,7 +88,8 @@ structure CumulativeOfferProcess (B S X : Type*) where
 variable {B S X : Type*}
 
 /-- Use an existing market's incidence and buyer choices. The supplied preferences determine
-proposals; the market's seller choice functions are not used by this raw cumulative offer process. -/
+proposals; the market's seller choice functions are not used by this raw cumulative offer
+process. -/
 def ofMarket (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s})) :
     CumulativeOfferProcess B S X :=
@@ -133,7 +134,8 @@ def remaining (A : Set X) (s : S) : Set (P.Own s) :=
   {x | x.val ∉ A ∧ (P.pref s).lt none (some x)}
 
 /-- A seller is eligible to propose if no contract involving it is currently held and it has
-an unoffered strictly acceptable contract. Eligibility does not assert attainment of a best offer. -/
+an unoffered strictly acceptable contract. Eligibility does not assert attainment of a
+best offer. -/
 def Eligible (A : Set X) (s : S) : Prop :=
   P.NoHeldContract A s ∧ (P.remaining A s).Nonempty
 
