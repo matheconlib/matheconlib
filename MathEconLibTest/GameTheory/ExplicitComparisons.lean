@@ -30,9 +30,17 @@ example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (i : I) (s :
   P.isOptimalWith_iff R i s
 
 example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (s : S) :
-    P.IsEquilibriumWith R s ↔
+    P.IsDeviationOptimalWith R s ↔
       ∀ i t, P.deviation i s t → R i (P.value i t) (P.value i s) :=
+  P.isDeviationOptimalWith_iff R s
+
+example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (s : S) :
+    P.IsEquilibriumWith R s ↔ P.valid s ∧ P.IsDeviationOptimalWith R s :=
   P.isEquilibriumWith_iff R s
+
+example [LE X] (P : EquilibriumProblem S I X) (s : S) :
+    P.IsDeviationOptimalWith (fun _ x y ↦ x ≤ y) s ↔ P.IsDeviationOptimal s :=
+  P.isDeviationOptimalWith_le_iff s
 
 example [LE X] (P : EquilibriumProblem S I X) (s : S) :
     P.IsEquilibriumWith (fun _ x y ↦ x ≤ y) s ↔ P.IsEquilibrium s :=
@@ -42,9 +50,18 @@ example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
     (R : I → X → X → Prop) (R' : I → V → V → Prop)
     (hdev : ∀ i s t, P.deviation i s t ↔ Q.deviation i s t)
     (hcmp : ∀ i s t, P.deviation i s t →
-      (R i (P.value i t) (P.value i s) ↔ R' i (Q.value i t) (Q.value i s))) (s : S) :
+      (R i (P.value i t) (P.value i s) ↔ R' i (Q.value i t) (Q.value i s)))
+    (hvalid : ∀ s, P.valid s ↔ Q.valid s) (s : S) :
     P.IsEquilibriumWith R s ↔ Q.IsEquilibriumWith R' s :=
-  P.isEquilibriumWith_iff_of_comparisons Q R R' (hdev := hdev) (hcmp := hcmp) s
+  P.isEquilibriumWith_iff_of_comparisons Q R R' hdev hcmp hvalid s
+
+example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
+    (R : I → X → X → Prop) (R' : I → V → V → Prop)
+    (hdev : ∀ i s t, P.deviation i s t ↔ Q.deviation i s t)
+    (hcmp : ∀ i s t, P.deviation i s t →
+      (R i (P.value i t) (P.value i s) ↔ R' i (Q.value i t) (Q.value i s))) (s : S) :
+    P.IsDeviationOptimalWith R s ↔ Q.IsDeviationOptimalWith R' s :=
+  P.isDeviationOptimalWith_iff_of_comparisons Q R R' hdev hcmp s
 
 example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
     (R : I → X → X → Prop) (R' : I → V → V → Prop) (i : I)
@@ -57,7 +74,7 @@ example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
 example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (s : S)
     (hcmp : ∀ i t, P.deviation i s t →
       R i (P.value i t) (P.value i s) ∨ R i (P.value i s) (P.value i t)) :
-    P.IsEquilibriumWith R s ↔ ∀ i t, P.deviation i s t →
+    P.IsEquilibriumWith R s ↔ P.valid s ∧ ∀ i t, P.deviation i s t →
       ¬ (R i (P.value i s) (P.value i t) ∧ ¬ R i (P.value i t) (P.value i s)) :=
   P.isEquilibriumWith_iff_no_strictImprovement R s hcmp
 
@@ -65,12 +82,13 @@ example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (s : S)
 def naturalProblem : EquilibriumProblem Nat Unit Nat where
   deviation _ _ _ := True
   value _ n := n
+  valid _ := True
 
 example : naturalProblem.IsEquilibriumWith (fun _ x y ↦ y ≤ x) 0 :=
-  fun _ n _ ↦ Nat.zero_le n
+  ⟨trivial, fun _ n _ ↦ Nat.zero_le n⟩
 
 example : ¬ naturalProblem.IsEquilibrium 0 :=
-  fun h ↦ (by decide : ¬ (1 : Nat) ≤ 0) (h () 1 trivial)
+  fun h ↦ (by decide : ¬ (1 : Nat) ≤ 0) (h.deviation_le () 1 trivial)
 
 /-! Ordered recovery also recovers both existing transport routes with only an `LE` instance. -/
 
@@ -96,6 +114,7 @@ example {T : Type y} {J : Type z} [LE X]
 def indexedProblem : EquilibriumProblem Nat Bool Nat where
   deviation _ _ _ := True
   value i n := if i then n else 0
+  valid _ := True
 
 /-- The active player minimizes its reward, while the constant-payoff player compares equality. -/
 def indexedComparison (i : Bool) (x y : Nat) : Prop := if i then y ≤ x else x = y
@@ -103,6 +122,7 @@ def indexedComparison (i : Bool) (x y : Nat) : Prop := if i then y ≤ x else x 
 /-- Zero is optimal for the active player, and the other player is indifferent. -/
 theorem indexed_zero_isEquilibriumWith :
     indexedProblem.IsEquilibriumWith indexedComparison 0 := by
+  refine ⟨trivial, ?_⟩
   intro i n _
   cases i <;> simp [indexedComparison, indexedProblem]
 
@@ -111,7 +131,8 @@ example : naturalProblem.IsEquilibriumWith (fun _ x y ↦ y ≤ x ∨ x = 0) 0 :
     toFun := id
     deviatorMap := fun _ ↦ true
     deviation_lifts := fun _ _ t _ ↦ ⟨t, trivial, rfl⟩
-    value_eq := fun _ _ ↦ rfl }
+    value_eq := fun _ _ ↦ rfl
+    valid_preserves := fun _ _ ↦ trivial }
   apply f.transportWith indexedComparison (fun _ x y ↦ y ≤ x ∨ x = 0)
   · intro _ _ _ _ h
     exact Or.inl h
@@ -122,7 +143,8 @@ example : naturalProblem.IsEquilibriumWith (fun _ x y ↦ y ≤ x ∨ x = 0) 0 :
     toFun := id
     deviatorMap := fun _ ↦ true
     deviation_maps := fun _ _ _ _ ↦ trivial
-    value_eq := fun _ _ ↦ rfl }
+    value_eq := fun _ _ ↦ rfl
+    valid_reflects := fun _ _ ↦ trivial }
   apply f.pullbackWith (fun _ x y ↦ y ≤ x ∨ x = 0) indexedComparison
   · intro _ _ _ _ h
     exact Or.inl h
@@ -134,10 +156,11 @@ example : naturalProblem.IsEquilibriumWith (fun _ x y ↦ y ≤ x ∨ x = 0) 0 :
 def successorProblem : EquilibriumProblem Nat Unit Nat where
   deviation _ s t := t = s + 1
   value _ n := n
+  valid _ := True
 
 example (s : Nat) :
     successorProblem.IsEquilibriumWith (fun _ x y ↦ x = y + 1) s ↔
-      ∀ i t, successorProblem.deviation i s t →
+      successorProblem.valid s ∧ ∀ i t, successorProblem.deviation i s t →
         ¬ (s = t + 1 ∧ ¬ t = s + 1) :=
   successorProblem.isEquilibriumWith_iff_no_strictImprovement
     (fun _ x y ↦ x = y + 1) s (fun _ _ ht ↦ Or.inl ht)
