@@ -18,7 +18,7 @@ example : symmetricQuantity 2 2 1 1 = 1 / 3 := by norm_num [symmetricQuantity]
 example (i : Fin 2) : profit 2 1 1 i (fun _ => symmetricQuantity 2 2 1 1) = 1 / 9 := by
   norm_num [profit, symmetricQuantity, Fin.sum_univ_two]
 
--- Restrict to capacity one using Nash transport, without another optimization proof.
+-- Restrict to capacity 1 using Nash transport, without another optimization proof.
 example : ((game 2 2 1 1).comapActions
     (fun _ (q : Set.Icc (0 : ℝ) 1) => (⟨q.val, q.property.1⟩ : {q : ℝ // 0 ≤ q}))).IsNash
       (fun _ => (⟨1 / 3, by norm_num, by norm_num⟩ : Set.Icc (0 : ℝ) 1)) := by
@@ -42,7 +42,7 @@ example (a b k x : ℝ) (hb : 0 < b) :
         b * (x - symmetricQuantity 0 a b k) ^ 2 :=
   by simpa only [Nat.cast_zero] using symmetricQuantity_payoff_gap 0 a b k hb x
 
--- Increasing own output changes price: the deviator earns zero, not 2/9.
+-- Increasing own output changes price: the deviator earns 0 (rather than 2/9).
 example : profit 2 1 1 (0 : Fin 2) (Function.update (fun _ => (1 / 3 : ℝ)) 0 (2 / 3)) = 0 := by
   norm_num [profit, Fin.sum_univ_two]
 
