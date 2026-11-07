@@ -46,27 +46,35 @@ theorem manRank_injective : ∀ i, Function.Injective (manRank i) := by
 theorem womanRank_injective : ∀ j, Function.Injective (womanRank j) := by
   decide
 
+/-- Man `i`'s preference order over women and staying single. -/
+@[instance_reducible] def manPreference (i : Fin 3) : LinearOrder (Option (Fin 2)) :=
+  LinearOrder.lift' (manRank i) (manRank_injective i)
+
+/-- Woman `j`'s preference order over men and staying single. -/
+@[instance_reducible] def womanPreference (j : Fin 2) : LinearOrder (Option (Fin 3)) :=
+  LinearOrder.lift' (womanRank j) (womanRank_injective j)
+
 /-- A market with three men, two women, and unacceptable partners. -/
 def market : MarriageMarket (Fin 3) (Fin 2) where
-  prefM := fun i => LinearOrder.lift' (manRank i) (manRank_injective i)
-  prefW := fun j => LinearOrder.lift' (womanRank j) (womanRank_injective j)
+  prefM := manPreference
+  prefW := womanPreference
 
 /-- Man `i < 2` marries woman `i`; man `2` is single. -/
 def diagonal : Fin 3 ≃. Fin 2 where
-  toFun := ![some 0, some 1, none]
-  invFun := ![some 0, some 1]
+  toFun i := if i = 0 then some 0 else if i = 1 then some 1 else none
+  invFun j := if j = 0 then some 0 else some 1
   inv := by decide
 
 /-- Man `i < 2` marries woman `1 - i`; man `2` is single. -/
 def crossed : Fin 3 ≃. Fin 2 where
-  toFun := ![some 1, some 0, none]
-  invFun := ![some 1, some 0]
+  toFun i := if i = 0 then some 1 else if i = 1 then some 0 else none
+  invFun j := if j = 0 then some 1 else some 0
   inv := by decide
 
 /-- A matching that marries man `2` to the woman he finds acceptable. -/
 def withThirdMan : Fin 3 ≃. Fin 2 where
-  toFun := ![none, some 1, some 0]
-  invFun := ![some 2, some 1]
+  toFun i := if i = 0 then none else if i = 1 then some 1 else some 0
+  invFun j := if j = 0 then some 2 else some 1
   inv := by decide
 
 theorem diagonal_stable : market.IsStableMatching diagonal := by
