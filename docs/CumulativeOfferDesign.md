@@ -3,25 +3,25 @@
 Status: design only; no declarations or theorems below are implemented by this
 document. This starts [#139](https://github.com/matheconlib/matheconlib/issues/139)
 under [#136](https://github.com/matheconlib/matheconlib/issues/136), and prepares
-the process-comparison work remaining in
+the cumulative-offer comparison work remaining in
 [#138](https://github.com/matheconlib/matheconlib/issues/138).
 Names and module boundaries are provisional.
 
 ## Recommended scope
 
 Define one accumulated-offer transition relation, with explicit proposal
-batches and histories. Expose sequential and simultaneous processes as named
+batches and histories. Expose sequential and simultaneous cumulative offer processes as named
 specializations. Add source-specific views and correspondence theorems where
 the papers use different state variables. Equality across schedules is a
 theorem, not part of the definition.
 
 Use weak preferences over a proposer's own contracts and the outside option,
-with unrestricted receiving-side choice functions. Define admissible batches
+with unrestricted buyer choice functions. Define admissible batches
 relationally before selecting a policy. Policies may use history to select
 proposers and resolve preference ties; fixed tie-breaking is a named
 specialization. Reuse `ChoiceFunction`, incidence maps, and stability predicates;
-bridge to `Market.ofSellerPreferences` through a strict refinement. Do not require substitutability, IRC, LAD, or feasible holdings in
-the process data. These conditions belong to individual results.
+bridge to `Market.ofSellerPreferences` through a strict refinement. Do not require substitutability, IRC, the law of aggregate demand, or feasibility of the held contract set in
+the cumulative offer process data. These conditions belong to individual results.
 
 The initial economic scope is unit-demand proposing sellers and accepting
 buyers. A completely abstract proposal oracle would admit procedures that
@@ -35,8 +35,8 @@ correspondences with indifferences are tracked separately in
 
 | Presentation | Source convention | Proposed interface |
 | --- | --- | --- |
-| Hatfield–Milgrom (2005), §V, system (14), pp. 928–929 | Simultaneous doctor choices; hospital offer sets accumulate. Held offers may be repeated. | All-eligible fresh-offer policy plus a view of the literal recurrence. |
-| Hatfield–Kojima (2010), §2.3, p. 1710 | One currently unheld doctor offers at each step; the receiving hospital chooses from its accumulated offers. | Singleton-batch policy and a projection to per-hospital menus. |
+| Hatfield–Milgrom (2005), §V, system (14), pp. 928–929 | Simultaneous doctor choices; hospital offer sets accumulate. Contracts currently held may be offered again. | All-eligible fresh-offer policy plus a view of the literal recurrence. |
+| Hatfield–Kojima (2010), §2.3, p. 1710 | One doctor with no held contract offers at each step; the hospital chooses from its accumulated offers. | Singleton-batch policy and a projection to per-hospital menus. |
 | Bó–Kratz–Shimoji (2024), §3 | A nonempty subset of eligible doctors can propose together. | Motivation for the shared batch relation. |
 
 For the Hatfield–Milgrom view, write their cumulative hospital menu as
@@ -51,25 +51,25 @@ A(t) = A(t−1) ∪ C_D(D(t))
 
 The fresh-offer formulation must be related to this recurrence on reachable
 states by an invariant about descending proposals under the fixed strict
-refinement and previously offered contracts. Repeated held offers disappear under the cumulative-set projection.
+refinement and previously offered contracts. Repeated offers of held contracts disappear under the cumulative-set projection.
 Do not claim definitional equality on arbitrary states. Their Theorem 15
 compares cumulative offers with their generalized deferred acceptance under
 substitutes; it is not itself a sequential-versus-batch independence theorem.
 
 For Hatfield–Kojima, singleton steps should preserve every other buyer's menu
-and holdings. Prove that projection directly. Their preference-based model
-supplies receiving-side rationality properties that our raw choice interface
+and held contract set. Prove that projection directly. Their preference-based model
+supplies rationality properties of hospital choice that our raw choice interface
 does not assume. The source also warns that unrestricted choices may produce
 an infeasible final set. Source correspondence must state which assumptions
 come from representation and which enter feasibility or stability.
 
 These are two named instantiations/views of shared machinery, not two
-independently maintained process foundations. Avoid the abbreviation “HK” in
+independently maintained cumulative offer process definitions. Avoid the abbreviation “HK” in
 public names: Hatfield–Kojima and Hirata–Kasuya are different references.
 
 ## Data, locality, and state
 
-Let `X` be contracts, `S` proposers, and `B` receivers, with existing
+Let `X` be contracts, `S` proposing sellers, and `B` buyers, with existing
 `seller : X → S` and `buyer : X → B`. Preferences are complete, transitive weak relations on
 `Option {x : X // seller x = s}`, with `none` the outside option.
 Reuse the `CompletePreference` interface from #253 and the refinement API
@@ -93,7 +93,7 @@ Strict economic preferences are a specialization in which contract tie-breaking
 has no effect. Document the library's comparison orientation at implementation.
 
 The semantic state is the accumulated offer set `A : Set X`. Start at the
-empty set. Define the own-buyer menu and holdings by
+empty set. Define the each buyer's accumulated offer set and held contract set by
 
 ```text
 A_b = {x ∈ A | buyer x = b}
@@ -101,9 +101,9 @@ H_b(A) = choiceB b A_b
 H(A) = ⋃ b, H_b(A)
 ```
 
-Holdings are derived data. Do not store a second independently mutable holding
-set. In particular, retain rejected offers in A: without extra conditions a
-receiver may choose a previously rejected contract again.
+The held contract set is derived from accumulated offers. Do not store it as a
+second independently mutable state variable. In particular, retain rejected offers in A: without extra conditions a
+buyer may choose a previously rejected contract again.
 
 **Locality decision:** evaluate each buyer on its own menu. Existing market
 support alone does not rule out choices depending on other buyers' contracts.
@@ -134,18 +134,18 @@ contracts. Eligibility makes no assertion that a best contract exists.
 
 A valid productive batch Q is nonempty, contains only admissible offers by
 eligible proposers, and contains at most one offer per proposer. The step is
-`A' = A ∪ Q`. Every test uses the same pre-step state. Holdings are then
+`A' = A ∪ Q`. Every test uses the same pre-step state. The held contract set is then
 recomputed from A'. Validity and runs are relational; determinism is additional
-policy data, not part of the definition of a process.
+policy data, not part of the definition of a cumulative offer process.
 
 A history-dependent policy selects a valid batch at each nonterminal valid
 history. Equivalently it selects a nonempty subset of eligible agents and one
 admissible contract for each selected agent. Use this equivalence as an adapter,
-rather than maintaining two independent process definitions. In the contract-set
+rather than maintaining two independent cumulative offer process definitions. In the contract-set
 representation, the participating agents are the seller image of the batch.
 
-The history determines A, which determines holdings, availability, and
-eligibility. Do not store these as independently mutable policy inputs.
+The history determines A, which determines the held contract set, the unoffered contracts, and
+proposer eligibility. Do not store these as independently mutable policy inputs.
 A state-dependent policy factors through A: two valid histories with the same
 accumulated offers receive the same batch. Provide the lift of a state policy
 to a history policy and the corresponding agreement of runs.
@@ -183,7 +183,7 @@ simultaneous rule that takes each eligible agent's Γ-first admissible contract.
 among `none` and the contracts in that menu. Since the refinement places
 `none` ahead of contracts tied with it, `OutsideOptionOptimal R_s (Y_s(A))`
 is equivalent to `U_s(A) = ∅`. Thus terminality says that the outside option
-is optimal for every **unheld** proposer.
+is optimal for every proposer **with no held contract**.
 
 The strict constructor returns empty choice either because the optimum is
 unattained or because the outside option is optimal. An optimal outside option
@@ -221,7 +221,7 @@ With finite X, every productive run has at most |X| steps, and a policy valid
 at every nonterminal state reaches a terminal state. No fairness assumption
 is needed: finite fresh offers plus nonempty progress suffice.
 
-Terminal means that no unheld proposer has an acceptable unoffered contract.
+Terminal means that no proposer with no held contract has an acceptable unoffered contract.
 A total iteration may stutter at terminal states, but those repetitions must
 not count as productive steps. Empty markets and universal unacceptability
 terminate immediately.
@@ -244,7 +244,7 @@ outcome, even for one proposer indifferent between two accepted contracts.
 Independence from scheduling is not independence from tie-breaking. Keep the policy-indexed
 interface available for domains without independence.
 
-Reports vary the proposer preference profile; receiving choices and incidence
+Reports vary the proposer preference profile; buyer choices and incidence
 maps, scheduling rule, and tie-selection rule are fixed parameters of the
 relevant mechanism (a fixed rule may still depend on its input history). Reuse the existing
 mechanism infrastructure, with zero monetary transfers where appropriate.
@@ -295,7 +295,7 @@ a cumulative-offer selection or prove completion independence.
 
 A useful sufficient process bridge would assume equality of original and
 completed buyer choices on all relevant reachable menus. This yields equality
-of holdings, eligibility, and subsequent steps under a common policy. However,
+of held contract sets, proposer eligibility, and subsequent steps under a common policy. However,
 completion agreement on feasible menus does not by itself supply that
 hypothesis: accumulated menus can contain multiple contracts with one seller.
 
@@ -318,7 +318,7 @@ antisymmetry.
 
 The raw `ChoiceFunction` structure imposes only containment. It can encode
 a set of maximizing individual alternatives, but under the matching
-interpretation its output is one held bundle. A family of tied optimal bundles
+interpretation its output is one chosen set of contracts. A family of tied optimal bundles
 requires a correspondence or equivalent relational interface. Simply weakening
 the order in the current existential bundle formula would union all optimal
 bundles, potentially destroying feasibility and optimality.
@@ -334,8 +334,8 @@ the rest of #200.
 
 ## Implementation sequence and acceptance checks
 
-1. **Core and sequential process.** Tentative module
-   `Matching/Contracts/CumulativeOffer/Basic.lean`: own-menu holdings,
+1. **Core and sequential cumulative offer process.** Tentative module
+   `Matching/Contracts/CumulativeOffer/Basic.lean`: buyer choice from accumulated offers and the resulting held contract set,
    weak preferences, eligibility, relational admissible offers and valid batches,
    labeled runs and terminal outcomes. Add history policies, state-policy lifts,
    and sequential, simultaneous, fixed-tie-breaking, and fixed-order adapters.
@@ -354,10 +354,10 @@ the rest of #200.
    interfaces with #140.
 
 Initial regression examples should exercise empty contracts, all-unacceptable
-contracts, a rejected proposer making a second offer, two contracts between
-the same proposer and receiver, tied acceptable contracts, a tie with the
+contracts, a proposer whose contract was rejected making a second offer, two contracts between
+the same seller and buyer, tied acceptable contracts, a tie with the
 outside option, refinement correspondence, re-selection of an earlier rejected contract,
-and infeasible raw holdings under unrestricted choices. Exercise state-policy
+and an infeasible held contract set under unrestricted choices. Exercise state-policy
 lifts, history-dependent scheduling, history-dependent tie selection, and the
 fixed-order adapter. Include an example where sequential and simultaneous
 outcomes differ under unrestricted choices. A small regular market
@@ -377,17 +377,17 @@ scoped economic guarantees. A design document does not close #139 or #138.
 
 ## Agreed generality and remaining review
 
-- Use weak proposer preferences and arbitrary receiving choices. Define valid
+- Use weak proposer preferences and arbitrary buyer choices. Define valid
   batches relationally, with history-dependent policies selecting agents and
   resolving ties. Fixed tie-breaking and strict refinements are specializations.
 - Provide state-dependent, simultaneous, sequential, and fixed-contract-order
-  specializations of the same process; prove their validity and run embeddings.
+  specializations of the same cumulative offer process; prove their validity and run embeddings.
 - Finite termination applies to all valid productive runs, including policies
   with history-dependent tie selection. Scheduling independence and classical
   source correspondence retain their separate fixed-refinement hypotheses.
 - Review the outside-option convention and keep general choice with
   indifferences in #200.
-- Approve own-menu receiver evaluation and explicit locality transport.
+- Approve buyer choice from the buyer's own accumulated offers and explicit locality transport.
 - Approve batch-labeled runs with sequential and simultaneous specializations,
   while prioritizing sequential proofs.
 - Review the proposed reachable-state correspondence for the literal
