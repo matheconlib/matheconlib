@@ -283,18 +283,24 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 
 section Affiliation
 
--- Affiliation definition pin: the exact unfolding of `Affiliated`
+-- Own-signal strictness uses the environment's closed bounds; rival profiles are arbitrary.
+example : ∀ {n : ℕ} (E : MathEconLib.Auction.Affiliation.SignalValueEnv n)
+    (i : Fin n) (X : Fin n → ℝ),
+    StrictMonoOn (fun t ↦ E.v i (Function.update X i t)) (Set.Icc E.x_lo E.x_hi) :=
+  @MathEconLib.Auction.Affiliation.SignalValueEnv.v_strictMono_own
+
+-- Definition pin: the exact unfolding of `Affiliated`
 example {n : ℕ} (f : (Fin n → ℝ) → ℝ) :
     MathEconLib.Auction.Affiliation.Affiliated f
       ↔ ∀ x y : Fin n → ℝ, f (x ⊔ y) * f (x ⊓ y) ≥ f x * f y :=
   Iff.rfl
 
--- Independent (factorized) densities are affiliated
+-- Factorized weights are affiliated
 example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ} {g : Fin n → ℝ → ℝ},
     MathEconLib.Auction.Affiliation.Factors f g → MathEconLib.Auction.Affiliation.Affiliated f :=
   @MathEconLib.Auction.Affiliation.factors_affiliated
 
--- Affiliation ⇔ log-supermodularity for positive densities
+-- Affiliation ⇔ log-supermodularity for positive weights
 example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ},
     (∀ x : Fin n → ℝ, 0 < f x) →
       (MathEconLib.Auction.Affiliation.Affiliated f ↔
@@ -302,7 +308,7 @@ example : ∀ {n : ℕ} {f : (Fin n → ℝ) → ℝ},
           Real.log (f x) + Real.log (f y) ≤ Real.log (f (x ⊔ y)) + Real.log (f (x ⊓ y))) :=
   @MathEconLib.Auction.Affiliation.affiliated_iff_logSupermodular
 
--- FKG-style four-sum inequality for affiliated densities
+-- FKG-style four-sum inequality for affiliated weights
 example : ∀ {n : ℕ} {f g : (Fin n → ℝ) → ℝ} {S A B : Finset (Fin n → ℝ)},
     MathEconLib.Auction.Affiliation.Affiliated f →
       (∀ x ∈ S, 0 < f x) → IsSublattice (S : Set (Fin n → ℝ)) → Monotone g →

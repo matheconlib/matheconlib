@@ -5,6 +5,7 @@ Authors: Ruiz Chen, Daniel Lyng
 -/
 module
 
+public import MathEconLib.Competition.Cournot.Linear
 public import MathEconLib.Auction.AllPurchase.Basic
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
 public import MathEconLib.Auction.IdenticalTypes
@@ -594,7 +595,7 @@ theorem revenue_decomposition_boundary_of_isBoundaryRegime
 /-- The symmetric per-bidder editions-only Cournot candidate. It is a feasible purchase when
 the posted price does not exceed the scarcity intercept. -/
 noncomputable def cournotPurchaseLinear : ℝ :=
-  (A.φ_bar - A.spec.price) / (A.α_coeff * ((n : ℝ) + 1))
+  Competition.Cournot.symmetricQuantity n A.φ_bar A.α_coeff A.spec.price
 
 /-- Interior stationary Cournot candidate for total editions-only purchases under linear scarcity:
 `B^{ed-only} = n(φ̄ − p)/(α(n+1))`.
