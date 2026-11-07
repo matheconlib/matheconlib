@@ -11,15 +11,32 @@ public import MathEconLib.Matching.Contracts.ManyToOne
 /-!
 # Feasibility and individual rationality of cumulative offers
 
-Substitutability makes rejected contracts remain rejected as accumulated offers grow.
+The hypotheses differ across the invariant statements:
+
+* Rejection persistence (`held_of_held_of_subset`, `rejected_mono`, and
+  `heldContracts_union_subset`) assumes buyer substitutability, for arbitrary offer sets.
+* One-step proposer feasibility assumes buyer substitutability, a valid batch, and proposer
+  feasibility before the batch. Run feasibility assumes buyer substitutability and a valid run.
+* Proposer acceptability assumes a valid run, without buyer substitutability or IRC.
+* Choosing held contracts from themselves assumes buyer IRC, for arbitrary offer sets.
+* Market individual rationality assumes a valid run, buyer substitutability and IRC, seller
+  locality, and seller acceptance of strictly acceptable singleton menus. The strict
+  preference-induced seller-choice specialization supplies these last two conditions and
+  assumes buyer choices respect buyer identities.
+* Policy-outcome corollaries assume a finite contract type and a valid policy, together with
+  the choice hypotheses of the corresponding run result.
+
+Under buyer substitutability, rejected contracts remain rejected as accumulated offers grow.
 Consequently every valid batched run holds at most one contract per proposer: previously
 rejected contracts cannot be recalled, new offers come from proposers with no held contract,
-and a batch has at most one offer per proposer. No restriction on buyer choices' off-run counterparty feasibility is needed.
+and a batch has at most one offer per proposer. No restriction on buyer choices' off-run
+counterparty feasibility is needed.
 
 Every offered contract is strictly acceptable to its proposer. Buyer IRC makes held contracts
 chosen from themselves, independently of substitutability. To conclude the existing
 `Market.IndRational` predicate, the market's seller choices must agree with the cumulative offer process:
-we use seller locality and acceptance of strictly acceptable singleton menus. These are
+we use buyer substitutability for proposer feasibility, buyer IRC for buyer individual
+rationality, and seller locality and acceptance of strictly acceptable singleton menus. These are
 explicit hypotheses, since `ofMarket` deliberately ignores the market's seller choices.
 Strict preference-induced seller choices satisfy this compatibility on arbitrary contract
 types; only the finite policy-outcome corollary requires finiteness.
@@ -61,7 +78,9 @@ theorem Admissible.acceptable {A : Set X} {x : X} (h : P.Admissible A x) :
   subst s
   exact hx.1.2
 
-/-- A previously offered contract held after menu expansion was already held before it. -/
+/-- Under buyer substitutability, a previously offered contract held after offer-set expansion
+was already held before it. Requires nested offer sets and membership in the smaller set;
+no valid-run, IRC, or finiteness hypothesis is used. -/
 theorem held_of_held_of_subset (hsub : ∀ b, (P.choiceB b).Substitutable)
     {A D : Set X} (hAD : A ⊆ D) {x : X}
     (hx : x ∈ P.heldContracts D) (hxA : x ∈ A) : x ∈ P.heldContracts A := by
@@ -70,13 +89,15 @@ theorem held_of_held_of_subset (hsub : ∀ b, (P.choiceB b).Substitutable)
       {y ∈ D | P.buyer y = P.buyer x} := fun _ hy => ⟨hAD hy.1, hy.2⟩
   exact (hsub (P.buyer x)).mem_of_subset hmenus ((P.mem_heldContracts_iff).1 hx) ⟨hxA, rfl⟩
 
-/-- Rejections persist under expansion of accumulated offers. Neither IRC nor finiteness is used. -/
+/-- Under buyer substitutability, rejections persist under expansion of accumulated offers.
+No valid-run, IRC, or finiteness hypothesis is used. -/
 theorem rejected_mono (hsub : ∀ b, (P.choiceB b).Substitutable) :
     Monotone (fun A => A \ P.heldContracts A) := by
   intro A D hAD x hx
   exact ⟨hAD hx.1, fun hheld => hx.2 (P.held_of_held_of_subset hsub hAD hheld hx.1)⟩
 
-/-- After a batch, every held contract is either an previously held contract or a new proposal. -/
+/-- Under buyer substitutability, every contract held from enlarged offers was previously held
+or belongs to the newly added set. The added set need not be a valid batch. -/
 theorem heldContracts_union_subset (hsub : ∀ b, (P.choiceB b).Substitutable) (A Q : Set X) :
     P.heldContracts (A ∪ Q) ⊆ P.heldContracts A ∪ Q := by
   intro x hx
@@ -84,7 +105,8 @@ theorem heldContracts_union_subset (hsub : ∀ b, (P.choiceB b).Substitutable) (
   · exact Or.inl (P.held_of_held_of_subset hsub Set.subset_union_left hx hxA)
   · exact Or.inr hxQ
 
-/-- Substitutability and a valid batch preserve at most one held contract per proposer. -/
+/-- Buyer substitutability and a valid batch preserve at most one held contract per proposer,
+assuming this property before the batch. No IRC or finiteness hypothesis is used. -/
 theorem ValidBatch.heldContracts_injOn (hsub : ∀ b, (P.choiceB b).Substitutable)
     {A Q : Set X} (hQ : P.ValidBatch A Q) (hA : Set.InjOn P.seller (P.heldContracts A)) :
     Set.InjOn P.seller (P.heldContracts (A ∪ Q)) := by
@@ -107,7 +129,8 @@ theorem Run.heldContracts_injOn (hsub : ∀ b, (P.choiceB b).Substitutable)
     exact (P.heldContracts_subset ∅ hx).elim
   | cons _ hQ ih => exact hQ.heldContracts_injOn P hsub ih
 
-/-- Every contract offered during a valid run is strictly acceptable to its proposer. -/
+/-- Every contract offered during a valid run is strictly acceptable to its proposer.
+No buyer substitutability, IRC, or finiteness hypothesis is used. -/
 theorem Run.acceptable_offers {h : List (Set X)} (hr : P.Run h) :
     ∀ x ∈ offers h, P.Acceptable x := by
   induction hr with
@@ -133,21 +156,24 @@ theorem buyer_heldContracts_eq (A : Set X) (b : B) :
   · intro hx
     exact ⟨⟨b, hx⟩, ((P.choiceB b).choose_subset _ hx).2⟩
 
-/-- Buyer IRC makes each buyer choose its held contracts from those held contracts. -/
+/-- Buyer IRC makes each buyer choose its held contracts from those held contracts.
+This holds for arbitrary offer sets, without substitutability or a valid-run hypothesis. -/
 theorem choice_heldContracts_eq (hcons : ∀ b, (P.choiceB b).Consistent) (A : Set X) (b : B) :
     P.choiceB b {x ∈ P.heldContracts A | P.buyer x = b} =
       {x ∈ P.heldContracts A | P.buyer x = b} := by
   rw [P.buyer_heldContracts_eq]
   exact (hcons b).idempotent _
 
-/-- Every finite valid policy produces seller-feasible held contracts under substitutability. -/
+/-- On a finite contract type, a valid policy produces at most one held contract per proposer
+under buyer substitutability. No buyer IRC hypothesis is used. -/
 theorem rawOutcome_injOn [Finite X] (hsub : ∀ b, (P.choiceB b).Substitutable)
     {π : Policy X} (hp : P.ValidPolicy π) : Set.InjOn P.seller (P.rawOutcome π) :=
   (P.execute_run hp _).heldContracts_injOn P hsub
 
 end CumulativeOfferProcess
 
-/-- Market-adapted runs satisfy the library's many-to-one feasibility predicate. -/
+/-- Under buyer substitutability, valid market-adapted runs satisfy the library's many-to-one
+feasibility predicate. No buyer IRC, seller-choice compatibility, or finiteness is assumed. -/
 theorem manyToOneFeasible_of_run (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s}))
     (hsub : ∀ b, (M.choiceB b).Substitutable)
@@ -155,8 +181,10 @@ theorem manyToOneFeasible_of_run (M : Market B S X)
     M.ManyToOneFeasible ((ofMarket M pref).heldContracts (CumulativeOfferProcess.offers h)) :=
   hr.heldContracts_injOn (ofMarket M pref) hsub
 
-/-- Buyer IRC and compatible local seller choices give market individual rationality along
-valid runs. Seller compatibility is only required on strictly acceptable singleton menus. -/
+/-- Buyer substitutability and IRC, together with seller locality and acceptance of strictly
+acceptable singleton menus, give market individual rationality along valid runs.
+Substitutability supplies proposer feasibility, IRC gives buyer individual rationality, and
+seller compatibility gives seller individual rationality. No finiteness is assumed. -/
 theorem indRational_of_run (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s}))
     (hsub : ∀ b, (M.choiceB b).Substitutable)
@@ -185,8 +213,9 @@ theorem indRational_of_run (M : Market B S X)
     rw [← hlocal s Z, hsingle, ← hx.2]
     exact haccept x (hr.acceptable_heldContracts P x hx.1)
 
-/-- A finite valid policy inherits market individual rationality under the same local
-compatibility conditions. The policy may use history and batches. -/
+/-- On a finite contract type, a valid policy inherits market individual rationality under
+buyer substitutability and IRC, seller locality, and acceptance of strictly acceptable singleton
+menus. The policy may depend on the history and select batches. -/
 theorem indRational_rawOutcome [Finite X] (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s}))
     (hsub : ∀ b, (M.choiceB b).Substitutable)
@@ -197,8 +226,10 @@ theorem indRational_rawOutcome [Finite X] (M : Market B S X)
     M.IndRational ((ofMarket M pref).rawOutcome π) :=
   indRational_of_run M pref hsub hcons hlocal haccept ((ofMarket M pref).execute_run hp _)
 
-/-- Strict preference-induced seller choices supply the compatibility required for
-individual rationality. No finiteness or off-run buyer feasibility is needed. -/
+/-- Under buyer substitutability and IRC, a valid run has market individual rationality when
+seller choices are induced by strict preferences and buyer choices respect buyer identities.
+The seller choices supply locality and acceptance of strictly acceptable singleton menus.
+No finiteness or off-run buyer feasibility is needed. -/
 theorem indRational_ofSellerPreferences_of_run
     (buyer : X → B) (seller : X → S) (choiceB : B → ChoiceFunction X)
     (hB : ∀ ⦃b Y x⦄, x ∈ choiceB b Y → buyer x = b)
