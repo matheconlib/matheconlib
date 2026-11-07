@@ -12,11 +12,13 @@ import Mathlib.Order.Preorder.Finite
 /-!
 # Cutoff completions for roster choice
 
-Fix a worker choice rule and a family of target assignments on the roster chosen
-when all workers are represented. A cutoff completion selects the roster from
-the offered workers and keeps each term that is no better, for its worker, than
-their term in any target contained in the menu. For a family closed under meet,
-the cutoff is itself an eligible target whenever an eligible target exists.
+Fix the hospital's roster-choice rule `R` and a family of target assignments
+on the roster selected when every worker is represented. For each offer
+menu, the cutoff completion selects workers using `R`. It keeps each
+offered term that is weakly worse for its worker than their term in every
+target contained in the menu. With finitely many contracts and a meet-closed
+target family, a nonempty set of eligible targets has a least element
+determining the cutoff.
 -/
 
 @[expose] public section

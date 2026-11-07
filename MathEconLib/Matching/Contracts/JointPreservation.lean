@@ -11,16 +11,25 @@ public import MathEconLib.Matching.Contracts.Completion
 /-!
 # Joint preservation of stable outcomes under completion
 
-Each target outcome imposes rejections on the buyer choices. For a contract that
-the seller would take in place of their assignment, the buyer must reject it
-when it is added to the buyer's part of the outcome. Substitutability extends
-this rejection to every larger menu. Restrict the substitute envelope by all
-these rejections, then take its greatest path-independent minorant.
+Fix a family `targets` of individually rational outcomes. We seek one profile of substitutable IRC
+buyer completions under which every target is stable. Seller choices and contract endpoints remain
+unchanged.
 
-The resulting buyer profile is a completion exactly when one substitutable IRC
-completion preserves every target. When it exists it is the greatest such
-profile, and its stable set is the intersection of the stable sets of all
-preserving profiles. The original buyers need neither IRC nor substitutability.
+Each target requires rejecting every new contract that its seller would accept when added to the
+outcome, if accepting that contract at its buyer would create a block. Substitutability propagates
+these rejections to larger menus. For each buyer, restrict the substitute envelope by these
+requirements, then take its greatest path-independent minorant.
+
+With unit-demand substitutable sellers, these choices are completions exactly when such a profile
+exists. They are then greatest by pointwise inclusion of chosen contracts at every buyer and menu.
+Their stable set is the intersection of the stable sets of all profiles making every target stable.
+
+Original buyer IRC and substitutability are unnecessary for these results. Transfer of stable
+outcomes back to the original market is supplied separately by `stable_of_withBuyerCompletions`,
+under its IRC hypotheses.
+
+The joint-preservation results in this module were developed for an in-preparation writeup on
+substitute completions and stable outcomes.
 -/
 
 @[expose] public section
@@ -66,7 +75,10 @@ theorem jointPreservationEnvelope_substitutable (targets : Set (Set X)) (b : B) 
   rintro ⟨A, hA, hb, hxA, hxS, hmenu⟩
   exact hx.1.2 ⟨A, hA, hb, hxA, hxS, hmenu.trans hYZ⟩
 
-/-- The canonical candidate for a joint preserving completion. -/
+/-- For each buyer, the greatest path-independent minorant of its envelope after imposing the
+singleton rejections required by every target. Under the hypotheses of
+`isGreatest_jointPreservationChoices`, passing the completion test makes all targets stable in the
+same completed market. For an empty target family this is the buyer's path-independent envelope. -/
 def jointPreservationChoices (targets : Set (Set X)) (b : B) : ChoiceFunction X :=
   (M.jointPreservationEnvelope targets b).pathIndependentMinorant
 
@@ -74,7 +86,9 @@ theorem jointPreservationChoices_pathIndependent (targets : Set (Set X)) (b : B)
     (M.jointPreservationChoices targets b).PathIndependent :=
   ChoiceFunction.pathIndependentMinorant_pathIndependent _
 
-/-- Substitutable IRC buyer completions preserving every target allocation. -/
+/-- Substitutable IRC buyer completion profiles under which every outcome in `targets` is stable.
+The same profile must work for every target; seller choices and contract endpoints remain
+unchanged. -/
 def preservingBuyerCompletions (targets : Set (Set X)) : Set (B → ChoiceFunction X) :=
   {D | ∃ (hcomp : ∀ b, (M.choiceB b).IsCompletionOf M.seller (D b))
       (hsub : ∀ b, (D b).Substitutable),
@@ -115,8 +129,10 @@ private theorem jointPreservationChoices_isCompletionOf {targets : Set (Set X)}
   exact ChoiceFunction.pathIndependentMinorant_isCompletionOf_of_le_substituteEnvelope
     (fun _ _ hx => hx.1) (hcomp b) ((hsub b).pathIndependent (hcons b)) hbound
 
-/-- When the canonical choices complete the original choices, they are the
-greatest substitutable IRC completion profile preserving the targets. -/
+/-- With unit-demand substitutable sellers and individually rational targets, canonical choices
+that pass the completion test make every target stable. Every other substitutable IRC completion
+profile making all targets stable is contained in them at each buyer and menu, in the pointwise
+choice order. -/
 theorem isGreatest_jointPreservationChoices {targets : Set (Set X)}
     (hunit : M.SellersUnitDemand) (hSsub : ∀ s, (M.choiceS s).Substitutable)
     (hIR : ∀ A ∈ targets, M.IndRational A)
@@ -145,9 +161,9 @@ theorem isGreatest_jointPreservationChoices {targets : Set (Set X)}
     (M.jointPreservationEnvelope targets (M.buyer x)) _ hxD
   exact hxE.2 ⟨A, hA, rfl, hxA, hxS, Set.Subset.rfl⟩
 
-/-- A single substitutable IRC completion preserves the targets exactly when
-each canonical choice rule passes the completion test. Target individual
-rationality suffices, in particular when the targets were originally stable. -/
+/-- With unit-demand substitutable sellers, a single substitutable IRC completion profile makes
+every target stable exactly when each canonical choice rule passes the completion test. Target
+individual rationality suffices, in particular when the targets were originally stable. -/
 theorem preservingBuyerCompletions_nonempty_iff {targets : Set (Set X)}
     (hunit : M.SellersUnitDemand) (hSsub : ∀ s, (M.choiceS s).Substitutable)
     (hIR : ∀ A ∈ targets, M.IndRational A) :
@@ -156,9 +172,10 @@ theorem preservingBuyerCompletions_nonempty_iff {targets : Set (Set X)}
   ⟨fun ⟨_, h⟩ => M.jointPreservationChoices_isCompletionOf h,
     fun h => ⟨_, (M.isGreatest_jointPreservationChoices hunit hSsub hIR h).1⟩⟩
 
-/-- Stability under the greatest preserving completion is stability under
-every preserving completion. The statement uses the original target family
-only to specify which completions are being compared. -/
+/-- An outcome is stable under the canonical completion iff it is stable under every substitutable
+IRC completion profile making all targets stable. Thus the canonical market has the intersection
+of those stable sets. Greatestness is for pointwise inclusion of buyer choices, so the stable-set
+inclusion runs in the reverse direction. -/
 theorem stable_withJointPreservationChoices_iff {targets : Set (Set X)}
     (hunit : M.SellersUnitDemand) (hSsub : ∀ s, (M.choiceS s).Substitutable)
     (hIR : ∀ A ∈ targets, M.IndRational A)

@@ -12,11 +12,23 @@ public import Mathlib.Order.WithBot
 /-!
 # Assignments on a fixed worker roster
 
-A roster assignment gives each worker in the roster one of their contracts.
-Each worker orders their own terms, with better terms higher. Mathlib's
-pointwise order and meet therefore describe workerwise comparisons of assignments.
-The single-hospital market uses the existing preference-induced seller choices,
-with the outside option below every term.
+A roster `W` is a specified set of workers, the sellers in `Market`.
+`RosterAssignment seller W` gives each worker in `W` one own contract.
+Its `terms` map identifies these assignments with contract sets containing
+exactly one contract for each roster worker and none for other workers.
+
+This separates staffing from contract terms: two assignments can employ
+the same doctors at different wages, shifts, or duties. The assignment
+type itself assumes neither stability nor preferences.
+
+Once workers rank their own terms, with better terms higher, Mathlib's
+pointwise order compares assignments worker by worker. Their meet gives
+each worker the worse of their two terms.
+
+The later single-hospital model adds a staffing rule that depends only
+on the workers represented in a menu and derives the roster employed at
+stable outcomes. Its worker preferences place unemployment below every
+own contract.
 -/
 
 @[expose] public section

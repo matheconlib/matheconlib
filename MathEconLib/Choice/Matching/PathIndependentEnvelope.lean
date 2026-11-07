@@ -13,10 +13,14 @@ public import MathEconLib.Choice.Matching.SubstituteEnvelope
 
 The greatest path-independent minorant of the substitute envelope is the
 canonical candidate for a completion satisfying both substitutability and IRC.
-It is a completion exactly when such a completion exists, and is then the greatest
-one; the original rule need not satisfy IRC. The construction does not assert that bare
-substitutable completability implies consistent substitutable completability.
+It is a completion exactly when such a completion exists, and is then the greatest such
+completion under pointwise inclusion of chosen contracts. The original rule need not satisfy IRC.
+The construction does not assert that bare substitutable completability implies consistent
+substitutable completability.
 All results apply to arbitrary contract types.
+
+The completion-preservation results in this module were developed for an in-preparation writeup
+on substitute completions and stable outcomes.
 -/
 
 @[expose] public section
@@ -46,9 +50,9 @@ theorem IsCompletionOf.le_pathIndependentEnvelope
   le_pathIndependentMinorant (hsub.pathIndependent hIRC)
     (hcomp.le_substituteEnvelope hsub)
 
-/-- A bound below the substitute envelope has a canonical path-independent completion
-whenever it contains any path-independent completion of the original rule. The IRC
-hypothesis is on the witnessing completion. -/
+/-- If `K` lies below the substitute envelope and above a path-independent completion `D` of `C`,
+its greatest path-independent minorant completes `C`. The IRC condition is satisfied by the
+witnessing completion `D`. -/
 theorem pathIndependentMinorant_isCompletionOf_of_le_substituteEnvelope {K : ChoiceFunction X}
     (hKU : K ≤ substituteEnvelope counterparty C) (hcomp : C.IsCompletionOf counterparty D)
     (hD : D.PathIndependent) (hDK : D ≤ K) :
@@ -74,9 +78,9 @@ theorem pathIndependentMinorant_isCompletionOf_of_le_substituteEnvelope {K : Cho
     obtain ⟨x, hx, y, hy, heq, hne⟩ := hfeas
     exact ⟨x, hx, y, hy, hne, heq⟩
 
-/-- If a substitutable IRC completion exists, the path-independent envelope is one.
-The original rule need not satisfy IRC. -/
-theorem pathIndependentEnvelope_isCompletionOf
+/-- If `C` admits a substitutable completion satisfying IRC, its path-independent envelope
+is a completion of `C`. -/
+theorem pathIndependentEnvelope_isCompletionOf_of_hasConsistentSubstitutableCompletion
     (hC : C.HasConsistentSubstitutableCompletion counterparty) :
     C.IsCompletionOf counterparty (pathIndependentEnvelope counterparty C) := by
   obtain ⟨D, hcomp, hsub, hcons⟩ := hC
@@ -88,7 +92,7 @@ theorem hasConsistentSubstitutableCompletion_iff_pathIndependentEnvelope_isCompl
     C.HasConsistentSubstitutableCompletion counterparty ↔
       C.IsCompletionOf counterparty (pathIndependentEnvelope counterparty C) := by
   constructor
-  · exact pathIndependentEnvelope_isCompletionOf
+  · exact pathIndependentEnvelope_isCompletionOf_of_hasConsistentSubstitutableCompletion
   · intro hcomp
     have hpi := pathIndependentEnvelope_pathIndependent counterparty C
     exact ⟨_, hcomp, hpi.substitutable, hpi.consistent⟩
@@ -100,7 +104,8 @@ theorem isGreatest_pathIndependentEnvelope
       C.IsCompletionOf counterparty D ∧ D.Substitutable ∧ D.Consistent}
       (pathIndependentEnvelope counterparty C) := by
   have hpi := pathIndependentEnvelope_pathIndependent counterparty C
-  exact ⟨⟨pathIndependentEnvelope_isCompletionOf hC, hpi.substitutable, hpi.consistent⟩,
+  exact ⟨⟨pathIndependentEnvelope_isCompletionOf_of_hasConsistentSubstitutableCompletion hC,
+    hpi.substitutable, hpi.consistent⟩,
     fun _ h => h.1.le_pathIndependentEnvelope h.2.1 h.2.2⟩
 
 /-- The path-independent sandwich describes exactly the enlarging IRC completions.

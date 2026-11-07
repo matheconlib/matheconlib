@@ -11,18 +11,25 @@ public import MathEconLib.Matching.Contracts.RosterStability
 /-!
 # Stable sets attainable under a term-independent roster rule
 
-A hospital chooses whom to hire from the represented workers, then chooses
-one contract for each member of that roster. Its terms may depend on the
-whole offer menu. If the roster choice satisfies substitutes and IRC and the
-original contract choice satisfies IRC, every stable outcome employs the
-roster selected from all workers.
+Assume finitely many contracts and strict worker rankings with every own
+term above unemployment. The hospital's feasible-valued contract choice
+`C` satisfies IRC and selects workers using a substitutable IRC roster
+rule `R`, applied to the workers represented in the menu. Staffing is
+therefore independent of contract terms, while selected terms may depend
+on the whole menu. Fixed hiring priorities with a quota are one example.
 
-A family of assignments on that roster is exactly the stable set of some
-substitutable IRC completion iff its members are originally stable, it contains
-the worker-favourite assignment, and it is closed under giving each worker the
-worse of their terms in two assignments. In particular, one completion can
-preserve the whole original stable set iff that set is closed under workerwise
-meets. The proof uses choice-theoretic stability.
+Every stable outcome employs exactly `R (Set.range seller)`. A family of
+assignments on that roster is the entire stable set of a substitutable
+IRC completion exactly when its members are originally stable, it contains
+the worker-favourite assignment, and it is closed under workerwise meets.
+
+Consequently, one substitutable completion preserves every original
+stable outcome exactly when the original stable assignments are closed
+under workerwise meets. When this holds, a completion satisfying IRC can
+realize exactly the original stable set. The proof uses choice-theoretic stability.
+
+The roster stable-set characterization in this module was developed for
+an in-preparation writeup on substitute completions and stable outcomes.
 -/
 
 @[expose] public section
