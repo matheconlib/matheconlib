@@ -26,6 +26,22 @@ Preferences are strict orders over partners and the outside option. Populations
 may have different sizes and some partners may be unacceptable. The proof uses
 the existing lone-wolf theorem to handle unmatched participants.
 
+## Terminology and main definitions
+
+Fix two stable matchings `μ` and `ν`.
+
+* The **pointwise choice** `preferredM mkt μ ν` assigns each man `m` the better,
+  in his own preference order, of his two input assignments `μ m` and `ν m`
+  (possibly the outside option `none`). It is only a function `M → Option W`.
+* The **preferred matching** `preferredMatching mkt μ ν : M ≃. W` packages the
+  pointwise choice as a partial matching. This is possible because no woman is
+  chosen by two men (`preferredM_leftUnique`), which uses the stability of both
+  inputs. At this point it is only known to be a partial matching.
+* `stable_preferredMatching` shows that the preferred matching is stable, and
+  `matching_sup_apply` identifies it with the existing lattice join `μ ⊔ ν`.
+  Applying the same construction to the women's side gives the meet
+  (`matching_inf_symm_apply`, `matching_inf_apply`).
+
 ## References
 
 Alvin E. Roth and Marilda A. Oliveira Sotomayor (1990),
@@ -68,7 +84,7 @@ private noncomputable def matchedEquiv (ρ : M ≃. W) :
     have hy : ρ.symm y.1 = some ((ρ.symm y.1).get y.2) := (Option.coe_get y.2).symm
     simp [ρ.eq_some_iff.mp hy]
 
-/-- The better of two assignments according to man `m`. -/
+/-- The pointwise choice: man `m`'s better assignment among `μ m` and `ν m`. -/
 noncomputable def preferredM (μ ν : mkt.StableMatching) (m : M) : Option W := by
   letI := mkt.prefM m
   exact max (μ.matching m) (ν.matching m)
@@ -98,7 +114,8 @@ theorem preferredM_rightUnique (μ ν : mkt.StableMatching) (m : M)
     (hw' : preferredM mkt μ ν m = some w') : w = w' :=
   Option.some.inj (hw.symm.trans hw')
 
-/-- Crossed preferred choices cannot assign one woman twice. -/
+/-- If one man chooses a woman from `μ` and another chooses her from `ν`,
+then they are the same man: the pointwise choice cannot assign her twice. -/
 private theorem preferredM_crossUnique (μ ν : mkt.StableMatching)
     {m m' : M} {w : W}
     (hmw : μ.matching m = some w) (hm'w : ν.matching m' = some w)
@@ -134,7 +151,7 @@ private theorem preferredM_crossUnique (μ ν : mkt.StableMatching)
     simpa only [μ.matching.eq_some_iff.mpr hmw] using hle
   exact hne (Option.some.inj (le_antisymm hνle hμle))
 
-/-- Two men cannot choose the same woman from two stable matchings. -/
+/-- The pointwise choice never assigns the same woman to two men. -/
 theorem preferredM_leftUnique (μ ν : mkt.StableMatching) (w : W)
     {m m' : M} (hm : preferredM mkt μ ν m = some w)
     (hm' : preferredM mkt μ ν m' = some w) : m = m' := by
@@ -149,7 +166,8 @@ theorem preferredM_leftUnique (μ ν : mkt.StableMatching) (w : W)
       (by simpa [preferredM, max_comm] using hm')
   · exact ν.matching.graph_leftUnique (hν.symm.trans hm) (hν'.symm.trans hm')
 
-/-- The pointwise preferred assignment is a partial matching. -/
+/-- The preferred matching: the pointwise choice, packaged as a partial matching.
+Its stability is proved separately in `stable_preferredMatching`. -/
 noncomputable def preferredMatching (μ ν : mkt.StableMatching) : M ≃. W :=
   PEquiv.ofRelation (fun m w => preferredM mkt μ ν m = some w)
     (fun m _ hw _ hw' => preferredM_rightUnique mkt μ ν m hw hw')
@@ -161,12 +179,13 @@ noncomputable def preferredMatching (μ ν : mkt.StableMatching) : M ≃. W :=
   intro w
   exact PEquiv.ofRelation_apply_eq_some_iff _ _ _
 
-/-- Every man weakly prefers the constructed matching to both inputs. -/
+/-- Every man weakly prefers the preferred matching to the first input. -/
 theorem le_preferredMatching_left (μ ν : mkt.StableMatching) (m : M) :
     mkt.leM m (μ.matching m) (preferredMatching mkt μ ν m) := by
   rw [preferredMatching_apply]
   exact le_preferredM_left mkt μ ν m
 
+/-- Every man weakly prefers the preferred matching to the second input. -/
 theorem le_preferredMatching_right (μ ν : mkt.StableMatching) (m : M) :
     mkt.leM m (ν.matching m) (preferredMatching mkt μ ν m) := by
   rw [preferredMatching_apply]
@@ -176,7 +195,7 @@ section Finite
 
 variable [Finite M] [Finite W]
 
-/-- The pointwise choice preserves the matched men. -/
+/-- The preferred matching preserves the set of matched men. -/
 private theorem preferredMatching_isSome_iff (μ ν : mkt.StableMatching) (m : M) :
     (preferredMatching mkt μ ν m).isSome ↔ (μ.matching m).isSome := by
   have hnone := mkt.eq_none_iff_of_stable μ.isStable ν.isStable m
@@ -194,7 +213,8 @@ private theorem preferredMatching_isSome_iff (μ ν : mkt.StableMatching) (m : M
           · simp [preferredMatching_apply, hleft, hμ]
           · simp [preferredMatching_apply, hright, hν]
 
-/-- Every woman chosen by the constructed matching is matched in each input. -/
+/-- Every woman matched by the preferred matching is matched in `μ` (and hence,
+by the lone-wolf theorem, in `ν`). -/
 private theorem preferredMatching_woman_isSome_imp (μ ν : mkt.StableMatching)
     (w : W) (hw : ((preferredMatching mkt μ ν).symm w).isSome) :
     (μ.matching.symm w).isSome := by
@@ -215,7 +235,7 @@ private theorem preferredMatching_woman_isSome_imp (μ ν : mkt.StableMatching)
         have hνsome : (ν.matching.symm w).isSome := by simp [hνw]
         exact (mkt.isSome_symm_iff_of_stable μ.isStable ν.isStable w).mpr hνsome
 
-/-- The pointwise choice also preserves the matched women. -/
+/-- The preferred matching also preserves the set of matched women. -/
 theorem preferredMatching_woman_isSome_iff (μ ν : mkt.StableMatching) (w : W) :
     ((preferredMatching mkt μ ν).symm w).isSome ↔
       (μ.matching.symm w).isSome := by
@@ -248,7 +268,7 @@ theorem preferredMatching_woman_isSome_iff (μ ν : mkt.StableMatching) (w : W) 
     have : x.1 = w := congrArg Subtype.val hx
     simpa only [this] using x.2
 
-/-- A woman's assignment in the pointwise construction comes from an input. -/
+/-- Each woman's partner in the preferred matching is her partner in one of the inputs. -/
 theorem preferredMatching_woman_eq_left_or_right (μ ν : mkt.StableMatching) (w : W) :
     (preferredMatching mkt μ ν).symm w = μ.matching.symm w ∨
       (preferredMatching mkt μ ν).symm w = ν.matching.symm w := by
@@ -274,7 +294,7 @@ theorem preferredMatching_woman_eq_left_or_right (μ ν : mkt.StableMatching) (w
       · right
         exact (ν.matching.eq_some_iff.mpr (hν.symm.trans hmw)).symm
 
-/-- Pointwise preferred choice of two stable matchings is stable. -/
+/-- The preferred matching of two stable matchings is stable. -/
 theorem stable_preferredMatching (μ ν : mkt.StableMatching) :
     mkt.IsStableMatching (preferredMatching mkt μ ν) := by
   let σ := preferredMatching mkt μ ν
@@ -315,7 +335,7 @@ end Finite
 
 variable [Fintype M] [Fintype W]
 
-/-- The lattice join is pointwise maximum in each man's preference order. -/
+/-- The lattice join is the pointwise choice: each man's better input assignment. -/
 theorem matching_sup_apply (μ ν : mkt.StableMatching) (m : M) :
     (μ ⊔ ν).matching m = preferredM mkt μ ν m := by
   let σ : mkt.StableMatching :=
@@ -340,7 +360,7 @@ theorem matching_sup_apply (μ ν : mkt.StableMatching) (m : M) :
   have h := congrArg (fun ρ : mkt.StableMatching => ρ.matching m) hσ
   simpa only [σ, preferredMatching_apply] using h
 
-/-- The meet assigns each woman her preferred input assignment. -/
+/-- The meet is the women's pointwise choice: each woman's better input assignment. -/
 theorem matching_inf_symm_apply (μ ν : mkt.StableMatching) (w : W) :
     (μ ⊓ ν).matching.symm w =
       preferredM mkt.symm (symmEquiv mkt μ) (symmEquiv mkt ν) w := by
