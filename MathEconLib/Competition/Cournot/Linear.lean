@@ -20,9 +20,10 @@ symmetric profile is Nash for every `a` and `k`; `k ≤ a` makes that profile no
 Restricting actions uses the existing Nash transport theorem.
 
 The scalar payoff-gap identity also holds at `n = 0`; profile results quantify over `Fin n`.
-This module extracts the editions-only calculation from the all-purchase development in #121,
-following the shared-core design in #193. It asserts neither uniqueness nor the constrained
-shutdown equilibrium when `a < k`. Welfare and auction accounting remain in their own modules.
+The quantity-competition calculation here was extracted from the all-purchase development
+in #121, following the shared-core design in #193. This module does not prove uniqueness, nor
+the shutdown equilibrium of the nonnegative game when `a < k`. Welfare and auction accounting
+remain in their own modules.
 -/
 
 @[expose] public noncomputable section
