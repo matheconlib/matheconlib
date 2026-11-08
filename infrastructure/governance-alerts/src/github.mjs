@@ -5,7 +5,7 @@ export function githubReader(token, fetcher = fetch) {
     const url = new URL(path, 'https://api.github.com/');
     if (url.origin !== 'https://api.github.com') throw new Error('Refused a non-GitHub API URL.');
     const r = await fetcher(url, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json',
-      'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'MathEconLib-governance-alerts' }, redirect: 'error', signal: AbortSignal.timeout(15000) });
+      'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'MathEconLib-governance-alerts' }, redirect: 'manual', signal: AbortSignal.timeout(15000) });
     if (r.status === 404) return { status: 404 };
     if (!r.ok) throw new Error(`GitHub ${url.pathname}: HTTP ${r.status}.`);
     return { status: r.status, data: await r.json(), next: r.headers.get('link')?.match(/<([^>]+)>; rel="next"/)?.[1] };

@@ -152,6 +152,16 @@ test('reader prevents credential forwarding to pagination URLs outside GitHub', 
   let calls = 0; const read = githubReader('do-not-disclose', async () => { calls++; });
   await assert.rejects(read('https://example.com/steal'), /non-GitHub/); assert.equal(calls, 0);
 });
+test('reader rejects redirects explicitly using the edge-supported manual mode', async () => {
+  let calls = 0;
+  const read = githubReader('do-not-disclose', async (_url, options) => {
+    calls++;
+    assert.equal(options.redirect, 'manual');
+    return new Response(null, { status: 302, headers: { location: 'https://example.com/steal' } });
+  });
+  await assert.rejects(read('repos/matheconlib/matheconlib'), /HTTP 302/);
+  assert.equal(calls, 1);
+});
 test('read-only cloud snapshots do not call GitHub history endpoints requiring write access', async () => {
   const { read, calls } = fakeReader();
   await collectSnapshot(read, [56843070], { history: false });
