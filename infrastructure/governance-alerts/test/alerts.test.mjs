@@ -112,6 +112,15 @@ test('failed email persists, retries, then deduplicates across a restarted insta
   await monitor.flush(); await monitor.enqueue({ key: 'one-change' }); await monitor.flush();
   assert.equal(attempts, 2); assert.equal([...storage.data.values()][0].providerId, 'sent-1');
 });
+test('a failed scheduled check returns failure and preserves the prior successful checkpoint', async () => {
+  const storage = memoryStorage(), state = initialState(); state.lastSuccessfulCheck = now;
+  await storage.put('state', state); let delivered = 0;
+  const monitor = new GovernanceMonitor({ storage }, { ALERT_TO: 'bo.cowgill.work@gmail.com',
+    EMAIL: { async send() { delivered++; return { messageId: 'failure-notice' }; } } });
+  const r = await monitor.fetch(new Request('https://monitor.internal/reconcile', { method: 'POST' }));
+  assert.equal(r.status, 503); assert.equal((await r.json()).checkedAt, now);
+  assert.equal((await storage.get('state')).lastSuccessfulCheck, now); assert.equal(delivered, 1);
+});
 function fakeReader({ missingRule = false, partial = false } = {}) {
   const root = 'repos/matheconlib/matheconlib'; const calls = [];
   const read = async path => {

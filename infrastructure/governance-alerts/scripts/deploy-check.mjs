@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { collectSnapshot, githubReader } from '../src/github.mjs';
 import { APPROVED_ADMINS, APPROVED_POLICY, stable } from '../src/core.mjs';
+import { sendEmail } from '../src/worker.mjs';
 
 for (const name of ['GITHUB_READ_TOKEN', 'WEBHOOK_SECRET', 'BACKUP_SECRET', 'MAIL_BRIDGE_URL', 'MAIL_BRIDGE_SECRET']) {
   assert.ok(process.env[name], `Missing deployment secret ${name}.`);
@@ -16,3 +17,9 @@ assert.equal(stable(snapshot.policy), stable(APPROVED_POLICY), 'The current merg
 assert.equal(stable(snapshot.admins), stable(APPROVED_ADMINS), 'Admin accounts differ from the approved baseline; review before activation.');
 assert.equal(snapshot.invitations.length, 0, 'Review pending Admin invitations before activation.');
 console.log('DEPLOYMENT READ-ACCESS AND BASELINE CHECK PASSED');
+await sendEmail(process.env, {
+  key: 'setup-end-to-end:v1',
+  subject: '[MathEconLib governance] Automatic email delivery verified',
+  text: 'The MathEconLib governance monitor has verified its signed email connection and read-only repository access.\n\nThis is the requested setup test. Alerts will cover changes to the merge allowlist, disabling or deleting the main protection rule, and new Admin access/invitations.\n\nhttps://github.com/matheconlib/matheconlib/rules/26805968',
+});
+console.log('SIGNED EMAIL DELIVERY ACKNOWLEDGED');

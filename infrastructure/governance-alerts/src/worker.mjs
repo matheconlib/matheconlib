@@ -37,7 +37,7 @@ export default {
   async fetch(request, env) {
     const path = new URL(request.url).pathname;
     if (path === '/health' && request.method === 'GET') return json({ service: 'MathEconLib governance alerts' });
-    if (!['/webhook', '/backup', '/test'].includes(path) || request.method !== 'POST') return json({ error: 'Not found.' }, 404);
+    if (!['/webhook', '/backup', '/test', '/check'].includes(path) || request.method !== 'POST') return json({ error: 'Not found.' }, 404);
     let raw;
     try { raw = await boundedBody(request); } catch { return json({ error: 'Invalid or excessive body.' }, 413); }
     const secret = path === '/webhook' ? env.WEBHOOK_SECRET : env.BACKUP_SECRET;
@@ -57,7 +57,7 @@ export default {
     // Timestamped admin requests prevent an old signed snapshot being replayed.
     const age = Date.now() - Date.parse(body.capturedAt);
     if (!Number.isFinite(age) || age < -60000 || age > 300000) return json({ error: 'Expired request.' }, 400);
-    return stub(env).fetch(`https://monitor.internal${path}`, { method: 'POST', body: raw });
+    return stub(env).fetch(`https://monitor.internal${path === '/check' ? '/reconcile' : path}`, { method: 'POST', body: raw });
   },
   async scheduled(_event, env, context) {
     context.waitUntil(stub(env).fetch('https://monitor.internal/reconcile', { method: 'POST' }).then(r => {
@@ -99,7 +99,9 @@ export class GovernanceMonitor {
       await this.flush(); return json({ sent: true });
     }
     if (path === '/reconcile') {
-      await this.run(); return json({ checked: true });
+      await this.run();
+      const state = await this.ctx.storage.get('state');
+      return json({ checkedAt: state?.lastSuccessfulCheck || null, failure: state?.failure || null }, state?.failure ? 503 : 200);
     }
     return json({ error: 'Not found.' }, 404);
   }
