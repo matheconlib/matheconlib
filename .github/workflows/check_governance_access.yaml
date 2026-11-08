@@ -30,3 +30,18 @@ jobs:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CF_MATHECON_PASS }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_MATHECON_ACCT }}
         run: node scripts/service-access.mjs
+      - name: Inspect the other existing Cloudflare connection without changes
+        env:
+          ALERT_CF_ACCOUNT: ${{ secrets.CF_MATHECON_ACCT }}
+          OTHER_CF_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          OTHER_CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          const sameAccount = process.env.ALERT_CF_ACCOUNT === process.env.OTHER_CF_ACCOUNT;
+          console.log(JSON.stringify({sameAccount}));
+          if (!sameAccount) process.exit(0);
+          const r = await fetch(`https://api.cloudflare.com/client/v4/accounts/${process.env.ALERT_CF_ACCOUNT}/workers/scripts`, {headers: {authorization: `Bearer ${process.env.OTHER_CF_TOKEN}`}, signal: AbortSignal.timeout(20000)});
+          const data = await r.json();
+          console.log(JSON.stringify({status:r.status,success:data.success,expectedWebsite:Array.isArray(data.result) && data.result.some(s=>s.id==='matheconlib')}));
+          JS
