@@ -120,6 +120,7 @@ public import MathEconLib.Probability.FinDist.Measure
 public import MathEconLib.Probability.FinDist.Simplex
 public import MathEconLib.RevealedPreference
 public import MathEconLib.RevealedPreference.Afriat
+public import MathEconLib.RevealedPreference.AfriatGeometry
 public import MathEconLib.RevealedPreference.Basic
 public import MathEconLib.RevealedPreference.Choice
 public import MathEconLib.RevealedPreference.GARP

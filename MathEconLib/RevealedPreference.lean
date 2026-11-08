@@ -6,6 +6,7 @@ Authors: Victor H. Aguiar
 module
 
 public import MathEconLib.RevealedPreference.Afriat
+public import MathEconLib.RevealedPreference.AfriatGeometry
 public import MathEconLib.RevealedPreference.Basic
 public import MathEconLib.RevealedPreference.Choice
 public import MathEconLib.RevealedPreference.GARP
@@ -17,6 +18,10 @@ Afriat's theorem connects GARP, positive-multiplier Afriat inequalities, and a c
 concave, strictly increasing utility rationalization of finite observations. The rationalizing
 utility is an explicit finite lower envelope of affine functions. The choice interface embeds
 observed utility maximization in the library's existing `ChoiceFunction` API.
+
+`AfriatGeometry` contains the certificate definitions and affine-envelope construction,
+independently of GARP. `GARP` constructs certificates from the revealed-preference graph;
+`Afriat` combines these ingredients into the economic equivalences.
 
 See the leaf modules for hypotheses, sources, and proof provenance, and
 `MathEconLibExamples.RevealedPreference` for checked applications.

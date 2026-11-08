@@ -17,7 +17,7 @@ Rationalization means membership among all feasible utility maximizers. The brid
 uses `Choice.maximizers` and the existing `Choice.ChoiceFunction` carrier; it does
 not introduce a competing choice abstraction or a tie-breaking rule.
 
-The resulting set-valued choice retains ties. Observed-budget attainment follows
+The resulting set-valued choice rule retains ties. Observed-budget attainment follows
 from rationalization, while no attainment claim is made for arbitrary menus.
 An element of a consumer menu is itself a commodity vector; it is not an individual
 contract in the separate matching interpretation of `ChoiceFunction`.

@@ -5,7 +5,7 @@ Authors: Victor H. Aguiar
 -/
 module
 
-public import MathEconLib.RevealedPreference.Basic
+public import MathEconLib.RevealedPreference.AfriatGeometry
 
 /-!
 # Finite GARP and positive-multiplier Afriat inequalities
@@ -46,13 +46,13 @@ namespace MathEconLib.RevealedPreference
 variable {L : ℕ} {T : Type*}
 
 /-- Direct revealed preference for arbitrary observed prices and choices. -/
-def DirectRP (p q : T → Bundle L) (s t : T) : Prop :=
+def DirectlyRevealedPreferred (p q : T → Bundle L) (s t : T) : Prop :=
   dot (p s) (q t) ≤ dot (p s) (q s)
 
 /-- Revealed preference is the reflexive-transitive closure of direct revealed
 preference. -/
-def RevealedPref (p q : T → Bundle L) : T → T → Prop :=
-  Relation.ReflTransGen (DirectRP p q)
+def RevealedPreferred (p q : T → Bundle L) : T → T → Prop :=
+  Relation.ReflTransGen (DirectlyRevealedPreferred p q)
 
 /-- Observation `t` is strictly cheaper than the chosen bundle at observation
 `s`. -/
@@ -62,7 +62,7 @@ def StrictlyCheaperAt (p q : T → Bundle L) (s t : T) : Prop :=
 /-- Graph form of GARP, independent of the extra regularity fields carried by
 `Dataset`. -/
 def GraphGARP (p q : T → Bundle L) : Prop :=
-  ∀ s t, RevealedPref p q s t → ¬ StrictlyCheaperAt p q t s
+  ∀ s t, RevealedPreferred p q s t → ¬ StrictlyCheaperAt p q t s
 
 /-- GARP for an observed consumer dataset. -/
 def SatisfiesGARP (D : Dataset L T) : Prop :=
@@ -71,76 +71,65 @@ def SatisfiesGARP (D : Dataset L T) : Prop :=
 /-- Short dataset-level name used in theorem statements. -/
 abbrev GARP (D : Dataset L T) : Prop := SatisfiesGARP D
 
-theorem directRP_dataset_iff (D : Dataset L T) (s t : T) :
-    DirectRP D.price D.choice s t ↔ 0 ≤ expenditureGap D s t := by
+theorem directlyRevealedPreferred_iff_expenditureGap_nonneg (D : Dataset L T) (s t : T) :
+    DirectlyRevealedPreferred D.price D.choice s t ↔ 0 ≤ expenditureGap D s t := by
   rw [expenditureGap_eq]
   exact sub_nonneg.symm
 
-theorem strictlyCheaperAt_dataset_iff (D : Dataset L T) (s t : T) :
+theorem strictlyCheaperAt_iff_expenditureGap_pos (D : Dataset L T) (s t : T) :
     StrictlyCheaperAt D.price D.choice s t ↔ 0 < expenditureGap D s t := by
   rw [expenditureGap_eq]
   exact sub_pos.symm
 
-/-- Direct revealed preference specialized to a dataset. -/
-def DirectRevealed (D : Dataset L T) (s t : T) : Prop :=
-  0 ≤ expenditureGap D s t
-
-/-- Strict direct revealed preference specialized to a dataset. -/
-def StrictDirectRevealed (D : Dataset L T) (s t : T) : Prop :=
-  0 < expenditureGap D s t
-
-/-- Dataset reachability, stated directly in terms of expenditure gaps. -/
-def DatasetRevealedPref (D : Dataset L T) : T → T → Prop :=
-  RevealedPref D.price D.choice
-
-theorem directRevealed_iff_directRP (D : Dataset L T) (s t : T) :
-    DirectRevealed D s t ↔ DirectRP D.price D.choice s t := by
-  exact (directRP_dataset_iff D s t).symm
-
-theorem datasetRevealedPref_iff (D : Dataset L T) (s t : T) :
-    DatasetRevealedPref D s t ↔ RevealedPref D.price D.choice s t := by
-  rfl
-
+/-- Dataset GARP expressed using the expenditure gap of the reverse comparison. -/
 theorem garp_dataset_iff (D : Dataset L T) :
-    GARP D ↔ ∀ s t, DatasetRevealedPref D s t → ¬ StrictDirectRevealed D t s := by
-  simp only [SatisfiesGARP, GraphGARP, StrictDirectRevealed,
-    strictlyCheaperAt_dataset_iff, ← datasetRevealedPref_iff]
+    GARP D ↔ ∀ s t, RevealedPreferred D.price D.choice s t → ¬ 0 < expenditureGap D t s := by
+  simp only [GARP, SatisfiesGARP, GraphGARP, strictlyCheaperAt_iff_expenditureGap_pos]
 
-theorem directRP_revealedPref (p q : T → Bundle L) {s t : T}
-    (h : DirectRP p q s t) : RevealedPref p q s t :=
+theorem directlyRevealedPreferred_revealedPreferred (p q : T → Bundle L) {s t : T}
+    (h : DirectlyRevealedPreferred p q s t) : RevealedPreferred p q s t :=
   Relation.ReflTransGen.single h
 
-theorem revealedPref_refl (p q : T → Bundle L) (s : T) :
-    RevealedPref p q s s :=
+theorem revealedPreferred_refl (p q : T → Bundle L) (s : T) :
+    RevealedPreferred p q s s :=
   Relation.ReflTransGen.refl
 
-theorem revealedPref_trans (p q : T → Bundle L) {s t v : T}
-    (hst : RevealedPref p q s t) (htv : RevealedPref p q t v) :
-    RevealedPref p q s v :=
+theorem revealedPreferred_trans (p q : T → Bundle L) {s t v : T}
+    (hst : RevealedPreferred p q s t) (htv : RevealedPreferred p q t v) :
+    RevealedPreferred p q s v :=
   hst.trans htv
 
+/-- A numerical assignment respecting direct revelation respects every revealed-preference chain. -/
+theorem revealedPreferred_mono (p q : T → Bundle L) (V : T → ℝ)
+    (hV : ∀ ⦃s t⦄, DirectlyRevealedPreferred p q s t → V t ≤ V s)
+    {s t : T} (hst : RevealedPreferred p q s t) : V t ≤ V s := by
+  refine Relation.ReflTransGen.head_induction_on hst ?_ ?_
+  · exact le_rfl
+  · intro a b hab _hbc ih
+    exact ih.trans (hV hab)
+
 /-- The finite set reachable from an observation. -/
-noncomputable def reachFinset [Fintype T] (p q : T → Bundle L) (s : T) : Finset T := by
+private noncomputable def reachFinset [Fintype T] (p q : T → Bundle L) (s : T) : Finset T := by
   classical
-  exact Finset.univ.filter fun t => RevealedPref p q s t
+  exact Finset.univ.filter fun t => RevealedPreferred p q s t
 
 /-- Reachability rank used by the geometric Afriat construction. -/
-noncomputable def reachRank [Fintype T] (p q : T → Bundle L) (s : T) : ℕ :=
+private noncomputable def reachRank [Fintype T] (p q : T → Bundle L) (s : T) : ℕ :=
   (reachFinset p q s).card
 
-theorem mem_reachFinset_iff [Fintype T] (p q : T → Bundle L) {s t : T} :
-    t ∈ reachFinset p q s ↔ RevealedPref p q s t := by
+private theorem mem_reachFinset_iff [Fintype T] (p q : T → Bundle L) {s t : T} :
+    t ∈ reachFinset p q s ↔ RevealedPreferred p q s t := by
   classical
   simp [reachFinset]
 
-theorem reachRank_pos [Fintype T] (p q : T → Bundle L) (s : T) :
+private theorem reachRank_pos [Fintype T] (p q : T → Bundle L) (s : T) :
     1 ≤ reachRank p q s := by
   classical
   apply Finset.one_le_card.mpr
-  exact ⟨s, (mem_reachFinset_iff p q).2 (revealedPref_refl p q s)⟩
+  exact ⟨s, (mem_reachFinset_iff p q).2 (revealedPreferred_refl p q s)⟩
 
-theorem reachRank_mono [Fintype T] (p q : T → Bundle L) {s t : T}
-    (hst : RevealedPref p q s t) :
+private theorem reachRank_mono [Fintype T] (p q : T → Bundle L) {s t : T}
+    (hst : RevealedPreferred p q s t) :
     reachRank p q t ≤ reachRank p q s := by
   classical
   apply Finset.card_le_card
@@ -148,17 +137,17 @@ theorem reachRank_mono [Fintype T] (p q : T → Bundle L) {s t : T}
   rw [mem_reachFinset_iff] at hv ⊢
   exact hst.trans hv
 
-theorem directRP_reachRank_mono [Fintype T] (p q : T → Bundle L) {s t : T}
-    (hst : DirectRP p q s t) :
+private theorem directlyRevealedPreferred_reachRank_mono [Fintype T] (p q : T → Bundle L) {s t : T}
+    (hst : DirectlyRevealedPreferred p q s t) :
     reachRank p q t ≤ reachRank p q s :=
-  reachRank_mono p q (directRP_revealedPref p q hst)
+  reachRank_mono p q (directlyRevealedPreferred_revealedPreferred p q hst)
 
-theorem reverse_of_direct_and_equal_reachRank [Fintype T]
+private theorem reverse_of_direct_and_equal_reachRank [Fintype T]
     (p q : T → Bundle L) {s t : T}
-    (hst : DirectRP p q s t) (hrank : reachRank p q s = reachRank p q t) :
-    RevealedPref p q t s := by
+    (hst : DirectlyRevealedPreferred p q s t) (hrank : reachRank p q s = reachRank p q t) :
+    RevealedPreferred p q t s := by
   classical
-  have hforward : RevealedPref p q s t := directRP_revealedPref p q hst
+  have hforward : RevealedPreferred p q s t := directlyRevealedPreferred_revealedPreferred p q hst
   have hsubset : reachFinset p q t ⊆ reachFinset p q s := by
     intro v hv
     rw [mem_reachFinset_iff] at hv ⊢
@@ -168,33 +157,33 @@ theorem reverse_of_direct_and_equal_reachRank [Fintype T]
     refine ⟨hsubset, ?_⟩
     intro heq
     have hs : s ∈ reachFinset p q s :=
-      (mem_reachFinset_iff p q).2 (revealedPref_refl p q s)
+      (mem_reachFinset_iff p q).2 (revealedPreferred_refl p q s)
     have hs' : s ∈ reachFinset p q t := heq hs
     exact hnot ((mem_reachFinset_iff p q).1 hs')
   have hlt : reachRank p q t < reachRank p q s := by
     simpa [reachRank] using Finset.card_lt_card hproper
   exact (not_lt_of_ge (by simp [hrank])) hlt
 
-theorem equal_reachRank_expenditure_ge [Fintype T]
+private theorem equal_reachRank_expenditure_ge [Fintype T]
     (p q : T → Bundle L) (hG : GraphGARP p q) {s t : T}
     (hrank : reachRank p q s = reachRank p q t) :
     dot (p s) (q s) ≤ dot (p s) (q t) := by
   apply le_of_not_gt
   intro hcheap
-  have hdirect : DirectRP p q s t := le_of_lt hcheap
-  have hreverse : RevealedPref p q t s :=
+  have hdirect : DirectlyRevealedPreferred p q s t := le_of_lt hcheap
+  have hreverse : RevealedPreferred p q t s :=
     reverse_of_direct_and_equal_reachRank p q hdirect hrank
   exact hG t s hreverse hcheap
 
-theorem higher_reachRank_expenditure_lt [Fintype T]
+private theorem higher_reachRank_expenditure_lt [Fintype T]
     (p q : T → Bundle L) {s t : T}
     (hrank : reachRank p q s < reachRank p q t) :
     dot (p s) (q s) < dot (p s) (q t) := by
   apply lt_of_not_ge
   intro hdirect
-  exact (not_le_of_gt hrank) (directRP_reachRank_mono p q hdirect)
+  exact (not_le_of_gt hrank) (directlyRevealedPreferred_reachRank_mono p q hdirect)
 
-theorem exists_strictly_higher_reachRank [Fintype T]
+private theorem exists_strictly_higher_reachRank [Fintype T]
     (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) :
     ∃ s t, reachRank p q s < reachRank p q t := by
@@ -209,23 +198,23 @@ theorem exists_strictly_higher_reachRank [Fintype T]
     · exact False.elim (hnone ⟨t, s, hgt⟩)
 
 /-- Rank-increasing ordered pairs. -/
-noncomputable def higherPairs [Fintype T] (p q : T → Bundle L) : Finset (T × T) :=
+private noncomputable def higherPairs [Fintype T] (p q : T → Bundle L) : Finset (T × T) :=
   (Finset.univ.product Finset.univ).filter
     fun st => reachRank p q st.1 < reachRank p q st.2
 
 /-- Positive expenditure differences on rank-increasing pairs. -/
-noncomputable def higherGapVals [Fintype T] (p q : T → Bundle L) : Finset ℝ :=
+private noncomputable def higherGapVals [Fintype T] (p q : T → Bundle L) : Finset ℝ :=
   (higherPairs p q).image
     fun st => dot (p st.1) (q st.2) - dot (p st.1) (q st.1)
 
 /-- Magnitudes of negative differences on rank-decreasing pairs. -/
-noncomputable def lowerNegGapVals [Fintype T] (p q : T → Bundle L) : Finset ℝ :=
+private noncomputable def lowerNegGapVals [Fintype T] (p q : T → Bundle L) : Finset ℝ :=
   ((Finset.univ.product Finset.univ).filter fun st =>
       reachRank p q st.2 < reachRank p q st.1 ∧
         dot (p st.1) (q st.2) < dot (p st.1) (q st.1)).image
     fun st => dot (p st.1) (q st.1) - dot (p st.1) (q st.2)
 
-theorem higherGapVals_nonempty [Fintype T]
+private theorem higherGapVals_nonempty [Fintype T]
     (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) :
     (higherGapVals p q).Nonempty := by
@@ -235,7 +224,7 @@ theorem higherGapVals_nonempty [Fintype T]
   apply Finset.mem_image.mpr
   exact ⟨(s, t), by simp [higherPairs, hst], rfl⟩
 
-theorem mem_higherGapVals_of_lt [Fintype T]
+private theorem mem_higherGapVals_of_lt [Fintype T]
     (p q : T → Bundle L) {s t : T}
     (hst : reachRank p q s < reachRank p q t) :
     dot (p s) (q t) - dot (p s) (q s) ∈ higherGapVals p q := by
@@ -243,7 +232,7 @@ theorem mem_higherGapVals_of_lt [Fintype T]
   apply Finset.mem_image.mpr
   exact ⟨(s, t), by simp [higherPairs, hst], rfl⟩
 
-theorem mem_lowerNegGapVals_of_lt_and_neg [Fintype T]
+private theorem mem_lowerNegGapVals_of_lt_and_neg [Fintype T]
     (p q : T → Bundle L) {s t : T}
     (hst : reachRank p q t < reachRank p q s)
     (hneg : dot (p s) (q t) < dot (p s) (q s)) :
@@ -253,15 +242,15 @@ theorem mem_lowerNegGapVals_of_lt_and_neg [Fintype T]
   exact ⟨(s, t), by simp [hst, hneg], rfl⟩
 
 /-- Smallest positive gap on a rank-increasing pair. -/
-noncomputable def higherGap [Fintype T] (p q : T → Bundle L)
+private noncomputable def higherGap [Fintype T] (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) : ℝ :=
   (higherGapVals p q).min' (higherGapVals_nonempty p q hneq)
 
 /-- Largest relevant negative-gap magnitude, with zero adjoined. -/
-noncomputable def maxLowerNegGap [Fintype T] (p q : T → Bundle L) : ℝ :=
+private noncomputable def maxLowerNegGap [Fintype T] (p q : T → Bundle L) : ℝ :=
   (insert 0 (lowerNegGapVals p q)).max' (by simp)
 
-theorem higherGap_le_gap_of_lt [Fintype T]
+private theorem higherGap_le_gap_of_lt [Fintype T]
     (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) {s t : T}
     (hst : reachRank p q s < reachRank p q t) :
@@ -269,7 +258,7 @@ theorem higherGap_le_gap_of_lt [Fintype T]
   classical
   exact Finset.min'_le _ _ (mem_higherGapVals_of_lt p q hst)
 
-theorem higherGap_pos [Fintype T]
+private theorem higherGap_pos [Fintype T]
     (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) :
     0 < higherGap p q hneq := by
@@ -282,12 +271,12 @@ theorem higherGap_pos [Fintype T]
   rw [← heq]
   exact sub_pos.mpr (higher_reachRank_expenditure_lt p q hst)
 
-theorem nonneg_maxLowerNegGap [Fintype T] (p q : T → Bundle L) :
+private theorem nonneg_maxLowerNegGap [Fintype T] (p q : T → Bundle L) :
     0 ≤ maxLowerNegGap p q := by
   classical
   exact Finset.le_max' _ 0 (by simp)
 
-theorem gap_le_maxLowerNegGap [Fintype T]
+private theorem gap_le_maxLowerNegGap [Fintype T]
     (p q : T → Bundle L) {s t : T}
     (hst : reachRank p q t < reachRank p q s)
     (hneg : dot (p s) (q t) < dot (p s) (q s)) :
@@ -296,13 +285,13 @@ theorem gap_le_maxLowerNegGap [Fintype T]
   apply Finset.le_max'
   simp [mem_lowerNegGapVals_of_lt_and_neg p q hst hneg]
 
-theorem equal_reachRank_gap_nonneg [Fintype T]
+private theorem equal_reachRank_gap_nonneg [Fintype T]
     (p q : T → Bundle L) (hG : GraphGARP p q) {s t : T}
     (hrank : reachRank p q s = reachRank p q t) :
     0 ≤ dot (p s) (q t) - dot (p s) (q s) :=
   sub_nonneg.mpr (equal_reachRank_expenditure_ge p q hG hrank)
 
-theorem neg_maxLowerNegGap_le_gap_of_lower [Fintype T]
+private theorem neg_maxLowerNegGap_le_gap_of_lower [Fintype T]
     (p q : T → Bundle L) {s t : T}
     (hst : reachRank p q t < reachRank p q s) :
     -maxLowerNegGap p q ≤ dot (p s) (q t) - dot (p s) (q s) := by
@@ -314,36 +303,23 @@ theorem neg_maxLowerNegGap_le_gap_of_lower [Fintype T]
     have hmax := nonneg_maxLowerNegGap p q
     linarith
 
-/-- Afriat support plane based at observation `t`. -/
-def globalAfriatSupport (U lam : T → ℝ) (p q : T → Bundle L)
-    (t : T) (x : Bundle L) : ℝ :=
-  U t + lam t * (dot (p t) x - dot (p t) (q t))
-
-/-- The finite system of global Afriat inequalities. -/
-def AfriatInequalities (U lam : T → ℝ) (p q : T → Bundle L) : Prop :=
-  ∀ s t, U s ≤ globalAfriatSupport U lam p q t (q s)
-
-/-- Strict positivity of the global Afriat multipliers. -/
-def PositiveMultipliers (lam : T → ℝ) : Prop :=
-  ∀ t, 0 < lam t
-
 /-- Geometric ratio in the explicit construction. -/
-noncomputable def geometricRho [Fintype T] (p q : T → Bundle L)
+private noncomputable def geometricRho [Fintype T] (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) : ℝ :=
   higherGap p q hneq /
     (maxLowerNegGap p q + 2 * higherGap p q hneq)
 
 /-- Explicit observed utility levels. -/
-noncomputable def geometricU [Fintype T] (p q : T → Bundle L)
+private noncomputable def geometricU [Fintype T] (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) : T → ℝ :=
   fun s => 1 - geometricRho p q hneq ^ reachRank p q s
 
 /-- Explicit positive Afriat multipliers. -/
-noncomputable def geometricLam [Fintype T] (p q : T → Bundle L)
+private noncomputable def geometricLam [Fintype T] (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) : T → ℝ :=
   fun s => geometricRho p q hneq ^ reachRank p q s / higherGap p q hneq
 
-theorem geometricRho_pos [Fintype T]
+private theorem geometricRho_pos [Fintype T]
     (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) :
     0 < geometricRho p q hneq := by
@@ -351,7 +327,7 @@ theorem geometricRho_pos [Fintype T]
   have hmax := nonneg_maxLowerNegGap p q
   exact div_pos hgap (by linarith)
 
-theorem geometricRho_lt_one [Fintype T]
+private theorem geometricRho_lt_one [Fintype T]
     (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) :
     geometricRho p q hneq < 1 := by
@@ -360,7 +336,7 @@ theorem geometricRho_lt_one [Fintype T]
   rw [geometricRho]
   exact (div_lt_one (by linarith)).2 (by linarith)
 
-theorem geometricRho_pow_antitone [Fintype T]
+private theorem geometricRho_pow_antitone [Fintype T]
     (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) {a b : ℕ}
     (hab : a ≤ b) :
@@ -368,7 +344,7 @@ theorem geometricRho_pow_antitone [Fintype T]
   exact pow_le_pow_of_le_one (geometricRho_pos p q hneq).le
     (geometricRho_lt_one p q hneq).le hab
 
-theorem maxLowerNegGap_mul_geometricRho_le_higherGap_mul_one_sub
+private theorem maxLowerNegGap_mul_geometricRho_le_higherGap_mul_one_sub
     [Fintype T] (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) :
     maxLowerNegGap p q * geometricRho p q hneq ≤
@@ -380,7 +356,7 @@ theorem maxLowerNegGap_mul_geometricRho_le_higherGap_mul_one_sub
   field_simp [ne_of_gt hden]
   nlinarith
 
-theorem geometricLam_pos [Fintype T]
+private theorem geometricLam_pos [Fintype T]
     (p q : T → Bundle L)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) :
     PositiveMultipliers (geometricLam p q hneq) := by
@@ -388,7 +364,7 @@ theorem geometricLam_pos [Fintype T]
   exact div_pos (pow_pos (geometricRho_pos p q hneq) _)
     (higherGap_pos p q hneq)
 
-theorem geometric_afriatInequalities [Fintype T]
+private theorem geometric_afriatInequalities [Fintype T]
     (p q : T → Bundle L) (hG : GraphGARP p q)
     (hneq : ¬ ∀ s t, reachRank p q s = reachRank p q t) :
     AfriatInequalities (geometricU p q hneq) (geometricLam p q hneq) p q := by
@@ -477,10 +453,10 @@ theorem graphGARP_implies_afriatInequalities [Finite T]
     simp only [globalAfriatSupport]
     linarith
 
-theorem directRP_monotone_of_afriat
+theorem directlyRevealedPreferred_mono_of_afriat
     (U lam : T → ℝ) (p q : T → Bundle L)
     (hA : AfriatInequalities U lam p q) (hpos : PositiveMultipliers lam)
-    {s t : T} (hst : DirectRP p q s t) :
+    {s t : T} (hst : DirectlyRevealedPreferred p q s t) :
     U t ≤ U s := by
   have hineq := hA t s
   have hgap : dot (p s) (q t) - dot (p s) (q s) ≤ 0 := sub_nonpos.mpr hst
@@ -489,15 +465,13 @@ theorem directRP_monotone_of_afriat
   simp only [globalAfriatSupport] at hineq
   linarith
 
-theorem revealedPref_monotone_of_afriat
+theorem revealedPreferred_mono_of_afriat
     (U lam : T → ℝ) (p q : T → Bundle L)
     (hA : AfriatInequalities U lam p q) (hpos : PositiveMultipliers lam)
-    {s t : T} (hst : RevealedPref p q s t) :
+    {s t : T} (hst : RevealedPreferred p q s t) :
     U t ≤ U s := by
-  refine Relation.ReflTransGen.head_induction_on hst ?_ ?_
-  · exact le_rfl
-  · intro a b hab _hbc ih
-    exact ih.trans (directRP_monotone_of_afriat U lam p q hA hpos hab)
+  exact revealedPreferred_mono p q U
+    (fun {_ _} h => directlyRevealedPreferred_mono_of_afriat U lam p q hA hpos h) hst
 
 theorem afriatInequalities_imply_graphGARP
     (U lam : T → ℝ) (p q : T → Bundle L)
@@ -505,7 +479,7 @@ theorem afriatInequalities_imply_graphGARP
     GraphGARP p q := by
   intro s t hst hcheap
   have hmon : U t ≤ U s :=
-    revealedPref_monotone_of_afriat U lam p q hA hpos hst
+    revealedPreferred_mono_of_afriat U lam p q hA hpos hst
   have hineq := hA s t
   have hscaled : lam t * (dot (p t) (q s) - dot (p t) (q t)) < 0 :=
     mul_neg_of_pos_of_neg (hpos t) (sub_neg.mpr hcheap)

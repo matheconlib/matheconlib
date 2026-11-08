@@ -5,6 +5,7 @@ Authors: Victor H. Aguiar
 -/
 module
 
+import MathEconLib.RevealedPreference
 import MathEconLibExamples.RevealedPreference
 
 /-!
@@ -22,11 +23,32 @@ open MathEconLib.RevealedPreference MathEconLibExamples.RevealedPreference
 
 example : GARP twoDataset := two_garp
 
+example (x : Bundle 2) :
+    twoUtility x = min (x 0 + 2 * x 1) (2 * x 0 + x 1) :=
+  twoUtility_eq_min x
+
+example (t : Fin 2) : twoUtility (twoDataset.choice t) = twoLevels t :=
+  twoUtility_eq_observed t
+
+example : UtilityRationalizes twoDataset twoUtility := twoUtility_rationalizes
+
+example : Continuous twoUtility ∧ ConcaveOn ℝ Set.univ twoUtility ∧
+    StrictlyIncreasing twoUtility := twoUtility_regular
+
 example : ∃ u : Utility 2, Continuous u ∧ ConcaveOn ℝ Set.univ u ∧
     StrictlyIncreasing u ∧ UtilityRationalizes twoDataset u :=
   two_has_regular_utility
 
 example : ¬ GARP cycleDataset := cycle_not_garp
+
+example (s t : Fin 3) :
+    DirectlyRevealedPreferred threeDataset.price threeDataset.choice s t →
+      ¬ StrictlyCheaperAt threeDataset.price threeDataset.choice t s :=
+  three_no_pairwise_reversal s t
+
+example : ¬ GARP threeDataset := three_not_garp
+
+example : ¬ HasRegularUtilityRationalization threeDataset := three_no_regular_utility
 
 example : ¬ HasRegularUtilityRationalization cycleDataset := cycle_no_regular_utility
 

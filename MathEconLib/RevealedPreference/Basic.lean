@@ -10,6 +10,7 @@ public import Mathlib.LinearAlgebra.Matrix.DotProduct
 public import Mathlib.Data.Fin.VecNotation
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Topology.Constructions
+public import Mathlib.Topology.Instances.Matrix
 public import Mathlib.Topology.Instances.Real.Lemmas
 public import Mathlib.Topology.Order.Lattice
 public import Mathlib.Tactic.FieldSimp
@@ -21,7 +22,9 @@ public import Mathlib.Tactic.Ring
 # Observed consumer data and expenditure geometry
 
 Bundles lie in `Fin L → ℝ`. Budgets restrict alternatives to the nonnegative orthant.
-Prices are strictly positive and observed choices are nonnegative.
+`Dataset` retains strictly positive prices and nonnegative observed choices.
+Separating its observations from regularity predicates is deliberately deferred;
+the reusable Afriat geometry instead uses raw arrays with explicit hypotheses.
 Unlike the downstream WGARP specialization, no lower bound on dimension or
 nonzero-choice restriction is needed for the finite Afriat theorem.
 Finiteness is a theorem hypothesis, rather than
@@ -85,9 +88,24 @@ def StrictDominates {L : ℕ} (x z : Bundle L) : Prop :=
 def StrictlyIncreasing {L : ℕ} (u : Utility L) : Prop :=
   ∀ ⦃x z : Bundle L⦄, StrictDominates x z → u z < u x
 
+/-- Strict commodity dominance is the strict product order, with the arguments reversed. -/
+theorem strictDominates_iff_lt {L : ℕ} {x z : Bundle L} :
+    StrictDominates x z ↔ z < x := by
+  rw [lt_iff_le_and_ne]
+  exact ⟨fun h => ⟨h.1, Ne.symm h.2⟩, fun h => ⟨h.1, Ne.symm h.2⟩⟩
+
+/-- Economic strict increase agrees with Mathlib's strict monotonicity predicate. -/
+theorem strictlyIncreasing_iff_strictMono {L : ℕ} {u : Utility L} :
+    StrictlyIncreasing u ↔ StrictMono u := by
+  constructor
+  · intro h x z hxz
+    exact h (strictDominates_iff_lt.mpr hxz)
+  · intro h x z hxz
+    exact h (strictDominates_iff_lt.mp hxz)
+
 /--
-A consumer dataset indexed by `T`; finiteness is imposed by theorems.  Strictly positive prices and
-nonnegative observed bundles are constitutive; dimension and sample size are unrestricted.
+A consumer dataset indexed by `T`, specialized to strictly positive prices and nonnegative
+observed bundles. Finiteness is imposed by theorems; dimension and sample size are unrestricted.
 -/
 structure Dataset (L : ℕ) (T : Type*) where
   price : T → Bundle L
@@ -160,10 +178,7 @@ theorem expenditure_strictlyIncreasing
 /-- The finite-dimensional dot product is continuous in its second
 argument. -/
 theorem continuous_dot (p : Bundle L) : Continuous (dot p) := by
-  unfold dot dotProduct
-  apply continuous_finsetSum Finset.univ
-  intro i _hi
-  exact continuous_const.mul (continuous_apply i)
+  exact continuous_const.dotProduct continuous_id
 
 /-- Dot products preserve affine combinations. -/
 theorem dot_add_smul (p x y : Bundle L) (a b : ℝ) :

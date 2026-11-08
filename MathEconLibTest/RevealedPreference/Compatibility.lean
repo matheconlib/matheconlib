@@ -20,6 +20,22 @@ set_option linter.privateModule false
 
 open MathEconLib.RevealedPreference
 
+example {L : ℕ} {x z : Bundle L} : StrictDominates x z ↔ z < x :=
+  strictDominates_iff_lt
+
+example {L : ℕ} {u : Utility L} : StrictlyIncreasing u ↔ StrictMono u :=
+  strictlyIncreasing_iff_strictMono
+
+-- The certificate and utility converses do not assume finite observations.
+example {L : ℕ} {T : Type*} (U lam : T → ℝ) (p q : T → Bundle L)
+    (hA : AfriatInequalities U lam p q) (hpos : PositiveMultipliers lam) :
+    GraphGARP p q :=
+  afriatInequalities_imply_graphGARP U lam p q hA hpos
+
+example {L : ℕ} {T : Type*} (D : Dataset L T) (u : Utility L)
+    (hinc : StrictlyIncreasing u) (hrat : UtilityRationalizes D u) : GARP D :=
+  garp_of_strictlyIncreasing_utilityRationalization D u hinc hrat
+
 example {L : ℕ} {T : Type*} [Finite T] (p q : T → Bundle L) :
     GraphGARP p q ↔
       ∃ U lam, PositiveMultipliers lam ∧ AfriatInequalities U lam p q :=
