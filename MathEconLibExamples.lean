@@ -7,6 +7,7 @@ module
 
 public import MathEconLibExamples.Choice.SubstituteEnvelope
 public import MathEconLibExamples.GameTheory.MatchingPennies
+public import MathEconLibExamples.Preferences.Finite
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
 /-!

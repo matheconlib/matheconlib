@@ -7,10 +7,9 @@ module
 
 public import MathEconLib.Auction.Affiliation.MonotoneCondExp
 
-/-! # Proposition 7.4 — Winner's curse (finite case)
+/-! # Winner's curse (finite case)
 
-This file proves the finite-support version of **Proposition 7.4
-(Winner's curse)** from Section 7.
+This file proves the finite-support winner's-curse inequality.
 
 Fix a bidder `i` and a realized own signal `t`.  Inside a finite support
 `S : Finset (Fin n → ℝ)`, compare the following two sets of signal profiles:
@@ -20,7 +19,7 @@ Fix a bidder `i` and a realized own signal `t`.  Inside a finite support
   for which `x j ≤ t` for every bidder `j`.
 
 The second condition says that bidder `i`'s signal is a (not necessarily
-unique) maximum, so ties count as wins.  For an affiliated density `f` and a
+unique) maximum, so ties count as wins. For affiliated weights `f` and a
 nondecreasing nonnegative value function `g`, the target theorem is
 
 `E_f[g(X) | X_i = t, X_i = max_j X_j] ≤ E_f[g(X) | X_i = t]`.
@@ -37,9 +36,10 @@ averages have positive denominators.  The proof shows that the winning slice
 is lattice-lower than the own-signal slice and applies
 `condExpOn_le_condExpOn_of_affiliated_of_nonneg` from
 `FiniteCondExp.lean`.  The own-signal conditional expectation is
-`condExpSlice` from `MonotoneCondExp.lean`.  The proposition's additional
-claim that the inequality is generically strict is outside this first finite
-scope.
+`condExpSlice` from `MonotoneCondExp.lean`. A claim that the inequality is
+generically strict is outside this first finite
+scope. These are conditional averages under the discrete law obtained by
+normalizing the weights on `S`, not conditioning a continuous signal law.
 -/
 
 namespace MathEconLib
@@ -148,7 +148,7 @@ theorem inf_mem_winningSlice {n : ℕ} {S : Finset (Fin n → ℝ)}
 /-! ### The affiliation comparison before normalization -/
 
 /-- The cross-multiplied weighted-sum comparison underlying the finite
-winner's-curse inequality.  For an affiliated density `f` positive on the
+winner's-curse inequality. For affiliated weights `f` positive on the
 finite sublattice `S` and a monotone nonnegative value function `g`, the
 `f`-weighted average numerator over the winning slice, multiplied by the
 mass of the full own-signal slice, is at most the reverse product.
@@ -171,10 +171,10 @@ theorem sum_mul_sum_le_winningSlice_of_affiliated {n : ℕ}
     (fun _ ha _ hb => sup_mem_ownSignalSlice hsub ha hb)
     (fun _ ha _ hb => inf_mem_winningSlice hsub ha hb)
 
-/-! ### Proposition 7.4 — the normalized finite winner's-curse inequality -/
+/-! ### The normalized finite winner's-curse inequality -/
 
-/-- **Proposition 7.4 (Winner's curse), finite case.** Let `f` be an
-affiliated density that is positive on the finite sublattice `S`, and let `g`
+/-- **Winner's curse, finite case.** Let `f` be affiliated
+weights that are positive on the finite sublattice `S`, and let `g`
 be a nondecreasing nonnegative value function.  Conditional on bidder `i`
 having signal `t`, additionally learning that bidder `i` wins weakly lowers
 the conditional expected value:
@@ -229,24 +229,27 @@ theorem condExpWinningSlice_le_condExpSlice_of_affiliated {n : ℕ}
 
 /-! ### Signal/value environment form -/
 
-/-- **Proposition 7.4 (Winner's curse), finite environment form.** In a
-`SignalValueEnv` with affiliated signals, bidder `i`'s expected value
+/-- **Winner's curse, finite environment form.** In a
+`SignalValueEnv` with affiliated weights, bidder `i`'s expected value
 conditional on having signal `t` and winning is at most the expected value
 conditional only on having signal `t`.
 
 This is the preceding finite theorem with `g = E.v i`.  The environment fields
 `v_mono` and `v_nonneg` supply exactly the monotonicity and nonnegativity
-assumptions needed there.  Although Proposition 7.4 is stated for a
-pure-common-value environment, this inequality uses only these two properties
-of bidder `i`'s value, so the formal statement applies to the more general
+assumptions needed there. The inequality uses only these two properties
+of bidder `i`'s value, so it applies beyond pure common values to the more general
 interdependent-value environment represented by `SignalValueEnv`.
+
+The averages use the raw weights `E.f` on the finite set `S`. `SignalValueEnv`
+does not itself supply a probability law; this result does not establish a
+conditional-expectation identity for a continuous signal model.
 
 The additional hypothesis that `E.f` is strictly positive on `S` strengthens
 the environment's built-in nonnegativity just where it is needed to normalize
 the two finite conditional expectations. -/
 theorem SignalValueEnv.condExpWinningSlice_le_condExpSlice {n : ℕ}
     (E : SignalValueEnv n) {S : Finset (Fin n → ℝ)}
-    (haff : HasAffiliatedSignals E) (hpos : ∀ x ∈ S, 0 < E.f x)
+    (haff : HasAffiliatedWeights E) (hpos : ∀ x ∈ S, 0 < E.f x)
     (hsub : IsSublattice (↑S : Set (Fin n → ℝ)))
     (i : Fin n) (t : ℝ) (hwin : (winningSlice S i t).Nonempty) :
     condExpWinningSlice E.f (E.v i) S i t ≤
