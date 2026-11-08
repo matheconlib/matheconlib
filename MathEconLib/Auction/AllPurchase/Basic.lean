@@ -24,9 +24,8 @@ enters the all-purchase net-payment identity, which expresses equilibrium net ex
 
 Scott Duke Kominers observed this all-purchase format in NFT sales; see the
 [sale provenance](https://x.com/tiffatronn/status/1928904850022265170).
-The economic-theory research write-up is pending. For now, cite the MathEconLib Lean development
-for the formalized all-purchase analysis. The standard all-pay benchmark has separate textbook
-sources, recorded alongside the all-purchase provenance in `docs/AuctionReferences.md`.
+See `docs/AuctionReferences.md` for the all-purchase analysis provenance and the separate
+textbook sources for the standard all-pay benchmark.
 
 ## Main definitions
 

@@ -133,12 +133,8 @@ lemma total_revenue
     have hadd := (intervalIntegral.integral_add_adjacent_intervals hii1 hii2).symm
     linarith [intervalIntegral.integral_nonneg (μ := volume) hst
       (fun ψ _ => pow_nonneg (A.commonCDF_nonneg ψ) (n - 1))]
-  have hsym i : ∫ ω, φ (A.θ i ω) ∂ℙ = ∫ ω, φ (A.θ 0 ω) ∂ℙ := by
-    rw [← integral_map (A.θ_measurable i).aemeasurable
-          hφ_meas.aestronglyMeasurable,
-        (HasIdenticalTypes.θ_identical i 0).map_eq,
-        integral_map (A.θ_measurable 0).aemeasurable
-          hφ_meas.aestronglyMeasurable]
+  have hsym i : ∫ ω, φ (A.θ i ω) ∂ℙ = ∫ ω, φ (A.θ 0 ω) ∂ℙ :=
+    A.integral_comp_type_eq φ hφ_meas i 0
   simp_rw [hsym, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
     nsmul_eq_mul]
   change n * ∫ ω, φ (A.θ 0 ω) ∂ℙ = ∫ ω, A.S₂ ω ∂ℙ

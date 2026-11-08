@@ -26,8 +26,7 @@ When lowest-type utility is zero, the decomposition compares bundled profit with
 revenue and editions-only profit, allowing a unit production cost `c` and a supplied editions-only
 quantity. Under linear scarcity, the benchmark is the interior stationary Cournot quantity.
 
-This is part of MathEconLib's all-purchase analysis, whose economic-theory research write-up is
-pending. See `docs/AuctionReferences.md` for provenance and citation guidance.
+See `docs/AuctionReferences.md` for the all-purchase analysis provenance and citation guidance.
 
 ## Main definitions
 
@@ -36,7 +35,8 @@ pending. See `docs/AuctionReferences.md` for provenance and citation guidance.
 * `Auction.lowestTypeUtility`: bidder 0's interim utility at its lowest type.
 * `Auction.allPayBenchmarkProfit`, `Auction.editionsOnlyBenchmarkProfit`, and
   `Auction.bundledProfit`: the three profits in the bundling comparison.
-* `LinearScarcityAuction.cournotQuantityLinear`: the interior stationary editions-only quantity.
+* `LinearScarcityAuction.cournotPurchaseLinear`: symmetric per-bidder editions-only purchases.
+* `LinearScarcityAuction.cournotQuantityLinear`: the corresponding aggregate quantity.
 
 ## Main statements
 
@@ -590,7 +590,7 @@ theorem revenue_decomposition_boundary_of_isBoundaryRegime
   exact A.toAuction.revenue_decomposition_boundary A.spec β hβ_meas hβ_mono hIC
     ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
 
-/-! #### Linear-scarcity profit comparison -/
+/-! #### Symmetric editions-only Cournot quantities -/
 
 /-- The symmetric per-bidder editions-only Cournot candidate. It is a feasible purchase when
 the posted price does not exceed the scarcity intercept. -/
@@ -605,6 +605,8 @@ For payoff `bᵢ · (φ̄ − αB − p)`, symmetric first-order conditions give
 case it is infeasible for a game with nonnegative purchases. -/
 noncomputable def cournotQuantityLinear : ℝ :=
   (n : ℝ) * A.cournotPurchaseLinear
+
+/-! #### Linear-scarcity bundling profit comparison -/
 
 omit [n.AtLeastTwo] in
 /-- **Boundary-regime profit comparison under linear scarcity.**

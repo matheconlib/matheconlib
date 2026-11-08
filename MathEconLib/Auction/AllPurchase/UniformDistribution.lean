@@ -27,7 +27,7 @@ pp. 29–30. [Publisher](https://www.sciencedirect.com/book/9780123745071/auctio
 The all-pay formula on p. 30 gives the benchmark in `Auction.allPayBid` by integration by parts;
 this module evaluates it for the uniform law on `[0, v̄]`.
 
-The all-purchase analysis has separate provenance and a pending economic-theory research write-up.
+The all-purchase analysis has separate provenance.
 See `docs/AuctionReferences.md` for the source map and citation guidance.
 -/
 

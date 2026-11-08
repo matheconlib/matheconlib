@@ -29,8 +29,7 @@ introduced in commit 384acbf.
 
 This formalizes the all-purchase format Scott Duke Kominers observed in NFT sales; see the
 [sale provenance](https://x.com/tiffatronn/status/1928904850022265170).
-The economic-theory research write-up is pending; the current reference is the MathEconLib Lean
-development. See `docs/AuctionReferences.md` for the source map and citation guidance.
+See `docs/AuctionReferences.md` for the source map and citation guidance.
 
 ## Main definitions
 

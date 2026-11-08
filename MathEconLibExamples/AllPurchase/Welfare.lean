@@ -14,7 +14,7 @@ public import MathEconLib.Auction.AllPurchase
 The two buyers each purchase `1/3` edition at price `2`, with scarcity value `3 - B` and production
 cost `0`. The editions-only Cournot quantity is `2/3`; its welfare is `14/9`, while first-best
 welfare is `9/4`. This example constructs the auction, proves square integrability, applies the
-decomposition, and certifies the Cournot profile's best-response property. The deterministic
+decomposition, and certifies the Cournot profile as Nash. The deterministic
 purchase profile is an editions-only equilibrium; no claim of contest equilibrium is made.
 -/
 
@@ -52,20 +52,6 @@ theorem aggregate_memLp : MemLp (model.toAuction.aggregateBid purchase) 2 ℙ :=
 theorem cournot_quantity : model.cournotQuantityLinear = (2 : ℝ) / 3 := by
   change (2 : ℝ) * ((3 - 2) / (1 * (2 + 1))) = 2 / 3
   norm_num
-
-theorem cournot_profile_best_response :
-    ∀ x : ℝ, 0 ≤ x → x * (3 - (x + 1 / 3) - 2) ≤ (1 : ℝ) / 9 := by
-  intro x hx
-  have hp : model.spec.price ≤ model.φ_bar := by change (2 : ℝ) ≤ 3; norm_num
-  have h := (model.cournotPurchaseLinear_best_response hp).2 x hx
-  have hq : model.cournotPurchaseLinear = (1 : ℝ) / 3 := by
-    change (3 - 2 : ℝ) / (1 * (2 + 1)) = 1 / 3
-    norm_num
-  rw [hq] at h
-  change x * (3 - (x + (2 - 1) * (1 / 3)) - 2) ≤
-    (1 / 3) * (3 - 2 * (1 / 3) - 2) at h
-  norm_num at h
-  exact h
 
 /-- The example uses the library's strategic-game Nash predicate. -/
 theorem cournot_profile_isNash :

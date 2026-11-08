@@ -30,8 +30,7 @@ The optimal value is an upper bound for the profit of each such auction, with eq
 exactly when its posted price is `p*`. This does not construct an auction equilibrium at
 another price or compare interior and boundary regimes.
 
-This is part of MathEconLib's all-purchase analysis, whose economic-theory research write-up is
-pending. See `docs/AuctionReferences.md` for provenance and citation guidance.
+See `docs/AuctionReferences.md` for the all-purchase analysis provenance and citation guidance.
 
 ## Main results
 
@@ -231,6 +230,23 @@ theorem IsInteriorRegimeStrategy.integrable {β : ℝ → ℝ} {i : Fin n}
     Integrable (fun ω => β (A.θ j ω)) ℙ :=
   A.toAuction.integrable_comp_type_of_monotoneOn β h.measurable h.strictMonoOn.monotoneOn j
 
+variable {A} in
+/-- Construct the interior bidder problem from the explicit strategy hypotheses. -/
+noncomputable def IsInteriorRegimeStrategy.toInteriorRegimeProblem
+    {β : ℝ → ℝ} {i : Fin n} (h : A.IsInteriorRegimeStrategy β i) :
+    InteriorRegimeProblem := {
+  A.toQuadraticCostProblem β h.measurable h.integrable i with
+  K_neg := h.K_neg
+  U_lowestType_eq := h.lowestTypeUtility
+}
+
+variable {A} in
+/-- The constructed interior problem inherits type-deviation incentive compatibility. -/
+instance IsInteriorRegimeStrategy.toInteriorRegimeProblem_hasTypeDeviationIC
+    {β : ℝ → ℝ} {i : Fin n} (h : A.IsInteriorRegimeStrategy β i) :
+    h.toInteriorRegimeProblem.toBidderProblem.HasTypeDeviationIC :=
+  h.typeDeviationIC
+
 /-- Interior purchases in terms of the distribution-based all-pay bid. The lowest-type
 utility condition forces `β(lowestType) = −K/(2α)`, and strict monotonicity selects the
 upper quadratic root. Thus no separate root-selection or all-pay-nonnegativity premise
@@ -240,12 +256,8 @@ theorem interior_regime_strategy_eq_strategyInterior
     (v : ℝ) (hv : v ∈ Icc A.lowestType A.highestType) :
     β v = AllPurchase.strategyInterior A.α_coeff (-(A.K_linear β))
       (A.toAuction.allPayBid v) := by
-  let P : InteriorRegimeProblem := {
-    A.toQuadraticCostProblem β h.measurable h.integrable i with
-    K_neg := h.K_neg
-    U_lowestType_eq := h.lowestTypeUtility
-  }
-  let : BidderProblem.HasTypeDeviationIC P.toBidderProblem := h.typeDeviationIC
+  let P := h.toInteriorRegimeProblem
+  let : BidderProblem.HasTypeDeviationIC P.toBidderProblem := inferInstance
   let := h.typeDeviationIC
   have hmem (w : ℝ) (hw : w ∈ Icc A.lowestType A.highestType) :
       w ∈ P.typeInterval := by
