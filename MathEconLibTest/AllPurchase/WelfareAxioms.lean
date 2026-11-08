@@ -24,6 +24,7 @@ inside a `module`. The default test target builds this file and records the resu
 
 -- No nonempty-player assumption is needed for the equilibrium API.
 example {Ω : Type} [MeasureTheory.MeasureSpace Ω]
-    [MeasureTheory.IsProbabilityMeasure (MeasureTheory.MeasureSpace.volume : MeasureTheory.Measure Ω)]
+    [MeasureTheory.IsProbabilityMeasure
+      (MeasureTheory.MeasureSpace.volume : MeasureTheory.Measure Ω)]
     (A : MathEconLib.LinearScarcityAuction Ω 0) (hp : A.spec.price ≤ A.φ_bar) :
     A.editionsOnlyGame.IsNash (A.cournotProfile hp) := A.cournotProfile_isNash hp

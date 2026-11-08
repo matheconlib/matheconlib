@@ -292,7 +292,8 @@ theorem cournotProfile_payoff_gap (hp : A.spec.price ≤ A.φ_bar)
     · simp [Function.update_of_ne h, cournotProfile]
   simp only [editionsOnlyGame, congr_fun A.scarcity_is_linear]
   rw [hupdate]
-  simpa only [cournotProfile, Competition.Cournot.profit, cournotPurchaseLinear] using
+  simpa only [cournotProfile, Competition.Cournot.profit, cournotPurchaseLinear,
+    Function.update_self] using
     Competition.Cournot.symmetric_payoff_gap A.φ_bar A.α_coeff A.spec.price A.α_pos i (x : ℝ)
 
 /-- The symmetric Cournot profile is a Nash equilibrium of the editions-only game. -/

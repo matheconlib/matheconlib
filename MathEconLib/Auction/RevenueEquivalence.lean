@@ -6,6 +6,7 @@ Authors: Jujian Zhang, Ruiz Chen, Scott Duke Kominers, Bo Cowgill
 module
 
 public import MathEconLib.Auction.SymmetricIPV
+public import MathEconLib.Auction.IdenticalTypes
 
 /-!
 # Revenue Equivalence Theorem
