@@ -21,6 +21,9 @@ This separates staffing from contract terms: two assignments can employ
 the same doctors at different wages, shifts, or duties. The assignment
 type itself assumes neither stability nor preferences.
 
+Holding the roster fixed lets us compare contract sets and stable outcomes on that roster across
+completions without invoking rural-hospitals invariance.
+
 Once doctors rank their own terms, with better terms higher, Mathlib's
 pointwise order compares assignments doctor by doctor. Their meet gives
 each doctor the worse of their two terms.

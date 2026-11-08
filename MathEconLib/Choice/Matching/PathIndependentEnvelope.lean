@@ -19,7 +19,7 @@ The construction does not assert that bare substitutable completability implies 
 substitutable completability.
 All results apply to arbitrary contract types.
 
-The completion-preservation results in this module were developed for an in-preparation writeup
+The envelope results in this module were developed for an in-preparation writeup
 on substitute completions and stable outcomes.
 -/
 

@@ -132,7 +132,8 @@ implies P_C(Y) ⊆ C(P_C(Y)) = C(Y), proving equality. Thus IRC is required
 of the witnessing completion D, not of C. This argument works on arbitrary
 contract types.
 
-The three public results `pathIndependentEnvelope_isCompletionOf`,
+The three public results
+`pathIndependentEnvelope_isCompletionOf_of_hasConsistentSubstitutableCompletion`,
 `hasConsistentSubstitutableCompletion_iff_pathIndependentEnvelope_isCompletionOf`,
 and `isGreatest_pathIndependentEnvelope` consequently no longer take an
 original-rule IRC argument. Callers should omit that argument; the completion
