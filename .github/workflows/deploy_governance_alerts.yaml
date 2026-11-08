@@ -42,14 +42,14 @@ jobs:
         run: node scripts/deploy-check.mjs
       - name: Initialize the separate Worker before uploading secrets
         env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_MATHECON_PASS }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_MATHECON_ACCT }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: node scripts/bootstrap.mjs
       - name: Deploy a separate Worker and its scheduled backup
         uses: cloudflare/wrangler-action@v3
         with:
-          apiToken: ${{ secrets.CF_MATHECON_PASS }}
-          accountId: ${{ secrets.CF_MATHECON_ACCT }}
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           wranglerVersion: 4.130.0
           workingDirectory: infrastructure/governance-alerts
           command: deploy
