@@ -49,51 +49,53 @@ lemma payment_eq_allocation_integral
   simpa only [A.θmin_eq_lowestType, HasZeroLowestTypeUtility.zeroLowestTypeUtility i,
     sub_zero] using A.payment_formula halloc i hs
 
-/-- With the same interim allocation and type bounds, two BIC auctions normalized to zero
-lowest-type utility have identical interim payments throughout the common type interval. -/
+/-- For a bidder `i` with the same interim allocation in two BIC auctions with common type bounds,
+normalization to zero lowest-type utility gives identical interim payments throughout `i`'s type
+interval. Only bidder `i`'s allocation is compared. -/
 theorem payment_determined_by_allocation
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.HasIdenticalTypes]
+    [A.IsIPV] [Auction.IPV.BIC A] [A₂.IsIPV] [Auction.IPV.BIC A₂]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility] (i : Fin n)
     (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
     (halloc₂ : IsUnitIntervalAllocation A₂.rules (fun o i => o i))
-    (hq : ∀ i, A.q i = A₂.q i)
+    (hq : A.q i = A₂.q i)
     (hmin : A.lowestType = A₂.lowestType)
     (hmax : A.highestType = A₂.highestType)
-    [A.IsIPV] [Auction.IPV.BIC A] [A₂.IsIPV] [Auction.IPV.BIC A₂]
-    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
-    (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) : A.p i s = A₂.p i s := by
+    {s : ℝ} (hs : s ∈ A.interval i) : A.p i s = A₂.p i s := by
   apply A.payment_equivalence A₂ halloc halloc₂ i i
     (by simpa only [θmin_eq_lowestType] using hmin)
-    (by simpa only [θmax_eq_highestType] using hmax) (hq i) _ hs
+    (by simpa only [θmax_eq_highestType] using hmax) hq _ hs
   simp only [θmin_eq_lowestType, HasZeroLowestTypeUtility.zeroLowestTypeUtility]
 
-/-- Identically distributed types turn normalized pointwise payment uniqueness into equality of
-expected interim payments. Integrability on the second space is an assumption, and integrability
-on the first space is part of the conclusion. Only the first auction needs bounded realized types:
-the pointwise comparison is evaluated at its types before transporting their law. -/
+/-- For a bidder `i` whose types are identically distributed across the two auctions, normalized
+pointwise payment uniqueness gives equality of expected interim payments. Integrability on the
+second space is an assumption, and integrability on the first space is part of the conclusion.
+Only the first auction needs bounded realized types: the pointwise comparison is evaluated at its
+types before transporting their law. All hypotheses on allocations, laws, and payments concern
+bidder `i` alone. -/
 theorem expected_payment_determined_by_allocation
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.HasIdenticalTypes] [A.HasBoundedTypes]
+    [A.IsIPV] [Auction.IPV.BIC A] [A₂.IsIPV] [Auction.IPV.BIC A₂]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility] (i : Fin n)
     (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i))
     (halloc₂ : IsUnitIntervalAllocation A₂.rules (fun o i => o i))
-    (hq : ∀ i, A.q i = A₂.q i)
+    (hq : A.q i = A₂.q i)
     (hmin : A.lowestType = A₂.lowestType)
     (hmax : A.highestType = A₂.highestType)
-    (ident : ∀ i, IdentDistrib (A.θ i) (A₂.θ i) ℙ ℙ)
-    [A.IsIPV] [Auction.IPV.BIC A] [A₂.IsIPV] [Auction.IPV.BIC A₂]
-    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
-    (p_meas : ∀ i, Measurable (A₂.p i))
-    (p_int₂ : ∀ i, Integrable (fun ω => A₂.p i (A₂.θ i ω)) ℙ)
-    (i : Fin n) :
+    (ident : IdentDistrib (A.θ i) (A₂.θ i) ℙ ℙ)
+    (p_meas : Measurable (A₂.p i))
+    (p_int₂ : Integrable (fun ω => A₂.p i (A₂.θ i ω)) ℙ) :
     Integrable (fun ω => A.p i (A.θ i ω)) ℙ ∧
       ∫ ω, A.p i (A.θ i ω) ∂ℙ = ∫ ω, A₂.p i (A₂.θ i ω) ∂ℙ := by
   have heq : (fun ω => A.p i (A.θ i ω)) = (fun ω => A₂.p i (A.θ i ω)) := by
     funext ω
-    exact A.payment_determined_by_allocation A₂ halloc halloc₂ hq hmin hmax i
+    exact A.payment_determined_by_allocation A₂ i halloc halloc₂ hq hmin hmax
       (HasBoundedTypes.θ_in i ω)
   rw [heq]
-  have hident := (ident i).comp (p_meas i)
-  exact ⟨hident.integrable_iff.mpr (p_int₂ i), hident.integral_eq⟩
+  have hident := ident.comp p_meas
+  exact ⟨hident.integrable_iff.mpr p_int₂, hident.integral_eq⟩
 
 end MathEconLib.Auction
 

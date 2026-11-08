@@ -95,13 +95,14 @@ theorem not_isRunnerUp_of_isWinner {b : Fin n → ℝ} {i : Fin n}
 
 /-! ### Measurability for probabilistic auction models -/
 
+/-- The profiles at which bidder `i` is the strict highest bidder form a measurable set. -/
 theorem measurableSet_isWinner (i : Fin n) :
-    MeasurableSet {f : Fin n → ℝ | ∀ j ≠ i, f j < f i} := by
-  have h : {f : Fin n → ℝ | ∀ j ≠ i, f j < f i}
+    MeasurableSet {f : Fin n → ℝ | IsWinner f i} := by
+  have h : {f : Fin n → ℝ | IsWinner f i}
       = ⋂ j : {j : Fin n // j ≠ i},
           {f : Fin n → ℝ | f j.1 < f i} := by
     ext f
-    simp only [mem_ofPred_eq, mem_iInter, Subtype.forall]
+    simp only [IsWinner, mem_ofPred_eq, mem_iInter, Subtype.forall]
   rw [h]
   exact MeasurableSet.iInter fun j =>
     (isOpen_lt (continuous_apply j.1) (continuous_apply i)).measurableSet
