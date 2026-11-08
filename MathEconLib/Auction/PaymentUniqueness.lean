@@ -17,8 +17,9 @@ lowest-type utility. Fixing that utility at zero gives the normalized formula be
 individual rationality, which only bounds utility from below, does not fix this constant.
 
 The pointwise results specialize `Auction.payment_formula` and `Auction.payment_equivalence`.
-They explicitly require independent private values and IPV BIC, but not atomless types. `HasIdenticalTypes` supplies the common
-bounds used by the normalization; the underlying payment-equivalence theorem is more general.
+They explicitly require independent private values and IPV BIC, but not atomless types.
+`HasIdenticalTypes` supplies the common bounds used by the normalization; the underlying
+payment-equivalence theorem is more general.
 
 `expected_payment_determined_by_allocation` transports integrability from the second auction
 and proves equality of the two expected interim payments. This avoids interpreting a totalized
@@ -58,7 +59,8 @@ theorem payment_determined_by_allocation
     (hq : ∀ i, A.q i = A₂.q i)
     (hmin : A.lowestType = A₂.lowestType)
     (hmax : A.highestType = A₂.highestType)
-    [A.IsIPV] [Auction.IPV.BIC A] [A₂.IsIPV] [Auction.IPV.BIC A₂] [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
+    [A.IsIPV] [Auction.IPV.BIC A] [A₂.IsIPV] [Auction.IPV.BIC A₂]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
     (i : Fin n) {s : ℝ} (hs : s ∈ A.interval i) : A.p i s = A₂.p i s := by
   apply A.payment_equivalence A₂ halloc halloc₂ i i
     (by simpa only [θmin_eq_lowestType] using hmin)
@@ -78,7 +80,8 @@ theorem expected_payment_determined_by_allocation
     (hmin : A.lowestType = A₂.lowestType)
     (hmax : A.highestType = A₂.highestType)
     (ident : ∀ i, IdentDistrib (A.θ i) (A₂.θ i) ℙ ℙ)
-    [A.IsIPV] [Auction.IPV.BIC A] [A₂.IsIPV] [Auction.IPV.BIC A₂] [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
+    [A.IsIPV] [Auction.IPV.BIC A] [A₂.IsIPV] [Auction.IPV.BIC A₂]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility]
     (p_meas : ∀ i, Measurable (A₂.p i))
     (p_int₂ : ∀ i, Integrable (fun ω => A₂.p i (A₂.θ i ω)) ℙ)
     (i : Fin n) :

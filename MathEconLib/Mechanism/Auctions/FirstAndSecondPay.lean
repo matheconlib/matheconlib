@@ -101,7 +101,7 @@ theorem measurableSet_isWinner (i : Fin n) :
       = ⋂ j : {j : Fin n // j ≠ i},
           {f : Fin n → ℝ | f j.1 < f i} := by
     ext f
-    simp only [mem_setOf_eq, mem_iInter, Subtype.forall]
+    simp only [mem_ofPred_eq, mem_iInter, Subtype.forall]
   rw [h]
   exact MeasurableSet.iInter fun j =>
     (isOpen_lt (continuous_apply j.1) (continuous_apply i)).measurableSet
