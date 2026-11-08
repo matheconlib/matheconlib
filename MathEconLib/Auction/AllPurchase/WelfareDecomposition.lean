@@ -21,12 +21,15 @@ real quantities; the optimizer is nonnegative exactly when `φbar ≥ c`.
 
 The algebraic helper splits a supplied welfare gap at a supplied intermediate quantity. The
 auction-level decomposition instead uses the auction's editions-only Cournot quantity and actual
-expected edition welfare. A separate best-response certificate verifies that the Cournot profile
-is feasible when `p ≤ φ̄`. No equilibrium assumption on bundled purchases is needed for the
+expected edition welfare. The symmetric Cournot profile
+is a Nash equilibrium of the editions-only game when `p ≤ φ̄`. No equilibrium assumption on bundled purchases is needed for the
 decomposition itself.
 
 For square-integrable aggregate purchases, the difference between welfare at the mean and
 expected welfare is exactly the nonnegative penalty `α · Var(B)`. The Cournot gap is nonnegative.
+When posted price `p` differs from production cost `c`, the Cournot gap reflects both the
+price-cost wedge and buyers' dilution incentives. A sufficiently high markup can put editions-only
+purchases below the efficient quantity, so increased purchases can improve edition welfare.
 The contest gap is nonnegative when editions-only purchases already exceed the efficient quantity
 and the contest weakly raises mean purchases; it can be negative without these conditions. All
 welfare quantities here concern editions, excluding the contest prize's value.
@@ -38,7 +41,9 @@ welfare quantities here concern editions, excluding the contest prize's value.
 * `cournotLoss` and `contestLoss`: welfare gaps at supplied quantity and welfare benchmarks.
 * `bundledEditionWelfareMoments`: the welfare expression in two supplied moments.
 * `LinearScarcityAuction.bundledEditionWelfare`: the auction's edition-welfare moment expression.
-* `LinearScarcityAuction.cournotPurchaseLinear`: symmetric editions-only purchases per bidder.
+* `LinearScarcityAuction.editionsOnlyGame`: the game with nonnegative editions-only purchases.
+* `LinearScarcityAuction.cournotProfile`: the feasible symmetric Cournot profile.
+The per-bidder and aggregate Cournot quantities are defined in `RevenueDecomposition`.
 
 ## Main statements
 
@@ -49,8 +54,9 @@ welfare quantities here concern editions, excluding the contest prize's value.
 * `AllPurchase.welfare_decomposition`: the algebraic welfare-gap helper, retained for reuse.
 * `LinearScarcityAuction.welfare_decomposition`: the decomposition of actual expected edition
   welfare using the auction's Cournot benchmark.
-* `LinearScarcityAuction.cournotPurchaseLinear_best_response`: feasibility and optimality against
-  nonnegative unilateral deviations in the editions-only game.
+* `LinearScarcityAuction.cournotProfile_isNash`: equilibrium in the editions-only game.
+* `LinearScarcityAuction.sum_cournotProfile`: aggregate equilibrium purchases.
+* `LinearScarcityAuction.cournotProfile_payoff_gap`: exact loss from a unilateral deviation.
 * `LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance`: the variance penalty for
   actual square-integrable purchases.
 * `LinearScarcityAuction.contestLoss_nonneg_of_mean_ge`: a sufficient quantity condition for a
@@ -129,7 +135,9 @@ theorem editionWelfare_le_of_firstBest_le (hα : 0 < α) {B₁ B₂ : ℝ}
 
 /-- The welfare gap `L_Cournot = W* − W^B`, with `W^B` evaluated at the supplied quantity `B_ed`.
 It represents Cournot deadweight loss for nonnegative purchases when `B_ed` is the editions-only
-Cournot quantity, `α > 0`, and `φbar ≥ c`; the definition itself imposes none of these conditions.
+Cournot quantity, `α > 0`, and `φbar ≥ c`. When posted price differs from production cost,
+this gap includes the price-cost wedge as well as dilution incentives; it is not a pure dilution
+loss. The definition itself imposes none of these conditions.
 -/
 noncomputable def cournotLoss (B_ed : ℝ) : ℝ :=
   firstBestEditionSurplus φbar c α - editionWelfare φbar c α B_ed
@@ -241,28 +249,6 @@ theorem cournotQuantityLinear_eq_total :
     A.cournotQuantityLinear = (n : ℝ) * A.cournotPurchaseLinear := by
   rfl
 
-/-- Completing the square gives the exact loss from any real unilateral deviation. The
-price restriction is needed only for feasibility of the symmetric nonnegative profile. -/
-theorem cournotPurchaseLinear_payoff_gap (x : ℝ) :
-    A.cournotPurchaseLinear *
-        (A.spec.φ ((n : ℝ) * A.cournotPurchaseLinear) - A.spec.price) -
-      x * (A.spec.φ (x + ((n : ℝ) - 1) * A.cournotPurchaseLinear) - A.spec.price) =
-        A.α_coeff * (x - A.cournotPurchaseLinear) ^ 2 := by
-  simpa only [cournotPurchaseLinear, congr_fun A.scarcity_is_linear] using
-    Competition.Cournot.symmetricQuantity_payoff_gap n A.φ_bar A.α_coeff A.spec.price A.α_pos x
-
-/-- Compatibility certificate: feasibility and no profitable nonnegative unilateral deviation. -/
-theorem cournotPurchaseLinear_best_response [NeZero n] (hp : A.spec.price ≤ A.φ_bar) :
-    0 ≤ A.cournotPurchaseLinear ∧
-      ∀ x : ℝ, 0 ≤ x →
-        x * (A.spec.φ (x + ((n : ℝ) - 1) * A.cournotPurchaseLinear) - A.spec.price) ≤
-          A.cournotPurchaseLinear *
-            (A.spec.φ ((n : ℝ) * A.cournotPurchaseLinear) - A.spec.price) := by
-  refine ⟨A.cournotPurchaseLinear_nonneg hp, fun x _ => ?_⟩
-  have h := A.cournotPurchaseLinear_payoff_gap x
-  have hnonneg := mul_nonneg A.α_pos.le (sq_nonneg (x - A.cournotPurchaseLinear))
-  linarith
-
 /-- Editions-only Cournot game. Purchases are nonnegative; there is no contest prize.
 This action restriction does not change the bundled auction's real deviation space. -/
 noncomputable def editionsOnlyGame :
@@ -284,8 +270,31 @@ theorem editionsOnlyGame_eq_cournotGame :
   funext i q
   simp only [Competition.Cournot.profit, congr_fun A.scarcity_is_linear]
 
+/-- Aggregate purchases at the certified profile equal the welfare benchmark quantity. -/
+theorem sum_cournotProfile (hp : A.spec.price ≤ A.φ_bar) :
+    ∑ j, (A.cournotProfile hp j : ℝ) = A.cournotQuantityLinear := by
+  simp [cournotProfile, cournotQuantityLinear]
+
+/-- Exact payoff loss from a feasible unilateral deviation in the editions-only game. -/
+theorem cournotProfile_payoff_gap (hp : A.spec.price ≤ A.φ_bar)
+    (i : Fin n) (x : {x : ℝ // 0 ≤ x}) :
+    A.editionsOnlyGame.payoff i (A.cournotProfile hp) -
+      A.editionsOnlyGame.payoff i (Function.update (A.cournotProfile hp) i x) =
+        A.α_coeff * ((x : ℝ) - A.cournotPurchaseLinear) ^ 2 := by
+  have hupdate : (fun j => ((Function.update (A.cournotProfile hp) i x) j : ℝ)) =
+      Function.update (fun _ : Fin n => A.cournotPurchaseLinear) i (x : ℝ) := by
+    funext j
+    by_cases h : j = i
+    · subst j
+      simp
+    · simp [Function.update_of_ne h, cournotProfile]
+  simp only [editionsOnlyGame, congr_fun A.scarcity_is_linear]
+  rw [hupdate]
+  simpa only [cournotProfile, Competition.Cournot.profit, cournotPurchaseLinear] using
+    Competition.Cournot.symmetric_payoff_gap A.φ_bar A.α_coeff A.spec.price A.α_pos i (x : ℝ)
+
 /-- The symmetric Cournot profile is a Nash equilibrium of the editions-only game. -/
-theorem cournotProfile_isNash [NeZero n] (hp : A.spec.price ≤ A.φ_bar) :
+theorem cournotProfile_isNash (hp : A.spec.price ≤ A.φ_bar) :
     A.editionsOnlyGame.IsNash (A.cournotProfile hp) := by
   rw [A.editionsOnlyGame_eq_cournotGame]
   exact Competition.Cournot.symmetricProfile_isNash n A.φ_bar A.α_coeff A.spec.price A.α_pos hp
@@ -319,8 +328,8 @@ actual expected edition welfare is the Cournot gap plus the contest gap, evaluat
 auction's editions-only Cournot quantity and bundled welfare.
 
 The equality holds for every square-integrable strategy, including equilibrium strategies. The
-Cournot benchmark is feasible and a best response when `price ≤ φ_bar`, as proved by
-`cournotPurchaseLinear_best_response`; the first-best quantity is feasible when `c ≤ φ_bar`.
+Cournot profile is feasible and Nash when `price ≤ φ_bar`, as proved by
+`cournotProfile_isNash`; the first-best quantity is feasible when `c ≤ φ_bar`.
 The signs of the two gaps are separate conclusions, not hypotheses hidden in the identity. -/
 theorem welfare_decomposition (β : ℝ → ℝ) (c : ℝ)
     (hB : MemLp (A.toAuction.aggregateBid β) 2 ℙ) :

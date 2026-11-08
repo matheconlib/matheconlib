@@ -14,9 +14,16 @@ inside a `module`. The default test target builds this file and records the resu
 
 #print axioms MathEconLib.LinearScarcityAuction.welfare_decomposition
 #print axioms MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
-#print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_best_response
 #print axioms MathEconLib.LinearScarcityAuction.bundledEditionWelfare_le_firstBest
 #print axioms MathEconLib.Examples.AllPurchase.Welfare.welfare_gap
 
-#print axioms MathEconLib.LinearScarcityAuction.cournotPurchaseLinear_payoff_gap
+#print axioms MathEconLib.LinearScarcityAuction.cournotProfile_payoff_gap
 #print axioms MathEconLib.LinearScarcityAuction.cournotProfile_isNash
+
+#print axioms MathEconLib.LinearScarcityAuction.sum_cournotProfile
+
+-- No nonempty-player assumption is needed for the equilibrium API.
+example {Ω : Type} [MeasureTheory.MeasureSpace Ω]
+    [MeasureTheory.IsProbabilityMeasure (MeasureTheory.MeasureSpace.volume : MeasureTheory.Measure Ω)]
+    (A : MathEconLib.LinearScarcityAuction Ω 0) (hp : A.spec.price ≤ A.φ_bar) :
+    A.editionsOnlyGame.IsNash (A.cournotProfile hp) := A.cournotProfile_isNash hp
