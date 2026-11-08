@@ -22,7 +22,8 @@ real quantities; the optimizer is nonnegative exactly when `φbar ≥ c`.
 The algebraic helper splits a supplied welfare gap at a supplied intermediate quantity. The
 auction-level decomposition instead uses the auction's editions-only Cournot quantity and actual
 expected edition welfare. The symmetric Cournot profile
-is a Nash equilibrium of the editions-only game when `p ≤ φ̄`. No equilibrium assumption on bundled purchases is needed for the
+is a Nash equilibrium of the editions-only game when `p ≤ φ̄`. No equilibrium assumption on bundled
+purchases is needed for the
 decomposition itself.
 
 For square-integrable aggregate purchases, the difference between welfare at the mean and
