@@ -72,8 +72,9 @@ theorem payment_determined_by_allocation
 pointwise payment uniqueness gives equality of expected interim payments. Integrability on the
 second space is an assumption, and integrability on the first space is part of the conclusion.
 Only the first auction needs bounded realized types: the pointwise comparison is evaluated at its
-types before transporting their law. All hypotheses on allocations, laws, and payments concern
-bidder `i` alone. -/
+types before transporting their law. The allocation-equality, type-law, payment-measurability,
+and payment-integrability hypotheses are stated for bidder `i`; the standing auction-wide
+assumptions remain. -/
 theorem expected_payment_determined_by_allocation
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.HasIdenticalTypes] [A.HasBoundedTypes]
