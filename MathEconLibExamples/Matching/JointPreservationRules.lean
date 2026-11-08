@@ -11,13 +11,13 @@ import Mathlib.Tactic.Tauto
 import Mathlib.Tactic.FinCases
 
 /-!
-# Hospital choices in the three-worker example
+# Hospital choices in the three-doctor example
 
-Each worker has two contracts. The original choice accepts one contract per represented
-worker. Workers 1 and 2 have priority for their a-term. Worker 3 has priority for their
+Each doctor has two contracts. The original choice accepts one contract per represented
+doctor. Doctors 1 and 2 have priority for their a-term. Doctor 3 has priority for their
 a-term except when both earlier a-terms are offered.
 
-The three witness completions are indexed by the worker whose target they sacrifice.
+The three witness completions are indexed by the doctor whose target they sacrifice.
 -/
 
 @[expose] public section
@@ -27,7 +27,7 @@ namespace MathEconLib.Examples.Matching.JointPreservation
 open MathEconLib.Choice
 open ChoiceFunction
 
-/-- Two possible terms for each of three workers. -/
+/-- Two possible terms for each of three doctors. -/
 inductive Contract
   | a1 | b1 | a2 | b2 | a3 | b3
   deriving DecidableEq
@@ -38,7 +38,7 @@ instance : Fintype Contract where
   elems := {a1, b1, a2, b2, a3, b3}
   complete x := by cases x <;> simp
 
-/-- The counterparty map, indexed by worker number minus one. -/
+/-- The counterparty map, indexed by doctor number minus one. -/
 def worker : Contract → Fin 3
   | a1 | b1 => 0
   | a2 | b2 => 1
@@ -52,7 +52,7 @@ def originalAccepts (Y : Set Contract) : Contract → Prop
   | a3 => ¬ (a1 ∈ Y ∧ a2 ∈ Y ∧ b3 ∈ Y)
   | b3 => a3 ∉ Y ∨ (a1 ∈ Y ∧ a2 ∈ Y)
 
-/-- Original choice, using the menu-dependent third-worker priority. -/
+/-- Original choice, using the menu-dependent third-doctor priority. -/
 def original : ChoiceFunction Contract where
   toFun Y := {x ∈ Y | originalAccepts Y x}
   choose_subset _ _ hx := hx.1
@@ -61,14 +61,14 @@ def original : ChoiceFunction Contract where
     x ∈ original Y ↔ x ∈ Y ∧ originalAccepts Y x :=
   Iff.rfl
 
-/-- The priority test for the completion sacrificing worker j's target. -/
+/-- The priority test for the completion sacrificing doctor j's target. -/
 def pairAccepts (j : Fin 3) (Y : Set Contract) : Contract → Prop
   | a1 | a2 | a3 => True
   | b1 => j = 0 ∨ a1 ∉ Y
   | b2 => j = 1 ∨ a2 ∉ Y
   | b3 => j = 2 ∨ a3 ∉ Y ∨ (if j = 0 then b1 else b2) ∉ Y
 
-/-- Select both terms of worker j when offered, modifying worker 3's priority
+/-- Select both terms of doctor j when offered, modifying doctor 3's priority
 so that the other two targets survive. -/
 def pairCompletion (j : Fin 3) : ChoiceFunction Contract where
   toFun Y := {x ∈ Y | pairAccepts j Y x}
@@ -78,7 +78,7 @@ def pairCompletion (j : Fin 3) : ChoiceFunction Contract where
     x ∈ pairCompletion j Y ↔ x ∈ Y ∧ pairAccepts j Y x :=
   Iff.rfl
 
-/-- No worker has two contracts in the original hospital choice. -/
+/-- No doctor has two contracts in the original hospital choice. -/
 theorem original_feasible (Y : Set Contract) : Set.InjOn worker (original Y) := by
   intro x hx y hy hxy
   cases x <;> cases y <;> simp [worker] at hxy ⊢ <;>
@@ -99,7 +99,7 @@ theorem original_apply_of_feasible {Y : Set Contract} (hY : Set.InjOn worker Y) 
   | a3 => exact fun h ↦ different (b := b3) hx rfl (by decide) h.2.2
   | b3 => exact Or.inl (different hx rfl (by decide))
 
-/-- A sole offer from a worker cannot witness failure of unilateral substitutes. -/
+/-- A sole offer from a doctor cannot witness failure of unilateral substitutes. -/
 theorem original_unilaterallySubstitutable :
     original.UnilaterallySubstitutable worker := by
   intro x _ Y hfresh hrej
@@ -118,7 +118,7 @@ theorem original_unilaterallySubstitutable :
   | b3 => exact Or.inl (otherAbsent rfl (by decide))
 
 /-- Retaining every selected contract retains the earlier a-terms and thus
-worker 3's priority. -/
+doctor 3's priority. -/
 theorem original_consistent : original.Consistent := by
   intro Y Z hretain hsub
   have keep (x : Contract) : x ∈ Y → originalAccepts Y x → x ∈ Z :=
@@ -171,7 +171,7 @@ theorem pairCompletion_substitutable (j : Fin 3) : (pairCompletion j).Substituta
       (fun hb hy ↦ hb (hsub hy)))
 
 /-- A witness that alters a feasible original choice takes both terms of
-some worker. -/
+some doctor. -/
 theorem pairCompletion_isCompletion (j : Fin 3) :
     original.IsCompletionOf worker (pairCompletion j) := by
   classical

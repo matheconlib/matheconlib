@@ -13,9 +13,9 @@ public import MathEconLib.Matching.Contracts.Completion
 
 An IRC hospital may choose the terms jointly while using a substitutable IRC
 roster rule to decide whom to hire. Every stable outcome has the roster selected
-when every worker is represented. The same conclusion holds under completion.
+when every doctor is represented. The same conclusion holds under completion.
 On this roster, stability can be tested on the menu of incumbent and preferred
-terms, including all offers from workers who remain unmatched.
+terms, including all offers from doctors who remain unmatched.
 -/
 
 @[expose] public section
@@ -60,7 +60,7 @@ private theorem rosterMarket_indRational_iff_of_feasible (C : ChoiceFunction X) 
     rw [rosterMarket_buyerSide]
     exact hC
 
-/-- Stable outcomes under a completion have the roster selected when all workers are represented. -/
+/-- Stable outcomes under a completion have the roster selected when all doctors are represented. -/
 theorem exists_rosterAssignment_of_stable {R : ChoiceFunction S} {C D : ChoiceFunction X}
     (hRoster : ∀ Y, seller '' (C Y) = R (seller '' Y))
     (hRSub : R.Substitutable) (hRIRC : R.Consistent)
@@ -127,7 +127,7 @@ private theorem rosterMarket_stable_terms_of_eq {C : ChoiceFunction X} (hIRC : C
   exact Set.disjoint_left.mp hZ.2.1 hx hxB
 
 /-- A feasible-valued IRC hospital's stable assignments are its fixed choices from the
-incumbent terms and all offers their workers would accept. -/
+incumbent terms and all offers their doctors would accept. -/
 theorem rosterMarket_stable_terms_iff {C : ChoiceFunction X}
     (hFeas : ∀ Y, Set.InjOn seller (C Y)) (hIRC : C.Consistent)
     (A : RosterAssignment seller W) :
@@ -176,7 +176,7 @@ theorem rosterMarket_stable_terms_iff {C : ChoiceFunction X}
   exact (hIRC hSubset A.terms_subset_improvementMenu).symm.trans hCA
 
 /-- Under a substitutable IRC hospital rule, this stability test also applies
-when hospital choices can contain several contracts of a worker. -/
+when hospital choices can contain several contracts of a doctor. -/
 theorem rosterMarket_stable_terms_iff_of_substitutable {D : ChoiceFunction X}
     (hSub : D.Substitutable) (hIRC : D.Consistent) (A : RosterAssignment seller W) :
     (rosterMarket seller D).Stable A.terms ↔ D A.improvementMenu = A.terms := by
@@ -205,7 +205,7 @@ private theorem favourite_mem_terms_of_mem_improvementMenu {R : ChoiceFunction S
     (R.choose_subset (Set.range seller)) i ⟨x, rfl⟩
   exact ⟨i, congrArg Subtype.val (le_antisymm hLe hGe)⟩
 
-/-- Giving each selected worker their favourite term is stable under the original rule. -/
+/-- Giving each selected doctor their favourite term is stable under the original rule. -/
 theorem rosterMarket_favourite_stable_original {R : ChoiceFunction S} {C : ChoiceFunction X}
     (hRoster : ∀ Y, seller '' (C Y) = R (seller '' Y)) (hRIRC : R.Consistent)
     (hFeas : ∀ Y, Set.InjOn seller (C Y)) (hCIRC : C.Consistent) :
@@ -224,7 +224,7 @@ theorem rosterMarket_favourite_stable_original {R : ChoiceFunction S} {C : Choic
   exact (A.injOn_terms.image_eq_image_iff hSubset Set.Subset.rfl).mp
     (hImage.trans A.image_terms.symm)
 
-/-- Giving each selected worker their favourite term is stable under every
+/-- Giving each selected doctor their favourite term is stable under every
 substitutable completion. -/
 theorem rosterMarket_favourite_stable {R : ChoiceFunction S} {C D : ChoiceFunction X}
     (hRoster : ∀ Y, seller '' (C Y) = R (seller '' Y)) (hRIRC : R.Consistent)

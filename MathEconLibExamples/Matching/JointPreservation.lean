@@ -13,17 +13,17 @@ import Mathlib.Tactic.FinCases
 /-!
 # Three stable allocations that cannot all survive completion
 
-One hospital and three workers trade two terms per worker. Each worker prefers
-their `b` term. In target `i`, worker `i` takes their `a` term and the other
-workers take their `b` terms. Every target is stable under the original rule.
+One hospital and three doctors trade two terms per doctor. Each doctor prefers
+their `b` term. In target `i`, doctor `i` takes their `a` term and the other
+doctors take their `b` terms. Every target is stable under the original rule.
 For each omitted target, a substitutable, consistent, size-monotone completion
 preserves the other two. Any substitutable completion preserving all three would reject all
 the `b` terms at the full menu, contrary to the original full-menu choice.
 
 The stability notion is the existing choice-theoretic one. A new contract can
-block when the completed buyer chooses it alongside the worker's current term.
+block when the completed buyer chooses it alongside the doctor's current term.
 See Hatfield and Kominers (2019), *Hidden Substitutes*, Appendix A, Example A.1,
-for a two-worker example where different completions give different stable sets.
+for a two-doctor example where different completions give different stable sets.
 https://johnhatfield.squarespace.com/s/Hidden-Substitutes.pdf
 -/
 
@@ -35,7 +35,7 @@ namespace MathEconLib.Examples.Matching.JointPreservation
 
 open Contract
 
-/-- The term each worker strictly prefers to their other term and being unmatched. -/
+/-- The term each doctor strictly prefers to their other term and being unmatched. -/
 def preferred : Fin 3 → Contract
   | 0 => b1
   | 1 => b2
@@ -54,12 +54,12 @@ private theorem term_cases (x : Contract) :
     x = preferred (worker x) ∨ x = lessPreferred (worker x) := by
   cases x <;> decide
 
-/-- Workers choose their best available own term, with both terms acceptable. -/
+/-- Doctors choose their best available own term, with both terms acceptable. -/
 def sellerChoice (i : Fin 3) : ChoiceFunction Contract where
   toFun Y := {x ∈ Y | worker x = i ∧ (x = preferred i ∨ preferred i ∉ Y)}
   choose_subset _ _ hx := hx.1
 
-/-- Each worker chooses at most one contract. -/
+/-- Each doctor chooses at most one contract. -/
 theorem sellerChoice_unitDemand (i : Fin 3) : (sellerChoice i).UnitDemand := by
   intro Y x hx y hy
   change x ∈ Y ∧ worker x = i ∧ (x = preferred i ∨ preferred i ∉ Y) at hx
@@ -77,7 +77,7 @@ theorem sellerChoice_unitDemand (i : Fin 3) : (sellerChoice i).UnitDemand := by
       exact ht.resolve_left (fun heq ↦ h (heq ▸ hy.1))
     exact hx'.trans hy'.symm
 
-/-- Dropping rejected offers keeps the worker's favorite available term. -/
+/-- Dropping rejected offers keeps the doctor's favorite available term. -/
 theorem sellerChoice_consistent (i : Fin 3) : (sellerChoice i).Consistent := by
   intro Y Z hchoice hYZ
   apply Set.Subset.antisymm
@@ -91,7 +91,7 @@ theorem sellerChoice_consistent (i : Fin 3) : (sellerChoice i).Consistent := by
     change x ∈ Y ∧ worker x = i ∧ (x = preferred i ∨ preferred i ∉ Y) at hx
     exact ⟨hchoice hx, hx.2.1, hx.2.2.imp_right (fun hnot hmem ↦ hnot (hYZ hmem))⟩
 
-/-- The three-worker market with an arbitrary choice rule for the hospital. -/
+/-- The three-doctor market with an arbitrary choice rule for the hospital. -/
 def marketOfBuyerChoice (C : ChoiceFunction Contract) :
     Market Unit (Fin 3) Contract where
   buyer _ := ()
@@ -109,14 +109,14 @@ def completedMarket (D : ChoiceFunction Contract) (hcomp : original.IsCompletion
     (hsub : D.Substitutable) : Market Unit (Fin 3) Contract :=
   market.withBuyerCompletions (fun _ ↦ D) (fun _ ↦ hcomp) (fun _ ↦ hsub)
 
-/-- Target `i` assigns the less preferred term to `i` and preferred terms to all other workers. -/
+/-- Target `i` assigns the less preferred term to `i` and preferred terms to all other doctors. -/
 def target (i : Fin 3) : Set Contract :=
   {x | if worker x = i then x = lessPreferred i else x = preferred (worker x)}
 
 private theorem preferred_not_mem_target (i : Fin 3) : preferred i ∉ target i := by
   fin_cases i <;> simp [target, worker, preferred, lessPreferred]
 
-/-- Each target assigns at most one term to each worker. -/
+/-- Each target assigns at most one term to each doctor. -/
 theorem target_feasible (i : Fin 3) : Set.InjOn worker (target i) := by
   intro x hx y hy hxy
   change (if worker x = i then x = lessPreferred i else x = preferred (worker x)) at hx
@@ -251,7 +251,7 @@ section Ordinal
 
 open Classical
 
-/-- The best available term in one worker's position, with vacancy last. -/
+/-- The best available term in one doctor's position, with vacancy last. -/
 noncomputable def termRank (high low : Contract) (A : Set Contract) : ℕ :=
   if high ∈ A then 2 else if low ∈ A then 1 else 0
 
@@ -370,11 +370,11 @@ theorem original_rank_lt_of_feasible_ne {A Y : Set Contract}
     · simp only [mem_original, originalAccepts, h, or_false]
     · exact Or.inl ⟨rfl, rfl⟩
 
-/-- Each worker ranks their preferred term above the other term, and both above vacancy. -/
+/-- Each doctor ranks their preferred term above the other term, and both above vacancy. -/
 noncomputable def workerRank (i : Fin 3) (A : Set Contract) : ℕ :=
   termRank (preferred i) (lessPreferred i) A
 
-/-- No distinct feasible allocation weakly improves the hospital and every worker. -/
+/-- No distinct feasible allocation weakly improves the hospital and every doctor. -/
 theorem target_paretoEfficient (i : Fin 3) {A : Set Contract}
     (hA : Set.InjOn worker A)
     (hWorkers : ∀ j, workerRank j (target i) ≤ workerRank j A)

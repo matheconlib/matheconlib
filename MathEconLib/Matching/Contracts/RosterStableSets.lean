@@ -11,21 +11,21 @@ public import MathEconLib.Matching.Contracts.RosterStability
 /-!
 # Stable sets attainable under a term-independent roster rule
 
-Assume finitely many contracts and strict worker rankings with every own
+Assume finitely many contracts and strict doctor rankings with every own
 term above unemployment. The hospital's feasible-valued contract choice
-`C` satisfies IRC and selects workers using a substitutable IRC roster
-rule `R`, applied to the workers represented in the menu. Staffing is
+`C` satisfies IRC and selects doctors using a substitutable IRC roster
+rule `R`, applied to the doctors represented in the menu. Staffing is
 therefore independent of contract terms, while selected terms may depend
 on the whole menu. Fixed hiring priorities with a quota are one example.
 
 Every stable outcome employs exactly `R (Set.range seller)`. A family of
 assignments on that roster is the entire stable set of a substitutable
 IRC completion exactly when its members are originally stable, it contains
-the worker-favourite assignment, and it is closed under workerwise meets.
+the doctor-favourite assignment, and it is closed under doctorwise meets.
 
 Consequently, one substitutable completion preserves every original
 stable outcome exactly when the original stable assignments are closed
-under workerwise meets. When this holds, a completion satisfying IRC can
+under doctorwise meets. When this holds, a completion satisfying IRC can
 realize exactly the original stable set. The proof uses choice-theoretic stability.
 
 The roster stable-set characterization in this module was developed for
@@ -100,7 +100,7 @@ private theorem choose_improvementMenu_inf_of_stable
 
 /-- The stable sets attainable under substitutable IRC completions are exactly
 the meet-closed subfamilies of the original stable set containing the
-worker-favourite assignment. The equality on the left covers the entire
+doctor-favourite assignment. The equality on the left covers the entire
 stable set, including the claim that there are no other stable outcomes. -/
 theorem roster_attainable_stable_sets_iff
     (hRoster : ∀ Y, seller '' C Y = R (seller '' Y))
@@ -167,7 +167,7 @@ theorem roster_attainable_stable_sets_iff
 
 /-- The whole original stable set is realizable by one substitutable IRC
 completion exactly when the original stable assignments are closed under
-workerwise meets. -/
+doctorwise meets. -/
 theorem roster_exact_whole_stable_set_iff
     (hRoster : ∀ Y, seller '' C Y = R (seller '' Y))
     (hFeas : ∀ Y, Set.InjOn seller (C Y))
@@ -196,7 +196,7 @@ theorem roster_exact_whole_stable_set_iff
     rosterMarket_favourite_stable_original seller hRoster hRIRC hFeas hCIRC, h⟩⟩
 
 /-- One substitutable completion preserves every original stable outcome iff
-the original stable set is closed under workerwise meets. When this holds,
+the original stable set is closed under doctorwise meets. When this holds,
 one can take the completion to satisfy IRC and have exactly the original
 stable set by the attainable-stable-sets theorem. -/
 theorem roster_preserves_whole_stable_set_iff

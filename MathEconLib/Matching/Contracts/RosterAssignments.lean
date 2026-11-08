@@ -10,24 +10,24 @@ public import Mathlib.Data.Fintype.Lattice
 public import Mathlib.Order.WithBot
 
 /-!
-# Assignments on a fixed worker roster
+# Assignments on a fixed doctor roster
 
-A roster `W` is a specified set of workers, the sellers in `Market`.
-`RosterAssignment seller W` gives each worker in `W` one own contract.
+A roster `W` is a specified set of doctors, the sellers in `Market`.
+`RosterAssignment seller W` gives each doctor in `W` one own contract.
 Its `terms` map identifies these assignments with contract sets containing
-exactly one contract for each roster worker and none for other workers.
+exactly one contract for each roster doctor and none for other doctors.
 
 This separates staffing from contract terms: two assignments can employ
 the same doctors at different wages, shifts, or duties. The assignment
 type itself assumes neither stability nor preferences.
 
-Once workers rank their own terms, with better terms higher, Mathlib's
-pointwise order compares assignments worker by worker. Their meet gives
-each worker the worse of their two terms.
+Once doctors rank their own terms, with better terms higher, Mathlib's
+pointwise order compares assignments doctor by doctor. Their meet gives
+each doctor the worse of their two terms.
 
 The later single-hospital model adds a staffing rule that depends only
-on the workers represented in a menu and derives the roster employed at
-stable outcomes. Its worker preferences place unemployment below every
+on the doctors represented in a menu and derives the roster employed at
+stable outcomes. Its doctor preferences place unemployment below every
 own contract.
 -/
 
@@ -37,7 +37,7 @@ namespace MathEconLib.Matching
 
 open MathEconLib.Choice
 
-/-- An assignment of one contract to every worker on the given roster. -/
+/-- An assignment of one contract to every doctor on the given roster. -/
 abbrev RosterAssignment {S X : Type*} (seller : X → S) (W : Set S) :=
   ∀ i : W, {x : X // seller x = i.1}
 
@@ -45,7 +45,7 @@ namespace RosterAssignment
 
 variable {S X : Type*} {seller : X → S} {W : Set S}
 
-/-- The contracts assigned to the workers on the roster. -/
+/-- The contracts assigned to the doctors on the roster. -/
 def terms (A : RosterAssignment seller W) : Set X :=
   Set.range fun i ↦ (A i).1
 
@@ -100,8 +100,8 @@ theorem exists_terms_eq {Y : Set X} (hY : Set.InjOn seller Y) (hR : seller '' Y 
 
 variable [∀ i, LinearOrder {x : X // seller x = i}]
 
-/-- Incumbents, weakly preferred terms for roster workers, and every term of
-workers outside the roster. -/
+/-- Incumbents, weakly preferred terms for roster doctors, and every term of
+doctors outside the roster. -/
 def improvementMenu (A : RosterAssignment seller W) : Set X :=
   {x | ∀ i : W, ∀ h : seller x = i.1,
     A i ≤ (⟨x, h⟩ : {y : X // seller y = i.1})}
@@ -125,7 +125,7 @@ theorem improvementMenu_antitone :
   intro A B hAB x hx i hi
   exact (hAB i).trans (hx i hi)
 
-/-- The meet assigns each worker a term already present in one input assignment. -/
+/-- The meet assigns each doctor a term already present in one input assignment. -/
 theorem terms_inf_subset (A B : RosterAssignment seller W) :
     (A ⊓ B).terms ⊆ A.terms ∪ B.terms := by
   rintro _ ⟨i, rfl⟩
@@ -142,7 +142,7 @@ theorem exists_favourite_term [Finite X] (hW : W ⊆ Set.range seller) (i : W) :
   let : Nonempty {x : X // seller x = i.1} := ⟨⟨x, hx⟩⟩
   exact Finite.exists_max id
 
-/-- Give each hired worker their favourite contract. -/
+/-- Give each hired doctor their favourite contract. -/
 noncomputable def favourite [Finite X] (hW : W ⊆ Set.range seller) :
     RosterAssignment seller W :=
   fun i ↦ Classical.choose (exists_favourite_term hW i)
@@ -162,7 +162,7 @@ section SingleHospital
 variable {S X : Type*} (seller : X → S) (C : ChoiceFunction X)
   [∀ i, LinearOrder {x : X // seller x = i}]
 
-/-- The single-hospital market in which each worker accepts every one of their terms. -/
+/-- The single-hospital market in which each doctor accepts every one of their terms. -/
 def rosterMarket : Market Unit S X :=
   Market.ofSellerPreferences (fun _ ↦ ()) seller (fun _ ↦ C)
     (by intro b _ _ _; cases b; rfl)

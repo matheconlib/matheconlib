@@ -11,7 +11,7 @@ public import MathEconLib.Matching.Contracts.RosterStableSets
 # Supermodular hospital payoffs
 
 A hospital's unique maximizers on the improvement menus are closed under
-the workerwise worse term when its payoff is supermodular in workers' terms.
+the doctorwise worse term when its payoff is supermodular in doctors' terms.
 In the roster model these fixed choices are the stable assignments.
 -/
 

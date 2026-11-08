@@ -13,9 +13,9 @@ import Mathlib.Order.Preorder.Finite
 # Cutoff completions for roster choice
 
 Fix the hospital's roster-choice rule `R` and a family of target assignments
-on the roster selected when every worker is represented. For each offer
-menu, the cutoff completion selects workers using `R`. It keeps each
-offered term that is weakly worse for its worker than their term in every
+on the roster selected when every doctor is represented. For each offer
+menu, the cutoff completion selects doctors using `R`. It keeps each
+offered term that is weakly worse for its doctor than their term in every
 target contained in the menu. With finitely many contracts and a meet-closed
 target family, a nonempty set of eligible targets has a least element
 determining the cutoff.
@@ -30,7 +30,7 @@ open MathEconLib.Choice
 variable {S X : Type*} {seller : X → S} {R : ChoiceFunction S}
   [∀ i, LinearOrder {x : X // seller x = i}]
 
-/-- Choose the roster from represented workers and keep their terms unless a
+/-- Choose the roster from represented doctors and keep their terms unless a
 target assignment contained in the menu requires rejecting a better term. -/
 def rosterCompletion (seller : X → S) (R : ChoiceFunction S)
     [∀ i, LinearOrder {x : X // seller x = i}]
@@ -80,7 +80,7 @@ theorem rosterCompletion_terms_subset {Y : Set X}
     exact hbound A hA hAY i
 
 /-- A contract is kept at an eligible least target's cutoff exactly when it is
-offered to a roster worker and is weakly worse than their cutoff term. -/
+offered to a roster doctor and is weakly worse than their cutoff term. -/
 theorem mem_rosterCompletion_iff_of_cutoff {Y : Set X} {x : X}
     {K : RosterAssignment seller (R (Set.range seller))}
     (hR : R.Consistent) (hKT : K ∈ T) (hKY : K.terms ⊆ Y)
@@ -117,7 +117,7 @@ theorem rosterCompletion_eq_terms_on_improvementMenu
   exact (RosterAssignment.mem_terms_iff i hi).mpr
     (congrArg Subtype.val (le_antisymm (hxY i hi) hxi))
 
-/-- Shrinking a menu preserves a retained worker's roster place and can only
+/-- Shrinking a menu preserves a retained doctor's roster place and can only
 remove targets that constrain their terms. -/
 theorem rosterCompletion_substitutable (hR : R.Substitutable) :
     (rosterCompletion seller R T).Substitutable := by
