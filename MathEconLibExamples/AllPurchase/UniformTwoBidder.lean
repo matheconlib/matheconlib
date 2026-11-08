@@ -147,7 +147,7 @@ private theorem winning_probability_below (i : Fin 2) (b : ℝ) (hb : b ≤ 1 / 
     model.q_strat strategy i b = 0 := by
   have hset : {v ∈ Icc (0 : ℝ) 2 | strategy v < b} = ∅ := by
     ext v
-    simp only [mem_setOf_eq, mem_empty_iff_false, iff_false]
+    simp only [mem_ofPred_eq, mem_empty_iff_false, iff_false]
     rintro ⟨hv, hlt⟩
     dsimp [strategy] at hlt
     linarith [hv.1]
