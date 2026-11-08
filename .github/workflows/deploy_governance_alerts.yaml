@@ -40,6 +40,11 @@ jobs:
           MAIL_BRIDGE_URL: ${{ secrets.GOVERNANCE_MAIL_BRIDGE_URL }}
           MAIL_BRIDGE_SECRET: ${{ secrets.GOVERNANCE_MAIL_BRIDGE_SECRET }}
         run: node scripts/deploy-check.mjs
+      - name: Initialize the separate Worker before uploading secrets
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_MATHECON_PASS }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_MATHECON_ACCT }}
+        run: node scripts/bootstrap.mjs
       - name: Deploy a separate Worker and its scheduled backup
         uses: cloudflare/wrangler-action@v3
         with:
