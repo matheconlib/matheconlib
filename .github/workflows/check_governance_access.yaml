@@ -47,3 +47,15 @@ jobs:
             console.log(JSON.stringify({verifyEndpoint:path.startsWith('/user')?'user':'account',status:r.status}));
           }
           JS
+      - name: Verify the existing connection for the signed-in Cloudflare account
+        env:
+          GITHUB_READ_TOKEN: ${{ secrets.GOVERNANCE_READ_TOKEN }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          assert.equal(process.env.CLOUDFLARE_ACCOUNT_ID,'2d76bd1b19fcf132d3acb21c49dd7cf0','This connection is not the signed-in hosting account.');
+          console.log('SIGNED-IN CLOUDFLARE ACCOUNT MATCHED');
+          JS
+          node scripts/service-access.mjs
