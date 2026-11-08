@@ -24,38 +24,9 @@ jobs:
         with:
           node-version: 22
       - run: node --test
-      - name: Check read-only GitHub visibility and existing Cloudflare connection
-        env:
-          GITHUB_READ_TOKEN: ${{ secrets.GOVERNANCE_READ_TOKEN }}
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CF_MATHECON_PASS }}
-          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CF_MATHECON_ACCT }}
-        run: node scripts/service-access.mjs
-      - name: Identify the existing deployment token without revealing it
-        env:
-          ALERT_CF_ACCOUNT: ${{ secrets.CF_MATHECON_ACCT }}
-          ALERT_CF_TOKEN: ${{ secrets.CF_MATHECON_PASS }}
-        run: |
-          node --input-type=module <<'JS'
-          const headers = {authorization: `Bearer ${process.env.ALERT_CF_TOKEN}`};
-          for (const path of ['/user/tokens/verify', `/accounts/${process.env.ALERT_CF_ACCOUNT}/tokens/verify`]) {
-            const r = await fetch('https://api.cloudflare.com/client/v4'+path, {headers, signal: AbortSignal.timeout(20000)});
-            const data = await r.json();
-            if (r.ok && data.success) {
-              console.log(JSON.stringify({tokenId:data.result.id,status:data.result.status,kind:path.startsWith('/user')?'user':'account'}));
-              break;
-            }
-            console.log(JSON.stringify({verifyEndpoint:path.startsWith('/user')?'user':'account',status:r.status}));
-          }
-          JS
-      - name: Verify the existing connection for the signed-in Cloudflare account
+      - name: Check read-only GitHub visibility and the monitor hosting account
         env:
           GITHUB_READ_TOKEN: ${{ secrets.GOVERNANCE_READ_TOKEN }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-        run: |
-          node --input-type=module <<'JS'
-          import assert from 'node:assert/strict';
-          assert.equal(process.env.CLOUDFLARE_ACCOUNT_ID,'2d76bd1b19fcf132d3acb21c49dd7cf0','This connection is not the signed-in hosting account.');
-          console.log('SIGNED-IN CLOUDFLARE ACCOUNT MATCHED');
-          JS
-          node scripts/service-access.mjs
+        run: node scripts/service-access.mjs

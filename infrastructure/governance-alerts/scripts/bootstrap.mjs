@@ -1,11 +1,12 @@
 import assert from 'node:assert/strict';
 
-// The secrets-bulk endpoint cannot initialize a nonexistent Worker in this
-// account. Create only an inert, separately named Worker before uploading keys.
+// Initialize only the separately named Worker if it is missing. Existing
+// deployments are left untouched until the tested code and secrets are ready.
 const name = 'matheconlib-governance-alerts';
 const account = process.env.CLOUDFLARE_ACCOUNT_ID;
 const token = process.env.CLOUDFLARE_API_TOKEN;
-assert.ok(account && token, 'Cloudflare deployment connection is missing.');
+assert.ok(token, 'Cloudflare deployment connection is missing.');
+assert.equal(account, '2d76bd1b19fcf132d3acb21c49dd7cf0', 'Wrong governance-monitor hosting account.');
 const base = `https://api.cloudflare.com/client/v4/accounts/${account}/workers/scripts`;
 const headers = { authorization: `Bearer ${token}` };
 const existing = await fetch(base, { headers, signal: AbortSignal.timeout(20000), redirect: 'error' });

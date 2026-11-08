@@ -7,9 +7,25 @@ changes GitHub collaborators, rules, or pull requests.
 
 ## Current state
 
-The implementation and read-only backup have been tested locally. **Production
-email alerts and scheduled backup are not active until the activation steps
-below are completed and verified.** `GATES.md` records activation evidence.
+**Active, verified 8 November 2026.** Signed GitHub events are delivered to the
+separate `matheconlib-governance-alerts` Worker. A cloud Cron Trigger performs
+reconciliation at minutes **7, 22, 37, and 52** every hour, without an LLM or a
+running Mac. The independent local history-backup script was also tested.
+
+Production verification: GitHub ping received **HTTP 202**, confirmation email
+arrived at the work address, unsigned request rejected with **HTTP 401**, and
+a signed live reconciliation succeeded. Setup produced a monitoring-failure
+email for a fixed edge-runtime redirect issue and a subsequent recovery email.
+
+- Receiver: https://matheconlib-governance-alerts.bo-cowgill.workers.dev
+- Organization webhook: https://github.com/organizations/matheconlib/settings/hooks/709126020
+- Verified deployment: https://github.com/matheconlib/matheconlib/actions/runs/42522683121
+- Source branch: `codex/governance-email-alerts`; no merge or PR into main.
+- Read-only GitHub credential expires **6 February 2027**; renew the Actions
+  secret `GOVERNANCE_READ_TOKEN` and redeploy before then.
+- The existing `CLOUDFLARE_ACCOUNT_ID` / `CLOUDFLARE_API_TOKEN` connection matches
+  this Worker's account. The website's `CF_MATHECON_*` connection belongs to a
+  different account and is not changed or used by this deployment.
 
 The existing hourly Codex automation remains in **MEL: New Issues?** and now
 covers issue and PR follow-ups only.
@@ -44,7 +60,7 @@ restricting updates, with only these individual pull-request exceptions:
 `jjaassoonn`. The three approved Admins are Bo, Ruiz and Scott. The original
 PR/CI ruleset **25759286** is not edited.
 
-## Activation
+## Re-deployment / recovery
 
 1. Deploy `gmail/Code.gs` and `gmail/appsscript.json` as a Google Apps Script Web
    App owned by **bo.cowgill.work@gmail.com**, executing as the owner. The only
@@ -69,8 +85,9 @@ PR/CI ruleset **25759286** is not edited.
    Worker's `/webhook` endpoint. Subscribe to `repository_ruleset`, `member`,
    `membership`, `organization`, `team`, `team_add`, `repository`, and `meta`.
    Filter to the target repository in the receiver. Repository-only hooks omit
-   organization/team events. The current CLI connection lacks `admin:org_hook`;
-   an organization owner must authorize that scope or create the hook in the UI.
+   organization/team events. Changing organization webhooks requires
+   an owner connection with `admin:org_hook` or the organization settings UI.
+   That temporary CLI scope was removed after the initial hook was verified.
 5. Verify a real GitHub ping, rejection of an unsigned request, receipt of the
    test email, and a successful production reconciliation and Cron Trigger.
    Do not test by weakening production rules or granting a new Admin.
