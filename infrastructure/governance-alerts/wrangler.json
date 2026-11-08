@@ -1,0 +1,14 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "matheconlib-governance-alerts",
+  "main": "src/worker.mjs",
+  "compatibility_date": "2026-11-08",
+  "workers_dev": true,
+  "vars": {
+    "ALERT_TO": "bo.cowgill.work@gmail.com"
+  },
+  "durable_objects": { "bindings": [{ "name": "MONITOR", "class_name": "GovernanceMonitor" }] },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["GovernanceMonitor"] }],
+  "triggers": { "crons": ["7,22,37,52 * * * *"] },
+  "observability": { "enabled": true }
+}

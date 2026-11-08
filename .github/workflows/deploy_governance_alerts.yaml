@@ -1,0 +1,62 @@
+name: Deploy MathEconLib governance alerts
+
+on:
+  push:
+    branches:
+      - codex/governance-email-alerts
+      - main
+    paths:
+      - infrastructure/governance-alerts/**
+      - .github/workflows/deploy_governance_alerts.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: matheconlib-governance-alerts-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: vars.GOVERNANCE_ALERTS_READY == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: infrastructure/governance-alerts
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+      - name: Verify alert logic
+        run: node --test
+      - name: Verify deployment prerequisites
+        env:
+          GITHUB_READ_TOKEN: ${{ secrets.GOVERNANCE_READ_TOKEN }}
+          WEBHOOK_SECRET: ${{ secrets.GOVERNANCE_WEBHOOK_SECRET }}
+          BACKUP_SECRET: ${{ secrets.GOVERNANCE_BACKUP_SECRET }}
+          MAIL_BRIDGE_URL: ${{ secrets.GOVERNANCE_MAIL_BRIDGE_URL }}
+          MAIL_BRIDGE_SECRET: ${{ secrets.GOVERNANCE_MAIL_BRIDGE_SECRET }}
+        run: node scripts/deploy-check.mjs
+      - name: Deploy a separate Worker and its scheduled backup
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_MATHECON_PASS }}
+          accountId: ${{ secrets.CF_MATHECON_ACCT }}
+          wranglerVersion: 4.130.0
+          workingDirectory: infrastructure/governance-alerts
+          command: deploy
+          secrets: |
+            GITHUB_READ_TOKEN
+            WEBHOOK_SECRET
+            BACKUP_SECRET
+            MAIL_BRIDGE_URL
+            MAIL_BRIDGE_SECRET
+        env:
+          GITHUB_READ_TOKEN: ${{ secrets.GOVERNANCE_READ_TOKEN }}
+          WEBHOOK_SECRET: ${{ secrets.GOVERNANCE_WEBHOOK_SECRET }}
+          BACKUP_SECRET: ${{ secrets.GOVERNANCE_BACKUP_SECRET }}
+          MAIL_BRIDGE_URL: ${{ secrets.GOVERNANCE_MAIL_BRIDGE_URL }}
+          MAIL_BRIDGE_SECRET: ${{ secrets.GOVERNANCE_MAIL_BRIDGE_SECRET }}

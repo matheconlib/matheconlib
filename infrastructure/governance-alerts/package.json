@@ -1,0 +1,8 @@
+{
+  "name": "matheconlib-governance-alerts",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test", "check": "node scripts/check.mjs" },
+  "engines": { "node": ">=22" },
+  "devDependencies": { "wrangler": "4.130.0" }
+}
