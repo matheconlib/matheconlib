@@ -1,17 +1,23 @@
 /-
-Copyright (c) 2026 Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng, Bo Cowgill.
+All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng
+Authors: Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng, Bo Cowgill
 -/
 module
 
 public import MathEconLib.Auction.AllPurchase.Basic
 public import MathEconLib.Auction.IdenticalTypes
 public import MathEconLib.ForMathlib.FinsetUpdate
-public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
+public import MathEconLib.Auction.AllPurchase.BidderModel
 
 /-!
 # Linear scarcity in all-purchase auctions
+
+The `AllPurchaseBidderModel` parent separates seller receipts from bidder net costs. Use
+`expectedSellerRevenue β` for actual receipts and `expectedNetCost β` for net costs.
+The scalar auction is available only by explicit `toNetCostAuction` projection; its `p_strat`
+and `Auction.expectedRevenue` are bidder net costs.
 
 With scarcity `φ(B) = φ̄ − αB`, a bidder's expected net cost of purchasing `b` editions is
 `αb² + Kb`. The coefficient `K` depends on the posted price and opponents' expected purchases under
@@ -94,7 +100,7 @@ variable {n : ℕ} [NeZero n] [n.AtLeastTwo]
 
 namespace Auction
 
-variable (A : Auction Ω n) (spec : AllPurchaseSpec A.rules (fun o i => o i))
+variable (A : Auction Ω n) (spec : AllPurchaseBidderSpec A.rules)
 
 /-- Expected net cost for bidder `i` in auction `A`, using the posted unit price and scarcity
 schedule supplied by `spec`. The bidder purchases `b` editions and opponents purchase according to
@@ -111,14 +117,12 @@ end Auction
 
 /-- An all-purchase auction with `n` bidders and linear scarcity `φ(B) = φ̄ − α · B` at total
 purchases `B`. The probability space `(Ω, ℙ)` describes states, and the type random variables
-`θ i : Ω → ℝ` determine the bidders' joint type distribution. The all-purchase specification
+`θ i : Ω → ℝ` determine the bidders' joint type distribution. The auxiliary bidder specification
 supplies the posted price and scarcity schedule; `φ̄ > 0` is the schedule's intercept and `α > 0`
 is the magnitude of its negative slope. -/
 structure LinearScarcityAuction (Ω : Type) [MeasureSpace Ω]
     [IsProbabilityMeasure (ℙ : Measure Ω)] (n : ℕ)
-    extends Auction Ω n where
-  /-- Posted unit price, scarcity schedule, and the all-purchase allocation and payment rules. -/
-  spec : AllPurchaseSpec toAuction.rules (fun o i => o i)
+    extends AllPurchaseBidderModel Ω n where
   /-- Per-edition value at zero total purchases. -/
   φ_bar : ℝ
   /-- Magnitude of the negative scarcity slope: the decline in per-edition value per purchase. -/
@@ -134,12 +138,12 @@ namespace LinearScarcityAuction
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} [NeZero n] [n.AtLeastTwo]
-variable (A : LinearScarcityAuction Ω n) [A.HasIdenticalTypes]
+variable (A : LinearScarcityAuction Ω n) [A.toNetCostAuction.HasIdenticalTypes]
 
 /-- Mean purchase of bidder `0` under strategy `β`: `μ = 𝔼[β(θ₀)]`. For measurable `β`, identical
 type distributions give each bidder the same mean purchase under this common strategy. -/
 noncomputable def meanPurchase (β : ℝ → ℝ) : ℝ :=
-  𝔼[fun ω => β (A.θ 0 ω)]
+  𝔼[fun ω => β (A.toNetCostAuction.θ 0 ω)]
 
 /-- Marginal net cost at zero purchases against opponents using strategy `β`:
 `K = p − φ̄ + α(n−1)μ`, where `μ = 𝔼[β(θ₀)]` is mean purchase under `β`. -/
@@ -154,27 +158,27 @@ omit [n.AtLeastTwo] in
 strategy is measurable and each bidder's purchase is integrable. -/
 theorem expected_scarcity_linear
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.toNetCostAuction.θ j ω)) ℙ)
     (i : Fin n) (b : ℝ) :
     𝔼[fun ω => A.spec.φ <|
-      b + ∑ j ∈ univ.erase i, β (A.θ j ω)] =
+      b + ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω)] =
       A.φ_bar - A.α_coeff * (b + (↑(n - 1) : ℝ) * A.meanPurchase β) := by
   have hφ : ∀ ω, (A.spec.φ <|
-      b + ∑ j ∈ univ.erase i, β (A.θ j ω)) =
+      b + ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω)) =
       (A.φ_bar - A.α_coeff * b) +
-        (-A.α_coeff) * (∑ j ∈ univ.erase i, β (A.θ j ω)) := by
+        (-A.α_coeff) * (∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω)) := by
     intro ω
     show A.spec.φ _ = _
     have := congr_fun A.scarcity_is_linear <|
-      b + ∑ j ∈ univ.erase i, β (A.θ j ω)
+      b + ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω)
     rw [this]
     ring
   simp_rw [hφ]
-  have hS_int : Integrable (fun ω => ∑ j ∈ univ.erase i, β (A.θ j ω)) ℙ :=
+  have hS_int : Integrable (fun ω => ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω)) ℙ :=
     integrable_finsetSum _ (fun j _ => hβ_int j)
   rw [integral_add (integrable_const _) (hS_int.const_mul _),
       integral_const_mul, integral_const, probReal_univ, one_smul]
-  rw [A.expected_sum_erase β hβ_meas i hβ_int]
+  rw [A.toNetCostAuction.expected_sum_erase β hβ_meas i hβ_int]
   unfold meanPurchase
   ring
 
@@ -182,9 +186,9 @@ theorem expected_scarcity_linear
 `C(b) = α·b² + K·b`, where `K = K_linear β`. -/
 theorem allPurchaseNetCost_eq
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.toNetCostAuction.θ j ω)) ℙ)
     (i : Fin n) (b : ℝ) :
-    A.allPurchaseNetCost A.spec β i b =
+    A.toNetCostAuction.allPurchaseNetCost A.spec β i b =
       A.α_coeff * b ^ 2 + A.K_linear β * b := by
   unfold Auction.allPurchaseNetCost
   rw [A.expected_scarcity_linear β hβ_meas hβ_int i b]
@@ -197,27 +201,27 @@ theorem allPurchaseNetCost_eq
 
 /-! ## Interim bidder problem -/
 
-omit [NeZero n] [n.AtLeastTwo] [A.HasIdenticalTypes] in
+omit [NeZero n] [n.AtLeastTwo] [A.toNetCostAuction.HasIdenticalTypes] in
 /-- Bidder `i`'s interim payment for purchasing `b` against opponents using `β` equals gross
 expenditure minus expected edition value: `p·b − b·𝔼[φ(b + Σ_{j≠i} β(θⱼ))]`. -/
 theorem p_strat_eq_allPurchaseNetCost
     (β : ℝ → ℝ)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.toNetCostAuction.θ j ω)) ℙ)
     (i : Fin n) (b : ℝ) :
-    A.p_strat β i b = A.allPurchaseNetCost A.spec β i b := by
+    A.toNetCostAuction.p_strat β i b = A.toNetCostAuction.allPurchaseNetCost A.spec β i b := by
   simp only [Auction.p_strat, Auction.allPurchaseNetCost]
   simp_rw [A.spec.payment_eq, Finset.sum_update_univ, Function.update_self]
   simp_rw [show ∀ ω, (A.spec.price -
       A.spec.φ
-        (b + ∑ j ∈ univ.erase i, β (A.θ j ω))) * b =
+        (b + ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω))) * b =
     A.spec.price * b +
       (-b) * A.spec.φ
-        (b + ∑ j ∈ univ.erase i, β (A.θ j ω)) from fun _ => by ring]
+        (b + ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω)) from fun _ => by ring]
   have hφ_int : Integrable (fun ω => A.spec.φ
-      (b + ∑ j ∈ univ.erase i, β (A.θ j ω))) ℙ := by
+      (b + ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω))) ℙ := by
     simp_rw [show ∀ ω, A.spec.φ
-        (b + ∑ j ∈ univ.erase i, β (A.θ j ω)) =
-      A.φ_bar - A.α_coeff * (b + ∑ j ∈ univ.erase i, β (A.θ j ω)) from
+        (b + ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω)) =
+      A.φ_bar - A.α_coeff * (b + ∑ j ∈ univ.erase i, β (A.toNetCostAuction.θ j ω)) from
       fun ω => congr_fun A.scarcity_is_linear _]
     exact (integrable_const _).sub
       ((integrable_const_add_iff.mpr
@@ -230,21 +234,22 @@ theorem p_strat_eq_allPurchaseNetCost
 `p_strat(β, i, b) = α·b² + K·b`, where `K = K_linear β`. -/
 theorem p_strat_eq_quadratic
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.toNetCostAuction.θ j ω)) ℙ)
     (i : Fin n) (b : ℝ) :
-    A.p_strat β i b = A.α_coeff * b ^ 2 + A.K_linear β * b := by
+    A.toNetCostAuction.p_strat β i b = A.α_coeff * b ^ 2 + A.K_linear β * b := by
   rw [A.p_strat_eq_allPurchaseNetCost β hβ_int i b]
   exact A.allPurchaseNetCost_eq β hβ_meas hβ_int i b
 
 /-- Bidder `i`'s interim problem in a linear scarcity auction when opponents use strategy `β`. At
-purchase `b`, the winning probability is `A.q_strat β i b` and net cost is `α·b² + (K_linear β)·b`,
+purchase `b`, winning probability is `A.toNetCostAuction.q_strat β i b` and net cost is
+`α·b² + (K_linear β)·b`,
 so type `v` receives expected utility equal to `v` times that winning probability minus this cost.
 The bidder's prescribed strategy is also `β`. -/
 noncomputable def toQuadraticCostProblem
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.toNetCostAuction.θ j ω)) ℙ)
     (i : Fin n) : QuadraticCostProblem where
-  toBidderProblem := A.toBidderProblem A.spec.isUnitIntervalAllocation β i
+  toBidderProblem := A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i
   α_coeff := A.α_coeff
   K_param := A.K_linear β
   α_pos := A.α_pos

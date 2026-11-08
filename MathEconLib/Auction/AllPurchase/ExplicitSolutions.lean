@@ -1,7 +1,8 @@
 /-
-Copyright (c) 2026 Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng, Bo Cowgill.
+All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng
+Authors: Jujian Zhang, Scott Duke Kominers, Ruiz Chen, Daniel Lyng, Bo Cowgill
 -/
 module
 
@@ -218,18 +219,22 @@ common strategy `β` with integrable purchases satisfies
 type-deviation incentive compatible, `U(lowestType) = 0`, and `K ≥ 0`. Here `v` lies in the
 bidder's type interval, and both `β(v)` and the induced all-pay bid are nonnegative. -/
 theorem boundary_regime_strategy_auction
-    [A.HasIdenticalTypes]
+    [A.toNetCostAuction.HasIdenticalTypes]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.toNetCostAuction.θ j ω)) ℙ)
     (i : Fin n)
-    (hIC : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
-    (hBR : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
+    (hIC :
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (hBR :
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
     (hK : 0 ≤ A.K_linear β)
-    (v : ℝ) (hv : v ∈ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).typeInterval)
-    (h_bAP_nn : 0 ≤ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v)
+    (v : ℝ)
+    (hv : v ∈ (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).typeInterval)
+    (h_bAP_nn :
+      0 ≤ (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v)
     (h_strat_nn : 0 ≤ β v) :
     β v = strategyBoundary A.α_coeff (A.K_linear β)
-      ((A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
+      ((A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
   let P := A.toQuadraticCostProblem β hβ_meas hβ_int i
   let : BidderProblem.HasTypeDeviationIC P.toBidderProblem := hIC
   let : BidderProblem.IsBoundaryRegime P.toBidderProblem := hBR
@@ -242,20 +247,23 @@ bidder `i`'s induced problem is type-deviation incentive compatible, `K < 0`, an
 `U(lowestType) = K²/(4α)`. Here `v` lies in the bidder's type interval, the induced all-pay bid is
 nonnegative, and `β(v) ≥ −K/(2α)`. -/
 theorem interior_regime_strategy_auction
-    [A.HasIdenticalTypes]
+    [A.toNetCostAuction.HasIdenticalTypes]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_int : ∀ j, Integrable (fun ω => β (A.θ j ω)) ℙ)
+    (hβ_int : ∀ j, Integrable (fun ω => β (A.toNetCostAuction.θ j ω)) ℙ)
     (i : Fin n)
-    (hIC : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (hIC :
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
     (hK_neg : A.K_linear β < 0)
-    (hU_eq : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
-        (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
+    (hU_eq : (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+        (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
         (A.K_linear β) ^ 2 / (4 * A.α_coeff))
-    (v : ℝ) (hv : v ∈ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).typeInterval)
-    (h_bAP_nn : 0 ≤ (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v)
+    (v : ℝ)
+    (hv : v ∈ (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).typeInterval)
+    (h_bAP_nn :
+      0 ≤ (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v)
     (h_strat_ge : -(A.K_linear β) / (2 * A.α_coeff) ≤ β v) :
     β v = strategyInterior A.α_coeff (-(A.K_linear β))
-      ((A.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
+      ((A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).allPayBid v) := by
   let P : InteriorRegimeProblem := {
     A.toQuadraticCostProblem β hβ_meas hβ_int i with
     K_neg := hK_neg
