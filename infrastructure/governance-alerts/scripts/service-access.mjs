@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { collectSnapshot, githubReader } from '../src/github.mjs';
 import { APPROVED_ADMINS, APPROVED_POLICY, stable } from '../src/core.mjs';
-const snapshot = await collectSnapshot(githubReader(process.env.GITHUB_READ_TOKEN), [56843070]);
+const snapshot = await collectSnapshot(githubReader(process.env.GITHUB_READ_TOKEN), [56843070], { history: false });
 assert.equal(stable(snapshot.policy), stable(APPROVED_POLICY));
 assert.equal(stable(snapshot.admins), stable(APPROVED_ADMINS));
 assert.equal(snapshot.invitations.length, 0);

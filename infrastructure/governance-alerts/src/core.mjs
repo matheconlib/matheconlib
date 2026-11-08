@@ -29,7 +29,7 @@ export const APPROVED_POLICY = policy({ id: RULE_ID, target: 'branch', enforceme
   bypass_actors: MERGERS.map(([actor_id]) => ({ actor_id, actor_type: 'User', bypass_mode: 'pull_request' })) });
 export function initialState() {
   return { version: 1, observed: { policy: APPROVED_POLICY, admins: APPROVED_ADMINS, invitations: [] },
-    historyPolicy: APPROVED_POLICY, historySeen: [56843070], lastSuccessfulCheck: null, failure: null };
+    historyPolicy: APPROVED_POLICY, historySeen: [56843070], reportedRuleRevisions: [], lastSuccessfulCheck: null, failure: null };
 }
 function actorLabel(a) { return `${a.actor_type} ${names.get(a.actor_id) || a.actor_id} (${a.bypass_mode})`; }
 export function policyChanges(before, after) {
@@ -67,18 +67,24 @@ export function relevantEvent(event, body) {
   return ['member', 'membership', 'organization', 'team', 'team_add', 'repository', 'meta'].includes(event);
 }
 function notice(key, title, lines, source, now) { return { key, subject: `[MathEconLib governance] ${title}`, text: `${lines.join('\n')}\n\nSource: ${source}\nObserved: ${now}\n\nReview the change and restore the approved policy if it was unintended. This monitor does not change repository access or rules.`, createdAt: now }; }
+async function revisionId(time, p) {
+  return time && Number.isFinite(Date.parse(time)) ? digest([new Date(time).toISOString(), p]) : null;
+}
 export async function reconcile(previous, snapshot, now = new Date().toISOString()) {
   if (!snapshot || !Array.isArray(snapshot.admins) || !Array.isArray(snapshot.invitations) || !Array.isArray(snapshot.history)) throw new Error('Incomplete governance snapshot.');
   const state = structuredClone(previous), alerts = [];
+  state.reportedRuleRevisions ||= [];
   const currentPolicy = policy(snapshot.policy);
   let historyPolicy = state.historyPolicy;
   const unseen = snapshot.history.filter(h => !state.historySeen.includes(h.version_id));
   for (const h of unseen) {
     const p = policy(h.policy), changes = policyChanges(historyPolicy, p);
-    if (changes.length) alerts.push(notice(`history:${h.version_id}`, 'Merge rule changed', [
+    const revision = await revisionId(h.updated_at, p);
+    if (changes.length && (!revision || !state.reportedRuleRevisions.includes(revision))) alerts.push(notice(`history:${h.version_id}`, 'Merge rule changed', [
       ...changes, `Recorded actor: ${names.get(h.actor?.id) || h.actor?.id || 'unavailable'}; time: ${h.updated_at || 'unavailable'}.`,
       `Current policy ${stable(currentPolicy) === stable(APPROVED_POLICY) ? 'matches' : 'differs from'} the approved baseline.`,
     ], `${RULE_URL}/history`, now));
+    if (revision) state.reportedRuleRevisions.push(revision);
     historyPolicy = p;
     state.historySeen.push(h.version_id);
   }
@@ -86,8 +92,10 @@ export async function reconcile(previous, snapshot, now = new Date().toISOString
   // if the live state differs from the most recent historical state as well.
   const changes = policyChanges(state.observed.policy, currentPolicy);
   if (changes.length && (!unseen.length || stable(historyPolicy) !== stable(currentPolicy))) {
-    const key = 'policy:' + await digest([state.observed.policy, currentPolicy, state.historySeen.at(-1)]);
-    alerts.push(notice(key, 'Merge rule changed', changes, RULE_URL, now));
+    const revision = await revisionId(snapshot.ruleUpdatedAt, currentPolicy);
+    const key = 'policy:' + (revision || await digest([state.observed.policy, currentPolicy, state.historySeen.at(-1)]));
+    if (!revision || !(state.reportedRuleRevisions || []).includes(revision)) alerts.push(notice(key, 'Merge rule changed', changes, RULE_URL, now));
+    if (revision) state.reportedRuleRevisions = [...(state.reportedRuleRevisions || []), revision].slice(-2000);
   }
   state.historyPolicy = historyPolicy;
   const oldAdmins = new Map(state.observed.admins.map(a => [a.id, a]));
@@ -103,6 +111,7 @@ export async function reconcile(previous, snapshot, now = new Date().toISOString
   if (state.failure) alerts.push(notice(`recovered:${state.failure}`, 'Governance checks restored', ['Authenticated governance checks are working again.'], RULE_URL, now));
   state.observed = structuredClone({ policy: currentPolicy, admins: snapshot.admins, invitations: snapshot.invitations });
   state.historySeen = state.historySeen.slice(-2000);
+  state.reportedRuleRevisions = state.reportedRuleRevisions.slice(-2000);
   state.lastSuccessfulCheck = now;
   state.failure = null;
   return { state, alerts };
@@ -110,4 +119,37 @@ export async function reconcile(previous, snapshot, now = new Date().toISOString
 export function failureNotice(error, now) {
   // Errors from the API reader contain only paths/statuses, never response bodies or credentials.
   return notice(`failure:${error.message}`, 'Governance monitoring needs attention', [error.message, 'The previous successful checkpoint has been preserved.'], RULE_URL, now);
+}
+
+export async function applySignals(previous, receipts, now) {
+  const state = structuredClone(previous), alerts = [];
+  state.reportedRuleRevisions ||= [];
+  for (const signal of receipts) {
+    if (signal.event === 'repository_ruleset' && signal.ruleset?.id === RULE_ID) {
+      let after;
+      try { after = signal.action === 'deleted' ? null : policy(signal.ruleset); } catch { after = undefined; }
+      const substantive = Object.keys(signal.changes || {}).some(k => k !== 'name');
+      const nameOnly = Object.keys(signal.changes || {}).length > 0 && !substantive;
+      const revision = after !== undefined ? await revisionId(signal.ruleset.updated_at, after) : null;
+      if (revision && state.reportedRuleRevisions.includes(revision)) continue;
+      const changes = after === undefined ? (nameOnly ? [] : ['GitHub reported a ruleset edit; the event omits the full bypass list. Review its current configuration.']) : policyChanges(state.observed.policy, after);
+      if (changes.length && (!revision || !state.reportedRuleRevisions.includes(revision))) {
+        alerts.push(notice(`webhook:${signal.id}`, 'Merge rule changed', [...changes,
+          `GitHub event: ${signal.action}; actor: @${signal.actor || 'unavailable'}.`], RULE_URL, now));
+      }
+      if (revision) state.reportedRuleRevisions.push(revision);
+      if (after !== undefined) state.observed.policy = after;
+    }
+    const granted = signal.permissionTo === 'admin' && signal.member?.id;
+    if (signal.event === 'member' && granted && !state.observed.admins.some(a => a.id === signal.member.id)) {
+      const a = { id: signal.member.id, login: signal.member.login };
+      state.observed.admins.push(a);
+      alerts.push(notice(`webhook:${signal.id}`, 'New Admin access', [
+        `GitHub reported an Admin grant to @${a.login}. Previous permission: ${signal.permissionFrom || 'unavailable'}.`,
+        `Recorded actor: @${signal.actor || 'unavailable'}. The authenticated snapshot will verify current access.`,
+      ], ACCESS_URL, now));
+    }
+  }
+  state.reportedRuleRevisions = state.reportedRuleRevisions.slice(-2000);
+  return { state, alerts };
 }

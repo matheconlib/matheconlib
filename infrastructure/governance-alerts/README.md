@@ -18,18 +18,21 @@ covers issue and PR follow-ups only.
 
 - A Cloudflare Worker validates GitHub's SHA-256 HMAC signature and queues each
   accepted event in a durable object. Unrelated repositories are ignored.
-- The durable object reads the actual ruleset, history, effective main rules,
+- The durable object reads the actual ruleset, effective main rules,
   all collaborators including inherited access, and pending invitations.
 - Changes to the seven-person merge allowlist, governing rule, and effective
   Admin access or pending Admin invitations become persistent pending emails.
   The initial approved state is quiet. Name-only edits and ordinary Write
-  invitations are quiet. History catches intervening rule edits and reversals.
+  invitations are quiet. Signed rule-change payloads record intervening edits
+  and reversals. Direct Admin grants with an explicit destination permission
+  are recorded even when revoked before the next snapshot.
 - A send-only Google Apps Script bridge sends to the single fixed recipient.
   It requires a signed, timestamped request; it does not read the inbox or
   accept an arbitrary recipient. Its durable message IDs suppress retries.
 - A Cloudflare Cron Trigger runs the same authenticated reconciliation every
   fifteen minutes. `scripts/check.mjs` is also an independent local backup:
-  it uses the existing `gh` login without exporting that personal credential.
+  it uses the existing `gh` login without exporting that personal credential
+  and can additionally inspect the ruleset history.
   Signed uploads never advance a local checkpoint before acknowledgment.
 - Failed or partial GitHub reads preserve the last successful checkpoint;
   monitoring failures and recoveries are emailed once per material transition.
@@ -86,10 +89,16 @@ performs authenticated live reads, prints only a summary, and sends no email.
 
 ## Limits
 
+GitHub's history API requires Administration **write** even for GET requests.
+The cloud credential deliberately remains read-only and does not call that
+endpoint. The optional local backup can read history using the existing login.
+
 GitHub webhooks are near real time, not a delivery-time guarantee. API snapshots
 are not atomic. Without an accessible audit-event feed, an Admin grant that is
-revoked before both the event-triggered read and backup check may be missed.
-Rule history covers intervening ruleset edits while that history is accessible.
+revoked before both the event-triggered read and backup check may be missed
+when its event does not include the resulting role. Rule changes whose event
+omits the full bypass list are flagged for inspection. The local history check
+can recover missed rule edits while that history is accessible.
 There is a narrow at-least-once email edge case if a sender succeeds but crashes
 before its deduplication write. Expired credentials or mail quotas produce a
 monitoring failure, not an empty access list. No paid plan is purchased and no

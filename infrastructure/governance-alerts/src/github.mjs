@@ -11,7 +11,7 @@ export function githubReader(token, fetcher = fetch) {
     return { status: r.status, data: await r.json(), next: r.headers.get('link')?.match(/<([^>]+)>; rel="next"/)?.[1] };
   };
 }
-export async function collectSnapshot(read, known = []) {
+export async function collectSnapshot(read, known = [], options = { history: true }) {
   async function list(path) {
     const rows = [], visited = new Set();
     for (let next = path; next;) {
@@ -33,6 +33,7 @@ export async function collectSnapshot(read, known = []) {
     if (rules.some(r => r.id === RULE_ID)) throw new Error('Ruleset exists but its configuration could not be read.');
   } else {
     currentPolicy = policy(raw.data);
+    if (options.history) {
     const versions = await list(`${root}/rulesets/${RULE_ID}/history?per_page=100`);
     if (known.length && !versions.some(h => known.includes(h.version_id))) throw new Error('Ruleset history has a coverage gap; manual reconciliation required.');
     const newVersions = [];
@@ -41,6 +42,7 @@ export async function collectSnapshot(read, known = []) {
       const r = await read(`${root}/rulesets/${RULE_ID}/history/${v.version_id}`);
       history.push({ ...v, policy: policy(r.data?.state) });
     }
+    }
   }
   // This read verifies the endpoint is usable, but does not mistake an expanded
   // effective-rules response for the raw bypass actor list.
@@ -48,7 +50,8 @@ export async function collectSnapshot(read, known = []) {
   const collaborators = await list(`${root}/collaborators?affiliation=all&per_page=100`);
   if (collaborators.some(a => typeof a.permissions?.admin !== 'boolean')) throw new Error('Collaborator permissions are incomplete.');
   const invitations = await list(`${root}/invitations?per_page=100`);
-  return { policy: currentPolicy,
+  return { policy: currentPolicy, ruleUpdatedAt: raw.data?.updated_at || null,
+    historyCoverage: options.history ? 'ruleset-history' : 'signed-webhooks-and-snapshots',
     admins: collaborators.filter(a => a.permissions.admin).map(({ id, login }) => ({ id, login })),
     invitations: invitations.filter(i => ['admin', 'administer'].includes(i.permissions)).map(i => ({ id: i.id, login: i.invitee?.login })), history };
 }

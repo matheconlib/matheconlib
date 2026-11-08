@@ -1,4 +1,4 @@
-import { REPO, RULE_URL, digest, failureNotice, initialState, reconcile, relevantEvent, sign, validSignature } from './core.mjs';
+import { REPO, RULE_URL, applySignals, digest, failureNotice, initialState, reconcile, relevantEvent, sign, validSignature } from './core.mjs';
 import { collectSnapshot, githubReader } from './github.mjs';
 
 const json = (body, status = 200) => Response.json(body, { status, headers: { 'Cache-Control': 'no-store' } });
@@ -49,7 +49,10 @@ export default {
       if (!id || !/^[a-zA-Z0-9-]{1,80}$/.test(id)) return json({ error: 'Missing delivery ID.' }, 400);
       if (!allowedEvents.has(event) || !relevantEvent(event, body)) return json({ ignored: true });
       return stub(env).fetch('https://monitor.internal/event', { method: 'POST', body: JSON.stringify({ id,
-        event, action: body.action, actor: body.sender?.login, test: event === 'ping' }) });
+        event, action: body.action, actor: body.sender?.login, test: event === 'ping', ruleset: body.repository_ruleset,
+        changes: body.changes, member: body.member ? { id: body.member.id, login: body.member.login } : undefined,
+        permissionFrom: body.changes?.permission?.from || body.changes?.old_permission?.from,
+        permissionTo: body.changes?.permission?.to }) });
     }
     // Timestamped admin requests prevent an old signed snapshot being replayed.
     const age = Date.now() - Date.parse(body.capturedAt);
@@ -118,17 +121,25 @@ export class GovernanceMonitor {
   async run() {
     const now = new Date().toISOString();
     let state = await this.ctx.storage.get('state') || initialState();
+    const receipts = await this.ctx.storage.list({ prefix: 'receipt:' });
+    const pending = [...receipts.values()].filter(r => !r.processed).sort((a, b) => a.receivedAt.localeCompare(b.receivedAt));
+    if (pending.length) {
+      const events = await applySignals(state, pending, now);
+      await this.commit(events); state = events.state;
+      for (const [key, receipt] of receipts) if (!receipt.processed && !receipt.test) await this.ctx.storage.put(key, { ...receipt, processed: true });
+    }
     try {
-      const snapshot = await collectSnapshot(githubReader(this.env.GITHUB_READ_TOKEN), state.historySeen);
+      // GitHub requires Administration WRITE for historical revisions. Keep
+      // the cloud token read-only; signed events preserve intervening edits.
+      const snapshot = await collectSnapshot(githubReader(this.env.GITHUB_READ_TOKEN), state.historySeen, { history: false });
       const result = await reconcile(state, snapshot, now);
       await this.commit(result);
       state = result.state;
-      const receipts = await this.ctx.storage.list({ prefix: 'receipt:' });
-      for (const [key, receipt] of receipts) {
-        if (!receipt.processed && receipt.test) await this.enqueue({ key: `github-ping:${receipt.id}`,
+      for (const receipt of pending) {
+        if (receipt.test) await this.enqueue({ key: `github-ping:${receipt.id}`,
           subject: '[MathEconLib governance] GitHub webhook connected',
           text: `GitHub delivered a signed webhook ping. Authenticated baseline checks completed at ${now}.\n\n${RULE_URL}`, createdAt: now });
-        if (!receipt.processed) await this.ctx.storage.put(key, { ...receipt, processed: true });
+        if (receipt.test) await this.ctx.storage.put(`receipt:${receipt.id}`, { ...receipt, processed: true });
       }
     } catch (error) {
       const alert = failureNotice(error, now);

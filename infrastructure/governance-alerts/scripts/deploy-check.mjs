@@ -11,7 +11,7 @@ assert.notEqual(process.env.WEBHOOK_SECRET, process.env.BACKUP_SECRET, 'Keep web
 const bridge = new URL(process.env.MAIL_BRIDGE_URL);
 assert.equal(bridge.origin, 'https://script.google.com');
 assert.ok(bridge.pathname.endsWith('/exec'));
-const snapshot = await collectSnapshot(githubReader(process.env.GITHUB_READ_TOKEN), [56843070]);
+const snapshot = await collectSnapshot(githubReader(process.env.GITHUB_READ_TOKEN), [56843070], { history: false });
 assert.equal(stable(snapshot.policy), stable(APPROVED_POLICY), 'The current merge policy differs from the approved baseline; review before activation.');
 assert.equal(stable(snapshot.admins), stable(APPROVED_ADMINS), 'Admin accounts differ from the approved baseline; review before activation.');
 assert.equal(snapshot.invitations.length, 0, 'Review pending Admin invitations before activation.');

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { APPROVED_ADMINS, APPROVED_POLICY, initialState, policy, policyChanges, reconcile, relevantEvent, sign, validSignature } from '../src/core.mjs';
+import { APPROVED_ADMINS, APPROVED_POLICY, applySignals, initialState, policy, policyChanges, reconcile, relevantEvent, sign, validSignature } from '../src/core.mjs';
 import { collectSnapshot, githubReader } from '../src/github.mjs';
 import worker, { GovernanceMonitor, sendEmail } from '../src/worker.mjs';
 import vm from 'node:vm';
@@ -142,6 +142,44 @@ test('partial collaborator access fails without advancing any state', async () =
 test('reader prevents credential forwarding to pagination URLs outside GitHub', async () => {
   let calls = 0; const read = githubReader('do-not-disclose', async () => { calls++; });
   await assert.rejects(read('https://example.com/steal'), /non-GitHub/); assert.equal(calls, 0);
+});
+test('read-only cloud snapshots do not call GitHub history endpoints requiring write access', async () => {
+  const { read, calls } = fakeReader();
+  await collectSnapshot(read, [56843070], { history: false });
+  assert.equal(calls.some(x => x.includes('/history')), false);
+});
+test('signed rule events preserve a transient change and restoration without a history API', async () => {
+  const disabled = { ...copy(APPROVED_POLICY), enforcement: 'disabled', updated_at: '2026-11-08T20:00:01Z' };
+  const restored = { ...copy(APPROVED_POLICY), updated_at: '2026-11-08T20:00:02Z' };
+  const events = await applySignals(initialState(), [{ id: 'a', event: 'repository_ruleset', action: 'edited', ruleset: disabled },
+    { id: 'b', event: 'repository_ruleset', action: 'edited', ruleset: restored }], now);
+  assert.equal(events.alerts.length, 2);
+  assert.equal((await reconcile(events.state, snapshot(), now)).alerts.length, 0);
+  const duplicate = await applySignals(events.state, [{ id: 'a', event: 'repository_ruleset', action: 'edited', ruleset: disabled }], now);
+  assert.equal(duplicate.alerts.length, 0); assert.deepEqual(duplicate.state.observed.policy, APPROVED_POLICY);
+  const history = snapshot(); history.history = [
+    { version_id: 11, policy: disabled, updated_at: disabled.updated_at },
+    { version_id: 12, policy: restored, updated_at: restored.updated_at }];
+  assert.equal((await reconcile(events.state, history, now)).alerts.length, 0);
+});
+test('an ordinary event followed by its live snapshot sends one alert', async () => {
+  const p = { ...copy(APPROVED_POLICY), enforcement: 'disabled', updated_at: now };
+  const events = await applySignals(initialState(), [{ id: 'a', event: 'repository_ruleset', action: 'edited', ruleset: p }], now);
+  assert.equal(events.alerts.length, 1);
+  const s = snapshot(p); s.ruleUpdatedAt = now;
+  assert.equal((await reconcile(events.state, s, now)).alerts.length, 0);
+});
+test('an incomplete rule event alerts safely, while a known name-only edit stays quiet', async () => {
+  const rule = { id: 26805968, updated_at: now };
+  assert.equal((await applySignals(initialState(), [{ id: 'a', event: 'repository_ruleset', action: 'edited', ruleset: rule }], now)).alerts.length, 1);
+  assert.equal((await applySignals(initialState(), [{ id: 'b', event: 'repository_ruleset', action: 'edited', ruleset: rule, changes: { name: { from: 'old' } } }], now)).alerts.length, 0);
+});
+test('a direct Admin-grant event is reported even if the grant is already revoked at the snapshot', async () => {
+  const event = { id: 'new-admin', event: 'member', action: 'edited', member: { id: 99, login: 'temporary-admin' }, permissionTo: 'admin', permissionFrom: 'write' };
+  const events = await applySignals(initialState(), [event], now);
+  assert.equal(events.alerts.length, 1);
+  const result = await reconcile(events.state, snapshot(), now);
+  assert.equal(result.alerts.length, 1); assert.match(result.alerts[0].subject, /revoked/);
 });
 test('mail bridge authenticates requests and requires a matching acknowledgment', async () => {
   const env = { MAIL_BRIDGE_URL: 'https://script.google.com/macros/s/test/exec', MAIL_BRIDGE_SECRET: 'secret' };
