@@ -25,3 +25,5 @@ public import MathEconLib.Matching.Contracts.RuralHospitals
 public import MathEconLib.Matching.Contracts.StableFixedPoints
 public import MathEconLib.Matching.Contracts.StableOrder
 public import MathEconLib.Matching.Contracts.WeakSubstitutes
+public import MathEconLib.Matching.Continuum
+public import MathEconLib.Matching.PartnerComparisons
