@@ -16,6 +16,7 @@ public import MathEconLib.Auction.AllPurchase.UniformDistribution
 public import MathEconLib.Auction.AllPurchase.WelfareDecomposition
 public import MathEconLib.Auction.Basic
 public import MathEconLib.Auction.IdenticalTypes
+public import MathEconLib.Auction.PaymentUniqueness
 public import MathEconLib.Auction.RevenueEquivalence
 public import MathEconLib.Auction.StrictMonotonicity
 public import MathEconLib.Auction.SymmetricIPV
@@ -27,6 +28,7 @@ public import MathEconLib.BidderProblem.EnvelopeIC
 public import MathEconLib.BidderProblem.TypeDeviationIC
 public import MathEconLib.BidderProblem.UniversalIC
 public import MathEconLib.Choice
+public import MathEconLib.Choice.Attainment
 public import MathEconLib.Choice.Basic
 public import MathEconLib.Choice.Conditions
 public import MathEconLib.Choice.FiniteOption
@@ -36,7 +38,10 @@ public import MathEconLib.Choice.Matching.Completion
 public import MathEconLib.Choice.Matching.Preferences
 public import MathEconLib.Choice.Matching.Relationships
 public import MathEconLib.Choice.Matching.WeakSubstitutability
+public import MathEconLib.Choice.Maximizers
 public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.Choice.WeakPreferences
+public import MathEconLib.Competition.Cournot.Linear
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
 public import MathEconLib.ForMathlib.Data.PartialMatching
@@ -51,6 +56,7 @@ public import MathEconLib.ForMathlib.MeasureTheory.VonNeumannSelection
 public import MathEconLib.ForMathlib.Order.FixedPointLattice
 public import MathEconLib.ForMathlib.Order.IterateFiniteSet
 public import MathEconLib.ForMathlib.Order.IterateFixedPoint
+public import MathEconLib.ForMathlib.Order.Refinement
 public import MathEconLib.ForMathlib.ProbabilityMeasure
 public import MathEconLib.ForMathlib.Quasiconvex
 public import MathEconLib.ForMathlib.Schauder
@@ -95,6 +101,7 @@ public import MathEconLib.Matching.Contracts.WeakSubstitutes
 public import MathEconLib.Mechanism
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 public import MathEconLib.Mechanism.Auctions.Allocation
+public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.Comap
@@ -103,6 +110,12 @@ public import MathEconLib.Mechanism.Core.Mechanism
 public import MathEconLib.Mechanism.Core.Profile
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import MathEconLib.Mechanism.Core.Strategic
+public import MathEconLib.Preferences
+public import MathEconLib.Preferences.Basic
+public import MathEconLib.Preferences.Complete
+public import MathEconLib.Preferences.Refinement
+public import MathEconLib.Preferences.Representation.Basic
+public import MathEconLib.Preferences.Representation.Finite
 public import MathEconLib.Probability.FinDist.Basic
 public import MathEconLib.Probability.FinDist.ConditionalOn
 public import MathEconLib.Probability.FinDist.Expect
