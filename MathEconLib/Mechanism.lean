@@ -7,6 +7,7 @@ Authors: Ruiz Chen, Scott Duke Kominers, Daniel Lyng, Jujian Zhang, Bo Cowgill
 module
 
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
+public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.SolutionConcepts
@@ -48,6 +49,9 @@ equilibrium under the stated analytic hypotheses.
 * `DirectMechanism.Quasilinear.IsBIC.isBNE`: Full-space pointwise BIC gives a truthful Bayesian
   equilibrium.
 * `Mechanism.inducedBayesianGame_comap`: Translating mechanism actions translates its Bayesian game.
+
+First-and-second-pay auctions are specified and implemented in
+`MathEconLib.Mechanism.Auctions.FirstAndSecondPay`.
 
 ## Tags
 
