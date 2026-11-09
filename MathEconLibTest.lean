@@ -1,6 +1,7 @@
 import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
+import MathEconLibTest.Auction.PaymentUniqueness
 import MathEconLibTest.Auction.SignalValueEnv
 import MathEconLibTest.Auction.SignalWeights
 import MathEconLibTest.Choice.Attainment
@@ -36,6 +37,7 @@ import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
 import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core
+import MathEconLibTest.Mechanism.FirstAndSecondPay
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
 import MathEconLibTest.Mechanism.TruthfulNash
