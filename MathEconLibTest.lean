@@ -19,6 +19,8 @@ import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
 import MathEconLibTest.GameTheory.ConditionalBeliefs
+import MathEconLibTest.GameTheory.ExplicitComparisonValidity
+import MathEconLibTest.GameTheory.ExplicitComparisons
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
 import MathEconLibTest.GameTheory.MatchingPennies
