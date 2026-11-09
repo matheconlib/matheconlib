@@ -16,6 +16,16 @@ as many rounds as contracts, regardless of history-dependent scheduling or tie s
 A valid deterministic policy reaches economic exhaustion within that bound. No fairness,
 substitutability, IRC, or feasibility assumption is used. The selected raw outcome need not
 be a feasible matching.
+
+## Main definitions
+
+`execute` constructs a bounded policy execution; `rawOutcome` is its held contract set.
+
+## Main statements
+
+`Run.length_le_card` bounds productive rounds on finite contract types.
+`execute_terminal` and `rawOutcome_isOutcome` require validity only along policy-following runs.
+Terminal histories following the same policy yield the same raw outcome.
 -/
 
 @[expose] public section
@@ -64,19 +74,6 @@ theorem execute_succ_of_not_terminal (π : Policy X) (n : ℕ)
   classical
   simp only [execute, ite_eq_right ht]
 
-/-- Execution of a valid policy produces a valid run. -/
-theorem execute_run {π : Policy X} (hp : P.ValidPolicy π) (n : ℕ) :
-    P.Run (P.execute π n) := by
-  induction n with
-  | zero => exact .nil
-  | succ n ih =>
-    classical
-    by_cases ht : P.Terminal (offers (P.execute π n))
-    · rw [P.execute_succ_of_terminal π n ht]
-      exact ih
-    · rw [P.execute_succ_of_not_terminal π n ht]
-      exact .cons ih (hp _ ih ht)
-
 /-- Execution uses the policy's own choices. -/
 theorem execute_follows (π : Policy X) (n : ℕ) :
     Follows π (P.execute π n) := by
@@ -89,6 +86,19 @@ theorem execute_follows (π : Policy X) (n : ℕ) :
       exact ih
     · rw [P.execute_succ_of_not_terminal π n ht]
       exact ⟨ih, rfl⟩
+
+/-- Execution of a valid policy produces a valid run. -/
+theorem execute_run {π : Policy X} (hp : P.ValidPolicy π) (n : ℕ) :
+    P.Run (P.execute π n) := by
+  induction n with
+  | zero => exact .nil
+  | succ n ih =>
+    classical
+    by_cases ht : P.Terminal (offers (P.execute π n))
+    · rw [P.execute_succ_of_terminal π n ht]
+      exact ih
+    · rw [P.execute_succ_of_not_terminal π n ht]
+      exact .cons ih (hp _ ih (P.execute_follows π n) ht)
 
 /-- Before exhaustion, execution has performed every requested round. -/
 theorem execute_length_or_terminal (π : Policy X) (n : ℕ) :
@@ -111,7 +121,7 @@ theorem execute_terminal [Finite X] {π : Policy X} (hp : P.ValidPolicy π) :
   have hn := (P.execute_length_or_terminal π (Nat.card X)).resolve_right ht
   have hr := P.execute_run hp (Nat.card X)
   have hnext : P.Run (π (P.execute π (Nat.card X)) :: P.execute π (Nat.card X)) :=
-    .cons hr (hp _ hr ht)
+    .cons hr (hp _ hr (P.execute_follows π (Nat.card X)) ht)
   have hb := hnext.length_le_card P
   simp only [List.length_cons] at hb
   exact (Nat.not_succ_le_self (Nat.card X)) ((Nat.succ_le_succ hn).trans hb)
@@ -192,4 +202,3 @@ theorem rawOutcome_eq_iff [Finite X] {π : Policy X} (hp : P.ValidPolicy π) (Z 
     exact (hr.heldContracts_eq_rawOutcome P hf ht).symm.trans hZ
 
 end MathEconLib.Matching.CumulativeOffer.CumulativeOfferProcess
-

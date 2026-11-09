@@ -53,8 +53,7 @@ John William Hatfield and Fuhito Kojima (2010), *Substitutes and Stability for M
 with Contracts*, Journal of Economic Theory 145(5), 1704–1723, §2.3.
 https://doi.org/10.1016/j.jet.2010.01.007.
 This module generalizes the sequential cumulative offer process to accommodate weak preferences and
-batched proposals. Source correspondence, stability, and incentive theorems are separate work
-under #139.
+batched proposals.
 
 Hatfield and Milgrom (2005), *Matching with Contracts*, American Economic Review 95(4),
 913–935, §§II–III. https://doi.org/10.1257/0002828054825466.
@@ -64,6 +63,15 @@ Hatfield, Kominers, and Westkamp, *Stability, Strategy-Proofness, and Cumulative
 Mechanisms*, July 30, 2015 working-paper version, §§2.3 and 3 (published in Review of Economic
 Studies 88(3), 2021, 1457–1502, https://doi.org/10.1093/restud/rdaa052).
 The proposal condition refers to a proposer having no contract currently held.
+
+## Main definitions
+
+`CumulativeOfferProcess`, `Admissible`, `ValidBatch`, `Run`, and `Outcome` describe
+process data, productive batches, histories, and terminal held contract sets.
+
+## Main statements
+
+`validBatch_singleton_iff` characterizes singleton proposals; valid batches add fresh offers.
 -/
 
 @[expose] public section
@@ -88,7 +96,8 @@ structure CumulativeOfferProcess (B S X : Type*) where
 variable {B S X : Type*}
 
 /-- Use an existing market's incidence and buyer choices. The supplied preferences determine
-proposals; the market's seller choice functions are not used by this raw cumulative offer process. -/
+proposals; the market's seller choice functions are not used by this raw cumulative offer
+process. -/
 def ofMarket (M : Market B S X)
     (pref : ∀ s, CompletePreference (Option {x : X // M.seller x = s})) :
     CumulativeOfferProcess B S X :=
@@ -133,7 +142,8 @@ def remaining (A : Set X) (s : S) : Set (P.Own s) :=
   {x | x.val ∉ A ∧ (P.pref s).lt none (some x)}
 
 /-- A seller is eligible to propose if no contract involving it is currently held and it has
-an unoffered strictly acceptable contract. Eligibility does not assert attainment of a best offer. -/
+an unoffered strictly acceptable contract. Eligibility does not assert attainment of a
+best offer. -/
 def Eligible (A : Set X) (s : S) : Prop :=
   P.NoHeldContract A s ∧ (P.remaining A s).Nonempty
 

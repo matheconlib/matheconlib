@@ -2,6 +2,9 @@ import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
 import MathEconLibTest.Auction.SignalValueEnv
+import MathEconLibTest.Auction.SignalWeights
+import MathEconLibTest.Choice.Attainment
+import MathEconLibTest.Choice.AttainmentPublicImport
 import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
@@ -12,6 +15,7 @@ import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
+import MathEconLibTest.GameTheory.CandidateValidity
 import MathEconLibTest.GameTheory.ConditionalBeliefs
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
@@ -26,8 +30,11 @@ import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.CumulativeOffer
+import MathEconLibTest.Matching.CumulativeOfferAttainment
 import MathEconLibTest.Matching.CumulativeOfferInvariants
 import MathEconLibTest.Matching.PublicImport
+import MathEconLibTest.Matching.SellerParticipation
+import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
 import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core

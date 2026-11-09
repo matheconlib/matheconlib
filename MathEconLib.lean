@@ -27,6 +27,7 @@ public import MathEconLib.BidderProblem.EnvelopeIC
 public import MathEconLib.BidderProblem.TypeDeviationIC
 public import MathEconLib.BidderProblem.UniversalIC
 public import MathEconLib.Choice
+public import MathEconLib.Choice.Attainment
 public import MathEconLib.Choice.Basic
 public import MathEconLib.Choice.Conditions
 public import MathEconLib.Choice.FiniteOption
@@ -88,6 +89,7 @@ public import MathEconLib.Matching.Classical.Marriage.StableOrder
 public import MathEconLib.Matching.Classical.Marriage.ToContracts
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Attainment
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Basic
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Invariants
 public import MathEconLib.Matching.Contracts.CumulativeOffer.Policies
