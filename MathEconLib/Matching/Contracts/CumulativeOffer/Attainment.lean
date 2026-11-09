@@ -17,6 +17,16 @@ The outside option is always feasible in the induced option choice. With a prior
 that ranks it first within its indifference class, it is optimal exactly when no
 strictly acceptable contract remains. This characterizes terminality for unheld
 sellers and leaves eligibility and relational admissibility unchanged.
+
+## Main definitions
+
+`unofferedOwnMenu` retains the full own-contract menu before acceptability filtering.
+
+## Main statements
+
+`mem_tieBreak_optionChoice_iff` identifies refined proposals.
+`Eligible.exists_validSingleton_of_hasBundleOptimum` supplies a valid step under attainment.
+`Eligible.not_hasBundleOptimum_of_optionChoice_eq_empty` diagnoses nonattainment.
 -/
 
 @[expose] public section
@@ -117,6 +127,19 @@ theorem mem_tieBreak_optionChoice_iff [LinearOrder U] (A : Set X) (s : S)
         exact hyacc ((P.pref s).not_le.mp hnle)
       have hyx := (P.pref s).toPreference.lt_of_le_of_lt hy0 hacc
       exact ⟨hyx.1, fun htie ↦ (hyx.2 htie.2).elim⟩
+
+/-- At an eligible seller's menu, empty refined choice means failure of attainment.
+This distinguishes nonattainment from optimal nonparticipation without finiteness. -/
+theorem Eligible.not_hasBundleOptimum_of_optionChoice_eq_empty [LinearOrder U]
+    {A : Set X} {s : S} (h : P.Eligible A s)
+    (priority : Option (P.Own s) ↪ U) (hnone : ∀ x, priority (some x) ≤ priority none)
+    (hempty : ofOptionLinearOrder ((P.pref s).tieBreak priority)
+      (P.unofferedOwnMenu A s) = ∅) :
+    ¬ HasBundleOptimum ((P.pref s).tieBreak priority) optionBundle
+      (P.unofferedOwnMenu A s) := by
+  intro hatt
+  have hout := (ofOptionLinearOrder_eq_empty_iff_of_hasBundleOptimum _ hatt).mp hempty
+  exact (P.outsideOptionOptimal_tieBreak_iff A s priority hnone).mp hout h.2
 
 /-- An eligible seller with an attained refined optimum can take a singleton step.
 No finiteness of the seller set or contract type is required. -/

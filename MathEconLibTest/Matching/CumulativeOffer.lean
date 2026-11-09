@@ -130,7 +130,7 @@ example : ([{1}, {2}, {0}] : List (Set (Fin 3))).length ≤ Nat.card (Fin 3) :=
 /-- Finite policy execution yields a terminal outcome through the public matching umbrella. -/
 example (priority : LinearOrder (Fin 3)) :
     market.Outcome (market.rawOutcome (liftStatePolicy (market.fixedOrder priority))) :=
-  market.rawOutcome_isOutcome ((market.fixedOrder_valid priority).lift market)
+  market.rawOutcome_isOutcome ((market.fixedOrder_valid_of_finite priority).lift market)
 
 /-- Empty contracts exhaust immediately, with no assumption on buyer choice functions. -/
 example (P : CumulativeOfferProcess Bool Bool Empty) : P.Terminal ∅ := by
@@ -145,6 +145,27 @@ def sequentialPolicy : Policy (Fin 3) := fun h =>
 
 theorem sequential_follows : Follows sequentialPolicy [{1}, {2}, {0}] := by
   simp [Follows, sequentialPolicy]
+
+/-- The history-dependent recall policy is valid along its own histories. -/
+theorem sequentialPolicy_valid : market.ValidPolicy sequentialPolicy := by
+  intro h hr hf ht
+  have hlen : h.length ≤ 3 := by simpa using hr.length_le_card market
+  cases h with
+  | nil => exact first
+  | cons Q h =>
+    rcases hf with ⟨hf, rfl⟩
+    cases h with
+    | nil => simpa [sequentialPolicy, offers] using second
+    | cons R h =>
+      rcases hf with ⟨hf, rfl⟩
+      cases h with
+      | nil => simpa [sequentialPolicy, offers] using third
+      | cons T h =>
+        rcases hf with ⟨hf, rfl⟩
+        cases h with
+        | nil =>
+          exact (ht (by simpa [sequentialPolicy] using both_terminal.1)).elim
+        | cons U h => simp only [List.length_cons] at hlen; omega
 
 /-- The raw outcome bridge applies even when the terminal held contracts are infeasible. -/
 example : market.rawOutcome sequentialPolicy = {0, 1, 2} :=

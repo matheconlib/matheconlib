@@ -3,8 +3,9 @@ Copyright (c) 2026 Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Bo Cowgill
 -/
+module
 
-import MathEconLib.Matching
+public import MathEconLib.Matching
 
 /-!
 # Attainment boundaries for cumulative offers
@@ -13,6 +14,8 @@ The same countable carrier gives a finite unoffered menu, a tie with the outside
 option, and two infinite menus without a refined optimum. Only the infinite menu
 with weak maximizers still permits a relational proposal.
 -/
+
+public section
 
 namespace MathEconLibTest.Matching.CumulativeOfferAttainment
 
@@ -54,16 +57,6 @@ private theorem tied_weakBest (x : tied.Own ()) :
   ⟨⟨by simp, Nat.zero_le _, Nat.not_le_of_gt Nat.one_pos⟩,
     fun {_} _ ↦ (le_rfl : (1 : ℕ) ≤ 1)⟩
 
-private theorem noOptimumOfEmpty (P : CumulativeOfferProcess Unit Unit ℕ)
-    (h : P.Eligible ∅ ()) (hempty :
-      ofOptionLinearOrder (P.proposalOrder inferInstance ()) (P.unofferedOwnMenu ∅ ()) = ∅) :
-    ¬ HasBundleOptimum (P.proposalOrder inferInstance ()) optionBundle
-      (P.unofferedOwnMenu ∅ ()) := by
-  intro hatt
-  have hout := (ofOptionLinearOrder_eq_empty_iff_of_hasBundleOptimum _ hatt).mp hempty
-  exact (P.outsideOptionOptimal_tieBreak_iff ∅ () (P.proposalPriority ())
-    (fun _ ↦ le_top)).mp hout h.2
-
 -- The single unoffered contract attains even though the contract type is infinite.
 example : ∃ x, increasing.seller x = () ∧ increasing.ValidBatch {n | n ≠ 0} {x} := by
   let A : Set ℕ := {n | n ≠ 0}
@@ -100,7 +93,8 @@ example : ¬ increasing.Terminal ∅ ∧ (∀ Q, ¬ increasing.ValidBatch ∅ Q)
     ¬ HasBundleOptimum (increasing.proposalOrder inferInstance ()) optionBundle
       (increasing.unofferedOwnMenu ∅ ()) := by
   have h := increasing_eligible ∅ (by simp)
-  refine ⟨fun ht ↦ ht () h, ?_, noOptimumOfEmpty increasing h ?_⟩
+  refine ⟨fun ht ↦ ht () h, ?_, h.not_hasBundleOptimum_of_optionChoice_eq_empty increasing
+      (increasing.proposalPriority ()) (fun _ ↦ le_top) ?_⟩
   · intro Q hQ
     obtain ⟨x, hx⟩ := hQ.1
     obtain ⟨s, y, _, _, hy⟩ := hQ.2.1 x hx
@@ -118,7 +112,8 @@ example : ¬ tied.Terminal ∅ ∧ tied.ValidBatch ∅ {0} ∧
   let zero : tied.Own () := ⟨0, rfl⟩
   have h : tied.Eligible ∅ () := ⟨noHeld _ ∅ (), zero, (tied_weakBest zero).1⟩
   refine ⟨fun ht ↦ ht () h, (tied.validBatch_singleton_iff ∅ 0).mpr
-    ⟨(), zero, rfl, h.1, tied_weakBest zero⟩, noOptimumOfEmpty tied h ?_⟩
+    ⟨(), zero, rfl, h.1, tied_weakBest zero⟩, h.not_hasBundleOptimum_of_optionChoice_eq_empty tied
+      (tied.proposalPriority ()) (fun _ ↦ le_top) ?_⟩
   apply Set.eq_empty_iff_forall_notMem.mpr
   intro x hx
   let y : tied.Own () := ⟨x.val + 1, rfl⟩
@@ -132,5 +127,33 @@ example {B S X : Type*} [Finite X] (P : CumulativeOfferProcess B S X)
     Subtype.val '' ofOptionLinearOrder (P.proposalOrder priority s) (P.unofferedOwnMenu A s) =
       {P.selectOffer priority A s h} :=
   P.ofOptionLinearOrder_proposalOrder_eq_singleton_selectOffer priority A s h
+
+-- Infinitely many sellers, each with one contract: local attainment suffices for batching.
+/-- An infinite market with one contract per seller. -/
+@[expose] def singletonMenus : CumulativeOfferProcess Unit ℕ ℕ where
+  buyer _ := ()
+  seller := id
+  choiceB _ := ⟨fun _ ↦ ∅, fun _ ↦ Set.empty_subset _⟩
+  pref _ := CompletePreference.ofUtility (fun o ↦ o.elim 0 (fun _ ↦ (1 : ℕ)))
+
+theorem singletonMenus_simultaneous_valid :
+    singletonMenus.ValidStatePolicy (singletonMenus.simultaneous inferInstance) := by
+  apply singletonMenus.simultaneous_valid_of_finite_menus
+  intro A s _
+  apply (Set.finite_singleton (⟨s, rfl⟩ : singletonMenus.Own s)).subset
+  intro x _
+  exact Set.mem_singleton_iff.mpr (Subtype.ext x.property)
+
+-- Per-seller finite menus do not provide a globally greatest admissible proposal.
+example : ¬ ∃ x, singletonMenus.Admissible ∅ x ∧
+    ∀ y, singletonMenus.Admissible ∅ y → y ≤ x := by
+  have had (n : ℕ) : singletonMenus.Admissible ∅ n := by
+    refine ⟨n, ⟨n, rfl⟩, rfl, ?_, ?_⟩
+    · rintro x ⟨b, hx⟩
+      exact hx.elim
+    · exact ⟨⟨by simp, Nat.zero_le _, Nat.not_le_of_gt Nat.one_pos⟩,
+        fun {_} _ ↦ (le_rfl : (1 : ℕ) ≤ 1)⟩
+  rintro ⟨x, _, hx⟩
+  exact Nat.not_succ_le_self x (hx (x + 1) (had (x + 1)))
 
 end MathEconLibTest.Matching.CumulativeOfferAttainment
