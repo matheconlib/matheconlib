@@ -5,6 +5,7 @@ Authors: Scott Duke Kominers
 -/
 module
 
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Invariants
 public import MathEconLib.Matching.Classical.Marriage
 public import MathEconLib.Matching.Classical.Marriage.Basic
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance

@@ -31,6 +31,7 @@ import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.CumulativeOffer
 import MathEconLibTest.Matching.CumulativeOfferAttainment
+import MathEconLibTest.Matching.CumulativeOfferInvariants
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.SellerParticipation
 import MathEconLibTest.Matching.SellerParticipationPublicImport
