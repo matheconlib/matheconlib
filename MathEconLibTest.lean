@@ -54,6 +54,8 @@ import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.RevealedPreference.Compatibility
 import MathEconLibTest.RevealedPreference.Examples
 import MathEconLibTest.RevealedPreference.Geometry
+import MathEconLibTest.RevealedPreference.WGARP
+import MathEconLibTest.RevealedPreference.WGARPCompatibility
 import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility

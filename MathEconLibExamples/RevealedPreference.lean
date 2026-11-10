@@ -22,8 +22,9 @@ Both observed expenditures equal `6`; the cross-expenditures `4` and `6` violate
 Consequently this dataset has no regular utility rationalization.
 
 A third dataset has no prohibited pairwise reversal but violates GARP along a
-three-observation cycle. The pairwise condition is stated explicitly; no general
-WGARP theory is imported.
+three-observation cycle. The pairwise condition is stated explicitly here;
+`MathEconLibExamples.RevealedPreference.WGARP` applies the WGARP characterization
+to these same data.
 
 These are exact illustrative data, not empirical estimates. Rationalization permits ties.
 The numerical examples are adapted from Victor H. Aguiar's Apache-2.0

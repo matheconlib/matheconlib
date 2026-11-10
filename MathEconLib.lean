@@ -131,6 +131,12 @@ public import MathEconLib.RevealedPreference.AfriatGeometry
 public import MathEconLib.RevealedPreference.Basic
 public import MathEconLib.RevealedPreference.Choice
 public import MathEconLib.RevealedPreference.GARP
+public import MathEconLib.RevealedPreference.WGARP
+public import MathEconLib.RevealedPreference.WGARP.Basic
+public import MathEconLib.RevealedPreference.WGARP.Characterization
+public import MathEconLib.RevealedPreference.WGARP.Choice
+public import MathEconLib.RevealedPreference.WGARP.FiniteCMU
+public import MathEconLib.RevealedPreference.WGARP.Pairwise
 public import MathEconLib.SingleParameter
 public import MathEconLib.SingleParameter.Basic
 public import MathEconLib.SingleParameter.EnvelopeIC
