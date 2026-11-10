@@ -11,6 +11,11 @@ public import MathEconLib.SocialChoice.Basic
 # Dictatorship
 
 A rule with a dictator is Pareto and IIA on every domain (Osborne and Rubinstein, Section 20.3).
+
+## Main statements
+
+* `IsDictatorOn.isParetoOn`: a rule with a dictator satisfies the Pareto property.
+* `IsDictatorOn.isIIAOn`: a rule with a dictator is independent of irrelevant alternatives.
 -/
 
 @[expose] public section
@@ -21,7 +26,7 @@ open MathEconLib.Preferences
 
 universe u v
 
-variable {N : Type u} {X : Type v} {F : SocialWelfareFunction N X} {D : Set (Profile N X)}
+variable {N : Type u} {X : Type v} {F : SocialWelfareFunction N X} {D : Set (Profile N fun _ => X)}
   {i : N}
 
 /-- A rule with a dictator satisfies the Pareto property. -/
