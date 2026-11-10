@@ -49,8 +49,8 @@ import MathEconLibTest.Mechanism.Utility
 import MathEconLibTest.Namespace
 import MathEconLibTest.Preferences.Basic
 import MathEconLibTest.Preferences.Complete
+import MathEconLibTest.Preferences.Profile
 import MathEconLibTest.Preferences.PublicImport
-import MathEconLibTest.Preferences.Relation
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.RevealedPreference.Compatibility
 import MathEconLibTest.RevealedPreference.Examples

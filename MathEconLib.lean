@@ -119,10 +119,8 @@ public import MathEconLib.Preferences.Basic
 public import MathEconLib.Preferences.Complete
 public import MathEconLib.Preferences.Profile
 public import MathEconLib.Preferences.Refinement
-public import MathEconLib.Preferences.Relation
 public import MathEconLib.Preferences.Representation.Basic
 public import MathEconLib.Preferences.Representation.Finite
-public import MathEconLib.Preferences.Representation.Relation
 public import MathEconLib.Probability.FinDist.Basic
 public import MathEconLib.Probability.FinDist.ConditionalOn
 public import MathEconLib.Probability.FinDist.Expect
