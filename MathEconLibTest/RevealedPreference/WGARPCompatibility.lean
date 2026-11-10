@@ -46,9 +46,14 @@ example {L : ℕ} {T : Type*} [Finite T] (D : Dataset L T) :
         ∀ t y, (∀ i, 0 ≤ y i) →
           expenditure D t y ≤ expenditure D t (D.choice t) →
             0 ≤ r (D.choice t) y := by
+  have hnonnegative (y : Bundle L) : Nonnegative y ↔ ∀ i, 0 ≤ y i := Iff.rfl
+  have hdominance (x z : Bundle L) :
+      StrictDominates x z ↔ (∀ i, z i ≤ x i) ∧ x ≠ z := by
+    rw [strictDominates_iff_lt, lt_iff_le_and_ne]
+    exact ⟨fun h => ⟨h.1, Ne.symm h.2⟩, fun h => ⟨h.1, Ne.symm h.2⟩⟩
   simpa only [HasRegularPreferenceRationalization, ContinuousPreference,
-    StrictlyIncreasingFirst, StrictDominates, Asymmetric, PreferenceRationalizes,
-    Affordable, Nonnegative, and_imp] using
+    StrictlyIncreasingFirst, hdominance, Asymmetric, PreferenceRationalizes,
+    Affordable, hnonnegative, and_imp] using
       wgarp_iff_hasRegularPreferenceRationalization D
 
 -- Necessity requires no finite sample, continuity, or concavity assumption.
