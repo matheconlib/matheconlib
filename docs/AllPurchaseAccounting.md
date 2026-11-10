@@ -20,13 +20,16 @@ This repair follows the report and proposed fix by
 
 - `purchases (M.outcome b) = b`, so valuations can observe the purchased editions;
 - `M.transfer i b = -(spec.price * b i)`, so payments to the seller are gross expenditure;
-- the existing strictly highest purchaser allocation rule, positive price, and continuous,
-  strictly decreasing scarcity schedule.
+- the existing strictly highest purchaser allocation rule and a positive posted price.
 
-Use `spec.environment` to include prize value and resale value in the bidder's valuation.
-`spec.utility_eq` gives the net-cost utility formula. `spec.revenue_eq` gives actual receipts
+The monetary specification contains no resale schedule or valuation regularity assumptions.
+Use `spec.environment φ` to include prize value and a supplied resale value in the bidder's
+valuation. The same `M` and `spec` can be paired with different schedules, including constant
+ones. This can change bidder utility while leaving the mechanism's transfers and receipts fixed.
+
+`spec.utility_eq φ` gives the net-cost utility formula. `spec.revenue_eq` gives actual receipts
 `p * B`, and `spec.price_unique` identifies the posted price when there is at least one bidder.
-`spec.netCost` is expenditure less resale value; `spec.payment_eq` now gives gross expenditure.
+`spec.netCost φ` is expenditure less resale value; `spec.payment_eq` gives gross expenditure.
 
 ## Scalar bidder analysis and revenue API
 
@@ -34,6 +37,10 @@ The scalar `Auction` carrier represents prize-only values. Existing all-purchase
 quadratic-cost, and envelope calculations use `AllPurchaseBidderSpec` to represent bidder net
 costs. `AllPurchaseBidderModel` packages that auxiliary calculation with its price and scarcity
 specification, with no automatic conversion to a generic `Auction`.
+This is an **interim compatibility adapter**. Its replacement analysis is tracked in
+[#272](https://github.com/matheconlib/matheconlib/issues/272); its API pins preserve the current
+boundary while that design is developed. `AllPurchaseBidderSpec` retains the resale schedule and
+regularity assumptions for the existing valuation-dependent analysis.
 
 For an adapter `A`, the public financial methods have distinct names:
 
@@ -51,6 +58,8 @@ net costs. In particular, `A.expectedNetCost id` agrees with the raw auction's t
 value. At the specification level, `spec.utility_toMechanism` and
 `spec.preference_toMechanism` prove that the actual mechanism and auxiliary model give every
 bidder the same utility and deviation comparisons on the unchanged real action domain.
+These identities are pointwise at every profile and deviation. They do not themselves assert
+an interim incentive-compatibility result; the shared interim construction is separately scoped.
 
 `expectedSellerRevenue_eq` gives posted price times expected purchases under the same strategy.
 `sellerRevenue_integrable` proves receipt integrability from integrable individual purchases.
@@ -58,11 +67,20 @@ The bridges in `RevenueDecomposition.lean` connect these APIs to the existing gr
 net-payment formulas. Revenue decomposition, profit comparison, and welfare-moment results keep
 their economic hypotheses and conclusions.
 
+The seller-side functions retained in the `Auction` namespace take the auxiliary `spec`
+explicitly: their receipts and profit describe `spec.toMechanism`. The scalar auction alone does
+not determine the monetary posted price. `sellerGrossRevenue_eq_integral_revenue_comap` and
+`bundledProfit_eq_integral_profit` identify actual receipts and receipts less production
+expenditure under the same supplied strategy. Integrability is needed for finite expectations.
+
 ## Migration
 
 Code constructing a monetary `AllPurchaseSpec` must add the purchases projection and
 `purchases_eq`, and change transfers to gross expenditure. Pair the mechanism with
-`spec.environment` to preserve bidder utility. A transfer-only edit changes the game.
+`spec.environment φ` using the same resale schedule to preserve bidder utility. A transfer-only
+edit changes the game. Remove `φ`, `φ_continuous`, and `φ_strictAnti` from monetary-specification
+constructors; pass `φ` to `environment`, `resaleValue`, `netCost`, and `utility_eq` instead.
+Regularity assumptions stay with the valuation-dependent bidder model or theorems that need them.
 
 Code using the old scalar net-cost specification should use `AllPurchaseBidderSpec A.rules`.
 Package the scalar auction and specification as an `AllPurchaseBidderModel` when exposing it to

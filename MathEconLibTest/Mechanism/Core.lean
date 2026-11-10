@@ -135,8 +135,8 @@ lemma postedPrice_purchase :
       postedPriceMechanism.payment () (fun _ => true) = 1 := by
   norm_num [postedPriceMechanism, MathEconLib.Mechanism.payment]
 
-/-- Two bidders purchase editions at posted price two, with per-edition resale value equal to minus
-aggregate purchases. The outcome records both purchase quantities. -/
+/-- Two bidders purchase editions at posted price two. The outcome records both quantities,
+independently of the resale valuation later paired with this mechanism. -/
 noncomputable def twoBidderAllPurchase :
     MathEconLib.Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ) where
   outcome b := b
@@ -146,15 +146,11 @@ noncomputable def twoBidderAllPurchase :
 noncomputable def twoBidderAllocation (b : Fin 2 → ℝ) (i : Fin 2) : ℝ :=
   {r | ∀ j ≠ i, r j < r i}.indicator 1 b
 
-/-- Price two and the negative identity scarcity schedule specify the two-bidder all-purchase
-mechanism. -/
+/-- Price two, prize allocation and the purchase record specify the monetary mechanism. -/
 noncomputable def twoBidderAllPurchaseSpec :
     AllPurchaseSpec twoBidderAllPurchase twoBidderAllocation id where
   price := 2
   price_pos := by norm_num
-  φ := fun total => -total
-  φ_continuous := continuous_id.neg
-  φ_strictAnti := fun _ _ h => neg_lt_neg h
   usesStrictHighestBidAllocation _ := rfl
   purchases_eq _ := rfl
   transfer_eq _ _ := rfl

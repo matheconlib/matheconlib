@@ -10,7 +10,11 @@ public import MathEconLib.Mechanism.Auctions.Allocation
 public import MathEconLib.Mechanism.Core.Comap
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import Mathlib.Algebra.BigOperators.Ring.Finset
-public import Mathlib.Topology.Instances.Real.Lemmas
+public import Mathlib.Algebra.Order.BigOperators.Group.Finset
+import Mathlib.Tactic.Linarith
+import Mathlib.Tactic.Ring
+
+/- Adapted from Auctionlib/Mechanism/AllPurchase.lean (commit 384acbf). -/
 
 /-!
 # All-purchase specification
@@ -20,15 +24,32 @@ wins a separate prize; highest ties award no prize. Outcomes record prize shares
 The seller charges `price * b i`. Resale value `φ(B) * b i` belongs in the bidder's valuation of
 the outcome, rather than in a designer-to-bidder transfer.
 
-The paired `environment` gives utility equal to prize value plus resale value less purchase
-expenditure. `netCost` is expenditure less resale value; it is not the seller's receipts.
+The paired `environment φ` gives utility equal to prize value plus resale value less purchase
+expenditure. The resale schedule is an environment parameter, independent of the monetary rules.
+Neither its continuity nor strict decrease is required by this specification. `netCost φ` is
+expenditure less resale value; it is not the seller's receipts.
 `revenue_eq` identifies actual receipts as `price * ∑ i, b i`. Purchases remain real-valued:
 nonnegative receipts require nonnegative total purchases, and global no-deficit is proved only
 after restricting actions to nonnegative purchases. This accounting repair imposes no no-arbitrage
 condition on the scarcity schedule and makes no equilibrium-existence claim.
 
-Adapted from Auctionlib/Mechanism/AllPurchase.lean (commit 384acbf). The separation of receipts and
-resale value follows the repair proposed by @yoshiki-pramaana in issue #239.
+## Main definitions
+
+* `AllPurchaseSpec`: posted price, prize allocation, purchase record and monetary transfers.
+* `IsAllPurchase`: existence of this monetary specification, without a valuation schedule.
+* `AllPurchaseSpec.environment`: prize and resale valuations for a supplied schedule.
+* `AllPurchaseSpec.netCost`: purchase expenditure less resale value.
+
+## Main statements
+
+* `AllPurchaseSpec.utility_eq`: the pointwise utility identity for the supplied resale schedule.
+* `AllPurchaseSpec.revenue_eq`: monetary receipts are price times total purchases.
+* `AllPurchaseSpec.price_unique`: the mechanism identifies price when there is a bidder.
+* `AllPurchaseSpec.isNoDeficit_nonnegative`: no-deficit on nonnegative purchases.
+
+## Tags
+
+all-purchase, mechanism, monetary transfers, resale valuation, seller revenue
 -/
 
 @[expose] public section
@@ -45,12 +66,6 @@ structure AllPurchaseSpec {I : Type u} [Fintype I] {O : Type w}
   price : ℝ
   /-- The posted unit price is positive. -/
   price_pos : 0 < price
-  /-- Per-edition resale value as a function of total purchases. -/
-  φ : ℝ → ℝ
-  /-- The scarcity schedule is continuous. -/
-  φ_continuous : Continuous φ
-  /-- The scarcity schedule is strictly decreasing. -/
-  φ_strictAnti : StrictAnti φ
   /-- The unique strictly highest purchaser wins, with no prize awarded at highest ties. -/
   usesStrictHighestBidAllocation : UsesStrictHighestBidAllocation M alloc
   /-- The chosen outcome records each bidder's purchases. -/
@@ -78,23 +93,28 @@ theorem isUnitIntervalAllocation (spec : AllPurchaseSpec M alloc purchases) :
     IsUnitIntervalAllocation M alloc :=
   spec.usesStrictHighestBidAllocation.isUnitIntervalAllocation
 
-/-- Resale proceeds are the value of the editions recorded in the outcome. -/
-def resaleValue (spec : AllPurchaseSpec M alloc purchases) (o : O) (i : I) : ℝ :=
-  spec.φ (∑ j, purchases o j) * purchases o i
+/-- The supplied resale schedule values the editions recorded in the outcome.
+No regularity of the schedule is needed to define this valuation. -/
+def resaleValue (_spec : AllPurchaseSpec M alloc purchases) (φ : ℝ → ℝ)
+    (o : O) (i : I) : ℝ :=
+  φ (∑ j, purchases o j) * purchases o i
 
-/-- Private outcome valuations include both the prize and the purchased editions. -/
-def environment (spec : AllPurchaseSpec M alloc purchases) :
+/-- Private outcome valuations include the prize and the supplied resale value of purchases.
+The same monetary mechanism can be paired with different resale schedules. -/
+def environment (spec : AllPurchaseSpec M alloc purchases) (φ : ℝ → ℝ) :
     Mechanism.QuasilinearEnvironment I (fun _ ↦ ℝ) O :=
   Mechanism.QuasilinearEnvironment.ofPrivate fun i s o ↦
-    s * alloc o i + spec.resaleValue o i
+    s * alloc o i + spec.resaleValue φ o i
 
 /-- Net cost to a bidder, including resale value, differs from the payment to the seller. -/
-def netCost (spec : AllPurchaseSpec M alloc purchases) (i : I) (b : I → ℝ) : ℝ :=
-  (spec.price - spec.φ (∑ j, b j)) * b i
+def netCost (spec : AllPurchaseSpec M alloc purchases) (φ : ℝ → ℝ) (i : I) (b : I → ℝ) : ℝ :=
+  (spec.price - φ (∑ j, b j)) * b i
 
 /-- The outcome valuation restores the net-cost utility formula. -/
-theorem utility_eq (spec : AllPurchaseSpec M alloc purchases) (i : I) (θ b : I → ℝ) :
-    spec.environment.utility M i θ b = θ i * alloc (M.outcome b) i - spec.netCost i b := by
+theorem utility_eq (spec : AllPurchaseSpec M alloc purchases) (φ : ℝ → ℝ)
+    (i : I) (θ b : I → ℝ) :
+    (spec.environment φ).utility M i θ b =
+      θ i * alloc (M.outcome b) i - spec.netCost φ i b := by
   simp only [environment, Mechanism.QuasilinearEnvironment.ofPrivate,
     Mechanism.QuasilinearEnvironment.utility, resaleValue, spec.purchases_eq,
     spec.transfer_eq, netCost]

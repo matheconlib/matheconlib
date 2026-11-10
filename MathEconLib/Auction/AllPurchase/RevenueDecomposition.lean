@@ -40,6 +40,7 @@ quantity. Under linear scarcity, the benchmark is the interior stationary Courno
 * `Auction.revenue_decomposition`: the three-term gross-revenue identity (Proposition 6.10).
 * `Auction.bundling_revenue_gain`: the profit difference when lowest-type utility is zero
   (Corollary 6.11).
+* `Auction.bundledProfit_eq_integral_profit`: profit of the specified monetary mechanism.
 * `LinearScarcityAuction.bundling_revenue_gain_of_isBoundaryRegime`: the profit comparison at the
   linear-scarcity benchmark quantity.
 
@@ -79,7 +80,9 @@ noncomputable def aggregateBid (β : ℝ → ℝ) : Ω → ℝ :=
 noncomputable def expectedAggregateBid (β : ℝ → ℝ) : ℝ :=
   𝔼[A.aggregateBid β]
 
-/-- Seller's gross revenue at price `p` under strategy `β`: `𝔼[p · B] = p · 𝔼[B]`. -/
+/-- Gross monetary receipts of `spec.toMechanism` under the common strategy `β`.
+The scalar auction alone does not determine the posted price or these receipts. This definition
+remains in `Auction` for compatibility and uses a totalized integral. -/
 noncomputable def sellerGrossRevenue (β : ℝ → ℝ) : ℝ :=
   spec.price * A.expectedAggregateBid β
 
@@ -87,8 +90,8 @@ noncomputable def sellerGrossRevenue (β : ℝ → ℝ) : ℝ :=
 noncomputable def expectedEditionValue (β : ℝ → ℝ) : ℝ :=
   𝔼[fun ω => A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)]
 
-/-- Expected total net receipts `𝔼[∑ᵢ tᵢ(β·θ)]`. For an all-purchase auction, these equal
-`𝔼[(p − φ(B)) · B]`: gross receipts less the value of the purchased editions. -/
+/-- Expected aggregate bidder net cost in the auxiliary scalar auction.
+With `spec`, this equals `𝔼[(p − φ(B)) · B]`, not `spec.toMechanism`'s monetary receipts. -/
 noncomputable def expectedNetPayment (β : ℝ → ℝ) : ℝ :=
   𝔼[fun ω => ∑ i, A.rules.payment i (fun j => β (A.θ j ω))]
 
@@ -121,7 +124,7 @@ omit [NeZero n] [n.AtLeastTwo] in
 /-- The auxiliary scalar model computes bidder net costs of the actual mechanism. -/
 theorem expectedNetPayment_eq_integral_netCost (β : ℝ → ℝ) :
     A.expectedNetPayment β =
-      𝔼[fun ω ↦ ∑ i, spec.toSpec.netCost i (fun j ↦ β (A.θ j ω))] := by
+      𝔼[fun ω ↦ ∑ i, spec.toSpec.netCost spec.φ i (fun j ↦ β (A.θ j ω))] := by
   simp only [expectedNetPayment, spec.payment_eq, AllPurchaseSpec.netCost,
     AllPurchaseBidderSpec.toSpec]
 
@@ -149,15 +152,27 @@ all-pay benchmark bids. -/
 noncomputable def allPayBenchmarkProfit : ℝ :=
   (n : ℝ) * A.expectedAllPayBid
 
-/-- Editions-only profit `Π_B = (p − c) · B_ed` at the supplied total quantity `B_ed`, price `p`,
-and unit production cost `c`. -/
+/-- Editions-only profit `Π_B = (p − c) · B_ed` using `spec`'s monetary posted price and supplied
+quantity `B_ed` and unit production cost `c`. The scalar auction alone does not determine price. -/
 noncomputable def editionsOnlyBenchmarkProfit (c B_ed : ℝ) : ℝ :=
   (spec.price - c) * B_ed
 
-/-- Bundled all-purchase profit `Π_C = (p − c) · 𝔼[B]` under strategy `β`, with unit production
-cost `c`. -/
+/-- Profit of `spec.toMechanism` under strategy `β`, less unit production cost `c` per purchase.
+The scalar auction alone does not determine this profit. This definition remains in `Auction`
+for compatibility; `bundledProfit_eq_integral_profit` identifies the monetary interpretation. -/
 noncomputable def bundledProfit (β : ℝ → ℝ) (c : ℝ) : ℝ :=
   (spec.price - c) * A.expectedAggregateBid β
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- Bundled profit is the specified monetary mechanism's receipts less production expenditure
+under the same strategy. This totalized identity needs integrable purchases for a finite expected
+profit interpretation. -/
+theorem bundledProfit_eq_integral_profit (β : ℝ → ℝ) (c : ℝ) :
+    A.bundledProfit spec β c =
+      𝔼[fun ω ↦ spec.toMechanism.revenue (fun j ↦ β (A.θ j ω)) -
+        c * ∑ j, β (A.θ j ω)] := by
+  simp_rw [spec.toSpec.revenue_eq, ← sub_mul]
+  exact (integral_const_mul _ _).symm
 
 /-! ### `bidThreshold` identity under strict monotonicity -/
 

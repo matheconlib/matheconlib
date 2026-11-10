@@ -9,6 +9,8 @@ module
 public import MathEconLib.Auction.Basic
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 
+/- Scalar net-cost formula adapted from Auctionlib/Mechanism/AllPurchase.lean (commit 384acbf). -/
+
 /-!
 # All-purchase bidder models
 
@@ -18,18 +20,38 @@ auxiliary model of bidders' incentives: its `Mechanism.revenue` and `Auction.exp
 net costs, not the seller's monetary receipts.
 
 `toMechanism` constructs the actual all-purchase mechanism, recording both prize shares and
-purchases and charging gross expenditure. Its `AllPurchaseSpec.environment` includes resale value.
+purchases and charging gross expenditure. Its `AllPurchaseSpec.environment spec.φ` includes resale
+value. The schedule and its regularity belong to this valuation-aware auxiliary model; they are
+absent from the monetary `AllPurchaseSpec`.
 `utility_toMechanism` proves that this mechanism and environment reproduce every bidder utility
-of the auxiliary scalar model, including at deviations. No action-domain restriction is imposed.
+of the auxiliary scalar model, including at deviations. This is a pointwise identity; an interim
+incentive connection requires a separate construction. No action-domain restriction is imposed.
 
 `AllPurchaseBidderModel` packages this scalar model without a coercion to `Auction`. Use
 `expectedSellerRevenue β` for actual receipts and `expectedNetCost β` for bidder net costs.
 Both require an explicit strategy. Access to the raw auction and its misleading revenue name
 requires the deliberate `toNetCostAuction` projection.
 
-The net-cost formula is adapted from Auctionlib/Mechanism/AllPurchase.lean (commit 384acbf).
-The separation of receipts and resale value repairs the accounting issue reported by
-@yoshiki-pramaana in https://github.com/matheconlib/matheconlib/issues/239.
+This scalar adapter is an interim compatibility layer; the shared-analysis design is tracked in
+[#272](https://github.com/matheconlib/matheconlib/issues/272).
+
+## Main definitions
+
+* `AllPurchaseBidderSpec`: the auxiliary scalar net-cost model and its resale schedule.
+* `AllPurchaseBidderSpec.toMechanism`: the monetary mechanism with a purchase record.
+* `AllPurchaseBidderModel`: an explicit interim adapter without a coercion to `Auction`.
+* `AllPurchaseBidderModel.expectedSellerRevenue` and `expectedNetCost`: strategy-explicit integrals.
+
+## Main statements
+
+* `AllPurchaseBidderSpec.utility_toMechanism`: pointwise utility agreement at every profile.
+* `AllPurchaseBidderSpec.preference_toMechanism`: pointwise agreement of deviation comparisons.
+* `AllPurchaseBidderModel.sellerRevenue_eq`: actual monetary receipts at any purchase profile.
+* `AllPurchaseBidderModel.sellerRevenue_integrable`: integrable purchases give finite receipts.
+
+## Tags
+
+all-purchase, bidder model, interim adapter, net cost, monetary receipts
 -/
 
 @[expose] public section
@@ -38,8 +60,8 @@ namespace MathEconLib.Mechanism.Auctions
 
 universe u
 
-/-- Scalar bidder model with net costs. The monetary mechanism is `toMechanism`; the revenue of
-this auxiliary model is not seller revenue. -/
+/-- Interim scalar bidder model with net costs and resale valuations. The monetary mechanism is
+`toMechanism`; revenue of this auxiliary model is not seller revenue. -/
 structure AllPurchaseBidderSpec {I : Type u} [Fintype I]
     (M : Mechanism I (fun _ ↦ ℝ) (I → ℝ)) where
   /-- Positive posted unit price. -/
@@ -90,9 +112,6 @@ def toSpec (spec : AllPurchaseBidderSpec M) :
     AllPurchaseSpec spec.toMechanism Outcome.prize Outcome.purchases where
   price := spec.price
   price_pos := spec.price_pos
-  φ := spec.φ
-  φ_continuous := spec.φ_continuous
-  φ_strictAnti := spec.φ_strictAnti
   usesStrictHighestBidAllocation := spec.usesStrictHighestBidAllocation
   purchases_eq _ := rfl
   transfer_eq _ _ := rfl
@@ -102,19 +121,20 @@ def prizeEnvironment :
     Mechanism.QuasilinearEnvironment I (fun _ ↦ ℝ) (I → ℝ) :=
   Mechanism.QuasilinearEnvironment.ofPrivate fun i s o ↦ s * o i
 
-/-- Moving resale from net costs into outcome value preserves utility at every action profile. -/
+/-- Moving resale from net costs into outcome value preserves utility at every action profile.
+This pointwise identity does not itself state an interim incentive-compatibility result. -/
 theorem utility_toMechanism (spec : AllPurchaseBidderSpec M) (i : I) (θ b : I → ℝ) :
-    spec.toSpec.environment.utility spec.toMechanism i θ b =
+    (spec.toSpec.environment spec.φ).utility spec.toMechanism i θ b =
       prizeEnvironment.utility M i θ b := by
   change θ i * M.outcome b i + spec.φ (∑ j, b j) * b i + -(spec.price * b i) =
     θ i * M.outcome b i + M.transfer i b
   rw [spec.transfer_eq]
   ring
 
-/-- All preferences over deviations agree on the unchanged action domain. -/
+/-- Pointwise preferences over deviations agree on the unchanged action domain. -/
 theorem preference_toMechanism (spec : AllPurchaseBidderSpec M) (i : I) (θ b c : I → ℝ) :
-    (spec.toSpec.environment.utility spec.toMechanism i θ b ≤
-        spec.toSpec.environment.utility spec.toMechanism i θ c) ↔
+    ((spec.toSpec.environment spec.φ).utility spec.toMechanism i θ b ≤
+        (spec.toSpec.environment spec.φ).utility spec.toMechanism i θ c) ↔
       prizeEnvironment.utility M i θ b ≤ prizeEnvironment.utility M i θ c := by
   rw [spec.utility_toMechanism, spec.utility_toMechanism]
 
@@ -126,7 +146,7 @@ namespace MathEconLib
 
 open MeasureTheory ProbabilityTheory Mechanism.Auctions
 
-/-- An all-purchase bidder model with an explicit escape hatch to the auxiliary net-cost auction.
+/-- An interim all-purchase adapter with an explicit projection to the auxiliary net-cost auction.
 There is no coercion to `Auction`: seller receipts and bidder net costs have distinct APIs. -/
 structure AllPurchaseBidderModel (Ω : Type) [MeasureSpace Ω]
     [IsProbabilityMeasure (ℙ : Measure Ω)] (n : ℕ) where
@@ -143,8 +163,8 @@ variable {n : ℕ} (A : AllPurchaseBidderModel Ω n)
 /-- The monetary mechanism records purchases and charges gross expenditure. -/
 def toMechanism := A.spec.toMechanism
 
-/-- The monetary mechanism's valuations include prize value and resale value. -/
-def environment := A.spec.toSpec.environment
+/-- The paired environment includes prize value and this bidder model's resale schedule. -/
+def environment := A.spec.toSpec.environment A.spec.φ
 
 /-- Actual seller receipts at the supplied purchase profile. -/
 def sellerRevenue (b : Fin n → ℝ) : ℝ := A.toMechanism.revenue b
@@ -157,7 +177,7 @@ noncomputable def expectedSellerRevenue (β : ℝ → ℝ) : ℝ :=
 /-- Expected total bidder net cost under the supplied common strategy, including resale value.
 This is not seller revenue. The integral is totalized. -/
 noncomputable def expectedNetCost (β : ℝ → ℝ) : ℝ :=
-  𝔼[fun ω ↦ ∑ i, A.spec.toSpec.netCost i (fun j ↦ β (A.toNetCostAuction.θ j ω))]
+  𝔼[fun ω ↦ ∑ i, A.spec.toSpec.netCost A.spec.φ i (fun j ↦ β (A.toNetCostAuction.θ j ω))]
 
 /-- Actual receipts equal posted price times total purchases. -/
 theorem sellerRevenue_eq (b : Fin n → ℝ) :

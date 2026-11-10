@@ -417,7 +417,15 @@ end Affiliation
 
 /-! ## All-purchase auctions -/
 
--- All-purchase adapters require explicit access to the raw net-cost auction.
+-- A monetary specification accepts an independent resale valuation without regularity hypotheses.
+example {I : Type} [Fintype I] {O : Type}
+    {M : MathEconLib.Mechanism I (fun _ ↦ ℝ) O} {alloc purchases : O → I → ℝ}
+    (spec : AllPurchaseSpec M alloc purchases) (φ : ℝ → ℝ) :
+    (spec.environment φ).value =
+      fun i θ o ↦ θ i * alloc o i + φ (∑ j, purchases o j) * purchases o i := rfl
+
+-- Interim all-purchase adapter pins, pending the shared-analysis replacement in #272.
+-- These compatibility pins require explicit access to the raw net-cost auction.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ}, MathEconLib.AllPurchaseBidderModel Ω n → MathEconLib.Auction Ω n :=
   @MathEconLib.AllPurchaseBidderModel.toNetCostAuction
@@ -440,7 +448,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : MathEconLib.AllPurchaseBidderModel Ω n) (β : ℝ → ℝ),
     A.expectedNetCost β =
-      ∫ ω, ∑ i, A.spec.toSpec.netCost i (fun j ↦ β (A.toNetCostAuction.θ j ω)) := by
+      ∫ ω, ∑ i, A.spec.toSpec.netCost A.spec.φ i (fun j ↦ β (A.toNetCostAuction.θ j ω)) := by
   intros
   rfl
 
@@ -448,6 +456,13 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 -- The auxiliary bidder model keeps net costs for the envelope calculations (#239).
 -- Actual seller receipts are supplied by spec.toMechanism.
 -- Revenue decomposition keeps every IC, integrability, and boundary-utility hypothesis.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.Auction Ω n) (spec : AllPurchaseBidderSpec A.rules)
+    (β : ℝ → ℝ) (c : ℝ),
+    A.bundledProfit spec β c =
+      ∫ ω, spec.toMechanism.revenue (fun j ↦ β (A.θ j ω)) - c * ∑ j, β (A.θ j ω) :=
+  @MathEconLib.Auction.bundledProfit_eq_integral_profit
+
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
     (spec : AllPurchaseBidderSpec A.rules) [A.HasIdenticalTypes]

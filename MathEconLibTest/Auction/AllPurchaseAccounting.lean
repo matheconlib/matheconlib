@@ -11,11 +11,21 @@ public import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 /-!
 # All-purchase accounting regressions
 
-These examples adapt the counterexamples submitted by @yoshiki-pramaana in issue #239.
 The scalar bidder model retains the net-cost formula used by the bidding proofs. Its induced
 monetary mechanism records purchases, charges the seller's posted price, and values resale in the
 outcome environment. The examples distinguish actual receipts from bidder net cost, check price
 identification, and retain the action-domain and arbitrage qualifications.
+
+## Main statements
+
+* `same_mechanism_different_valuations`: one monetary mechanism supports distinct resale values.
+* `resale_valuation_is_environment_input`: valuation needs no regularity assumptions.
+* `expected_receipts_same_strategy` and `expected_profit_same_strategy`: monetary interpretations.
+* `arbitrage_no_best_nonnegative`: the accounting model still allows arbitrage.
+
+## Tags
+
+all-purchase, accounting, resale valuation, revenue, regression tests
 -/
 
 @[expose] public section
@@ -48,9 +58,9 @@ def model (k : ℝ) (hk : 0 ≤ k) : AllPurchaseBidderSpec bidderRules where
 /-- At one purchase the bidder gains two and the seller receives one; net cost is minus one. -/
 theorem finite_accounting :
     (model 0 (by norm_num)).toMechanism.revenue (fun _ ↦ 1) = 1 ∧
-      (model 0 (by norm_num)).toSpec.environment.utility
+      ((model 0 (by norm_num)).toSpec.environment (fun B ↦ 3 - B)).utility
         (model 0 (by norm_num)).toMechanism 0 (fun _ ↦ 1) (fun _ ↦ 1) = 2 ∧
-      (model 0 (by norm_num)).toSpec.netCost 0 (fun _ ↦ 1) = -1 := by
+      (model 0 (by norm_num)).toSpec.netCost (fun B ↦ 3 - B) 0 (fun _ ↦ 1) = -1 := by
   norm_num [AllPurchaseSpec.environment, AllPurchaseSpec.resaleValue,
     AllPurchaseSpec.netCost, QuasilinearEnvironment.utility,
     QuasilinearEnvironment.ofPrivate, AllPurchaseBidderSpec.toSpec,
@@ -80,6 +90,41 @@ theorem posted_price_identified
     spec.price = 1 := by
   have h := spec.price_unique (model 0 (by norm_num)).toSpec
   simpa [AllPurchaseBidderSpec.toSpec, model] using h
+
+/-- Any resale function can value the same monetary mechanism, without regularity assumptions. -/
+theorem resale_valuation_is_environment_input (φ : ℝ → ℝ) :
+    ((model 0 (by norm_num)).toSpec.environment φ).utility
+      (model 0 (by norm_num)).toMechanism 0 (fun _ ↦ 1) (fun _ ↦ 1) = φ 1 := by
+  norm_num [AllPurchaseSpec.environment, AllPurchaseSpec.resaleValue,
+    QuasilinearEnvironment.utility, QuasilinearEnvironment.ofPrivate,
+    AllPurchaseBidderSpec.toSpec, AllPurchaseBidderSpec.toMechanism, bidderRules, model]
+
+/-- Different resale schedules change utility while the same monetary mechanism collects one. -/
+theorem same_mechanism_different_valuations :
+    (model 0 (by norm_num)).toMechanism.revenue (fun _ ↦ 1) = 1 ∧
+      ((model 0 (by norm_num)).toSpec.environment (fun B ↦ 3 - B)).utility
+        (model 0 (by norm_num)).toMechanism 0 (fun _ ↦ 1) (fun _ ↦ 1) = 2 ∧
+      ((model 0 (by norm_num)).toSpec.environment (fun B ↦ 4 - B)).utility
+        (model 0 (by norm_num)).toMechanism 0 (fun _ ↦ 1) (fun _ ↦ 1) = 3 := by
+  refine ⟨finite_accounting.1, ?_, ?_⟩
+  · convert resale_valuation_is_environment_input (fun B ↦ 3 - B) using 1; norm_num
+  · convert resale_valuation_is_environment_input (fun B ↦ 4 - B) using 1; norm_num
+
+/-- A constant resale valuation is allowed even though it is not strictly decreasing. -/
+theorem constant_resale_valuation :
+    ((model 0 (by norm_num)).toSpec.environment (fun _ ↦ 0)).utility
+      (model 0 (by norm_num)).toMechanism 0 (fun _ ↦ 1) (fun _ ↦ 1) = 0 :=
+  resale_valuation_is_environment_input (fun _ ↦ 0)
+
+-- The monetary specification contains no resale data or implicit environment choice.
+example : True := by
+  let spec := (model 0 (by norm_num)).toSpec
+  have _ := spec.environment (fun B ↦ 3 - B)
+  fail_if_success have _ := spec.φ
+  fail_if_success have _ := spec.φ_continuous
+  fail_if_success have _ := spec.φ_strictAnti
+  fail_if_success have _ := spec.environment.utility
+  trivial
 
 /-- Real actions allow negative purchases and hence negative receipts even after repair. -/
 theorem negative_purchase_receipts :
@@ -123,6 +168,18 @@ theorem expected_receipts_same_strategy :
   exact ⟨h, (bidderAuction.sellerGrossRevenue_eq_integral_revenue_comap
     (model 0 (by norm_num)) (fun v ↦ 2 * v)).symm.trans h⟩
 
+/-- Profit subtracts production expenditure from the monetary receipts under the same strategy. -/
+theorem expected_profit_same_strategy :
+    bidderAuction.bundledProfit (model 0 (by norm_num)) (fun v ↦ 2 * v) (1 / 2) = 1 ∧
+      (𝔼[fun ω ↦ (model 0 (by norm_num)).toMechanism.revenue
+        (fun j ↦ 2 * bidderAuction.θ j ω) -
+          (1 / 2) * ∑ j, 2 * bidderAuction.θ j ω]) = 1 := by
+  have h : bidderAuction.bundledProfit (model 0 (by norm_num)) (fun v ↦ 2 * v) (1 / 2) = 1 := by
+    norm_num [Auction.bundledProfit, Auction.expectedAggregateBid, Auction.aggregateBid,
+      bidderAuction, model]
+  exact ⟨h, (bidderAuction.bundledProfit_eq_integral_profit
+    (model 0 (by norm_num)) (fun v ↦ 2 * v) (1 / 2)).symm.trans h⟩
+
 /-- The exponential scarcity example's auxiliary net-cost model. -/
 def arbitrageRules : MathEconLib.Mechanism (Fin 1) (fun _ ↦ ℝ) (Fin 1 → ℝ) where
   outcome _ _ := 1
@@ -143,17 +200,20 @@ def arbitrageModel : AllPurchaseBidderSpec arbitrageRules where
 
 /-- Every nonnegative purchase gives utility at least prize value plus quantity purchased. -/
 theorem arbitrage_utility_lower_bound (θ : Fin 1 → ℝ) (x : ℝ) (hx : 0 ≤ x) :
-    θ 0 + x ≤ arbitrageModel.toSpec.environment.utility arbitrageModel.toMechanism
-      0 θ (fun _ ↦ x) := by
+    θ 0 + x ≤ (arbitrageModel.toSpec.environment arbitrageModel.φ).utility
+      arbitrageModel.toMechanism 0 θ (fun _ ↦ x) := by
   change θ 0 + x ≤ θ 0 * 1 + (2 + Real.exp (-(∑ _j : Fin 1, x))) * x + -(1 * x)
   simp only [Finset.univ_unique, Finset.sum_singleton, mul_one, one_mul]
   nlinarith [Real.exp_pos (-x)]
 
 /-- No purchase level is a best response on the unchanged real action domain. -/
 theorem arbitrage_no_best_bid (θ r : Fin 1 → ℝ) :
-    ∃ r', arbitrageModel.toSpec.environment.utility arbitrageModel.toMechanism 0 θ r <
-      arbitrageModel.toSpec.environment.utility arbitrageModel.toMechanism 0 θ r' := by
-  let u := arbitrageModel.toSpec.environment.utility arbitrageModel.toMechanism 0 θ r
+    ∃ r', (arbitrageModel.toSpec.environment arbitrageModel.φ).utility
+        arbitrageModel.toMechanism 0 θ r <
+      (arbitrageModel.toSpec.environment arbitrageModel.φ).utility
+        arbitrageModel.toMechanism 0 θ r' := by
+  let u := (arbitrageModel.toSpec.environment arbitrageModel.φ).utility
+    arbitrageModel.toMechanism 0 θ r
   let x := max 0 (u - θ 0 + 1)
   refine ⟨fun _ ↦ x, ?_⟩
   have h := arbitrage_utility_lower_bound θ x (le_max_left _ _)
@@ -164,15 +224,16 @@ theorem arbitrage_no_best_bid (θ r : Fin 1 → ℝ) :
 theorem arbitrage_no_best_nonnegative (θ : Fin 1 → ℝ)
     (r : Fin 1 → Set.Ici (0 : ℝ)) :
     ∃ r' : Fin 1 → Set.Ici (0 : ℝ),
-      arbitrageModel.toSpec.environment.utility
+      (arbitrageModel.toSpec.environment arbitrageModel.φ).utility
           (arbitrageModel.toMechanism.comap (fun _ (b : Set.Ici (0 : ℝ)) ↦ b.val)) 0 θ r <
-        arbitrageModel.toSpec.environment.utility
+        (arbitrageModel.toSpec.environment arbitrageModel.φ).utility
           (arbitrageModel.toMechanism.comap (fun _ (b : Set.Ici (0 : ℝ)) ↦ b.val)) 0 θ r' := by
-  let u := arbitrageModel.toSpec.environment.utility arbitrageModel.toMechanism
+  let u := (arbitrageModel.toSpec.environment arbitrageModel.φ).utility arbitrageModel.toMechanism
     0 θ (fun i ↦ (r i).val)
   let x := max 0 (u - θ 0 + 1)
   refine ⟨fun _ ↦ ⟨x, le_max_left _ _⟩, ?_⟩
-  change u < arbitrageModel.toSpec.environment.utility arbitrageModel.toMechanism 0 θ (fun _ ↦ x)
+  change u < (arbitrageModel.toSpec.environment arbitrageModel.φ).utility
+    arbitrageModel.toMechanism 0 θ (fun _ ↦ x)
   have h := arbitrage_utility_lower_bound θ x (le_max_left _ _)
   have hx : u - θ 0 + 1 ≤ x := le_max_right _ _
   linarith

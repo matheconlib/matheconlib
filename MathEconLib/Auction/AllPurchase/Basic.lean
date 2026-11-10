@@ -17,7 +17,7 @@ makes net payment `(p - φ(B)) * b i` for `b i` editions. The strictly highest p
 prize; a tie for the highest purchase leaves the prize unawarded.
 
 `MathEconLib.Mechanism.Auctions.AllPurchaseBidderSpec A.rules` describes this net-cost bidder
-model. Its `toMechanism` charges gross expenditure and records purchases; its `toSpec.environment`
+model. Its `toMechanism` charges gross expenditure and records purchases; its `toSpec.environment φ`
 values the purchased editions. The scalar model's revenue is net cost, not seller receipts.
 The all-pay bid function
 enters the all-purchase net-payment identity, which expresses equilibrium net expenditure as
