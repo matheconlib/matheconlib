@@ -1,14 +1,51 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Yaron Velner. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Yaron Velner
 -/
 module
 
 public import MathEconLib.GameTheory.Strategic.Existence
 
 /-!
-TODO
+# Rock paper scissors and its unique mixed Nash equilibrium
+
+Two players choose rock, paper or scissors. Paper beats rock, rock beats scissors,
+and scissors beats paper. If both players choose the same action then it is a draw.
+Winner gets a payoff of 1, loser gets -1, and in case of a draw both get 0.
+No pure profile is a Nash equilibrium. The unique mixed Nash equilibrium has both
+players independently choose each action with probability 1/3,
+giving each player expected payoff zero.
+
+## Main definitions
+
+* `rockPaperScissors`: The two-player, two-action zero-sum game.
+* `uniformAction`: Equal probabilities on heads and tails.
+* `uniformProfile`: Uniform independent randomization by both players.
+* `expectedPayoff_p0`: The expected payoff of Player 0, give a strategy profile.
+* `expectedPayoff_p1`: The expected payoff of Player 1, give a strategy profile.
+
+## Lemmas
+
+* `zeroSumGame` : This is a zero sum game.
+* `uniformActionGuaranteesZero` : By playing uniform action Player-i can guarantee payoff ≥ 0
+* `exists_p0_profitable_response` : If Player-1's strategy is not a uniform action, then
+                                    Player 0 can guarantee positive payoff for himself and negative
+                                    payoff for Player 0.
+* `exists_p1_profitable_response` : If Player-0's strategy is not a uniform action, then
+                                    Player 1 can guarantee positive payoff for himself and negative
+                                    payoff for Player 1.
+
+## Main statements
+
+* `rockPaperScissors_exists_mixedNash`: Rock paper scissors admits a mixed Nash equilibrium.
+* `rockPaperScissors_uniform_is_mixed_nash`: Uniform randomization is a mixed Nash equilibrium.
+* `rockPaperScissors_mixed_nash_unique`: Every mixed Nash equilibrium is the uniform profile.
+* `rockPaperScissors_no_pure_nash`: No pure Nash equilibrium exists.
+
+## Tags
+
+matching pennies, strategic games, mixed strategies, nash equilibrium, zero-sum games
 -/
 
 @[expose] public noncomputable section
@@ -39,8 +76,9 @@ abbrev paper : Fin 3 := 1
 /-- The scissors action. -/
 abbrev scissors : Fin 3 := 2
 
-/-- The game: if both players select the same more, then payoff is 0.
-    otherwise, rock beats scissors, paper beats rock, and scissors beats paper -/
+/-- The game: if both players select the same move, then payoff is 0.
+    otherwise, rock beats scissors, paper beats rock, and scissors beats paper.
+    The definition is tested in the examples below -/
 abbrev rockPaperScissors : StrategicGame (Fin 2) (fun _ ↦ Fin 3) ℝ where
   payoff i s := if i = p0 then
     if (s p0) = (s p1) + 1 then 1 else if (s p0 = s p1) then 0 else -1
