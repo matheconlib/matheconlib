@@ -125,6 +125,12 @@ public import MathEconLib.Probability.FinDist.ConditionalOn
 public import MathEconLib.Probability.FinDist.Expect
 public import MathEconLib.Probability.FinDist.Measure
 public import MathEconLib.Probability.FinDist.Simplex
+public import MathEconLib.RevealedPreference
+public import MathEconLib.RevealedPreference.Afriat
+public import MathEconLib.RevealedPreference.AfriatGeometry
+public import MathEconLib.RevealedPreference.Basic
+public import MathEconLib.RevealedPreference.Choice
+public import MathEconLib.RevealedPreference.GARP
 public import MathEconLib.SingleParameter
 public import MathEconLib.SingleParameter.Basic
 public import MathEconLib.SingleParameter.EnvelopeIC

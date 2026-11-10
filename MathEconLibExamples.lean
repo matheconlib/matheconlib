@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Victor H. Aguiar. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Daniel Lyng, Victor H. Aguiar
 -/
 module
 
@@ -11,6 +11,7 @@ public import MathEconLibExamples.Matching.DistributiveMarriage
 public import MathEconLibExamples.Matching.UnbalancedMarriage
 public import MathEconLibExamples.Mechanism.PostedPriceUtility
 public import MathEconLibExamples.Preferences.Finite
+public import MathEconLibExamples.RevealedPreference
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
 /-!
