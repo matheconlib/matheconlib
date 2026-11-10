@@ -44,6 +44,7 @@ import MathEconLibTest.Mechanism.FirstAndSecondPay
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
 import MathEconLibTest.Mechanism.TruthfulNash
+import MathEconLibTest.Mechanism.Utility
 import MathEconLibTest.Namespace
 import MathEconLibTest.Preferences.Basic
 import MathEconLibTest.Preferences.Complete
