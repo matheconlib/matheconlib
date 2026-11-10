@@ -32,6 +32,12 @@ positive has support equal to the union of its components' supports.
 
 * `FinDist.pmf_le_one`: Each probability is at most one.
 * `FinDist.support_mixture`: Support of a strict mixture is the union of supports.
+* `FinDist.mixture_self`, `FinDist.mixture_one`, `FinDist.mixture_zero`: Degenerate mixtures.
+* `FinDist.exists_eq_mixture_pure`: A distribution with `d a < 1` mixes the point mass at `a` with
+  a distribution vanishing at `a`.
+* `FinDist.finMixture_mixture`: Finite mixtures are affine in their weights.
+* `FinDist.finMixture_pure_left`, `FinDist.finMixture_pure_right`, `FinDist.finMixture_const`:
+  Finite mixtures with point-mass weights, point-mass components, or a constant component.
 
 ## Tags
 
@@ -244,6 +250,103 @@ noncomputable def finMixture (weights : FinDist β) (beliefs : β → FinDist α
     (a : α) :
     (FinDist.finMixture weights beliefs).pmf a = ∑ s, weights.pmf s * (beliefs s).pmf a :=
   rfl
+
+/-- Mixing a distribution with itself returns it. -/
+@[simp] lemma mixture_self (t : unitInterval) (d : FinDist α) : FinDist.mixture t d d = d :=
+  FinDist.ext _ _ fun a ↦ by
+    rw [mixture_pmf]
+    ring
+
+/-- A mixture with weight one on the first distribution is that distribution. -/
+lemma mixture_of_coe_eq_one {t : unitInterval} (h : (t : ℝ) = 1) (d₁ d₂ : FinDist α) :
+    FinDist.mixture t d₁ d₂ = d₁ :=
+  FinDist.ext _ _ fun a ↦ by
+    rw [mixture_pmf, h]
+    ring
+
+/-- A mixture with weight zero on the first distribution is the second distribution. -/
+lemma mixture_of_coe_eq_zero {t : unitInterval} (h : (t : ℝ) = 0) (d₁ d₂ : FinDist α) :
+    FinDist.mixture t d₁ d₂ = d₂ :=
+  FinDist.ext _ _ fun a ↦ by
+    rw [mixture_pmf, h]
+    ring
+
+@[simp] lemma mixture_one (d₁ d₂ : FinDist α) : FinDist.mixture 1 d₁ d₂ = d₁ :=
+  mixture_of_coe_eq_one rfl d₁ d₂
+
+@[simp] lemma mixture_zero (d₁ d₂ : FinDist α) : FinDist.mixture 0 d₁ d₂ = d₂ :=
+  mixture_of_coe_eq_zero rfl d₁ d₂
+
+/-- If `d a < 1`, then `d` mixes the point mass at `a`, with weight `d a`, and a distribution `r`
+that vanishes at `a` and wherever `d` does. -/
+lemma exists_eq_mixture_pure [DecidableEq α] (d : FinDist α) (a : α) (ha : d.pmf a < 1) :
+    ∃ r : FinDist α, r.pmf a = 0 ∧ (∀ b, d.pmf b = 0 → r.pmf b = 0) ∧
+      d = FinDist.mixture ⟨d.pmf a, d.nonneg a, ha.le⟩ (FinDist.pure a) r := by
+  have h1 : (0 : ℝ) < 1 - d.pmf a := by linarith
+  let f : α → ℝ := fun b ↦ if b = a then 0 else d.pmf b / (1 - d.pmf a)
+  have hf : ∀ b, f b = (d.pmf b - if b = a then d.pmf a else 0) * (1 - d.pmf a)⁻¹ := by
+    intro b
+    by_cases hb : b = a
+    · simp [f, hb]
+    · simp [f, hb, div_eq_mul_inv]
+  have hsum : ∑ b, f b = 1 := by
+    simp_rw [hf, ← Finset.sum_mul, Finset.sum_sub_distrib, Finset.sum_ite_eq', Finset.mem_univ,
+      ite_true, d.sum_one]
+    exact mul_inv_cancel₀ h1.ne'
+  let r : FinDist α := ⟨f, fun b ↦ by
+    by_cases hb : b = a
+    · simp [f, hb]
+    · simp only [f, hb, ite_false]
+      exact div_nonneg (d.nonneg b) h1.le, hsum⟩
+  refine ⟨r, show f a = 0 by simp [f],
+    fun b hb ↦ show f b = 0 by simp only [f, hb, zero_div, ite_self], ?_⟩
+  refine FinDist.ext _ _ fun b ↦ ?_
+  rw [mixture_pmf, pure_pmf]
+  change d.pmf b = d.pmf a * (if a = b then 1 else 0) + (1 - d.pmf a) * f b
+  by_cases hb : b = a
+  · subst hb
+    simp [f]
+  · simp only [Ne.symm hb, f, hb, ite_false, mul_zero, zero_add]
+    rw [mul_div_assoc']
+    exact (mul_div_cancel_left₀ (d.pmf b) h1.ne').symm
+
+/-- Finite mixtures are affine in their weights. -/
+lemma finMixture_mixture (t : unitInterval) (w w' : FinDist β) (beliefs : β → FinDist α) :
+    FinDist.finMixture (FinDist.mixture t w w') beliefs =
+      FinDist.mixture t (FinDist.finMixture w beliefs) (FinDist.finMixture w' beliefs) :=
+  FinDist.ext _ _ fun a ↦ by
+    simp only [finMixture_pmf, mixture_pmf, add_mul, Finset.sum_add_distrib, mul_assoc,
+      Finset.mul_sum]
+
+/-- A finite mixture with point-mass weights at `s` is the component at `s`. -/
+lemma finMixture_pure_left [DecidableEq β] (s : β) (beliefs : β → FinDist α) :
+    FinDist.finMixture (FinDist.pure s) beliefs = beliefs s :=
+  FinDist.ext _ _ fun a ↦ by
+    simp only [finMixture_pmf, pure_pmf, ite_mul, one_mul, zero_mul, Finset.sum_ite_eq,
+      Finset.mem_univ, ite_true]
+
+/-- Mixing point masses with weights `w` returns `w`. -/
+lemma finMixture_pure_right [DecidableEq α] (w : FinDist α) :
+    FinDist.finMixture w FinDist.pure = w :=
+  FinDist.ext _ _ fun a ↦ by
+    simp only [finMixture_pmf, pure_pmf, mul_ite, mul_one, mul_zero, Finset.sum_ite_eq',
+      Finset.mem_univ, ite_true]
+
+/-- A finite mixture of copies of one distribution is that distribution. -/
+@[simp] lemma finMixture_const (w : FinDist β) (d : FinDist α) :
+    FinDist.finMixture w (fun _ ↦ d) = d :=
+  FinDist.ext _ _ fun a ↦ by
+    rw [finMixture_pmf, ← Finset.sum_mul, w.sum_one, one_mul]
+
+/-- Finite mixtures depend only on the components with positive weight. -/
+lemma finMixture_congr {w : FinDist β} {f g : β → FinDist α}
+    (h : ∀ s, w.pmf s ≠ 0 → f s = g s) : FinDist.finMixture w f = FinDist.finMixture w g :=
+  FinDist.ext _ _ fun a ↦ by
+    simp only [finMixture_pmf]
+    refine Finset.sum_congr rfl fun s _ ↦ ?_
+    by_cases hs : w.pmf s = 0
+    · rw [hs, zero_mul, zero_mul]
+    · rw [h s hs]
 
 end FinDist
 

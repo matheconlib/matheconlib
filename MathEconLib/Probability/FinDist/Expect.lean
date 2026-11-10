@@ -27,6 +27,7 @@ expectation.
 
 * `FinDist.expect_add`: Additivity of expectation.
 * `FinDist.expect_mixture`: Expectation of a binary mixture.
+* `FinDist.expect_finMixture`: Expectation of a finite mixture.
 * `FinDist.expect_le_expect_of_support_max`: Distributions supported on maximizers maximize
   expectation.
 * `FinDist.eq_expect_of_pmf_pos_of_forall_le_expect`: Outcomes with positive probability attain a
@@ -95,6 +96,14 @@ lemma expect_mixture (t : unitInterval) (d₁ d₂ : FinDist α) (f : α → V) 
     (FinDist.mixture t d₁ d₂).expect f =
       (t : ℝ) • d₁.expect f + (1 - (t : ℝ)) • d₂.expect f := by
   simp only [expect, mixture_pmf, add_smul, mul_smul, Finset.sum_add_distrib, Finset.smul_sum]
+
+/-- Expectation of a finite mixture is the expectation, under the weights, of the components'
+expectations. -/
+lemma expect_finMixture {β : Type*} [Fintype β] (w : FinDist β) (beliefs : β → FinDist α)
+    (f : α → V) :
+    (FinDist.finMixture w beliefs).expect f = w.expect fun s ↦ (beliefs s).expect f := by
+  simp only [expect, finMixture_pmf, Finset.sum_smul, Finset.smul_sum, mul_smul]
+  exact Finset.sum_comm
 
 section Ordered
 

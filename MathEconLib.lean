@@ -42,10 +42,10 @@ public import MathEconLib.Choice.Maximizers
 public import MathEconLib.Choice.SubstituteHull
 public import MathEconLib.Choice.WeakPreferences
 public import MathEconLib.Competition.Cournot.Linear
-public import MathEconLib.DecisionTheory.Continuity
-public import MathEconLib.DecisionTheory.ExpectedUtility
-public import MathEconLib.DecisionTheory.Independence
-public import MathEconLib.DecisionTheory.Lottery
+public import MathEconLib.Decision.Continuity
+public import MathEconLib.Decision.ExpectedUtility
+public import MathEconLib.Decision.Independence
+public import MathEconLib.Decision.Lottery
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
 public import MathEconLib.ForMathlib.Data.PartialMatching
