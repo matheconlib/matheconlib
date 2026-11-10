@@ -49,6 +49,7 @@ public import MathEconLib.ForMathlib.Data.SetFiber
 public import MathEconLib.ForMathlib.FinsetUpdate
 public import MathEconLib.ForMathlib.IndepFun
 public import MathEconLib.ForMathlib.Kakutani
+public import MathEconLib.ForMathlib.LogicalCompactness
 public import MathEconLib.ForMathlib.MeasureTheory
 public import MathEconLib.ForMathlib.MeasureTheory.AnalyticNullMeasurable
 public import MathEconLib.ForMathlib.MeasureTheory.AnalyticUniformization
@@ -131,6 +132,12 @@ public import MathEconLib.RevealedPreference.AfriatGeometry
 public import MathEconLib.RevealedPreference.Basic
 public import MathEconLib.RevealedPreference.Choice
 public import MathEconLib.RevealedPreference.GARP
+public import MathEconLib.RevealedPreference.InfiniteAfriat
+public import MathEconLib.RevealedPreference.RenyData
+public import MathEconLib.RevealedPreference.RenyFinite
+public import MathEconLib.RevealedPreference.RenyNormalization
+public import MathEconLib.RevealedPreference.RenyStrictness
+public import MathEconLib.RevealedPreference.RenyWeights
 public import MathEconLib.SingleParameter
 public import MathEconLib.SingleParameter.Basic
 public import MathEconLib.SingleParameter.EnvelopeIC
