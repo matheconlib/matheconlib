@@ -28,6 +28,8 @@ social choice.
   profile defined by the utilities.
 * `Profile.comap_id`, `Profile.comap_comp` — agentwise changes of alternatives respect identities
   and composition.
+* `Profile.antisymm_comap` — agentwise changes of alternatives along injective maps preserve
+  antisymmetry.
 * `Profile.reindexAgents_id`, `Profile.reindexAgents_comp` — reindexing agents respects identities
   and composition.
 * `Profile.comap_reindexAgents` — reindexing agents commutes with agentwise changes of
@@ -85,6 +87,13 @@ theorem comap_id (P : Profile N X) : P.comap (fun _ => id) = P := rfl
 
 theorem comap_comp (P : Profile N Z) (f : (i : N) → Y i → Z i) (g : (i : N) → X i → Y i) :
     (P.comap f).comap g = P.comap fun i => f i ∘ g i := rfl
+
+/-- Changing alternatives along injective maps preserves antisymmetry, agent by agent. Without
+injectivity it can fail: a constant map makes every pair indifferent. -/
+theorem antisymm_comap (P : Profile N Y) {f : (i : N) → X i → Y i}
+    (hf : ∀ i, Function.Injective (f i)) (i : N) [Std.Antisymm (P i).le] :
+    Std.Antisymm (P.comap f i).le :=
+  (P i).toPreference.antisymm_comap (hf i)
 
 /-- The profile in which agent `j : M` holds the preference of agent `g j`. -/
 def reindexAgents (P : Profile N X) (g : M → N) : Profile M (X ∘ g) :=
