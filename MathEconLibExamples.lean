@@ -5,6 +5,7 @@ Authors: Daniel Lyng, Victor H. Aguiar
 -/
 module
 
+public import MathEconLibExamples.AllPurchase.Welfare
 public import MathEconLibExamples.Choice.SubstituteEnvelope
 public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.GameTheory.MatchingPennies

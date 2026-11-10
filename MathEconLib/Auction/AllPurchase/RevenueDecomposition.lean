@@ -5,6 +5,7 @@ Authors: Ruiz Chen, Daniel Lyng
 -/
 module
 
+public import MathEconLib.Competition.Cournot.Linear
 public import MathEconLib.Auction.AllPurchase.Basic
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
 public import MathEconLib.Auction.IdenticalTypes
@@ -32,7 +33,8 @@ quantity. Under linear scarcity, the benchmark is the interior stationary Courno
 * `Auction.lowestTypeUtility`: bidder 0's interim utility at its lowest type.
 * `Auction.allPayBenchmarkProfit`, `Auction.editionsOnlyBenchmarkProfit`, and
   `Auction.bundledProfit`: the three profits in the bundling comparison.
-* `LinearScarcityAuction.cournotQuantityLinear`: the interior stationary editions-only quantity.
+* `LinearScarcityAuction.cournotPurchaseLinear`: symmetric per-bidder editions-only purchases.
+* `LinearScarcityAuction.cournotQuantityLinear`: the corresponding aggregate quantity.
 
 ## Main statements
 
@@ -592,7 +594,12 @@ theorem revenue_decomposition_boundary_of_isBoundaryRegime
   exact A.toAuction.revenue_decomposition_boundary A.spec β hβ_meas hβ_mono hIC
     ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
 
-/-! #### Corollary 6.11 — LinearScarcity specialization -/
+/-! #### Symmetric editions-only Cournot quantities -/
+
+/-- The symmetric per-bidder editions-only Cournot candidate. It is a feasible purchase when
+the posted price does not exceed the scarcity intercept. -/
+noncomputable def cournotPurchaseLinear : ℝ :=
+  Competition.Cournot.symmetricQuantity n A.φ_bar A.α_coeff A.spec.price
 
 /-- Interior stationary Cournot candidate for total editions-only purchases under linear scarcity:
 `B^{ed-only} = n(φ̄ − p)/(α(n+1))`.
@@ -601,8 +608,9 @@ For payoff `bᵢ · (φ̄ − αB − p)`, symmetric first-order conditions give
 `α > 0`, it is positive when `φ̄ > p`, zero when `φ̄ = p`, and negative when `φ̄ < p`; in the last
 case it is infeasible for a game with nonnegative purchases. -/
 noncomputable def cournotQuantityLinear : ℝ :=
-  (n : ℝ) * (A.φ_bar - A.spec.price) /
-    (A.α_coeff * ((n : ℝ) + 1))
+  (n : ℝ) * A.cournotPurchaseLinear
+
+/-! #### Corollary 6.11 — LinearScarcity specialization -/
 
 omit [n.AtLeastTwo] in
 /-- **Corollary 6.11 for `LinearScarcityAuction` in boundary regime.**
