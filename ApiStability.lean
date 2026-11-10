@@ -144,17 +144,17 @@ end MechanismCore
 
 /-! ## MathEconLib.BidderProblem — envelope theorem and Myerson lemmas -/
 
--- Envelope theorem, integral representation: U(v) = U(low) + ∫ q (Theorem 5.1)
+-- Envelope theorem, integral representation: U(v) = U(low) + ∫ q
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     ∀ v ∈ B.typeInterval, B.U v = B.U B.lowestType + ∫ (w : ℝ) in B.lowestType..v, B.q w :=
   @MathEconLib.BidderProblem.integral_rep
 
--- Envelope theorem: interim utility is 1-Lipschitz on the type interval (Theorem 5.1)
+-- Envelope theorem: interim utility is 1-Lipschitz on the type interval
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     LipschitzOnWith 1 B.U B.typeInterval :=
   @MathEconLib.BidderProblem.lipschitz
 
--- Envelope theorem: interim winning probability is monotone (Theorem 5.1)
+-- Envelope theorem: interim winning probability is monotone
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC], MonotoneOn B.q B.typeInterval :=
   @MathEconLib.BidderProblem.q_monotoneOn
 
@@ -163,14 +163,14 @@ example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     ∀ᵐ s ∂volume.restrict B.typeInterval, HasDerivAt B.U (B.q s) s :=
   @MathEconLib.BidderProblem.aeDifferentiable
 
--- Myerson payment identity: cost(strategy(s)) = s·q(s) − U(low) − ∫ q (Lemma 5.2)
+-- Myerson payment identity: cost(strategy(s)) = s·q(s) − U(low) − ∫ q
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasTypeDeviationIC],
     ∀ s ∈ B.typeInterval,
       B.cost (B.strategy s)
         = s * B.q s - B.U B.lowestType - ∫ (ψ : ℝ) in B.lowestType..s, B.q ψ :=
   @MathEconLib.BidderProblem.payment_identity
 
--- Myerson payment uniqueness: same q and U(low) force the same payments (Lemma 5.2)
+-- Myerson payment uniqueness: same q and U(low) force the same payments
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasTypeDeviationIC],
     ∀ (B₂ : MathEconLib.BidderProblem) [B₂.HasTypeDeviationIC],
       B.lowestType = B₂.lowestType → B.highestType = B₂.highestType → B.q = B₂.q →
@@ -535,6 +535,26 @@ example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ
       p = MathEconLib.AllPurchase.optimalPriceInterior φbar c α M :=
   @MathEconLib.AllPurchase.sellerProfitInterior_eq_at_optimal_iff
 
+-- The interior formula is identified with actual profit at the supplied auction's posted price.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
+    [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : A.IsInteriorRegimeStrategy β 0) (c : ℝ),
+    A.toAuction.bundledProfit A.spec β c =
+      MathEconLib.AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
+        A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
+  @MathEconLib.LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior
+
+-- The price-independent moment and actual expected aggregate quantity use the same hypotheses.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
+    [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : A.IsInteriorRegimeStrategy β 0),
+    A.toAuction.expectedAggregateBid β =
+      MathEconLib.AllPurchase.interiorMeanQuantity A.φ_bar A.α_coeff
+        A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
+  @MathEconLib.LinearScarcityAuction.expectedAggregateBid_eq_interiorMeanQuantity
+
 -- Edition-welfare bound and moment identity over supplied real parameters.
 example : ∀ φbar c α : ℝ, 0 < α → ∀ B : ℝ,
     MathEconLib.AllPurchase.editionWelfare φbar c α B ≤
@@ -556,15 +576,37 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
             c * A.toNetCostAuction.expectedAggregateBid β :=
   @MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq
 
--- Algebraic welfare-gap identity over supplied values, motivated by Proposition 6.13.
--- Equilibrium interpretation and nonnegativity of the two gaps require additional results.
+-- Reusable algebraic welfare-gap identity over supplied values.
+-- The economic statement and the signs of the two gaps are pinned or proved separately.
 example : ∀ φbar c α B_ed WC : ℝ,
     MathEconLib.AllPurchase.firstBestEditionSurplus φbar c α - WC
       = MathEconLib.AllPurchase.cournotLoss φbar c α B_ed +
         MathEconLib.AllPurchase.contestLoss φbar c α B_ed WC :=
   @MathEconLib.AllPurchase.welfare_decomposition
 
--- Uniform all-pay bid (§9.6.3): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
+-- Actual expected edition welfare decomposes at the auction's Cournot
+-- benchmark. Square integrability is the only strategy assumption; gap signs are separate.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    MemLp (A.toAuction.aggregateBid β) 2 volume →
+      MathEconLib.AllPurchase.firstBestEditionSurplus A.φ_bar c A.α_coeff -
+          (∫ ω, A.toAuction.aggregateBid β ω * A.spec.φ (A.toAuction.aggregateBid β ω) -
+            c * A.toAuction.aggregateBid β ω) =
+        MathEconLib.AllPurchase.cournotLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear +
+          MathEconLib.AllPurchase.contestLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear
+            (A.bundledEditionWelfare β c) :=
+  @MathEconLib.LinearScarcityAuction.welfare_decomposition
+
+-- The welfare penalty is the variance of the actual aggregate purchases.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    MemLp (A.toAuction.aggregateBid β) 2 volume →
+      MathEconLib.AllPurchase.editionWelfare A.φ_bar c A.α_coeff
+          (A.toAuction.expectedAggregateBid β) - A.bundledEditionWelfare β c =
+        A.α_coeff * variance (A.toAuction.aggregateBid β) volume :=
+  @MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
+
+-- Uniform all-pay bid (Krishna 2010, Example 3.1, rescaled): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.Auction Ω n)
     [A.HasIdenticalTypes] (vbar : ℝ),

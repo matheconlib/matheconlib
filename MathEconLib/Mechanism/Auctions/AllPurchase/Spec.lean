@@ -33,6 +33,12 @@ nonnegative receipts require nonnegative total purchases, and global no-deficit 
 after restricting actions to nonnegative purchases. This accounting repair imposes no no-arbitrage
 condition on the scarcity schedule and makes no equilibrium-existence claim.
 
+## Sources and provenance
+
+This formalizes the all-purchase format Scott Duke Kominers observed in NFT sales; see the
+[sale provenance](https://x.com/tiffatronn/status/1928904850022265170).
+See `docs/AuctionReferences.md` for the source map and citation guidance.
+
 ## Main definitions
 
 * `AllPurchaseSpec`: posted price, prize allocation, purchase record and monetary transfers.

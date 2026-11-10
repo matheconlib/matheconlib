@@ -99,7 +99,13 @@ public import MathEconLib.Matching.Classical.Marriage.ToContracts
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
+public import MathEconLib.Matching.Contracts.JointPreservation
 public import MathEconLib.Matching.Contracts.ManyToOne
+public import MathEconLib.Matching.Contracts.RosterAssignments
+public import MathEconLib.Matching.Contracts.RosterCompletion
+public import MathEconLib.Matching.Contracts.RosterStability
+public import MathEconLib.Matching.Contracts.RosterStableSets
+public import MathEconLib.Matching.Contracts.RosterSupermodular
 public import MathEconLib.Matching.Contracts.RuralHospitals
 public import MathEconLib.Matching.Contracts.StableFixedPoints
 public import MathEconLib.Matching.Contracts.StableOrder

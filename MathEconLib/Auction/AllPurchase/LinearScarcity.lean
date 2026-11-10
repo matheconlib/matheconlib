@@ -23,6 +23,8 @@ With scarcity `φ(B) = φ̄ − αB`, a bidder's expected net cost of purchasing
 `αb² + Kb`. The coefficient `K` depends on the posted price and opponents' expected purchases under
 their strategy. Boundary and interior regimes specify the lowest type's utility.
 
+See `docs/AuctionReferences.md` for the all-purchase analysis provenance and citation guidance.
+
 ## Main definitions
 
 * `QuadraticCostProblem` and `LinearCostProblem`: bidder problems with quadratic or linear net cost.
