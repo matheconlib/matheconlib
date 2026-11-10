@@ -660,4 +660,3 @@ end LinearScarcityAuction
 end
 
 end MathEconLib
-
