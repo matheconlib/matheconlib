@@ -27,20 +27,7 @@ namespace MathEconLibTest.RevealedPreference.InfiniteAfriat
 open MathEconLib
 open MathEconLib.RevealedPreference
 open MathEconLibExamples.RevealedPreference
-
--- The terminal characterization has no finite/countable observation assumption.
-example {L : ℕ} {T : Type*} (hL : 0 < L) (p q : T → Bundle L)
-    (hp : RenyPriceAdmissible p) (hq : RenyChoiceAdmissible q) :
-    ((∃ u : Utility L, rawRenyRationalizes p q u) ↔ GraphGARP p q) ∧
-      (GraphGARP p q ↔ HasRegularRenyRationalization p q) :=
-  infinite_reny_characterization hL p q hp hq
-
--- The rationalization convention includes strict affordability explicitly.
-example {L : ℕ} {T : Type*} (p q : T → Bundle L) (u : Utility L)
-    (hu : rawRenyRationalizes p q u) (t : T) (y : Bundle L)
-    (hy : Nonnegative y) (hb : dot (p t) y < dot (p t) (q t)) :
-    u y < u (q t) :=
-  (hu t y hy).2 hb
+open scoped BigOperators
 
 -- Empty observations are covered by the same infinite theorem.
 example (p q : Empty → Bundle 1) : HasRegularRenyRationalization p q := by
@@ -95,16 +82,17 @@ The existential `w` is outside the universal finite-subfamily quantifier. -/
 theorem infinite_data_uniform_margin_client :
     ∃ w : RationalStrongPair 2 → ℝ,
       (∀ r, 0 < w r) ∧
+      (∀ K : Finset (RationalStrongPair 2), ∑ r ∈ K, w r ≤ 1 / 2) ∧
       ∀ s : Finset (InfiniteAfriat.Constraint 2 ℕ),
         ∃ v : InfiniteAfriat.UtilityCube 2, ∀ c ∈ s,
           InfiniteAfriat.Satisfies RenyInfinite.price
             RenyInfinite.choice w c v := by
-  obtain ⟨w, hw, _hsum, hf⟩ :=
+  obtain ⟨w, hw, hsum, hf⟩ :=
     InfiniteAfriat.exists_uniform_margins_and_finite_witnesses (by decide)
       RenyInfinite.price RenyInfinite.choice
       RenyInfinite.price_admissible RenyInfinite.choice_admissible
       RenyInfinite.graph_garp
-  exact ⟨w, hw, hf⟩
+  exact ⟨w, hw, hsum, hf⟩
 
 /-- Regression boundary: allowing a positive gap to depend on a finite
 subfamily is strictly weaker than prescribing one gap for the whole family.

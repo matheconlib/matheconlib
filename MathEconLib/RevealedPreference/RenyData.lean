@@ -6,6 +6,7 @@ Authors: Victor H. Aguiar
 module
 
 public import MathEconLib.RevealedPreference.GARP
+public import MathEconLib.RevealedPreference.Choice
 public import Mathlib.Analysis.Convex.Quasiconvex
 
 /-!
@@ -42,25 +43,58 @@ def RenyPriceAdmissible (p : T → Bundle L) : Prop :=
 def RenyChoiceAdmissible (q : T → Bundle L) : Prop :=
   ∀ t, Nonnegative (q t)
 
+/-- Weak maximization at every observed budget, without a strictness clause. -/
+def WeakUtilityRationalizes (p q : T → Bundle L) (u : Utility L) : Prop :=
+  ∀ t y, Nonnegative y → dot (p t) y ≤ dot (p t) (q t) → u y ≤ u (q t)
+
 /-- Reny's rationalization convention distinguishes strict affordability from
 weak affordability. It does not require a unique maximizer. -/
-def rawRenyRationalizes (p q : T → Bundle L) (u : Utility L) : Prop :=
+def RenyRationalizes (p q : T → Bundle L) (u : Utility L) : Prop :=
   ∀ t y, Nonnegative y →
     (dot (p t) y ≤ dot (p t) (q t) → u y ≤ u (q t)) ∧
     (dot (p t) y < dot (p t) (q t) → u y < u (q t))
 
+/-- Reny's strict-affordability convention implies weak utility maximization. -/
+theorem RenyRationalizes.weakUtilityRationalizes {p q : T → Bundle L} {u : Utility L}
+    (h : RenyRationalizes p q u) : WeakUtilityRationalizes p q u :=
+  fun t y hy => (h t y hy).1
+
+/-- On a `Dataset`, raw weak maximization agrees with the existing rationalization API. -/
+theorem weakUtilityRationalizes_iff_utilityRationalizes (D : Dataset L T) (u : Utility L) :
+    WeakUtilityRationalizes D.price D.choice u ↔ UtilityRationalizes D u := by
+  constructor
+  · intro h t y hy
+    exact h t y hy.1 hy.2
+  · intro h t y hy hb
+    exact h t y ⟨hy, hb⟩
+
+/-- With feasible observed bundles, raw weak rationalization is membership in
+all utility maximizers on each nonnegative budget. The existing choice carrier
+retains ties, and neither price positivity nor finite observations are needed. -/
+theorem weakUtilityRationalizes_iff_mem_utilityChoice
+    (p q : T → Bundle L) (u : Utility L) (hq : RenyChoiceAdmissible q) :
+    WeakUtilityRationalizes p q u ↔
+      ∀ t, q t ∈ utilityChoice u {y | Nonnegative y ∧ dot (p t) y ≤ dot (p t) (q t)} := by
+  constructor
+  · intro h t
+    apply (mem_utilityChoice _ _ _).mpr
+    exact ⟨⟨hq t, le_rfl⟩, isMaxOn_iff.mpr (fun y hy => h t y hy.1 hy.2)⟩
+  · intro h t y hy hb
+    exact isMaxOn_iff.mp ((mem_utilityChoice _ _ _).mp (h t)).2 y ⟨hy, hb⟩
+
 /-- Utility increases strictly when every commodity coordinate increases.
-This is weaker than the package's `StrictlyIncreasing` predicate. -/
+When `0 < L`, this is weaker than the package's `StrictlyIncreasing` predicate.
+For `L = 0`, this predicate is impossible, while `StrictlyIncreasing` is vacuous. -/
 def SemiStrictlyIncreasingOnNonnegative (u : Utility L) : Prop :=
   ∀ x y, Nonnegative x → Nonnegative y →
     (∀ i, x i < y i) → u x < u y
 
 /-- A Reny rationalization propagates weak utility comparisons along revealed
 preference paths, even when the observation type is infinite. -/
-theorem revealedPreferred_monotone_of_rawRenyRationalizes
+theorem revealedPreferred_monotone_of_renyRationalizes
     (p q : T → Bundle L) (u : Utility L)
     (hchoice : RenyChoiceAdmissible q)
-    (hrat : rawRenyRationalizes p q u)
+    (hrat : RenyRationalizes p q u)
     {s t : T} (hst : RevealedPreferred p q s t) :
     u (q t) ≤ u (q s) := by
   refine Relation.ReflTransGen.head_induction_on hst ?_ ?_
@@ -69,13 +103,13 @@ theorem revealedPreferred_monotone_of_rawRenyRationalizes
     exact ih.trans ((hrat a (q b) (hchoice b)).1 hab)
 
 /-- Necessity of GARP uses no finiteness or price-positivity assumption. -/
-theorem graphGARP_of_rawRenyRationalizes
+theorem graphGARP_of_renyRationalizes
     (p q : T → Bundle L) (u : Utility L)
     (hchoice : RenyChoiceAdmissible q)
-    (hrat : rawRenyRationalizes p q u) :
+    (hrat : RenyRationalizes p q u) :
     GraphGARP p q := by
   intro s t hst hcheap
-  have hweak := revealedPreferred_monotone_of_rawRenyRationalizes p q u hchoice hrat hst
+  have hweak := revealedPreferred_monotone_of_renyRationalizes p q u hchoice hrat hst
   have hstrict : u (q s) < u (q t) := (hrat t (q s) (hchoice s)).2 hcheap
   exact (not_lt_of_ge hweak) hstrict
 

@@ -35,14 +35,6 @@ namespace MathEconLib.RevealedPreference
 
 variable {L : ℕ} {T : Type*}
 
-/-- A nonnegative price vector defines a coordinatewise nondecreasing linear
-functional; the bundles themselves need not be nonnegative. -/
-theorem dot_monotone_of_nonnegative {p : Bundle L} (hp : Nonnegative p) :
-    Monotone (dot p) := by
-  intro x y hxy
-  unfold dot
-  exact Finset.sum_le_sum fun i _hi => mul_le_mul_of_nonneg_left (hxy i) (hp i)
-
 /-- A nonzero nonnegative price vector assigns positive weight to some good. -/
 theorem exists_positive_coordinate_of_nonnegative_ne_zero
     {p : Bundle L} (hp : Nonnegative p) (hne : p ≠ 0) :
@@ -67,31 +59,6 @@ theorem dot_lt_of_all_coordinates_lt
     exact mul_le_mul_of_nonneg_left (hxy i).le (hp i)
   · obtain ⟨i, hi⟩ := exists_positive_coordinate_of_nonnegative_ne_zero hp hne
     exact ⟨i, Finset.mem_univ i, mul_lt_mul_of_pos_left (hxy i) hi⟩
-
-/-- Nonnegative prices and positive multipliers make every affine support
-coordinatewise nondecreasing. -/
-theorem globalAfriatSupport_monotone
-    (p q : T → Bundle L) (U lam : T → ℝ)
-    (hprice : ∀ t, Nonnegative (p t)) (hpos : PositiveMultipliers lam) (t : T) :
-    Monotone (globalAfriatSupport U lam p q t) := by
-  intro x y hxy
-  have hdot := dot_monotone_of_nonnegative (hprice t) hxy
-  unfold globalAfriatSupport
-  have hscaled := mul_le_mul_of_nonneg_left
-    (sub_le_sub_right hdot (dot (p t) (q t))) (hpos t).le
-  linarith
-
-/-- The finite Afriat envelope is coordinatewise nondecreasing even with
-zero-price goods. -/
-theorem globalAfriatUtility_monotone [Fintype T] [Nonempty T]
-    (p q : T → Bundle L) (U lam : T → ℝ)
-    (hprice : ∀ t, Nonnegative (p t)) (hpos : PositiveMultipliers lam) :
-    Monotone (globalAfriatUtility U lam p q) := by
-  intro x y hxy
-  apply le_globalAfriatUtility_of_le_supports
-  intro t
-  exact (globalAfriatUtility_le_support U lam p q t x).trans
-    (globalAfriatSupport_monotone p q U lam hprice hpos t hxy)
 
 /-- Each nonzero nonnegative support price gives the semistrict commodity
 comparison required by Reny's finite and infinite statements. -/
@@ -122,10 +89,10 @@ theorem globalAfriatUtility_semiStrictlyIncreasingOnNonnegative
 
 /-- A positive Afriat certificate yields both weak and strict affordability
 comparisons for raw data, without assuming positive prices or nonzero choices. -/
-theorem globalAfriatUtility_rawRenyRationalizes [Fintype T] [Nonempty T]
+theorem globalAfriatUtility_renyRationalizes [Fintype T] [Nonempty T]
     (p q : T → Bundle L) (U lam : T → ℝ)
     (hA : AfriatInequalities U lam p q) (hpos : PositiveMultipliers lam) :
-    rawRenyRationalizes p q (globalAfriatUtility U lam p q) := by
+    RenyRationalizes p q (globalAfriatUtility U lam p q) := by
   intro t y _hy
   exact ⟨globalAfriatUtility_le_observed_of_dot_le U lam p q hA t (hpos t).le,
     globalAfriatUtility_lt_observed_of_dot_lt U lam p q hA t (hpos t)⟩
@@ -138,7 +105,7 @@ def HasFiniteRegularRenyRationalization (p q : T → Bundle L) : Prop :=
     ConcaveOn ℝ Set.univ u ∧
     MonotoneOn u {x | Nonnegative x} ∧
     SemiStrictlyIncreasingOnNonnegative u ∧
-    rawRenyRationalizes p q u
+    RenyRationalizes p q u
 
 /-- Finite GARP yields continuous, concave, nondecreasing, semistrictly
 increasing utility. This includes empty observations and zero-price goods. -/
@@ -154,9 +121,10 @@ theorem finiteRenyRationalization_of_graphGARP [Finite T]
     exact ⟨globalAfriatUtility U lam p q,
       globalAfriatUtility_continuous U lam p q,
       globalAfriatUtility_concaveOn U lam p q,
-      (globalAfriatUtility_monotone p q U lam (fun t => (hprice t).1) hpos).monotoneOn _,
+      (globalAfriatUtility_monotone U lam p q (fun t => (hprice t).1)
+        (fun t => (hpos t).le)).monotoneOn _,
       globalAfriatUtility_semiStrictlyIncreasingOnNonnegative p q U lam hprice hpos,
-      globalAfriatUtility_rawRenyRationalizes p q U lam hA hpos⟩
+      globalAfriatUtility_renyRationalizes p q U lam hA hpos⟩
   · let u : Utility L := dot (fun _ => 1)
     have hprice_one : Nonnegative (fun _ : Fin L => (1 : ℝ)) := fun _ => zero_le_one
     have hone_ne : (fun _ : Fin L => (1 : ℝ)) ≠ 0 := by
@@ -184,7 +152,7 @@ theorem finite_graphGARP_iff_regularRenyRationalization [Finite T]
   constructor
   · exact finiteRenyRationalization_of_graphGARP hL p q hprice
   · rintro ⟨u, _hcont, _hconcave, _hmono, _hsemi, hrat⟩
-    exact graphGARP_of_rawRenyRationalizes p q u hchoice hrat
+    exact graphGARP_of_renyRationalizes p q u hchoice hrat
 
 /-- Every finite restriction admits a regular finite-Afriat utility exactly
 when the entire, possibly infinite, observed graph satisfies GARP. The utility

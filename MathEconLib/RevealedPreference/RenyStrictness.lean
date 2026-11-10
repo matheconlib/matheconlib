@@ -41,10 +41,6 @@ open scoped BigOperators
 
 variable {L : ℕ} {T : Type*}
 
-/-- Weak maximization at every observed budget, without a strictness clause. -/
-def rawWeakRationalizes (p q : T → Bundle L) (u : Utility L) : Prop :=
-  ∀ t y, Nonnegative y → dot (p t) y ≤ dot (p t) (q t) → u y ≤ u (q t)
-
 /-- A nonzero nonnegative finite price vector has a positive sum. -/
 theorem sum_pos_of_nonnegative_ne_zero (p : Bundle L)
     (hp : Nonnegative p) (hpne : p ≠ 0) : 0 < ∑ i, p i := by
@@ -82,12 +78,12 @@ theorem exists_strictly_dominating_affordable (p x y : Bundle L)
 
 /-- Weak budget rationalization and strict increases in all coordinates imply
 Reny's strict-affordability convention. This does not imply unique demand. -/
-theorem rawRenyRationalizes_of_weak_of_semiStrict
+theorem renyRationalizes_of_weak_of_semiStrict
     (p q : T → Bundle L) (u : Utility L)
     (hp : RenyPriceAdmissible p)
-    (hweak : rawWeakRationalizes p q u)
+    (hweak : WeakUtilityRationalizes p q u)
     (hstrict : SemiStrictlyIncreasingOnNonnegative u) :
-    rawRenyRationalizes p q u := by
+    RenyRationalizes p q u := by
   intro t y hy
   refine ⟨hweak t y hy, ?_⟩
   intro hcheap

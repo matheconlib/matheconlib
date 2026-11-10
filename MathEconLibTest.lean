@@ -15,6 +15,7 @@ import MathEconLibTest.Choice.WeakPreferences
 import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.Competition.Cournot
+import MathEconLibTest.ForMathlib.LogicalCompactness.Compatibility
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
@@ -55,6 +56,8 @@ import MathEconLibTest.RevealedPreference.Compatibility
 import MathEconLibTest.RevealedPreference.Examples
 import MathEconLibTest.RevealedPreference.Geometry
 import MathEconLibTest.RevealedPreference.InfiniteAfriat
+import MathEconLibTest.RevealedPreference.MonotoneGeometry
+import MathEconLibTest.RevealedPreference.RenyCompatibility
 import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility

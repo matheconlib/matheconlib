@@ -9,11 +9,11 @@ observation type `T`, nonnegative nonzero prices `p : T → Bundle L`, and
 nonnegative choices `q : T → Bundle L`, it proves
 
 ```lean
-((∃ u : Utility L, rawRenyRationalizes p q u) ↔ GraphGARP p q) ∧
+((∃ u : Utility L, RenyRationalizes p q u) ↔ GraphGARP p q) ∧
   (GraphGARP p q ↔ HasRegularRenyRationalization p q)
 ```
 
-`rawRenyRationalizes` requires weak utility comparisons for affordable bundles
+`RenyRationalizes` requires weak utility comparisons for affordable bundles
 and strict comparisons for strictly cheaper bundles. The regularity package
 adds monotonicity, quasiconcavity, and strict increase when **every** coordinate
 increases. No finiteness or countability assumption is imposed on `T`.
@@ -21,13 +21,34 @@ Utilities are represented on all real bundles; economic requirements apply to
 the nonnegative orthant. Empty data, zero choices, zero income, and free goods
 are permitted. Continuity, concavity, and unique demand are not conclusions.
 
+## Rationalization interfaces
+
+`RenyRationalizes.weakUtilityRationalizes` forgets the strict-affordability
+clause. `weakUtilityRationalizes_iff_utilityRationalizes` identifies
+`WeakUtilityRationalizes` on a `Dataset` with the existing `UtilityRationalizes`
+predicate. For nonnegative observed choices,
+`weakUtilityRationalizes_iff_mem_utilityChoice` identifies raw weak
+rationalization with membership in the existing utility-maximizer choice
+correspondence on each nonnegative budget, retaining ties and permitting free goods.
+`finiteRegularRenyRationalization_implies_regularRenyRationalization` forgets
+continuity and restricts concavity to quasiconcavity on the nonnegative orthant;
+it imposes no finiteness assumption on the observation type.
+
+The initial PR spellings `rawRenyRationalizes` and `rawWeakRationalizes` have
+been replaced by `RenyRationalizes` and `WeakUtilityRationalizes`. The corresponding
+Reny lemmas use the `renyRationalizes` name component. These are name migrations
+within this contribution, not changes to the economic predicates. The weaker-than-
+`StrictlyIncreasing` interpretation of semistrict increase requires `0 < L`;
+in dimension zero semistrict increase is impossible, while strict increase is vacuous.
+
 ## Proof dependencies
 
 1. The merged finite GARP certificate and Afriat envelope API gives a finite
    continuous concave rationalization. `RenyFinite` supplies the additional
    nonnegative-price monotonicity and semistrictness lemmas and handles empty data.
-2. Countability of rational strong pairs gives one positive dyadic margin
-   schedule whose mass over every finite set is at most one half.
+2. Countability of rational strong pairs gives one positive margin
+   schedule whose mass over every finite set is at most one half, using Mathlib's
+   `Set.Countable.exists_pos_forall_sum_le`.
 3. A bounded scalar baseline and finitely many utility-threshold jumps normalize
    each finite witness. The transformation preserves utility comparisons and
    quasiconcavity while imposing the prescribed margins.

@@ -65,7 +65,7 @@ theorem zero_observation_choice : choice 0 = 0 := by
   fin_cases i <;> simp [choice]
 
 theorem first_good_rationalizes :
-    rawRenyRationalizes price choice firstGoodUtility := by
+    RenyRationalizes price choice firstGoodUtility := by
   intro n y _hy
   constructor
   · intro hbudget
@@ -74,7 +74,7 @@ theorem first_good_rationalizes :
     simpa [price, choice, firstGoodUtility, dot, Fin.sum_univ_succ, Matrix.vecHead] using hbudget
 
 theorem graph_garp : GraphGARP price choice :=
-  graphGARP_of_rawRenyRationalizes price choice firstGoodUtility
+  graphGARP_of_renyRationalizes price choice firstGoodUtility
     choice_admissible first_good_rationalizes
 
 /-- A concrete, genuinely infinite downstream application of Reny's theorem. -/

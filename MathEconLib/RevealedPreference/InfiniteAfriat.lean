@@ -229,7 +229,7 @@ private theorem regular_rationalization_of_satisfying_constraints (p q : T → B
     MonotoneOn (cubeUtility v) {x | Nonnegative x} ∧
     QuasiconcaveOn ℝ {x | Nonnegative x} (cubeUtility v) ∧
     SemiStrictlyIncreasingOnNonnegative (cubeUtility v) ∧
-    rawRenyRationalizes p q (cubeUtility v) := by
+    RenyRationalizes p q (cubeUtility v) := by
   have hmono : MonotoneOn (cubeUtility v) {x | Nonnegative x} := by
     intro x hx y hy hxy
     exact hv (.monotone x y) hx hy hxy
@@ -242,7 +242,7 @@ private theorem regular_rationalization_of_satisfying_constraints (p q : T → B
     semiStrict_of_rationalStrongPair_margins (cubeUtility v) hmono w hw
       (fun r => hv (.gap r))
   refine ⟨hmono, hquasi, hstrict, ?_⟩
-  exact rawRenyRationalizes_of_weak_of_semiStrict p q (cubeUtility v) hp
+  exact renyRationalizes_of_weak_of_semiStrict p q (cubeUtility v) hp
     (fun t y hy hb => hv (.budget t y) hy hb) hstrict
 
 end InfiniteAfriat
@@ -254,7 +254,17 @@ def HasRegularRenyRationalization (p q : T → Bundle L) : Prop :=
   ∃ u : Utility L,
     MonotoneOn u {x | Nonnegative x} ∧
     QuasiconcaveOn ℝ {x | Nonnegative x} u ∧
-    SemiStrictlyIncreasingOnNonnegative u ∧ rawRenyRationalizes p q u
+    SemiStrictlyIncreasingOnNonnegative u ∧ RenyRationalizes p q u
+
+/-- Finite regular rationalization entails the regularity required by the
+infinite-data theorem, without any assumption on the observation type. -/
+theorem finiteRegularRenyRationalization_implies_regularRenyRationalization
+    (p q : T → Bundle L) (h : HasFiniteRegularRenyRationalization p q) :
+    HasRegularRenyRationalization p q := by
+  obtain ⟨u, _hcontinuous, hconcave, hmono, hsemi, hrat⟩ := h
+  refine ⟨u, hmono, ?_, hsemi, hrat⟩
+  exact Convex.quasiconcaveOn_restrict hconcave.quasiconcaveOn
+    (Set.subset_univ _) (convex_nonnegative_bundles L)
 
 /-- Reny's infinite-data sufficiency theorem, with arbitrary observation
 cardinality. The proof uses fixed positive gaps and standard-real compactness
@@ -280,18 +290,18 @@ theorem infinite_graphGARP_iff_regularRenyRationalization
   constructor
   · exact infiniteRenyRationalization_of_graphGARP hL p q hp hq
   · rintro ⟨u, _hmono, _hquasi, _hstrict, hrat⟩
-    exact graphGARP_of_rawRenyRationalizes p q u hq hrat
+    exact graphGARP_of_renyRationalizes p q u hq hrat
 
 /-- All three clauses of Reny's characterization, with ordinary
 rationalizability understood in his strict-affordability convention. -/
 theorem infinite_reny_characterization
     (hL : 0 < L) (p q : T → Bundle L)
     (hp : RenyPriceAdmissible p) (hq : RenyChoiceAdmissible q) :
-    ((∃ u : Utility L, rawRenyRationalizes p q u) ↔ GraphGARP p q) ∧
+    ((∃ u : Utility L, RenyRationalizes p q u) ↔ GraphGARP p q) ∧
     (GraphGARP p q ↔ HasRegularRenyRationalization p q) := by
   refine ⟨⟨?_, ?_⟩, infinite_graphGARP_iff_regularRenyRationalization hL p q hp hq⟩
   · rintro ⟨u, hu⟩
-    exact graphGARP_of_rawRenyRationalizes p q u hq hu
+    exact graphGARP_of_renyRationalizes p q u hq hu
   · intro hg
     obtain ⟨u, _hmono, _hquasi, _hstrict, hrat⟩ :=
       infiniteRenyRationalization_of_graphGARP hL p q hp hq hg

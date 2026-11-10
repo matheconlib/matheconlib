@@ -13,8 +13,9 @@ public import MathEconLib.RevealedPreference.Basic
 This module is independent of GARP and its certificate construction. Prices and
 observed bundles are unrestricted arrays. Continuity, concavity, and interpolation
 need no sign restrictions; strict increase requires positive prices and multipliers,
-with no nonnegativity assumption on observed bundles. Weak budget maximization needs
-only nonnegative multipliers. The finite lower envelope requires nonempty observations.
+with no nonnegativity assumption on observed bundles. Coordinatewise monotonicity allows
+nonnegative prices and multipliers. Weak budget maximization needs only nonnegative
+multipliers. The finite lower envelope requires nonempty observations.
 
 ## References and provenance
 
@@ -153,6 +154,37 @@ theorem globalAfriatUtility_concaveOn [Fintype T] [Nonempty T]
     simp [envelope, globalAfriatUtility, Finset.inf'_apply]
   rw [← heq]
   exact henvelope
+
+/-- A nonnegative price vector defines a coordinatewise nondecreasing linear
+functional; the bundles themselves need not be nonnegative. -/
+theorem dot_monotone_of_nonnegative {p : Bundle L} (hp : Nonnegative p) :
+    Monotone (dot p) := by
+  intro x y hxy
+  unfold dot
+  exact Finset.sum_le_sum fun i _hi => mul_le_mul_of_nonneg_left (hxy i) (hp i)
+
+/-- A nonnegative multiplier and nonnegative prices at `t` make its affine
+support coordinatewise nondecreasing. Other observations are unrestricted. -/
+theorem globalAfriatSupport_monotone
+    (U lam : T → ℝ) (p q : T → Bundle L) (t : T)
+    (hp : Nonnegative (p t)) (hlam : 0 ≤ lam t) :
+    Monotone (globalAfriatSupport U lam p q t) := by
+  intro x y hxy
+  exact add_le_add le_rfl
+    (mul_le_mul_of_nonneg_left
+      (sub_le_sub_right (dot_monotone_of_nonnegative hp hxy) _) hlam)
+
+/-- Nonnegative prices and multipliers make the finite envelope coordinatewise
+nondecreasing. Zero multipliers and zero-price goods are allowed. -/
+theorem globalAfriatUtility_monotone [Fintype T] [Nonempty T]
+    (U lam : T → ℝ) (p q : T → Bundle L)
+    (hp : ∀ t, Nonnegative (p t)) (hlam : ∀ t, 0 ≤ lam t) :
+    Monotone (globalAfriatUtility U lam p q) := by
+  intro x y hxy
+  apply le_globalAfriatUtility_of_le_supports
+  intro t
+  exact (globalAfriatUtility_le_support U lam p q t x).trans
+    (globalAfriatSupport_monotone U lam p q t (hp t) (hlam t) hxy)
 
 /-- A positive multiplier and strictly positive price vector make a global
 support plane strictly increasing. -/
