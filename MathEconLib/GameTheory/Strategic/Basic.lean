@@ -29,7 +29,8 @@ the translated game whenever its image is a Nash equilibrium in the original gam
 
 ## Main definitions
 
-* `StrategicGame`, `StrategicGame.nashProblem`, and `StrategicGame.IsNash`.
+* `StrategicGame`, `StrategicGame.nashProblem`, and `StrategicGame.IsNash`: Strategic games and
+  Nash equilibrium with every action profile admitted as a candidate.
 * `StrategicGame.comapActions`: The game obtained by translating each player's action.
 * `StrategicGame.comapActionsComorphism`: Action translation between Nash equilibrium problems.
 * `StrategicGame.Strategy`, with the preorder of weak dominance.
@@ -86,10 +87,11 @@ lemma comapActions_comp {B : ι → Type*} {C : ι → Type*} (G : StrategicGame
     (κ : (i : ι) → B i → A i) (τ : (i : ι) → C i → B i) :
     (G.comapActions κ).comapActions τ = G.comapActions (fun i ↦ κ i ∘ τ i) := rfl
 
-/-- The equilibrium problem in which a player may replace only their own action. -/
-def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) : EquilibriumProblem (∀ i, A i) ι V where
-  deviation i a a' := ∃ s, a' = Function.update a i s
-  value := G.payoff
+/-- The equilibrium problem in which every profile is a valid candidate and a player may replace
+only their own action. -/
+def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) :
+    EquilibriumProblem ((i : ι) → A i) ι V :=
+  .ofDeviation (fun i a a' ↦ ∃ s, a' = Function.update a i s) G.payoff
 
 /-- Action translation maps unilateral deviations to unilateral deviations and preserves each
 player's payoff. -/
@@ -102,6 +104,7 @@ def comapActionsComorphism [DecidableEq ι] {B : ι → Type*} (G : StrategicGam
     obtain ⟨s, rfl⟩ := hb
     exact ⟨κ i s, funext (Function.apply_update κ b i s)⟩
   value_eq _ _ := rfl
+  valid_reflects _ _ := trivial
 
 /-- Every unilateral deviation gives the player a payoff at most their incumbent payoff. -/
 def IsNash [LE V] [DecidableEq ι] (G : StrategicGame ι A V) (a : ∀ i, A i) : Prop :=
@@ -119,8 +122,10 @@ theorem IsNash.comapActions [LE V] [DecidableEq ι] {B : ι → Type*}
     G.IsNash a ↔ ∀ i s, G.payoff i (Function.update a i s) ≤ G.payoff i a := by
   constructor
   · intro h i s
-    exact h i _ ⟨s, rfl⟩
-  · intro h i a' hd
+    exact h.deviation_le i _ ⟨s, rfl⟩
+  · intro h
+    refine ⟨trivial, ?_⟩
+    intro i a' hd
     obtain ⟨s, hs⟩ := hd
     change G.payoff i a' ≤ G.payoff i a
     rw [hs]

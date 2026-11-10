@@ -8,6 +8,7 @@ module
 public import MathEconLib.Preferences.Basic
 public import MathEconLib.Preferences.Complete
 public import MathEconLib.Preferences.Profile
+public import MathEconLib.Preferences.Refinement
 public import MathEconLib.Preferences.Representation.Basic
 public import MathEconLib.Preferences.Representation.Finite
 
@@ -15,14 +16,16 @@ public import MathEconLib.Preferences.Representation.Finite
 # Preferences and ordinal utility
 
 This module collects MathEconLib's preference layer: preferences over arbitrary alternatives,
-complete preferences, and their ordinal utility representations. Preferences need not be complete,
-and utilities may take values in any preorder.
+complete preferences, fixed tie-breaking, and ordinal utility representations. Preferences need not
+be complete, and utilities may take values in any preorder.
 
 ## Main topics
 
 * Preferences: `Preference`, strict preference, indifference, and the correspondence with
   preorders.
 * Complete preferences: `CompletePreference`, total preorders, and linear orders.
+* Fixed tie-breaking: `CompletePreference.tieBreak` resolves indifference using fixed injective
+  priorities, with larger priority preferred among tied alternatives.
 * Ordinal utility: `Preference.IsRepresentedBy`, preferences determined by utilities, and the link
   between greatest alternatives on a menu and utility maximization.
 * Finite alternatives: natural-number representations of complete preferences.
@@ -39,5 +42,5 @@ Larger utilities are better: a utility `u` represents `R` when `x ≼[R] y ↔ u
 
 ## Tags
 
-preference, complete preference, ordinal utility, finite representation
+preference, complete preference, tie-breaking, ordinal utility, finite representation
 -/
