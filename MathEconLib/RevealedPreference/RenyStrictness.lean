@@ -109,7 +109,7 @@ def upper (ab : RationalStrongPair L) : Bundle L := fun i => (ab.val.2 i : ℝ)
 
 theorem lower_nonnegative (ab : RationalStrongPair L) : Nonnegative ab.lower := by
   intro i
-  unfold lower
+  change (0 : ℝ) ≤ (ab.val.1 i : ℝ)
   exact_mod_cast (ab.property i).1
 
 theorem lower_lt_upper (ab : RationalStrongPair L) :
@@ -142,7 +142,8 @@ theorem exists_rationalStrongPair_between (x y : Bundle L)
   have hpair : ∀ i, 0 ≤ a i ∧ a i < b i := by
     intro i
     constructor
-    · exact_mod_cast (hx i).trans (hxa i).le
+    · have hai : (0 : ℝ) ≤ (a i : ℝ) := (hx i).trans (hxa i).le
+      exact_mod_cast hai
     · exact_mod_cast hab i
   exact ⟨⟨(a, b), hpair⟩, hxa, hby⟩
 
