@@ -35,6 +35,8 @@ The contest gap is nonnegative when editions-only purchases already exceed the e
 and the contest weakly raises mean purchases; it can be negative without these conditions. All
 welfare quantities here concern editions, excluding the contest prize's value.
 
+See `docs/AuctionReferences.md` for the all-purchase analysis provenance and citation guidance.
+
 ## Main definitions
 
 * `editionWelfare`: edition welfare net of production cost.

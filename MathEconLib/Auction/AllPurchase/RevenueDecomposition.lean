@@ -13,7 +13,7 @@ public import MathEconLib.Auction.SymmetricIPV
 public import MathEconLib.ForMathlib.IndepFun
 
 /-!
-# Revenue decomposition for the all-purchase auction (§6.7.1)
+# Revenue decomposition for the all-purchase auction
 
 For aggregate purchases `B = Σⱼ β(Vⱼ)`, price `p`, and per-edition value `φ(B)`, gross revenue
 `𝔼[p · B]` is all-pay contest revenue `n · 𝔼[b^{AP}(V)]`, less the baseline utility retained by
@@ -25,6 +25,8 @@ measurability and integrability conditions.
 When lowest-type utility is zero, the decomposition compares bundled profit with the sum of all-pay
 revenue and editions-only profit, allowing a unit production cost `c` and a supplied editions-only
 quantity. Under linear scarcity, the benchmark is the interior stationary Cournot quantity.
+
+See `docs/AuctionReferences.md` for the all-purchase analysis provenance and citation guidance.
 
 ## Main definitions
 
@@ -39,9 +41,8 @@ quantity. Under linear scarcity, the benchmark is the interior stationary Courno
 ## Main statements
 
 * `Auction.expectedNetPayment_eq`: expected net payments are all-pay revenue less baseline utility.
-* `Auction.revenue_decomposition`: the three-term gross-revenue identity (Proposition 6.10).
-* `Auction.bundling_revenue_gain`: the profit difference when lowest-type utility is zero
-  (Corollary 6.11).
+* `Auction.revenue_decomposition`: the three-term gross-revenue identity.
+* `Auction.bundling_revenue_gain`: the profit difference when lowest-type utility is 0.
 * `LinearScarcityAuction.bundling_revenue_gain_of_isBoundaryRegime`: the profit comparison at the
   linear-scarcity benchmark quantity.
 
@@ -103,7 +104,7 @@ noncomputable def lowestTypeUtility
     (halloc : IsUnitIntervalAllocation A.rules (fun o i => o i)) (β : ℝ → ℝ) : ℝ :=
   (A.toBidderProblem halloc β 0).U (A.toBidderProblem halloc β 0).lowestType
 
-/-! ### Seller's three mechanism options (for Corollary 6.11) -/
+/-! ### Seller's three mechanism options -/
 
 /-- All-pay-only benchmark profit `Π_A = n · 𝔼[b^{AP}(V)]`: the sum of the `n` bidders' expected
 all-pay benchmark bids. -/
@@ -425,22 +426,17 @@ lemma expectedNetPayment_eq
     rw [integral_sub (hallPayBid_int i) (integrable_const _)]
     rw [integral_const, probReal_univ, smul_eq_mul, one_mul]
     -- (e) IdentDistrib: 𝔼[A.allPayBid(θᵢ)] = 𝔼[A.allPayBid(θ₀)] = expectedAllPayBid
-    have hident : ∫ ω, A.allPayBid (A.θ i ω) ∂ℙ = ∫ ω, A.allPayBid (A.θ 0 ω) ∂ℙ := by
-      rw [← integral_map (A.θ_measurable i).aemeasurable
-            hallPayBid_meas.aestronglyMeasurable,
-          (HasIdenticalTypes.θ_identical i 0).map_eq,
-          integral_map (A.θ_measurable 0).aemeasurable
-            hallPayBid_meas.aestronglyMeasurable]
+    have hident := A.integral_comp_type_eq A.allPayBid hallPayBid_meas i 0
     rw [hident, hU_sym i]
     rfl
   -- Step 3: sum n equal copies
   simp_rw [per_bidder]
   rw [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
 
-/-! ### Proposition 6.10 — Revenue decomposition -/
+/-! ### Revenue decomposition -/
 
 omit [n.AtLeastTwo] in
-/-- **Proposition 6.10 (Revenue decomposition, general form).**
+/-- **Revenue decomposition, general form.**
 
 Gross revenue satisfies `𝔼[p · B] = n · 𝔼[b^{AP}(V)] − n · U(lowestType) + 𝔼[B · φ(B)]`: contest
 revenue less baseline bidder utility plus edition value.
@@ -476,7 +472,7 @@ theorem revenue_decomposition
   ring
 
 omit [n.AtLeastTwo] in
-/-- **Proposition 6.10 (boundary-regime form, `U(lowestType) = 0`).**
+/-- **Boundary-regime revenue decomposition, `U(lowestType) = 0`.**
 
 Under the assumptions of `revenue_decomposition`, if the common lowest-type utility is zero, gross
 revenue is `𝔼[p · B] = n · 𝔼[b^{AP}(V)] + 𝔼[B · φ(B)]`: all-pay benchmark revenue plus aggregate
@@ -502,10 +498,10 @@ theorem revenue_decomposition_boundary
         ht_int hedition_int hallPayBid_meas hallPayBid_int hU_sym, hU0]
   ring
 
-/-! ### Corollary 6.11 — bundled vs standalone revenue comparison -/
+/-! ### Bundled and standalone profit comparison -/
 
 omit [n.AtLeastTwo] in
-/-- **Corollary 6.11 (boundary-regime profit comparison).**
+/-- **Boundary-regime profit comparison.**
 
 Under the assumptions of `revenue_decomposition_boundary`, the profit difference between the
 bundled all-purchase auction and the sum of the all-pay and editions-only benchmarks is
@@ -513,7 +509,7 @@ bundled all-purchase auction and the sum of the all-pay and editions-only benchm
 and `B^{ed-only}` is the supplied editions-only quantity; the identity does not assert that this
 difference is positive.
 
-**Source-formula discrepancy (§6.7.1).** For `p ≠ 0`, the expression in §6.7.1,
+**Comparison with an alternative expression.** For `p ≠ 0`, the expression
 `(p − c)·(𝔼[B] − B^{ed-only}) + c · 𝔼[B·φ(B)] / p`, minus the profit difference here is
 `p · 𝔼[B] − 𝔼[B·φ(B)]·(p − c)/p`. -/
 theorem bundling_revenue_gain
@@ -557,7 +553,7 @@ variable [A.HasIdenticalTypes] [A.HasIndependentTypes]
 variable [A.HasBoundedTypes] [A.HasAtomlessTypes]
 
 omit [n.AtLeastTwo] in
-/-- **Proposition 6.10 for `LinearScarcityAuction` in boundary regime.**
+/-- **Boundary-regime revenue decomposition under linear scarcity.**
 
 For linear scarcity `φ(B) = φ̄ − αB`, gross revenue is `𝔼[p · B] = n · 𝔼[b^{AP}(V)] + 𝔼[B · φ(B)]`
 when every bidder's lowest type earns zero utility, as required by the boundary-regime
@@ -610,10 +606,10 @@ case it is infeasible for a game with nonnegative purchases. -/
 noncomputable def cournotQuantityLinear : ℝ :=
   (n : ℝ) * A.cournotPurchaseLinear
 
-/-! #### Corollary 6.11 — LinearScarcity specialization -/
+/-! #### Linear-scarcity bundling profit comparison -/
 
 omit [n.AtLeastTwo] in
-/-- **Corollary 6.11 for `LinearScarcityAuction` in boundary regime.**
+/-- **Boundary-regime profit comparison under linear scarcity.**
 
 Bundled profit minus all-pay benchmark profit and editions-only profit at
 `B_ed = n(φ̄ − p)/(α(n+1))` equals `𝔼[B·φ(B)] − c · 𝔼[B] − (p − c) · B_ed`, where `c` is unit
