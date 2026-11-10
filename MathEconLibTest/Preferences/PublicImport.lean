@@ -26,7 +26,7 @@ These compile-time checks pin the signatures of the preference API through the u
   and the characterization of greatest alternatives by utility maximization.
 * Finite alternatives — natural-number and real-valued representations of complete preferences.
 * Profiles — `Profile` and its constant case, `Profile.ofUtility`, `Profile.comap`,
-  `Profile.reindexAgents`, and their laws.
+  `Profile.reindexAgents`, their laws, and antisymmetry along injective maps.
 
 ## Tags
 
@@ -246,6 +246,10 @@ example (P : Profile N X) : P.comap (fun _ => id) = P := P.comap_id
 example (P : Profile N Z) (f : (i : N) → Y i → Z i) (g : (i : N) → X i → Y i) :
     (P.comap f).comap g = P.comap fun i => f i ∘ g i :=
   P.comap_comp f g
+
+example (P : Profile N Y) {f : (i : N) → X i → Y i} (hf : ∀ i, Function.Injective (f i)) (i : N)
+    [Std.Antisymm (P i).le] : Std.Antisymm (P.comap f i).le :=
+  P.antisymm_comap hf i
 
 example (P : Profile N X) (g : M → N) (j : M) : P.reindexAgents g j = P (g j) :=
   P.reindexAgents_apply g j
