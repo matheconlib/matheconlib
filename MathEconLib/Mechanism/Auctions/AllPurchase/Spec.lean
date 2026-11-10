@@ -106,4 +106,3 @@ theorem isUnitIntervalAllocation (spec : AllPurchaseSpec M alloc) :
 end AllPurchaseSpec
 
 end MathEconLib.Mechanism.Auctions
-

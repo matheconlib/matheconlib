@@ -279,6 +279,69 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @MathEconLib.Auction.total_revenue
 
+-- Zero lowest-type utility pins interim payments down to the allocation integral.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n) [A.HasIdenticalTypes]
+    (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    [A.IsIPV] [MathEconLib.Auction.IPV.BIC A] [A.HasZeroLowestTypeUtility]
+    (i : Fin n) {s : ℝ}, s ∈ A.interval i →
+      A.p i s = s * A.q i s - ∫ ψ in A.lowestType..s, A.q i ψ :=
+  @MathEconLib.Auction.payment_eq_allocation_integral
+
+-- Normalized payment uniqueness compares a single bidder's allocation across two auctions.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n) [A.HasIdenticalTypes]
+    {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
+    (A₂ : MathEconLib.Auction Ω₂ n) [A₂.HasIdenticalTypes]
+    [A.IsIPV] [MathEconLib.Auction.IPV.BIC A] [A₂.IsIPV] [MathEconLib.Auction.IPV.BIC A₂]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility] (i : Fin n)
+    (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)),
+    A.q i = A₂.q i → A.lowestType = A₂.lowestType → A.highestType = A₂.highestType →
+      ∀ {s : ℝ}, s ∈ A.interval i → A.p i s = A₂.p i s :=
+  @MathEconLib.Auction.payment_determined_by_allocation
+
+-- Expected interim payments agree; integrability is assumed on the second space only.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n) [A.HasIdenticalTypes]
+    {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
+    (A₂ : MathEconLib.Auction Ω₂ n) [A₂.HasIdenticalTypes] [A.HasBoundedTypes]
+    [A.IsIPV] [MathEconLib.Auction.IPV.BIC A] [A₂.IsIPV] [MathEconLib.Auction.IPV.BIC A₂]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility] (i : Fin n)
+    (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)),
+    A.q i = A₂.q i → A.lowestType = A₂.lowestType → A.highestType = A₂.highestType →
+      IdentDistrib (A.θ i) (A₂.θ i) volume volume → Measurable (A₂.p i) →
+        Integrable (fun ω => A₂.p i (A₂.θ i ω)) volume →
+          Integrable (fun ω => A.p i (A.θ i ω)) volume ∧
+            ∫ ω, A.p i (A.θ i ω) = ∫ ω, A₂.p i (A₂.θ i ω) :=
+  @MathEconLib.Auction.expected_payment_determined_by_allocation
+
+/-! ### First-and-second-pay auctions -/
+
+-- The canonical first-and-second-pay mechanism meets its specification.
+example : ∀ {n : ℕ},
+    FirstAndSecondPay.IsFirstAndSecondPay (FirstAndSecondPay.firstAndSecondPay n) :=
+  @FirstAndSecondPay.firstAndSecondPay_spec
+
+-- On a tie-free profile the seller collects exactly the top two bids.
+example : ∀ {n : ℕ} {b : Fin n → ℝ} (M : MathEconLib.Mechanism (Fin n) (fun _ => ℝ) (Fin n → ℝ)),
+    FirstAndSecondPay.IsFirstAndSecondPay M → ∀ [Nontrivial (Fin n)]
+      (hb : FirstAndSecondPay.NoTies b), ∑ j, M.payment j b = b hb.winner + b hb.runnerUp :=
+  @FirstAndSecondPay.NoTies.sum_payment_eq
+
+-- Truthful reporting is not dominant with two private-value bidders.
+example : ∀ (M : MathEconLib.Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ)),
+    FirstAndSecondPay.IsFirstAndSecondPay M →
+      ¬MathEconLib.Mechanism.DirectMechanism.IsDSIC (FirstAndSecondPay.privateValues 2) M :=
+  @FirstAndSecondPay.not_isDSIC
+
+-- Truthful participation is not ex-post individually rational with zero outside utility.
+example : ∀ (M : MathEconLib.Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ)),
+    FirstAndSecondPay.IsFirstAndSecondPay M →
+      ¬MathEconLib.Mechanism.DirectMechanism.IsExPostIR (FirstAndSecondPay.privateValues 2) M :=
+  @FirstAndSecondPay.not_isExPostIR
+
 /-! ## Affiliation -/
 
 section Affiliation

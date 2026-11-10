@@ -122,4 +122,3 @@ end BidderProblem
 end
 
 end MathEconLib
-

@@ -158,4 +158,3 @@ end Auction
 end
 
 end MathEconLib
-
