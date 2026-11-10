@@ -9,6 +9,7 @@ public import MathEconLibExamples.Choice.SubstituteEnvelope
 public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.Matching.DistributiveMarriage
+public import MathEconLibExamples.Matching.JointPreservation
 public import MathEconLibExamples.Matching.UnbalancedMarriage
 public import MathEconLibExamples.Mechanism.PostedPriceUtility
 public import MathEconLibExamples.Preferences.Finite
