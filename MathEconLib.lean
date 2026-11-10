@@ -85,6 +85,7 @@ public import MathEconLib.GameTheory.Strategic.Outcome
 public import MathEconLib.Matching
 public import MathEconLib.Matching.Classical.Marriage
 public import MathEconLib.Matching.Classical.Marriage.Basic
+public import MathEconLib.Matching.Classical.Marriage.BlockingLemma
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
