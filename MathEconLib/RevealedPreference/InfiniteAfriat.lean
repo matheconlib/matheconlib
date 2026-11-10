@@ -47,9 +47,8 @@ variable {L : ℕ} {T : Type*}
 
 /-- The nonnegative commodity orthant is convex. -/
 private theorem convex_nonnegative_bundles (L : ℕ) :
-    Convex ℝ {x : Bundle L | Nonnegative x} := by
-  intro x hx y hy a b ha hb _hab i
-  exact add_nonneg (mul_nonneg ha (hx i)) (mul_nonneg hb (hy i))
+    Convex ℝ {x : Bundle L | Nonnegative x} :=
+  convex_Ici (0 : Bundle L)
 
 namespace InfiniteAfriat
 
@@ -164,7 +163,7 @@ private theorem finite_constraints_satisfiable (hL : 0 < L) (p q : T → Bundle 
   let F := observedSupport s
   let K := gapSupport s
   obtain ⟨U, _hcont, hconc, hmono, hstrict, hrat⟩ :=
-    finiteRenyRationalization_of_graphGARP hL (fun t : F => p t) (fun t : F => q t)
+    hasFiniteRegularRenyRationalization_of_graphGARP hL (fun t : F => p t) (fun t : F => q t)
       (fun t => hp t) (graphGARP_reindex p q (fun t : F => (t : T)) hg)
   let v := normalizedCube U hmono K w hw (hsum K)
   have heval (x : Bundle L) (hx : Nonnegative x) :
@@ -208,7 +207,7 @@ across rational pairs; it may not be reselected or shrunk with `s`.
 
 This packages an invariant already present in `finite_constraints_satisfiable`
 and makes the quantifier order visible to callers of the compactness step. -/
-theorem exists_uniform_margins_and_finite_witnesses
+theorem exists_fixed_margins_and_finite_witnesses
     (hL : 0 < L) (p q : T → Bundle L)
     (hp : RenyPriceAdmissible p) (hq : RenyChoiceAdmissible q)
     (hg : GraphGARP p q) :
@@ -269,12 +268,12 @@ theorem finiteRegularRenyRationalization_implies_regularRenyRationalization
 /-- Reny's infinite-data sufficiency theorem, with arbitrary observation
 cardinality. The proof uses fixed positive gaps and standard-real compactness
 as in the logical-compactness approach of Gonczarowski--Kominers--Shorrer. -/
-theorem infiniteRenyRationalization_of_graphGARP
+theorem hasRegularRenyRationalization_of_graphGARP
     (hL : 0 < L) (p q : T → Bundle L)
     (hp : RenyPriceAdmissible p) (hq : RenyChoiceAdmissible q)
     (hg : GraphGARP p q) : HasRegularRenyRationalization p q := by
   obtain ⟨w, hw, _hsum, hfinite⟩ :=
-    InfiniteAfriat.exists_uniform_margins_and_finite_witnesses hL p q hp hq hg
+    InfiniteAfriat.exists_fixed_margins_and_finite_witnesses hL p q hp hq hg
   obtain ⟨v, hv⟩ := LogicalCompactness.exists_satisfying_closed_constraints
     (InfiniteAfriat.Satisfies p q w) (InfiniteAfriat.satisfies_isClosed p q w) hfinite
   exact ⟨InfiniteAfriat.cubeUtility v,
@@ -283,12 +282,12 @@ theorem infiniteRenyRationalization_of_graphGARP
 /-- Infinite Afriat/Reny: GARP is equivalent to regular Reny rationalization.
 There are finitely many goods but no finiteness/countability assumption on
 observations, and empty datasets, free goods and zero income are allowed. -/
-theorem infinite_graphGARP_iff_regularRenyRationalization
+theorem graphGARP_iff_hasRegularRenyRationalization
     (hL : 0 < L) (p q : T → Bundle L)
     (hp : RenyPriceAdmissible p) (hq : RenyChoiceAdmissible q) :
     GraphGARP p q ↔ HasRegularRenyRationalization p q := by
   constructor
-  · exact infiniteRenyRationalization_of_graphGARP hL p q hp hq
+  · exact hasRegularRenyRationalization_of_graphGARP hL p q hp hq
   · rintro ⟨u, _hmono, _hquasi, _hstrict, hrat⟩
     exact graphGARP_of_renyRationalizes p q u hq hrat
 
@@ -299,12 +298,12 @@ theorem infinite_reny_characterization
     (hp : RenyPriceAdmissible p) (hq : RenyChoiceAdmissible q) :
     ((∃ u : Utility L, RenyRationalizes p q u) ↔ GraphGARP p q) ∧
     (GraphGARP p q ↔ HasRegularRenyRationalization p q) := by
-  refine ⟨⟨?_, ?_⟩, infinite_graphGARP_iff_regularRenyRationalization hL p q hp hq⟩
+  refine ⟨⟨?_, ?_⟩, graphGARP_iff_hasRegularRenyRationalization hL p q hp hq⟩
   · rintro ⟨u, hu⟩
     exact graphGARP_of_renyRationalizes p q u hq hu
   · intro hg
     obtain ⟨u, _hmono, _hquasi, _hstrict, hrat⟩ :=
-      infiniteRenyRationalization_of_graphGARP hL p q hp hq hg
+      hasRegularRenyRationalization_of_graphGARP hL p q hp hq hg
     exact ⟨u, hrat⟩
 
 end MathEconLib.RevealedPreference

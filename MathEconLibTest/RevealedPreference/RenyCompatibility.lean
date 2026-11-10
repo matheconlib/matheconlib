@@ -33,7 +33,7 @@ example {L : ℕ} {T : Type*} [Finite T] (hL : 0 < L) (p q : T → Bundle L)
       ∀ t y, Nonnegative y →
         (dot (p t) y ≤ dot (p t) (q t) → u y ≤ u (q t)) ∧
         (dot (p t) y < dot (p t) (q t) → u y < u (q t)) :=
-  finite_graphGARP_iff_regularRenyRationalization hL p q hp hq
+  graphGARP_iff_hasFiniteRegularRenyRationalization hL p q hp hq
 
 -- The infinite conclusion spells out every regularity and rationalization clause.
 example {L : ℕ} {T : Type*} (hL : 0 < L) (p q : T → Bundle L)
@@ -44,7 +44,7 @@ example {L : ℕ} {T : Type*} (hL : 0 < L) (p q : T → Bundle L)
       ∀ t y, Nonnegative y →
         (dot (p t) y ≤ dot (p t) (q t) → u y ≤ u (q t)) ∧
         (dot (p t) y < dot (p t) (q t) → u y < u (q t)) :=
-  infinite_graphGARP_iff_regularRenyRationalization hL p q hp hq
+  graphGARP_iff_hasRegularRenyRationalization hL p q hp hq
 
 -- Also retain the named terminal characterization as a downstream contract.
 example {L : ℕ} {T : Type*} (hL : 0 < L) (p q : T → Bundle L)
@@ -70,7 +70,7 @@ example {L : ℕ} {T : Type*} (hL : 0 < L) (p q : T → Bundle L)
       ∀ s : Finset (InfiniteAfriat.Constraint L T),
         ∃ v : InfiniteAfriat.UtilityCube L, ∀ c ∈ s,
           InfiniteAfriat.Satisfies p q w c v :=
-  InfiniteAfriat.exists_uniform_margins_and_finite_witnesses hL p q hp hq hg
+  InfiniteAfriat.exists_fixed_margins_and_finite_witnesses hL p q hp hq hg
 
 -- Pin the economic meaning of every constraint used in that margin contract.
 example {L : ℕ} {T : Type*} (p q : T → Bundle L)
@@ -131,10 +131,10 @@ example {L : ℕ} {T : Type*} (p q : T → Bundle L)
     HasRegularRenyRationalization p q :=
   finiteRegularRenyRationalization_implies_regularRenyRationalization p q h
 
-#print axioms finite_graphGARP_iff_regularRenyRationalization
-#print axioms infinite_graphGARP_iff_regularRenyRationalization
+#print axioms graphGARP_iff_hasFiniteRegularRenyRationalization
+#print axioms graphGARP_iff_hasRegularRenyRationalization
 #print axioms infinite_reny_characterization
-#print axioms InfiniteAfriat.exists_uniform_margins_and_finite_witnesses
+#print axioms InfiniteAfriat.exists_fixed_margins_and_finite_witnesses
 #print axioms weakUtilityRationalizes_iff_utilityRationalizes
 #print axioms weakUtilityRationalizes_iff_mem_utilityChoice
 #print axioms finiteRegularRenyRationalization_implies_regularRenyRationalization

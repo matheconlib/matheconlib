@@ -109,7 +109,7 @@ def HasFiniteRegularRenyRationalization (p q : T → Bundle L) : Prop :=
 
 /-- Finite GARP yields continuous, concave, nondecreasing, semistrictly
 increasing utility. This includes empty observations and zero-price goods. -/
-theorem finiteRenyRationalization_of_graphGARP [Finite T]
+theorem hasFiniteRegularRenyRationalization_of_graphGARP [Finite T]
     (hL : 0 < L) (p q : T → Bundle L)
     (hprice : RenyPriceAdmissible p) (hgarp : GraphGARP p q) :
     HasFiniteRegularRenyRationalization p q := by
@@ -145,12 +145,12 @@ theorem finiteRenyRationalization_of_graphGARP [Finite T]
 
 /-- Full finite Afriat equivalence on raw data with Reny's admissibility,
 including zero prices, zero choices, and empty observation sets. -/
-theorem finite_graphGARP_iff_regularRenyRationalization [Finite T]
+theorem graphGARP_iff_hasFiniteRegularRenyRationalization [Finite T]
     (hL : 0 < L) (p q : T → Bundle L)
     (hprice : RenyPriceAdmissible p) (hchoice : RenyChoiceAdmissible q) :
     GraphGARP p q ↔ HasFiniteRegularRenyRationalization p q := by
   constructor
-  · exact finiteRenyRationalization_of_graphGARP hL p q hprice
+  · exact hasFiniteRegularRenyRationalization_of_graphGARP hL p q hprice
   · rintro ⟨u, _hcont, _hconcave, _hmono, _hsemi, hrat⟩
     exact graphGARP_of_renyRationalizes p q u hchoice hrat
 
@@ -166,11 +166,11 @@ theorem graphGARP_iff_all_finite_regularRenyRationalizations
   rw [graphGARP_iff_all_finite_restrictions]
   constructor
   · intro hfinite F
-    exact (finite_graphGARP_iff_regularRenyRationalization hL
+    exact (graphGARP_iff_hasFiniteRegularRenyRationalization hL
       (fun z : F => p z) (fun z : F => q z) (fun z => hprice z) (fun z => hchoice z)).mp
       (hfinite F)
   · intro hfinite F
-    exact (finite_graphGARP_iff_regularRenyRationalization hL
+    exact (graphGARP_iff_hasFiniteRegularRenyRationalization hL
       (fun z : F => p z) (fun z : F => q z) (fun z => hprice z) (fun z => hchoice z)).mpr
       (hfinite F)
 

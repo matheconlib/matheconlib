@@ -41,6 +41,25 @@ within this contribution, not changes to the economic predicates. The weaker-tha
 `StrictlyIncreasing` interpretation of semistrict increase requires `0 < L`;
 in dimension zero semistrict increase is impossible, while strict increase is vacuous.
 
+## Declaration name migration
+
+The following review-stage renames describe the predicates in the conclusions
+and clarify that the margins are fixed across finite subfamilies. Hypotheses,
+conclusions, and the terminal `infinite_reny_characterization` remain unchanged.
+
+| Previous name | Current name |
+| --- | --- |
+| `revealedPreferred_monotone_of_renyRationalizes` | `revealedPreferred_mono_of_renyRationalizes` |
+| `exists_finset_revealedPref` | `exists_finset_revealedPreferred` |
+| `exists_uniform_margins_and_finite_witnesses` | `exists_fixed_margins_and_finite_witnesses` |
+| `infiniteRenyRationalization_of_graphGARP` | `hasRegularRenyRationalization_of_graphGARP` |
+| `infinite_graphGARP_iff_regularRenyRationalization` | `graphGARP_iff_hasRegularRenyRationalization` |
+| `finiteRenyRationalization_of_graphGARP` | `hasFiniteRegularRenyRationalization_of_graphGARP` |
+| `finite_graphGARP_iff_regularRenyRationalization` | `graphGARP_iff_hasFiniteRegularRenyRationalization` |
+
+The margin theorem is in the `InfiniteAfriat` namespace; the other declarations
+are in `MathEconLib.RevealedPreference`.
+
 ## Proof dependencies
 
 1. The merged finite GARP certificate and Afriat envelope API gives a finite
@@ -57,7 +76,7 @@ in dimension zero semistrict increase is impossible, while strict increase is va
    semistrict increase; a budget-slack argument recovers strict affordability.
 
 The public invariant
-`InfiniteAfriat.exists_uniform_margins_and_finite_witnesses` has quantifier order
+`InfiniteAfriat.exists_fixed_margins_and_finite_witnesses` has quantifier order
 `∃ w, (∀ r, 0 < w r) ∧ … ∧ ∀ finite s, ∃ v, …`.
 The same schedule is used by every finite witness. Margins can vary across pairs;
 they are not a single positive scalar lower bound.

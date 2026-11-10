@@ -31,7 +31,7 @@ open scoped BigOperators
 
 -- Empty observations are covered by the same infinite theorem.
 example (p q : Empty → Bundle 1) : HasRegularRenyRationalization p q := by
-  apply infiniteRenyRationalization_of_graphGARP (by decide) p q
+  apply hasRegularRenyRationalization_of_graphGARP (by decide) p q
   · intro t; exact t.elim
   · intro t; exact t.elim
   · intro t; exact t.elim
@@ -88,7 +88,7 @@ theorem infinite_data_uniform_margin_client :
           InfiniteAfriat.Satisfies RenyInfinite.price
             RenyInfinite.choice w c v := by
   obtain ⟨w, hw, hsum, hf⟩ :=
-    InfiniteAfriat.exists_uniform_margins_and_finite_witnesses (by decide)
+    InfiniteAfriat.exists_fixed_margins_and_finite_witnesses (by decide)
       RenyInfinite.price RenyInfinite.choice
       RenyInfinite.price_admissible RenyInfinite.choice_admissible
       RenyInfinite.graph_garp
@@ -127,7 +127,7 @@ theorem no_global_positive_gap_for_shrinking_bounds :
 
 #print axioms LogicalCompactness.finite_local_compactness
 #print axioms LogicalCompactness.finite_local_compactness_iff
-#print axioms InfiniteAfriat.exists_uniform_margins_and_finite_witnesses
+#print axioms InfiniteAfriat.exists_fixed_margins_and_finite_witnesses
 #print axioms infinite_three_value_model
 #print axioms infinite_data_uniform_margin_client
 #print axioms finite_subfamilies_allow_shrinking_positive_gaps

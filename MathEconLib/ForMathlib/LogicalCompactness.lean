@@ -6,7 +6,6 @@ Authors: Victor H. Aguiar
 module
 
 public import Mathlib.Topology.Compactness.Compact
-public import Mathlib.Topology.Order
 
 /-!
 # Compactness for finite-local descriptions

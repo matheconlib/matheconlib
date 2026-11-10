@@ -91,16 +91,14 @@ def SemiStrictlyIncreasingOnNonnegative (u : Utility L) : Prop :=
 
 /-- A Reny rationalization propagates weak utility comparisons along revealed
 preference paths, even when the observation type is infinite. -/
-theorem revealedPreferred_monotone_of_renyRationalizes
+theorem revealedPreferred_mono_of_renyRationalizes
     (p q : T → Bundle L) (u : Utility L)
     (hchoice : RenyChoiceAdmissible q)
     (hrat : RenyRationalizes p q u)
     {s t : T} (hst : RevealedPreferred p q s t) :
     u (q t) ≤ u (q s) := by
-  refine Relation.ReflTransGen.head_induction_on hst ?_ ?_
-  · exact le_rfl
-  · intro a b hab _hbc ih
-    exact ih.trans ((hrat a (q b) (hchoice b)).1 hab)
+  exact revealedPreferred_mono p q (fun t => u (q t))
+    (fun {a b} hab => (hrat a (q b) (hchoice b)).1 hab) hst
 
 /-- Necessity of GARP uses no finiteness or price-positivity assumption. -/
 theorem graphGARP_of_renyRationalizes
@@ -109,7 +107,7 @@ theorem graphGARP_of_renyRationalizes
     (hrat : RenyRationalizes p q u) :
     GraphGARP p q := by
   intro s t hst hcheap
-  have hweak := revealedPreferred_monotone_of_renyRationalizes p q u hchoice hrat hst
+  have hweak := revealedPreferred_mono_of_renyRationalizes p q u hchoice hrat hst
   have hstrict : u (q s) < u (q t) := (hrat t (q s) (hchoice s)).2 hcheap
   exact (not_lt_of_ge hweak) hstrict
 
@@ -118,10 +116,7 @@ reindexing, without injectivity or finiteness assumptions. -/
 theorem revealedPreferred_reindex (p q : T → Bundle L) (f : S → T)
     {s t : S} (hst : RevealedPreferred (p ∘ f) (q ∘ f) s t) :
     RevealedPreferred p q (f s) (f t) := by
-  refine Relation.ReflTransGen.head_induction_on hst ?_ ?_
-  · exact Relation.ReflTransGen.refl
-  · intro a b hab _hbc ih
-    exact ih.head hab
+  exact Relation.ReflTransGen.lift f (fun _ _ h => h) s t hst
 
 /-- Every subfamily of GARP-consistent observations remains GARP-consistent. -/
 theorem graphGARP_reindex (p q : T → Bundle L) (f : S → T)
@@ -130,7 +125,7 @@ theorem graphGARP_reindex (p q : T → Bundle L) (f : S → T)
   exact hgarp (f s) (f t) (revealedPreferred_reindex p q f hst)
 
 /-- A revealed-preference path uses only finitely many observations. -/
-theorem exists_finset_revealedPref (p q : T → Bundle L)
+theorem exists_finset_revealedPreferred (p q : T → Bundle L)
     {s t : T} (hst : RevealedPreferred p q s t) :
     ∃ (F : Finset T) (hs : s ∈ F) (ht : t ∈ F),
       RevealedPreferred (fun z : F => p z) (fun z : F => q z)
@@ -162,7 +157,7 @@ theorem graphGARP_iff_all_finite_restrictions (p q : T → Bundle L) :
   · intro hgarp F
     exact graphGARP_reindex p q Subtype.val hgarp
   · intro hfinite s t hst hcheap
-    obtain ⟨F, hs, ht, hF⟩ := exists_finset_revealedPref p q hst
+    obtain ⟨F, hs, ht, hF⟩ := exists_finset_revealedPreferred p q hst
     exact hfinite F ⟨s, hs⟩ ⟨t, ht⟩ hF hcheap
 
 end MathEconLib.RevealedPreference

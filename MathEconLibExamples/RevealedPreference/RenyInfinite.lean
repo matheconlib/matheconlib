@@ -79,7 +79,7 @@ theorem graph_garp : GraphGARP price choice :=
 
 /-- A concrete, genuinely infinite downstream application of Reny's theorem. -/
 theorem has_regular_rationalization : HasRegularRenyRationalization price choice := by
-  exact (infinite_graphGARP_iff_regularRenyRationalization (by decide) price choice
+  exact (graphGARP_iff_hasRegularRenyRationalization (by decide) price choice
     price_admissible choice_admissible).mp graph_garp
 
 end MathEconLibExamples.RevealedPreference.RenyInfinite

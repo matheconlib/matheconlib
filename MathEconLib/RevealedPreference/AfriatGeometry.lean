@@ -160,8 +160,7 @@ functional; the bundles themselves need not be nonnegative. -/
 theorem dot_monotone_of_nonnegative {p : Bundle L} (hp : Nonnegative p) :
     Monotone (dot p) := by
   intro x y hxy
-  unfold dot
-  exact Finset.sum_le_sum fun i _hi => mul_le_mul_of_nonneg_left (hxy i) (hp i)
+  exact dotProduct_le_dotProduct_of_nonneg_left hxy hp
 
 /-- A nonnegative multiplier and nonnegative prices at `t` make its affine
 support coordinatewise nondecreasing. Other observations are unrestricted. -/
