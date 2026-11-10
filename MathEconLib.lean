@@ -16,6 +16,7 @@ public import MathEconLib.Auction.AllPurchase.UniformDistribution
 public import MathEconLib.Auction.AllPurchase.WelfareDecomposition
 public import MathEconLib.Auction.Basic
 public import MathEconLib.Auction.IdenticalTypes
+public import MathEconLib.Auction.PaymentUniqueness
 public import MathEconLib.Auction.RevenueEquivalence
 public import MathEconLib.Auction.StrictMonotonicity
 public import MathEconLib.Auction.SymmetricIPV
@@ -75,6 +76,7 @@ public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Game
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Interim
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.InterimConverse
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
+public import MathEconLib.GameTheory.Strategic.Bayesian.Outcome
 public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
@@ -85,6 +87,7 @@ public import MathEconLib.Matching.Classical.Marriage.Basic
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
+public import MathEconLib.Matching.Classical.Marriage.Distributive
 public import MathEconLib.Matching.Classical.Marriage.Existence
 public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
@@ -103,14 +106,18 @@ public import MathEconLib.Matching.Contracts.WeakSubstitutes
 public import MathEconLib.Mechanism
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 public import MathEconLib.Mechanism.Auctions.Allocation
+public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
+public import MathEconLib.Mechanism.Core.BayesianUtility
 public import MathEconLib.Mechanism.Core.Comap
 public import MathEconLib.Mechanism.Core.Environment
 public import MathEconLib.Mechanism.Core.Mechanism
 public import MathEconLib.Mechanism.Core.Profile
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import MathEconLib.Mechanism.Core.Strategic
+public import MathEconLib.Mechanism.Core.Utility
+public import MathEconLib.Mechanism.Core.UtilityCompatibility
 public import MathEconLib.Preferences
 public import MathEconLib.Preferences.Basic
 public import MathEconLib.Preferences.Complete
@@ -122,6 +129,12 @@ public import MathEconLib.Probability.FinDist.ConditionalOn
 public import MathEconLib.Probability.FinDist.Expect
 public import MathEconLib.Probability.FinDist.Measure
 public import MathEconLib.Probability.FinDist.Simplex
+public import MathEconLib.RevealedPreference
+public import MathEconLib.RevealedPreference.Afriat
+public import MathEconLib.RevealedPreference.AfriatGeometry
+public import MathEconLib.RevealedPreference.Basic
+public import MathEconLib.RevealedPreference.Choice
+public import MathEconLib.RevealedPreference.GARP
 public import MathEconLib.SingleParameter
 public import MathEconLib.SingleParameter.Basic
 public import MathEconLib.SingleParameter.EnvelopeIC
