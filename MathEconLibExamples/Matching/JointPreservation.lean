@@ -249,8 +249,7 @@ theorem not_jointly_preserved (D : ChoiceFunction Contract)
 
 section Ordinal
 
-open Classical
-
+open Classical in
 /-- The best available term in one doctor's position, with vacancy last. -/
 noncomputable def termRank (high low : Contract) (A : Set Contract) : ℕ :=
   if high ∈ A then 2 else if low ∈ A then 1 else 0
@@ -270,6 +269,7 @@ private theorem termRank_mono {high low : Contract} {A Y : Set Contract}
 private theorem termRank_eq_of_priority {high low : Contract} {A Y : Set Contract}
     (hh : high ∈ A ↔ high ∈ Y) (hl : low ∈ A ↔ low ∈ Y ∧ high ∉ Y) :
     termRank high low A = termRank high low Y := by
+  classical
   by_cases h : high ∈ Y <;> simp [termRank, hh, hl, h]
 
 private theorem termRank_mem_of_eq {high low : Contract} {A Y : Set Contract}
@@ -279,6 +279,7 @@ private theorem termRank_mem_of_eq {high low : Contract} {A Y : Set Contract}
   by_cases ha : high ∈ A <;> by_cases hy : high ∈ Y <;>
     by_cases la : low ∈ A <;> by_cases ly : low ∈ Y <;> simp_all [termRank]
 
+open Classical in
 /-- The third coordinate reverses priority when the first two coordinates are a-terms. -/
 noncomputable def thirdRank (A : Set Contract) : ℕ :=
   if a1 ∈ A ∧ a2 ∈ A then termRank b3 a3 A else termRank a3 b3 A
@@ -296,6 +297,7 @@ noncomputable def hospitalRank (A : Set Contract) : ℕ :=
 theorem original_rank_lt_of_feasible_ne {A Y : Set Contract}
     (hA : Set.InjOn worker A) (hAY : A ⊆ Y) (hne : A ≠ original Y) :
     hospitalRank A < hospitalRank (original Y) := by
+  classical
   have h1best : termRank a1 b1 (original Y) = termRank a1 b1 Y :=
     termRank_eq_of_priority (by simp [originalAccepts]) (by simp [originalAccepts])
   have h2best : termRank a2 b2 (original Y) = termRank a2 b2 Y :=
