@@ -1,5 +1,5 @@
 /-
-Copyright (c) 2026 Ruiz Chen, Bo Cowgill. All rights reserved.
+Copyright (c) 2026 Ruiz Chen, Bo Cowgill, Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Ruiz Chen, Bo Cowgill, Scott Duke Kominers
 -/
@@ -29,6 +29,9 @@ formula are derived from these assumptions.
 The optimal value is an upper bound for the profit of each such auction, with equality
 exactly when its posted price is `p*`. This does not construct an auction equilibrium at
 another price or compare interior and boundary regimes.
+
+The scalar input is accessed explicitly through `toNetCostAuction`. Profit means receipts of
+`A.spec.toMechanism` less production expenditure under the same strategy.
 
 See `docs/AuctionReferences.md` for the all-purchase analysis provenance and citation guidance.
 
@@ -201,8 +204,8 @@ namespace LinearScarcityAuction
 
 variable [n.AtLeastTwo]
 variable (A : LinearScarcityAuction Ω n)
-variable [A.HasIdenticalTypes] [A.HasIndependentTypes]
-variable [A.HasBoundedTypes] [A.HasAtomlessTypes]
+variable [A.toNetCostAuction.HasIdenticalTypes] [A.toNetCostAuction.HasIndependentTypes]
+variable [A.toNetCostAuction.HasBoundedTypes] [A.toNetCostAuction.HasAtomlessTypes]
 
 /-- Substantive assumptions for an interior strategy at representative bidder `i`.
 Integrability follows from measurable monotone bids and bounded types, so is not a field.
@@ -211,24 +214,25 @@ structure IsInteriorRegimeStrategy (β : ℝ → ℝ) (i : Fin n) : Prop where
   /-- The common strategy is measurable. -/
   measurable : Measurable β
   /-- Bids strictly increase on the common type interval. -/
-  strictMonoOn : StrictMonoOn β (Icc A.lowestType A.highestType)
+  strictMonoOn : StrictMonoOn β (Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType)
   /-- The representative bidder has no profitable deviation to another type's bid. -/
   typeDeviationIC :
-    (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC
+    (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC
   /-- The quadratic cost lies in the interior regime. -/
   K_neg : A.K_linear β < 0
   /-- Lowest-type utility has the interior normalization. -/
-  lowestTypeUtility : (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
-    (A.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
+  lowestTypeUtility : (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+    (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
       (A.K_linear β) ^ 2 / (4 * A.α_coeff)
 
 variable {A} in
-omit [n.AtLeastTwo] [A.HasIndependentTypes] [A.HasAtomlessTypes] in
+omit [n.AtLeastTwo] [A.toNetCostAuction.HasIndependentTypes]
+    [A.toNetCostAuction.HasAtomlessTypes] in
 /-- Interior strategy assumptions imply integrability for every bidder. -/
 theorem IsInteriorRegimeStrategy.integrable {β : ℝ → ℝ} {i : Fin n}
     (h : A.IsInteriorRegimeStrategy β i) (j : Fin n) :
-    Integrable (fun ω => β (A.θ j ω)) ℙ :=
-  A.toAuction.integrable_comp_type_of_monotoneOn β h.measurable h.strictMonoOn.monotoneOn j
+    Integrable (fun ω => β (A.toNetCostAuction.θ j ω)) ℙ :=
+  A.toNetCostAuction.integrable_comp_type_of_monotoneOn β h.measurable h.strictMonoOn.monotoneOn j
 
 variable {A} in
 /-- Construct the interior bidder problem from the explicit strategy hypotheses. -/
@@ -253,28 +257,28 @@ upper quadratic root. Thus no separate root-selection or all-pay-nonnegativity p
 is needed. The incentive condition concerns deviations to other types' prescribed bids. -/
 theorem interior_regime_strategy_eq_strategyInterior
     (β : ℝ → ℝ) (i : Fin n) (h : A.IsInteriorRegimeStrategy β i)
-    (v : ℝ) (hv : v ∈ Icc A.lowestType A.highestType) :
+    (v : ℝ) (hv : v ∈ Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType) :
     β v = AllPurchase.strategyInterior A.α_coeff (-(A.K_linear β))
-      (A.toAuction.allPayBid v) := by
+      (A.toNetCostAuction.allPayBid v) := by
   let P := h.toInteriorRegimeProblem
   let : BidderProblem.HasTypeDeviationIC P.toBidderProblem := inferInstance
   let := h.typeDeviationIC
-  have hmem (w : ℝ) (hw : w ∈ Icc A.lowestType A.highestType) :
+  have hmem (w : ℝ) (hw : w ∈ Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType) :
       w ∈ P.typeInterval := by
-    change w ∈ Icc (A.θmin i) (A.θmax i)
+    change w ∈ Icc (A.toNetCostAuction.θmin i) (A.toNetCostAuction.θmax i)
     simpa only [Auction.θmin_eq_lowestType, Auction.θmax_eq_highestType] using hw
-  have hAP (w : ℝ) (hw : w ∈ Icc A.lowestType A.highestType) :
-      P.allPayBid w = A.toAuction.allPayBid w := by
-    exact A.toAuction.toBidderProblem_allPayBid_eq
+  have hAP (w : ℝ) (hw : w ∈ Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType) :
+      P.allPayBid w = A.toNetCostAuction.allPayBid w := by
+    exact A.toNetCostAuction.toBidderProblem_allPayBid_eq
       A.spec.usesStrictHighestBidAllocation h.strictMonoOn h.measurable i hw
   have hα_ne : A.α_coeff ≠ 0 := ne_of_gt A.α_pos
-  have hsquare (w : ℝ) (hw : w ∈ Icc A.lowestType A.highestType) :
+  have hsquare (w : ℝ) (hw : w ∈ Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType) :
       A.α_coeff * (β w + A.K_linear β / (2 * A.α_coeff)) ^ 2 =
-        A.toAuction.allPayBid w := by
+        A.toNetCostAuction.allPayBid w := by
     have hquad := P.interior_regime_quadratic w (hmem w hw)
     rw [hAP w hw] at hquad
     change A.α_coeff * (β w) ^ 2 + A.K_linear β * β w =
-      A.toAuction.allPayBid w - (A.K_linear β) ^ 2 / (4 * A.α_coeff) at hquad
+      A.toNetCostAuction.allPayBid w - (A.K_linear β) ^ 2 / (4 * A.α_coeff) at hquad
     have hcomplete :
         A.α_coeff * (β w + A.K_linear β / (2 * A.α_coeff)) ^ 2 =
           A.α_coeff * (β w) ^ 2 + A.K_linear β * β w +
@@ -282,12 +286,13 @@ theorem interior_regime_strategy_eq_strategyInterior
       field_simp
       ring
     linarith
-  have hlo_mem : A.lowestType ∈ Icc A.lowestType A.highestType :=
+  have hlo_mem : A.toNetCostAuction.lowestType ∈
+      Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType :=
     ⟨le_rfl, hv.1.trans hv.2⟩
-  have hlo_sq := hsquare A.lowestType hlo_mem
-  rw [A.toAuction.allPayBid_lowestType] at hlo_sq
-  have hlo_zero : β A.lowestType + A.K_linear β / (2 * A.α_coeff) = 0 := by
-    have hsq : (β A.lowestType + A.K_linear β / (2 * A.α_coeff)) ^ 2 = 0 :=
+  have hlo_sq := hsquare A.toNetCostAuction.lowestType hlo_mem
+  rw [A.toNetCostAuction.allPayBid_lowestType] at hlo_sq
+  have hlo_zero : β A.toNetCostAuction.lowestType + A.K_linear β / (2 * A.α_coeff) = 0 := by
+    have hsq : (β A.toNetCostAuction.lowestType + A.K_linear β / (2 * A.α_coeff)) ^ 2 = 0 :=
       (mul_eq_zero.mp hlo_sq).resolve_left hα_ne
     exact pow_eq_zero_iff two_ne_zero |>.mp hsq
   have hroot : -(A.K_linear β) / (2 * A.α_coeff) ≤ β v := by
@@ -300,15 +305,15 @@ theorem interior_regime_strategy_eq_strategyInterior
   have hstrategy := P.interior_regime_strategy v (hmem v hv) hAP_nn hroot
   rw [hAP v hv] at hstrategy
   change β v = AllPurchase.strategyInterior A.α_coeff (-(A.K_linear β))
-    (A.toAuction.allPayBid v) at hstrategy
+    (A.toNetCostAuction.allPayBid v) at hstrategy
   exact hstrategy
 
 /-- Expanded square-root version of the canonical interior strategy formula. -/
 theorem interior_regime_strategy_eq_allPayBid
     (β : ℝ → ℝ) (i : Fin n) (h : A.IsInteriorRegimeStrategy β i)
-    (v : ℝ) (hv : v ∈ Icc A.lowestType A.highestType) :
+    (v : ℝ) (hv : v ∈ Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType) :
     β v = -(A.K_linear β) / (2 * A.α_coeff) +
-      sqrt (A.toAuction.allPayBid v) / sqrt A.α_coeff := by
+      sqrt (A.toNetCostAuction.allPayBid v) / sqrt A.α_coeff := by
   simpa only [AllPurchase.strategyInterior, sqrt_div' _ A.α_pos.le] using
     A.interior_regime_strategy_eq_strategyInterior β i h v hv
 
@@ -320,18 +325,19 @@ include h
 assumptions: the strategy formula expresses it as a constant multiple of an integrable
 purchase plus a constant. -/
 theorem integrable_sqrt_allPayBid_of_interior (j : Fin n) :
-    Integrable (fun ω => sqrt (A.toAuction.allPayBid (A.θ j ω))) ℙ := by
+    Integrable (fun ω => sqrt (A.toNetCostAuction.allPayBid (A.toNetCostAuction.θ j ω))) ℙ := by
   have hs_ne : sqrt A.α_coeff ≠ 0 := ne_of_gt (sqrt_pos.mpr A.α_pos)
-  have hfun : (fun ω => sqrt (A.toAuction.allPayBid (A.θ j ω))) =
+  have hfun : (fun ω => sqrt (A.toNetCostAuction.allPayBid (A.toNetCostAuction.θ j ω))) =
       (fun ω => sqrt A.α_coeff *
-        (β (A.θ j ω) + A.K_linear β / (2 * A.α_coeff))) := by
+        (β (A.toNetCostAuction.θ j ω) + A.K_linear β / (2 * A.α_coeff))) := by
     funext ω
-    have hmem : A.θ j ω ∈ Icc A.lowestType A.highestType := by
+    have hmem : A.toNetCostAuction.θ j ω ∈
+        Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType := by
       simpa only [Auction.θmin_eq_lowestType, Auction.θmax_eq_highestType] using
-        (Auction.HasBoundedTypes.θ_in (A := A.toAuction) j ω)
-    have h := A.interior_regime_strategy_eq_allPayBid β 0 h (A.θ j ω) hmem
-    have hdiv : β (A.θ j ω) + A.K_linear β / (2 * A.α_coeff) =
-        sqrt (A.toAuction.allPayBid (A.θ j ω)) / sqrt A.α_coeff := by
+        (Auction.HasBoundedTypes.θ_in (A := A.toNetCostAuction) j ω)
+    have h := A.interior_regime_strategy_eq_allPayBid β 0 h (A.toNetCostAuction.θ j ω) hmem
+    have hdiv : β (A.toNetCostAuction.θ j ω) + A.K_linear β / (2 * A.α_coeff) =
+        sqrt (A.toNetCostAuction.allPayBid (A.toNetCostAuction.θ j ω)) / sqrt A.α_coeff := by
       rw [neg_div] at h
       linarith
     simpa only [mul_comm] using ((eq_div_iff hs_ne).mp hdiv).symm
@@ -343,17 +349,17 @@ theorem integrable_sqrt_allPayBid_of_interior (j : Fin n) :
 theorem meanPurchase_eq_interior :
     A.meanPurchase β =
       (A.φ_bar - A.spec.price) / (A.α_coeff * ((n : ℝ) + 1)) +
-        2 * A.toAuction.expectedSqrtAllPayBid / (((n : ℝ) + 1) * sqrt A.α_coeff) := by
+        2 * A.toNetCostAuction.expectedSqrtAllPayBid / (((n : ℝ) + 1) * sqrt A.α_coeff) := by
   have hs_int := A.integrable_sqrt_allPayBid_of_interior β h 0
-  have hfun : (fun ω => β (A.θ 0 ω)) =
+  have hfun : (fun ω => β (A.toNetCostAuction.θ 0 ω)) =
       (fun ω => -(A.K_linear β) / (2 * A.α_coeff) +
-        sqrt (A.toAuction.allPayBid (A.θ 0 ω)) / sqrt A.α_coeff) := by
+        sqrt (A.toNetCostAuction.allPayBid (A.toNetCostAuction.θ 0 ω)) / sqrt A.α_coeff) := by
     funext ω
     apply A.interior_regime_strategy_eq_allPayBid β 0 h
     simpa only [Auction.θmin_eq_lowestType, Auction.θmax_eq_highestType] using
-      (Auction.HasBoundedTypes.θ_in (A := A.toAuction) 0 ω)
+      (Auction.HasBoundedTypes.θ_in (A := A.toNetCostAuction) 0 ω)
   have hmean : A.meanPurchase β = -(A.K_linear β) / (2 * A.α_coeff) +
-      A.toAuction.expectedSqrtAllPayBid / sqrt A.α_coeff := by
+      A.toNetCostAuction.expectedSqrtAllPayBid / sqrt A.α_coeff := by
     unfold meanPurchase
     rw [hfun, integral_add (integrable_const _) (hs_int.div_const _),
       integral_const, probReal_univ, one_smul, integral_div]
@@ -370,10 +376,10 @@ purchases equal the quantity formula at the actual posted price, with the moment
 from the type distribution's all-pay bid. Only the representative bidder's IC and
 baseline utility are needed because all bidders use the common strategy. -/
 theorem expectedAggregateBid_eq_interiorMeanQuantity :
-    A.toAuction.expectedAggregateBid β =
+    A.toNetCostAuction.expectedAggregateBid β =
       AllPurchase.interiorMeanQuantity A.φ_bar A.α_coeff
-        A.toAuction.expectedSqrtAllPayBid n A.spec.price := by
-  rw [A.toAuction.expectedAggregateBid_eq_mul_mean β h.measurable h.integrable]
+        A.toNetCostAuction.expectedSqrtAllPayBid n A.spec.price := by
+  rw [A.toNetCostAuction.expectedAggregateBid_eq_mul_mean β h.measurable h.integrable]
   change (n : ℝ) * A.meanPurchase β = _
   rw [A.meanPurchase_eq_interior β h]
   unfold AllPurchase.interiorMeanQuantity
@@ -383,20 +389,20 @@ theorem expectedAggregateBid_eq_interiorMeanQuantity :
 with the distribution-based square-root all-pay moment. This is an identification for
 the supplied auction and strategy, not an existence statement at other prices. -/
 theorem bundledProfit_eq_sellerProfitInterior (c : ℝ) :
-    A.toAuction.bundledProfit A.spec β c =
+    A.toNetCostAuction.bundledProfit A.spec β c =
       AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
-        A.toAuction.expectedSqrtAllPayBid n A.spec.price := by
+        A.toNetCostAuction.expectedSqrtAllPayBid n A.spec.price := by
   unfold Auction.bundledProfit AllPurchase.sellerProfitInterior
   rw [A.expectedAggregateBid_eq_interiorMeanQuantity β h]
 
 /-- The algebraic interior optimum bounds the actual profit of a supplied interior
 auction. This does not assert the existence of an equilibrium at the optimizing price. -/
 theorem bundledProfit_le_interior_optimum (c : ℝ) :
-    A.toAuction.bundledProfit A.spec β c ≤
+    A.toNetCostAuction.bundledProfit A.spec β c ≤
       AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
-        A.toAuction.expectedSqrtAllPayBid n
+        A.toNetCostAuction.expectedSqrtAllPayBid n
         (AllPurchase.optimalPriceInterior A.φ_bar c A.α_coeff
-          A.toAuction.expectedSqrtAllPayBid) := by
+          A.toNetCostAuction.expectedSqrtAllPayBid) := by
   rw [A.bundledProfit_eq_sellerProfitInterior β h c]
   exact AllPurchase.sellerProfitInterior_le_at_optimal A.α_pos
     (by have := Nat.AtLeastTwo.prop (n := n); omega) A.spec.price
@@ -404,13 +410,13 @@ theorem bundledProfit_le_interior_optimum (c : ℝ) :
 /-- An interior auction attains the algebraic optimum exactly when its actual posted
 price equals the candidate price. No cross-price auction family is assumed. -/
 theorem bundledProfit_eq_interior_optimum_iff (c : ℝ) :
-    A.toAuction.bundledProfit A.spec β c =
+    A.toNetCostAuction.bundledProfit A.spec β c =
         AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
-          A.toAuction.expectedSqrtAllPayBid n
+          A.toNetCostAuction.expectedSqrtAllPayBid n
           (AllPurchase.optimalPriceInterior A.φ_bar c A.α_coeff
-            A.toAuction.expectedSqrtAllPayBid) ↔
+            A.toNetCostAuction.expectedSqrtAllPayBid) ↔
       A.spec.price = AllPurchase.optimalPriceInterior A.φ_bar c A.α_coeff
-        A.toAuction.expectedSqrtAllPayBid := by
+        A.toNetCostAuction.expectedSqrtAllPayBid := by
   rw [A.bundledProfit_eq_sellerProfitInterior β h c]
   exact AllPurchase.sellerProfitInterior_eq_at_optimal_iff A.α_pos
     (by have := Nat.AtLeastTwo.prop (n := n); omega) A.spec.price

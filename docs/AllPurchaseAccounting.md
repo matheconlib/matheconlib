@@ -37,9 +37,9 @@ The scalar `Auction` carrier represents prize-only values. Existing all-purchase
 quadratic-cost, and envelope calculations use `AllPurchaseBidderSpec` to represent bidder net
 costs. `AllPurchaseBidderModel` packages that auxiliary calculation with its price and scarcity
 specification, with no automatic conversion to a generic `Auction`.
-This is an **interim compatibility adapter**. Its replacement analysis is tracked in
+This is an **interim compatibility adapter**. Its future is an open design question tracked in
 [#272](https://github.com/matheconlib/matheconlib/issues/272); its API pins preserve the current
-boundary while that design is developed. `AllPurchaseBidderSpec` retains the resale schedule and
+boundary while that question is considered. `AllPurchaseBidderSpec` retains the resale schedule and
 regularity assumptions for the existing valuation-dependent analysis.
 
 For an adapter `A`, the public financial methods have distinct names:
@@ -98,6 +98,14 @@ meaning. Scalar `payment_eq` and `p_strat` formulas remain net costs behind the 
 projection. The affected API pins include these projection changes and the new financial APIs;
 IC, integrability, and baseline-utility assumptions are retained.
 
+The welfare and pricing clients from #121 and #122 use this explicit adapter. In
+`MathEconLibExamples.AllPurchase`, the former scalar `rules`, `spec`, and
+`rules_outcome_measurable` are now `bidderRules`, `bidderSpec`, and
+`bidderRules_outcome_measurable`. `monetaryRules` and `monetarySpec` expose the actual mechanism.
+The uniform two-bidder example retains expected purchases `4/3`, edition welfare `37/18`, and
+first-best gap `7/36`. It additionally verifies actual monetary profit `8/3` under the same
+strategy and proves its integrability. The zero-bidder Cournot client is retained.
+
 ## Scope
 
 Purchases remain real-valued. `spec.revenue_nonnegative` assumes nonnegative purchases;
@@ -106,7 +114,7 @@ to `Set.Ici 0`. With at least one bidder, unrestricted real actions admit negati
 violate global no-deficit. Restricting actions changes the set of allowed deviations.
 
 The repair preserves the current scarcity model. It does not impose no-arbitrage conditions or
-prove equilibrium existence. The exponential scarcity example in #239 still has no best response,
-even with nonnegative purchases. Expected-revenue comparisons must use the same strategy and
+prove general equilibrium existence. The exponential scarcity example in #239 still has no best
+response, even with nonnegative purchases. Expected-revenue comparisons must use the same strategy and
 establish integrability; Lean's totalized integral identities alone do not provide finite
 expectations. The resale valuation models the bidder's proceeds, not an entire secondary market.

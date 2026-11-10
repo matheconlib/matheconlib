@@ -538,21 +538,23 @@ example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ
 -- The interior formula is identified with actual profit at the supplied auction's posted price.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
-    [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    [A.toNetCostAuction.HasIdenticalTypes] [A.toNetCostAuction.HasIndependentTypes]
+    [A.toNetCostAuction.HasBoundedTypes] [A.toNetCostAuction.HasAtomlessTypes]
     (β : ℝ → ℝ) (_ : A.IsInteriorRegimeStrategy β 0) (c : ℝ),
-    A.toAuction.bundledProfit A.spec β c =
+    A.toNetCostAuction.bundledProfit A.spec β c =
       MathEconLib.AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
-        A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
+        A.toNetCostAuction.expectedSqrtAllPayBid n A.spec.price :=
   @MathEconLib.LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior
 
 -- The price-independent moment and actual expected aggregate quantity use the same hypotheses.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
-    [A.HasIdenticalTypes] [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
+    [A.toNetCostAuction.HasIdenticalTypes] [A.toNetCostAuction.HasIndependentTypes]
+    [A.toNetCostAuction.HasBoundedTypes] [A.toNetCostAuction.HasAtomlessTypes]
     (β : ℝ → ℝ) (_ : A.IsInteriorRegimeStrategy β 0),
-    A.toAuction.expectedAggregateBid β =
+    A.toNetCostAuction.expectedAggregateBid β =
       MathEconLib.AllPurchase.interiorMeanQuantity A.φ_bar A.α_coeff
-        A.toAuction.expectedSqrtAllPayBid n A.spec.price :=
+        A.toNetCostAuction.expectedSqrtAllPayBid n A.spec.price :=
   @MathEconLib.LinearScarcityAuction.expectedAggregateBid_eq_interiorMeanQuantity
 
 -- Edition-welfare bound and moment identity over supplied real parameters.
@@ -588,10 +590,11 @@ example : ∀ φbar c α B_ed WC : ℝ,
 -- benchmark. Square integrability is the only strategy assumption; gap signs are separate.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
-    MemLp (A.toAuction.aggregateBid β) 2 volume →
+    MemLp (A.toNetCostAuction.aggregateBid β) 2 volume →
       MathEconLib.AllPurchase.firstBestEditionSurplus A.φ_bar c A.α_coeff -
-          (∫ ω, A.toAuction.aggregateBid β ω * A.spec.φ (A.toAuction.aggregateBid β ω) -
-            c * A.toAuction.aggregateBid β ω) =
+          (∫ ω, A.toNetCostAuction.aggregateBid β ω *
+            A.spec.φ (A.toNetCostAuction.aggregateBid β ω) -
+            c * A.toNetCostAuction.aggregateBid β ω) =
         MathEconLib.AllPurchase.cournotLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear +
           MathEconLib.AllPurchase.contestLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear
             (A.bundledEditionWelfare β c) :=
@@ -600,10 +603,10 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 -- The welfare penalty is the variance of the actual aggregate purchases.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
-    MemLp (A.toAuction.aggregateBid β) 2 volume →
+    MemLp (A.toNetCostAuction.aggregateBid β) 2 volume →
       MathEconLib.AllPurchase.editionWelfare A.φ_bar c A.α_coeff
-          (A.toAuction.expectedAggregateBid β) - A.bundledEditionWelfare β c =
-        A.α_coeff * variance (A.toAuction.aggregateBid β) volume :=
+          (A.toNetCostAuction.expectedAggregateBid β) - A.bundledEditionWelfare β c =
+        A.α_coeff * variance (A.toNetCostAuction.aggregateBid β) volume :=
   @MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
 
 -- Uniform all-pay bid (Krishna 2010, Example 3.1, rescaled): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
