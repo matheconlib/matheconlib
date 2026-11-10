@@ -83,19 +83,6 @@ abbrev uniformAction : FinDist (Fin 3) := FinDist.uniform
 def uniformProfile : Fin 2 → FinDist (Fin 3) :=
   fun _ => uniformAction
 
-/-- A player's x2 probability of choosing rock minus their probability of choosing other moves. -/
-def rockBias (σ : Fin 2 → FinDist (Fin 3)) (player : Fin 2) : ℝ :=
-  2 * (σ player) rock - ((σ player) paper + (σ player) scissors)
-
-/-- Difference between the probabilities of paper and scissors. -/
-def paperScissorsBias (σ : Fin 2 → FinDist (Fin 3)) (player : Fin 2) : ℝ :=
-  (σ player) paper - (σ player) scissors
-
-/-!
-## Auxilary definitions
-
--/
-
 /-- in lemma expectedPayoff_p0_closed we prove that this is indeed the payoff -/
 def expectedPayoff_p0 (σ : Fin 2 → FinDist (Fin 3)) : ℝ :=
   (σ p0) rock *
@@ -113,16 +100,6 @@ def expectedPayoff_p1 (σ : Fin 2 → FinDist (Fin 3)) : ℝ :=
     ((σ p0) rock - (σ p0) scissors) +
   (σ p1) scissors *
     ((σ p0) paper - (σ p0) rock)
-
-/-- Choose a pure strategy that exploits a nonuniform opponent. -/
-noncomputable def counterStrategy
-    (opponentMoves : FinDist (Fin 3)) : FinDist (Fin 3) :=
-  if opponentMoves scissors > opponentMoves paper then
-    FinDist.pure rock
-  else if opponentMoves rock > opponentMoves scissors then
-    FinDist.pure paper
-  else
-    FinDist.pure scissors
 
 /-!
 ## Intermediate results
