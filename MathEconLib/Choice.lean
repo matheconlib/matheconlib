@@ -5,11 +5,13 @@ Authors: Scott Duke Kominers
 -/
 module
 
+public import MathEconLib.Choice.Attainment
 public import MathEconLib.Choice.Basic
 public import MathEconLib.Choice.Conditions
 public import MathEconLib.Choice.FiniteOption
 public import MathEconLib.Choice.Induced
 public import MathEconLib.Choice.Map
+public import MathEconLib.Choice.Maximizers
 public import MathEconLib.Choice.Matching.Completion
 public import MathEconLib.Choice.Matching.CompletionEvidence
 public import MathEconLib.Choice.Matching.PathIndependentEnvelope
@@ -19,3 +21,4 @@ public import MathEconLib.Choice.Matching.SubstituteEnvelope
 public import MathEconLib.Choice.Matching.WeakSubstitutability
 public import MathEconLib.Choice.PathIndependentMinorant
 public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.Choice.WeakPreferences

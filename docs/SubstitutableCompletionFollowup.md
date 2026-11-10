@@ -16,7 +16,11 @@ The general path-independent minorant, path-independent envelope, and rejection-
 characterization now have Lean proof scripts in `Choice/PathIndependentMinorant.lean`,
 `Choice/Matching/PathIndependentEnvelope.lean`, and `Choice/Matching/CompletionEvidence.lean`.
 The concrete clients in `MathEconLibExamples/Choice/SubstituteEnvelope.lean` apply greatestness,
-the sandwich, and a rejection obstruction. Validation of these additions is pending.
+the sandwich, and a rejection obstruction. The formalized core and clients passed the full
+build and repository-wide proof-integrity audit at `52255e6e83e5e48d615244962af405654f1aa1d1`
+in [CI run 41660821485](https://github.com/matheconlib/matheconlib/actions/runs/41660821485).
+Validation of subsequent integration updates is recorded in
+[PR #275](https://github.com/matheconlib/matheconlib/pull/275).
 The finite obstruction bound and four-contract demand impossibility remain mathematical
 specifications with proofs, not claims of completed Lean formalization. They are included here so the follow-on PR records the entire
 research development rather than silently dropping its remaining components.
@@ -204,13 +208,10 @@ otherwise. It drops from two choices on {a,a′} to one on X, while C itself is 
 substitutable, IRC, demand-monotone completion. Thus neither extremal construction
 alone decides whether a demand-monotone completion exists.
 
-## Remaining formalization checks
+## Remaining Lean formalizations
 
-- Validate the formalized rejection-evidence axiom; formalize the finite obstruction bound.
-- Validate the formalized general path-independent minorant and P_C completion theorem.
+- Formalize the finite obstruction bound.
 - Formalize the four-contract example and its universal nonexistence result.
-- Validate the added concrete applications of the envelope, sandwich, and obstruction theorems.
-- Build all targets, regenerate/verify imports, and run proof-integrity checks.
 
 No changes to the manuscript, market definition, or completion predicates are
 part of this follow-on. The public theorem generalizations are listed in Section 4.

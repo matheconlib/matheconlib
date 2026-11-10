@@ -1,13 +1,19 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Victor H. Aguiar. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Daniel Lyng, Victor H. Aguiar
 -/
 module
 
 public import MathEconLibExamples.Choice.SubstituteEnvelope
+public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.GameTheory.MatchingPennies
+public import MathEconLibExamples.Matching.DistributiveMarriage
 public import MathEconLibExamples.Matching.JointPreservation
+public import MathEconLibExamples.Matching.UnbalancedMarriage
+public import MathEconLibExamples.Mechanism.PostedPriceUtility
+public import MathEconLibExamples.Preferences.Finite
+public import MathEconLibExamples.RevealedPreference
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
 /-!
@@ -21,6 +27,8 @@ Concrete economic models illustrate the library's definitions and results.
 * Matching pennies has no pure Nash equilibrium.
 * A Becker-inspired crime-choice model gives a threshold rule and deterrence results
   for individuals and aggregate crime under a fixed type distribution.
+* A two-couple marriage market has distinct stable outcomes whose lattice join,
+  meet, and intrinsic ideal representations are checked explicitly.
 
 ## Tags
 
