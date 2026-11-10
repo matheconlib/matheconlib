@@ -7,6 +7,7 @@ Authors: Daniel Lyng
 module
 
 public import MathEconLib.Preferences.Representation.Basic
+public import Mathlib.Basic.Real.Basic
 public import Mathlib.Data.Finset.Card
 public import Mathlib.Data.Fintype.EquivFin
 
@@ -22,6 +23,8 @@ receive equal scores. Differences between these scores carry no economic meaning
 
 * `CompletePreference.exists_isRepresentedBy_nat` — every complete preference on a finite type is
   represented by a natural-number utility.
+* `CompletePreference.exists_isRepresentedBy_real` — every complete preference on a finite type is
+  represented by a real-valued utility.
 * `CompletePreference.exists_nat_utility_isMaxOn` — a single natural-number utility identifies, on
   every menu, the alternatives at least as good as all others with the utility maximizers.
 
@@ -68,6 +71,12 @@ theorem exists_isRepresentedBy_nat [Finite X] (R : CompletePreference X) :
         Finset.univ.filter (fun z => z ≼[R] x) :=
       Finset.ssubset_iff_subset_ne.mpr ⟨hsub, fun h => hx_not (h.symm ▸ hx_in)⟩
     exact (not_lt_of_ge huxy) (Finset.card_lt_card hss)
+
+/-- Every complete preference on a finite type is represented by a real-valued utility. -/
+theorem exists_isRepresentedBy_real [Finite X] (R : CompletePreference X) :
+    ∃ u : X → ℝ, R.IsRepresentedBy u :=
+  let ⟨u, hu⟩ := R.exists_isRepresentedBy_nat
+  ⟨Nat.cast ∘ u, hu.comp_strictMono Nat.strictMono_cast⟩
 
 /-- One natural-number utility identifies greatest alternatives with maximizers on every menu. -/
 theorem exists_nat_utility_isMaxOn [Finite X] (R : CompletePreference X) :
