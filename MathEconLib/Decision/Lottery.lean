@@ -6,7 +6,7 @@ Authors: Ritik Jain
 module
 
 public import MathEconLib.Probability.FinDist.Basic
-public import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.FieldSimp
 
 /-!
 # Degenerate and binary lotteries

@@ -9,28 +9,49 @@ public import MathEconLib.Decision.Independence
 public import MathEconLib.Decision.Continuity
 public import MathEconLib.Preferences.Representation.Finite
 public import MathEconLib.Probability.FinDist.Expect
-public import Mathlib.Data.Fintype.Lattice
-public import Mathlib.Tactic.LinearCombination
+import Mathlib.Data.Fintype.Lattice
+import Mathlib.Tactic.FieldSimp
+import Mathlib.Tactic.LinearCombination
 
 /-!
 # Expected utility
 
 The *expected utility* of a lottery `p` for a Bernoulli function `v : Z → ℝ` is
-`p.expect v = ∑_z p(z) v(z)`. On a finite set of prizes, a complete preference has an expected
-utility representation iff it is continuous and independent (von Neumann–Morgenstern).
+`p.expect v = ∑_z p(z) v(z)`. A preference `R` on lotteries has an *expected utility
+representation* when some `v` gives `p ≼[R] q ↔ p.expect v ≤ q.expect v` for all lotteries.
 
 ## Main definitions
 
-* `HasExpectedUtility`: some expected utility `p ↦ p.expect v` represents the preference.
+* `HasExpectedUtilityRepresentation`: some expected utility `p ↦ p.expect v` represents `R`.
 
 ## Main statements
 
-* `isIndependent_of_isRepresentedBy`, `isMixtureContinuous_of_isRepresentedBy`:
-  **Proposition 3.1**.
-* `exists_eq_mul_add_of_isRepresentedBy`: Bernoulli functions are unique up to positive affine
-  maps.
-* `hasExpectedUtility_of_isIndependentOn`: **Proposition 3.2**.
-* `hasExpectedUtility_iff_isMixtureContinuous_and_isIndependent`: the expected utility theorem.
+* `isMixtureIndependent_of_isRepresentedBy`, `isMixtureContinuous_of_isRepresentedBy`:
+  **Proposition 3.1**, an expected utility representation gives independence and continuity on
+  all lotteries.
+* `exists_eq_mul_add_of_isRepresentedBy`, `isRepresentedBy_expect_mul_add`: Bernoulli functions
+  are unique up to positive affine maps `w = a v + b`, `a > 0`.
+* `hasExpectedUtilityRepresentation_of_isMixtureContinuousOn_of_isMixtureIndependentOn`:
+  **Proposition 3.2**, the restricted theorem.
+* `hasExpectedUtilityRepresentation_iff_isMixtureContinuous_and_isMixtureIndependent`: **the
+  expected utility theorem**, for all lotteries.
+
+## Assumptions
+
+The prizes `Z` are finite and the preference is a `CompletePreference` (complete and transitive).
+The restricted theorem, Osborne and Rubinstein's Proposition 3.2, asks for less than the iff:
+
+* continuity in mixtures only among sure prizes, `IsMixtureContinuousOn degenerate`: if
+  `[c] ≺ [b] ≺ [a]`, some `α · a ⊕ (1 − α) · c` with `0 < α < 1` is indifferent to `[b]`;
+* independence only between a sure prize and a binary lottery, in both orders,
+  `IsMixtureIndependentOn degenerate binary` and `IsMixtureIndependentOn binary degenerate`.
+
+The iff assumes continuity `IsMixtureContinuous` and independence `IsMixtureIndependent` on all
+lotteries, which imply the restricted hypotheses, and are implied by any representation.
+
+No prize needs to be strictly better than another: when all sure prizes are indifferent, the
+representation is given by a constant Bernoulli function. Every Bernoulli function of such a
+preference is then constant, by uniqueness.
 
 ## References
 
@@ -48,20 +69,20 @@ universe u
 
 variable {Z : Type u} [Fintype Z] {R : Preference (FinDist Z)} {v w : Z → ℝ}
 
-/-- `R` is *consistent with expected utility*: some `p ↦ p.expect v` represents it. -/
-def HasExpectedUtility (R : Preference (FinDist Z)) : Prop :=
+/-- `R` has an *expected utility representation*: some `p ↦ p.expect v` represents it. -/
+def HasExpectedUtilityRepresentation (R : Preference (FinDist Z)) : Prop :=
   ∃ v : Z → ℝ, R.IsRepresentedBy fun p => p.expect v
 
-theorem hasExpectedUtility_iff :
-    HasExpectedUtility R ↔ ∃ v : Z → ℝ, R.IsRepresentedBy fun p => p.expect v :=
+theorem hasExpectedUtilityRepresentation_iff :
+    HasExpectedUtilityRepresentation R ↔ ∃ v : Z → ℝ, R.IsRepresentedBy fun p => p.expect v :=
   Iff.rfl
 
 /-! ### Expected utility implies independence and continuity -/
 
-/-- **Proposition 3.1**: a preference with expected utility is independent. -/
-theorem isIndependent_of_isRepresentedBy (h : R.IsRepresentedBy fun p => p.expect v) :
-    IsIndependent R := by
-  rw [isIndependent_iff]
+/-- **Proposition 3.1**: a preference with an expected utility representation is independent. -/
+theorem isMixtureIndependent_of_isRepresentedBy (h : R.IsRepresentedBy fun p => p.expect v) :
+    IsMixtureIndependent R := by
+  rw [isMixtureIndependent_iff]
   intro p q r α hα
   rw [h q p, h (FinDist.mixture α q r) (FinDist.mixture α p r)]
   simp only [FinDist.expect_mixture, smul_eq_mul]
@@ -69,7 +90,8 @@ theorem isIndependent_of_isRepresentedBy (h : R.IsRepresentedBy fun p => p.expec
   · intro hle; nlinarith
   · intro hle; exact le_of_mul_le_mul_left (by linarith) hα
 
-/-- **Proposition 3.1**: a preference with expected utility is continuous in mixtures. -/
+/-- **Proposition 3.1**: a preference with an expected utility representation is continuous in
+mixtures. -/
 theorem isMixtureContinuous_of_isRepresentedBy (h : R.IsRepresentedBy fun p => p.expect v) :
     IsMixtureContinuous R := by
   rw [isMixtureContinuous_iff]
@@ -88,10 +110,12 @@ theorem isMixtureContinuous_of_isRepresentedBy (h : R.IsRepresentedBy fun p => p
   exact ⟨α, div_pos (by linarith) hpr, (div_lt_one hpr).2 (by linarith),
     (h _ _).2 he.le, (h _ _).2 he.ge⟩
 
-theorem HasExpectedUtility.isIndependent (h : HasExpectedUtility R) : IsIndependent R :=
-  let ⟨_, hv⟩ := h; isIndependent_of_isRepresentedBy hv
+theorem HasExpectedUtilityRepresentation.isMixtureIndependent
+    (h : HasExpectedUtilityRepresentation R) : IsMixtureIndependent R :=
+  let ⟨_, hv⟩ := h; isMixtureIndependent_of_isRepresentedBy hv
 
-theorem HasExpectedUtility.isMixtureContinuous (h : HasExpectedUtility R) :
+theorem HasExpectedUtilityRepresentation.isMixtureContinuous
+    (h : HasExpectedUtilityRepresentation R) :
     IsMixtureContinuous R :=
   let ⟨_, hv⟩ := h; isMixtureContinuous_of_isRepresentedBy hv
 
@@ -179,18 +203,20 @@ theorem exists_eq_mul_add_of_isRepresentedBy (hv : R.IsRepresentedBy fun p => p.
 
 /-! ### The expected utility theorem -/
 
-/-- **Proposition 3.2**: on finite `Z`, a complete preference continuous on degenerate lotteries
-and independent between degenerate and binary ones, both ways, has expected utility. -/
-theorem hasExpectedUtility_of_isIndependentOn [DecidableEq Z] {R : CompletePreference (FinDist Z)}
+/-- **Proposition 3.2**: on finite `Z`, a complete preference that is continuous in mixtures among
+sure prizes, and independent between a sure prize and a binary lottery in both orders, has an
+expected utility representation. -/
+theorem hasExpectedUtilityRepresentation_of_isMixtureContinuousOn_of_isMixtureIndependentOn
+    [DecidableEq Z] {R : CompletePreference (FinDist Z)}
     (hC : IsMixtureContinuousOn degenerate R.toPreference)
-    (hDB : IsIndependentOn degenerate binary R.toPreference)
-    (hBD : IsIndependentOn binary degenerate R.toPreference) :
-    HasExpectedUtility R.toPreference := by
+    (hDB : IsMixtureIndependentOn degenerate binary R.toPreference)
+    (hBD : IsMixtureIndependentOn binary degenerate R.toPreference) :
+    HasExpectedUtilityRepresentation R.toPreference := by
   rcases isEmpty_or_nonempty Z with hZ | hZ
   · refine ⟨0, fun p _ => ?_⟩
     obtain ⟨z, -⟩ := p.exists_pmf_pos
     exact (IsEmpty.false z).elim
-  have hDD : IsIndependentOn degenerate degenerate R.toPreference :=
+  have hDD : IsMixtureIndependentOn degenerate degenerate R.toPreference :=
     hDB.mono subset_rfl degenerate_subset_binary
   -- With a best prize `a` and a worst `b`, each `p` is indifferent to `mix (U p) [a] [b]`, and
   -- monotonicity ranks these mixtures by `U`.
@@ -287,16 +313,16 @@ theorem hasExpectedUtility_of_isIndependentOn [DecidableEq Z] {R : CompletePrefe
     rw [FinDist.finMixture_const] at hp hq
     exact R.le_trans hp.1 hq.2
 
-/-- **The expected utility theorem**: on finite `Z`, a complete preference has expected utility
-iff it is continuous in mixtures and independent. -/
-theorem hasExpectedUtility_iff_isMixtureContinuous_and_isIndependent
+/-- **The expected utility theorem**: on finite `Z`, a complete preference has an expected utility
+representation iff it is continuous in mixtures and independent on all lotteries. -/
+theorem hasExpectedUtilityRepresentation_iff_isMixtureContinuous_and_isMixtureIndependent
     {R : CompletePreference (FinDist Z)} :
-    HasExpectedUtility R.toPreference ↔
-      IsMixtureContinuous R.toPreference ∧ IsIndependent R.toPreference := by
+    HasExpectedUtilityRepresentation R.toPreference ↔
+      IsMixtureContinuous R.toPreference ∧ IsMixtureIndependent R.toPreference := by
   classical
-  exact ⟨fun h => ⟨h.isMixtureContinuous, h.isIndependent⟩, fun ⟨hC, hI⟩ =>
-    hasExpectedUtility_of_isIndependentOn (hC.isMixtureContinuousOn _)
-      (hI.isIndependentOn _ _) (hI.isIndependentOn _ _)⟩
+  exact ⟨fun h => ⟨h.isMixtureContinuous, h.isMixtureIndependent⟩, fun ⟨hC, hI⟩ =>
+    hasExpectedUtilityRepresentation_of_isMixtureContinuousOn_of_isMixtureIndependentOn
+      (hC.isMixtureContinuousOn _) (hI.isMixtureIndependentOn _ _) (hI.isMixtureIndependentOn _ _)⟩
 
 end MathEconLib.Decision
 
@@ -323,9 +349,9 @@ example (v : Fin 3 → ℝ) :
   simp only [FinDist.expect_mixture, FinDist.expect_pure, smul_eq_mul]
   ring
 
-example : IsIndependent (Preference.ofUtility fun p : FinDist (Fin 2) =>
+example : IsMixtureIndependent (Preference.ofUtility fun p : FinDist (Fin 2) =>
     p.expect fun z => if z = 0 then (1 : ℝ) else 0) :=
-  isIndependent_of_isRepresentedBy (Preference.isRepresentedBy_ofUtility _)
+  isMixtureIndependent_of_isRepresentedBy (Preference.isRepresentedBy_ofUtility _)
 
 /-- `−v` is not a Bernoulli function for the preference of `v`. -/
 example : ¬ (Preference.ofUtility fun p : FinDist (Fin 2) =>

@@ -11,23 +11,27 @@ public import MathEconLib.Preferences.Representation.Basic
 /-!
 # The independence property
 
-A preference `R` over lotteries is *independent on `(P, Q)`* if
+A preference `R` over lotteries is *mixture independent on `(P, Q)`* if
 `q ≼[R] p ↔ α · q ⊕ (1 − α) · r ≼[R] α · p ⊕ (1 − α) · r` for `p ∈ P`, `q ∈ Q`, every lottery `r`
-and `0 < α ≤ 1`.
+and `0 < α ≤ 1`. Mixing both sides with a common lottery `r` does not change their comparison.
 
 ## Main definitions
 
-* `IsIndependentOn`, `IsIndependent`: the independence property on `(P, Q)` and on all lotteries.
+* `IsMixtureIndependentOn`: the independence property for `p ∈ P` and `q ∈ Q`.
+* `IsMixtureIndependent`: the independence property for all lotteries.
 
 ## Main statements
 
-* `IsIndependentOn.lt_mixture_iff`: **Lemma 3.1**, monotonicity in the probability.
-* `IsIndependentOn.antisymmRel_finMixture`: replacing prizes by indifferent binary lotteries.
+* `IsMixtureIndependentOn.lt_mixture_iff`: **Lemma 3.1**, monotonicity in the probability.
+* `IsMixtureIndependentOn.antisymmRel_finMixture`: replacing prizes by indifferent binary
+  lotteries.
 
 ## Implementation notes
 
-* Osborne and Rubinstein's Definition 3.4 is `IsIndependentOn degenerate binary`; their proof of
-  Proposition 3.2 also uses `IsIndependentOn binary degenerate`, assumed here explicitly.
+* Osborne and Rubinstein's Definition 3.4 is `IsMixtureIndependentOn degenerate binary`: `p` is a
+  sure prize and `q` a binary lottery. Their proof of Proposition 3.2 also uses the reverse
+  comparison, `IsMixtureIndependentOn binary degenerate`, which is assumed here explicitly.
+* `α = 0` is excluded, since then both mixtures are `r`.
 
 ## References
 
@@ -46,45 +50,48 @@ variable {Z : Type u} [Fintype Z] {R : Preference (FinDist Z)} {P Q P' Q' : Set 
 
 /-- The *independence property on `(P, Q)`*: for `p ∈ P`, `q ∈ Q` and `0 < α ≤ 1`,
 `q ≼[R] p ↔ α · q ⊕ (1 − α) · r ≼[R] α · p ⊕ (1 − α) · r`. -/
-def IsIndependentOn (P Q : Set (FinDist Z)) (R : Preference (FinDist Z)) : Prop :=
+def IsMixtureIndependentOn (P Q : Set (FinDist Z)) (R : Preference (FinDist Z)) : Prop :=
   ∀ p ∈ P, ∀ q ∈ Q, ∀ (r : FinDist Z) (α : unitInterval), 0 < (α : ℝ) →
     (q ≼[R] p ↔ FinDist.mixture α q r ≼[R] FinDist.mixture α p r)
 
 /-- The *independence property* on all lotteries. -/
-def IsIndependent (R : Preference (FinDist Z)) : Prop :=
-  IsIndependentOn Set.univ Set.univ R
+def IsMixtureIndependent (R : Preference (FinDist Z)) : Prop :=
+  IsMixtureIndependentOn Set.univ Set.univ R
 
-theorem isIndependentOn_iff : IsIndependentOn P Q R ↔
+theorem isMixtureIndependentOn_iff : IsMixtureIndependentOn P Q R ↔
     ∀ p ∈ P, ∀ q ∈ Q, ∀ (r : FinDist Z) (α : unitInterval), 0 < (α : ℝ) →
       (q ≼[R] p ↔ FinDist.mixture α q r ≼[R] FinDist.mixture α p r) :=
   Iff.rfl
 
-theorem isIndependent_iff : IsIndependent R ↔
+theorem isMixtureIndependent_iff : IsMixtureIndependent R ↔
     ∀ (p q r : FinDist Z) (α : unitInterval), 0 < (α : ℝ) →
       (q ≼[R] p ↔ FinDist.mixture α q r ≼[R] FinDist.mixture α p r) :=
   ⟨fun h p q => h p trivial q trivial, fun h p _ q _ => h p q⟩
 
-theorem IsIndependentOn.le_iff (h : IsIndependentOn P Q R) {p q : FinDist Z} (hp : p ∈ P)
-    (hq : q ∈ Q) (r : FinDist Z) {α : unitInterval} (hα : 0 < (α : ℝ)) :
+theorem IsMixtureIndependentOn.le_iff (h : IsMixtureIndependentOn P Q R) {p q : FinDist Z}
+    (hp : p ∈ P) (hq : q ∈ Q) (r : FinDist Z) {α : unitInterval} (hα : 0 < (α : ℝ)) :
     q ≼[R] p ↔ FinDist.mixture α q r ≼[R] FinDist.mixture α p r :=
   h p hp q hq r α hα
 
-theorem IsIndependentOn.mono (h : IsIndependentOn P Q R) (hP : P' ⊆ P) (hQ : Q' ⊆ Q) :
-    IsIndependentOn P' Q' R :=
+theorem IsMixtureIndependentOn.mono (h : IsMixtureIndependentOn P Q R) (hP : P' ⊆ P)
+    (hQ : Q' ⊆ Q) :
+    IsMixtureIndependentOn P' Q' R :=
   fun p hp q hq => h p (hP hp) q (hQ hq)
 
-theorem IsIndependent.isIndependentOn (h : IsIndependent R) (P Q : Set (FinDist Z)) :
-    IsIndependentOn P Q R :=
+theorem IsMixtureIndependent.isMixtureIndependentOn (h : IsMixtureIndependent R)
+    (P Q : Set (FinDist Z)) :
+    IsMixtureIndependentOn P Q R :=
   h.mono (Set.subset_univ P) (Set.subset_univ Q)
 
-theorem IsIndependentOn.lt_iff (hPQ : IsIndependentOn P Q R) (hQP : IsIndependentOn Q P R)
+theorem IsMixtureIndependentOn.lt_iff (hPQ : IsMixtureIndependentOn P Q R)
+    (hQP : IsMixtureIndependentOn Q P R)
     {p q : FinDist Z} (hp : p ∈ P) (hq : q ∈ Q) (r : FinDist Z) {α : unitInterval}
     (hα : 0 < (α : ℝ)) :
     q ≺[R] p ↔ FinDist.mixture α q r ≺[R] FinDist.mixture α p r :=
   and_congr (hPQ.le_iff hp hq r hα) (not_congr (hQP.le_iff hq hp r hα))
 
-theorem IsIndependentOn.antisymmRel_iff (hPQ : IsIndependentOn P Q R)
-    (hQP : IsIndependentOn Q P R) {p q : FinDist Z} (hp : p ∈ P) (hq : q ∈ Q) (r : FinDist Z)
+theorem IsMixtureIndependentOn.antisymmRel_iff (hPQ : IsMixtureIndependentOn P Q R)
+    (hQP : IsMixtureIndependentOn Q P R) {p q : FinDist Z} (hp : p ∈ P) (hq : q ∈ Q) (r : FinDist Z)
     {α : unitInterval} (hα : 0 < (α : ℝ)) :
     p ~[R] q ↔ FinDist.mixture α p r ~[R] FinDist.mixture α q r :=
   and_congr (hQP.le_iff hq hp r hα) (hPQ.le_iff hp hq r hα)
@@ -97,7 +104,8 @@ variable [DecidableEq Z]
 
 /-- **Lemma 3.1**: if `[b] ≺ [a]`, then `β · a ⊕ (1 − β) · b ≺ α · a ⊕ (1 − α) · b` iff `β < α`.
 -/
-theorem IsIndependentOn.lt_mixture_iff (hI : IsIndependentOn degenerate degenerate R) {a b : Z}
+theorem IsMixtureIndependentOn.lt_mixture_iff (hI : IsMixtureIndependentOn degenerate degenerate R)
+    {a b : Z}
     (hab : FinDist.pure b ≺[R] FinDist.pure a) (α β : unitInterval) :
     (β : ℝ) < α ↔ FinDist.mixture β (FinDist.pure a) (FinDist.pure b) ≺[R]
       FinDist.mixture α (FinDist.pure a) (FinDist.pure b) := by
@@ -120,8 +128,8 @@ theorem IsIndependentOn.lt_mixture_iff (hI : IsIndependentOn degenerate degenera
   · exact R.lt_irrefl _ (by rwa [Subtype.ext heq] at h)
 
 /-- For complete `R` with `[b] ≺ [a]`, `β · a ⊕ (1 − β) · b ≼ α · a ⊕ (1 − α) · b` iff `β ≤ α`. -/
-theorem IsIndependentOn.le_mixture_iff {R : CompletePreference (FinDist Z)}
-    (hI : IsIndependentOn degenerate degenerate R.toPreference) {a b : Z}
+theorem IsMixtureIndependentOn.le_mixture_iff {R : CompletePreference (FinDist Z)}
+    (hI : IsMixtureIndependentOn degenerate degenerate R.toPreference) {a b : Z}
     (hab : FinDist.pure b ≺[R] FinDist.pure a) (α β : unitInterval) :
     FinDist.mixture β (FinDist.pure a) (FinDist.pure b) ≼[R]
       FinDist.mixture α (FinDist.pure a) (FinDist.pure b) ↔ (β : ℝ) ≤ α := by
@@ -131,8 +139,9 @@ theorem IsIndependentOn.le_mixture_iff {R : CompletePreference (FinDist Z)}
 
 /-- If each `[z]` is indifferent to a binary lottery `m z` (with `m` fixing a finite `T` holding
 all supports), then `p ∼ ∑_z p(z) · m z`. -/
-theorem IsIndependentOn.antisymmRel_finMixture (hDB : IsIndependentOn degenerate binary R)
-    (hBD : IsIndependentOn binary degenerate R) (m : Z → FinDist Z) (T : Finset Z)
+theorem IsMixtureIndependentOn.antisymmRel_finMixture
+    (hDB : IsMixtureIndependentOn degenerate binary R)
+    (hBD : IsMixtureIndependentOn binary degenerate R) (m : Z → FinDist Z) (T : Finset Z)
     (hm : ∀ z, FinDist.pure z ~[R] m z) (hmB : ∀ z, m z ∈ binary)
     (hmT : ∀ z y, (m z).pmf y ≠ 0 → y ∈ T) (hT : ∀ t ∈ T, m t = FinDist.pure t)
     (p : FinDist Z) :
@@ -214,15 +223,15 @@ section Examples
 open MathEconLib.Probability MathEconLib.Decision MathEconLib.Preferences
 
 /-- Ranking lotteries by the probability of the prize `0` satisfies independence. -/
-example : IsIndependent (Preference.ofUtility fun p : FinDist (Fin 2) => p.pmf 0) := by
-  rw [isIndependent_iff]
+example : IsMixtureIndependent (Preference.ofUtility fun p : FinDist (Fin 2) => p.pmf 0) := by
+  rw [isMixtureIndependent_iff]
   intro p q r α hα
   simp only [Preference.ofUtility_le_iff, FinDist.mixture_pmf]
   constructor
   · intro h; nlinarith
   · intro h; nlinarith
 
-example (R : Preference (FinDist (Fin 2))) (hI : IsIndependentOn degenerate degenerate R)
+example (R : Preference (FinDist (Fin 2))) (hI : IsMixtureIndependentOn degenerate degenerate R)
     (h01 : FinDist.pure 1 ≺[R] FinDist.pure 0) :
     FinDist.mixture ⟨0.2, by norm_num, by norm_num⟩ (FinDist.pure 0) (FinDist.pure 1) ≺[R]
       FinDist.mixture ⟨0.7, by norm_num, by norm_num⟩ (FinDist.pure 0) (FinDist.pure 1) :=
