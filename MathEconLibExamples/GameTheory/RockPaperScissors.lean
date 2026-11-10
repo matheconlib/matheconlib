@@ -19,22 +19,23 @@ giving each player expected payoff zero.
 
 ## Main definitions
 
-* `rockPaperScissors`: The two-player, two-action zero-sum game.
-* `uniformAction`: Equal probabilities on heads and tails.
+* `rockPaperScissors`: The two-player, three-action zero-sum game.
+* `uniformAction`: Equal probabilities on rock, paper, and scissors.
 * `uniformProfile`: Uniform independent randomization by both players.
-* `expectedPayoff_p0`: The expected payoff of Player 0, give a strategy profile.
-* `expectedPayoff_p1`: The expected payoff of Player 1, give a strategy profile.
+* `expectedPayoff_p0`: The expected payoff of Player 0, given a strategy profile.
+* `expectedPayoff_p1`: The expected payoff of Player 1, given a strategy profile.
 
 ## Lemmas
 
 * `zeroSumGame` : This is a zero sum game.
-* `uniformActionGuaranteesZero` : By playing uniform action Player-i can guarantee payoff ≥ 0
+* `uniformActionGuaranteesZero` : By playing uniform action Player-i can guarantee payoff 0,
+                                  regardless to his opponent's strategy.
 * `exists_p0_profitable_response` : If Player-1's strategy is not a uniform action, then
                                     Player 0 can guarantee positive payoff for himself and negative
-                                    payoff for Player 0.
+                                    payoff for Player 1.
 * `exists_p1_profitable_response` : If Player-0's strategy is not a uniform action, then
                                     Player 1 can guarantee positive payoff for himself and negative
-                                    payoff for Player 1.
+                                    payoff for Player 0.
 
 ## Main statements
 
@@ -81,6 +82,7 @@ abbrev scissors : Fin 3 := 2
     The definition is tested in the examples below -/
 abbrev rockPaperScissors : StrategicGame (Fin 2) (fun _ ↦ Fin 3) ℝ where
   payoff i s := if i = p0 then
+    -- recall that addition over Fin 3 is % 3, hence scissors + 1 = rock.
     if (s p0) = (s p1) + 1 then 1 else if (s p0 = s p1) then 0 else -1
   else
     if (s p0) = (s p1) + 1 then -1 else if (s p0 = s p1) then 0 else 1
@@ -114,7 +116,7 @@ example : rockPaperScissors.payoff p1 ![paper, scissors] = 1 := by trivial
 example : rockPaperScissors.payoff p1 ![scissors, rock] = 1 := by trivial
 
 
-/-- The action distribution assigning probability one 1/3 to each of the actions. -/
+/-- The action distribution assigning probability 1/3 to each of the actions. -/
 abbrev uniformAction : FinDist (Fin 3) := FinDist.uniform
 
 /-- The profile where both players independently randomize uniformly over their three actions. -/
@@ -179,7 +181,7 @@ lemma expectedPayoff_p1_closed
 lemma zeroSumGame
     (σ : Fin 2 → FinDist (Fin 3)) :
     expectedPayoff_p0 σ + expectedPayoff_p1 σ = 0 := by
-    simp[expectedPayoff_p0, expectedPayoff_p1]
+    simp [expectedPayoff_p0, expectedPayoff_p1]
     ring
 
 lemma uniformActionGuaranteesZero
@@ -188,10 +190,10 @@ lemma uniformActionGuaranteesZero
   expectedPayoff_p1 ![p0Moves, uniformAction] = 0 := by
   have h0 :
     expectedPayoff_p1 ![uniformAction, p1Moves] = 0 := by
-    simp[uniformAction, expectedPayoff_p1]
+    simp [uniformAction, expectedPayoff_p1]
   have h1 :
     expectedPayoff_p0 ![p0Moves, uniformAction] = 0 := by
-    simp[uniformAction, expectedPayoff_p0]
+    simp [uniformAction, expectedPayoff_p0]
   constructor
   · -- Player 0's payoff is zero when playing uniformly.
     have hz := zeroSumGame ![uniformAction, p1Moves]
@@ -255,7 +257,7 @@ lemma exists_p0_profitable_response
       ∀ b : Fin 3, expectedPayoff_p0
       ![FinDist.pure b, opponentMoves] = expectedPayoff_p1 ![opponentMoves, FinDist.pure b] := by
         intro b
-        simp[expectedPayoff_p0, expectedPayoff_p1]
+        simp [expectedPayoff_p0, expectedPayoff_p1]
     -- Obtain the profitable action for player 1.
     obtain ⟨a, ha⟩ := exists_p1_profitable_response opponentMoves h
     -- Use the same action for player 0.
@@ -271,7 +273,7 @@ Finally, we assert the existence of a mixed Nash equilibrium, show that the unif
 profile is the unique mixed Nash equilibrium, and that no pure Nash equilibrium exists.
 -/
 
-/-- Matching rock paper scissors admits a mixed Nash equilibrium. -/
+/-- Rock paper scissors admits a mixed Nash equilibrium. -/
 theorem rockPaperScissors_exists_mixedNash :
     ∃ σ : Fin 2 → FinDist (Fin 3), rockPaperScissors.IsFiniteMixedNash σ :=
   -- Notice that we do not need to provide any argument here: The existence argument is inherited
