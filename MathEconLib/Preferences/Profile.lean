@@ -5,126 +5,108 @@ Authors: Ritik Jain
 -/
 module
 
-public import MathEconLib.Preferences.Representation.Relation
-public import MathEconLib.Mechanism.Core.Profile
-public import Mathlib.Logic.Equiv.Defs
+public import MathEconLib.Preferences.Representation.Basic
 
 /-!
-# Profiles of preference relations
+# Preference Profiles
 
-A profile assigns to each agent in `N` a relation on the alternatives `X`, read from the better
-alternative; it is a `Mechanism.Profile` with every agent reporting a relation.
+A profile assigns a complete preference to each agent. Agent `i` ranks its own type of
+alternatives `X i`, as when each seller ranks its own contracts and an outside option. When every
+agent ranks the same alternatives `X`, a profile is a function `N → CompletePreference X`, as in
+social choice.
 
-## Main definitions
+## Main Definitions
 
-* `Profile N X`: a relation on `X` for each agent in `N`.
-* `Profile.IsPreferenceRelation`, `Profile.IsStrict`: conditions on every agent's relation.
-* `Profile.permuteAgents`, `Profile.relabel`: permute the agents, or relabel the alternatives.
-* `Profile.ofUtilities`: the profile defined by a utility for each agent.
+* `Profile` — a complete preference on `X i` for each agent `i : N`.
+* `Profile.ofUtility` — the profile in which each agent ranks its alternatives by its own utility.
+* `Profile.comap` — each agent compares alternatives by their images under its own map.
+* `Profile.reindexAgents` — along `g : M → N`, agent `j : M` holds the preference of agent `g j`.
 
-## References
+## Main Statements
 
-* Martin J. Osborne and Ariel Rubinstein (2023), *Models in Microeconomic Theory*, Section 20.2.
+* `Profile.isRepresentedBy_ofUtility` — each agent's utility represents its preference in the
+  profile defined by the utilities.
+* `Profile.comap_id`, `Profile.comap_comp` — agentwise changes of alternatives respect identities
+  and composition.
+* `Profile.reindexAgents_id`, `Profile.reindexAgents_comp` — reindexing agents respects identities
+  and composition.
+* `Profile.comap_reindexAgents` — reindexing agents commutes with agentwise changes of
+  alternatives.
+
+## Implementation Notes
+
+`Profile N X` unfolds to the dependent function type `(i : N) → CompletePreference (X i)`, as
+`MathEconLib.Mechanism.Profile` does for inputs. It is stated here so that the preference layer
+does not depend on the mechanism layer. The map `g` in `Profile.reindexAgents` need not be a
+permutation: several agents may receive the preference of one agent.
+
+## Tags
+
+preference profile, complete preference, agents, utility, reindexing
 -/
 
 @[expose] public section
 
-namespace MathEconLib.Preferences
+namespace MathEconLib
 
-/-- A profile: `P i x y` reads "agent `i` finds `x` at least as good as `y`". -/
-abbrev Profile (N : Type*) (X : Type*) := Mechanism.Profile fun _ : N => X → X → Prop
+namespace Preferences
+
+/-- A preference profile: each agent `i : N` holds a complete preference on its alternatives
+`X i`. -/
+abbrev Profile (N : Type*) (X : N → Type*) := (i : N) → CompletePreference (X i)
 
 namespace Profile
 
-variable {N X α : Type*} {P : Profile N X}
+variable {L M N U : Type*} {X Y Z : N → Type*}
 
-/-- Every agent's relation is a preference relation (complete and transitive). -/
-def IsPreferenceRelation (P : Profile N X) : Prop := ∀ i, Preferences.IsPreferenceRelation (P i)
-
-/-- Every agent's relation is antisymmetric. -/
-def IsStrict (P : Profile N X) : Prop := ∀ i, IsAntisymmetric (P i)
-
-theorem isPreferenceRelation_iff :
-    P.IsPreferenceRelation ↔ ∀ i, Preferences.IsPreferenceRelation (P i) := Iff.rfl
-
-theorem isStrict_iff : P.IsStrict ↔ ∀ i, IsAntisymmetric (P i) := Iff.rfl
-
-theorem IsStrict.isLinearPreference (hS : P.IsStrict) (hP : P.IsPreferenceRelation) (i : N) :
-    IsLinearPreference (P i) :=
-  ⟨hP i, hS i⟩
-
-/-- Agent `i`'s complete preference in a profile of preference relations. -/
-def IsPreferenceRelation.toCompletePreference (h : P.IsPreferenceRelation) (i : N) :
-    CompletePreference X :=
-  .ofGE (P i) (h i)
+/-- The profile in which agent `i` ranks its alternatives by the utility `u i`. -/
+def ofUtility [Preorder U] [Std.Total (α := U) (· ≤ ·)] (u : (i : N) → X i → U) : Profile N X :=
+  fun i => CompletePreference.ofUtility (u i)
 
 @[simp]
-theorem IsPreferenceRelation.ge_toCompletePreference (h : P.IsPreferenceRelation) (i : N) :
-    (h.toCompletePreference i).ge = P i := rfl
+theorem ofUtility_apply [Preorder U] [Std.Total (α := U) (· ≤ ·)] (u : (i : N) → X i → U)
+    (i : N) : ofUtility u i = CompletePreference.ofUtility (u i) := rfl
 
-/-- The profile in which agent `i` holds the relation of agent `σ i`. -/
-def permuteAgents (σ : N ≃ N) (P : Profile N X) : Profile N X := fun i => P (σ i)
+/-- Each agent's utility represents its preference in the profile defined by the utilities. -/
+theorem isRepresentedBy_ofUtility [Preorder U] [Std.Total (α := U) (· ≤ ·)]
+    (u : (i : N) → X i → U) (i : N) : (ofUtility u i).IsRepresentedBy (u i) :=
+  Preference.isRepresentedBy_ofUtility (u i)
 
-@[simp]
-theorem permuteAgents_apply (σ : N ≃ N) (P : Profile N X) (i : N) :
-    permuteAgents σ P i = P (σ i) := rfl
-
-@[simp]
-theorem permuteAgents_refl (P : Profile N X) : permuteAgents (Equiv.refl N) P = P := rfl
-
-theorem permuteAgents_permuteAgents (σ τ : N ≃ N) (P : Profile N X) :
-    permuteAgents σ (permuteAgents τ P) = permuteAgents (σ.trans τ) P := rfl
-
-theorem IsPreferenceRelation.permuteAgents (h : P.IsPreferenceRelation) (σ : N ≃ N) :
-    (permuteAgents σ P).IsPreferenceRelation := fun i => h (σ i)
-
-theorem IsStrict.permuteAgents (h : P.IsStrict) (σ : N ≃ N) : (permuteAgents σ P).IsStrict :=
-  fun i => h (σ i)
-
-/-- The alternatives relabelled by `τ`: every agent ranks `x` where she ranked `τ.symm x`. -/
-def relabel (τ : X ≃ X) (P : Profile N X) : Profile N X := fun i x y => P i (τ.symm x) (τ.symm y)
+/-- Agent `i` compares alternatives by their images under its own map `f i`. -/
+def comap (P : Profile N Y) (f : (i : N) → X i → Y i) : Profile N X :=
+  fun i => (P i).comap (f i)
 
 @[simp]
-theorem relabel_apply (τ : X ≃ X) (P : Profile N X) (i : N) (x y : X) :
-    relabel τ P i x y ↔ P i (τ.symm x) (τ.symm y) := Iff.rfl
+theorem comap_apply (P : Profile N Y) (f : (i : N) → X i → Y i) (i : N) :
+    P.comap f i = (P i).comap (f i) := rfl
 
 @[simp]
-theorem relabel_refl (P : Profile N X) : relabel (Equiv.refl X) P = P := rfl
+theorem comap_id (P : Profile N X) : P.comap (fun _ => id) = P := rfl
 
-theorem relabel_relabel (τ τ' : X ≃ X) (P : Profile N X) :
-    relabel τ (relabel τ' P) = relabel (τ'.trans τ) P := rfl
+theorem comap_comp (P : Profile N Z) (f : (i : N) → Y i → Z i) (g : (i : N) → X i → Y i) :
+    (P.comap f).comap g = P.comap fun i => f i ∘ g i := rfl
 
-/-- Relabelling is `CompletePreference.comap` along `τ.symm`, agent by agent. -/
-theorem IsPreferenceRelation.relabel (h : P.IsPreferenceRelation) (τ : X ≃ X) :
-    (relabel τ P).IsPreferenceRelation := fun i =>
-  ((h.toCompletePreference i).comap τ.symm).isPreferenceRelation_ge
-
-theorem IsStrict.relabel (h : P.IsStrict) (τ : X ≃ X) : (relabel τ P).IsStrict := fun i =>
-  isAntisymmetric_iff.2 fun _ _ h₁ h₂ => τ.symm.injective ((h i).antisymm h₁ h₂)
-
-/-- The profile in which `x ≿ᵢ y` iff `u i y ≤ u i x`. -/
-def ofUtilities [LE α] (u : N → X → α) : Profile N X := fun i => UtilityRel (u i)
-
-instance [LE α] [DecidableLE α] (u : N → X → α) (i : N) : DecidableRel (ofUtilities u i) :=
-  inferInstanceAs (DecidableRel (UtilityRel (u i)))
+/-- The profile in which agent `j : M` holds the preference of agent `g j`. -/
+def reindexAgents (P : Profile N X) (g : M → N) : Profile M (X ∘ g) :=
+  fun j => P (g j)
 
 @[simp]
-theorem ofUtilities_apply [LE α] (u : N → X → α) (i : N) : ofUtilities u i = UtilityRel (u i) :=
-  rfl
+theorem reindexAgents_apply (P : Profile N X) (g : M → N) (j : M) :
+    P.reindexAgents g j = P (g j) := rfl
 
-theorem represents_ofUtilities [LE α] (u : N → X → α) (i : N) :
-    Represents (u i) (ofUtilities u i) :=
-  represents_utilityRel (u i)
+@[simp]
+theorem reindexAgents_id (P : Profile N X) : P.reindexAgents id = P := rfl
 
-theorem isPreferenceRelation_ofUtilities [LinearOrder α] (u : N → X → α) :
-    (ofUtilities u).IsPreferenceRelation := fun i => isPreferenceRelation_utilityRel (u i)
+theorem reindexAgents_comp (P : Profile N X) (g : M → N) (h : L → M) :
+    (P.reindexAgents g).reindexAgents h = P.reindexAgents (g ∘ h) := rfl
 
-theorem isStrict_ofUtilities [PartialOrder α] {u : N → X → α}
-    (hu : ∀ i, Function.Injective (u i)) : (ofUtilities u).IsStrict := fun i =>
-  isAntisymmetric_utilityRel_iff.2 (hu i)
+theorem comap_reindexAgents (P : Profile N Y) (f : (i : N) → X i → Y i) (g : M → N) :
+    (P.comap f).reindexAgents g = (P.reindexAgents g).comap fun j => f (g j) := rfl
 
 end Profile
 
-end MathEconLib.Preferences
+end Preferences
+
+end MathEconLib
 
 end

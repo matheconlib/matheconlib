@@ -33,6 +33,8 @@ differences between utility values carry no economic meaning.
   preorder lifted from the utility scale.
 * `Preference.IsRepresentedBy.comap` — composing with a map of alternatives preserves
   representation.
+* `Preference.IsRepresentedBy.comp_strictMono` — a strictly increasing transformation of a
+  representing utility also represents the preference.
 * `Preference.IsRepresentedBy.forall_le_iff_isMaxOn` — under a representation, an alternative is at
   least as good as every alternative on a menu if and only if it maximizes utility on that menu.
 
@@ -49,7 +51,7 @@ namespace Preferences
 
 namespace Preference
 
-variable {X Y U : Type*}
+variable {X Y U V : Type*}
 
 /-- Utility `u` represents `R` if larger utility is equivalent to weakly better alternatives. -/
 def IsRepresentedBy (R : Preference X) [Preorder U] (u : X → U) : Prop :=
@@ -96,6 +98,12 @@ theorem isRepresentedBy_iff_eq_ofUtility (R : Preference X) [Preorder U] (u : X 
 theorem IsRepresentedBy.comap {R : Preference Y} [Preorder U] {u : Y → U}
     (hu : R.IsRepresentedBy u) (f : X → Y) :
     (R.comap f).IsRepresentedBy (u ∘ f) := fun x y => hu (f x) (f y)
+
+/-- A strictly increasing transformation of a representing utility also represents the
+preference. -/
+theorem IsRepresentedBy.comp_strictMono {R : Preference X} [LinearOrder U] [Preorder V]
+    {u : X → U} {f : U → V} (hu : R.IsRepresentedBy u) (hf : StrictMono f) :
+    R.IsRepresentedBy (f ∘ u) := fun x y => (hu x y).trans hf.le_iff_le.symm
 
 /-- A greatest alternative on a menu has exactly the utility-maximization property. -/
 theorem IsRepresentedBy.forall_le_iff_isMaxOn {R : Preference X} [Preorder U] {u : X → U}
