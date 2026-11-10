@@ -360,6 +360,15 @@ theorem rockPaperScissors_mixed_nash_unique
   · simpa [uniformProfile, p0] using hp0
   · simpa [uniformProfile, p1] using hp1
 
+
+/-- Uniform randomization is a mixed Nash equilibrium. -/
+theorem rockPaperScissors_uniform_is_mixed_nash :
+    rockPaperScissors.IsFiniteMixedNash uniformProfile := by
+  obtain ⟨σ, hσ⟩ := rockPaperScissors_exists_mixedNash
+  have h := rockPaperScissors_mixed_nash_unique σ hσ
+  rw [← h]
+  exact hσ
+
 /-- No pure Nash equilibrium exists. -/
 theorem rockPaperScissors_no_pure_nash :
     ¬ ∃ s : Fin 2 → Fin 3,
