@@ -133,7 +133,8 @@ def interpolated := s!"sorry {1} admit"
             for relative in ["MathEconLib.lean", "MathEconLib/Unimported.lean",
                              "MathEconLibTest/Unimported.lean", "MathEconLibExamples/Unused.lean",
                              "ApiStability.lean", ".lake/packages/Dependency.lean",
-                             "scripts/tests/fixtures/Incomplete.lean.txt"]:
+                             "scripts/tests/fixtures/Incomplete.lean.txt",
+                             "scripts/tests/fixtures/docs-e2e/Fixture/Holes.lean"]:
                 path = root / relative
                 path.parent.mkdir(parents=True, exist_ok=True)
                 path.write_text("")

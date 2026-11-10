@@ -1,0 +1,6 @@
+name = "docs-e2e"
+version = "0.1.0"
+defaultTargets = ["DocsFixture"]
+
+[[lean_lib]]
+name = "DocsFixture"

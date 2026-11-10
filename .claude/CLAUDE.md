@@ -63,3 +63,7 @@ ensure all relevant files would be built.
 - `native_decide` tactic is **STRICTLY NOT ALLOWED**
 - variable naming should follow mathlib naming conventions
 - Grepping in the project root folder's `.lake` subfolder is good idea as it contains a copy of `mathlib` we are using
+
+## Declaration signatures
+
+See `AGENTS.md` for downloading and searching the published declaration-signature index.

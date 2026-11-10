@@ -14,6 +14,8 @@ import tempfile
 REPO = Path(__file__).resolve().parents[1]
 BACKEND = Path(__file__).with_name("CheckProofIntegrity.lean")
 EXCLUDED_DIRS = {".git", ".lake", "node_modules", ".venv"}
+# Test fixtures are inputs to other tools, never project modules.
+EXCLUDED_PATHS = {Path("scripts/tests/fixtures")}
 FORBIDDEN_TOKENS = {"sorry", "admit", "native_decide"}
 RAW_STRING = re.compile(r'r(#+)?"')
 CHARACTER = re.compile(r"'(?:\\u[0-9a-fA-F]{4}|\\.|[^'\\])'")
@@ -100,7 +102,8 @@ def discover_sources(root):
     """Include orphan sources as well as umbrella imports; exclude dependencies and this tool."""
     sources = []
     for directory, dirs, files in os.walk(root):
-        dirs[:] = sorted(d for d in dirs if d not in EXCLUDED_DIRS)
+        relative = Path(directory).relative_to(root)
+        dirs[:] = sorted(d for d in dirs if d not in EXCLUDED_DIRS and relative / d not in EXCLUDED_PATHS)
         for name in sorted(files):
             path = Path(directory) / name
             if path.suffix != ".lean" or path.resolve() == BACKEND.resolve():
