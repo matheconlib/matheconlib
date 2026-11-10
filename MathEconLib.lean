@@ -16,6 +16,7 @@ public import MathEconLib.Auction.AllPurchase.UniformDistribution
 public import MathEconLib.Auction.AllPurchase.WelfareDecomposition
 public import MathEconLib.Auction.Basic
 public import MathEconLib.Auction.IdenticalTypes
+public import MathEconLib.Auction.PaymentUniqueness
 public import MathEconLib.Auction.RevenueEquivalence
 public import MathEconLib.Auction.StrictMonotonicity
 public import MathEconLib.Auction.SymmetricIPV
@@ -71,6 +72,7 @@ public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Game
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Interim
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.InterimConverse
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
+public import MathEconLib.GameTheory.Strategic.Bayesian.Outcome
 public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
@@ -99,6 +101,7 @@ public import MathEconLib.Matching.Contracts.WeakSubstitutes
 public import MathEconLib.Mechanism
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 public import MathEconLib.Mechanism.Auctions.Allocation
+public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.Comap

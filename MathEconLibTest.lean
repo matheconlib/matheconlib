@@ -1,6 +1,7 @@
 import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
+import MathEconLibTest.Auction.PaymentUniqueness
 import MathEconLibTest.Auction.SignalValueEnv
 import MathEconLibTest.Auction.SignalWeights
 import MathEconLibTest.Choice.Attainment
@@ -18,11 +19,14 @@ import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
 import MathEconLibTest.GameTheory.ConditionalBeliefs
+import MathEconLibTest.GameTheory.ExplicitComparisonValidity
+import MathEconLibTest.GameTheory.ExplicitComparisons
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
 import MathEconLibTest.GameTheory.MatchingPennies
 import MathEconLibTest.GameTheory.MeasurableBayesian
 import MathEconLibTest.GameTheory.OrderedPayoffs
+import MathEconLibTest.GameTheory.StateOutcomeEvaluation
 import MathEconLibTest.GameTheory.Strategic
 import MathEconLibTest.GameTheory.StrategicTransport
 import MathEconLibTest.GameTheory.Transport
@@ -36,6 +40,7 @@ import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
 import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core
+import MathEconLibTest.Mechanism.FirstAndSecondPay
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
 import MathEconLibTest.Mechanism.TruthfulNash
