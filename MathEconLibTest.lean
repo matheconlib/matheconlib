@@ -57,6 +57,7 @@ import MathEconLibTest.RevealedPreference.Examples
 import MathEconLibTest.RevealedPreference.Geometry
 import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
+import MathEconLibTest.SocialChoice.PublicImport
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples
 import MathEconLibTest.ValueDistribution.UniformPricing

@@ -6,8 +6,8 @@ Authors: Ritik Jain
 module
 
 public import MathEconLib.SocialChoice.Basic
-public import Mathlib.Data.Fin.VecNotation
-public import Mathlib.Tactic.FinCases
+import Mathlib.Data.Fin.VecNotation
+import Mathlib.Tactic.FinCases
 
 /-!
 # Majority rule

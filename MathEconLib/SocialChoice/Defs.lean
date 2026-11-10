@@ -11,18 +11,20 @@ public import Mathlib.Data.Fintype.Card
 /-!
 # Aggregating preferences: definitions
 
-Social welfare functions and their axioms, each on an explicit domain `D` of profiles. A profile
-gives each agent a complete preference on the alternatives `X`, and a social welfare function
-gives society a complete preference. Majority rule need not be transitive (the Condorcet paradox),
-so it is a relation `majority P` on the alternatives rather than a social welfare function.
+Social welfare functions and their axioms. A profile gives each agent a complete preference on the
+alternatives `X`. A social welfare function on a domain `D` of profiles gives society a complete
+preference at each profile in `D`; Arrow's and May's theorems take `D = linearProfiles N X`, the
+profiles of strict individual rankings. The axioms compare alternatives pair by pair. Majority rule
+need not be transitive (the Condorcet paradox), so it is a relation `majority P` on the
+alternatives rather than a social welfare function.
 
 ## Main definitions
 
-* `SocialWelfareFunction N X`: a complete preference of society for each profile.
+* `SocialWelfareFunction D`: society's complete preference at each profile in `D`.
 * `linearProfiles N X`: the profiles in which every agent's preference is antisymmetric.
-* `supporters P x y`: the agents who strictly prefer `x` to `y`.
-* `IsParetoOn`, `IsIIAOn`, `IsAnonymousOn`, `IsNeutralOn`, `IsPositivelyResponsiveOn`: the axioms.
-* `IsDictatorOn`, `IsDictatorialOn`: dictatorship.
+* `supporters P x y`: the agents who strictly prefer `x` to `y`, that is, with `y ≺[P i] x`.
+* `IsPareto`, `IsIIA`, `IsAnonymous`, `IsNeutral`, `IsPositivelyResponsive`: the axioms.
+* `IsDictator`, `IsDictatorial`: dictatorship.
 * `majority P x y`: `y` is at least as good as `x` by majority: no more agents strictly prefer `x`
   to `y` than `y` to `x`.
 
@@ -40,13 +42,15 @@ open MathEconLib.Preferences
 
 universe u v
 
-/-- A social welfare function (Definition 20.2): society's complete preference at each profile. -/
-abbrev SocialWelfareFunction (N : Type u) (X : Type v) : Type (max u v) :=
-  Profile N (fun _ => X) → CompletePreference X
-
 variable {N : Type u} {X : Type v}
 
-/-- The profiles in which every agent's preference is a linear order. -/
+/-- A social welfare function on the domain `D` (Definition 20.2): society's complete preference
+at each admissible profile. -/
+abbrev SocialWelfareFunction (D : Set (Profile N fun _ => X)) : Type (max u v) :=
+  {P // P ∈ D} → CompletePreference X
+
+/-- The profiles in which every agent's preference is a linear order: strict individual
+rankings. -/
 def linearProfiles (N : Type u) (X : Type v) : Set (Profile N fun _ => X) :=
   {P | ∀ i, Std.Antisymm (P i).le}
 
@@ -61,36 +65,38 @@ def RisesAgainst (P Q : Profile N fun _ => X) (x y : X) : Prop :=
     (∀ i, x ≺[Q i] y → x ≺[P i] y) ∧
     ∃ i, (y ≺[Q i] x ∧ ¬ y ≺[P i] x) ∨ (x ≺[P i] y ∧ ¬ x ≺[Q i] y)
 
-/-- The Pareto property on `D` (Definition 20.6): unanimous strict preferences are social. -/
-def IsParetoOn (F : SocialWelfareFunction N X) (D : Set (Profile N fun _ => X)) : Prop :=
-  ∀ ⦃P⦄, P ∈ D → ∀ x y : X, (∀ i, y ≺[P i] x) → y ≺[F P] x
+variable {D : Set (Profile N fun _ => X)}
 
-/-- IIA on `D` (Arrow's form): the agents' comparisons of `x` and `y` fix society's. -/
-def IsIIAOn (F : SocialWelfareFunction N X) (D : Set (Profile N fun _ => X)) : Prop :=
-  ∀ ⦃P⦄, P ∈ D → ∀ ⦃Q⦄, Q ∈ D → ∀ x y : X,
-    (∀ i, (y ≼[P i] x ↔ y ≼[Q i] x) ∧ (x ≼[P i] y ↔ x ≼[Q i] y)) → (y ≼[F P] x ↔ y ≼[F Q] x)
+/-- The Pareto property (Definition 20.6): unanimous strict preferences are social. -/
+def IsPareto (F : SocialWelfareFunction D) : Prop :=
+  ∀ (P : {P // P ∈ D}) (x y : X), (∀ i, y ≺[P.1 i] x) → y ≺[F P] x
 
-/-- Anonymity on `D`: permuting the agents does not change society's preference. -/
-def IsAnonymousOn (F : SocialWelfareFunction N X) (D : Set (Profile N fun _ => X)) : Prop :=
-  ∀ (σ : N ≃ N) ⦃P⦄, P ∈ D → P.reindexAgents σ ∈ D → F (P.reindexAgents σ) = F P
+/-- IIA (Arrow's form): the agents' comparisons of `x` and `y` fix society's. -/
+def IsIIA (F : SocialWelfareFunction D) : Prop :=
+  ∀ (P Q : {P // P ∈ D}) (x y : X),
+    (∀ i, (y ≼[P.1 i] x ↔ y ≼[Q.1 i] x) ∧ (x ≼[P.1 i] y ↔ x ≼[Q.1 i] y)) →
+      (y ≼[F P] x ↔ y ≼[F Q] x)
 
-/-- Neutrality on `D`: relabelling the alternatives by `τ` relabels society's preference by `τ`. -/
-def IsNeutralOn (F : SocialWelfareFunction N X) (D : Set (Profile N fun _ => X)) : Prop :=
-  ∀ (τ : X ≃ X) ⦃P⦄, P ∈ D → (P.comap fun _ => τ.symm) ∈ D →
-    ∀ x y : X, y ≼[F (P.comap fun _ => τ.symm)] x ↔ τ.symm y ≼[F P] τ.symm x
+/-- Anonymity: permuting the agents does not change society's preference. -/
+def IsAnonymous (F : SocialWelfareFunction D) : Prop :=
+  ∀ (σ : N ≃ N) (P : {P // P ∈ D}) (hσ : P.1.reindexAgents σ ∈ D), F ⟨_, hσ⟩ = F P
 
-/-- Positive responsiveness on `D` (May's, not Osborne and Rubinstein's Definition 20.5). -/
-def IsPositivelyResponsiveOn (F : SocialWelfareFunction N X) (D : Set (Profile N fun _ => X)) :
-    Prop :=
-  ∀ ⦃P⦄, P ∈ D → ∀ ⦃Q⦄, Q ∈ D → ∀ x y : X, RisesAgainst P Q x y → y ≼[F P] x → y ≺[F Q] x
+/-- Neutrality: relabelling the alternatives by `τ` relabels society's preference by `τ`. -/
+def IsNeutral (F : SocialWelfareFunction D) : Prop :=
+  ∀ (τ : X ≃ X) (P : {P // P ∈ D}) (hτ : (P.1.comap fun _ => τ.symm) ∈ D) (x y : X),
+    y ≼[F ⟨_, hτ⟩] x ↔ τ.symm y ≼[F P] τ.symm x
 
-/-- Agent `i` is a dictator for `F` on `D`: society's preference is always `i`'s preference. -/
-def IsDictatorOn (F : SocialWelfareFunction N X) (D : Set (Profile N fun _ => X)) (i : N) : Prop :=
-  ∀ ⦃P⦄, P ∈ D → F P = P i
+/-- Positive responsiveness (May's, not Osborne and Rubinstein's Definition 20.5). -/
+def IsPositivelyResponsive (F : SocialWelfareFunction D) : Prop :=
+  ∀ (P Q : {P // P ∈ D}) (x y : X), RisesAgainst P.1 Q.1 x y → y ≼[F P] x → y ≺[F Q] x
 
-/-- `F` is dictatorial on `D`: some agent is a dictator. -/
-def IsDictatorialOn (F : SocialWelfareFunction N X) (D : Set (Profile N fun _ => X)) : Prop :=
-  ∃ i, IsDictatorOn F D i
+/-- Agent `i` is a dictator for `F`: society's preference is always `i`'s preference. -/
+def IsDictator (F : SocialWelfareFunction D) (i : N) : Prop :=
+  ∀ P : {P // P ∈ D}, F P = P.1 i
+
+/-- `F` is dictatorial: some agent is a dictator. -/
+def IsDictatorial (F : SocialWelfareFunction D) : Prop :=
+  ∃ i, IsDictator F i
 
 /-- Majority rule's comparison: `y` is at least as good as `x` unless more agents strictly prefer
 `x` to `y` than `y` to `x`. It is complete but need not be transitive, so it is a relation rather

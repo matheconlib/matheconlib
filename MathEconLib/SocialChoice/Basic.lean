@@ -23,7 +23,7 @@ Linear profiles, supporters, and independence of irrelevant alternatives on line
 * `exists_mem_linearProfiles_lt_of_lt`: every family of ranks has a linear profile.
 * `card_supporters_add_card_supporters`: on a linear profile, for `x ≠ y`, supporters of `x` and
   of `y` partition the agents.
-* `IsIIAOn.le_iff_of_lt_iff`: on linear profiles, IIA implies Osborne and Rubinstein's form.
+* `IsIIA.le_iff_of_lt_iff`: on linear profiles, IIA implies Osborne and Rubinstein's form.
 
 ## References
 
@@ -38,8 +38,8 @@ open MathEconLib.Preferences
 
 universe u v w
 
-variable {N : Type u} {X : Type v} {F : SocialWelfareFunction N X}
-  {D : Set (Profile N fun _ => X)} {P Q : Profile N fun _ => X} {x y : X}
+variable {N : Type u} {X : Type v} {D : Set (Profile N fun _ => X)} {F : SocialWelfareFunction D}
+  {P Q : Profile N fun _ => X} {x y : X}
 
 /-- On a linear profile, weak preference between distinct alternatives is strict preference. -/
 theorem le_iff_lt_of_mem_linearProfiles (hP : P ∈ linearProfiles N X) (hxy : x ≠ y) (i : N) :
@@ -140,23 +140,21 @@ end Supporters
 
 /-- On linear profiles, IIA implies Osborne and Rubinstein's form (Definition 20.7), which compares
 only the strict preferences of `x` over `y`. -/
-theorem IsIIAOn.le_iff_of_lt_iff (hF : IsIIAOn F D) (hD : D ⊆ linearProfiles N X)
-    (hP : P ∈ D) (hQ : Q ∈ D) (hxy : x ≠ y) (h : ∀ i, y ≺[P i] x ↔ y ≺[Q i] x) :
-    y ≼[F P] x ↔ y ≼[F Q] x :=
-  hF hP hQ x y fun i => ⟨by
-    rw [le_iff_lt_of_mem_linearProfiles (hD hP) (Ne.symm hxy),
-      le_iff_lt_of_mem_linearProfiles (hD hQ) (Ne.symm hxy), h i], by
-    rw [← (P i).not_lt, ← (Q i).not_lt, h i]⟩
+theorem IsIIA.le_iff_of_lt_iff (hF : IsIIA F) (hD : D ⊆ linearProfiles N X) (P Q : {P // P ∈ D})
+    (hxy : x ≠ y) (h : ∀ i, y ≺[P.1 i] x ↔ y ≺[Q.1 i] x) : y ≼[F P] x ↔ y ≼[F Q] x :=
+  hF P Q x y fun i => ⟨by
+    rw [le_iff_lt_of_mem_linearProfiles (hD P.2) (Ne.symm hxy),
+      le_iff_lt_of_mem_linearProfiles (hD Q.2) (Ne.symm hxy), h i], by
+    rw [← (P.1 i).not_lt, ← (Q.1 i).not_lt, h i]⟩
 
 /-- The same, for society's strict preference of `x` over `y`. -/
-theorem IsIIAOn.lt_iff_of_lt_iff (hF : IsIIAOn F D) (hD : D ⊆ linearProfiles N X)
-    (hP : P ∈ D) (hQ : Q ∈ D) (hxy : x ≠ y) (h : ∀ i, y ≺[P i] x ↔ y ≺[Q i] x) :
-    y ≺[F P] x ↔ y ≺[F Q] x := by
-  have h' : ∀ i, x ≺[P i] y ↔ x ≺[Q i] y := fun i => by
-    rw [lt_iff_not_lt_of_mem_linearProfiles (hD hP) hxy,
-      lt_iff_not_lt_of_mem_linearProfiles (hD hQ) hxy, h i]
-  exact and_congr (hF.le_iff_of_lt_iff hD hP hQ hxy h)
-    (not_congr (hF.le_iff_of_lt_iff hD hP hQ (Ne.symm hxy) h'))
+theorem IsIIA.lt_iff_of_lt_iff (hF : IsIIA F) (hD : D ⊆ linearProfiles N X) (P Q : {P // P ∈ D})
+    (hxy : x ≠ y) (h : ∀ i, y ≺[P.1 i] x ↔ y ≺[Q.1 i] x) : y ≺[F P] x ↔ y ≺[F Q] x := by
+  have h' : ∀ i, x ≺[P.1 i] y ↔ x ≺[Q.1 i] y := fun i => by
+    rw [lt_iff_not_lt_of_mem_linearProfiles (hD P.2) hxy,
+      lt_iff_not_lt_of_mem_linearProfiles (hD Q.2) hxy, h i]
+  exact and_congr (hF.le_iff_of_lt_iff hD P Q hxy h)
+    (not_congr (hF.le_iff_of_lt_iff hD P Q (Ne.symm hxy) h'))
 
 end MathEconLib.SocialChoice
 
@@ -175,8 +173,8 @@ example : (fun _ => CompletePreference.ofUtility fun _ : Bool => (0 : ℕ) :
     ((Preference.ofUtility_le_iff _ _ _).2 le_rfl)) (by decide)
 
 /-- A constant rule (Osborne and Rubinstein's Example 20.4) ignores the profile. -/
-example (R : CompletePreference Bool) (P : Profile (Fin 2) fun _ => Bool) :
-    (Function.const _ R : SocialWelfareFunction (Fin 2) Bool) P = R :=
+example (R : CompletePreference Bool) (P : {P // P ∈ linearProfiles (Fin 2) Bool}) :
+    (Function.const _ R : SocialWelfareFunction (linearProfiles (Fin 2) Bool)) P = R :=
   rfl
 
 end Examples

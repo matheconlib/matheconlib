@@ -139,6 +139,7 @@ public import MathEconLib.SingleParameter.IC
 public import MathEconLib.SingleParameter.Payment
 public import MathEconLib.SingleParameter.PostedPrice
 public import MathEconLib.SingleParameter.Revelation
+public import MathEconLib.SocialChoice
 public import MathEconLib.SocialChoice.Arrow
 public import MathEconLib.SocialChoice.Basic
 public import MathEconLib.SocialChoice.Defs
