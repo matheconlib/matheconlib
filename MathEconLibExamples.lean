@@ -10,6 +10,7 @@ public import MathEconLibExamples.AllPurchase.UniformTwoBidder
 public import MathEconLibExamples.AllPurchase.Welfare
 public import MathEconLibExamples.Choice.SubstituteEnvelope
 public import MathEconLibExamples.GameTheory.ExplicitComparisons
+public import MathEconLibExamples.GameTheory.RockPaperScissors
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.Matching.DistributiveMarriage
 public import MathEconLibExamples.Matching.JointPreservation
