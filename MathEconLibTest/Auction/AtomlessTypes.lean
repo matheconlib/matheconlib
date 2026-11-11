@@ -19,12 +19,14 @@ constant has a point-mass law, so no auction with such a bidder satisfies `HasAt
 The positive check extracts atomlessness for an arbitrary bidder without identical types.
 -/
 
+public section
+
 open MathEconLib MeasureTheory ProbabilityTheory
 
 namespace MathEconLibTest.AtomlessTypes
 
 variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
-variable {n : ℕ} [NeZero n]
+variable {n : ℕ}
 
 /-- Atomlessness is available for every bidder, with no identical-types assumption. -/
 example (A : Auction Ω n) [A.HasAtomlessTypes] (i : Fin n) (x : ℝ) :
@@ -44,3 +46,5 @@ theorem not_hasAtomlessTypes_of_const (A : Auction Ω n) (i : Fin n) (c : ℝ)
   simp at hzero
 
 end MathEconLibTest.AtomlessTypes
+
+end
