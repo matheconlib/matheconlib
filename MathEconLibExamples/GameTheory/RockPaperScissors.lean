@@ -27,15 +27,13 @@ giving each player expected payoff zero.
 
 ## Lemmas
 
-* `zeroSumGame` : This is a zero sum game.
-* `uniformActionGuaranteesZero` : By playing uniform action Player-i can guarantee payoff 0,
-                                  regardless to his opponent's strategy.
-* `exists_p0_profitable_response` : If Player-1's strategy is not a uniform action, then
-                                    Player 0 can guarantee positive payoff for himself and negative
-                                    payoff for Player 1.
-* `exists_p1_profitable_response` : If Player-0's strategy is not a uniform action, then
-                                    Player 1 can guarantee positive payoff for himself and negative
-                                    payoff for Player 0.
+* `expectedPayoff_p0_add_p1_eq_zero`: The players' expected payoffs sum to zero.
+* `expectedPayoff_zero_of_uniformAction`: Either player's uniform mixed action gives expected
+  payoff zero against any opponent action.
+* `exists_p0_profitable_response`: Against a nonuniform Player 1 mixed action, Player 0 has
+  a pure response with strictly positive expected payoff.
+* `exists_p1_profitable_response`: Against a nonuniform Player 0 mixed action, Player 1 has
+  a pure response with strictly positive expected payoff.
 
 ## Main statements
 
@@ -77,9 +75,8 @@ abbrev paper : Fin 3 := 1
 /-- The scissors action. -/
 abbrev scissors : Fin 3 := 2
 
-/-- The game: if both players select the same move, then payoff is 0.
-    otherwise, rock beats scissors, paper beats rock, and scissors beats paper.
-    The definition is tested in the examples below -/
+/-- Rock-paper-scissors: ties pay zero, while a win pays `1` to the winner and `-1`
+to the loser. Rock beats scissors, paper beats rock, and scissors beats paper. -/
 abbrev rockPaperScissors : StrategicGame (Fin 2) (fun _ ↦ Fin 3) ℝ where
   payoff i s := if i = p0 then
     -- recall that addition over Fin 3 is % 3, hence scissors + 1 = rock.
@@ -123,7 +120,7 @@ abbrev uniformAction : FinDist (Fin 3) := FinDist.uniform
 def uniformProfile : Fin 2 → FinDist (Fin 3) :=
   fun _ ↦ uniformAction
 
-/-- in lemma expectedPayoff_p0_closed we prove that this is indeed the payoff -/
+/-- The expected payoff of Player 0, expressed in terms of the probabilities of each action. -/
 def expectedPayoff_p0 (σ : Fin 2 → FinDist (Fin 3)) : ℝ :=
   (σ p0) rock *
     ((σ p1) scissors - (σ p1) paper) +
@@ -132,7 +129,7 @@ def expectedPayoff_p0 (σ : Fin 2 → FinDist (Fin 3)) : ℝ :=
   (σ p0) scissors *
     ((σ p1) paper - (σ p1) rock)
 
-/-- in lemma expectedPayoff_p1_closed we prove that this is indeed the payoff -/
+/-- The expected payoff of Player 1, expressed in terms of the probabilities of each action. -/
 def expectedPayoff_p1 (σ : Fin 2 → FinDist (Fin 3)) : ℝ :=
   (σ p1) rock *
     ((σ p0) scissors - (σ p0) paper) +
@@ -158,7 +155,8 @@ private lemma sum_action_profile (f : (Fin 2 → Fin 3) → ℝ) :
   ring
 
 
-/-- Player 0's expected payoff in rock-paper-scissors. -/
+/-- The game's finite expected payoff for Player 0 equals the explicit formula
+`expectedPayoff_p0`. -/
 lemma expectedPayoff_p0_closed
     (σ : Fin 2 → FinDist (Fin 3)) :
     rockPaperScissors.finiteExpectedPayoff p0 σ = expectedPayoff_p0 σ := by
@@ -168,7 +166,8 @@ lemma expectedPayoff_p0_closed
         p0, p1, rock, paper, scissors, expectedPayoff_p0]
   ring
 
-/-- Player 1's expected payoff in rock-paper-scissors. -/
+/-- The game's finite expected payoff for Player 1 equals the explicit formula
+`expectedPayoff_p1`. -/
 lemma expectedPayoff_p1_closed
     (σ : Fin 2 → FinDist (Fin 3)) :
     rockPaperScissors.finiteExpectedPayoff p1 σ = expectedPayoff_p1 σ := by
@@ -178,13 +177,16 @@ lemma expectedPayoff_p1_closed
         p0, p1, rock, paper, scissors, expectedPayoff_p1]
   ring
 
-lemma zeroSumGame
+/-- The two players' expected payoffs always sum to zero. -/
+lemma expectedPayoff_p0_add_p1_eq_zero
     (σ : Fin 2 → FinDist (Fin 3)) :
     expectedPayoff_p0 σ + expectedPayoff_p1 σ = 0 := by
   simp [expectedPayoff_p0, expectedPayoff_p1]
   ring
 
-lemma uniformActionGuaranteesZero
+/-- A player choosing the uniform mixed action receives expected payoff zero against
+any mixed action of the opponent. -/
+lemma expectedPayoff_zero_of_uniformAction
     (p0Moves p1Moves : FinDist (Fin 3)) :
     expectedPayoff_p0 ![uniformAction, p1Moves] = 0 ∧
     expectedPayoff_p1 ![p0Moves, uniformAction] = 0 := by
@@ -196,14 +198,15 @@ lemma uniformActionGuaranteesZero
     simp [uniformAction, expectedPayoff_p0]
   constructor
   · -- Player 0's payoff is zero when playing uniformly.
-    have hz := zeroSumGame ![uniformAction, p1Moves]
+    have hz := expectedPayoff_p0_add_p1_eq_zero ![uniformAction, p1Moves]
     linarith
   · -- Player 1's payoff is zero when playing uniformly.
-    have hz := zeroSumGame ![p0Moves, uniformAction]
+    have hz := expectedPayoff_p0_add_p1_eq_zero ![p0Moves, uniformAction]
     linarith
 
 
-
+/-- Against a nonuniform mixed action of Player 0, Player 1 has a pure response with
+strictly positive expected payoff. -/
 lemma exists_p1_profitable_response
     (opponentMoves : FinDist (Fin 3))
     (h : opponentMoves ≠ uniformAction) :
@@ -247,6 +250,8 @@ lemma exists_p1_profitable_response
         · simpa [uniformAction, rock, paper, scissors] using hp
         · simpa [uniformAction, rock, paper, scissors] using hs
 
+/-- Against a nonuniform mixed action of Player 1, Player 0 has a pure response with
+strictly positive expected payoff. -/
 lemma exists_p0_profitable_response
     (opponentMoves : FinDist (Fin 3))
     (h : opponentMoves ≠ uniformAction) :
@@ -318,10 +323,10 @@ theorem rockPaperScissors_mixed_nash_unique
     simp only [expectedPayoff_p1_closed] at hdev1
     -- Uniform play guarantees player 0 zero payoff.
     have hz0 :=
-      (uniformActionGuaranteesZero (σ p0) (σ p1)).1
+      (expectedPayoff_zero_of_uniformAction (σ p0) (σ p1)).1
     rw [hz0] at hdev0
     -- The game is zero-sum.
-    have hz := zeroSumGame σ
+    have hz := expectedPayoff_p0_add_p1_eq_zero σ
     -- Player 0's payoff >= 0.
     -- Player 1's payoff > 0.
     -- Their sum = 0. Contradiction!
@@ -353,7 +358,7 @@ theorem rockPaperScissors_mixed_nash_unique
         · simpa [p0] using hp0
         · rfl
       rw [hprofile]
-      exact (uniformActionGuaranteesZero (σ p0) (σ p1)).1
+      exact (expectedPayoff_zero_of_uniformAction (σ p0) (σ p1)).1
     -- Player 0 cannot improve beyond zero,
     -- but ha says a positive payoff is possible.
     linarith
