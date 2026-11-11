@@ -5,7 +5,7 @@ Authors: Scott Duke Kominers
 -/
 module
 
-import MathEconLib.Auction.Typeclasses
+public import MathEconLib.Auction.Typeclasses
 
 /-!
 # Atomless types for every bidder
