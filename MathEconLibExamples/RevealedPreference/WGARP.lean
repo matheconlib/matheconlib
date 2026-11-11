@@ -17,6 +17,10 @@ rationalization and excludes a regular ordinary utility rationalization. The und
 prices, choices, and exact arithmetic are defined once in
 `MathEconLibExamples.RevealedPreference`.
 
+An explicit three-agent majority witness also proves regularity and rationalization
+on three observed budgets, then applies the supplied-witness converse. Its scores
+exhibit a strict cycle on the separate menu of unit bundles.
+
 A separate tie example distinguishes WGARP from the single-valued WARP condition:
 two distinct choices on the same budget are permitted by weak rationalization.
 These are exact mathematical examples, not empirical estimates. No demand existence
@@ -62,9 +66,85 @@ theorem three_has_regular_preference : HasRegularPreferenceRationalization three
 choice on its budget, without asserting nonempty demand on other menus. -/
 theorem three_has_regular_preferenceChoice :
     ∃ r : PreferenceFunction 3,
-      ContinuousPreference r ∧ StrictlyIncreasingFirst r ∧ Asymmetric r ∧
+      ContinuousPreference r ∧ StrictlyIncreasingFirst r ∧ SignAsymmetric r ∧
         ∀ t, threeDataset.choice t ∈ preferenceChoice r (budgetSet threeDataset t) :=
   (wgarp_iff_exists_regular_preferenceChoice threeDataset).mp three_wgarp
+
+/-- Three two-agent majorities, supplied independently of the observation construction. -/
+def majorityCoalitions : FiniteCoalitionSystem (Fin 3) (Fin 3) where
+  members := ![{0, 1}, {1, 2}, {2, 0}]
+  members_nonempty := by intro c; fin_cases c <;> simp
+
+/-- Any two majorities share an agent. -/
+theorem majorityCoalitions_isCoherent : majorityCoalitions.IsCoherent := by
+  intro c d
+  fin_cases c <;> fin_cases d <;> norm_num [majorityCoalitions, Fin.exists_fin_succ]
+
+/-- Positive linear utility coefficients with cyclic rankings of the unit bundles. -/
+def majorityWeights : Fin 3 → Bundle 3 := ![![3, 2, 1], ![1, 3, 2], ![2, 1, 3]]
+
+/-- The three supplied utilities are ordinary linear utilities. -/
+noncomputable def majorityAgents (i : Fin 3) : Utility 3 := dot (majorityWeights i)
+
+/-- Every supplied component is continuous, strictly increasing, and concave globally. -/
+theorem majorityAgents_regular (i : Fin 3) :
+    Continuous (majorityAgents i) ∧ StrictlyIncreasing (majorityAgents i) ∧
+      ConcaveOn ℝ Set.univ (majorityAgents i) := by
+  refine ⟨continuous_dot _, ?_, convex_univ, ?_⟩
+  · apply strictlyIncreasing_iff_strictMono.mpr
+    intro z x hzx
+    apply dot_strictlyIncreasing_of_pos (p := majorityWeights i) _
+      (strictDominates_iff_lt.mpr hzx)
+    intro j
+    fin_cases i <;> fin_cases j <;> norm_num [majorityWeights]
+  · intro x _ y _ a b _ _ _
+    exact le_of_eq (dot_add_smul (majorityWeights i) x y a b).symm
+
+/-- Three unit purchases, each facing prices that support a majority of the utilities. -/
+def majorityDataset : Dataset 3 (Fin 3) where
+  price := ![![1, 2, 2], ![2, 1, 2], ![2, 2, 1]]
+  choice := ![![1, 0, 0], ![0, 1, 0], ![0, 0, 1]]
+  price_pos := by intro t i; fin_cases t <;> fin_cases i <;> norm_num
+  choice_nonneg := by intro t i; fin_cases t <;> fin_cases i <;> norm_num
+
+/-- A supporting majority maximizes the observed purchase over its whole budget. -/
+theorem majority_rationalizes :
+    PreferenceRationalizes majorityDataset (finiteCMU majorityCoalitions majorityAgents) := by
+  apply finiteCMU_rationalizes_of_coalitions
+  intro t
+  refine ⟨(![2, 0, 1] : Fin 3 → Fin 3) t, ?_⟩
+  intro i hi y hy
+  have h0 : (0 : ℝ) ≤ y 0 := hy.1 0
+  have h1 : (0 : ℝ) ≤ y 1 := hy.1 1
+  have h2 : (0 : ℝ) ≤ y 2 := hy.1 2
+  have hb := hy.2
+  fin_cases t <;> fin_cases i <;>
+    norm_num [majorityCoalitions] at hi <;>
+    norm_num [majorityAgents, majorityWeights, majorityDataset, expenditure,
+      dot, dotProduct, Fin.sum_univ_succ] at hb ⊢ <;> linarith
+
+/-- All assumptions of the supplied-witness converse are proved for the explicit model. -/
+theorem majority_cmu_rationalizes :
+    FiniteCoherentCMURationalizes majorityDataset majorityCoalitions majorityAgents :=
+  ⟨majorityCoalitions_isCoherent, fun i => (majorityAgents_regular i).1,
+    fun i => (majorityAgents_regular i).2.1, fun i => (majorityAgents_regular i).2.2,
+    majority_rationalizes⟩
+
+/-- The named supplied-witness converse establishes WGARP without constructing row coalitions. -/
+theorem majority_wgarp : WGARP majorityDataset :=
+  majority_cmu_rationalizes.wgarp majorityDataset majorityCoalitions majorityAgents
+
+/-- The supplied CMU has a strict three-cycle on the separate menu of unit bundles.
+Every forward score is exactly one and every reverse score is minus one. -/
+theorem majority_scores :
+    finiteCMU majorityCoalitions majorityAgents ![1, 0, 0] ![0, 1, 0] = 1 ∧
+    finiteCMU majorityCoalitions majorityAgents ![0, 1, 0] ![0, 0, 1] = 1 ∧
+    finiteCMU majorityCoalitions majorityAgents ![0, 0, 1] ![1, 0, 0] = 1 ∧
+    finiteCMU majorityCoalitions majorityAgents ![0, 1, 0] ![1, 0, 0] = -1 ∧
+    finiteCMU majorityCoalitions majorityAgents ![0, 0, 1] ![0, 1, 0] = -1 ∧
+    finiteCMU majorityCoalitions majorityAgents ![1, 0, 0] ![0, 0, 1] = -1 := by
+  norm_num [finiteCMU, coalitionScore, majorityCoalitions, majorityAgents, majorityWeights,
+    Fin.univ_succ, dot, dotProduct, Fin.sum_univ_succ]
 
 /-- Two distinct bundles chosen at identical prices and identical expenditure. -/
 def tieDataset : Dataset 2 (Fin 2) where

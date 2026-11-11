@@ -74,8 +74,8 @@ theorem FiniteCoherentCMURationalizes.hasRegularPreferenceRationalization
     HasRegularPreferenceRationalization D := by
   rcases h with ⟨hcoh, hc, hi, _hconc, hr⟩
   exact ⟨finiteCMU coalitions agents,
-    finiteCMU_continuous coalitions agents hc,
-    finiteCMU_strictlyIncreasingFirst coalitions agents hi,
+    finiteCMU_continuous coalitions agents (fun _ i _ => hc i),
+    finiteCMU_strictlyIncreasingFirst coalitions agents (fun _ i _ => hi i),
     ⟨fun _ _ hxy => finiteCMU_weakSignAsymmetry coalitions agents hcoh hxy,
       fun _ _ hxy => finiteCMU_signAsymmetry coalitions agents hcoh hxy⟩, hr⟩
 
@@ -118,12 +118,8 @@ theorem finiteCMU_rationalizes_of_coalitions
     PreferenceRationalizes D (finiteCMU coalitions agents) := by
   intro s y hy
   obtain ⟨c, hc⟩ := h s
-  have hscore : 0 ≤ coalitionScore coalitions agents c (D.choice s) y := by
-    apply Finset.le_inf'
-    intro i hi
-    exact sub_nonneg.mpr (hc i hi y hy)
-  exact hscore.trans (Finset.le_sup'
-    (fun d => coalitionScore coalitions agents d (D.choice s) y) (Finset.mem_univ c))
+  exact (finiteCMU_nonneg_iff coalitions agents (D.choice s) y).mpr
+    ⟨c, fun i hi => hc i hi y hy⟩
 
 /-- Pair utilities need only rationalize their two endpoints; no symmetry is required. -/
 theorem rowFiniteCMU_rationalizes [Fintype T] [Nonempty T]
@@ -165,7 +161,7 @@ theorem hasFiniteCoherentCMURationalization_of_hasRegularUtilityRationalization
       members_nonempty := fun _ => Finset.singleton_nonempty _ }
   have heq : finiteCMU coalitions (fun _ => u) = fun x y => u x - u y := by
     funext x y
-    simp [finiteCMU, coalitionScore, coalitions]
+    exact finiteCMU_const coalitions u x y
   refine ⟨ULift.{u} Unit, ULift.{u} Unit, inferInstance, inferInstance,
     coalitions, (fun _ => u), ?_, (fun _ => hc), (fun _ => hi), (fun _ => hconc), ?_⟩
   · intro c d

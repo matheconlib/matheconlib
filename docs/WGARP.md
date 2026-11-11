@@ -15,9 +15,13 @@ The proof first identifies WGARP with GARP on every two-observation restriction
 (`wgarp_iff_pairwise_garp`). Finite Afriat supplies one continuous, concave,
 strictly increasing utility for each ordered pair. Row-and-column coalitions
 share members; their finite maximum of finite minimum utility differences gives
-the coherent CMU rationalizer. Coherence supplies both weak and strict sign
-asymmetry implications. Empty data use a single utility and a singleton coalition.
+the coherent CMU rationalizer. Coherence supplies both weak and strict
+`SignAsymmetric` implications. Empty data use a single utility and a singleton coalition.
 Coherence does not assert numerical skew symmetry.
+
+`finiteCMU_nonneg_iff` exposes the CMU comparison as existence of a coalition
+whose every member weakly prefers the first bundle. `finiteCMU_const` recovers
+`u x - u y` when all agents share utility `u`; diagonal scores simplify to zero.
 
 `wgarp_iff_hasRegularPreferenceRationalization` exposes the preference
 equivalence. `preferenceChoice` packages all available bundles whose numerical
@@ -28,6 +32,13 @@ observed membership on `budgetSet`; `wgarp_iff_exists_regular_preferenceChoice`
 supplies that membership from WGARP. Choices retain ties. Rationalization
 guarantees nonempty choice on observed budgets, without requiring transitivity
 or imposing nonempty choice on every menu.
+
+Ordinary utility is a specialization: `preferenceChoice_sub` identifies choice
+from `u x - u y` with `utilityChoice u`, `preferenceRationalizes_sub_iff`
+identifies its rationalization with `UtilityRationalizes`, and
+`strictlyIncreasingFirst_sub_iff` identifies its strict increase with
+`StrictlyIncreasing u`. These bridges require neither finite observations nor
+regularity assumptions on the utility.
 
 The numerical preferences and component utilities are defined on all of
 `Bundle L`, while budgets contain only nonnegative bundles. The formalization
@@ -41,6 +52,20 @@ apply the characterization and choice bridge to the existing three-observation
 cycle, which satisfies WGARP and violates GARP. Separate applications handle
 expenditure ties and a prohibited binary reversal. These are exact illustrative
 datasets; no empirical calibration or predictive claim is made.
+
+## API migration
+
+`WGARP` is now the direct binary-expenditure condition; replace
+`SatisfiesWGARP` with `WGARP`. The numerical sign predicate is named
+`SignAsymmetric` instead of `Asymmetric`. Its contract still includes both
+`0 ≤ r x y → r y x ≤ 0` and `0 < r x y → r y x < 0` for all bundles.
+The characterization theorems retain their mathematical assumptions and
+conclusions. The continuity and strict-increase aggregation lemmas now request
+regularity only for agents belonging to the relevant coalitions. Callers with
+global regularity can pass `fun _ i _ ↦ hu i` for the finite-CMU lemmas or
+`fun i _ ↦ hu i` for the single-coalition lemmas. The supplied-witness and
+existential rationalization predicates still require regularity of every
+component utility.
 
 ## Sources and scope
 

@@ -30,7 +30,7 @@ example : HasFiniteCoherentCMURationalization threeDataset ∧
 example : HasRegularPreferenceRationalization threeDataset := three_has_regular_preference
 
 example : ∃ r : PreferenceFunction 3,
-    ContinuousPreference r ∧ StrictlyIncreasingFirst r ∧ Asymmetric r ∧
+    ContinuousPreference r ∧ StrictlyIncreasingFirst r ∧ SignAsymmetric r ∧
       ∀ t, threeDataset.choice t ∈ preferenceChoice r (budgetSet threeDataset t) :=
   three_has_regular_preferenceChoice
 
@@ -46,6 +46,13 @@ example :
 
 example : ¬ WGARP cycleDataset ∧ ¬ HasRegularPreferenceRationalization cycleDataset :=
   ⟨cycle_not_wgarp, cycle_no_regular_preference⟩
+
+-- Reuse the independently supplied majority witness and its named converse application.
+example : FiniteCoherentCMURationalizes majorityDataset majorityCoalitions majorityAgents ∧
+    WGARP majorityDataset := ⟨majority_cmu_rationalizes, majority_wgarp⟩
+
+example : finiteCMU majorityCoalitions majorityAgents ![1, 0, 0] ![0, 1, 0] = 1 :=
+  majority_scores.1
 
 private def zeroPurchaseDataset (L : ℕ) : Dataset L (Fin 1) where
   price := fun _ _ => 1

@@ -46,7 +46,7 @@ def StrictlyIncreasingFirst (r : PreferenceFunction L) : Prop :=
   ∀ ⦃x z : Bundle L⦄ (y : Bundle L), StrictDominates x z → r z y < r x y
 
 /-- Both sign implications in the paper's asymmetry condition, including ties. -/
-def Asymmetric (r : PreferenceFunction L) : Prop :=
+def SignAsymmetric (r : PreferenceFunction L) : Prop :=
   (∀ x y, 0 ≤ r x y → r y x ≤ 0) ∧ (∀ x y, 0 < r x y → r y x < 0)
 
 /-- Joint continuity of a numerical preference function. -/
@@ -58,11 +58,8 @@ def PreferenceRationalizes (D : Dataset L T) (r : PreferenceFunction L) : Prop :
   ∀ t y, Affordable D t y → 0 ≤ r (D.choice t) y
 
 /-- A weak direct comparison cannot have a strict direct reverse comparison. -/
-def SatisfiesWGARP (D : Dataset L T) : Prop :=
+def WGARP (D : Dataset L T) : Prop :=
   ∀ s t, 0 ≤ expenditureGap D t s → expenditureGap D s t ≤ 0
-
-/-- The weak generalized axiom of revealed preference. -/
-abbrev WGARP (D : Dataset L T) : Prop := SatisfiesWGARP D
 
 /-- WGARP rules out exactly the weak/strict binary revealed-preference cycles. -/
 theorem wgarp_iff_no_binary_cycle (D : Dataset L T) :
@@ -83,13 +80,13 @@ theorem wgarp_of_subsingleton [Subsingleton T] (D : Dataset L T) : WGARP D := by
 /-- A continuous, strictly increasing, asymmetric preference rationalization exists. -/
 def HasRegularPreferenceRationalization (D : Dataset L T) : Prop :=
   ∃ r : PreferenceFunction L,
-    ContinuousPreference r ∧ StrictlyIncreasingFirst r ∧ Asymmetric r ∧
+    ContinuousPreference r ∧ StrictlyIncreasingFirst r ∧ SignAsymmetric r ∧
       PreferenceRationalizes D r
 
 /-- Necessity uses only strict increase, sign asymmetry, and budget rationalization. -/
 theorem wgarp_of_asymmetric_strictlyIncreasing_rationalization
     (D : Dataset L T) (r : PreferenceFunction L)
-    (hasym : Asymmetric r) (hinc : StrictlyIncreasingFirst r)
+    (hasym : SignAsymmetric r) (hinc : StrictlyIncreasingFirst r)
     (hrat : PreferenceRationalizes D r) : WGARP D := by
   intro s t hts
   by_contra hnot

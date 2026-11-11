@@ -60,7 +60,7 @@ The library is organized around shared definitions and results that economic mod
 | Pricing | [Single-parameter choice](MathEconLib/SingleParameter/), [value distributions, posted-price optimality, and comparative statics](MathEconLib/ValueDistribution/) |
 | Mathematical foundations | [Probability](MathEconLib/Probability/), [order statistics](MathEconLib/Statistics/), and supporting [analysis, order, and fixed-point results](MathEconLib/ForMathlib/) |
 
-The WGARP characterization covers Theorem 1(i), (ii), and (iv) of Aguiar, Hjertstrand, Serrano, and Evren (2026), *[A Rationalization of the Weak Axiom of Revealed Preference](https://arxiv.org/abs/1906.00296v2)*, using a finite coherent-CMU normal form.
+The WGARP characterization covers Theorem 1(i), (ii), and (iv) of Aguiar, Hjertstrand, Serrano, and Evren (2026), *[A Rationalization of the Weak Axiom of Revealed Preference](https://arxiv.org/abs/1906.00296v2)*, using a finite coherent-CMU normal form. Utility-difference bridges recover ordinary utility choice and rationalization; see the [WGARP API migration notes](docs/WGARP.md#api-migration) for the direct `WGARP` and `SignAsymmetric` names.
 
 Browse the [source tree](MathEconLib/) for individual modules and their statements, or see [the architecture overview](docs/BeginnersManual.md#appendix-b--how-matheconlib-is-organised) for how the pieces fit together.
 

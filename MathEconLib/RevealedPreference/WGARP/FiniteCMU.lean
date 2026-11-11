@@ -23,8 +23,9 @@ Victor H. Aguiar, Per Hjertstrand, Roberto Serrano, and Özgür Evren (2026),
 [arXiv:1906.00296v2](https://arxiv.org/abs/1906.00296v2), revised August 12, 2026,
 Theorem 1(ii) and the finite coherent-CMU construction. Adapted from its Apache-2.0
 [WGARP Lean](https://github.com/vaguiarl/wgarp-lean) module `FiniteCMU`.
-The alternative space is arbitrary for the algebraic and continuity lemmas;
-monotonicity specializes to the existing consumer bundle order.
+The alternative space is arbitrary for the algebraic and continuity lemmas and
+preordered for monotonicity. Only agents belonging to the relevant coalitions need
+continuity or strict monotonicity; unused agents impose no regularity restrictions.
 -/
 
 @[expose] public section
@@ -61,6 +62,7 @@ noncomputable def finiteCMU
   Finset.univ.sup' Finset.univ_nonempty
     (fun c ↦ coalitionScore coalitions u c x y)
 
+@[simp]
 theorem coalitionScore_self
     {C I X : Type*} (coalitions : FiniteCoalitionSystem C I)
     (u : I → X → ℝ) (c : C) (x : X) :
@@ -68,6 +70,7 @@ theorem coalitionScore_self
   simp [coalitionScore]
 
 /-- A finite CMU is exactly zero on the diagonal. -/
+@[simp]
 theorem finiteCMU_self
     {C I X : Type*} [Fintype C] [Nonempty C]
     (coalitions : FiniteCoalitionSystem C I) (u : I → X → ℝ)
@@ -75,11 +78,45 @@ theorem finiteCMU_self
     finiteCMU coalitions u x x = 0 := by
   simp [finiteCMU, coalitionScore]
 
-/-- Joint continuity is preserved by both finite, attained extrema. -/
+/-- A coalition has a nonnegative score exactly when all its members
+weakly favor the first bundle. -/
+theorem coalitionScore_nonneg_iff
+    {C I X : Type*} (coalitions : FiniteCoalitionSystem C I)
+    (u : I → X → ℝ) (c : C) (x y : X) :
+    0 ≤ coalitionScore coalitions u c x y ↔
+      ∀ i ∈ coalitions.members c, u i y ≤ u i x := by
+  simp [coalitionScore, Finset.le_inf'_iff, sub_nonneg]
+
+/-- A nonnegative CMU comparison means that some coalition unanimously
+weakly favors the first bundle. -/
+theorem finiteCMU_nonneg_iff
+    {C I X : Type*} [Fintype C] [Nonempty C]
+    (coalitions : FiniteCoalitionSystem C I) (u : I → X → ℝ) (x y : X) :
+    0 ≤ finiteCMU coalitions u x y ↔
+      ∃ c, ∀ i ∈ coalitions.members c, u i y ≤ u i x := by
+  simp [finiteCMU, Finset.le_sup'_iff, coalitionScore_nonneg_iff]
+
+/-- Identical agents reduce a coalition score to the common utility difference. -/
+@[simp]
+theorem coalitionScore_const
+    {C I X : Type*} (coalitions : FiniteCoalitionSystem C I)
+    (u : X → ℝ) (c : C) (x y : X) :
+    coalitionScore coalitions (fun _ => u) c x y = u x - u y := by
+  simp [coalitionScore]
+
+/-- Identical agents reduce every nonempty finite CMU to the common utility difference. -/
+@[simp]
+theorem finiteCMU_const
+    {C I X : Type*} [Fintype C] [Nonempty C]
+    (coalitions : FiniteCoalitionSystem C I) (u : X → ℝ) (x y : X) :
+    finiteCMU coalitions (fun _ => u) x y = u x - u y := by
+  simp [finiteCMU]
+
+/-- Joint continuity requires continuity only of agents participating in a coalition. -/
 theorem finiteCMU_continuous
     {C I X : Type*} [Fintype C] [Nonempty C] [TopologicalSpace X]
     (coalitions : FiniteCoalitionSystem C I) (u : I → X → ℝ)
-    (hu : ∀ i, Continuous (u i)) :
+    (hu : ∀ c i, i ∈ coalitions.members c → Continuous (u i)) :
     Continuous (fun q : X × X ↦ finiteCMU coalitions u q.1 q.2) := by
   classical
   unfold finiteCMU
@@ -87,8 +124,8 @@ theorem finiteCMU_continuous
   intro c _hc
   unfold coalitionScore
   apply Continuous.finset_inf'_apply
-  intro i _hi
-  exact ((hu i).comp continuous_fst).sub ((hu i).comp continuous_snd)
+  intro i hi
+  exact ((hu c i hi).comp continuous_fst).sub ((hu c i hi).comp continuous_snd)
 
 /-- Every component utility is strictly increasing for the paper's
 dominance relation: coordinatewise weak dominance together with inequality. -/
@@ -96,61 +133,62 @@ def ComponentsStrictlyIncreasing
     {L : ℕ} {I : Type*} (u : I → Bundle L → ℝ) : Prop :=
   ∀ i, StrictlyIncreasing (u i)
 
-/-- The inner minimum is strictly increasing in its first argument.
-
-The minimizing member is chosen at the *improved* bundle.  This witness
-is the finite attained-extremum step that makes the strict inequality
-valid. -/
-theorem coalitionScore_strictlyIncreasingFirst
-    {C I : Type*} {L : ℕ}
-    (coalitions : FiniteCoalitionSystem C I)
-    (u : I → Bundle L → ℝ)
-    (hu : ComponentsStrictlyIncreasing u) (c : C) :
-    ∀ ⦃x z y⦄, StrictDominates z x →
-      coalitionScore coalitions u c x y <
-        coalitionScore coalitions u c z y := by
+/-- A coalition score is strictly monotone if every member of that coalition is.
+The minimum is attained at the improved alternative. -/
+theorem coalitionScore_strictMono
+    {C I X : Type*} [Preorder X] (coalitions : FiniteCoalitionSystem C I)
+    (u : I → X → ℝ) (c : C)
+    (hu : ∀ i ∈ coalitions.members c, StrictMono (u i)) (y : X) :
+    StrictMono (fun x => coalitionScore coalitions u c x y) := by
   classical
-  intro x z y hxz
+  intro x z hxz
   obtain ⟨i, hi, hmin⟩ :=
     Finset.exists_mem_eq_inf' (coalitions.members_nonempty c)
       (fun j ↦ u j z - u j y)
-  have hleft :
-      coalitionScore coalitions u c x y ≤ u i x - u i y :=
+  have hleft : coalitionScore coalitions u c x y ≤ u i x - u i y :=
     Finset.inf'_le (fun j ↦ u j x - u j y) hi
-  have hcomponent : u i x - u i y < u i z - u i y := by
-    exact sub_lt_sub_right (hu i hxz) (u i y)
-  have hright :
-      coalitionScore coalitions u c z y = u i z - u i y := hmin
-  exact hleft.trans_lt (hcomponent.trans_eq hright.symm)
+  exact hleft.trans_lt ((sub_lt_sub_right (hu i hi hxz) (u i y)).trans_eq hmin.symm)
 
-/-- Strictly increasing agents make the finite CMU strictly increasing
-in its first argument.
-
-Here the outer maximizing coalition is chosen at the *smaller* bundle,
-the complementary attained-extremum witness to the preceding lemma. -/
-theorem finiteCMU_strictlyIncreasingFirst
-    {C I : Type*} [Fintype C] [Nonempty C] {L : ℕ}
-    (coalitions : FiniteCoalitionSystem C I)
-    (u : I → Bundle L → ℝ)
-    (hu : ComponentsStrictlyIncreasing u) :
-    StrictlyIncreasingFirst (finiteCMU coalitions u) := by
+/-- Strict monotonicity of participating agents suffices for strict monotonicity of the CMU.
+The maximizing coalition is selected at the smaller alternative. -/
+theorem finiteCMU_strictMono
+    {C I X : Type*} [Fintype C] [Nonempty C] [Preorder X]
+    (coalitions : FiniteCoalitionSystem C I) (u : I → X → ℝ)
+    (hu : ∀ c i, i ∈ coalitions.members c → StrictMono (u i)) (y : X) :
+    StrictMono (fun x => finiteCMU coalitions u x y) := by
   classical
-  intro x z y hxz
+  intro x z hxz
   obtain ⟨c, hc, hmax⟩ :=
     Finset.exists_mem_eq_sup' Finset.univ_nonempty
-      (fun d ↦ coalitionScore coalitions u d z y)
-  have hcoalition :
-      coalitionScore coalitions u c z y <
-        coalitionScore coalitions u c x y :=
-    coalitionScore_strictlyIncreasingFirst coalitions u hu c hxz
-  have hright :
-      coalitionScore coalitions u c x y ≤ finiteCMU coalitions u x y :=
-    Finset.le_sup' (fun d ↦ coalitionScore coalitions u d x y) hc
-  have hleft :
-      finiteCMU coalitions u z y = coalitionScore coalitions u c z y := by
+      (fun d ↦ coalitionScore coalitions u d x y)
+  have hcoalition := coalitionScore_strictMono coalitions u c (hu c) y hxz
+  have hright : coalitionScore coalitions u c z y ≤ finiteCMU coalitions u z y :=
+    Finset.le_sup' (fun d ↦ coalitionScore coalitions u d z y) hc
+  have hleft : finiteCMU coalitions u x y = coalitionScore coalitions u c x y := by
     simpa [finiteCMU] using hmax
-  rw [hleft]
-  exact hcoalition.trans_le hright
+  exact hleft.trans_lt (hcoalition.trans_le hright)
+
+/-- Bundle-facing strict increase requires only the selected coalition's members. -/
+theorem coalitionScore_strictlyIncreasingFirst
+    {C I : Type*} {L : ℕ}
+    (coalitions : FiniteCoalitionSystem C I) (u : I → Bundle L → ℝ) (c : C)
+    (hu : ∀ i ∈ coalitions.members c, StrictlyIncreasing (u i)) :
+    StrictlyIncreasingFirst (coalitionScore coalitions u c) := by
+  intro x z y hxz
+  exact coalitionScore_strictMono coalitions u c
+    (fun i hi => strictlyIncreasing_iff_strictMono.mp (hu i hi)) y
+    (strictDominates_iff_lt.mp hxz)
+
+/-- Bundle-facing strict increase requires only agents participating in a coalition. -/
+theorem finiteCMU_strictlyIncreasingFirst
+    {C I : Type*} [Fintype C] [Nonempty C] {L : ℕ}
+    (coalitions : FiniteCoalitionSystem C I) (u : I → Bundle L → ℝ)
+    (hu : ∀ c i, i ∈ coalitions.members c → StrictlyIncreasing (u i)) :
+    StrictlyIncreasingFirst (finiteCMU coalitions u) := by
+  intro x z y hxz
+  exact finiteCMU_strictMono coalitions u
+    (fun c i hi => strictlyIncreasing_iff_strictMono.mp (hu c i hi)) y
+    (strictDominates_iff_lt.mp hxz)
 
 /-- The strong numerical consequence of coherence.  Selecting an
 attaining coalition in each direction and a common member bounds the two
