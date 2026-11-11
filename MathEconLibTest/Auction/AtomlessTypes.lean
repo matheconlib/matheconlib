@@ -19,7 +19,7 @@ constant has a point-mass law, so no auction with such a bidder satisfies `HasAt
 The positive check extracts atomlessness for an arbitrary bidder without identical types.
 -/
 
-open MathEconLib MeasureTheory
+open MathEconLib MeasureTheory ProbabilityTheory
 
 namespace MathEconLibTest.AtomlessTypes
 
