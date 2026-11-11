@@ -6,6 +6,7 @@ Authors: Jujian Zhang, Ruiz Chen, Scott Duke Kominers, Bo Cowgill
 module
 
 public import MathEconLib.Auction.SymmetricIPV
+public import MathEconLib.Auction.IdenticalTypes
 
 /-!
 # Revenue Equivalence Theorem
@@ -19,6 +20,19 @@ yield the same expected revenue, without any efficiency assumption.
 Revenue means realized receipts under the joint type law. Relating it to marginal interim payments
 requires measurable payment rules and integrable realized payments; BIC and bounded allocations
 alone do not supply these conditions.
+
+## References
+
+Vijay Krishna (2010), *Auction Theory*, 2nd ed., Academic Press:
+
+* §3.1, Proposition 3.1, p. 28: revenue equivalence for symmetric increasing equilibria
+  of standard auctions. `Auction.revenue_equivalence` expresses the sufficient common-allocation
+  condition directly through the interim functions `q`; this formulation also allows
+  common allocation rules that are not efficient.
+* §2.4, equations (2.6)–(2.7), pp. 18–19: expected revenue as the expected second-highest
+  value, corresponding to `Auction.total_revenue`.
+
+See the [auction reference map](../../docs/AuctionReferences.md) for the scope of these matches.
 -/
 
 namespace MathEconLib
@@ -51,7 +65,9 @@ lemma payment_formula_strictHighestBid
 
 Two BIC symmetric IPV auctions with zero lowest-type utility, the same `q`, same type bounds, and
 identically distributed types yield the same expected total revenue, provided the payment rules
-are measurable and the realized truthful payments are integrable. -/
+are measurable and the realized truthful payments are integrable.
+
+See Krishna (2010), §§2.4 and 3.1, and `docs/AuctionReferences.md`. -/
 theorem revenue_equivalence
     {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (ℙ : Measure Ω₂)]
     (A₂ : Auction Ω₂ n) [A₂.IsSymmetricIPV]
@@ -89,7 +105,9 @@ theorem revenue_equivalence
 
 /-- Under strict-highest-bid allocation, BIC, and zero lowest-type utility, expected realized
 revenue equals `𝔼[S₂]`, provided payment rules are measurable and truthful payments are
-integrable. -/
+integrable.
+
+See Krishna (2010), §§2.4 and 3.1, and `docs/AuctionReferences.md`. -/
 lemma total_revenue
     (hwinner : UsesStrictHighestBidAllocation A.rules (fun o i => o i))
     [IPV.BIC A] [A.HasZeroLowestTypeUtility]
@@ -116,12 +134,8 @@ lemma total_revenue
     have hadd := (intervalIntegral.integral_add_adjacent_intervals hii1 hii2).symm
     linarith [intervalIntegral.integral_nonneg (μ := volume) hst
       (fun ψ _ => pow_nonneg (A.commonCDF_nonneg ψ) (n - 1))]
-  have hsym i : ∫ ω, φ (A.θ i ω) ∂ℙ = ∫ ω, φ (A.θ 0 ω) ∂ℙ := by
-    rw [← integral_map (A.θ_measurable i).aemeasurable
-          hφ_meas.aestronglyMeasurable,
-        (HasIdenticalTypes.θ_identical i 0).map_eq,
-        integral_map (A.θ_measurable 0).aemeasurable
-          hφ_meas.aestronglyMeasurable]
+  have hsym i : ∫ ω, φ (A.θ i ω) ∂ℙ = ∫ ω, φ (A.θ 0 ω) ∂ℙ :=
+    A.integral_comp_type_eq φ hφ_meas i 0
   simp_rw [hsym, Finset.sum_const, Finset.card_univ, Fintype.card_fin,
     nsmul_eq_mul]
   change n * ∫ ω, φ (A.θ 0 ω) ∂ℙ = ∫ ω, A.S₂ ω ∂ℙ
