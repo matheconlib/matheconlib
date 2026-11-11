@@ -146,7 +146,8 @@ lemma q_eq_pow [HasIndependentTypes A] [HasIdenticalTypes A] [HasAtomlessTypes A
         _ = (Measure.map (A.θ 0) ℙ) (Iio s) :=
           (Measure.map_apply (A.θ_measurable 0) measurableSet_Iio).symm
         _ = (Measure.map (A.θ 0) ℙ) (Iic s) := by
-          have : NullSingletonClass (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
+          have : NullSingletonClass (Measure.map (A.θ 0) ℙ) :=
+            HasAtomlessTypes.θ_noAtoms (A := A) 0
           exact measure_congr Iio_ae_eq_Iic
         _ = ℙ (A.θ 0 ⁻¹' Iic s) :=
           Measure.map_apply (A.θ_measurable 0) measurableSet_Iic
@@ -196,7 +197,8 @@ private lemma measure_sigma_lt_eq
   have h_ident_hi : ℙ (A.θ j ⁻¹' Iic v₀) = ℙ (A.θ 0 ⁻¹' Iic v₀) :=
     (HasIdenticalTypes.θ_identical j 0).measure_mem_eq measurableSet_Iic
   have h_atomless : ℙ (A.θ 0 ⁻¹' Iio v₀) = ℙ (A.θ 0 ⁻¹' Iic v₀) := by
-    have : NullSingletonClass (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
+    have : NullSingletonClass (Measure.map (A.θ 0) ℙ) :=
+      HasAtomlessTypes.θ_noAtoms (A := A) 0
     rw [← Measure.map_apply (A.θ_measurable 0) measurableSet_Iio,
         ← Measure.map_apply (A.θ_measurable 0) measurableSet_Iic]
     exact measure_congr Iio_ae_eq_Iic

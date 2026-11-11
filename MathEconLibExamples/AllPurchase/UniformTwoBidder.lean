@@ -59,7 +59,7 @@ instance : Auction.HasBoundedTypes model.toAuction where
   θ_in := value_mem
 
 instance : Auction.HasAtomlessTypes model.toAuction where
-  θ_noAtoms := noAtoms_value 0
+  θ_noAtoms := noAtoms_value
 
 instance : Auction.HasDensity model.toAuction where
   θ_hasPDF := hasPDF_value

@@ -55,9 +55,10 @@ class HasBoundedTypes (A : Auction Ω n) : Prop where
 class HasDensity (A : Auction Ω n) : Prop where
   θ_hasPDF : ∀ i, HasPDF (A.θ i) ℙ volume
 
-/-- The type distribution is atomless. -/
+/-- Every bidder's type distribution is atomless. This is stated for each bidder separately, so it
+does not presuppose identically distributed types. -/
 class HasAtomlessTypes (A : Auction Ω n) : Prop where
-  θ_noAtoms : NullSingletonClass (Measure.map (A.θ 0) ℙ)
+  θ_noAtoms : ∀ i, NullSingletonClass (Measure.map (A.θ i) ℙ)
 
 /-! ### IsSymmetricIPV (convenience bundle) -/
 
@@ -130,7 +131,7 @@ lemma commonCDF_eq [HasIdenticalTypes A] (s : ℝ) :
       exact le_antisymm h hθ.1
     · intro h; exact le_of_eq h
   rw [heq, ← Measure.map_apply (A.θ_measurable 0) (measurableSet_singleton _)]
-  have : NullSingletonClass (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms
+  have : NullSingletonClass (Measure.map (A.θ 0) ℙ) := HasAtomlessTypes.θ_noAtoms (A := A) 0
   exact measure_singleton _
 
 @[simp] lemma commonCDF_highestType

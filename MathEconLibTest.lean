@@ -1,5 +1,6 @@
 import MathEconLibTest.AllPurchase.PricingAxioms
 import MathEconLibTest.AllPurchase.WelfareAxioms
+import MathEconLibTest.Auction.AtomlessTypes
 import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
