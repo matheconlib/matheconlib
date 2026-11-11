@@ -7,6 +7,15 @@ dominance still means weak improvement in every coordinate and inequality of
 the bundles; it does not require strict improvement in every coordinate.
 The theorem statements and economic assumptions are unchanged.
 
+Strict increase is global on `Bundle L`; affordability still restricts candidate
+bundles to the nonnegative orthant. Reny's `SemiStrictlyIncreasingOnNonnegative`
+in [#302](https://github.com/matheconlib/matheconlib/pull/302) is a separate condition:
+it compares nonnegative bundles whose every coordinate increases strictly. In
+positive dimension it is weaker than `StrictlyIncreasing`. With zero commodities,
+`StrictlyIncreasing` is vacuous, while the all-coordinate semistrict condition
+would require a strict utility increase from the unique bundle to itself and is
+therefore impossible.
+
 The bridge names `strictDominates_iff_lt` and
 `strictlyIncreasing_iff_strictMono` remain available. Downstream proofs that
 unfold the old definitions should use these bridges and Mathlib's order API.

@@ -27,6 +27,11 @@ example {L : ℕ} {x z : Bundle L} : StrictDominates x z ↔ z < x := Iff.rfl
 
 example {L : ℕ} {u : Utility L} : StrictlyIncreasing u ↔ StrictMono u := Iff.rfl
 
+-- Increasing utility transformations reuse Mathlib's composition theorem directly.
+example {L : ℕ} {u : Utility L} {g : ℝ → ℝ}
+    (hu : StrictlyIncreasing u) (hg : StrictMono g) : StrictlyIncreasing (g ∘ u) :=
+  hg.comp hu
+
 example {L : ℕ} {T : Type*} (D : Dataset L T) :
     GARP D ↔ GraphGARP D.price D.choice := Iff.rfl
 

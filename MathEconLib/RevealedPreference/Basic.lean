@@ -142,22 +142,12 @@ theorem dot_strictlyIncreasing_of_pos
     {p x z : Bundle L} (hp : ∀ i, 0 < p i)
     (hxz : StrictDominates x z) :
     dot p z < dot p x := by
-  rcases lt_iff_le_and_ne.mp hxz with ⟨hle, hne⟩
-  have hexists : ∃ i, z i < x i := by
-    by_contra hnone
-    apply hne
-    funext i
-    have hxle : x i ≤ z i := by
-      apply le_of_not_gt
-      intro hstrict
-      exact hnone ⟨i, hstrict⟩
-    exact le_antisymm (hle i) hxle
+  rcases Pi.lt_def.mp hxz with ⟨hle, i, hi⟩
   unfold dot dotProduct
   apply Finset.sum_lt_sum
   · intro i _hi
     exact mul_le_mul_of_nonneg_left (hle i) (hp i).le
-  · obtain ⟨i, hi⟩ := hexists
-    exact ⟨i, Finset.mem_univ i, mul_lt_mul_of_pos_left hi (hp i)⟩
+  · exact ⟨i, Finset.mem_univ i, mul_lt_mul_of_pos_left hi (hp i)⟩
 
 /-- Observed expenditure is strictly increasing under strict dominance. -/
 theorem expenditure_strictlyIncreasing
