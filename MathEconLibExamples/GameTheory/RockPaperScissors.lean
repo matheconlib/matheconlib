@@ -148,7 +148,7 @@ This section proves some properties of the game for use in the main results late
 -/
 
 /-- The sum over all two-player action profiles is the sum over the 9 options. -/
-lemma sum_action_profile (f : (Fin 2 → Fin 3) → ℝ) :
+private lemma sum_action_profile (f : (Fin 2 → Fin 3) → ℝ) :
     ∑ s : Fin 2 → Fin 3, f s
       = f ![paper, rock] + f ![paper, paper] + f ![paper, scissors] +
         f ![rock, rock] + f ![rock, paper] + f ![rock, scissors] +
