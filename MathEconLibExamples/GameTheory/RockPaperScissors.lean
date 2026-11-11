@@ -14,7 +14,7 @@ Two players choose rock, paper or scissors. Paper beats rock, rock beats scissor
 and scissors beats paper. If both players choose the same action then it is a draw.
 Winner gets a payoff of 1, loser gets -1, and in case of a draw both get 0.
 No pure profile is a Nash equilibrium. The unique mixed Nash equilibrium has both
-players independently choose each action with probability 1/3,
+players independently choosing each action with probability 1/3,
 giving each player expected payoff zero.
 
 ## Main definitions
@@ -46,7 +46,7 @@ giving each player expected payoff zero.
 
 ## Tags
 
-matching pennies, strategic games, mixed strategies, nash equilibrium, zero-sum games
+rock-paper-scissors, strategic games, mixed strategies, nash equilibrium, zero-sum games
 -/
 
 @[expose] public noncomputable section
@@ -121,7 +121,7 @@ abbrev uniformAction : FinDist (Fin 3) := FinDist.uniform
 
 /-- The profile where both players independently randomize uniformly over their three actions. -/
 def uniformProfile : Fin 2 → FinDist (Fin 3) :=
-  fun _ => uniformAction
+  fun _ ↦ uniformAction
 
 /-- in lemma expectedPayoff_p0_closed we prove that this is indeed the payoff -/
 def expectedPayoff_p0 (σ : Fin 2 → FinDist (Fin 3)) : ℝ :=
@@ -181,18 +181,18 @@ lemma expectedPayoff_p1_closed
 lemma zeroSumGame
     (σ : Fin 2 → FinDist (Fin 3)) :
     expectedPayoff_p0 σ + expectedPayoff_p1 σ = 0 := by
-    simp [expectedPayoff_p0, expectedPayoff_p1]
-    ring
+  simp [expectedPayoff_p0, expectedPayoff_p1]
+  ring
 
 lemma uniformActionGuaranteesZero
-  (p0Moves p1Moves : FinDist (Fin 3)) :
-  expectedPayoff_p0 ![uniformAction, p1Moves] = 0 ∧
-  expectedPayoff_p1 ![p0Moves, uniformAction] = 0 := by
+    (p0Moves p1Moves : FinDist (Fin 3)) :
+    expectedPayoff_p0 ![uniformAction, p1Moves] = 0 ∧
+    expectedPayoff_p1 ![p0Moves, uniformAction] = 0 := by
   have h0 :
-    expectedPayoff_p1 ![uniformAction, p1Moves] = 0 := by
+      expectedPayoff_p1 ![uniformAction, p1Moves] = 0 := by
     simp [uniformAction, expectedPayoff_p1]
   have h1 :
-    expectedPayoff_p0 ![p0Moves, uniformAction] = 0 := by
+      expectedPayoff_p0 ![p0Moves, uniformAction] = 0 := by
     simp [uniformAction, expectedPayoff_p0]
   constructor
   · -- Player 0's payoff is zero when playing uniformly.
@@ -253,18 +253,19 @@ lemma exists_p0_profitable_response
     ∃ a : Fin 3,
       expectedPayoff_p0
         ![FinDist.pure a, opponentMoves] > 0 := by
-    have h0:
-      ∀ b : Fin 3, expectedPayoff_p0
-      ![FinDist.pure b, opponentMoves] = expectedPayoff_p1 ![opponentMoves, FinDist.pure b] := by
-        intro b
-        simp [expectedPayoff_p0, expectedPayoff_p1]
-    -- Obtain the profitable action for player 1.
-    obtain ⟨a, ha⟩ := exists_p1_profitable_response opponentMoves h
-    -- Use the same action for player 0.
-    use a
-    -- By symmetry, the expected payoffs are equal.
-    rw [h0 a]
-    exact ha
+  have h0 :
+      ∀ b : Fin 3,
+        expectedPayoff_p0 ![FinDist.pure b, opponentMoves] =
+          expectedPayoff_p1 ![opponentMoves, FinDist.pure b] := by
+    intro b
+    simp [expectedPayoff_p0, expectedPayoff_p1]
+  -- Obtain the profitable action for player 1.
+  obtain ⟨a, ha⟩ := exists_p1_profitable_response opponentMoves h
+  -- Use the same action for player 0.
+  use a
+  -- By symmetry, the expected payoffs are equal.
+  rw [h0 a]
+  exact ha
 
 /-!
 ## Main results
