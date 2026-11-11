@@ -30,9 +30,9 @@ giving each player expected payoff zero.
 * `expectedPayoff_p0_add_p1_eq_zero`: The players' expected payoffs sum to zero.
 * `expectedPayoff_zero_of_uniformAction`: Either player's uniform mixed action gives expected
   payoff zero against any opponent action.
-* `exists_p0_profitable_response`: Against a nonuniform Player 1 mixed action, Player 0 has
+* `exists_p0_pos_payoff_response`: Against a nonuniform Player 1 mixed action, Player 0 has
   a pure response with strictly positive expected payoff.
-* `exists_p1_profitable_response`: Against a nonuniform Player 0 mixed action, Player 1 has
+* `exists_p1_pos_payoff_response`: Against a nonuniform Player 0 mixed action, Player 1 has
   a pure response with strictly positive expected payoff.
 
 ## Main statements
@@ -178,7 +178,7 @@ lemma expectedPayoff_p1_closed
   ring
 
 /-- The two players' expected payoffs always sum to zero. -/
-lemma expectedPayoff_p0_add_p1_eq_zero
+private lemma expectedPayoff_p0_add_p1_eq_zero
     (σ : Fin 2 → FinDist (Fin 3)) :
     expectedPayoff_p0 σ + expectedPayoff_p1 σ = 0 := by
   simp [expectedPayoff_p0, expectedPayoff_p1]
@@ -207,7 +207,7 @@ lemma expectedPayoff_zero_of_uniformAction
 
 /-- Against a nonuniform mixed action of Player 0, Player 1 has a pure response with
 strictly positive expected payoff. -/
-lemma exists_p1_profitable_response
+lemma exists_p1_pos_payoff_response
     (opponentMoves : FinDist (Fin 3))
     (h : opponentMoves ≠ uniformAction) :
     ∃ a : Fin 3,
@@ -252,7 +252,7 @@ lemma exists_p1_profitable_response
 
 /-- Against a nonuniform mixed action of Player 1, Player 0 has a pure response with
 strictly positive expected payoff. -/
-lemma exists_p0_profitable_response
+lemma exists_p0_pos_payoff_response
     (opponentMoves : FinDist (Fin 3))
     (h : opponentMoves ≠ uniformAction) :
     ∃ a : Fin 3,
@@ -265,7 +265,7 @@ lemma exists_p0_profitable_response
     intro b
     simp [expectedPayoff_p0, expectedPayoff_p1]
   -- Obtain the profitable action for player 1.
-  obtain ⟨a, ha⟩ := exists_p1_profitable_response opponentMoves h
+  obtain ⟨a, ha⟩ := exists_p1_pos_payoff_response opponentMoves h
   -- Use the same action for player 0.
   use a
   -- By symmetry, the expected payoffs are equal.
@@ -299,7 +299,7 @@ theorem rockPaperScissors_mixed_nash_unique
     -- Since player 0 is nonuniform, player 1 has
     -- a pure response giving strictly positive payoff.
     obtain ⟨a, ha⟩ :=
-      exists_p1_profitable_response (σ p0) hnon
+      exists_p1_pos_payoff_response (σ p0) hnon
     -- Nash equilibrium: player 0 cannot improve
     -- by switching to the uniform strategy.
     have hdev0 := hσ p0 uniformAction
@@ -337,7 +337,7 @@ theorem rockPaperScissors_mixed_nash_unique
     -- Against nonuniform player 1, player 0
     -- has a pure strategy with positive payoff.
     obtain ⟨a, ha⟩ :=
-      exists_p0_profitable_response (σ p1) hnon
+      exists_p0_pos_payoff_response (σ p1) hnon
     -- Nash equilibrium forbids player 0 from
     -- improving by switching to pure action a.
     have hdev := hσ p0 (FinDist.pure a)
