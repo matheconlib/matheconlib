@@ -177,6 +177,26 @@ lemma expectedPayoff_p1_closed
         p0, p1, rock, paper, scissors, expectedPayoff_p1]
   ring
 
+/-- Replacing Player 0's action in a mixed profile changes only Player 0's
+component of the expected-payoff formula. -/
+private lemma dev_p0_payoff (σ : Fin 2 → FinDist (Fin 3)) (τ : FinDist (Fin 3)) :
+    rockPaperScissors.finiteExpectedPayoff p0 (Function.update σ p0 τ) =
+      expectedPayoff_p0 ![τ, σ p1] := by
+  have hprofile : Function.update σ p0 τ = ![τ, σ p1] := by
+    funext i
+    fin_cases i <;> simp [p0, p1]
+  rw [hprofile, expectedPayoff_p0_closed]
+
+/-- Replacing Player 1's action in a mixed profile changes only Player 1's
+component of the expected-payoff formula. -/
+private lemma dev_p1_payoff (σ : Fin 2 → FinDist (Fin 3)) (τ : FinDist (Fin 3)) :
+    rockPaperScissors.finiteExpectedPayoff p1 (Function.update σ p1 τ) =
+      expectedPayoff_p1 ![σ p0, τ] := by
+  have hprofile : Function.update σ p1 τ = ![σ p0, τ] := by
+    funext i
+    fin_cases i <;> simp [p0, p1]
+  rw [hprofile, expectedPayoff_p1_closed]
+
 /-- The two players' expected payoffs always sum to zero. -/
 private lemma expectedPayoff_p0_add_p1_eq_zero
     (σ : Fin 2 → FinDist (Fin 3)) :
@@ -264,12 +284,38 @@ lemma exists_p0_pos_payoff_response
           expectedPayoff_p1 ![opponentMoves, FinDist.pure b] := by
     intro b
     simp [expectedPayoff_p0, expectedPayoff_p1]
-  -- Obtain the profitable action for player 1.
+  -- Obtain a pure action giving Player 1 positive payoff.
   obtain ⟨a, ha⟩ := exists_p1_pos_payoff_response opponentMoves h
-  -- Use the same action for player 0.
+  -- By symmetry, the same action gives Player 0 positive payoff.
   use a
   -- By symmetry, the expected payoffs are equal.
   rw [h0 a]
+  exact ha
+
+/-- Against a nonuniform Player 0 mixed action, Player 1 can choose a pure
+action whose payoff is positive in the updated strategy profile. -/
+private lemma exists_p1_pos_payoff_update
+    (σ : Fin 2 → FinDist (Fin 3))
+    (h : σ p0 ≠ uniformAction) :
+    ∃ a : Fin 3,
+      rockPaperScissors.finiteExpectedPayoff p1
+        (Function.update σ p1 (FinDist.pure a)) > 0 := by
+  obtain ⟨a, ha⟩ := exists_p1_pos_payoff_response (σ p0) h
+  refine ⟨a, ?_⟩
+  rw [dev_p1_payoff]
+  exact ha
+
+/-- Against a nonuniform Player 1 mixed action, Player 0 can choose a pure
+action whose payoff is positive in the updated strategy profile. -/
+private lemma exists_p0_pos_payoff_update
+    (σ : Fin 2 → FinDist (Fin 3))
+    (h : σ p1 ≠ uniformAction) :
+    ∃ a : Fin 3,
+      rockPaperScissors.finiteExpectedPayoff p0
+        (Function.update σ p0 (FinDist.pure a)) > 0 := by
+  obtain ⟨a, ha⟩ := exists_p0_pos_payoff_response (σ p1) h
+  refine ⟨a, ?_⟩
+  rw [dev_p0_payoff]
   exact ha
 
 /-!
@@ -293,66 +339,40 @@ theorem rockPaperScissors_mixed_nash_unique
     (hσ : rockPaperScissors.IsFiniteMixedNash σ) :
     σ = uniformProfile := by
   rw [StrategicGame.isFiniteMixedNash_iff] at hσ
-  -- First prove that player 0 must play uniformly.
+  -- First prove that Player 0 must play uniformly.
   have hp0 : σ p0 = uniformAction := by
     by_contra hnon
-    -- Since player 0 is nonuniform, player 1 has
-    -- a pure response giving strictly positive payoff.
-    obtain ⟨a, ha⟩ :=
-      exists_p1_pos_payoff_response (σ p0) hnon
-    -- Nash equilibrium: player 0 cannot improve
-    -- by switching to the uniform strategy.
+    -- Player 1 has a response with positive payoff in the updated profile.
+    obtain ⟨a, ha⟩ := exists_p1_pos_payoff_update σ hnon
+    -- At equilibrium, neither player can improve by deviating.
     have hdev0 := hσ p0 uniformAction
     -- Nash equilibrium: player 1 cannot improve
     -- by switching to pure action a.
     have hdev1 := hσ p1 (FinDist.pure a)
-    -- Rewrite Function.update as explicit profiles.
-    have hu0 :
-        Function.update σ p0 uniformAction =
-          ![uniformAction, σ p1] := by
-      funext i
-      fin_cases i <;> simp [p0, p1]
-    have hu1 :
-        Function.update σ p1 (FinDist.pure a) =
-          ![σ p0, FinDist.pure a] := by
-      funext i
-      fin_cases i <;> simp [p0, p1]
-    rw [hu0] at hdev0
-    rw [hu1] at hdev1
-    simp only [expectedPayoff_p0_closed] at hdev0
-    simp only [expectedPayoff_p1_closed] at hdev1
-    -- Uniform play guarantees player 0 zero payoff.
+    rw [dev_p0_payoff, expectedPayoff_p0_closed] at hdev0
+    rw [dev_p1_payoff, expectedPayoff_p1_closed] at hdev1
+    rw [dev_p1_payoff] at ha
+    -- A uniform response gives Player 0 payoff zero.
     have hz0 :=
       (expectedPayoff_zero_of_uniformAction (σ p0) (σ p1)).1
     rw [hz0] at hdev0
-    -- The game is zero-sum.
+    -- Player 0 cannot have a nonnegative equilibrium payoff while
+    -- Player 1 has a strictly positive one in a zero-sum game.
     have hz := expectedPayoff_p0_add_p1_eq_zero σ
     -- Player 0's payoff >= 0.
     -- Player 1's payoff > 0.
     -- Their sum = 0. Contradiction!
     linarith
-  -- We will prove player 1 is uniform.
+  -- Then prove that Player 1 must play uniformly.
   have hp1 : σ p1 = uniformAction := by
     by_contra hnon
-    -- Against nonuniform player 1, player 0
-    -- has a pure strategy with positive payoff.
-    obtain ⟨a, ha⟩ :=
-      exists_p0_pos_payoff_response (σ p1) hnon
-    -- Nash equilibrium forbids player 0 from
-    -- improving by switching to pure action a.
+    obtain ⟨a, ha⟩ := exists_p0_pos_payoff_update σ hnon
     have hdev := hσ p0 (FinDist.pure a)
-    -- Rewrite the deviating strategy profile.
-    have hupdate :
-        Function.update σ p0 (FinDist.pure a) =
-          ![FinDist.pure a, σ p1] := by
-      funext i
-      fin_cases i <;> simp [p0, p1]
-    rw [hupdate] at hdev
-    simp only [expectedPayoff_p0_closed] at hdev
-    -- Since player 0 plays uniformly, their payoff is zero.
+    rw [dev_p0_payoff, expectedPayoff_p0_closed] at hdev
+    rw [dev_p0_payoff] at ha
+    -- Since Player 0 plays uniformly, their current payoff is zero.
     have hpay0 : expectedPayoff_p0 σ = 0 := by
-      have hprofile :
-          σ = ![uniformAction, σ p1] := by
+      have hprofile : σ = ![uniformAction, σ p1] := by
         funext i
         fin_cases i
         · simpa [p0] using hp0
