@@ -9,7 +9,13 @@ public import MathEconLib.RevealedPreference.Afriat
 public import MathEconLib.RevealedPreference.AfriatGeometry
 public import MathEconLib.RevealedPreference.Basic
 public import MathEconLib.RevealedPreference.Choice
+public import MathEconLib.RevealedPreference.Equilibrium
+public import MathEconLib.RevealedPreference.EquilibriumAlternative
+public import MathEconLib.RevealedPreference.EquilibriumAxiom
+public import MathEconLib.RevealedPreference.EquilibriumBounds
+public import MathEconLib.RevealedPreference.EquilibriumElimination
 public import MathEconLib.RevealedPreference.GARP
+public import MathEconLib.RevealedPreference.LocalNonsatiation
 
 /-!
 # Finite revealed preference
@@ -22,6 +28,13 @@ observed utility maximization in the library's existing `ChoiceFunction` API.
 `AfriatGeometry` contains the certificate definitions and affine-envelope construction,
 independently of GARP. `GARP` constructs certificates from the revealed-preference graph;
 `Afriat` combines these ingredients into the economic equivalences.
+
+`Equilibrium` applies finite Afriat consumer by consumer to latent market-clearing
+allocations, characterizing exchange-equilibrium rationalization by joint certificates.
+`LocalNonsatiation` supplies ordinary utility-maximization necessity and budget exhaustion.
+`EquilibriumElimination` characterizes the same market observations by a finite ordinal
+disjunction of fully eliminated observable inequalities; `EquilibriumAlternative` and
+`EquilibriumBounds` verify the mixed weak/strict elimination used by that result.
 
 See the leaf modules for hypotheses, sources, and proof provenance, and
 `MathEconLibExamples.RevealedPreference` for checked applications.

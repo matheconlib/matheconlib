@@ -140,7 +140,13 @@ public import MathEconLib.RevealedPreference.Afriat
 public import MathEconLib.RevealedPreference.AfriatGeometry
 public import MathEconLib.RevealedPreference.Basic
 public import MathEconLib.RevealedPreference.Choice
+public import MathEconLib.RevealedPreference.Equilibrium
+public import MathEconLib.RevealedPreference.EquilibriumAlternative
+public import MathEconLib.RevealedPreference.EquilibriumAxiom
+public import MathEconLib.RevealedPreference.EquilibriumBounds
+public import MathEconLib.RevealedPreference.EquilibriumElimination
 public import MathEconLib.RevealedPreference.GARP
+public import MathEconLib.RevealedPreference.LocalNonsatiation
 public import MathEconLib.SingleParameter
 public import MathEconLib.SingleParameter.Basic
 public import MathEconLib.SingleParameter.EnvelopeIC
