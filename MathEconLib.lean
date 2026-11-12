@@ -46,6 +46,10 @@ public import MathEconLib.Choice.PathIndependentMinorant
 public import MathEconLib.Choice.SubstituteHull
 public import MathEconLib.Choice.WeakPreferences
 public import MathEconLib.Competition.Cournot.Linear
+public import MathEconLib.Decision.Continuity
+public import MathEconLib.Decision.ExpectedUtility
+public import MathEconLib.Decision.Independence
+public import MathEconLib.Decision.Lottery
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
 public import MathEconLib.ForMathlib.Data.PartialMatching
@@ -127,6 +131,7 @@ public import MathEconLib.Mechanism.Core.UtilityCompatibility
 public import MathEconLib.Preferences
 public import MathEconLib.Preferences.Basic
 public import MathEconLib.Preferences.Complete
+public import MathEconLib.Preferences.Profile
 public import MathEconLib.Preferences.Refinement
 public import MathEconLib.Preferences.Representation.Basic
 public import MathEconLib.Preferences.Representation.Finite

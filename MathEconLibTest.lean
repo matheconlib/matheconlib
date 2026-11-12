@@ -18,6 +18,7 @@ import MathEconLibTest.Choice.WeakPreferences
 import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.Competition.Cournot
+import MathEconLibTest.Decision.ExpectedUtility
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
@@ -52,6 +53,7 @@ import MathEconLibTest.Mechanism.Utility
 import MathEconLibTest.Namespace
 import MathEconLibTest.Preferences.Basic
 import MathEconLibTest.Preferences.Complete
+import MathEconLibTest.Preferences.Profile
 import MathEconLibTest.Preferences.PublicImport
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.RevealedPreference.Compatibility
