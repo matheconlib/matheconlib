@@ -393,10 +393,10 @@ def checkONeverLoses (fuel : Nat) (p : Player) (b : Board) : Bool :=
               true
 
 /-! informal check that X's strategy never loses. -/
-example : checkXNeverLoses 9 X emptyBoard = true := by decide
+example : checkXNeverLoses 9 X emptyBoard = true := by decide +kernel
 
 /-! informal check that Y's strategy never loses. -/
-example : checkONeverLoses 9 X emptyBoard = true := by decide
+example : checkONeverLoses 9 X emptyBoard = true := by decide +kernel
 
 /-!
 ## Checker soundness and non-losing strategies
@@ -466,7 +466,7 @@ private theorem checkXNeverLoses_sound
                 have hplay : playAccordingToStrategyProfile σ (n + 1) O b = xWinningBoard := by
                   simp [playAccordingToStrategyProfile, hgame, pos, hocc, X, O]
                 rw [hplay]
-                decide
+                decide +kernel
             | false =>
                 have hempty : (b pos).isNone = true := by
                   cases hv : b pos with
@@ -492,7 +492,7 @@ theorem xStrategy_never_loses (oStrategy : Strategy) :
   let σ : StrategyProfile := fun p ↦ if p = X then xStrategy else oStrategy
   have hX : σ X = xStrategy := by simp [σ]
   have hcheck : checkXNeverLoses 9 X emptyBoard = true := by
-    decide
+    decide +kernel
   exact checkXNeverLoses_sound σ hX 9 X emptyBoard hcheck
 
 /-- If the O checker succeeds with X to move, its check succeeds after
@@ -558,7 +558,7 @@ private theorem checkONeverLoses_sound
                 have hplay : playAccordingToStrategyProfile σ (n + 1) X b = oWinningBoard := by
                   simp [playAccordingToStrategyProfile, hgame, pos, hocc, X]
                 rw [hplay]
-                decide
+                decide +kernel
             | false =>
                 have hempty : (b pos).isNone = true := by
                   cases hv : b pos with
@@ -584,7 +584,7 @@ theorem oStrategy_never_loses (xStrat : Strategy) :
   let σ : StrategyProfile := fun p ↦ if p = O then oStrategy else xStrat
   have hO : σ O = oStrategy := by simp [σ, O]
   have hcheck : checkONeverLoses 9 X emptyBoard = true := by
-    decide
+    decide +kernel
   exact checkONeverLoses_sound σ hO 9 X emptyBoard hcheck
 
 /-!
