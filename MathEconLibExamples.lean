@@ -17,6 +17,7 @@ public import MathEconLibExamples.Matching.UnbalancedMarriage
 public import MathEconLibExamples.Mechanism.PostedPriceUtility
 public import MathEconLibExamples.Preferences.Finite
 public import MathEconLibExamples.RevealedPreference
+public import MathEconLibExamples.RevealedPreference.RenyInfinite
 public import MathEconLibExamples.SingleParameter.BeckerCrime
 
 /-!
