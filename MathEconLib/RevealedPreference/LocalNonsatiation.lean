@@ -84,16 +84,27 @@ theorem budget_exhaustion_of_locallyNonsatiated
     exists_strictlyPreferred_affordable_of_lt hlns p x m hx (lt_of_not_ge h)
   exact (not_lt_of_ge (hmax y hy hcost)) himprove
 
+/-- Raw locally nonsatiated utility maximization implies graph GARP. Prices may
+have arbitrary signs; only the observed choices must be nonnegative. -/
+theorem graphGARP_of_locallyNonsatiated_utilityMaximization
+    (p q : T → Bundle L) (u : Utility L) (hq : ∀ t, Nonnegative (q t))
+    (hlns : LocallyNonsatiatedOnNonnegative u)
+    (hmax : ∀ t y, Nonnegative y → dot (p t) y ≤ dot (p t) (q t) → u y ≤ u (q t)) :
+    GraphGARP p q := by
+  intro s t hst hcheap
+  have hchain : u (q t) ≤ u (q s) :=
+    revealedPreferred_mono p q (fun r => u (q r))
+      (fun {a b} hab => hmax a (q b) (hq b) hab) hst
+  obtain ⟨y, hy, hcost, himprove⟩ := exists_strictlyPreferred_affordable_of_lt
+    hlns (p t) (q s) (dot (p t) (q t)) (hq s) hcheap
+  exact (not_lt_of_ge hchain) (himprove.trans_le (hmax t y hy hcost))
+
 /-- Ordinary locally nonsatiated utility rationalization implies GARP. -/
 theorem garp_of_locallyNonsatiated_utilityRationalization
     (D : Dataset L T) (u : Utility L)
     (hlns : LocallyNonsatiatedOnNonnegative u) (hrat : UtilityRationalizes D u) :
-    GARP D := by
-  intro s t hst hcheap
-  have hchain := revealedPreferred_mono_of_utilityRationalization D u hrat hst
-  obtain ⟨y, hy, hcost, himprove⟩ := exists_strictlyPreferred_affordable_of_lt
-    hlns (D.price t) (D.choice s) (dot (D.price t) (D.choice t))
-    (D.choice_nonneg s) hcheap
-  exact (not_lt_of_ge hchain) (himprove.trans_le (hrat t y ⟨hy, hcost⟩))
+    GARP D :=
+  graphGARP_of_locallyNonsatiated_utilityMaximization D.price D.choice u
+    D.choice_nonneg hlns (fun t y hy hcost => hrat t y ⟨hy, hcost⟩)
 
 end MathEconLib.RevealedPreference

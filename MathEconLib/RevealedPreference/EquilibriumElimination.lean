@@ -6,7 +6,7 @@ Authors: Victor H. Aguiar
 module
 
 public import MathEconLib.RevealedPreference.EquilibriumAxiom
-public import MathEconLib.RevealedPreference.EquilibriumAlternative
+public import MathEconLib.ForMathlib.LinearInequalities
 public import Mathlib.Tactic.DeriveFintype
 public import Mathlib.LinearAlgebra.Pi
 
@@ -105,14 +105,6 @@ noncomputable def rowStrict (r : I → ObservationRanks T) : Row L I T → Bool 
   | .comparison i s t => decide (r i t < r i s)
   | _ => false
 
-/-- Express any finite-dimensional linear functional by its coordinate row. -/
-theorem linear_eq_dot {n : ℕ} (f : (Fin n → ℝ) →ₗ[ℝ] ℝ) (z : Fin n → ℝ) :
-    f z = dot (fun j => f (Pi.single j 1)) z := by
-  calc
-    f z = f (∑ j, z j • Pi.single j 1) := congrArg f (pi_eq_sum_univ' z)
-    _ = ∑ j, z j * f (Pi.single j 1) := by simp
-    _ = _ := by simp only [dot, dotProduct, mul_comm]
-
 /-- Matrix presentation of the fixed-rank ordinal system, depending only on
 the observed data and the selected finite rank profile. -/
 noncomputable def system (D : MarketData L I T) (r : I → ObservationRanks T) :
@@ -126,7 +118,8 @@ theorem satisfies_iff (D : MarketData L I T) (r : I → ObservationRanks T)
     FiniteLinearSystem.Satisfies (system D r) z ↔ OrdinalAllocationFeasible D r (decode z) := by
   classical
   have heval (row : Row L I T) :
-      dot ((system D r).coeff row) z = rowLinear D r row z := (linear_eq_dot _ z).symm
+      dotProduct ((system D r).coeff row) z = rowLinear D r row z :=
+    (FiniteLinearSystem.linear_eq_dotProduct _ z).symm
   constructor
   · intro h
     have hn (i : I) (t : T) (k : Fin L) := (h (.nonneg i t k)).1
@@ -204,19 +197,19 @@ end OrdinalEncoding
 
 variable {L : ℕ} {I T : Type*}
 
-/-- A generalized axiom of revealed equilibrium: one of the finitely many
+/-- Generalized Axiom of Revealed Equilibrium (GARE): one of the finitely many
 ordinal profiles passes its fully eliminated observable inequalities. This is
 a descriptive name for this formalization, not a priority claim or an assertion
 that the phrase has a uniquely established meaning in the literature. -/
-noncomputable def GeneralizedAxiomOfRevealedEquilibrium [Fintype I] [Fintype T]
+noncomputable def GARE [Fintype I] [Fintype T]
     (D : MarketData L I T) : Prop :=
   ∃ r : I → ObservationRanks T,
     FiniteLinearSystem.EliminationCondition (OrdinalEncoding.system D r)
 
 /-- Elimination removes all latent real quantities from the ordinal test. -/
-theorem hasOrdinalAllocation_iff_generalizedAxiomOfRevealedEquilibrium
+theorem hasOrdinalAllocation_iff_gare
     [Fintype I] [Fintype T] (D : MarketData L I T) :
-    HasOrdinalAllocation D ↔ GeneralizedAxiomOfRevealedEquilibrium D := by
+    HasOrdinalAllocation D ↔ GARE D := by
   constructor
   · rintro ⟨r, x, hx⟩
     exact ⟨r, (FiniteLinearSystem.feasible_iff_eliminationCondition _).mp
@@ -228,38 +221,62 @@ theorem hasOrdinalAllocation_iff_generalizedAxiomOfRevealedEquilibrium
 
 /-- The observable axiom is exactly joint GARP, even for empty observations
 and without sign assumptions on prices. -/
-theorem hasGARPAllocation_iff_generalizedAxiomOfRevealedEquilibrium
+theorem hasGARPAllocation_iff_gare
     [Fintype I] [Fintype T] (D : MarketData L I T) :
-    HasGARPAllocation D ↔ GeneralizedAxiomOfRevealedEquilibrium D :=
+    HasGARPAllocation D ↔ GARE D :=
   (hasGARPAllocation_iff_hasOrdinalAllocation D).trans
-    (hasOrdinalAllocation_iff_generalizedAxiomOfRevealedEquilibrium D)
+    (hasOrdinalAllocation_iff_gare D)
 
 /-- The eliminated observable axiom characterizes regular utility-maximizing
 equilibrium. All economic regularity assumptions are explicit. -/
-theorem hasRegularEquilibriumRationalization_iff_generalizedAxiomOfRevealedEquilibrium
+theorem hasRegularEquilibriumRationalization_iff_gare
     [Fintype I] [Fintype T] [Nonempty T]
     (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k) :
-    HasRegularEquilibriumRationalization D ↔ GeneralizedAxiomOfRevealedEquilibrium D :=
+    HasRegularEquilibriumRationalization D ↔ GARE D :=
   (hasRegularEquilibriumRationalization_iff_hasOrdinalAllocation D hp).trans
-    (hasOrdinalAllocation_iff_generalizedAxiomOfRevealedEquilibrium D)
+    (hasOrdinalAllocation_iff_gare D)
 
 /-- The same observable test characterizes increasing utility maximization,
 without presupposing concavity or continuity of the initial rationalization. -/
-theorem hasIncreasingEquilibriumRationalization_iff_generalizedAxiomOfRevealedEquilibrium
+theorem hasIncreasingEquilibriumRationalization_iff_gare
     [Fintype I] [Fintype T] [Nonempty T]
     (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k) :
-    HasIncreasingEquilibriumRationalization D ↔ GeneralizedAxiomOfRevealedEquilibrium D :=
+    HasIncreasingEquilibriumRationalization D ↔ GARE D :=
   (hasIncreasingEquilibriumRationalization_iff_hasRegularEquilibriumRationalization D hp).trans
-    (hasRegularEquilibriumRationalization_iff_generalizedAxiomOfRevealedEquilibrium D hp)
+    (hasRegularEquilibriumRationalization_iff_gare D hp)
 
 /-- Under positive prices and a nonzero commodity dimension, the observable
 axiom also characterizes locally nonsatiated utility maximization. -/
-theorem hasLocallyNonsatiatedEquilibriumRationalization_iff_generalizedAxiomOfRevealedEquilibrium
+theorem hasLocallyNonsatiatedEquilibriumRationalization_iff_gare
     [Fintype I] [Fintype T] [Nonempty T]
     (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k) (hL : 0 < L) :
-    HasLocallyNonsatiatedEquilibriumRationalization D ↔ GeneralizedAxiomOfRevealedEquilibrium D :=
+    HasLocallyNonsatiatedEquilibriumRationalization D ↔ GARE D :=
   (hasLocallyNonsatiatedEquilibriumRationalization_iff_hasAfriatAllocation D hp hL).trans
     ((hasGARPAllocation_iff_hasAfriatAllocation D).symm.trans
-      (hasGARPAllocation_iff_generalizedAxiomOfRevealedEquilibrium D))
+      (hasGARPAllocation_iff_gare D))
+
+/-- Compatibility name for `GARE`. -/
+noncomputable abbrev GeneralizedAxiomOfRevealedEquilibrium [Fintype I] [Fintype T]
+    (D : MarketData L I T) : Prop := GARE D
+
+/-- Compatibility name for `hasOrdinalAllocation_iff_gare`. -/
+alias hasOrdinalAllocation_iff_generalizedAxiomOfRevealedEquilibrium :=
+  hasOrdinalAllocation_iff_gare
+
+/-- Compatibility name for `hasGARPAllocation_iff_gare`. -/
+alias hasGARPAllocation_iff_generalizedAxiomOfRevealedEquilibrium :=
+  hasGARPAllocation_iff_gare
+
+/-- Compatibility name for `hasRegularEquilibriumRationalization_iff_gare`. -/
+alias hasRegularEquilibriumRationalization_iff_generalizedAxiomOfRevealedEquilibrium :=
+  hasRegularEquilibriumRationalization_iff_gare
+
+/-- Compatibility name for `hasIncreasingEquilibriumRationalization_iff_gare`. -/
+alias hasIncreasingEquilibriumRationalization_iff_generalizedAxiomOfRevealedEquilibrium :=
+  hasIncreasingEquilibriumRationalization_iff_gare
+
+/-- Compatibility name for `hasLocallyNonsatiatedEquilibriumRationalization_iff_gare`. -/
+alias hasLocallyNonsatiatedEquilibriumRationalization_iff_generalizedAxiomOfRevealedEquilibrium :=
+  hasLocallyNonsatiatedEquilibriumRationalization_iff_gare
 
 end MathEconLib.RevealedPreference.Equilibrium

@@ -14,6 +14,7 @@ public import MathEconLib.RevealedPreference.EquilibriumAlternative
 public import MathEconLib.RevealedPreference.EquilibriumAxiom
 public import MathEconLib.RevealedPreference.EquilibriumBounds
 public import MathEconLib.RevealedPreference.EquilibriumElimination
+public import MathEconLib.RevealedPreference.EquilibriumWelfare
 public import MathEconLib.RevealedPreference.GARP
 public import MathEconLib.RevealedPreference.LocalNonsatiation
 
@@ -33,8 +34,10 @@ independently of GARP. `GARP` constructs certificates from the revealed-preferen
 allocations, characterizing exchange-equilibrium rationalization by joint certificates.
 `LocalNonsatiation` supplies ordinary utility-maximization necessity and budget exhaustion.
 `EquilibriumElimination` characterizes the same market observations by a finite ordinal
-disjunction of fully eliminated observable inequalities; `EquilibriumAlternative` and
-`EquilibriumBounds` verify the mixed weak/strict elimination used by that result.
+disjunction of fully eliminated observable inequalities, using the generic mixed
+weak/strict elimination in `ForMathlib.LinearInequalities`. `EquilibriumWelfare`
+retains the certified allocation and proves the classical reciprocal-multiplier
+welfare maximization and Pareto-efficiency implication.
 
 See the leaf modules for hypotheses, sources, and proof provenance, and
 `MathEconLibExamples.RevealedPreference` for checked applications.

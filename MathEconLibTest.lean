@@ -56,6 +56,7 @@ import MathEconLibTest.Preferences.PublicImport
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.RevealedPreference.Compatibility
 import MathEconLibTest.RevealedPreference.Equilibrium
+import MathEconLibTest.RevealedPreference.EquilibriumExamples
 import MathEconLibTest.RevealedPreference.Examples
 import MathEconLibTest.RevealedPreference.Geometry
 import MathEconLibTest.SingleParameter.BeckerCrime

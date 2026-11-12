@@ -6,6 +6,7 @@ Authors: Victor H. Aguiar
 module
 
 public import MathEconLib.RevealedPreference.LocalNonsatiation
+public import MathEconLib.RevealedPreference.Choice
 
 /-!
 # Finite exchange-equilibrium rationalization
@@ -24,8 +25,9 @@ bundle space. The ordinary utility variant states local nonsatiation on the cons
 explicitly and derives budget exhaustion from weak budget feasibility. This resolves
 the source's ambiguous use of “monotone”: weak monotonicity alone would admit
 constant utilities and cannot imply positive-multiplier Afriat inequalities.
-We do not assert smoothness, strict
-concavity, unique demand, quantifier elimination, or an observable-only axiom.
+This module retains the allocation variables. The downstream `EquilibriumElimination`
+module gives an observable-only axiom, and `EquilibriumWelfare` proves its welfare
+consequences. Smoothness, strict concavity, and unique demand are not asserted.
 Prices need not be normalized. This is a characterization of finite observed
 price equilibria, not an existence theorem at unobserved endowments.
 
@@ -34,7 +36,7 @@ price equilibria, not an existence theorem at unobserved endowments.
 Donald J. Brown and Rosa L. Matzkin (1996), *Testable Restrictions on the
 Equilibrium Manifold*, Econometrica **64**(6), 1249–1262.
 [DOI: 10.2307/2171830](https://doi.org/10.2307/2171830).
-[August 1995 Cowles discussion paper 1109](https://cowles.yale.edu/sites/default/files/files/pub/d11/d1109.pdf).
+[August 1995 Cowles discussion paper 1109](https://cowles.yale.edu/sites/default/files/2022-08/d1109.pdf).
 -/
 
 @[expose] public section
@@ -82,6 +84,37 @@ def UtilityMaximizes (D : MarketData L I T) (x : I → T → Bundle L)
     (u : I → Utility L) : Prop :=
   ∀ i t y, Nonnegative y → dot (D.price t) y ≤ D.income i t →
     u i y ≤ u i (x i t)
+
+/-- Nonnegative bundles affordable at an observed individual income. No price
+sign, exhaustion, or candidate feasibility is built into this menu. -/
+def incomeBudgetSet (D : MarketData L I T) (i : I) (t : T) : Set (Bundle L) :=
+  {y | Nonnegative y ∧ dot (D.price t) y ≤ D.income i t}
+
+/-- The income-budget maximization inequality is exactly Mathlib's `IsMaxOn`.
+Candidate feasibility is a separate condition. -/
+theorem utilityMaximizes_iff_forall_isMaxOn (D : MarketData L I T)
+    (x : I → T → Bundle L) (u : I → Utility L) :
+    UtilityMaximizes D x u ↔ ∀ i t, IsMaxOn (u i) (incomeBudgetSet D i t) (x i t) := by
+  constructor
+  · intro h i t
+    exact isMaxOn_iff.mpr (fun y hy => h i t y hy.1 hy.2)
+  · intro h i t y hy hcost
+    exact isMaxOn_iff.mp (h i t) y ⟨hy, hcost⟩
+
+/-- Feasible income-budget maximizers are members of the existing utility choice
+correspondence. Weak budget feasibility suffices; exhaustion is not assumed. -/
+theorem utilityMaximizes_iff_forall_mem_utilityChoice (D : MarketData L I T)
+    (x : I → T → Bundle L) (u : I → Utility L)
+    (hnonneg : ∀ i t, Nonnegative (x i t))
+    (hbudget : ∀ i t, dot (D.price t) (x i t) ≤ D.income i t) :
+    UtilityMaximizes D x u ↔
+      ∀ i t, x i t ∈ utilityChoice (u i) (incomeBudgetSet D i t) := by
+  rw [utilityMaximizes_iff_forall_isMaxOn]
+  constructor
+  · intro h i t
+    exact (mem_utilityChoice _ _ _).mpr ⟨⟨hnonneg i t, hbudget i t⟩, h i t⟩
+  · intro h i t
+    exact ((mem_utilityChoice _ _ _).mp (h i t)).2
 
 /-- Ordinary utility maximization with local nonsatiation on the consumption
 orthant. Feasibility initially imposes weak budgets; exhaustion is a theorem. -/
@@ -140,7 +173,7 @@ def consumerDataset [Fintype I] (D : MarketData L I T)
   choice_nonneg := hx.nonneg i
 
 /-- Exhaustion identifies the income budget with the consumer dataset's budget. -/
-theorem utilityMaximizes_iff [Fintype I] (D : MarketData L I T)
+theorem utilityMaximizes_iff_forall_utilityRationalizes [Fintype I] (D : MarketData L I T)
     (hp : ∀ t k, 0 < D.price t k) (x : I → T → Bundle L)
     (hx : AllocationFeasible D x) (u : I → Utility L) :
     UtilityMaximizes D x u ↔ ∀ i, UtilityRationalizes (consumerDataset D hp x hx i) (u i) := by
@@ -150,6 +183,9 @@ theorem utilityMaximizes_iff [Fintype I] (D : MarketData L I T)
   · intro h i t y hy hbudget
     apply h i t y
     exact ⟨hy, by simpa [expenditure, consumerDataset, hx.budget i t] using hbudget⟩
+
+/-- Compatibility name for the former unqualified dataset bridge. -/
+abbrev utilityMaximizes_iff := @utilityMaximizes_iff_forall_utilityRationalizes
 
 /-- Joint GARP and joint Afriat feasibility are equivalent, even for empty data
 and without positivity assumptions on observed prices. -/
@@ -172,7 +208,24 @@ theorem hasGARPAllocation_of_hasIncreasingEquilibriumRationalization [Fintype I]
   obtain ⟨x, u, hx, hinc, hmax⟩ := h
   exact ⟨x, hx, fun i => garp_of_strictlyIncreasing_utilityRationalization
     (consumerDataset D hp x hx i) (u i) (hinc i)
-    ((utilityMaximizes_iff D hp x hx u).mp hmax i)⟩
+    ((utilityMaximizes_iff_forall_utilityRationalizes D hp x hx u).mp hmax i)⟩
+
+/-- Regular utilities rationalizing the supplied feasible allocation. The same
+allocation appears in the premise and the conclusion. -/
+theorem exists_regularUtility_of_garpAllocation
+    [Fintype I] [Finite T] [Nonempty T]
+    (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k)
+    (x : I → T → Bundle L) (hx : AllocationFeasible D x)
+    (hG : ∀ i, GraphGARP D.price (x i)) :
+    ∃ u : I → Utility L,
+      (∀ i, Continuous (u i) ∧ ConcaveOn ℝ Set.univ (u i) ∧ StrictlyIncreasing (u i)) ∧
+      UtilityMaximizes D x u := by
+  classical
+  have hreg := fun i => hasRegularUtilityRationalization_of_garp
+    (consumerDataset D hp x hx i) (hG i)
+  choose u hcont hconc hinc hrat using hreg
+  exact ⟨u, fun i => ⟨hcont i, hconc i, hinc i⟩,
+    (utilityMaximizes_iff_forall_utilityRationalizes D hp x hx u).mpr hrat⟩
 
 /-- The finite consumer theorem applied independently to each consumer, preserving
 one common array of allocations and hence the market-clearing constraints. -/
@@ -180,13 +233,9 @@ theorem hasRegularEquilibriumRationalization_of_hasGARPAllocation
     [Fintype I] [Finite T] [Nonempty T]
     (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k)
     (h : HasGARPAllocation D) : HasRegularEquilibriumRationalization D := by
-  classical
   obtain ⟨x, hx, hG⟩ := h
-  have hreg := fun i => hasRegularUtilityRationalization_of_garp
-    (consumerDataset D hp x hx i) (hG i)
-  choose u hcont hconc hinc hrat using hreg
-  exact ⟨x, u, hx, fun i => ⟨hcont i, hconc i, hinc i⟩,
-    (utilityMaximizes_iff D hp x hx u).mpr hrat⟩
+  obtain ⟨u, hreg, hmax⟩ := exists_regularUtility_of_garpAllocation D hp x hx hG
+  exact ⟨x, u, hx, hreg, hmax⟩
 
 /-- Forgetting continuity and concavity preserves utility-maximizing equilibrium. -/
 theorem HasRegularEquilibriumRationalization.to_increasing [Fintype I]
@@ -217,15 +266,22 @@ theorem hasIncreasingEquilibriumRationalization_iff_hasRegularEquilibriumRationa
 
 /-- Local nonsatiation and ordinary budget maximization yield a single jointly
 feasible GARP allocation. No continuity or concavity of the initial utilities is assumed. -/
-theorem hasGARPAllocation_of_hasLocallyNonsatiatedEquilibriumRationalization [Fintype I]
-    (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k)
+theorem hasGARPAllocation_of_locallyNonsatiatedEquilibriumRationalization [Fintype I]
+    (D : MarketData L I T)
     (h : HasLocallyNonsatiatedEquilibriumRationalization D) : HasGARPAllocation D := by
   obtain ⟨x, u, hnonneg, hbudget, hclearing, hlns, hmax⟩ := h
   have hx := allocationFeasible_of_locallyNonsatiated
     D x u hnonneg hbudget hclearing hlns hmax
-  exact ⟨x, hx, fun i => garp_of_locallyNonsatiated_utilityRationalization
-    (consumerDataset D hp x hx i) (u i) (hlns i)
-    ((utilityMaximizes_iff D hp x hx u).mp hmax i)⟩
+  exact ⟨x, hx, fun i => graphGARP_of_locallyNonsatiated_utilityMaximization
+    D.price (x i) (u i) (hnonneg i) (hlns i)
+    (fun t y hy hcost => hmax i t y hy ((hx.budget i t) ▸ hcost))⟩
+
+/-- Positive-price compatibility wrapper; raw necessity does not need this restriction. -/
+theorem hasGARPAllocation_of_hasLocallyNonsatiatedEquilibriumRationalization [Fintype I]
+    (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k)
+    (h : HasLocallyNonsatiatedEquilibriumRationalization D) : HasGARPAllocation D := by
+  have _ := hp
+  exact hasGARPAllocation_of_locallyNonsatiatedEquilibriumRationalization D h
 
 /-- Regular rationalizing utilities are locally nonsatiated when a commodity exists. -/
 theorem HasRegularEquilibriumRationalization.to_locallyNonsatiated [Fintype I]

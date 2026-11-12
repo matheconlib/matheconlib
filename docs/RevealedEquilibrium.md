@@ -53,7 +53,7 @@ The public import is `MathEconLib.RevealedPreference`.
 | `HasAfriatAllocation D` | A feasible allocation, utility levels, and positive multipliers satisfying every consumer's Afriat inequalities |
 | `HasGARPAllocation D` | One feasible allocation array satisfying every consumer's GARP |
 | `HasOrdinalAllocation D` | A finite ordinal rank profile and a jointly feasible allocation satisfying its weak and strict expenditure inequalities |
-| `GeneralizedAxiomOfRevealedEquilibrium D` | A finite ordinal rank profile whose completely eliminated inequalities in observed data hold |
+| `GARE D` | A finite ordinal rank profile whose completely eliminated inequalities in observed data hold |
 | `HasRegularEquilibriumRationalization D` | A feasible allocation supported by continuous, concave, strictly increasing utilities |
 | `HasLocallyNonsatiatedEquilibriumRationalization D` | Nonnegative clearing allocations that are affordable utility maximizers for locally nonsatiated utilities |
 
@@ -62,10 +62,14 @@ regular-utility certificate equivalence.
 `hasLocallyNonsatiatedEquilibriumRationalization_iff_hasAfriatAllocation` supplies
 the ordinary locally nonsatiated formulation. `AllocationFeasible.budget_adding_up`
 derives the aggregate income identity from individual exhaustion and clearing.
+`GARE` is the canonical name; the original long predicate and theorem names remain
+as compatibility aliases. API pins import only the public umbrella, while a
+separate regression module imports the numerical examples.
 
 ## Finite ordinal linear formulation
 
-`EquilibriumAxiom` assigns each consumer and observation a rank in
+The reusable `ObservationRanks` construction in `GARP` assigns each observation a
+rank. `EquilibriumAxiom` uses one such profile per consumer, with labels in
 `Fin (Fintype.card T + 1)`. For a fixed rank profile, a bundle assigned a higher
 rank than observation `t` must cost strictly more than the consumer's income at
 prices `t`; a bundle assigned an equal rank must cost at least that income.
@@ -88,20 +92,21 @@ weak rows; each budget and clearing equality produces two opposite weak rows;
 strict rank comparisons produce strict expenditure rows. The encoding theorem
 preserves the same joint allocation across every household and observation.
 
-`EquilibriumAlternative` then applies finite Fourier–Motzkin elimination. Every
+The economics-independent `ForMathlib.LinearInequalities` module supplies finite
+Fourier–Motzkin elimination in `MathEconLib.FiniteLinearSystem`. Every
 positive-coefficient lower bound is compared with every negative-coefficient
 upper bound. The combined row is strict if either bound is strict. Zero-coefficient
 rows persist, and divisions use coefficients whose signs ensure they are nonzero.
 After all consumption coordinates are eliminated, only weak or strict comparisons
 of functions of the observed data remain.
 
-`GeneralizedAxiomOfRevealedEquilibrium D` asserts that one of the finitely many
+`GARE D` asserts that one of the finitely many
 rank profiles passes these eliminated comparisons. Its definition has finite
 rank and row quantification, with no quantification over continuous latent
 consumption, utility levels, or multipliers. This is a descriptive name for the
 present formulation; it makes no claim of priority or uniquely established usage.
 
-`hasGARPAllocation_iff_generalizedAxiomOfRevealedEquilibrium` proves exact
+`hasGARPAllocation_iff_gare` proves exact
 equivalence without sign assumptions or nonempty observations. For positive
 prices and finite nonempty observations, the regular and increasing utility
 equivalences follow. The locally nonsatiated equivalence additionally requires
@@ -116,7 +121,7 @@ into a specified polynomial formula. The separate economic dual condition in
 `EquilibriumAxiom` is proved necessary; the full observable equivalence uses
 Fourier–Motzkin elimination and does not assume a converse for that dual condition.
 
-## Interpretation and preliminary contribution
+## Interpretation and prior work
 
 The axiom is a condition across households because each household has one ordinal
 rank profile across observations, and all households must be compatible with the
@@ -125,21 +130,59 @@ they do not compare utility levels between households. Eliminating that joint
 allocation expresses the compatibility requirement using observed prices,
 individual incomes, and aggregate resources alone.
 
-Brown and Matzkin already establish general equilibrium testability through
-quantifier elimination. Laurens Cherchye, Thomas Demuynck, and Bram De Rock (2011),
-*Testable implications of general equilibrium models: An integer programming
-approach*, Journal of Mathematical Economics **47**(4–5), 564–575,
+Brown and Matzkin establish general equilibrium testability through quantifier
+elimination. Donald J. Brown and Ravi Kannan (2006), *Two Algorithms for Solving
+the Walrasian Equilibrium Inequalities*,
+[Cowles Foundation Discussion Paper 1508R](https://cowles.yale.edu/sites/default/files/2022-08/d1508-r.pdf),
+§3.1, already enumerate each consumer's utility order and solve the resulting
+joint linear system, including aggregate clearing. Their construction uses strict
+orders and strictly positive consumption under strict Afriat inequalities. The
+household-order enumeration and joint linear-feasibility strategy are therefore
+prior work.
+
+Laurens Cherchye, Thomas Demuynck, and Bram De Rock (2011), *Testable implications
+of general equilibrium models: An integer programming approach*, Journal of
+Mathematical Economics **47**(4–5), 564–575,
 [DOI: 10.1016/j.jmateco.2011.07.002](https://doi.org/10.1016/j.jmateco.2011.07.002),
 give a mixed integer programming characterization for arbitrary finite numbers of
-observations and agents. The general strategy of finite linear feasibility tests
-is therefore established prior work.
+observations and agents.
 
-The explicit finite observable GARE formulation appears potentially new and
-economically interpretable; priority remains to be assessed. The candidate
-contribution is this ordinal observable presentation and its modular, formally
-verified derivation using the library's existing Afriat infrastructure. It is an
-equivalent characterization of the stated model, not an additional economic
-restriction. Kernel checking establishes the formal equivalences, not novelty.
+This development provides a verified formulation using weak finite ranks that
+allow ties, nonnegative boundary allocations, and exact mixed weak/strict
+Fourier–Motzkin elimination of every latent consumption coordinate. These are
+specific features of the present construction; they do not establish its novelty.
+Priority of this exact observable presentation remains open. The formal result is
+an equivalent characterization of the stated model. Kernel checking establishes
+the equivalences and their modular implementation.
+
+## Classical welfare implication
+
+`EquilibriumWelfare` connects a joint Afriat certificate to weighted welfare
+maximization and Pareto efficiency while retaining the same observed allocation.
+For each household, the Afriat construction supplies one fixed utility across
+observations. At observation `t`, its positive welfare weight is the reciprocal
+of its certificate multiplier, `α i t = (lam i t)⁻¹`. The supporting inequalities
+then share the common observed price vector. Summing them and using market
+clearing proves weighted welfare maximization over nonnegative allocations using
+at most the available resources. Positive weights exclude every feasible weak
+improvement for all households with a strict improvement for one.
+
+This is the classical welfare-weight interpretation of competitive equilibrium:
+Takashi Negishi (1960), *Welfare Economics and Existence of an Equilibrium for a
+Competitive Economy*, Metroeconomica **12**(2–3), 92–97,
+[DOI: 10.1111/j.1467-999X.1960.tb00275.x](https://doi.org/10.1111/j.1467-999X.1960.tb00275.x).
+His opening statement explicitly places the weights in inverse proportion to
+marginal utilities of income. Here the certificate's supporting-plane multipliers
+provide that role without assuming differentiability or interior consumption.
+The module formalizes this implication; Negishi's equilibrium existence argument
+is outside its scope.
+
+The certificate-level welfare theorem needs nonnegative prices and finite
+nonempty observations. The GARP/GARE corollaries use strictly positive prices to
+construct regular utilities. Weights may vary across observations and depend on
+the chosen cardinal utility representations. They do not identify interpersonal
+utility comparisons or a common weight vector across observations. Pareto
+efficiency alone does not imply GARE, as the checked refutable market below shows.
 
 ## Checked applications and limits
 
@@ -152,6 +195,8 @@ and resources `(4,0)` and `(0,4)`. Each consumer buys `(2,0)` and `(0,2)`.
 Constant utility levels `2` and multipliers `1` satisfy the joint certificate.
 Applying the named equivalences proves regular and locally nonsatiated
 equilibrium rationalization and satisfaction of the observable generalized axiom.
+The explicit certificate also proves weighted welfare maximization and Pareto
+efficiency of this same allocation at each observation, with unit weights.
 
 The refutable market has prices `(2,1)` and `(1,2)`, income `9` per consumer, and
 resources `(8,2)` and `(2,8)`. Equal sharing proves budget-exhausting,
@@ -161,6 +206,10 @@ strictly below income `9`, in both directions. This forces a strict
 two-observation revealed-preference cycle. Hence no feasible allocation supports
 GARP, an Afriat certificate, increasing utilities, or locally nonsatiated utilities.
 The observable generalized axiom therefore fails for these same data.
+Nevertheless, for each household's strictly increasing utility equal to the sum
+of its goods, equal sharing maximizes total utility at each observed resource
+vector and is Pareto efficient. This compiled example separates resource welfare
+optimality from rationalization at the observed prices and individual budgets.
 
 Tests cover empty observations and zero goods. Zero goods admit the regular
 certificate formulation at zero income, but no utility on the singleton
@@ -184,13 +233,14 @@ existence at unobserved endowments, or an executable solver.
 Victor H. Aguiar supplied the conceptual direction, selection, and interpretation:
 he proposed formalizing Brown–Matzkin and then seeking a Generalized Axiom of
 Revealed Equilibrium; restricted the project to ordinary utility maximization;
-asked that the existing Afriat
-infrastructure be reused as the first step; clarified that integer feasibility
+asked that the existing Afriat infrastructure be reused as the first step; clarified that integer feasibility
 plays the role of Afriat inequalities while GARE should play GARP's role as an
-axiom on observables; and highlighted the across-household interpretation.
+axiom on observables; and highlighted the across-household interpretation. He
+later recognized the Pareto connection and requested its formalization.
 
 Under that guidance, Codex with subagents developed the bounded ordinal
 reachability ranks, the exact Fourier–Motzkin recursion, the particular proofs,
 and the numerical counterexample, and implemented and checked the Lean
-development. The existing project infrastructure supplies the reused Afriat
+development. For the welfare extension, the assistant supplied the technical
+reciprocal-multiplier derivation of the classical implication. The existing project infrastructure supplies the reused Afriat
 results.

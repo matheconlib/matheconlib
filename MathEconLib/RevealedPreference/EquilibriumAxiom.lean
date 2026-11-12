@@ -36,83 +36,12 @@ namespace MathEconLib.RevealedPreference.Equilibrium
 
 variable {L : ℕ} {I T : Type*}
 
-/-- Finitely many admissible ordinal labels. Zero is harmless redundancy. -/
-abbrev ObservationRanks (T : Type*) [Fintype T] := T → Fin (Fintype.card T + 1)
-
 /-- An explicit bound on the number of linear systems in the disjunction.
 Different profiles can encode the same weak ordering, so this is redundant. -/
 theorem card_rankProfiles [Fintype I] [Fintype T] [DecidableEq I] [DecidableEq T] :
     Fintype.card (I → ObservationRanks T) =
       ((Fintype.card T + 1) ^ Fintype.card T) ^ Fintype.card I := by
   simp [ObservationRanks]
-
-/-- The two rank implications, with the second retaining indifference ties. -/
-def RankCompatible (p q : T → Bundle L) (r : T → ℕ) : Prop :=
-  (∀ s t, r t < r s → dot (p t) (q t) < dot (p t) (q s)) ∧
-  (∀ s t, r t ≤ r s → dot (p t) (q t) ≤ dot (p t) (q s))
-
-/-- Any compatible rank assignment rules out every revealed-preference cycle
-with a strictly cheaper closing comparison. Finiteness is unnecessary here. -/
-theorem graphGARP_of_rankCompatible (p q : T → Bundle L) (r : T → ℕ)
-    (h : RankCompatible p q r) : GraphGARP p q := by
-  have hmono : ∀ ⦃s t⦄, DirectlyRevealedPreferred p q s t → r t ≤ r s := by
-    intro s t hst
-    apply le_of_not_gt
-    intro hr
-    exact (not_lt_of_ge hst) (h.1 t s hr)
-  intro s t hst
-  have hr : r t ≤ r s := by
-    induction hst using Relation.ReflTransGen.head_induction_on with
-    | refl => exact le_rfl
-    | head hab _ ih => exact ih.trans (hmono hab)
-  exact not_lt_of_ge (h.2 s t hr)
-
-private noncomputable def reachable [Fintype T] (p q : T → Bundle L) (s : T) : Finset T := by
-  classical
-  exact Finset.univ.filter fun t => RevealedPreferred p q s t
-
-private theorem mem_reachable [Fintype T] (p q : T → Bundle L) (s t : T) :
-    t ∈ reachable p q s ↔ RevealedPreferred p q s t := by
-  classical
-  simp [reachable]
-
-private theorem reachable_subset [Fintype T] (p q : T → Bundle L) {s t : T}
-    (h : RevealedPreferred p q s t) : reachable p q t ⊆ reachable p q s := by
-  intro v hv
-  exact (mem_reachable p q s v).2 (h.trans ((mem_reachable p q t v).1 hv))
-
-/-- Reachability cardinalities provide bounded ordinal labels, including when
-distinct strongly connected components happen to have equal cardinalities. -/
-theorem exists_observationRanks_of_graphGARP [Fintype T] (p q : T → Bundle L)
-    (hG : GraphGARP p q) :
-    ∃ r : ObservationRanks T, RankCompatible p q (fun t => (r t).val) := by
-  classical
-  let r : ObservationRanks T := fun s =>
-    ⟨(reachable p q s).card, Nat.lt_succ_of_le (Finset.card_le_univ _)⟩
-  refine ⟨r, ?_, ?_⟩
-  · intro s t hr
-    apply lt_of_not_ge
-    intro hdirect
-    have hsub := reachable_subset p q (directlyRevealedPreferred_revealedPreferred p q hdirect)
-    exact (not_le_of_gt hr) (Finset.card_le_card hsub)
-  · intro s t hr
-    apply le_of_not_gt
-    intro hcheap
-    have hdirect : RevealedPreferred p q t s :=
-      directlyRevealedPreferred_revealedPreferred p q (le_of_lt hcheap)
-    have hsub := reachable_subset p q hdirect
-    have heq : reachable p q s = reachable p q t :=
-      Finset.eq_of_subset_of_card_le hsub hr
-    have ht : t ∈ reachable p q t := (mem_reachable p q t t).2 (revealedPreferred_refl p q t)
-    have hreverse : RevealedPreferred p q s t :=
-      (mem_reachable p q s t).1 (heq.symm ▸ ht)
-    exact hG s t hreverse hcheap
-
-/-- GARP is exactly a finite disjunction of ordinal weak/strict linear systems. -/
-theorem graphGARP_iff_exists_observationRanks [Fintype T] (p q : T → Bundle L) :
-    GraphGARP p q ↔ ∃ r : ObservationRanks T, RankCompatible p q (fun t => (r t).val) :=
-  ⟨exists_observationRanks_of_graphGARP p q,
-    fun ⟨r, hr⟩ => graphGARP_of_rankCompatible p q (fun t => (r t).val) hr⟩
 
 /-- The linear system attached to a fixed profile of ordinal ranks. All its
 coefficients are observed prices, incomes, resources, or fixed integers. -/
