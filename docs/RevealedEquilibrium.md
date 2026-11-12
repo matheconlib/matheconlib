@@ -9,7 +9,7 @@ income budget, and the joint allocation clears every market.
 ## Source and statement scope
 
 The exact source checked is Donald J. Brown and Rosa L. Matzkin's
-[August 1995 Cowles discussion paper 1109](https://cowles.yale.edu/sites/default/files/files/pub/d11/d1109.pdf),
+[August 1995 Cowles discussion paper 1109](https://cowles.yale.edu/sites/default/files/2022-08/d1109.pdf),
 *Testable Restrictions on the Equilibrium Manifold*. The published citation is
 Brown and Matzkin (1996), Econometrica **64**(6), 1249–1262,
 [DOI: 10.2307/2171830](https://doi.org/10.2307/2171830). The theorem numbering and
@@ -116,6 +116,31 @@ into a specified polynomial formula. The separate economic dual condition in
 `EquilibriumAxiom` is proved necessary; the full observable equivalence uses
 Fourier–Motzkin elimination and does not assume a converse for that dual condition.
 
+## Interpretation and preliminary contribution
+
+The axiom is a condition across households because each household has one ordinal
+rank profile across observations, and all households must be compatible with the
+same market-clearing allocation. Ranks compare observations within a household;
+they do not compare utility levels between households. Eliminating that joint
+allocation expresses the compatibility requirement using observed prices,
+individual incomes, and aggregate resources alone.
+
+Brown and Matzkin already establish general equilibrium testability through
+quantifier elimination. Laurens Cherchye, Thomas Demuynck, and Bram De Rock (2011),
+*Testable implications of general equilibrium models: An integer programming
+approach*, Journal of Mathematical Economics **47**(4–5), 564–575,
+[DOI: 10.1016/j.jmateco.2011.07.002](https://doi.org/10.1016/j.jmateco.2011.07.002),
+give a mixed integer programming characterization for arbitrary finite numbers of
+observations and agents. The general strategy of finite linear feasibility tests
+is therefore established prior work.
+
+The explicit finite observable GARE formulation appears potentially new and
+economically interpretable; priority remains to be assessed. The candidate
+contribution is this ordinal observable presentation and its modular, formally
+verified derivation using the library's existing Afriat infrastructure. It is an
+equivalent characterization of the stated model, not an additional economic
+restriction. Kernel checking establishes the formal equivalences, not novelty.
+
 ## Checked applications and limits
 
 `MathEconLibExamples.RevealedEquilibrium` supplies two exact illustrative markets,
@@ -153,3 +178,19 @@ encoding and finite linear elimination described above.
 The conclusions concern the supplied formal data and stated premises. They do
 not establish calibration to a real economy, predictive improvement, equilibrium
 existence at unobserved endowments, or an executable solver.
+
+## Human guidance and AI-assisted construction
+
+Victor H. Aguiar supplied the conceptual direction, selection, and interpretation:
+he proposed formalizing Brown–Matzkin and then seeking a Generalized Axiom of
+Revealed Equilibrium; restricted the project to ordinary utility maximization;
+asked that the existing Afriat
+infrastructure be reused as the first step; clarified that integer feasibility
+plays the role of Afriat inequalities while GARE should play GARP's role as an
+axiom on observables; and highlighted the across-household interpretation.
+
+Under that guidance, Codex with subagents developed the bounded ordinal
+reachability ranks, the exact Fourier–Motzkin recursion, the particular proofs,
+and the numerical counterexample, and implemented and checked the Lean
+development. The existing project infrastructure supplies the reused Afriat
+results.
