@@ -23,13 +23,7 @@ the explicit preference-list input size. -/
 theorem card_le_partner_assignments :
     Nat.card mkt.StableMatching ≤ (Fintype.card W + 1) ^ Fintype.card M := by
   classical
-  have hinj : Function.Injective (fun μ : mkt.StableMatching =>
-      fun m : M => μ.matching m) := by
-    intro μ ν h
-    apply ext mkt
-    apply PEquiv.ext
-    exact congrFun h
-  have h := Nat.card_le_card_of_injective _ hinj
+  have h := Nat.card_le_card_of_injective _ (matching_apply_injective mkt)
   simpa only [Nat.card_eq_fintype_card, Fintype.card_fun, Fintype.card_option] using h
 
 /-- A coarse bound requiring at most one bit per possible pair, plus one

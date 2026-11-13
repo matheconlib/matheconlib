@@ -7,6 +7,7 @@ module
 
 public import MathEconLib.Matching.Classical.Marriage.Distributive
 public import Mathlib.Data.Fintype.Card
+public import Mathlib.Order.SupClosed
 
 /-!
 # Threshold generators for the stable marriage lattice
@@ -54,55 +55,32 @@ theorem meetsThreshold_inf {m : M} {o : Option W}
   rw [matching_inf_apply]
   exact le_min hμ hν
 
+/-- Stable matchings meeting a threshold are closed under meets. -/
+theorem infClosed_meetsThreshold (m : M) (o : Option W) :
+    InfClosed {μ : mkt.StableMatching | MeetsThreshold mkt m o μ} :=
+  fun _ hμ _ hν => meetsThreshold_inf mkt hμ hν
+
 /-- A feasible threshold is met by its least stable realization. -/
 theorem thresholdGenerator_meets {m : M} {o : Option W}
     (hex : ∃ μ : mkt.StableMatching, MeetsThreshold mkt m o μ) :
-    MeetsThreshold mkt m o (thresholdGenerator mkt m o) := by
-  classical
-  let : Fintype mkt.StableMatching := by
-    have hinj : Function.Injective
-        (fun μ : mkt.StableMatching => fun m' : M => μ.matching m') := by
-      intro μ ν h
-      apply ext mkt
-      apply PEquiv.ext
-      intro m'
-      exact congrFun h m'
-    have : Finite mkt.StableMatching := Finite.of_injective _ hinj
-    exact Fintype.ofFinite _
-  let P : mkt.StableMatching → Prop := MeetsThreshold mkt m o
-  have htop : P ⊤ := by
-    obtain ⟨μ, hμ⟩ := hex
-    let := mkt.prefM m
-    exact le_trans hμ ((le_iff_menWeaklyPrefer mkt).mp (le_top (a := μ)) m)
-  have hclosed : ∀ μ ν, P μ → P ν → P (μ ⊓ ν) := by
-    intro μ ν hμ hν
-    exact meetsThreshold_inf mkt hμ hν
-  have hfin : ∀ s : Finset mkt.StableMatching,
-      (∀ μ ∈ s, P μ) → P (s.inf id) := by
-    intro s
-    induction s using Finset.induction_on with
-    | empty =>
-        intro _
-        simpa using htop
-    | @insert μ s hnot ih =>
-        intro hall
-        rw [Finset.inf_insert]
-        apply hclosed
-        · exact hall μ (Finset.mem_insert_self _ _)
-        · apply ih
-          intro ν hν
-          exact hall ν (Finset.mem_insert_of_mem hν)
-  let s : Finset mkt.StableMatching := Finset.univ.filter P
-  have hall : ∀ μ ∈ s, P μ := by
-    intro μ hμ
-    exact (Finset.mem_filter.mp hμ).2
-  have hs : (s : Set mkt.StableMatching) = {μ | P μ} := by
-    ext μ
-    simp [s]
-  have h := hfin s hall
-  change P (sInf {μ | P μ})
-  rw [← hs, ← Finset.inf_id_eq_sInf]
-  exact h
+    MeetsThreshold mkt m o (thresholdGenerator mkt m o) :=
+  (infClosed_meetsThreshold mkt m o).sInf_mem_of_nonempty (Set.toFinite _) hex
+    subset_rfl
+
+/-- An infeasible threshold has the empty meet, so its generator is the top
+(man-optimal) stable matching, which does not meet the threshold. -/
+theorem thresholdGenerator_eq_top_of_not_exists {m : M} {o : Option W}
+    (hex : ¬ ∃ μ : mkt.StableMatching, MeetsThreshold mkt m o μ) :
+    thresholdGenerator mkt m o = ⊤ := by
+  have hempty : {μ : mkt.StableMatching | MeetsThreshold mkt m o μ} = ∅ :=
+    Set.eq_empty_iff_forall_notMem.mpr fun μ hμ => hex ⟨μ, hμ⟩
+  rw [thresholdGenerator, hempty, sInf_empty]
+
+/-- The generator meets its threshold exactly when the threshold is feasible. -/
+theorem meetsThreshold_thresholdGenerator_iff {m : M} {o : Option W} :
+    MeetsThreshold mkt m o (thresholdGenerator mkt m o) ↔
+      ∃ μ : mkt.StableMatching, MeetsThreshold mkt m o μ :=
+  ⟨fun h => ⟨_, h⟩, thresholdGenerator_meets mkt⟩
 
 /-- The generator at an attained threshold keeps that man's assignment fixed. -/
 theorem thresholdGenerator_matching (μ : mkt.StableMatching) (m : M) :
@@ -170,21 +148,8 @@ theorem card_supIrred_le :
     Nat.card {μ : mkt.StableMatching // SupIrred μ} ≤
       Fintype.card M * (Fintype.card W + 1) := by
   classical
-  let : Fintype mkt.StableMatching := by
-    have hinj : Function.Injective
-        (fun μ : mkt.StableMatching => fun m : M => μ.matching m) := by
-      intro μ ν h
-      apply ext mkt
-      apply PEquiv.ext
-      intro m
-      exact congrFun h m
-    have : Finite mkt.StableMatching := Finite.of_injective _ hinj
-    exact Fintype.ofFinite _
-  have hcard : Fintype.card {μ : mkt.StableMatching // SupIrred μ} ≤
-      Fintype.card (M × Option W) :=
-    Fintype.card_le_of_injective (thresholdIndex mkt) (thresholdIndex_injective mkt)
-  simpa only [Nat.card_eq_fintype_card, Fintype.card_prod,
-    Fintype.card_option] using hcard
+  have h := Nat.card_le_card_of_injective _ (thresholdIndex_injective mkt)
+  simpa only [Nat.card_eq_fintype_card, Fintype.card_prod, Fintype.card_option] using h
 
 end StableMatching
 end MarriageMarket

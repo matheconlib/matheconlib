@@ -9,7 +9,23 @@ public import Mathlib.Data.List.SplitLengths
 public import Init.Data.List.Sublist
 public import Mathlib.Tactic.Linarith
 
-/-! Executable nonempty chunks of bounded length, using `List.splitLengths`. -/
+/-!
+# Executable nonempty chunks of bounded length
+
+`chunks D input` splits `input` into consecutive nonempty blocks of length at
+most `D`, using `List.splitLengths`.
+
+Batteries' `List.toChunks` computes the same blocks for `0 < D`, but its
+accumulator-based implementation has no proved API in our dependency. Because
+`chunks` is defined through `List.splitLengths`, it inherits Mathlib's lemmas
+about that function directly: concatenation (`flatten_chunks`), the length
+bound on each block (`length_le_of_mem`), and the block count (`count_le`).
+We do not prove an equivalence bridge with `List.toChunks`.
+
+The zero case differs: `chunks 0 input = []` (`chunks_zero`), whereas
+`input.toChunks 0 = [input]` for nonempty `input`. Use `flatten_chunks` only
+under `0 < D`.
+-/
 
 @[expose] public section
 
@@ -21,6 +37,10 @@ variable {α : Type*}
 def chunks (D : Nat) (input : List α) : List (List α) :=
   ((List.replicate (input.length / D + 1) D).splitLengths input).filter
     (fun block => !block.isEmpty)
+
+/-- With block size zero every block is empty and is discarded. -/
+@[simp] theorem chunks_zero (input : List α) : chunks 0 input = [] := by
+  simp [chunks]
 
 theorem flatten_nonempty_filter (blocks : List (List α)) :
     (blocks.filter (fun block => !block.isEmpty)).flatten = blocks.flatten := by

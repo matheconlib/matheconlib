@@ -8,6 +8,7 @@ module
 public import MathEconLib.Matching.Classical.Marriage.Preferences
 public import Mathlib.Data.List.GetD
 public import Mathlib.Data.List.Nodup
+public import Mathlib.Logic.Equiv.Fin.Basic
 
 /-! Explicit rank-list inputs for the existing marriage-market model.
 Higher ranks are preferred; the last entry is the outside option. -/
@@ -16,34 +17,30 @@ Higher ranks are preferred; the last entry is the outside option. -/
 
 namespace MathEconLib.Matching.MarriageMarket
 
+/-- Position of an optional partner in a rank row: partner `i` sits at index
+`i` and the outside option at the last index `n`. This is
+`finSuccEquivLast.symm` (`optionIndex_eq_finSuccEquivLast_symm`); the direct
+pattern match keeps concrete rank lookups reducible. -/
 def optionIndex {n : Nat} : Option (Fin n) → Fin (n + 1)
-  | none => ⟨n, by omega⟩
+  | none => Fin.last n
   | some i => i.castSucc
+
+theorem optionIndex_eq_finSuccEquivLast_symm {n : Nat} (o : Option (Fin n)) :
+    optionIndex o = finSuccEquivLast.symm o := by
+  cases o <;> simp [optionIndex]
 
 theorem optionIndex_injective {n : Nat} : Function.Injective (@optionIndex n) := by
   intro a b h
-  have hv := congrArg Fin.val h
-  cases a with
-  | none =>
-    cases b with
-    | none => rfl
-    | some b =>
-      change n = b.val at hv
-      omega
-  | some a =>
-    cases b with
-    | none =>
-      change a.val = n at hv
-      omega
-    | some b =>
-      congr 1
-      exact Fin.ext hv
+  rw [optionIndex_eq_finSuccEquivLast_symm, optionIndex_eq_finSuccEquivLast_symm] at h
+  exact finSuccEquivLast.symm.injective h
 
 /-- Total list lookup; the validity proofs below ensure that defaults are
 never used for participants and their optional partners. -/
 def rankAt (rows : List (List Nat)) (i j : Nat) : Nat :=
   (rows.getD i []).getD j 0
 
+/-- The order on optional partners induced by one row of distinct ranks;
+higher ranks are preferred. -/
 @[instance_reducible]
 def rankRowOrder {n : Nat} (row : List Nat) (hlen : row.length = n + 1)
     (hnd : row.Nodup) : LinearOrder (Option (Fin n)) :=
@@ -73,6 +70,7 @@ structure RankInput where
 
 namespace RankInput
 
+/-- The marriage market whose men and women are indexed by list position. -/
 def market (p : RankInput) : MarriageMarket (Fin p.men.length) (Fin p.men.length) where
   prefM m := rankRowOrder (p.men.get m)
     (p.men_row_length _ (List.get_mem _ _)) (p.men_row_nodup _ (List.get_mem _ _))
@@ -99,6 +97,15 @@ theorem leW_iff (p : RankInput) (w : Fin p.men.length)
     (a b : Option (Fin p.men.length)) :
     p.market.leW w a b ↔
       rankAt p.women w.val (optionIndex a).val ≤ rankAt p.women w.val (optionIndex b).val := by
+  let i : Fin p.women.length := Fin.cast p.women_length.symm w
+  have hrow : p.women.getD w.val [] = p.women.get i := List.getD_eq_get p.women [] i
+  simp only [rankAt, hrow]
+  rfl
+
+theorem ltW_iff (p : RankInput) (w : Fin p.men.length)
+    (a b : Option (Fin p.men.length)) :
+    p.market.ltW w a b ↔
+      rankAt p.women w.val (optionIndex a).val < rankAt p.women w.val (optionIndex b).val := by
   let i : Fin p.women.length := Fin.cast p.women_length.symm w
   have hrow : p.women.getD w.val [] = p.women.get i := List.getD_eq_get p.women [] i
   simp only [rankAt, hrow]

@@ -36,34 +36,38 @@ structure ThinChains (P : Type u) (R : Type v) (C : Type w)
 
 namespace ThinChains
 
-variable {P : Type u} {R : Type v} {C : Type w}
-variable [PartialOrder P] [Fintype P] [Fintype R] [Fintype C]
+variable {P : Type u} {R : Type v} {C : Type w} [PartialOrder P]
 variable (t : ThinChains P R C)
 
-theorem card_le_rows_mul_cols (t : ThinChains P R C) :
+/-- Distinct points have distinct row-column labels. -/
+theorem card_le_rows_mul_cols (t : ThinChains P R C) [Fintype P] [Fintype R] [Fintype C] :
     Fintype.card P ≤ Fintype.card R * Fintype.card C := by
   simpa only [Fintype.card_prod] using
     Fintype.card_le_of_injective (fun x : P => (t.row x, t.col x)) t.label_injective
 
+/-- Two distinct points of one row occupy different columns. -/
+theorem col_ne_of_row_eq {x x' : P} (hrow : t.row x = t.row x')
+    (hne : x ≠ x') : t.col x ≠ t.col x' := by
+  intro hcol
+  exact hne (t.label_injective (Prod.ext hrow hcol))
+
+/-- A point of a row together with an element of its column prefix. -/
+def RowPrefixPair (r : R) :=
+  {p : P × P // t.row p.1 = r ∧ t.col p.2 = t.col p.1 ∧ p.2 ≤ p.1}
+
+section Fibres
+
+variable [Fintype P]
+
 /-- The fibre of one row. -/
-noncomputable def rowFiber (t : ThinChains P R C) (r : R) : Finset P := by
+noncomputable def rowFiber (r : R) : Finset P := by
   classical
   exact Finset.univ.filter fun x => t.row x = r
 
 /-- The inclusive prefix in `x`'s column. -/
-noncomputable def colPrefix (t : ThinChains P R C) (x : P) : Finset P := by
+noncomputable def colPrefix (x : P) : Finset P := by
   classical
   exact Finset.univ.filter fun y => t.col y = t.col x ∧ y ≤ x
-
-/-- The inclusive downset of a point. -/
-noncomputable def downset (t : ThinChains P R C) (x : P) : Finset P := by
-  classical
-  exact Finset.univ.filter fun y => y ≤ x
-
-/-- The inclusive upset of a point. -/
-noncomputable def upset (t : ThinChains P R C) (x : P) : Finset P := by
-  classical
-  exact Finset.univ.filter fun y => x ≤ y
 
 @[simp] theorem mem_rowFiber {r : R} {x : P} :
     x ∈ t.rowFiber r ↔ t.row x = r := by
@@ -73,13 +77,9 @@ noncomputable def upset (t : ThinChains P R C) (x : P) : Finset P := by
     y ∈ t.colPrefix x ↔ t.col y = t.col x ∧ y ≤ x := by
   simp [colPrefix]
 
-@[simp] theorem mem_downset {x y : P} :
-    y ∈ t.downset x ↔ y ≤ x := by
-  simp [downset]
-
-@[simp] theorem mem_upset {x y : P} :
-    y ∈ t.upset x ↔ x ≤ y := by
-  simp [upset]
+/-- A column prefix is contained in the inclusive downset `Set.Iic x`. -/
+theorem coe_colPrefix_subset_Iic (x : P) : (t.colPrefix x : Set P) ⊆ Set.Iic x :=
+  fun _ hy => (t.mem_colPrefix.mp hy).2
 
 /-- A nonempty row has a largest element in the ambient order. -/
 theorem exists_row_greatest {r : R} (hr : (t.rowFiber r).Nonempty) :
@@ -93,12 +93,6 @@ theorem exists_row_greatest {r : R} (hr : (t.rowFiber r).Nonempty) :
   · exact hxv
   · exact hv.2 hx hvx
 
-/-- Two distinct points of one row occupy different columns. -/
-theorem col_ne_of_row_eq {x x' : P} (hrow : t.row x = t.row x')
-    (hne : x ≠ x') : t.col x ≠ t.col x' := by
-  intro hcol
-  exact hne (t.label_injective (Prod.ext hrow hcol))
-
 /-- Column prefixes of distinct elements of a row are disjoint. -/
 theorem colPrefix_disjoint_of_row_eq {x x' : P}
     (hrow : t.row x = t.row x') (hne : x ≠ x') :
@@ -110,25 +104,19 @@ theorem colPrefix_disjoint_of_row_eq {x x' : P}
   exact t.col_ne_of_row_eq hrow hne hcol
 
 /-- A column prefix below a row element lies below that row's greatest point. -/
-theorem colPrefix_subset_downset_of_le {x v : P} (hxv : x ≤ v) :
-    t.colPrefix x ⊆ t.downset v := by
-  intro y hy
-  exact t.mem_downset.mpr ((t.mem_colPrefix.mp hy).2.trans hxv)
+theorem coe_colPrefix_subset_Iic_of_le {x v : P} (hxv : x ≤ v) :
+    (t.colPrefix x : Set P) ⊆ Set.Iic v :=
+  (t.coe_colPrefix_subset_Iic x).trans (Set.Iic_subset_Iic.mpr hxv)
 
-/-- A point of a row together with an element of its column prefix. -/
-def RowPrefixPair (r : R) :=
-  {p : P × P // t.row p.1 = r ∧ t.col p.2 = t.col p.1 ∧ p.2 ≤ p.1}
-
-/-- Prefix pairs in one row inject into the downset of its greatest point.
-The second coordinate alone is injective because different row points have
-different columns. -/
+/-- Prefix pairs in one row inject into the inclusive downset `Set.Iic v` of
+its greatest point. The second coordinate alone is injective because
+different row points have different columns. -/
 theorem rowPrefixPairs_card_le_downset {r : R}
     (hr : (t.rowFiber r).Nonempty) :
     ∃ v ∈ t.rowFiber r,
-      Nat.card (t.RowPrefixPair r) ≤ Nat.card {y : P // y ≤ v} := by
-  classical
+      Nat.card (t.RowPrefixPair r) ≤ Nat.card (Set.Iic v) := by
   obtain ⟨v, hv, hgreatest⟩ := t.exists_row_greatest hr
-  let f : t.RowPrefixPair r → {y : P // y ≤ v} := fun p =>
+  let f : t.RowPrefixPair r → Set.Iic v := fun p =>
     ⟨p.1.2, (p.2.2.2).trans
       (hgreatest p.1.1 (t.mem_rowFiber.mpr p.2.1))⟩
   have hinj : Function.Injective f := by
@@ -143,13 +131,9 @@ theorem rowPrefixPairs_card_le_downset {r : R}
     have hx : p.1.1 = q.1.1 := t.label_injective (Prod.ext hrow hcol)
     apply Subtype.ext
     exact Prod.ext hx hy
-  letI : Fintype (t.RowPrefixPair r) := by
-    change Fintype
-      {p : P × P // t.row p.1 = r ∧ t.col p.2 = t.col p.1 ∧ p.2 ≤ p.1}
-    infer_instance
-  exact ⟨v, hv, by
-    simpa only [Nat.card_eq_fintype_card] using
-      (Fintype.card_le_of_injective f hinj)⟩
+  exact ⟨v, hv, Nat.card_le_card_of_injective f hinj⟩
+
+end Fibres
 
 end ThinChains
 end MathEconLib.Order

@@ -18,7 +18,9 @@ import MathEconLibTest.Choice.WeakPreferences
 import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.Competition.Cournot
+import MathEconLibTest.ForMathlib.Data.List.BoundedChunks
 import MathEconLibTest.ForMathlib.Order.Refinement
+import MathEconLibTest.ForMathlib.Order.ThinChains
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
 import MathEconLibTest.GameTheory.ConditionalBeliefs
@@ -37,6 +39,8 @@ import MathEconLibTest.GameTheory.VectorPayoffs
 import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
+import MathEconLibTest.Matching.CountingFoundations
+import MathEconLibTest.Matching.CountingFoundationsApplications
 import MathEconLibTest.Matching.DistributiveMarriage
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.SellerParticipation
