@@ -426,14 +426,6 @@ The poset is its intrinsic set of join-irreducible stable matchings. -/
 noncomputable def lowerSetSupIrred :
     mkt.StableMatching ≃o LowerSet {μ : mkt.StableMatching // SupIrred μ} := by
   classical
-  have hinj : Function.Injective
-      (fun μ : mkt.StableMatching => fun m : M => μ.matching m) := by
-    intro μ ν h
-    apply ext mkt
-    apply PEquiv.ext
-    intro m
-    exact congrFun h m
-  letI : Finite mkt.StableMatching := Finite.of_injective _ hinj
   letI : Fintype mkt.StableMatching := Fintype.ofFinite _
   exact OrderIso.lowerSetSupIrred
 
