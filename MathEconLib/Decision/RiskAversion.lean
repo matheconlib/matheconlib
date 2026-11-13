@@ -5,8 +5,7 @@ Authors: Siyang Liu
 -/
 module
 
-public import MathEconLib.Probability.FinDist.Expect
-public import Mathlib.Analysis.Convex.Jensen
+public import MathEconLib.Probability.FinDist.Convex
 
 /-!
 # Risk aversion over finite lotteries
@@ -19,9 +18,13 @@ Only outcomes with positive probability must lie in `I`. A zero-probability outc
 domain therefore does not affect the comparison.
 
 The main result says that, on a convex domain, risk aversion is equivalent to concavity. The
-concave direction is finite Jensen's inequality (Mathlib's `ConcaveOn.le_map_sum`); the converse
-applies the hypothesis to two-point lotteries. Both directions use the `FinDist` and
-`FinDist.expect` interfaces.
+concave direction is finite Jensen's inequality for `FinDist`; the converse applies the hypothesis
+to two-point lotteries. Both directions use the `FinDist` and `FinDist.expect` interfaces.
+
+The definition evaluates `u` at the mean of the lottery, and on a non-convex `I` that mean can fall
+outside `I`. On `{0, 1}`, for example, the fair coin constrains `u (1 / 2)`. A convexity hypothesis
+on `I` is therefore needed for the converse: a constant utility is risk averse on `{0, 1}` but not
+concave there, because `ConcaveOn` requires a convex domain.
 
 ## Main definitions
 
@@ -33,23 +36,13 @@ applies the hypothesis to two-point lotteries. Both directions use the `FinDist`
 * `MathEconLib.Decision.concaveOn_of_lotteryRiskAverse`: risk aversion implies concavity on a
   convex domain.
 * `MathEconLib.Decision.lotteryRiskAverse_iff_concaveOn`: the equivalence on a convex domain.
+* `MathEconLib.Decision.LotteryRiskAverse.expect_comp_le`: the inequality for lotteries indexed by
+  a finite type in any universe.
 
-## Port coverage
+## Implementation notes
 
-Source: `AssetPricing/Preferences/{Basic,ExpectedUtility}.lean` and blueprint U1 in Siyang Liu's
-private `lean_for_finance` library, at commit `edc24ed`. The code is redesigned for this library's
-conventions and is not a copy.
-
-| Source declaration | Status here |
-|---|---|
-| `riskAverse_iff_concaveOn` (U1) | Finite-lottery analogue; the wealth form waits for F2, F3. |
-| `Gamble.eu_le_of_concaveOn`, `Gamble.add_mean_mem` | Subsumed by the Jensen step. |
-| `le_of_concaveOn_integral` (U1′, general laws) | Deferred to F5 and F16. |
-| `existsUnique_riskPremium`, `riskPremium_nonneg` | Deferred to F2. |
-| `Gamble`, `RiskAverse`, `IsCertaintyEquiv`, `IsRiskPremium` | Deferred to F2 and F3. |
-| Strict concavity ⇔ strict risk aversion (Back p. 5) | Open obligation. |
-
-The worked examples are in `MathEconLibExamples/Decision/RiskAversion.lean`.
+Ported and redesigned from Siyang Liu's `lean_for_finance` library. The worked examples are in
+`MathEconLibExamples/Decision/RiskAversion.lean`.
 
 ## References
 
@@ -66,33 +59,31 @@ namespace MathEconLib.Decision
 /-- A utility `u` is **risk averse against finite lotteries** on `I`: for every finite distribution
 `d` on a finite type `α` and every assignment `x : α → ℝ` whose outcomes with positive probability
 lie in `I`, the expected utility is at most the utility of the expected outcome,
-`E[u(x)] ≤ u(E[x])`. The outcome type ranges over `Type`. -/
+`E[u(x)] ≤ u(E[x])`.
+
+The outcome type ranges over `Type`, so that the universe need not be inferred at use sites. This
+loses no generality: `LotteryRiskAverse.expect_comp_le` applies to finite types in any universe. -/
 def LotteryRiskAverse (u : ℝ → ℝ) (I : Set ℝ) : Prop :=
   ∀ (α : Type) [Fintype α] (d : FinDist α) (x : α → ℝ),
     (∀ a, 0 < d.pmf a → x a ∈ I) → d.expect (u ∘ x) ≤ u (d.expect x)
 
-/-- The support of a distribution carries all of its probability. -/
-private lemma sum_support_pmf {α : Type} [Fintype α] (d : FinDist α) :
-    ∑ a ∈ d.support, d.pmf a = 1 := by
-  rw [← d.sum_one]
-  exact Finset.sum_filter_of_ne fun a _ h ↦ lt_of_le_of_ne (d.nonneg a) (Ne.symm h)
+/-- A finite lottery in any universe satisfies the risk-aversion inequality, by reindexing it along
+`Fintype.equivFin`. -/
+theorem LotteryRiskAverse.expect_comp_le {u : ℝ → ℝ} {I : Set ℝ} (hu : LotteryRiskAverse u I)
+    {α : Type*} [Fintype α] (d : FinDist α) (x : α → ℝ) (hx : ∀ a, 0 < d.pmf a → x a ∈ I) :
+    d.expect (u ∘ x) ≤ u (d.expect x) := by
+  let e := Fintype.equivFin α
+  let d' : FinDist (Fin (Fintype.card α)) :=
+    ⟨d.pmf ∘ e.symm, fun _ ↦ d.nonneg _, (e.symm.sum_comp d.pmf).trans d.sum_one⟩
+  have hexpect (f : α → ℝ) : d'.expect (f ∘ e.symm) = d.expect f :=
+    e.symm.sum_comp fun a ↦ d.pmf a • f a
+  have h := hu _ d' (x ∘ e.symm) fun i hi ↦ hx _ hi
+  rwa [← Function.comp_assoc, hexpect, hexpect] at h
 
-/-- Expectation of a real-valued function, summed over the support of the distribution. -/
-private lemma expect_eq_sum_support {α : Type} [Fintype α] (d : FinDist α) (f : α → ℝ) :
-    d.expect f = ∑ a ∈ d.support, d.pmf a • f a := by
-  rw [FinDist.expect_eq_sum]
-  refine (Finset.sum_filter_of_ne fun a _ h ↦ ?_).symm
-  exact lt_of_le_of_ne (d.nonneg a) fun hz ↦ h (by rw [← hz, zero_smul])
-
-/-- Concavity implies risk aversion against finite lotteries: this is finite Jensen's inequality
-applied to the lottery's outcomes and probabilities. -/
+/-- Concavity implies risk aversion against finite lotteries: this is finite Jensen's inequality. -/
 theorem lotteryRiskAverse_of_concaveOn {u : ℝ → ℝ} {I : Set ℝ} (hu : ConcaveOn ℝ I u) :
-    LotteryRiskAverse u I := by
-  intro α _ d x hx
-  have h := hu.le_map_sum (t := d.support) (w := d.pmf) (p := x)
-    (fun a _ ↦ d.nonneg a) (sum_support_pmf d) fun a ha ↦ hx a (Finset.mem_filter.mp ha).2
-  rw [expect_eq_sum_support, expect_eq_sum_support]
-  exact h
+    LotteryRiskAverse u I :=
+  fun _ _ d _ hx ↦ FinDist.expect_comp_le_of_concaveOn hu d hx
 
 /-- Risk aversion against finite lotteries implies concavity on a convex domain. A two-point
 lottery with masses `a` and `1 - a` gives the concavity inequality. -/
