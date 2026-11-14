@@ -18,6 +18,7 @@ import MathEconLibTest.Choice.WeakPreferences
 import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.Competition.Cournot
+import MathEconLibTest.Decision.Compatibility
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity

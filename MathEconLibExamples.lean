@@ -9,6 +9,7 @@ public import MathEconLibExamples.AllPurchase.UniformTwoBidder
 
 public import MathEconLibExamples.AllPurchase.Welfare
 public import MathEconLibExamples.Choice.SubstituteEnvelope
+public import MathEconLibExamples.Decision.RiskAversion
 public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.Matching.DistributiveMarriage

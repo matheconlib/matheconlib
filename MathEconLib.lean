@@ -46,6 +46,7 @@ public import MathEconLib.Choice.PathIndependentMinorant
 public import MathEconLib.Choice.SubstituteHull
 public import MathEconLib.Choice.WeakPreferences
 public import MathEconLib.Competition.Cournot.Linear
+public import MathEconLib.Decision.RiskAversion
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
 public import MathEconLib.ForMathlib.Data.PartialMatching
@@ -132,6 +133,7 @@ public import MathEconLib.Preferences.Representation.Basic
 public import MathEconLib.Preferences.Representation.Finite
 public import MathEconLib.Probability.FinDist.Basic
 public import MathEconLib.Probability.FinDist.ConditionalOn
+public import MathEconLib.Probability.FinDist.Convex
 public import MathEconLib.Probability.FinDist.Expect
 public import MathEconLib.Probability.FinDist.Measure
 public import MathEconLib.Probability.FinDist.Simplex
