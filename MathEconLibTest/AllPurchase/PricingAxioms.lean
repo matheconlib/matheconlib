@@ -22,3 +22,6 @@ inside a `module`. The default test target builds this file and records the resu
 
 #print axioms MathEconLib.Auction.integrable_comp_type_of_monotoneOn
 #print axioms MathEconLib.LinearScarcityAuction.interior_regime_strategy_eq_strategyInterior
+
+#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.monetary_profit_integrable
+#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.monetary_profit_eq

@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 module
 
@@ -20,6 +20,9 @@ only bids in the strategy's range. A bid `b` gives interim utility
 `v · q(b) - b² + b/3`, accounting for both the prize and edition value.
 Each bidder's expected purchase is `2/3`, marginal net cost at purchases `0` is `-1/3`, and
 lowest-type utility is `1/36`.
+
+The scalar bidder model proves these interim incentive results. Its associated monetary
+mechanism preserves pointwise utilities; this example does not construct a new interim bridge.
 
 The final results apply the auction-level interior quantity and seller-profit theorems to this
 fully specified model. Expected total purchases are `4/3`, and profit at production cost `0` is
@@ -47,21 +50,21 @@ open UniformProbability
 def model : LinearScarcityAuction Ω 2 :=
   auction value measurable_value
 
-instance : Auction.HasIndependentTypes model.toAuction where
+instance : Auction.HasIndependentTypes model.toNetCostAuction where
   θ_indep := independent_values
 
-instance : Auction.HasIdenticalTypes model.toAuction where
+instance : Auction.HasIdenticalTypes model.toNetCostAuction where
   θ_identical := identical_values
   θmin_eq _ := rfl
   θmax_eq _ := rfl
 
-instance : Auction.HasBoundedTypes model.toAuction where
+instance : Auction.HasBoundedTypes model.toNetCostAuction where
   θ_in := value_mem
 
-instance : Auction.HasAtomlessTypes model.toAuction where
+instance : Auction.HasAtomlessTypes model.toNetCostAuction where
   θ_noAtoms := noAtoms_value 0
 
-instance : Auction.HasDensity model.toAuction where
+instance : Auction.HasDensity model.toNetCostAuction where
   θ_hasPDF := hasPDF_value
 
 /-- Each bidder buys a positive baseline quantity plus `1/2` of their value. -/
@@ -77,16 +80,17 @@ theorem strategy_strictMono : StrictMono strategy := by
   linarith
 
 theorem strategy_strictMonoOn :
-    StrictMonoOn strategy (Icc model.lowestType model.highestType) := by
+    StrictMonoOn strategy
+      (Icc model.toNetCostAuction.lowestType model.toNetCostAuction.highestType) := by
   intro v _ w _ hvw
   exact strategy_strictMono hvw
 
 theorem strategy_integrable (i : Fin 2) :
-    Integrable (fun ω => strategy (model.θ i ω)) ℙ := by
+    Integrable (fun ω => strategy (model.toNetCostAuction.θ i ω)) ℙ := by
   exact (integrable_const (1 / 6 : ℝ)).add ((integrable_value i).div_const 2)
 
 theorem mean_strategy (i : Fin 2) :
-    𝔼[fun ω => strategy (model.θ i ω)] = (2 : ℝ) / 3 := by
+    𝔼[fun ω => strategy (model.toNetCostAuction.θ i ω)] = (2 : ℝ) / 3 := by
   change (∫ ω, (1 / 6 : ℝ) + value i ω / 2 ∂ℙ) = 2 / 3
   rw [integral_add (integrable_const _) ((integrable_value i).div_const 2),
     integral_div 2 (value i), integral_value]
@@ -101,31 +105,31 @@ theorem K_eq : model.K_linear strategy = -(1 : ℝ) / 3 := by
   norm_num
 
 theorem commonCDF_eq (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
-    model.commonCDF v = v / 2 :=
+    model.toNetCostAuction.commonCDF v = v / 2 :=
   cdf_value 0 v hv
 
 /-- The prescribed bid of type `v` wins with probability `v/2`. -/
 theorem winning_probability (i : Fin 2) (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
-    model.q_strat strategy i (strategy v) = v / 2 := by
-  rw [model.toAuction.q_strat_at_strictMono_eq
+    model.toNetCostAuction.q_strat strategy i (strategy v) = v / 2 := by
+  rw [model.toNetCostAuction.q_strat_at_strictMono_eq
     model.spec.usesStrictHighestBidAllocation strategy_strictMonoOn strategy_measurable i hv]
   norm_num [commonCDF_eq v hv]
 
 /-- Expected net payment after edition value is `b² - b/3`; gross expenditure is `2b`. -/
 theorem interim_payment (i : Fin 2) (b : ℝ) :
-    model.p_strat strategy i b = b ^ 2 - b / 3 := by
+    model.toNetCostAuction.p_strat strategy i b = b ^ 2 - b / 3 := by
   rw [model.p_strat_eq_quadratic strategy strategy_measurable strategy_integrable i b, K_eq]
   change 1 * b ^ 2 + (-(1 : ℝ) / 3) * b = b ^ 2 - b / 3
   ring
 
 /-- The actual interim decision problem induced by the auction and opponents' strategy. -/
 abbrev problem (i : Fin 2) : BidderProblem :=
-  model.toBidderProblem model.spec.isUnitIntervalAllocation strategy i
+  model.toNetCostAuction.toBidderProblem model.spec.isUnitIntervalAllocation strategy i
 
 theorem payoff_on_strategy (i : Fin 2) (v w : ℝ) (hw : w ∈ Icc (0 : ℝ) 2) :
     (problem i).payoff v (strategy w) = v * w / 2 - w ^ 2 / 4 + 1 / 36 := by
-  change v * model.q_strat strategy i (strategy w) -
-    model.p_strat strategy i (strategy w) = _
+  change v * model.toNetCostAuction.q_strat strategy i (strategy w) -
+    model.toNetCostAuction.p_strat strategy i (strategy w) = _
   rw [winning_probability i w hw, interim_payment]
   dsimp [strategy]
   ring
@@ -144,7 +148,7 @@ instance typeDeviationIC (i : Fin 2) : (problem i).HasTypeDeviationIC where
     nlinarith [sq_nonneg (v - w)]
 
 private theorem winning_probability_below (i : Fin 2) (b : ℝ) (hb : b ≤ 1 / 6) :
-    model.q_strat strategy i b = 0 := by
+    model.toNetCostAuction.q_strat strategy i b = 0 := by
   have hset : {v ∈ Icc (0 : ℝ) 2 | strategy v < b} = ∅ := by
     ext v
     simp only [mem_ofPred_eq, mem_empty_iff_false, iff_false]
@@ -154,9 +158,9 @@ private theorem winning_probability_below (i : Fin 2) (b : ℝ) (hb : b ≤ 1 / 
   have hthreshold : bidThreshold strategy 0 2 b = 0 := by
     rw [bidThreshold, hset]
     simp
-  rw [model.toAuction.q_strat_eq_cdf_pow model.spec.usesStrictHighestBidAllocation
+  rw [model.toNetCostAuction.q_strat_eq_cdf_pow model.spec.usesStrictHighestBidAllocation
     strategy_strictMonoOn.monotoneOn strategy_measurable i b]
-  change model.commonCDF (bidThreshold strategy 0 2 b) ^ (2 - 1) = 0
+  change model.toNetCostAuction.commonCDF (bidThreshold strategy 0 2 b) ^ (2 - 1) = 0
   rw [hthreshold, commonCDF_eq 0 (by norm_num)]
   norm_num
 
@@ -167,7 +171,8 @@ instance universalIC (i : Fin 2) : (problem i).HasUniversalIC Set.univ where
   universalIC v hv b _ := by
     change (problem i).payoff v b ≤ (problem i).U v
     rw [utility_eq i v hv]
-    change v * model.q_strat strategy i b - model.p_strat strategy i b ≤ _
+    change v * model.toNetCostAuction.q_strat strategy i b -
+      model.toNetCostAuction.p_strat strategy i b ≤ _
     rw [interim_payment]
     by_cases hb : b ≤ 1 / 6
     · rw [winning_probability_below i b hb]
@@ -179,7 +184,8 @@ instance universalIC (i : Fin 2) : (problem i).HasUniversalIC Set.univ where
         rw [hrepr] at hq
         rw [hq]
         nlinarith [sq_nonneg (b - 1 / 6 - v / 2)]
-      · have hq := (model.q_strat_range model.spec.isUnitIntervalAllocation strategy i b).2
+      · have hq :=
+          (model.toNetCostAuction.q_strat_range model.spec.isUnitIntervalAllocation strategy i b).2
         have hv0 : 0 ≤ v := hv.1
         have hmul := mul_le_mul_of_nonneg_left hq hv0
         nlinarith [sq_nonneg (b - 7 / 6), sq_nonneg (v / 2 - 1)]
@@ -208,61 +214,77 @@ theorem interior_strategy : model.IsInteriorRegimeStrategy strategy 0 where
 
 /-- The common all-pay benchmark bid is `v²/4`. -/
 theorem allPayBid_eq (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
-    model.allPayBid v = v ^ 2 / 4 := by
-  have h := model.toAuction.allPayBid_uniform 2 (by norm_num) rfl commonCDF_eq v hv
+    model.toNetCostAuction.allPayBid v = v ^ 2 / 4 := by
+  have h := model.toNetCostAuction.allPayBid_uniform 2 (by norm_num) rfl commonCDF_eq v hv
   norm_num at h
   convert h using 1
   ring
 
 theorem sqrt_allPayBid_eq (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2) :
-    Real.sqrt (model.allPayBid v) = v / 2 := by
+    Real.sqrt (model.toNetCostAuction.allPayBid v) = v / 2 := by
   rw [allPayBid_eq v hv]
   have hsq : v ^ 2 / 4 = (v / 2) ^ 2 := by ring
   rw [hsq, Real.sqrt_sq (by linarith [hv.1])]
 
-theorem expectedSqrtAllPayBid_eq : model.toAuction.expectedSqrtAllPayBid = 1 / 2 := by
-  change (∫ ω, Real.sqrt (model.allPayBid (value 0 ω)) ∂ℙ) = 1 / 2
+theorem expectedSqrtAllPayBid_eq : model.toNetCostAuction.expectedSqrtAllPayBid = 1 / 2 := by
+  change (∫ ω, Real.sqrt (model.toNetCostAuction.allPayBid (value 0 ω)) ∂ℙ) = 1 / 2
   calc
-    (∫ ω, Real.sqrt (model.allPayBid (value 0 ω)) ∂ℙ) =
+    (∫ ω, Real.sqrt (model.toNetCostAuction.allPayBid (value 0 ω)) ∂ℙ) =
         ∫ ω, value 0 ω / 2 ∂ℙ := by
       apply integral_congr_ae
       exact ae_of_all _ fun ω => sqrt_allPayBid_eq (value 0 ω) (value_mem 0 ω)
     _ = 1 / 2 := by rw [integral_div, integral_value]
 
 /-- Applying the interior quantity theorem gives expected aggregate purchases `4/3`. -/
-theorem expectedAggregateBid_eq : model.expectedAggregateBid strategy = 4 / 3 := by
+theorem expectedAggregateBid_eq : model.toNetCostAuction.expectedAggregateBid strategy = 4 / 3 := by
   have h := model.expectedAggregateBid_eq_interiorMeanQuantity strategy interior_strategy
   rw [expectedSqrtAllPayBid_eq] at h
-  change model.expectedAggregateBid strategy =
+  change model.toNetCostAuction.expectedAggregateBid strategy =
     MathEconLib.AllPurchase.interiorMeanQuantity 3 1 (1 / 2) 2 2 at h
   norm_num [MathEconLib.AllPurchase.interiorMeanQuantity] at h
   exact h
 
 /-- Applying the auction-to-profit bridge gives profit `8/3` at production cost `0`. -/
-theorem bundledProfit_eq : model.bundledProfit model.spec strategy 0 = 8 / 3 := by
+theorem bundledProfit_eq : model.toNetCostAuction.bundledProfit model.spec strategy 0 = 8 / 3 := by
   have h := model.bundledProfit_eq_sellerProfitInterior strategy interior_strategy 0
   rw [expectedSqrtAllPayBid_eq] at h
-  change model.bundledProfit model.spec strategy 0 =
+  change model.toNetCostAuction.bundledProfit model.spec strategy 0 =
     MathEconLib.AllPurchase.sellerProfitInterior 3 1 0 (1 / 2) 2 2 at h
   norm_num [MathEconLib.AllPurchase.sellerProfitInterior,
     MathEconLib.AllPurchase.interiorMeanQuantity] at h
   exact h
 
+/-- Actual profit under the same strategy is integrable at production cost `0`. -/
+theorem monetary_profit_integrable :
+    Integrable (fun ω ↦ monetaryRules.revenue (fun j ↦ strategy (value j ω)) -
+      0 * ∑ j, strategy (value j ω)) ℙ := by
+  simpa only [zero_mul, sub_zero, model, auction, monetaryRules] using
+    model.toNetCostAuction.sellerRevenue_integrable model.spec strategy strategy_integrable
+
+/-- The monetary mechanism earns actual expected profit `8/3` under the same strategy. -/
+theorem monetary_profit_eq :
+    𝔼[fun ω ↦ monetaryRules.revenue (fun j ↦ strategy (value j ω)) -
+      0 * ∑ j, strategy (value j ω)] = 8 / 3 := by
+  calc
+    _ = model.toNetCostAuction.bundledProfit model.spec strategy 0 :=
+      (model.toNetCostAuction.bundledProfit_eq_integral_profit model.spec strategy 0).symm
+    _ = 8 / 3 := bundledProfit_eq
+
 /-- The actual posted price is the candidate price of the interior pricing theorem. -/
 theorem postedPrice_eq_optimal :
     model.spec.price = MathEconLib.AllPurchase.optimalPriceInterior
-      model.φ_bar 0 model.α_coeff model.toAuction.expectedSqrtAllPayBid := by
+      model.φ_bar 0 model.α_coeff model.toNetCostAuction.expectedSqrtAllPayBid := by
   rw [expectedSqrtAllPayBid_eq]
   change (2 : ℝ) = MathEconLib.AllPurchase.optimalPriceInterior 3 0 1 (1 / 2)
   norm_num [MathEconLib.AllPurchase.optimalPriceInterior]
 
 /-- The concrete equilibrium realizes the interior profit bound. -/
 theorem bundledProfit_eq_interior_optimum :
-    model.bundledProfit model.spec strategy 0 =
+    model.toNetCostAuction.bundledProfit model.spec strategy 0 =
       MathEconLib.AllPurchase.sellerProfitInterior model.φ_bar model.α_coeff 0
-        model.toAuction.expectedSqrtAllPayBid 2
+        model.toNetCostAuction.expectedSqrtAllPayBid 2
         (MathEconLib.AllPurchase.optimalPriceInterior
-          model.φ_bar 0 model.α_coeff model.toAuction.expectedSqrtAllPayBid) := by
+          model.φ_bar 0 model.α_coeff model.toNetCostAuction.expectedSqrtAllPayBid) := by
   exact (model.bundledProfit_eq_interior_optimum_iff strategy interior_strategy 0).2
       postedPrice_eq_optimal
 
@@ -272,16 +294,17 @@ theorem bundledProfit_eq_interior_optimum :
 purchases, with the net payment written explicitly. -/
 theorem prize_aware_best_response (i : Fin 2) (v : ℝ) (hv : v ∈ Icc (0 : ℝ) 2)
     (b : ℝ) :
-    v * model.q_strat strategy i b - (b ^ 2 - b / 3) ≤ v ^ 2 / 4 + 1 / 36 := by
+    v * model.toNetCostAuction.q_strat strategy i b - (b ^ 2 - b / 3) ≤ v ^ 2 / 4 + 1 / 36 := by
   have h := (universalIC i).universalIC v hv b (Set.mem_univ b)
   change (problem i).payoff v b ≤ (problem i).U v at h
   rw [utility_eq i v hv] at h
-  change v * model.q_strat strategy i b - model.p_strat strategy i b ≤ _ at h
+  change v * model.toNetCostAuction.q_strat strategy i b -
+      model.toNetCostAuction.p_strat strategy i b ≤ _ at h
   rwa [interim_payment] at h
 
 /-- Total equilibrium purchases are an affine function of the two independent values. -/
 theorem aggregate_formula :
-    model.aggregateBid strategy =
+    model.toNetCostAuction.aggregateBid strategy =
       fun ω => (1 / 3 : ℝ) + (1 / 2 : ℝ) * (value 0 ω + value 1 ω) := by
   funext ω
   simp only [Auction.aggregateBid, Fin.sum_univ_two]
@@ -293,7 +316,7 @@ private theorem value_memLp (i : Fin 2) : MemLp (value i) 2 ℙ :=
   memLp_of_bounded (ae_of_all _ (value_mem i)) (measurable_value i).aestronglyMeasurable 2
 
 /-- Equilibrium aggregate purchases are square-integrable. -/
-theorem aggregate_memLp : MemLp (model.aggregateBid strategy) 2 ℙ := by
+theorem aggregate_memLp : MemLp (model.toNetCostAuction.aggregateBid strategy) 2 ℙ := by
   rw [aggregate_formula]
   exact (memLp_const (1 / 3 : ℝ)).add
     (((value_memLp 0).add (value_memLp 1)).const_mul (1 / 2 : ℝ))
@@ -305,7 +328,7 @@ private theorem variance_value (i : Fin 2) : variance (value i) ℙ = 1 / 3 := b
   norm_num
 
 /-- Independence gives aggregate purchase variance `1/6`. -/
-theorem aggregate_variance : variance (model.aggregateBid strategy) ℙ = 1 / 6 := by
+theorem aggregate_variance : variance (model.toNetCostAuction.aggregateBid strategy) ℙ = 1 / 6 := by
   have hsum : variance (fun ω => value 0 ω + value 1 ω) ℙ = 2 / 3 := by
     rw [IndepFun.variance_fun_add (value_memLp 0) (value_memLp 1)
       (independent_values.indepFun (by decide : (0 : Fin 2) ≠ 1)),
@@ -320,8 +343,9 @@ theorem aggregate_variance : variance (model.aggregateBid strategy) ℙ = 1 / 6 
 /-- The second moment of actual aggregate purchases is `35/18`. -/
 theorem expectedAggregateBidSq_eq : model.expectedAggregateBidSq strategy = 35 / 18 := by
   have h := variance_eq_sub aggregate_memLp
-  change variance (model.aggregateBid strategy) ℙ =
-    model.expectedAggregateBidSq strategy - model.expectedAggregateBid strategy ^ 2 at h
+  change variance (model.toNetCostAuction.aggregateBid strategy) ℙ =
+    model.expectedAggregateBidSq strategy -
+      model.toNetCostAuction.expectedAggregateBid strategy ^ 2 at h
   rw [aggregate_variance, expectedAggregateBid_eq] at h
   linarith
 
@@ -335,8 +359,8 @@ theorem bundledEditionWelfare_eq : model.bundledEditionWelfare strategy 0 = 37 /
 /-- The welfare number is the expectation of realized edition value, rather than only a formula
 in supplied moments. The strategy also maximizes prize-aware utility, as proved above. -/
 theorem expected_edition_welfare :
-    𝔼[fun ω => model.aggregateBid strategy ω *
-      model.spec.φ (model.aggregateBid strategy ω)] = 37 / 18 := by
+    𝔼[fun ω => model.toNetCostAuction.aggregateBid strategy ω *
+      model.spec.φ (model.toNetCostAuction.aggregateBid strategy ω)] = 37 / 18 := by
   have h := model.bundledEditionWelfare_eq_integral strategy 0 aggregate_memLp
   rw [bundledEditionWelfare_eq] at h
   simpa only [zero_mul, sub_zero] using h.symm
@@ -374,8 +398,8 @@ theorem contest_gap :
 into Cournot gap `25/36` and contest gap `-1/2`. -/
 theorem welfare_gap :
     MathEconLib.AllPurchase.firstBestEditionSurplus model.φ_bar 0 model.α_coeff -
-      𝔼[fun ω => model.aggregateBid strategy ω *
-        model.spec.φ (model.aggregateBid strategy ω)] = 7 / 36 := by
+      𝔼[fun ω => model.toNetCostAuction.aggregateBid strategy ω *
+        model.spec.φ (model.toNetCostAuction.aggregateBid strategy ω)] = 7 / 36 := by
   have h := model.welfare_decomposition strategy 0 aggregate_memLp
   rw [cournot_gap, contest_gap] at h
   norm_num only [zero_mul, sub_zero] at h
@@ -385,11 +409,13 @@ theorem welfare_gap :
 replacing random purchases by their mean. -/
 theorem variance_penalty :
     MathEconLib.AllPurchase.editionWelfare model.φ_bar 0 model.α_coeff
-        (model.expectedAggregateBid strategy) - model.bundledEditionWelfare strategy 0 = 1 / 6 := by
+        (model.toNetCostAuction.expectedAggregateBid strategy) -
+      model.bundledEditionWelfare strategy 0 = 1 / 6 := by
   have h := model.editionWelfare_mean_sub_bundled_eq_variance strategy 0 aggregate_memLp
   rw [aggregate_variance] at h
   change MathEconLib.AllPurchase.editionWelfare model.φ_bar 0 model.α_coeff
-    (model.expectedAggregateBid strategy) - model.bundledEditionWelfare strategy 0 =
+      (model.toNetCostAuction.expectedAggregateBid strategy) -
+      model.bundledEditionWelfare strategy 0 =
       1 * (1 / 6) at h
   simpa only [one_mul] using h
 

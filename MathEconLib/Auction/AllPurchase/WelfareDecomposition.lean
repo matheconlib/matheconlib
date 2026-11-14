@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Daniel Lyng, Ruiz Chen. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Ruiz Chen, Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng, Ruiz Chen, Scott Duke Kominers
+Authors: Daniel Lyng, Ruiz Chen, Scott Duke Kominers, Bo Cowgill
 -/
 module
 
@@ -193,35 +193,35 @@ variable {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
 variable {n : ℕ} (A : LinearScarcityAuction Ω n)
 
 /-- Expected squared aggregate quantity `𝔼[B²]` when every bidder uses strategy `β`, with
-`B = A.toAuction.aggregateBid β`. -/
+`B = A.toNetCostAuction.aggregateBid β`. -/
 noncomputable def expectedAggregateBidSq (β : ℝ → ℝ) : ℝ :=
-  𝔼[fun ω => (A.toAuction.aggregateBid β ω) ^ 2]
+  𝔼[fun ω => (A.toNetCostAuction.aggregateBid β ω) ^ 2]
 
 /-- The bundled edition-welfare moment expression `W^C = (φ̄ − c)·𝔼[B] − α·𝔼[B²]`, where `B` is
 aggregate quantity under the common strategy `β`, `c` is unit production cost, and `φ̄` and `α` are
 the auction's scarcity-value intercept and dilution coefficient. It equals expected edition value
 net of production cost when `B` and `B²` are integrable. -/
 noncomputable def bundledEditionWelfare (β : ℝ → ℝ) (c : ℝ) : ℝ :=
-  (A.φ_bar - c) * A.toAuction.expectedAggregateBid β
+  (A.φ_bar - c) * A.toNetCostAuction.expectedAggregateBid β
     - A.α_coeff * A.expectedAggregateBidSq β
 
 /-- Under linear scarcity, expected edition value satisfies `𝔼[B·φ(B)] = φ̄·𝔼[B] − α·𝔼[B²]` when
 aggregate quantity `B` under strategy `β` and its square are integrable. -/
 theorem expectedEditionValue_linear (β : ℝ → ℝ)
-    (hB_int : Integrable (A.toAuction.aggregateBid β) ℙ)
-    (hB2_int : Integrable (fun ω => (A.toAuction.aggregateBid β ω) ^ 2) ℙ) :
-    A.toAuction.expectedEditionValue A.spec β
-      = A.φ_bar * A.toAuction.expectedAggregateBid β
+    (hB_int : Integrable (A.toNetCostAuction.aggregateBid β) ℙ)
+    (hB2_int : Integrable (fun ω => (A.toNetCostAuction.aggregateBid β ω) ^ 2) ℙ) :
+    A.toNetCostAuction.expectedEditionValue A.spec β
+      = A.φ_bar * A.toNetCostAuction.expectedAggregateBid β
         - A.α_coeff * A.expectedAggregateBidSq β := by
   unfold Auction.expectedEditionValue Auction.expectedAggregateBid
     expectedAggregateBidSq
-  have hpt : ∀ ω, A.toAuction.aggregateBid β ω *
-      A.spec.φ (A.toAuction.aggregateBid β ω)
-      = A.φ_bar * A.toAuction.aggregateBid β ω
-        - A.α_coeff * (A.toAuction.aggregateBid β ω) ^ 2 := by
+  have hpt : ∀ ω, A.toNetCostAuction.aggregateBid β ω *
+      A.spec.φ (A.toNetCostAuction.aggregateBid β ω)
+      = A.φ_bar * A.toNetCostAuction.aggregateBid β ω
+        - A.α_coeff * (A.toNetCostAuction.aggregateBid β ω) ^ 2 := by
     intro ω
-    show A.toAuction.aggregateBid β ω * A.spec.φ _ = _
-    rw [congr_fun A.scarcity_is_linear (A.toAuction.aggregateBid β ω)]
+    show A.toNetCostAuction.aggregateBid β ω * A.spec.φ _ = _
+    rw [congr_fun A.scarcity_is_linear (A.toNetCostAuction.aggregateBid β ω)]
     ring
   simp_rw [hpt]
   rw [integral_sub (hB_int.const_mul _) (hB2_int.const_mul _),
@@ -230,11 +230,11 @@ theorem expectedEditionValue_linear (β : ℝ → ℝ)
 /-- When aggregate quantity under strategy `β` and its square are integrable, bundled edition
 welfare equals expected edition value less expected production cost, `𝔼[B·φ(B)] − c·𝔼[B]`. -/
 theorem bundledEditionWelfare_eq (β : ℝ → ℝ) (c : ℝ)
-    (hB_int : Integrable (A.toAuction.aggregateBid β) ℙ)
-    (hB2_int : Integrable (fun ω => (A.toAuction.aggregateBid β ω) ^ 2) ℙ) :
+    (hB_int : Integrable (A.toNetCostAuction.aggregateBid β) ℙ)
+    (hB2_int : Integrable (fun ω => (A.toNetCostAuction.aggregateBid β ω) ^ 2) ℙ) :
     A.bundledEditionWelfare β c
-      = A.toAuction.expectedEditionValue A.spec β
-        - c * A.toAuction.expectedAggregateBid β := by
+      = A.toNetCostAuction.expectedEditionValue A.spec β
+        - c * A.toNetCostAuction.expectedAggregateBid β := by
   unfold bundledEditionWelfare
   rw [A.expectedEditionValue_linear β hB_int hB2_int]
   ring
@@ -307,18 +307,20 @@ theorem cournotProfile_isNash (hp : A.spec.price ≤ A.φ_bar) :
 realized edition value net of production cost. This is edition welfare; it excludes the prize's
 value. -/
 theorem bundledEditionWelfare_eq_integral (β : ℝ → ℝ) (c : ℝ)
-    (hB : MemLp (A.toAuction.aggregateBid β) 2 ℙ) :
+    (hB : MemLp (A.toNetCostAuction.aggregateBid β) 2 ℙ) :
     A.bundledEditionWelfare β c =
-      𝔼[fun ω => A.toAuction.aggregateBid β ω *
-        A.spec.φ (A.toAuction.aggregateBid β ω) - c * A.toAuction.aggregateBid β ω] := by
+      𝔼[fun ω => A.toNetCostAuction.aggregateBid β ω *
+        A.spec.φ (A.toNetCostAuction.aggregateBid β ω) -
+          c * A.toNetCostAuction.aggregateBid β ω] := by
   have hB_int := hB.integrable (by norm_num)
   have hB2_int := hB.integrable_sq
   have hedition_int : Integrable
-      (fun ω => A.toAuction.aggregateBid β ω * A.spec.φ (A.toAuction.aggregateBid β ω)) ℙ := by
-    have heq : (fun ω => A.toAuction.aggregateBid β ω *
-        A.spec.φ (A.toAuction.aggregateBid β ω)) =
-        (fun ω => A.φ_bar * A.toAuction.aggregateBid β ω -
-          A.α_coeff * (A.toAuction.aggregateBid β ω) ^ 2) := by
+      (fun ω => A.toNetCostAuction.aggregateBid β ω *
+        A.spec.φ (A.toNetCostAuction.aggregateBid β ω)) ℙ := by
+    have heq : (fun ω => A.toNetCostAuction.aggregateBid β ω *
+        A.spec.φ (A.toNetCostAuction.aggregateBid β ω)) =
+        (fun ω => A.φ_bar * A.toNetCostAuction.aggregateBid β ω -
+          A.α_coeff * (A.toNetCostAuction.aggregateBid β ω) ^ 2) := by
       funext ω
       rw [congr_fun A.scarcity_is_linear]
       ring
@@ -336,10 +338,11 @@ Cournot profile is feasible and Nash when `price ≤ φ_bar`, as proved by
 `cournotProfile_isNash`; the first-best quantity is feasible when `c ≤ φ_bar`.
 The signs of the two gaps are separate conclusions, not hypotheses hidden in the identity. -/
 theorem welfare_decomposition (β : ℝ → ℝ) (c : ℝ)
-    (hB : MemLp (A.toAuction.aggregateBid β) 2 ℙ) :
+    (hB : MemLp (A.toNetCostAuction.aggregateBid β) 2 ℙ) :
     AllPurchase.firstBestEditionSurplus A.φ_bar c A.α_coeff -
-        𝔼[fun ω => A.toAuction.aggregateBid β ω *
-          A.spec.φ (A.toAuction.aggregateBid β ω) - c * A.toAuction.aggregateBid β ω] =
+        𝔼[fun ω => A.toNetCostAuction.aggregateBid β ω *
+          A.spec.φ (A.toNetCostAuction.aggregateBid β ω) -
+          c * A.toNetCostAuction.aggregateBid β ω] =
       AllPurchase.cournotLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear +
         AllPurchase.contestLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear
           (A.bundledEditionWelfare β c) := by
@@ -350,10 +353,10 @@ theorem welfare_decomposition (β : ℝ → ℝ) (c : ℝ)
 /-- For an actual square-integrable aggregate quantity, the moment correction is precisely the
 nonnegative variance penalty. No independence or identical-distribution assumptions are needed. -/
 theorem editionWelfare_mean_sub_bundled_eq_variance (β : ℝ → ℝ) (c : ℝ)
-    (hB : MemLp (A.toAuction.aggregateBid β) 2 ℙ) :
-    AllPurchase.editionWelfare A.φ_bar c A.α_coeff (A.toAuction.expectedAggregateBid β) -
+    (hB : MemLp (A.toNetCostAuction.aggregateBid β) 2 ℙ) :
+    AllPurchase.editionWelfare A.φ_bar c A.α_coeff (A.toNetCostAuction.expectedAggregateBid β) -
         A.bundledEditionWelfare β c =
-      A.α_coeff * variance (A.toAuction.aggregateBid β) ℙ := by
+      A.α_coeff * variance (A.toNetCostAuction.aggregateBid β) ℙ := by
   rw [variance_eq_sub hB]
   unfold AllPurchase.editionWelfare bundledEditionWelfare expectedAggregateBidSq
     Auction.expectedAggregateBid
@@ -362,16 +365,17 @@ theorem editionWelfare_mean_sub_bundled_eq_variance (β : ℝ → ℝ) (c : ℝ)
 
 /-- Expected edition welfare does not exceed edition welfare evaluated at mean purchases. -/
 theorem bundledEditionWelfare_le_mean (β : ℝ → ℝ) (c : ℝ)
-    (hB : MemLp (A.toAuction.aggregateBid β) 2 ℙ) :
+    (hB : MemLp (A.toNetCostAuction.aggregateBid β) 2 ℙ) :
     A.bundledEditionWelfare β c ≤
-      AllPurchase.editionWelfare A.φ_bar c A.α_coeff (A.toAuction.expectedAggregateBid β) := by
+      AllPurchase.editionWelfare A.φ_bar c A.α_coeff
+        (A.toNetCostAuction.expectedAggregateBid β) := by
   have h := A.editionWelfare_mean_sub_bundled_eq_variance β c hB
-  have hnonneg := mul_nonneg A.α_pos.le (variance_nonneg (A.toAuction.aggregateBid β) ℙ)
+  have hnonneg := mul_nonneg A.α_pos.le (variance_nonneg (A.toNetCostAuction.aggregateBid β) ℙ)
   linarith
 
 /-- Actual expected edition welfare is bounded by the first-best surplus. -/
 theorem bundledEditionWelfare_le_firstBest (β : ℝ → ℝ) (c : ℝ)
-    (hB : MemLp (A.toAuction.aggregateBid β) 2 ℙ) :
+    (hB : MemLp (A.toNetCostAuction.aggregateBid β) 2 ℙ) :
     A.bundledEditionWelfare β c ≤ AllPurchase.firstBestEditionSurplus A.φ_bar c A.α_coeff :=
   (A.bundledEditionWelfare_le_mean β c hB).trans
     (AllPurchase.editionWelfare_le_firstBest A.φ_bar c A.α_coeff A.α_pos _)
@@ -386,9 +390,9 @@ theorem cournotLoss_nonneg (c : ℝ) :
 raises mean purchases weakly lowers edition welfare. Square integrability accounts for the
 additional variance penalty. Contest welfare need not fall when these quantity conditions fail. -/
 theorem contestLoss_nonneg_of_mean_ge (β : ℝ → ℝ) (c : ℝ)
-    (hB : MemLp (A.toAuction.aggregateBid β) 2 ℙ)
+    (hB : MemLp (A.toNetCostAuction.aggregateBid β) 2 ℙ)
     (hfirst : AllPurchase.firstBestQuantity A.φ_bar c A.α_coeff ≤ A.cournotQuantityLinear)
-    (hmean : A.cournotQuantityLinear ≤ A.toAuction.expectedAggregateBid β) :
+    (hmean : A.cournotQuantityLinear ≤ A.toNetCostAuction.expectedAggregateBid β) :
     0 ≤ AllPurchase.contestLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear
       (A.bundledEditionWelfare β c) := by
   exact sub_nonneg.mpr ((A.bundledEditionWelfare_le_mean β c hB).trans

@@ -8,6 +8,7 @@ public import MathEconLib.Auction.Affiliation.MonotoneCondExp
 public import MathEconLib.Auction.Affiliation.WinnersCurse
 public import MathEconLib.Auction.AllPurchase
 public import MathEconLib.Auction.AllPurchase.Basic
+public import MathEconLib.Auction.AllPurchase.BidderModel
 public import MathEconLib.Auction.AllPurchase.ExplicitSolutions
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
 public import MathEconLib.Auction.AllPurchase.OptimalPricing

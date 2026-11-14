@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Ruiz Chen, Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Ruiz Chen, Daniel Lyng, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ruiz Chen, Daniel Lyng
+Authors: Ruiz Chen, Daniel Lyng, Bo Cowgill
 -/
 module
 
@@ -42,13 +42,22 @@ See `docs/AuctionReferences.md` for the all-purchase analysis provenance and cit
 
 * `Auction.expectedNetPayment_eq`: expected net payments are all-pay revenue less baseline utility.
 * `Auction.revenue_decomposition`: the three-term gross-revenue identity.
-* `Auction.bundling_revenue_gain`: the profit difference when lowest-type utility is 0.
+* `Auction.bundling_revenue_gain`: the profit difference when lowest-type utility is zero.
+* `Auction.bundledProfit_eq_integral_profit`: profit of the specified monetary mechanism.
 * `LinearScarcityAuction.bundling_revenue_gain_of_isBoundaryRegime`: the profit comparison at the
   linear-scarcity benchmark quantity.
 
 ## Tags
 
 all-purchase auction, revenue decomposition, all-pay auction, bundling, cournot competition
+-/
+
+/-!
+The scalar `Auction` in this file is an auxiliary net-cost bidder model. Its payments and
+`p_strat` include resale value and are not gross seller receipts. `spec.toMechanism` records
+purchases and charges gross expenditure; its valuation environment supplies resale value.
+`sellerGrossRevenue_eq_integral_revenue_comap` links every revenue decomposition below to actual
+receipts under the same strategy. Integrability remains a separate hypothesis.
 -/
 
 namespace MathEconLib
@@ -64,7 +73,7 @@ namespace Auction
 
 /-! ### Aggregate bid and edition-value quantities -/
 
-variable (A : Auction Ω n) (spec : AllPurchaseSpec A.rules (fun o i => o i))
+variable (A : Auction Ω n) (spec : AllPurchaseBidderSpec A.rules)
 
 /-- Aggregate purchases under the common strategy `β`: `B(ω) = Σⱼ β(Vⱼ(ω))`. -/
 noncomputable def aggregateBid (β : ℝ → ℝ) : Ω → ℝ :=
@@ -74,7 +83,9 @@ noncomputable def aggregateBid (β : ℝ → ℝ) : Ω → ℝ :=
 noncomputable def expectedAggregateBid (β : ℝ → ℝ) : ℝ :=
   𝔼[A.aggregateBid β]
 
-/-- Seller's gross revenue at price `p` under strategy `β`: `𝔼[p · B] = p · 𝔼[B]`. -/
+/-- Gross monetary receipts of `spec.toMechanism` under the common strategy `β`.
+The scalar auction alone does not determine the posted price or these receipts. This definition
+remains in `Auction` for compatibility and uses a totalized integral. -/
 noncomputable def sellerGrossRevenue (β : ℝ → ℝ) : ℝ :=
   spec.price * A.expectedAggregateBid β
 
@@ -82,10 +93,43 @@ noncomputable def sellerGrossRevenue (β : ℝ → ℝ) : ℝ :=
 noncomputable def expectedEditionValue (β : ℝ → ℝ) : ℝ :=
   𝔼[fun ω => A.aggregateBid β ω * spec.φ (A.aggregateBid β ω)]
 
-/-- Expected total net receipts `𝔼[∑ᵢ tᵢ(β·θ)]`. For an all-purchase auction, these equal
-`𝔼[(p − φ(B)) · B]`: gross receipts less the value of the purchased editions. -/
+/-- Expected aggregate bidder net cost in the auxiliary scalar auction.
+With `spec`, this equals `𝔼[(p − φ(B)) · B]`, not `spec.toMechanism`'s monetary receipts. -/
 noncomputable def expectedNetPayment (β : ℝ → ℝ) : ℝ :=
   𝔼[fun ω => ∑ i, A.rules.payment i (fun j => β (A.θ j ω))]
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- Seller gross revenue equals the repaired mechanism's expected receipts under the same play.
+This identity uses totalized integrals; `sellerRevenue_integrable` supplies a finite-expectation
+condition. In particular, the scalar bidder model's `Auction.expectedRevenue` is not used. -/
+theorem sellerGrossRevenue_eq_integral_revenue (β : ℝ → ℝ) :
+    A.sellerGrossRevenue spec β =
+      𝔼[fun ω ↦ spec.toMechanism.revenue (fun j ↦ β (A.θ j ω))] := by
+  simp_rw [spec.toSpec.revenue_eq]
+  exact (integral_const_mul _ _).symm
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- Expected receipts of the mechanism induced by `β` use `β` for every bidder on both sides. -/
+theorem sellerGrossRevenue_eq_integral_revenue_comap (β : ℝ → ℝ) :
+    A.sellerGrossRevenue spec β =
+      𝔼[fun ω ↦ (spec.toMechanism.comap (fun _ ↦ β)).revenue (A.θ · ω)] :=
+  A.sellerGrossRevenue_eq_integral_revenue spec β
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- Integrable individual purchases imply integrable actual seller receipts. -/
+theorem sellerRevenue_integrable (β : ℝ → ℝ)
+    (hβ : ∀ j, Integrable (fun ω ↦ β (A.θ j ω)) ℙ) :
+    Integrable (fun ω ↦ spec.toMechanism.revenue (fun j ↦ β (A.θ j ω))) ℙ := by
+  simp_rw [spec.toSpec.revenue_eq]
+  exact (integrable_finsetSum _ fun j _ ↦ hβ j).const_mul spec.price
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- The auxiliary scalar model computes bidder net costs of the actual mechanism. -/
+theorem expectedNetPayment_eq_integral_netCost (β : ℝ → ℝ) :
+    A.expectedNetPayment β =
+      𝔼[fun ω ↦ ∑ i, spec.toSpec.netCost spec.φ i (fun j ↦ β (A.θ j ω))] := by
+  simp only [expectedNetPayment, spec.payment_eq, AllPurchaseSpec.netCost,
+    AllPurchaseBidderSpec.toSpec]
 
 /-! ### Quantities under a common type distribution -/
 
@@ -111,15 +155,27 @@ all-pay benchmark bids. -/
 noncomputable def allPayBenchmarkProfit : ℝ :=
   (n : ℝ) * A.expectedAllPayBid
 
-/-- Editions-only profit `Π_B = (p − c) · B_ed` at the supplied total quantity `B_ed`, price `p`,
-and unit production cost `c`. -/
+/-- Editions-only profit `Π_B = (p − c) · B_ed` using `spec`'s monetary posted price and supplied
+quantity `B_ed` and unit production cost `c`. The scalar auction alone does not determine price. -/
 noncomputable def editionsOnlyBenchmarkProfit (c B_ed : ℝ) : ℝ :=
   (spec.price - c) * B_ed
 
-/-- Bundled all-purchase profit `Π_C = (p − c) · 𝔼[B]` under strategy `β`, with unit production
-cost `c`. -/
+/-- Profit of `spec.toMechanism` under strategy `β`, less unit production cost `c` per purchase.
+The scalar auction alone does not determine this profit. This definition remains in `Auction`
+for compatibility; `bundledProfit_eq_integral_profit` identifies the monetary interpretation. -/
 noncomputable def bundledProfit (β : ℝ → ℝ) (c : ℝ) : ℝ :=
   (spec.price - c) * A.expectedAggregateBid β
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- Bundled profit is the specified monetary mechanism's receipts less production expenditure
+under the same strategy. This totalized identity needs integrable purchases for a finite expected
+profit interpretation. -/
+theorem bundledProfit_eq_integral_profit (β : ℝ → ℝ) (c : ℝ) :
+    A.bundledProfit spec β c =
+      𝔼[fun ω ↦ spec.toMechanism.revenue (fun j ↦ β (A.θ j ω)) -
+        c * ∑ j, β (A.θ j ω)] := by
+  simp_rw [spec.toSpec.revenue_eq, ← sub_mul]
+  exact (integral_const_mul _ _).symm
 
 /-! ### `bidThreshold` identity under strict monotonicity -/
 
@@ -292,7 +348,7 @@ omit [NeZero n] [n.AtLeastTwo] [HasIdenticalTypes A] in
 `𝔼[tᵢ(β·θ)] = 𝔼[p_strat β i (β(Vᵢ))]`. This assumes independent bounded types, a measurable
 strategy, and an integrable payment. -/
 lemma integral_t_i_eq_integral_p_strat
-    (spec : AllPurchaseSpec A.rules (fun o i => o i))
+    (spec : AllPurchaseBidderSpec A.rules)
     [HasIndependentTypes A] [HasBoundedTypes A]
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
     (i : Fin n)
@@ -333,7 +389,7 @@ lemma integral_t_i_eq_integral_p_strat
     · refine (measurable_const.sub ?_)
       refine hφ_meas.comp ?_
       exact (measurable_fst.comp measurable_id).add (measurable_snd.comp measurable_id)
-  -- Pointwise rewrite: t_i via AllPurchaseSpec.payment_eq + Finset.sum_update_univ.
+  -- Pointwise rewrite: t_i via AllPurchaseBidderSpec.payment_eq + Finset.sum_update_univ.
   have hLHS : (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) =
       (fun ω => h (X ω) (Y ω)) := by
     funext ω
@@ -544,13 +600,40 @@ theorem bundling_revenue_gain
 
 end Auction
 
+namespace AllPurchaseBidderModel
+
+variable (A : AllPurchaseBidderModel Ω n)
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- The safe revenue API agrees with the existing gross-receipts formula under the same play. -/
+theorem expectedSellerRevenue_eq_sellerGrossRevenue (β : ℝ → ℝ) :
+    A.expectedSellerRevenue β = A.toNetCostAuction.sellerGrossRevenue A.spec β :=
+  (A.toNetCostAuction.sellerGrossRevenue_eq_integral_revenue A.spec β).symm
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- The explicitly named net-cost API agrees with the auxiliary bidder calculation. -/
+theorem expectedNetCost_eq_expectedNetPayment (β : ℝ → ℝ) :
+    A.expectedNetCost β = A.toNetCostAuction.expectedNetPayment β :=
+  (A.toNetCostAuction.expectedNetPayment_eq_integral_netCost A.spec β).symm
+
+omit [NeZero n] [n.AtLeastTwo] in
+/-- The raw scalar auction's truthful revenue is bidder net cost, available only by explicit
+projection to `toNetCostAuction`. It is not seller revenue. -/
+theorem expectedNetCost_id_eq_auxiliary_expectedRevenue :
+    A.expectedNetCost id = A.toNetCostAuction.expectedRevenue := by
+  rw [A.expectedNetCost_eq_expectedNetPayment]
+  simp only [Auction.expectedNetPayment, Auction.expectedRevenue,
+    Mechanism.revenue_eq_sum_payment, id_eq]
+
+end AllPurchaseBidderModel
+
 /-! ### LinearScarcity specialization -/
 
 namespace LinearScarcityAuction
 
 variable (A : LinearScarcityAuction Ω n)
-variable [A.HasIdenticalTypes] [A.HasIndependentTypes]
-variable [A.HasBoundedTypes] [A.HasAtomlessTypes]
+variable [A.toNetCostAuction.HasIdenticalTypes] [A.toNetCostAuction.HasIndependentTypes]
+variable [A.toNetCostAuction.HasBoundedTypes] [A.toNetCostAuction.HasAtomlessTypes]
 
 omit [n.AtLeastTwo] in
 /-- **Boundary-regime revenue decomposition under linear scarcity.**
@@ -564,31 +647,32 @@ strictly increasing on the type interval, type-deviation incentive compatibility
 and integrable payments, all-pay benchmark bids, and aggregate edition value. -/
 theorem revenue_decomposition_boundary_of_isBoundaryRegime
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
+    (hβ_mono : StrictMonoOn β (Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType))
     (hIC : ∀ i,
-      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
-    (hBR : ∀ i, (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (hBR : ∀ i,
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
     (ht_int : ∀ i, Integrable
-      (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) ℙ)
+      (fun ω => A.toNetCostAuction.rules.payment i (fun j => β (A.toNetCostAuction.θ j ω))) ℙ)
     (hedition_int : Integrable
-      (fun ω => A.toAuction.aggregateBid β ω *
-        A.spec.φ (A.toAuction.aggregateBid β ω)) ℙ)
+      (fun ω => A.toNetCostAuction.aggregateBid β ω *
+        A.spec.φ (A.toNetCostAuction.aggregateBid β ω)) ℙ)
     (hallPayBid_int : ∀ i, Integrable
-      (fun ω => A.toAuction.allPayBid (A.θ i ω)) ℙ) :
-    A.toAuction.sellerGrossRevenue A.spec β =
-      n * A.toAuction.expectedAllPayBid +
-        A.toAuction.expectedEditionValue A.spec β := by
-  have hU0 : A.toAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β = 0 := by
-    change (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
-      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType = 0
+      (fun ω => A.toNetCostAuction.allPayBid (A.toNetCostAuction.θ i ω)) ℙ) :
+    A.toNetCostAuction.sellerGrossRevenue A.spec β =
+      n * A.toNetCostAuction.expectedAllPayBid +
+        A.toNetCostAuction.expectedEditionValue A.spec β := by
+  have hU0 : A.toNetCostAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β = 0 := by
+    change (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType = 0
     exact (hBR 0).U_lowestType_zero
   have hU_sym : ∀ i,
-      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
-        (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
-        A.toAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β := fun i => by
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+        (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
+        A.toNetCostAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β := fun i => by
     rw [(hBR i).U_lowestType_zero, hU0]
-  exact A.toAuction.revenue_decomposition_boundary A.spec β hβ_meas hβ_mono hIC
-    ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
+  exact A.toNetCostAuction.revenue_decomposition_boundary A.spec β hβ_meas hβ_mono hIC
+    ht_int hedition_int A.toNetCostAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
 
 /-! #### Symmetric editions-only Cournot quantities -/
 
@@ -620,35 +704,36 @@ The benchmark quantity is the interior stationary Cournot candidate and is feasi
 nonnegative purchase quantity only when `φ̄ ≥ p`. -/
 theorem bundling_revenue_gain_of_isBoundaryRegime
     (β : ℝ → ℝ) (hβ_meas : Measurable β)
-    (hβ_mono : StrictMonoOn β (Icc A.lowestType A.highestType))
+    (hβ_mono : StrictMonoOn β (Icc A.toNetCostAuction.lowestType A.toNetCostAuction.highestType))
     (hIC : ∀ i,
-      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
-    (hBR : ∀ i, (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).HasTypeDeviationIC)
+    (hBR : ∀ i,
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).IsBoundaryRegime)
     (ht_int : ∀ i, Integrable
-      (fun ω => A.rules.payment i (fun j => β (A.θ j ω))) ℙ)
+      (fun ω => A.toNetCostAuction.rules.payment i (fun j => β (A.toNetCostAuction.θ j ω))) ℙ)
     (hedition_int : Integrable
-      (fun ω => A.toAuction.aggregateBid β ω *
-        A.spec.φ (A.toAuction.aggregateBid β ω)) ℙ)
+      (fun ω => A.toNetCostAuction.aggregateBid β ω *
+        A.spec.φ (A.toNetCostAuction.aggregateBid β ω)) ℙ)
     (hallPayBid_int : ∀ i, Integrable
-      (fun ω => A.toAuction.allPayBid (A.θ i ω)) ℙ)
+      (fun ω => A.toNetCostAuction.allPayBid (A.toNetCostAuction.θ i ω)) ℙ)
     (c : ℝ) :
-    A.toAuction.bundledProfit A.spec β c -
-        A.toAuction.allPayBenchmarkProfit -
-        A.toAuction.editionsOnlyBenchmarkProfit A.spec c A.cournotQuantityLinear =
-      A.toAuction.expectedEditionValue A.spec β -
-        c * A.toAuction.expectedAggregateBid β -
+    A.toNetCostAuction.bundledProfit A.spec β c -
+        A.toNetCostAuction.allPayBenchmarkProfit -
+        A.toNetCostAuction.editionsOnlyBenchmarkProfit A.spec c A.cournotQuantityLinear =
+      A.toNetCostAuction.expectedEditionValue A.spec β -
+        c * A.toNetCostAuction.expectedAggregateBid β -
         (A.spec.price - c) * A.cournotQuantityLinear := by
-  have hU0 : A.toAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β = 0 := by
-    change (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
-      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType = 0
+  have hU0 : A.toNetCostAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β = 0 := by
+    change (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).U
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β 0).lowestType = 0
     exact (hBR 0).U_lowestType_zero
   have hU_sym : ∀ i,
-      (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
-        (A.toAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
-        A.toAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β := fun i => by
+      (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).U
+        (A.toNetCostAuction.toBidderProblem A.spec.isUnitIntervalAllocation β i).lowestType =
+        A.toNetCostAuction.lowestTypeUtility A.spec.isUnitIntervalAllocation β := fun i => by
     rw [(hBR i).U_lowestType_zero, hU0]
-  exact A.toAuction.bundling_revenue_gain A.spec β hβ_meas hβ_mono hIC
-    ht_int hedition_int A.toAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
+  exact A.toNetCostAuction.bundling_revenue_gain A.spec β hβ_meas hβ_mono hIC
+    ht_int hedition_int A.toNetCostAuction.allPayBid_measurable hallPayBid_int hU_sym hU0
     c A.cournotQuantityLinear
 
 end LinearScarcityAuction
