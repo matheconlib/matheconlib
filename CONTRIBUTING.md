@@ -280,3 +280,16 @@ where to put shared feedback and which PR owns a blocker.
   changes that also touch a core layer still need maintainer review.
 - Keep PRs single-purpose and reviewable: one theme per PR, with a short
   description of what is proved and where it sits in the library.
+
+### Maintainer merge checkbox
+
+The rulesets for `main` separate permission to merge from PR and CI requirements.
+An approved PR with passing checks may still show **Cannot update this protected
+ref**. If you are on the maintainer bypass list, open **Merge status**, select
+**Merge without waiting for requirements to be met (bypass rules)**, and confirm
+the merge. This is the normal maintainer merge step.
+
+The checkbox bypasses only the maintainer update restriction. The separate PR/CI
+ruleset has no bypass list: its required checks and approval conditions must still
+be satisfied. The review requirements above also still apply. See the
+[current rulesets](https://github.com/matheconlib/matheconlib/rules).
