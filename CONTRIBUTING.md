@@ -25,6 +25,18 @@ Changes to the foundational layers — `Mechanism/`, `BidderProblem/`, `GameTheo
 **design issue** before implementation. Sketch the intended definitions and the main
 statements, and get agreement on the shape before writing the proofs.
 
+Apply design-first review when a contribution adds a shared abstraction, adds a
+public representation of an existing concept, or introduces an import between
+layers. This applies to extensions of existing foundations such as `Preferences`
+and `Choice`.
+
+Record the canonical API, one representative downstream theorem and its assumptions,
+and the direction of any new imports. During PR review, if the downstream theorem
+exposes an unresolved choice about a shared abstraction, a public representation,
+or an import between layers, ask for a design issue or link an existing one that
+covers the question. Agree on the scope there with the contributor before
+requesting a refactor or downstream port.
+
 Leaf contributions — new theorems in existing chapters, documentation, applications
 built on the existing layers — can go straight to a PR.
 
