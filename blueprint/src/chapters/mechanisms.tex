@@ -1,0 +1,193 @@
+\chapter{Mechanisms}
+
+This chapter sets up the general mechanism-design layer of MathEconLib. A mechanism maps action profiles to an outcome and signed monetary transfers; a quasilinear environment supplies valuations, and together they define utilities and the standard solution concepts (dominant-strategy incentive compatibility, individual rationality, efficiency, budget balance). The last section specializes to single-object auctions with real bids, including the all-purchase specification.
+
+\section{Mechanisms and transfers}
+
+\begin{definition}\label{def:MathEconLib.Mechanism}\lean{MathEconLib.Mechanism, MathEconLib.Mechanism.Profile}\leanok
+Let $I$ be a type of agents, $(A_i)_{i\in I}$ action spaces and $O$ an outcome type. A \emph{profile} of a family $(X_i)_{i\in I}$ is an element of $\prod_i X_i$, i.e.\ a dependent function assigning each agent an element of its own input type. A \emph{mechanism} consists of an outcome rule $\mathrm{outcome}:\prod_i A_i\to O$ and signed transfers $\mathrm{transfer}_i:\prod_j A_j\to\mathbb{R}$ for $i\in I$, where $\mathrm{transfer}_i(a)$ is the net money received by agent $i$ at action profile $a$ (negative when the agent pays).
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.DirectMechanism}\lean{MathEconLib.Mechanism.DirectMechanism}\leanok
+\uses{def:MathEconLib.Mechanism}
+Given type spaces $(\Theta_i)_{i\in I}$ and outcomes $O$, a \emph{direct mechanism} is a mechanism whose action spaces are the type spaces, $A_i=\Theta_i$. Each agent's action is a report $r_i\in\Theta_i$; reports need not equal true types.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.payment}\lean{MathEconLib.Mechanism.payment}\leanok
+\uses{def:MathEconLib.Mechanism}
+The \emph{payment} of agent $i$ at action profile $a$ in mechanism $M$ is $M.\mathrm{payment}_i(a):=-M.\mathrm{transfer}_i(a)$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.revenue}\lean{MathEconLib.Mechanism.revenue}\leanok
+\uses{def:MathEconLib.Mechanism}
+Assume $I$ is finite. The designer's \emph{revenue} at action profile $a$ is $M.\mathrm{revenue}(a):=-\sum_{i\in I}M.\mathrm{transfer}_i(a)$.
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Mechanism.revenue_eq_sum_payment}\lean{MathEconLib.Mechanism.revenue_eq_sum_payment}\leanok
+\uses{def:MathEconLib.Mechanism.revenue, def:MathEconLib.Mechanism.payment}
+Assume $I$ is finite. For every action profile $a$, $M.\mathrm{revenue}(a)=\sum_{i\in I}M.\mathrm{payment}_i(a)$.
+\end{lemma}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Mechanism.revenue, def:MathEconLib.Mechanism.payment}
+Unfold both definitions and distribute the negation over the finite sum.
+\end{proof}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.comap}\lean{MathEconLib.Mechanism.comap}\leanok
+\uses{def:MathEconLib.Mechanism, def:MathEconLib.Mechanism.DirectMechanism}
+Let $M$ be a mechanism with action spaces $(A_i)$ and let $\sigma_i:B_i\to A_i$ for each $i$. The induced mechanism $M.\mathrm{comap}\,\sigma$ with input spaces $(B_i)$ has, at a profile $b$, outcome $M.\mathrm{outcome}(i\mapsto\sigma_i(b_i))$ and transfers $M.\mathrm{transfer}_j(i\mapsto\sigma_i(b_i))$. When $B_i$ is agent $i$'s type space, $\sigma$ is a strategy profile and $M.\mathrm{comap}\,\sigma$ is the direct mechanism it induces. Identity maps return $M$ ($\texttt{comap\_id}$), and successive maps compose pointwise ($\texttt{comap\_comp}$); both hold definitionally.
+\end{definition}
+
+\section{Quasilinear environments}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.QuasilinearEnvironment}\lean{MathEconLib.Mechanism.QuasilinearEnvironment}\leanok
+A \emph{quasilinear environment} for agents $I$, type spaces $(\Theta_i)$ and outcomes $O$ is a valuation $\mathrm{value}_i(\theta,o)\in\mathbb{R}$, giving agent $i$'s value for outcome $o$ at the full true type profile $\theta\in\prod_j\Theta_j$. Values may depend on other agents' types (interdependent values). The environment specifies no mechanism and no type distribution.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.QuasilinearEnvironment.IsPrivateValues}\lean{MathEconLib.Mechanism.QuasilinearEnvironment.IsPrivateValues}\leanok
+\uses{def:MathEconLib.Mechanism.QuasilinearEnvironment}
+An environment $E$ has \emph{private values} if for every agent $i$ and all type profiles $\theta,\theta'$ with $\theta_i=\theta'_i$, the functions $E.\mathrm{value}_i(\theta,\cdot)$ and $E.\mathrm{value}_i(\theta',\cdot)$ on $O$ coincide.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.QuasilinearEnvironment.utility}\lean{MathEconLib.Mechanism.QuasilinearEnvironment.utility}\leanok
+\uses{def:MathEconLib.Mechanism.QuasilinearEnvironment, def:MathEconLib.Mechanism, def:MathEconLib.Mechanism.payment}
+Let $E$ be an environment and $M$ a mechanism with action spaces $(A_i)$ and the same outcome type. For an agent $i$, a true type profile $\theta$ and an action profile $a$, agent $i$'s \emph{quasilinear utility} is
+\[
+E.\mathrm{utility}(M,i,\theta,a):=E.\mathrm{value}_i\bigl(\theta,M.\mathrm{outcome}(a)\bigr)+M.\mathrm{transfer}_i(a),
+\]
+equivalently value minus payment, $E.\mathrm{value}_i(\theta,M.\mathrm{outcome}(a))-M.\mathrm{payment}_i(a)$ ($\texttt{utility\_eq\_value\_sub\_payment}$).
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.QuasilinearEnvironment.totalValue}\lean{MathEconLib.Mechanism.QuasilinearEnvironment.totalValue}\leanok
+\uses{def:MathEconLib.Mechanism.QuasilinearEnvironment}
+Assume $I$ is finite. The utilitarian \emph{total value} of outcome $o$ at true type profile $\theta$ is $E.\mathrm{totalValue}(\theta,o):=\sum_{i\in I}E.\mathrm{value}_i(\theta,o)$; transfers are excluded.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.QuasilinearEnvironment.welfareExcl}\lean{MathEconLib.Mechanism.QuasilinearEnvironment.welfareExcl}\leanok
+\uses{def:MathEconLib.Mechanism.QuasilinearEnvironment}
+Assume $I$ is finite with decidable equality. The welfare of outcome $o$ \emph{excluding} agent $i$ at true type profile $\theta$ is $E.\mathrm{welfareExcl}(i,\theta,o):=\sum_{j\neq i}E.\mathrm{value}_j(\theta,o)$.
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Mechanism.QuasilinearEnvironment.value_add_welfareExcl}\lean{MathEconLib.Mechanism.QuasilinearEnvironment.value_add_welfareExcl}\leanok
+\uses{def:MathEconLib.Mechanism.QuasilinearEnvironment.welfareExcl, def:MathEconLib.Mechanism.QuasilinearEnvironment.totalValue}
+Assume $I$ is finite with decidable equality. For every agent $i$, type profile $\theta$ and outcome $o$,
+\[
+E.\mathrm{value}_i(\theta,o)+E.\mathrm{welfareExcl}(i,\theta,o)=E.\mathrm{totalValue}(\theta,o).
+\]
+\end{lemma}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Mechanism.QuasilinearEnvironment.welfareExcl, def:MathEconLib.Mechanism.QuasilinearEnvironment.totalValue}
+Split the sum over $I$ into the term for $i$ and the sum over $I\setminus\{i\}$.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.Mechanism.QuasilinearEnvironment.welfareExcl_update}\lean{MathEconLib.Mechanism.QuasilinearEnvironment.welfareExcl_update}\leanok
+\uses{def:MathEconLib.Mechanism.QuasilinearEnvironment.IsPrivateValues, def:MathEconLib.Mechanism.QuasilinearEnvironment.welfareExcl}
+Assume $I$ is finite with decidable equality and $E$ has private values. For every agent $i$, type profile $\theta$, alternative type $x\in\Theta_i$ and outcome $o$, writing $\theta[i\mapsto x]$ for $\theta$ with its $i$-th coordinate replaced by $x$,
+\[
+E.\mathrm{welfareExcl}(i,\theta[i\mapsto x],o)=E.\mathrm{welfareExcl}(i,\theta,o).
+\]
+\end{lemma}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Mechanism.QuasilinearEnvironment.IsPrivateValues, def:MathEconLib.Mechanism.QuasilinearEnvironment.welfareExcl}
+Compare the sums termwise: for each $j\neq i$ the profiles $\theta[i\mapsto x]$ and $\theta$ agree in coordinate $j$, so private values gives equal values.
+\end{proof}
+
+\section{Solution concepts}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.DirectMechanism.IsDSIC}\lean{MathEconLib.Mechanism.DirectMechanism.IsDSIC}\leanok
+\uses{def:MathEconLib.Mechanism.DirectMechanism, def:MathEconLib.Mechanism.QuasilinearEnvironment.utility}
+Assume $I$ has decidable equality. A direct mechanism $M$ is \emph{dominant-strategy incentive compatible} under environment $E$ if for every agent $i$, every true type profile $\theta$ and every report profile $r$,
+\[
+E.\mathrm{utility}(M,i,\theta,r)\le E.\mathrm{utility}(M,i,\theta,r[i\mapsto\theta_i]).
+\]
+The full true profile $\theta$ is held fixed, so values may depend on other agents' types.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.DirectMechanism.IsExPostIR}\lean{MathEconLib.Mechanism.DirectMechanism.IsExPostIR}\leanok
+\uses{def:MathEconLib.Mechanism.DirectMechanism, def:MathEconLib.Mechanism.QuasilinearEnvironment.utility}
+A direct mechanism $M$ is \emph{ex-post individually rational} under $E$ if $0\le E.\mathrm{utility}(M,i,\theta,\theta)$ for every agent $i$ and every true type profile $\theta$ (all agents report truthfully; the outside option is normalized to $0$).
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.DirectMechanism.IsEfficient}\lean{MathEconLib.Mechanism.DirectMechanism.IsEfficient, MathEconLib.Mechanism.DirectMechanism.isEfficient_iff}\leanok
+\uses{def:MathEconLib.Mechanism.DirectMechanism, def:MathEconLib.Mechanism.QuasilinearEnvironment.totalValue}
+Assume $I$ is finite. A direct mechanism $M$ is \emph{efficient} under $E$ if for every true type profile $\theta$ the truthful outcome $M.\mathrm{outcome}(\theta)$ maximizes $E.\mathrm{totalValue}(\theta,\cdot)$ over all of $O$. Equivalently ($\texttt{isEfficient\_iff}$), $E.\mathrm{totalValue}(\theta,o)\le E.\mathrm{totalValue}(\theta,M.\mathrm{outcome}(\theta))$ for all $\theta$ and $o$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.IsBudgetBalanced}\lean{MathEconLib.Mechanism.IsBudgetBalanced}\leanok
+\uses{def:MathEconLib.Mechanism}
+Assume $I$ is finite. A (direct or indirect) mechanism $M$ is \emph{strongly budget balanced} if $\sum_{i}M.\mathrm{transfer}_i(a)=0$ for every action profile $a$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.IsNoDeficit}\lean{MathEconLib.Mechanism.IsNoDeficit}\leanok
+\uses{def:MathEconLib.Mechanism, def:MathEconLib.Mechanism.revenue}
+Assume $I$ is finite. A mechanism $M$ has \emph{no deficit} if $\sum_{i}M.\mathrm{transfer}_i(a)\le 0$ for every action profile $a$. Equivalently ($\texttt{isNoDeficit\_iff\_revenue\_nonneg}$), $0\le M.\mathrm{revenue}(a)$ for all $a$.
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Mechanism.isBudgetBalanced_iff_revenue_eq_zero}\lean{MathEconLib.Mechanism.isBudgetBalanced_iff_revenue_eq_zero}\leanok
+\uses{def:MathEconLib.Mechanism.IsBudgetBalanced, def:MathEconLib.Mechanism.revenue}
+Assume $I$ is finite. A mechanism $M$ is strongly budget balanced if and only if $M.\mathrm{revenue}(a)=0$ for every action profile $a$.
+\end{lemma}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Mechanism.IsBudgetBalanced, def:MathEconLib.Mechanism.revenue}
+Revenue is the negated sum of transfers, and $-x=0$ if and only if $x=0$.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.Mechanism.IsBudgetBalanced.isNoDeficit}\lean{MathEconLib.Mechanism.IsBudgetBalanced.isNoDeficit}\leanok
+\uses{def:MathEconLib.Mechanism.IsBudgetBalanced, def:MathEconLib.Mechanism.IsNoDeficit}
+Assume $I$ is finite. Every strongly budget-balanced mechanism has no deficit.
+\end{lemma}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Mechanism.IsBudgetBalanced, def:MathEconLib.Mechanism.IsNoDeficit}
+At each action profile the sum of transfers equals $0$, hence is at most $0$.
+\end{proof}
+
+\section{Auction allocations}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}\lean{MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}\leanok
+\uses{def:MathEconLib.Mechanism}
+Let $M$ be a mechanism with outcomes $O$ and let $\mathrm{alloc}:O\to I\to\mathbb{R}$ be an allocation map. Then $M$ has \emph{unit-interval allocations} if $\mathrm{alloc}(M.\mathrm{outcome}(b))_i\in[0,1]$ for every bidder $i$ and action profile $b$. No aggregate capacity constraint is imposed.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation}\lean{MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation}\leanok
+\uses{def:MathEconLib.Mechanism}
+Let $M$ be a mechanism with real-valued bids ($A_i=\mathbb{R}$ for all $i$) and $\mathrm{alloc}:O\to I\to\mathbb{R}$. Then $M$ \emph{uses the strict-highest-bid allocation} if for every bidder $i$ the map $b\mapsto\mathrm{alloc}(M.\mathrm{outcome}(b))_i$ equals the indicator function of $\{b : b_j<b_i \text{ for all } j\neq i\}$. Thus a unique strictly highest bidder receives the whole object, and a tie at the top leaves it unallocated. This is a rule on bids, not a welfare-efficiency condition.
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation.isUnitIntervalAllocation}\lean{MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation.isUnitIntervalAllocation}\leanok
+\uses{def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation, def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}
+If a real-bid mechanism $M$ uses the strict-highest-bid allocation with respect to $\mathrm{alloc}$, then $M$ has unit-interval allocations with respect to $\mathrm{alloc}$.
+\end{lemma}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation, def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}
+Each coordinate is the value of an indicator function, hence lies in $\{0,1\}\subseteq[0,1]$.
+\end{proof}
+
+\begin{definition}\label{def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec}\lean{MathEconLib.Mechanism.Auctions.AllPurchaseSpec, MathEconLib.Mechanism.Auctions.IsAllPurchase}\leanok
+\uses{def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation, def:MathEconLib.Mechanism}
+Let $I$ be finite, let $M$ be a mechanism with real bids (edition purchases) and let $\mathrm{alloc}:O\to I\to\mathbb{R}$. An \emph{all-purchase specification} for $(M,\mathrm{alloc})$ consists of a posted unit price $p>0$ and a continuous, strictly decreasing resale-value (scarcity) function $\varphi:\mathbb{R}\to\mathbb{R}$ such that $M$ uses the strict-highest-bid allocation with respect to $\mathrm{alloc}$ and
+\[
+M.\mathrm{transfer}_i(b)=-\Bigl(p-\varphi\bigl(\textstyle\sum_j b_j\bigr)\Bigr)\,b_i\quad\text{for all } i \text{ and } b.
+\]
+Bids and resale values are not required to be nonnegative. The predicate $\texttt{IsAllPurchase}\ M\ \mathrm{alloc}$ asserts that such a specification exists.
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Mechanism.Auctions.AllPurchaseSpec.payment_eq}\lean{MathEconLib.Mechanism.Auctions.AllPurchaseSpec.payment_eq}\leanok
+\uses{def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec, def:MathEconLib.Mechanism.payment}
+Under an all-purchase specification with price $p$ and scarcity function $\varphi$, for every bidder $i$ and bid profile $b\in\mathbb{R}^I$,
+\[
+M.\mathrm{payment}_i(b)=\Bigl(p-\varphi\bigl(\textstyle\sum_j b_j\bigr)\Bigr)\,b_i,
+\]
+i.e.\ gross expenditure $p\,b_i$ minus resale proceeds $\varphi(\sum_j b_j)\,b_i$.
+\end{lemma}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec, def:MathEconLib.Mechanism.payment}
+Substitute the transfer equation of the specification into the definition of payment.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.Mechanism.Auctions.AllPurchaseSpec.isUnitIntervalAllocation}\lean{MathEconLib.Mechanism.Auctions.AllPurchaseSpec.isUnitIntervalAllocation}\leanok
+\uses{def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec, def:MathEconLib.Mechanism.Auctions.IsUnitIntervalAllocation}
+If $M$ admits an all-purchase specification with respect to $\mathrm{alloc}$, then $M$ has unit-interval allocations: every bidder's prize allocation lies in $[0,1]$ at every bid profile.
+\end{lemma}
+\begin{proof}\leanok
+\uses{def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec, thm:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation.isUnitIntervalAllocation}
+The specification includes the strict-highest-bid allocation rule, so apply the previous lemma.
+\end{proof}

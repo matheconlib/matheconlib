@@ -1,0 +1,313 @@
+\chapter{Value distributions and single-parameter pricing}
+
+This chapter develops single-agent mechanism design with one-dimensional types. It defines value distributions as Borel probability measures on $\mathbb{R}$, single-parameter problems over arbitrary action types with a chain of incentive-compatibility notions, and the seller-profit functional. The main results are the envelope theorem, the Myerson payment identity and its converse, the single-agent revelation principle, virtual-surplus representations of expected payment and seller profit, optimality conditions for posted prices, and order-statistic identities used for revenue equivalence.
+
+\section{Value distributions}
+
+\begin{definition}\label{def:MathEconLib.ValueDistribution}\lean{MathEconLib.ValueDistribution}\leanok
+A value distribution is a Borel probability measure on $\mathbb{R}$. It is a transparent abbreviation for Mathlib's \texttt{ProbabilityMeasure} $\mathbb{R}$ and adds no bounded-support, density or atomlessness assumption.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.ValueDistribution.IsSupportedOnInterval}\lean{MathEconLib.ValueDistribution.IsSupportedOnInterval}\leanok
+\uses{def:MathEconLib.ValueDistribution}
+A value distribution $D$ is supported on $[\ell,u]$ if $V\in[\ell,u]$ for $D$-almost every value $V$. This is an optional predicate, not a field of the distribution.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.ValueDistribution.probAtLeast}\lean{MathEconLib.ValueDistribution.probAtLeast}\leanok
+\uses{def:MathEconLib.ValueDistribution}
+The posted-price demand of $D$ at price $p$ is the real number $\Pr_D[V\ge p]=D([p,\infty))$. The tail is closed, so a buyer whose value equals the price buys. In general this equals $1-F(p)+D(\{p\})$, where $F$ is the CDF of $D$, and it equals $1-F(p)$ when $D$ has no atoms.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.ValueDistribution.realDensity}\lean{MathEconLib.ValueDistribution.realDensity}\leanok
+\uses{def:MathEconLib.ValueDistribution}
+The canonical real density of $D$ is $f_D(v)=\tfrac{dD}{d\lambda}(v)$ converted to a real number: the Radon--Nikodym derivative of $D$ with respect to Lebesgue measure $\lambda$, mapped from $[0,\infty]$ to $\mathbb{R}$ (with $\infty\mapsto 0$). It represents all of $D$ only when $D\ll\lambda$, so theorems that use it assume absolute continuity explicitly.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.ValueDistribution.virtualSurplusWeight}\lean{MathEconLib.ValueDistribution.virtualSurplusWeight, MathEconLib.ValueDistribution.virtualValue}\leanok
+\uses{def:MathEconLib.ValueDistribution.probAtLeast}
+For a value distribution $D$ and any function $f:\mathbb{R}\to\mathbb{R}$ (intended as a density), the virtual-surplus weight is $w_{D,f}(v)=v\,f(v)-\Pr_D[V\ge v]$; it involves no division. The virtual value is $\varphi_{D,f}(v)=w_{D,f}(v)/f(v)$, using Lean's total division (so $\varphi_{D,f}(v)=0$ when $f(v)=0$). The factorization $w_{D,f}=f\cdot\varphi_{D,f}$ holds where $f(v)\neq0$. For atomless $D$, $w_{D,f}(v)=v\,f(v)-(1-F(v))$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.ValueDistribution.uniformInterval}\lean{MathEconLib.ValueDistribution.uniformInterval}\leanok
+\uses{def:MathEconLib.ValueDistribution, def:MathEconLib.ValueDistribution.IsSupportedOnInterval, def:MathEconLib.ValueDistribution.realDensity, def:MathEconLib.ValueDistribution.probAtLeast}
+For $a<b$, the uniform value distribution on $[a,b]$ is Lebesgue measure conditioned on $[a,b]$. It is supported on $[a,b]$, absolutely continuous and atomless, and it has density $1/(b-a)$ almost everywhere on $[a,b]$. For $p\in[a,b]$ its demand is $\Pr[V\ge p]=(b-p)/(b-a)$.
+\end{definition}
+
+\begin{theorem}\label{thm:MathEconLib.ValueDistribution.integral_intervalIntegral_eq_integral_mul_probAtLeast}\lean{MathEconLib.ValueDistribution.integral_intervalIntegral_eq_integral_mul_probAtLeast}\leanok
+\uses{def:MathEconLib.ValueDistribution.IsSupportedOnInterval, def:MathEconLib.ValueDistribution.probAtLeast}
+(Tail-integral identity.) Let $\ell\le u$ and let $D$ be supported on $[\ell,u]$. Let $q$ be measurable, interval integrable on $[\ell,u]$ and nonnegative on $[\ell,u]$. Then
+\[
+\int\Bigl(\int_{\ell}^{v}q(c)\,dc\Bigr)\,dD(v)=\int_{\ell}^{u}q(c)\,\Pr_D[V\ge c]\,dc .
+\]
+No density or atomlessness is assumed.
+\end{theorem}
+\begin{proof}\leanok
+Write the inner integral against the triangular kernel $\mathbf 1[c\le v]$ and exchange the order of integration by Tonelli; integrating the kernel in $v$ gives $\Pr_D[V\ge c]$.
+\end{proof}
+
+\section{Single-parameter problems and incentive compatibility}
+
+\begin{definition}\label{def:MathEconLib.SingleParameterProblem}\lean{MathEconLib.SingleParameterProblem, MathEconLib.SingleParameterProblem.payoff, MathEconLib.SingleParameterProblem.q, MathEconLib.SingleParameterProblem.U}\leanok
+A single-parameter problem $P$ over an arbitrary action type $A$ consists of real type bounds $\underline v,\overline v$ (no ordering assumed), an allocation $x:A\to[0,1]$, a payment $t:A\to\mathbb{R}$, and a strategy $s:\mathbb{R}\to A$. Payoff is quasilinear, $\mathrm{payoff}(v,a)=v\,x(a)-t(a)$. The induced allocation is $q(v)=x(s(v))$ and the equilibrium utility is $U(v)=\mathrm{payoff}(v,s(v))$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.SingleParameterProblem.HasEnvelopeIC}\lean{MathEconLib.SingleParameterProblem.HasEnvelopeIC}\leanok
+\uses{def:MathEconLib.SingleParameterProblem}
+Envelope incentive compatibility (a typeclass) holds for $P$ if $(v-v')\,q(v')\le U(v)-U(v')$ for all $v,v'\in[\underline v,\overline v]$. It is the weakest notion in the chain universal IC $\Rightarrow$ type-deviation IC $\Rightarrow$ envelope IC.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.SingleParameterProblem.HasTypeDeviationIC}\lean{MathEconLib.SingleParameterProblem.HasTypeDeviationIC, MathEconLib.SingleParameterProblem.instHasEnvelopeICOfHasTypeDeviationIC}\leanok
+\uses{def:MathEconLib.SingleParameterProblem, def:MathEconLib.SingleParameterProblem.HasEnvelopeIC}
+Type-deviation IC (a typeclass) holds for $P$ if $\mathrm{payoff}(v,s(v'))\le\mathrm{payoff}(v,s(v))$ for all $v,v'\in[\underline v,\overline v]$: no type gains by mimicking another type's strategy action. An instance shows that it implies envelope IC.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.SingleParameterProblem.HasUniversalIC}\lean{MathEconLib.SingleParameterProblem.HasUniversalIC, MathEconLib.SingleParameterProblem.instHasTypeDeviationICOfHasUniversalIC}\leanok
+\uses{def:MathEconLib.SingleParameterProblem, def:MathEconLib.SingleParameterProblem.HasTypeDeviationIC}
+Universal IC with respect to a feasible action set $S\subseteq A$ (a typeclass with $S$ an \texttt{outParam}) holds if for every $v\in[\underline v,\overline v]$ we have $s(v)\in S$ and $\mathrm{payoff}(v,a)\le\mathrm{payoff}(v,s(v))$ for all $a\in S$. An instance shows that it implies type-deviation IC.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.SingleParameterProblem.reduce}\lean{MathEconLib.SingleParameterProblem.reduce}\leanok
+\uses{def:MathEconLib.SingleParameterProblem}
+The canonical direct reduced form of $P$ is the single-parameter problem with action type $\mathbb{R}$ (reported types) and the same type bounds, with allocation $w\mapsto q(w)$, payment $w\mapsto t(s(w))$ and identity strategy. It preserves $q$ and $U$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.SingleParameterProblem.postedPriceProblem}\lean{MathEconLib.SingleParameterProblem.postedPriceProblem, MathEconLib.SingleParameterProblem.PurchaseDecision, MathEconLib.SingleParameterProblem.instHasUniversalICPostedPriceProblem}\leanok
+\uses{def:MathEconLib.SingleParameterProblem, def:MathEconLib.SingleParameterProblem.HasUniversalIC}
+For type bounds $\underline v,\overline v$ and a price $p$, the posted-price problem has two actions: buy (allocation $1$, payment $p$) and do-not-buy (allocation $0$, payment $0$). Its strategy buys exactly when $p\le v$, so $q(v)=\mathbf 1[p\le v]$. An instance shows that this threshold strategy is universally IC over both actions.
+\end{definition}
+
+\section{Envelope theorem, payment identity and revelation}
+
+\begin{lemma}\label{thm:MathEconLib.SingleParameterProblem.q_monotoneOn}\lean{MathEconLib.SingleParameterProblem.q_monotoneOn}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.HasEnvelopeIC}
+If $P$ satisfies envelope IC, then the induced allocation $q$ is monotone (non-decreasing) on $[\underline v,\overline v]$.
+\end{lemma}
+\begin{proof}\leanok
+Adding the envelope inequalities for $(v,v')$ and $(v',v)$ gives $(v-v')(q(v)-q(v'))\ge0$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.SingleParameterProblem.integral_rep}\lean{MathEconLib.SingleParameterProblem.integral_rep}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.HasEnvelopeIC}
+(Envelope theorem.) Suppose $P$ satisfies envelope IC. Then for every $v\in[\underline v,\overline v]$,
+\[
+U(v)=U(\underline v)+\int_{\underline v}^{v}q(w)\,dw .
+\]
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.SingleParameterProblem.q_monotoneOn}
+Since $q$ takes values in $[0,1]$, the envelope inequalities make $U$ $1$-Lipschitz on the type interval, hence absolutely continuous; at every continuity point of the monotone $q$ (all but countably many) the inequalities squeeze $U'=q$, and the fundamental theorem of calculus concludes.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.SingleParameterProblem.payment_identity}\lean{MathEconLib.SingleParameterProblem.payment_identity, MathEconLib.SingleParameterProblem.payment_unique}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.HasEnvelopeIC}
+(Myerson payment identity.) Suppose $P$ satisfies envelope IC. Then for every $v\in[\underline v,\overline v]$,
+\[
+t(s(v))=v\,q(v)-U(\underline v)-\int_{\underline v}^{v}q(w)\,dw .
+\]
+Consequently, let $P$ and $P_2$ be two envelope-IC problems (possibly with different action types) with equal type bounds ($\underline v=\underline v_2$, $\overline v=\overline v_2$), equal induced allocations $q=q_2$ as functions on $\mathbb{R}$, and equal lowest-type utilities $U(\underline v)=U_2(\underline v_2)$. Then $t(s(x))=t_2(s_2(x))$ for every $x\in[\underline v,\overline v]$.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.SingleParameterProblem.integral_rep}
+Rearrange $U(v)=v\,q(v)-t(s(v))$ and substitute the envelope theorem; uniqueness follows because the right-hand side depends only on the shared data.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.SingleParameterProblem.typeDeviationIC_of_monotone_q}\lean{MathEconLib.SingleParameterProblem.typeDeviationIC_of_monotone_q}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.HasTypeDeviationIC}
+(Myerson sufficiency.) Suppose $q$ is monotone on $[\underline v,\overline v]$ and every $x$ in the interval satisfies $t(s(x))=x\,q(x)-U(\underline v)-\int_{\underline v}^{x}q(w)\,dw$. Then $P$ satisfies type-deviation IC. No IC assumption is made beforehand.
+\end{theorem}
+\begin{proof}\leanok
+For types $v,v'$ in the interval, the payment formula gives $\mathrm{payoff}(v,s(v))-\mathrm{payoff}(v,s(v'))=\int_{v'}^{v}(q(w)-q(v'))\,dw$, which is nonnegative in either orientation by monotonicity of $q$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.SingleParameterProblem.revelation_principle}\lean{MathEconLib.SingleParameterProblem.revelation_principle, MathEconLib.SingleParameterProblem.instHasUniversalICReduce}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.reduce, def:MathEconLib.SingleParameterProblem.HasTypeDeviationIC, def:MathEconLib.SingleParameterProblem.HasUniversalIC}
+(Revelation principle, single agent.) Suppose $P$ satisfies type-deviation IC. Then there is a direct problem $D$ with action type $\mathbb{R}$, namely the reduced form of $P$, whose strategy is the identity, which is universally IC with respect to the report set $[\underline v,\overline v]$, which has the same type bounds, $q_D=q_P$ and $U_D=U_P$, and whose payment satisfies $t_D(w)=t_P(s_P(w))$ for every $w\in\mathbb{R}$.
+\end{theorem}
+\begin{proof}\leanok
+Take the reduced form; a report $w$ in the type interval yields $\mathrm{payoff}_P(v,s_P(w))$, so universal IC over reports is exactly type-deviation IC of $P$, and the remaining properties hold by definition.
+\end{proof}
+
+\section{Seller profit and virtual surplus}
+
+\begin{definition}\label{def:MathEconLib.ValueDistribution.sellerProfit}\lean{MathEconLib.ValueDistribution.sellerProfit, MathEconLib.ValueDistribution.expectedAllocation, MathEconLib.ValueDistribution.expectedPayment}\leanok
+\uses{def:MathEconLib.ValueDistribution, def:MathEconLib.SingleParameterProblem}
+For a value distribution $D$ and a single-parameter problem $P$, the expected allocation $\mathbb{E}_D[q(V)]$ and expected payment $\mathbb{E}_D[t(s(V))]$ are Bochner integrals, with no integrability assumed. For a continuation value $r$ and an acquisition cost $c$, the expected seller profit is
+\[
+\Pi(D,P,r,c)=r-c+\mathbb{E}_D[t(s(V))]-r\,\mathbb{E}_D[q(V)] .
+\]
+\end{definition}
+
+\begin{theorem}\label{thm:MathEconLib.ValueDistribution.expectedPayment_eq_integral_value_mul_q_sub_integral_tail}\lean{MathEconLib.ValueDistribution.expectedPayment_eq_integral_value_mul_q_sub_integral_tail}\leanok
+\uses{def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.SingleParameterProblem.HasEnvelopeIC, def:MathEconLib.ValueDistribution.IsSupportedOnInterval, def:MathEconLib.ValueDistribution.probAtLeast}
+(Density-free expected payment.) Let $P$ satisfy envelope IC with $\underline v\le\overline v$, and let $D$ be supported on $[\underline v,\overline v]$. Then
+\[
+\mathbb{E}_D[t(s(V))]=\mathbb{E}_D[V\,q(V)]-U(\underline v)-\int_{\underline v}^{\overline v}q(c)\,\Pr_D[V\ge c]\,dc .
+\]
+This holds for atomic and mixed $D$ as well.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.SingleParameterProblem.payment_identity, thm:MathEconLib.SingleParameterProblem.q_monotoneOn, thm:MathEconLib.ValueDistribution.integral_intervalIntegral_eq_integral_mul_probAtLeast}
+Integrate the payment identity against $D$; monotonicity of $q$ gives the measurability and integrability needed, and the tail-integral identity rewrites the double integral.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.ValueDistribution.expectedPayment_eq_integral_q_mul_virtualSurplusWeight_realDensity}\lean{MathEconLib.ValueDistribution.expectedPayment_eq_integral_q_mul_virtualSurplusWeight_realDensity, MathEconLib.ValueDistribution.expectedPayment_eq_integral_q_mul_virtualSurplusWeight}\leanok
+\uses{def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.SingleParameterProblem.HasEnvelopeIC, def:MathEconLib.ValueDistribution.IsSupportedOnInterval, def:MathEconLib.ValueDistribution.realDensity, def:MathEconLib.ValueDistribution.virtualSurplusWeight}
+(Virtual-surplus expected payment.) Let $P$ satisfy envelope IC with $\underline v\le\overline v$, and let $D$ be supported on $[\underline v,\overline v]$ and absolutely continuous with respect to Lebesgue measure. Then
+\[
+\mathbb{E}_D[t(s(V))]=\int_{\underline v}^{\overline v}q(v)\,w_{D,f_D}(v)\,dv-U(\underline v),
+\]
+where $f_D$ is the canonical real density. The same formula holds with $w_{D,f}$ for any $f$ that equals $f_D$ almost everywhere on $[\underline v,\overline v]$.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.ValueDistribution.expectedPayment_eq_integral_value_mul_q_sub_integral_tail}
+Under $D\ll\lambda$, rewrite $\mathbb{E}_D[V\,q(V)]$ as $\int_{\underline v}^{\overline v}v\,q(v)\,f_D(v)\,dv$ and combine with the tail term from the density-free formula; the variant follows by almost-everywhere congruence.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.ValueDistribution.sellerProfit_eq_virtualSurplus}\lean{MathEconLib.ValueDistribution.sellerProfit_eq_virtualSurplus, MathEconLib.ValueDistribution.sellerProfit_eq_virtualSurplus_realDensity}\leanok
+\uses{def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.SingleParameterProblem.HasEnvelopeIC, def:MathEconLib.ValueDistribution.IsSupportedOnInterval, def:MathEconLib.ValueDistribution.virtualSurplusWeight, def:MathEconLib.ValueDistribution.realDensity}
+(Seller profit as virtual surplus.) Let $P$ satisfy envelope IC with $\underline v\le\overline v$. Let $D$ be supported on $[\underline v,\overline v]$ with $D\ll\lambda$, and let $f=f_D$ almost everywhere on $[\underline v,\overline v]$. Then for all $r,c$,
+\[
+\Pi(D,P,r,c)=r-c-U(\underline v)+\int_{\underline v}^{\overline v}q(v)\bigl(w_{D,f}(v)-r\,f(v)\bigr)\,dv .
+\]
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.ValueDistribution.expectedPayment_eq_integral_q_mul_virtualSurplusWeight_realDensity}
+Substitute the virtual-surplus expected payment and write $\mathbb{E}_D[q(V)]=\int_{\underline v}^{\overline v}q(v)\,f(v)\,dv$.
+\end{proof}
+
+\section{Posted-price optimality}
+
+\begin{proposition}\label{thm:MathEconLib.ValueDistribution.sellerProfit_postedPriceProblem}\lean{MathEconLib.ValueDistribution.sellerProfit_postedPriceProblem}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.postedPriceProblem, def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.ValueDistribution.probAtLeast}
+For any value distribution $D$, type bounds, price $p$, continuation value $r$ and acquisition cost $c$, the posted-price problem has seller profit $\Pi=r-c+(p-r)\Pr_D[V\ge p]$. No support, density or atomlessness assumption is needed.
+\end{proposition}
+\begin{proof}\leanok
+The induced allocation $q$ is the indicator of $[p,\infty)$ and the on-strategy payment $t\circ s$ is $p$ times that indicator, so the expectations equal $\Pr_D[V\ge p]$ and $p\Pr_D[V\ge p]$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.ValueDistribution.sellerProfit_postedPriceProblem_eq_intervalIntegral_netVirtualSurplus}\lean{MathEconLib.ValueDistribution.sellerProfit_postedPriceProblem_eq_intervalIntegral_netVirtualSurplus}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.postedPriceProblem, def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.ValueDistribution.IsSupportedOnInterval, def:MathEconLib.ValueDistribution.virtualSurplusWeight, def:MathEconLib.ValueDistribution.realDensity}
+(Cutoff representation.) Let $p\in[\underline v,\overline v]$. Let $D$ be supported on $[\underline v,\overline v]$ with $D\ll\lambda$, and let $f=f_D$ almost everywhere on $[\underline v,\overline v]$. Then for all $r,c$ the posted-price profit at $p$ is
+\[
+r-c+\int_{p}^{\overline v}\bigl(w_{D,f}(v)-r\,f(v)\bigr)\,dv .
+\]
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.ValueDistribution.sellerProfit_eq_virtualSurplus, def:MathEconLib.SingleParameterProblem.HasEnvelopeIC}
+The posted-price problem is envelope IC (via universal IC) with $U(\underline v)=0$ when $p\ge\underline v$, and $q=\mathbf 1[p\le v]$ cuts the virtual-surplus integral down to $[p,\overline v]$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.ValueDistribution.isMaxOn_sellerProfit_postedPriceProblem_of_netVirtualSurplus_sign}\lean{MathEconLib.ValueDistribution.isMaxOn_sellerProfit_postedPriceProblem_of_netVirtualSurplus_sign}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.postedPriceProblem, def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.ValueDistribution.IsSupportedOnInterval, def:MathEconLib.ValueDistribution.virtualSurplusWeight, def:MathEconLib.ValueDistribution.realDensity}
+(Single-crossing sufficiency.) Let $p^*\in[\underline v,\overline v]$. Let $D$ be supported on $[\underline v,\overline v]$ with $D\ll\lambda$, and let $f=f_D$ almost everywhere on $[\underline v,\overline v]$. Suppose $w_{D,f}(v)-r\,f(v)\le0$ for almost every $v\in[\underline v,p^*]$ and $w_{D,f}(v)-r\,f(v)\ge0$ for almost every $v\in[p^*,\overline v]$. Then $p^*$ maximizes the posted-price seller profit $p\mapsto\Pi$ over $p\in[\underline v,\overline v]$. The comparison is only among posted prices in the type interval.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.ValueDistribution.sellerProfit_postedPriceProblem_eq_intervalIntegral_netVirtualSurplus}
+By the cutoff representation, $\Pi(p^*)-\Pi(p)$ is the integral of the net weight between $p$ and $p^*$, which is nonnegative by the sign hypotheses on either side of $p^*$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.ValueDistribution.netVirtualSurplus_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem}\lean{MathEconLib.ValueDistribution.netVirtualSurplus_eq_zero_of_isLocalMaxOn_sellerProfit_postedPriceProblem, MathEconLib.ValueDistribution.virtualValue_eq_continuationValue_of_isLocalMaxOn_sellerProfit_postedPriceProblem, MathEconLib.ValueDistribution.hasDerivAt_sellerProfit_postedPriceProblem}\leanok
+\uses{def:MathEconLib.SingleParameterProblem.postedPriceProblem, def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.ValueDistribution.virtualSurplusWeight}
+(First-order condition.) Let $D$ be atomless, let $p\in(\underline v,\overline v)$, and suppose the CDF $F$ of $D$ has derivative $f(p)$ at $p$. If $p$ is a local maximizer of posted-price profit within $[\underline v,\overline v]$, then $w_{D,f}(p)-r\,f(p)=0$. If moreover $f(p)\neq0$, then $\varphi_{D,f}(p)=r$. These are necessary conditions only, with no global density, support or absolute-continuity assumption.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.ValueDistribution.sellerProfit_postedPriceProblem}
+For atomless $D$ the profit is $r-c+(p-r)(1-F(p))$, whose derivative at $p$ is $-(w_{D,f}(p)-r\,f(p))$; an interior local maximum on the interval is a local maximum, so this derivative vanishes, and dividing by $f(p)\neq0$ gives the virtual-value form.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.ValueDistribution.isMaxOn_sellerProfit_uniformInterval}\lean{MathEconLib.ValueDistribution.isMaxOn_sellerProfit_uniformInterval, MathEconLib.ValueDistribution.uniformOptimalPrice_eq_of_isMaxOn_sellerProfit_uniformInterval, MathEconLib.ValueDistribution.uniformOptimalPrice}\leanok
+\uses{def:MathEconLib.ValueDistribution.uniformInterval, def:MathEconLib.SingleParameterProblem.postedPriceProblem, def:MathEconLib.ValueDistribution.sellerProfit}
+Let $a<b$ and let $D$ be uniform on $[a,b]$. For every continuation value $r$ and acquisition cost $c$, put $p^*=\max\bigl(a,\min(b,(b+r)/2)\bigr)$. Then $p^*$ maximizes posted-price seller profit (with type bounds $a,b$) over $p\in[a,b]$. Conversely, any maximizer $p\in[a,b]$ equals $p^*$.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.ValueDistribution.isMaxOn_sellerProfit_postedPriceProblem_of_netVirtualSurplus_sign, thm:MathEconLib.ValueDistribution.sellerProfit_postedPriceProblem}
+On $[a,b]$ the net weight $(2v-b-r)/(b-a)$ is single-crossing at $(b+r)/2$, clamped to the interval, which gives optimality; uniqueness follows because the profit $r-c+(p-r)(b-p)/(b-a)$ is a strictly concave quadratic in $p$.
+\end{proof}
+
+\section{Order statistics}
+
+\begin{definition}\label{def:MathEconLib.OrderStatisticsSetup}\lean{MathEconLib.OrderStatisticsSetup, MathEconLib.orderStatistics, MathEconLib.OrderStatisticsSetup.val}\leanok
+For $v:\mathrm{Fin}\,n\to\alpha$ with $\alpha$ linearly ordered, $\mathrm{orderStatistics}\,v\,k$ is the $(k+1)$-smallest of $v_0,\dots,v_{n-1}$, indexed from $0$. An order-statistics setup on a probability space $\Omega$ bundles $n$ random variables $X_i:\Omega\to\mathbb{R}$ that are measurable, mutually independent, pairwise identically distributed, and each have a density with respect to Lebesgue measure. Its $k$-th order statistic is $X_{(k)}(\omega)=\mathrm{orderStatistics}(i\mapsto X_i(\omega))\,k$.
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.OrderStatisticsSetup.cdf_val}\lean{MathEconLib.OrderStatisticsSetup.cdf_val}\leanok
+\uses{def:MathEconLib.OrderStatisticsSetup}
+In an order-statistics setup, let $F$ be the CDF of $X_{i_0}$ for any $i_0$. Then for every $k$ (indexed from $0$) and every $x$,
+\[
+\Pr[X_{(k)}\le x]=\sum_{l=k+1}^{n}\binom{n}{l}F(x)^l(1-F(x))^{n-l}.
+\]
+\end{lemma}
+\begin{proof}\leanok
+$X_{(k)}\le x$ exactly when at least $k+1$ of the $X_i$ are $\le x$; split by the exact count $l$ and use independence and identical distribution to get a binomial probability for each $l$.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.OrderStatisticsSetup.pdf_val}\lean{MathEconLib.OrderStatisticsSetup.pdf_val}\leanok
+\uses{def:MathEconLib.OrderStatisticsSetup}
+In an order-statistics setup, let $F$ be the CDF and $f$ the density of $X_{i_0}$. Then for Lebesgue-almost every $x$, the density of $X_{(k)}$ is
+\[
+\frac{n!}{k!\,(n-1-k)!}F(x)^k(1-F(x))^{n-1-k}f(x).
+\]
+Here densities are Mathlib's $[0,\infty]$-valued pdfs.
+\end{lemma}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.OrderStatisticsSetup.cdf_val}
+Differentiate the binomial tail sum in $F$; it telescopes to the single displayed term, and the chain rule with $F'=f$ almost everywhere identifies the density.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.OrderStatisticsSetup.expected_val}\lean{MathEconLib.OrderStatisticsSetup.expected_val}\leanok
+\uses{def:MathEconLib.OrderStatisticsSetup}
+In an order-statistics setup with $a\le b$, suppose the CDF $F$ of $X_{i_0}$ satisfies $F(a)=0$ and $F(b)=1$, and let $f$ be its real density. Then
+\[
+\mathbb{E}[X_{(k)}]=\frac{n!}{k!\,(n-1-k)!}\int_a^b\psi\,F(\psi)^k(1-F(\psi))^{n-1-k}f(\psi)\,d\psi .
+\]
+\end{lemma}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.OrderStatisticsSetup.pdf_val}
+Write the expectation as $\int\psi\,f_{(k)}(\psi)\,d\psi$ with the order-statistic density, and note that the density vanishes outside $[a,b]$ because $F$ is constant there.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.OrderStatisticsSetup.integral_cdf_pow}\lean{MathEconLib.OrderStatisticsSetup.integral_cdf_pow}\leanok
+\uses{def:MathEconLib.OrderStatisticsSetup}
+(Integration by parts.) In an order-statistics setup, let $F$ and $f$ be the CDF and real density of $X_{i_0}$, with $F(a)=0$. Then for $m\ge1$ and any $s$,
+\[
+\int_a^s F(\psi)^m\,d\psi=s\,F(s)^m-m\int_a^s\psi\,F(\psi)^{m-1}f(\psi)\,d\psi .
+\]
+\end{lemma}
+\begin{proof}\leanok
+$F^m$ is absolutely continuous on the interval because $X_{i_0}$ has a density, with derivative $m F^{m-1}f$ almost everywhere; integrate $\psi\cdot(F^m)'$ by parts, the boundary term at $a$ vanishing since $F(a)=0$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.OrderStatisticsSetup.expected_second_highest}\lean{MathEconLib.OrderStatisticsSetup.expected_second_highest}\leanok
+\uses{def:MathEconLib.OrderStatisticsSetup}
+In an order-statistics setup with $n\ge2$ and $a\le b$, assume every $X_i\in[a,b]$ almost surely and that the CDF $F$ of $X_{i_0}$ satisfies $F(a)=0$ and $F(b)=1$. Then the second-highest value $X_{(n-2)}$ (indexed from $0$) satisfies
+\[
+\mathbb{E}[X_{(n-2)}]=n\,\mathbb{E}\Bigl[X_{i_0}F(X_{i_0})^{n-1}-\int_a^{X_{i_0}}F(\psi)^{n-1}\,d\psi\Bigr].
+\]
+This is the identity behind revenue equivalence.
+\end{theorem}
+\begin{proof}\leanok
+\uses{thm:MathEconLib.OrderStatisticsSetup.expected_val, thm:MathEconLib.OrderStatisticsSetup.integral_cdf_pow}
+Apply integration by parts pointwise inside the expectation to reduce the right side to $n(n-1)\,\mathbb{E}\bigl[\int_a^{X_{i_0}}\psi F^{n-2}f\bigr]$, exchange the order of integration, and match the result with the order-statistic formula for $k=n-2$.
+\end{proof}
+
+\section{Open targets}
+
+\begin{theorem}\label{thm:open.riley_zeckhauser_prop1}
+\uses{def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.SingleParameterProblem.postedPriceProblem}
+(Riley--Zeckhauser Proposition 1.) The optimal selling rule for a single buyer is a posted price. Optimality holds over all monotone sale-probability rules, not only over posted prices, and allows the net virtual-surplus weight to change sign several times; this gives the fixed-price conclusion against haggling. The repository records this as open in \texttt{MathEconLib/ValueDistribution/PostedPriceOptimality.lean} and \texttt{docs/PricingArchitecture.md}.
+\end{theorem}
+
+\begin{theorem}\label{thm:open.riley_zeckhauser_prop2}
+\uses{def:MathEconLib.ValueDistribution.sellerProfit, def:MathEconLib.SingleParameterProblem.postedPriceProblem}
+(Riley--Zeckhauser Proposition 2.) The comparative static of the optimal posted price in the number of remaining buyers, with a type-dependent continuation value. The repository records this as open in \texttt{MathEconLib/ValueDistribution/PostedPriceOptimality.lean}.
+\end{theorem}
+
+\begin{theorem}\label{thm:open.regularity_ironing_dominance}
+\uses{def:MathEconLib.ValueDistribution.virtualSurplusWeight}
+Optimal pricing under regularity assumptions on virtual values, ironing for non-regular distributions, and comparative statics of the optimal price under stochastic dominance of the value distribution. The repository records ironing and stochastic-dominance comparative statics as open in \texttt{MathEconLib/ValueDistribution/PostedPriceOptimality.lean}, and regularity and ironing as postponed in \texttt{docs/PricingArchitecture.md}.
+\end{theorem}
+
+\begin{theorem}\label{thm:open.type_dependent_continuation_value}
+\uses{def:MathEconLib.ValueDistribution.sellerProfit, thm:MathEconLib.ValueDistribution.sellerProfit_eq_virtualSurplus}
+Extend the single-buyer seller profit $\Pi$ and its virtual-surplus representation to a continuation value that depends on the buyer's type; currently it is a constant. The repository records this as open in \texttt{MathEconLib/ValueDistribution/SingleParameter.lean} and \texttt{MathEconLib/ValueDistribution/PostedPriceOptimality.lean}.
+\end{theorem}
