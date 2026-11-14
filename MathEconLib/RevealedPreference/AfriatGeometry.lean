@@ -160,7 +160,7 @@ theorem globalAfriatSupport_strictlyIncreasing
     (U lam : T → ℝ) (p q : T → Bundle L) (t : T)
     (hp : ∀ i, 0 < p t i) (hlam : 0 < lam t) :
     StrictlyIncreasing (globalAfriatSupport U lam p q t) := by
-  intro x z hxz
+  intro z x hxz
   have hdot : dot (p t) z < dot (p t) x :=
     dot_strictlyIncreasing_of_pos hp hxz
   have hscaled :

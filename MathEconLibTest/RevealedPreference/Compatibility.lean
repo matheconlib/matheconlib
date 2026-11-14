@@ -20,6 +20,45 @@ set_option linter.privateModule false
 
 open MathEconLib.RevealedPreference
 
+-- Economic names reduce directly to the shared order predicates.
+example {L : ℕ} {x : Bundle L} : Nonnegative x ↔ 0 ≤ x := Iff.rfl
+
+example {L : ℕ} {x z : Bundle L} : StrictDominates x z ↔ z < x := Iff.rfl
+
+example {L : ℕ} {u : Utility L} : StrictlyIncreasing u ↔ StrictMono u := Iff.rfl
+
+-- Increasing utility transformations reuse Mathlib's composition theorem directly.
+example {L : ℕ} {u : Utility L} {g : ℝ → ℝ}
+    (hu : StrictlyIncreasing u) (hg : StrictMono g) : StrictlyIncreasing (g ∘ u) :=
+  hg.comp hu
+
+example {L : ℕ} {T : Type*} (D : Dataset L T) :
+    GARP D ↔ GraphGARP D.price D.choice := Iff.rfl
+
+-- Preserve the coordinatewise economic contracts as well as the aliases.
+example {L : ℕ} {x : Bundle L} : Nonnegative x ↔ ∀ i, 0 ≤ x i := Iff.rfl
+
+example {L : ℕ} {x z : Bundle L} :
+    StrictDominates x z ↔ (∀ i, z i ≤ x i) ∧ x ≠ z := by
+  rw [strictDominates_iff_lt, lt_iff_le_and_ne]
+  exact ⟨fun h => ⟨h.1, Ne.symm h.2⟩, fun h => ⟨h.1, Ne.symm h.2⟩⟩
+
+example {L : ℕ} {u : Utility L} :
+    StrictlyIncreasing u ↔
+      ∀ ⦃x z : Bundle L⦄, ((∀ i, z i ≤ x i) ∧ x ≠ z) → u z < u x := by
+  rw [strictlyIncreasing_iff_strictMono]
+  constructor
+  · intro h x z hxz
+    exact h (lt_iff_le_and_ne.mpr ⟨hxz.1, Ne.symm hxz.2⟩)
+  · intro h z x hzx
+    exact h ⟨hzx.le, ne_of_gt hzx⟩
+
+-- With no commodities, strict dominance is empty and strict increase is vacuous.
+example (u : Utility 0) : StrictlyIncreasing u := by
+  apply strictlyIncreasing_iff_strictMono.mpr
+  intro x z hxz
+  exact (hxz.ne (Subsingleton.elim x z)).elim
+
 example {L : ℕ} {x z : Bundle L} : StrictDominates x z ↔ z < x :=
   strictDominates_iff_lt
 
