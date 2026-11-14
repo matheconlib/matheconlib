@@ -19,15 +19,18 @@ These compile-time checks pin the signatures of the preference API through the u
 * Preferences — the `IsPreorder` instance, the notation, conversions to and from preorders,
   `Preference.comap` and its laws, and the strict-preference lemmas.
 * Complete preferences — coercion, totality, the constructors from total preorders and linear
-  orders, `CompletePreference.comap`, `CompletePreference.toLinearOrder`, and trichotomy.
+  orders, `CompletePreference.comap`, `CompletePreference.toLinearOrder`, trichotomy, and strict
+  ranking of distinct alternatives under antisymmetry.
 * Ordinal utility — `Preference.IsRepresentedBy`, `Preference.ofUtility`,
-  `CompletePreference.ofUtility`, and the characterization of greatest alternatives by utility
-  maximization.
-* Finite alternatives — natural-number representations of complete preferences.
+  `CompletePreference.ofUtility`, strictly increasing transformations of a representing utility,
+  and the characterization of greatest alternatives by utility maximization.
+* Finite alternatives — natural-number and real-valued representations of complete preferences.
+* Profiles — `Profile` and its constant case, `Profile.ofUtility`, `Profile.comap`,
+  `Profile.reindexAgents`, their laws, and antisymmetry along injective maps.
 
 ## Tags
 
-preference, public api, ordinal utility, finite representation
+preference, public api, ordinal utility, finite representation, preference profile
 -/
 
 set_option linter.privateModule false
@@ -110,6 +113,9 @@ example : Preference X := R
 
 example : Std.Total R.le := inferInstance
 
+example {R S : CompletePreference X} (h : ∀ x y : X, x ≼[R] y ↔ x ≼[S] y) : R = S :=
+  CompletePreference.ext h
+
 example : IsPreorder X R.le := inferInstance
 
 example (x y : X) : x ≼[R] y ∨ y ≼[R] x := R.total x y
@@ -150,6 +156,14 @@ example {x y : X} : ¬x ≼[R] y ↔ y ≺[R] x := R.not_le
 example (x y : X) : x ≺[R] y ∨ x ~[R] y ∨ y ≺[R] x :=
   R.lt_or_antisymmRel_or_gt x y
 
+example {x y : X} : ¬x ≺[R] y ↔ y ≼[R] x := R.not_lt
+
+example [Std.Antisymm R.le] {x y : X} (h : x ≠ y) : x ≺[R] y ∨ y ≺[R] x :=
+  R.lt_or_gt_of_ne h
+
+example [Std.Antisymm R.le] {x y : X} : x ≼[R] y ↔ x = y ∨ x ≺[R] y :=
+  R.le_iff_eq_or_lt
+
 end CompletePreference
 
 section Representation
@@ -181,6 +195,10 @@ example (hu : R.IsRepresentedBy u) (f : Y → X) :
 example (hu : R.IsRepresentedBy u) {S : Set X} {a : X} :
     (∀ x ∈ S, x ≼[R] a) ↔ IsMaxOn u S a := hu.forall_le_iff_isMaxOn
 
+example {V W : Type*} [LinearOrder V] [Preorder W] {v : X → V} {f : V → W}
+    (hv : R.IsRepresentedBy v) (hf : StrictMono f) : R.IsRepresentedBy (f ∘ v) :=
+  hv.comp_strictMono hf
+
 example [Std.Total (α := U) (· ≤ ·)] : CompletePreference X :=
   CompletePreference.ofUtility u
 
@@ -200,5 +218,52 @@ example {X : Type*} [Finite X] (R : CompletePreference X) :
 example {X : Type*} [Finite X] (R : CompletePreference X) :
     ∃ u : X → ℕ, ∀ (S : Set X) (a : X),
       (∀ x ∈ S, x ≼[R] a) ↔ IsMaxOn u S a := R.exists_nat_utility_isMaxOn
+
+example {X : Type*} [Finite X] (R : CompletePreference X) :
+    ∃ u : X → ℝ, R.IsRepresentedBy u := R.exists_isRepresentedBy_real
+
+section Profile
+
+variable {L M N U : Type*} {X Y Z : N → Type*}
+
+example : Profile N X = ((i : N) → CompletePreference (X i)) := rfl
+
+example (A : Type*) : Profile N (fun _ => A) = (N → CompletePreference A) := rfl
+
+example [Preorder U] [Std.Total (α := U) (· ≤ ·)] (u : (i : N) → X i → U) (i : N) :
+    Profile.ofUtility u i = CompletePreference.ofUtility (u i) :=
+  Profile.ofUtility_apply u i
+
+example [Preorder U] [Std.Total (α := U) (· ≤ ·)] (u : (i : N) → X i → U) (i : N) :
+    (Profile.ofUtility u i).IsRepresentedBy (u i) :=
+  Profile.isRepresentedBy_ofUtility u i
+
+example (P : Profile N Y) (f : (i : N) → X i → Y i) (i : N) (x y : X i) :
+    x ≼[P.comap f i] y ↔ f i x ≼[P i] f i y := Iff.rfl
+
+example (P : Profile N X) : P.comap (fun _ => id) = P := P.comap_id
+
+example (P : Profile N Z) (f : (i : N) → Y i → Z i) (g : (i : N) → X i → Y i) :
+    (P.comap f).comap g = P.comap fun i => f i ∘ g i :=
+  P.comap_comp f g
+
+example (P : Profile N Y) {f : (i : N) → X i → Y i} (hf : ∀ i, Function.Injective (f i)) (i : N)
+    [Std.Antisymm (P i).le] : Std.Antisymm (P.comap f i).le :=
+  P.antisymm_comap hf i
+
+example (P : Profile N X) (g : M → N) (j : M) : P.reindexAgents g j = P (g j) :=
+  P.reindexAgents_apply g j
+
+example (P : Profile N X) : P.reindexAgents id = P := P.reindexAgents_id
+
+example (P : Profile N X) (g : M → N) (h : L → M) :
+    (P.reindexAgents g).reindexAgents h = P.reindexAgents (g ∘ h) :=
+  P.reindexAgents_comp g h
+
+example (P : Profile N Y) (f : (i : N) → X i → Y i) (g : M → N) :
+    (P.comap f).reindexAgents g = (P.reindexAgents g).comap fun j => f (g j) :=
+  P.comap_reindexAgents f g
+
+end Profile
 
 end MathEconLib.Preferences.Tests
