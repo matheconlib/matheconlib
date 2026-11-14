@@ -128,6 +128,7 @@ public import MathEconLib.Mechanism.Core.UtilityCompatibility
 public import MathEconLib.Preferences
 public import MathEconLib.Preferences.Basic
 public import MathEconLib.Preferences.Complete
+public import MathEconLib.Preferences.Profile
 public import MathEconLib.Preferences.Refinement
 public import MathEconLib.Preferences.Representation.Basic
 public import MathEconLib.Preferences.Representation.Finite
