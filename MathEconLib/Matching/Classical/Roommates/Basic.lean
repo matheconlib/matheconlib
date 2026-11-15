@@ -22,8 +22,8 @@ any two of whom may be matched with each other.
   its outside option: agents ranked above `a` are acceptable, agents ranked
   below `a` are unacceptable.
 * Acceptability need not be mutual. Individual rationality rules out matching
-  an agent to an unacceptable partner, and an agent cannot take part in a
-  blocking pair with someone it finds unacceptable.
+  an agent to an unacceptable partner. At an individually rational matching,
+  a blocking pair consists of agents who find each other acceptable.
 * A matching is an involution `μ : A → A`. `μ a = a` means that `a` is
   unmatched; otherwise `μ a` is `a`'s partner, and `μ (μ a) = a` makes the
   partnership mutual.
@@ -157,7 +157,7 @@ def IsStableMatching (μ : RoommatesMatching A) : Prop :=
 
 /-- Individual rationality in words: the agent is unmatched or matched to an
 acceptable partner. -/
-theorem individuallyRationalFor_iff (μ : RoommatesMatching A) (a : A) :
+theorem individuallyRationalFor_iff_eq_or_acceptable (μ : RoommatesMatching A) (a : A) :
     mkt.IndividuallyRationalFor μ a ↔ μ a = a ∨ mkt.Acceptable a (μ a) := by
   let := mkt.pref a
   exact le_iff_eq_or_lt.trans (or_congr_left eq_comm)
@@ -175,13 +175,13 @@ theorem IsStableMatching.not_isBlockingPair {μ : RoommatesMatching A}
 /-- Blocking is symmetric in the two agents. -/
 theorem isBlockingPair_comm {μ : RoommatesMatching A} {a b : A} :
     mkt.IsBlockingPair μ a b ↔ mkt.IsBlockingPair μ b a := by
-  constructor <;> exact fun ⟨hne, hab, hba⟩ => ⟨hne.symm, hba, hab⟩
+  constructor <;> exact fun ⟨hne, hab, hba⟩ ↦ ⟨hne.symm, hba, hab⟩
 
 /-- An agent never blocks with its own partner. -/
 theorem not_isBlockingPair_apply (μ : RoommatesMatching A) (a : A) :
     ¬mkt.IsBlockingPair μ a (μ a) := by
   let := mkt.pref a
-  exact fun ⟨_, h, _⟩ => lt_irrefl (μ a) h
+  exact fun ⟨_, h, _⟩ ↦ lt_irrefl (μ a) h
 
 /-- An agent "blocks with itself" exactly when individual rationality fails. -/
 theorem blocks_self_iff (μ : RoommatesMatching A) (a : A) :

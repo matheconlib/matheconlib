@@ -11,9 +11,12 @@ public import MathEconLib.Matching.Classical.Roommates
 # Roommates API checks
 
 Client checks through the public roommates entry point. The statements pin the
-stability interface and the non-existence result. A two-agent market in which
-each agent accepts the other exercises the decidability instance: matching the
-two agents is stable, while leaving both unmatched is blocked by them.
+stability interface, including the definitions of stability and blocking pairs,
+the decidability instance, and the non-existence result. A two-agent market in
+which each agent accepts the other exercises the decidability instance: matching
+the two agents is stable, while leaving both unmatched is blocked by them. A
+second two-agent market, in which only one agent finds the other acceptable,
+checks that individual rationality is part of stability.
 -/
 
 @[expose] public section
@@ -26,13 +29,22 @@ section Interface
 
 variable {A : Type*} (mkt : RoommatesMarket A)
 
-example (μ : RoommatesMatching A) (a : A) : μ (μ a) = a := by simp
+example (μ : RoommatesMatching A) (a : A) : μ (μ a) = a := μ.apply_apply a
 
-example {μ ν : RoommatesMatching A} (h : ∀ a, μ a = ν a) : μ = ν := by ext a; exact h a
+example {μ ν : RoommatesMatching A} (h : ∀ a, μ a = ν a) : μ = ν :=
+  RoommatesMatching.ext h
+
+example (μ : RoommatesMatching A) :
+    mkt.IsStableMatching μ ↔ mkt.IndividuallyRational μ ∧ mkt.Unblocked μ :=
+  Iff.rfl
+
+example (μ : RoommatesMatching A) (a b : A) :
+    mkt.IsBlockingPair μ a b ↔ a ≠ b ∧ mkt.Blocks μ a b ∧ mkt.Blocks μ b a :=
+  Iff.rfl
 
 example (μ : RoommatesMatching A) (a : A) :
     mkt.IndividuallyRationalFor μ a ↔ μ a = a ∨ mkt.Acceptable a (μ a) :=
-  mkt.individuallyRationalFor_iff μ a
+  mkt.individuallyRationalFor_iff_eq_or_acceptable μ a
 
 example (μ : RoommatesMatching A) (a : A) :
     mkt.Blocks μ a a ↔ ¬mkt.IndividuallyRationalFor μ a :=
@@ -45,6 +57,9 @@ example {μ : RoommatesMatching A} (h : mkt.IsStableMatching μ) (a b : A) :
 example {μ : RoommatesMatching A} {a b : A} (h : mkt.IsBlockingPair μ a b) :
     mkt.IsBlockingPair μ b a :=
   mkt.isBlockingPair_comm.mp h
+
+example [Fintype A] [DecidableEq A] : DecidablePred mkt.IsStableMatching :=
+  inferInstance
 
 end Interface
 
@@ -65,11 +80,19 @@ def market : RoommatesMarket Bool where
 def together : RoommatesMatching Bool := ⟨not, Bool.not_not⟩
 
 /-- Both agents are unmatched. -/
-def apart : RoommatesMatching Bool := ⟨id, fun _ => rfl⟩
+def apart : RoommatesMatching Bool := ⟨id, fun _ ↦ rfl⟩
 
 example : market.IsStableMatching together := by decide
 
 example : ¬market.IsStableMatching apart := by decide
+
+/-- Only `false` finds the other agent acceptable. -/
+def asymmetricMarket : RoommatesMarket Bool where
+  pref _ := inferInstance
+
+example : asymmetricMarket.IsStableMatching apart := by decide
+
+example : ¬asymmetricMarket.IsStableMatching together := by decide
 
 end TwoAgents
 

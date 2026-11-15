@@ -114,7 +114,7 @@ theorem exists_not_exists_stableMatching :
       ¬∃ μ : RoommatesMatching A, mkt.IsStableMatching μ := by
   refine ⟨Counterexamples.GaleShapley.Agent, inferInstance,
     Counterexamples.GaleShapley.market, ?_⟩
-  exact fun ⟨μ, hμ⟩ => Counterexamples.GaleShapley.not_isStableMatching μ hμ
+  exact fun ⟨μ, hμ⟩ ↦ Counterexamples.GaleShapley.not_isStableMatching μ hμ
 
 end RoommatesMarket
 
