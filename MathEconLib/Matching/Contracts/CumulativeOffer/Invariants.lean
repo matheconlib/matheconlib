@@ -11,7 +11,13 @@ public import MathEconLib.Matching.Contracts.ManyToOne
 /-!
 # Feasibility and individual rationality of cumulative offers
 
-The hypotheses differ across the invariant statements:
+These invariants hold for partial as well as terminal valid runs.
+
+## Main definitions
+
+`Acceptable` means strictly preferred to the proposer's outside option.
+
+## Main statements
 
 * Rejection persistence (`held_of_held_of_subset`, `rejected_mono`, and
   `heldContracts_union_subset`) assumes buyer substitutability, for arbitrary offer sets.
@@ -26,23 +32,10 @@ The hypotheses differ across the invariant statements:
 * Policy-outcome corollaries assume a finite contract type and a valid policy, together with
   the choice hypotheses of the corresponding run result.
 
-Under buyer substitutability, rejected contracts remain rejected as accumulated offers grow.
-Consequently every valid batched run holds at most one contract per proposer: previously
-rejected contracts cannot be recalled, new offers come from proposers with no held contract,
-and a batch has at most one offer per proposer. No restriction on buyer choices' off-run
-counterparty feasibility is needed.
+Substitutability prevents recall of previously rejected contracts. Together with proposal
+eligibility and the batch restriction, this preserves at most one held contract per proposer.
+Seller-choice compatibility is explicit because `ofMarket` uses only the market's buyer choices.
 
-Every offered contract is strictly acceptable to its proposer. Buyer IRC makes held contracts
-chosen from themselves, independently of substitutability. To conclude the existing
-`Market.IndRational` predicate, the market's seller choices must agree with the cumulative offer process:
-we use buyer substitutability for proposer feasibility, buyer IRC for buyer individual
-rationality, and seller locality and acceptance of strictly acceptable singleton menus. These are
-explicit hypotheses, since `ofMarket` deliberately ignores the market's seller choices.
-Strict preference-induced seller choices satisfy this compatibility on arbitrary contract
-types; only the finite policy-outcome corollary requires finiteness.
-
-These are invariants of every valid run, including partial runs. Terminality, fixed
-refinements, scheduling independence, stability, and optimality are not assumed or proved.
 -/
 
 @[expose] public section
