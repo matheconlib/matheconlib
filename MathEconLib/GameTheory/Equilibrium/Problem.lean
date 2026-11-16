@@ -48,12 +48,18 @@ universe u v w x y z r
 /-- States, admissible changes, and the reward evaluated by each deviator.
 
 Deviation relations may be arbitrary; notably the supplied relation need not commute or be
-transitive. Solution concepts should therefore take care to supply the correct relation. -/
-structure EquilibriumProblem (S : Type u) (I : Type v) (V : Type r) where
+transitive. Solution concepts should therefore take care to supply the correct relation.
+
+TODO: It is confusing that i : I is the first quantified variable in the rest of the file,
+but not the first argument of `EquilibriumProblem`.
+
+I would call `deviation` something like `allowed_deviation`.
+-/
+structure EquilibriumProblem (State : Type u) (I : Type v) (V : Type r) where
   /-- Whether a deviator may change the first state to the second state. -/
-  deviation : I → S → S → Prop
+  deviation : I → State → State → Prop
   /-- The reward of each deviator at each state. -/
-  value : I → S → V
+  value : I → State → V
 
 namespace EquilibriumProblem
 
