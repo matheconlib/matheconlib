@@ -47,6 +47,10 @@ public import MathEconLib.Choice.SubstituteHull
 public import MathEconLib.Choice.WeakPreferences
 public import MathEconLib.Competition.Cournot.Linear
 public import MathEconLib.Decision.RiskAversion
+public import MathEconLib.Epistemic
+public import MathEconLib.Epistemic.Agreement
+public import MathEconLib.Epistemic.CommonBelief
+public import MathEconLib.Epistemic.Posterior
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
 public import MathEconLib.ForMathlib.Data.PartialMatching
