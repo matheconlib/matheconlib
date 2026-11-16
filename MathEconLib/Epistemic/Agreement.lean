@@ -44,7 +44,9 @@ Robert J. Aumann (1976), *Agreeing to Disagree*, *The Annals of Statistics* **4*
 Ported from the `AgreeToDisagree` Lean development
 (<https://github.com/AxiomMath/AgreeToDisagree>), file `AgreeToDisagree/AgreeToDisagree.lean`,
 Copyright (c) 2026 Axiom Math, released under the MIT License; its notice is reproduced in
-`docs/licenses/AgreeToDisagree-MIT.txt`. The two common-prior corollaries are new here.
+`docs/licenses/AgreeToDisagree-MIT.txt`. `aumann_agreement_of_commonPrior` is the statement
+posed in that development's `input/AgreeToDisagree.lean`, without its hypothesis that `P₁ ⊔ P₂`
+is measurable, which the proof does not use; `aumann_agreement_iSup_of_commonPrior` is new.
 -/
 
 @[expose] public section
@@ -65,7 +67,7 @@ theorem aumann_agreement {P₁ P₂ : Partitions Ω} {μ₁ μ₂ : Measure Ω} 
     [IsFiniteMeasure μ₂] (hP₁ : P₁.Measurable) (hP₂ : P₂.Measurable)
     (hP₁' : ∀ s ∈ P₁, 0 < μ₁ s) (hP₂' : ∀ s ∈ P₂, 0 < μ₂ s)
     {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p₁ p₂ : ℝ≥0∞}
-    (h : (P₁ ⊔ P₂).part ω ⊆ {ω' | posterior P₁ μ₁ E ω' = p₁ ∧ posterior P₂ μ₂ E ω' = p₂})
+    (h : (P₁ ⊔ P₂).partOf ω ⊆ {ω' | posterior P₁ μ₁ E ω' = p₁ ∧ posterior P₂ μ₂ E ω' = p₂})
     (h' : posterior (P₁ ⊔ P₂) μ₁ E ω = posterior (P₁ ⊔ P₂) μ₂ E ω) :
     p₁ = p₂ := by
   rw [← posterior_eq_of_le hP₁ hP₁' le_sup_left hE ω fun _ hω' ↦ (h hω').1,
@@ -78,7 +80,7 @@ posterior on the common-knowledge partition `⨆ i, P i` at `ω`, then all poste
 theorem aumann_agreement_iSup {ι : Type*} {μ : ι → Measure Ω} [∀ i, IsFiniteMeasure (μ i)]
     {P : ι → Partitions Ω} (hP : ∀ i, (P i).Measurable) (hP' : ∀ i, ∀ s ∈ P i, 0 < μ i s)
     {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p : ι → ℝ≥0∞}
-    (h : (⨆ i, P i).part ω ⊆ {ω' | ∀ i, posterior (P i) (μ i) E ω' = p i})
+    (h : (⨆ i, P i).partOf ω ⊆ {ω' | ∀ i, posterior (P i) (μ i) E ω' = p i})
     (h' : ∀ i j, posterior (⨆ i, P i) (μ i) E ω = posterior (⨆ i, P i) (μ j) E ω) :
     ∀ i j, p i = p j := by
   intro i j
@@ -92,7 +94,7 @@ theorem aumann_agreement_of_commonPrior {P₁ P₂ : Partitions Ω} {μ : Measur
     [IsFiniteMeasure μ] (hP₁ : P₁.Measurable) (hP₂ : P₂.Measurable)
     (hP₁' : ∀ s ∈ P₁, 0 < μ s) (hP₂' : ∀ s ∈ P₂, 0 < μ s)
     {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p₁ p₂ : ℝ≥0∞}
-    (h : (P₁ ⊔ P₂).part ω ⊆ {ω' | posterior P₁ μ E ω' = p₁ ∧ posterior P₂ μ E ω' = p₂}) :
+    (h : (P₁ ⊔ P₂).partOf ω ⊆ {ω' | posterior P₁ μ E ω' = p₁ ∧ posterior P₂ μ E ω' = p₂}) :
     p₁ = p₂ :=
   aumann_agreement hP₁ hP₂ hP₁' hP₂' hE ω h rfl
 
@@ -101,7 +103,7 @@ posteriors of a measurable event are common knowledge at `ω`, they are equal. -
 theorem aumann_agreement_iSup_of_commonPrior {ι : Type*} {μ : Measure Ω} [IsFiniteMeasure μ]
     {P : ι → Partitions Ω} (hP : ∀ i, (P i).Measurable) (hP' : ∀ i, ∀ s ∈ P i, 0 < μ s)
     {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p : ι → ℝ≥0∞}
-    (h : (⨆ i, P i).part ω ⊆ {ω' | ∀ i, posterior (P i) μ E ω' = p i}) :
+    (h : (⨆ i, P i).partOf ω ⊆ {ω' | ∀ i, posterior (P i) μ E ω' = p i}) :
     ∀ i j, p i = p j :=
   aumann_agreement_iSup (μ := fun _ ↦ μ) hP hP' hE ω h fun _ _ ↦ rfl
 

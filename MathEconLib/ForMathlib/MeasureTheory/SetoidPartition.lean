@@ -49,8 +49,9 @@ variable {α : Type*} [MeasurableSpace α] {P Q : Partitions α}
 protected def Measurable (P : Partitions α) : Prop :=
   ∀ s ∈ P, MeasurableSet s
 
-lemma Measurable.measurableSet_part (hP : P.Measurable) (a : α) : MeasurableSet (P.part a) :=
-  hP _ (P.part_mem a)
+/-- In a measurable partition, the part of every point is a measurable set. -/
+lemma Measurable.measurableSet_partOf (hP : P.Measurable) (a : α) : MeasurableSet (P.partOf a) :=
+  hP _ (P.partOf_mem a)
 
 /-- A partition coarser than a countable measurable partition is measurable. Countability is
 needed: the partition into singletons refines every partition. -/

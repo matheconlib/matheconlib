@@ -8,9 +8,7 @@ module
 public import MathEconLib.Epistemic.Posterior
 
 import Mathlib.Analysis.Normed.Group.InfiniteSum
-import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.LinearCombination
-import Mathlib.Tactic.Linarith
 
 /-!
 # Approximate agreement under common `p`-belief
@@ -21,11 +19,11 @@ the agent `p`-believes it whenever it occurs. An event `C` is *common `p`-belief
 family of agents if some event containing `ω` is evident `p`-belief for every agent and implies
 that every agent `p`-believes `C`.
 
-Common `p`-belief weakens common knowledge, and agreement weakens accordingly: with a common
-prior, posteriors of a measurable event that are common `p`-belief at some state differ by at
-most `2 * (1 - p)`. All partitions are measurable with parts of positive prior probability, the
-prior need only be finite, and `0 < p`. Thresholds and posteriors are values in `ℝ≥0∞`; the
-bound is stated for their real parts.
+Monderer and Samet introduce common `p`-belief as an approximation to common knowledge.
+With a common prior, posteriors of a measurable event that are common `p`-belief at some state
+differ by at most `2 * (1 - p)`. All partitions are measurable with parts of positive prior
+probability, the prior need only be finite, and `0 < p`. Thresholds and posteriors are values in
+`ℝ≥0∞`; the bound is stated for their real parts.
 
 ## Main definitions
 
@@ -40,8 +38,8 @@ bound is stated for their real parts.
 * `MathEconLib.Epistemic.IsEvidentBelief.abs_toReal_sub_le`: on an evident `p`-belief on which
   an agent's posterior of `E` is constantly `r`, the probability of `E` conditional on that event
   is within `1 - p` of `r`.
-* `MathEconLib.Epistemic.abs_sub_le_of_isCommonBeliefAt`: posteriors that are common `p`-belief
-  differ by at most `2 * (1 - p)`.
+* `MathEconLib.Epistemic.abs_toReal_sub_le_of_isCommonBeliefAt`: posteriors that are common
+  `p`-belief differ by at most `2 * (1 - p)`.
 
 ## References
 
@@ -69,23 +67,17 @@ open scoped ENNReal
 
 namespace MathEconLib.Epistemic
 
-variable {Ω ι : Type*} [MeasurableSpace Ω] {P : Partitions Ω} {μ : Measure Ω} {p r : ℝ≥0∞}
-  {A C E X Y : Set Ω} {ω : Ω}
+variable {Ω ι : Type*} [MeasurableSpace Ω]
 
 /-- The event that an agent with information partition `P` and prior `μ` `p`-believes `E`:
 the states at which the posterior of `E` is at least `p`. -/
 def belief (P : Partitions Ω) (μ : Measure Ω) (p : ℝ≥0∞) (E : Set Ω) : Set Ω :=
   {ω | p ≤ posterior P μ E ω}
 
-@[simp]
-lemma mem_belief : ω ∈ belief P μ p E ↔ p ≤ posterior P μ E ω := Iff.rfl
-
 /-- An event `E` is an evident `p`-belief for an agent with information partition `P` and prior
 `μ` if the agent `p`-believes `E` whenever `E` occurs. -/
 def IsEvidentBelief (P : Partitions Ω) (μ : Measure Ω) (p : ℝ≥0∞) (E : Set Ω) : Prop :=
   E ⊆ belief P μ p E
-
-lemma isEvidentBelief_iff : IsEvidentBelief P μ p E ↔ E ⊆ belief P μ p E := Iff.rfl
 
 /-- An event `C` is a common `p`-belief at `ω` for agents with information partitions `P i` and
 common prior `μ` if some event `E` containing `ω` is an evident `p`-belief for every agent and
@@ -94,22 +86,59 @@ def IsCommonBeliefAt (P : ι → Partitions Ω) (μ : Measure Ω) (p : ℝ≥0�
     Prop :=
   ∃ E : Set Ω, ω ∈ E ∧ (∀ i, IsEvidentBelief (P i) μ p E) ∧ ∀ i, E ⊆ belief (P i) μ p C
 
-lemma isCommonBeliefAt_iff {P : ι → Partitions Ω} :
+/-- Unfolds `IsCommonBeliefAt`. -/
+lemma isCommonBeliefAt_iff {P : ι → Partitions Ω} {μ : Measure Ω} {p : ℝ≥0∞} {C : Set Ω}
+    {ω : Ω} :
     IsCommonBeliefAt P μ p C ω ↔
       ∃ E : Set Ω, ω ∈ E ∧ (∀ i, IsEvidentBelief (P i) μ p E) ∧ ∀ i, E ⊆ belief (P i) μ p C :=
   Iff.rfl
 
+/-- Arithmetic for one part `s`, writing `m`, `a`, `e`, `e'` for the probabilities of `s`,
+`A ∩ s`, `E ∩ A ∩ s` and `(E ∩ s) \ A`. -/
+private lemma abs_mul_sub_le_on_part {m a e e' r p : ℝ} (hm : 0 < m) (he : 0 ≤ e)
+    (hea : e ≤ a) (he' : 0 ≤ e') (hae' : a + e' ≤ m) (hr : r * m = e + e') (hp : p * m ≤ a) :
+    |r * a - e| ≤ (1 - p) * a := by
+  have ha : 0 ≤ a := he.trans hea
+  have key : (r * a - e) * m = a * e' - e * (m - a) := by linear_combination a * hr
+  have hpa := mul_le_mul_of_nonneg_left hp ha
+  rw [abs_le]
+  constructor <;> refine le_of_mul_le_mul_right ?_ hm <;> rw [key]
+  · nlinarith [mul_nonneg ha he', mul_le_mul_of_nonneg_right hea (by linarith : 0 ≤ m - a)]
+  · nlinarith [mul_le_mul_of_nonneg_left (by linarith : e' ≤ m - a) ha,
+      mul_nonneg he (by linarith : 0 ≤ m - a)]
+
+/-- Summing per-part bounds `|r * a i - e i| ≤ c * a i`. -/
+private lemma abs_mul_tsum_sub_tsum_le {β : Type*} {a e : β → ℝ} {r c : ℝ} (ha : Summable a)
+    (he : Summable e) (h : ∀ i, |r * a i - e i| ≤ c * a i) :
+    |r * ∑' i, a i - ∑' i, e i| ≤ c * ∑' i, a i := by
+  have hsub := (ha.mul_left r).sub he
+  rw [← tsum_mul_left, ← (ha.mul_left r).tsum_sub he, ← tsum_mul_left]
+  calc |∑' i, (r * a i - e i)| ≤ ∑' i, |r * a i - e i| :=
+        norm_tsum_le_tsum_norm (f := fun i ↦ r * a i - e i) hsub.abs
+    _ ≤ ∑' i, c * a i := hsub.abs.tsum_le_tsum h (ha.mul_left c)
+
+section SingleAgent
+
+variable {P : Partitions Ω} {μ : Measure Ω} {p r : ℝ≥0∞} {A C E X Y : Set Ω} {ω : Ω}
+
+/-- Unfolds membership in `belief`. -/
+@[simp]
+lemma mem_belief : ω ∈ belief P μ p E ↔ p ≤ posterior P μ E ω := Iff.rfl
+
+/-- Unfolds `IsEvidentBelief`. -/
+lemma isEvidentBelief_iff : IsEvidentBelief P μ p E ↔ E ⊆ belief P μ p E := Iff.rfl
+
 /-- Belief is monotone: `p`-believing an event implies `p`-believing every larger event. -/
 lemma belief_mono (P : Partitions Ω) (μ : Measure Ω) (p : ℝ≥0∞) (hXY : X ⊆ Y) :
     belief P μ p X ⊆ belief P μ p Y :=
-  fun ω hω ↦ (mem_belief.1 hω).trans (posterior_mono hXY P μ ω)
+  fun _ hω ↦ (mem_belief.1 hω).trans (posterior_mono hXY)
 
 /-- The belief event is the union of the parts on which the posterior is at least `p`. -/
 lemma belief_eq_biUnion (μ : Measure Ω) (p : ℝ≥0∞) (X : Set Ω) :
     belief P μ p X = ⋃ s ∈ {s : Set Ω | s ∈ P ∧ p ≤ μ (X ∩ s) / μ s}, s := by
   ext ω
   simp only [mem_belief, mem_iUnion, mem_ofPred_eq, exists_prop]
-  refine ⟨fun hω ↦ ⟨P.part ω, ⟨P.part_mem ω, hω⟩, P.mem_part_self ω⟩, ?_⟩
+  refine ⟨fun hω ↦ ⟨P.partOf ω, ⟨P.partOf_mem ω, hω⟩, P.mem_partOf_self ω⟩, ?_⟩
   rintro ⟨s, ⟨hs, hps⟩, hωs⟩
   rwa [posterior_eq_of_mem hs hωs]
 
@@ -121,41 +150,27 @@ lemma measurableSet_belief (hP : P.Measurable) (hPc : (P : Set (Set Ω)).Countab
 
 /-- An agent who `p`-believes `X` for some `0 < p` considers `X` possible: `X` meets the agent's
 part. -/
-lemma inter_part_nonempty_of_mem_belief (hp : 0 < p) (hω : ω ∈ belief P μ p X) :
-    (X ∩ P.part ω).Nonempty :=
+lemma inter_partOf_nonempty_of_mem_belief (hp : 0 < p) (hω : ω ∈ belief P μ p X) :
+    (X ∩ P.partOf ω).Nonempty :=
   nonempty_of_measure_ne_zero (ENNReal.div_pos_iff.1 (hp.trans_le hω)).1
 
 /-- For `0 < p`, `p`-believing that one `p`-believes `X` implies `p`-believing `X`. -/
 lemma belief_belief_subset (hp : 0 < p) (X : Set Ω) :
     belief P μ p (belief P μ p X) ⊆ belief P μ p X := fun ω hω ↦ by
-  obtain ⟨ω', hω'X, hω'⟩ := inter_part_nonempty_of_mem_belief hp hω
-  exact (mem_belief.1 hω'X).trans_eq (posterior_eq_posterior_of_mem_part hω')
+  obtain ⟨ω', hω'X, hω'⟩ := inter_partOf_nonempty_of_mem_belief hp hω
+  exact (mem_belief.1 hω'X).trans_eq (posterior_eq_posterior_of_mem_partOf hω')
 
 /-- For `0 < p`, an agent who `p`-believes that the posterior of `E` is `r` has posterior `r`. -/
 lemma posterior_eq_of_mem_belief (hp : 0 < p)
     (hω : ω ∈ belief P μ p {ω' | posterior P μ E ω' = r}) : posterior P μ E ω = r := by
-  obtain ⟨ω', hω'r, hω'⟩ := inter_part_nonempty_of_mem_belief hp hω
-  exact (posterior_eq_posterior_of_mem_part hω').symm.trans hω'r
+  obtain ⟨ω', hω'r, hω'⟩ := inter_partOf_nonempty_of_mem_belief hp hω
+  exact (posterior_eq_posterior_of_mem_partOf hω').symm.trans hω'r
 
 /-- For `0 < p`, an evident `p`-belief that occurs has positive probability. -/
 lemma IsEvidentBelief.measure_pos (hA : IsEvidentBelief P μ p A) (hp : 0 < p) (hω : ω ∈ A) :
     0 < μ A :=
   pos_iff_ne_zero.2 fun h ↦
     (ENNReal.div_pos_iff.1 (hp.trans_le (hA hω))).1 (measure_mono_null inter_subset_left h)
-
-/-- Arithmetic for one part `s`, writing `m`, `a`, `e`, `e'` for the probabilities of `s`,
-`A ∩ s`, `E ∩ A ∩ s` and `(E ∩ s) \ A`. -/
-private lemma abs_mul_sub_le_of_part {m a e e' r p : ℝ} (hm : 0 < m) (he : 0 ≤ e)
-    (hea : e ≤ a) (he' : 0 ≤ e') (hae' : a + e' ≤ m) (hr : r * m = e + e') (hp : p * m ≤ a) :
-    |r * a - e| ≤ (1 - p) * a := by
-  have ha : 0 ≤ a := he.trans hea
-  have key : (r * a - e) * m = a * e' - e * (m - a) := by linear_combination a * hr
-  have hpa := mul_le_mul_of_nonneg_left hp ha
-  rw [abs_le]
-  constructor <;> refine le_of_mul_le_mul_right ?_ hm <;> rw [key]
-  · nlinarith [mul_nonneg ha he', mul_le_mul_of_nonneg_right hea (by linarith : 0 ≤ m - a)]
-  · nlinarith [mul_le_mul_of_nonneg_left (by linarith : e' ≤ m - a) ha,
-      mul_nonneg he (by linarith : 0 ≤ m - a)]
 
 /-- The bound of `IsEvidentBelief.abs_toReal_sub_le` on a single part, scaled by the probability
 of `A` on that part. -/
@@ -180,7 +195,7 @@ private lemma abs_mul_sub_le_of_mem [IsFiniteMeasure μ] (hP' : ∀ s ∈ P, 0 <
   have hdecs : μ (A ∩ s) + μ (s \ A) = μ s := by
     rw [inter_comm]
     exact measure_inter_add_sdiff _ hA
-  refine abs_mul_sub_le_of_part (e' := (μ ((E ∩ s) \ A)).toReal)
+  refine abs_mul_sub_le_on_part (e' := (μ ((E ∩ s) \ A)).toReal)
     (ENNReal.toReal_pos hμs (measure_ne_top μ s)) ENNReal.toReal_nonneg
     (ENNReal.toReal_mono (measure_ne_top μ _) (measure_mono fun _ hx ↦ ⟨hx.1.2, hx.2⟩))
     ENNReal.toReal_nonneg ?_ ?_ ?_
@@ -191,16 +206,6 @@ private lemma abs_mul_sub_le_of_mem [IsFiniteMeasure μ] (hP' : ∀ s ∈ P, 0 <
       ENNReal.toReal_add (measure_ne_top μ _) (measure_ne_top μ _)]
   · rw [← ENNReal.toReal_mul]
     exact ENNReal.toReal_mono (measure_ne_top μ _) hAs
-
-/-- Summing per-part bounds `|r * a i - e i| ≤ c * a i`. -/
-private lemma abs_mul_tsum_sub_tsum_le {β : Type*} {a e : β → ℝ} {r c : ℝ} (ha : Summable a)
-    (he : Summable e) (h : ∀ i, |r * a i - e i| ≤ c * a i) :
-    |r * ∑' i, a i - ∑' i, e i| ≤ c * ∑' i, a i := by
-  have hsub := (ha.mul_left r).sub he
-  rw [← tsum_mul_left, ← (ha.mul_left r).tsum_sub he, ← tsum_mul_left]
-  calc |∑' i, (r * a i - e i)| ≤ ∑' i, |r * a i - e i| :=
-        norm_tsum_le_tsum_norm (f := fun i ↦ r * a i - e i) hsub.abs
-    _ ≤ ∑' i, c * a i := hsub.abs.tsum_le_tsum h (ha.mul_left c)
 
 /-- Let `A` be a measurable evident `p`-belief of positive probability for an agent with a
 measurable information partition `P` into parts of positive probability. If the agent's
@@ -225,12 +230,15 @@ theorem IsEvidentBelief.abs_toReal_sub_le [IsFiniteMeasure μ] (hAev : IsEvident
     abs_div, abs_of_pos hpos, div_le_iff₀ hpos]
   exact key
 
+end SingleAgent
+
 /-- **Approximate agreement under common `p`-belief** (Monderer and Samet). Let agents indexed by
 `ι` have measurable information partitions `P i` with parts of positive probability under a
 common prior `μ`, let `E` be a measurable event and `0 < p`. If it is common `p`-belief at `ω`
 that each agent `i`'s posterior of `E` is `r i`, then any two of these posteriors differ by at
 most `2 * (1 - p)`. -/
-theorem abs_sub_le_of_isCommonBeliefAt [IsFiniteMeasure μ] {P : ι → Partitions Ω}
+theorem abs_toReal_sub_le_of_isCommonBeliefAt {μ : Measure Ω} [IsFiniteMeasure μ]
+    {P : ι → Partitions Ω}
     (hP : ∀ i, (P i).Measurable) (hP' : ∀ i, ∀ s ∈ P i, 0 < μ s)
     {E : Set Ω} (hE : MeasurableSet E) (ω : Ω) {p : ℝ≥0∞} (hp : 0 < p) {r : ι → ℝ≥0∞}
     (h : IsCommonBeliefAt P μ p {ω | ∀ i, posterior (P i) μ E ω = r i} ω) :

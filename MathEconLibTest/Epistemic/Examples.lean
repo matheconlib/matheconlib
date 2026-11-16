@@ -49,13 +49,15 @@ noncomputable abbrev P₂ : Partitions (Fin 4) := Partition.orderIso _ (ker fun 
 /-- The event `{0, 1, 3}`. -/
 abbrev E : Set (Fin 4) := ((({0, 1, 3} : Finset (Fin 4))) : Set (Fin 4))
 
-theorem part₁_zero : P₁.part 0 = ((({0, 1} : Finset (Fin 4))) : Set (Fin 4)) := by
-  rw [Partitions.part_orderIso]
+/-- Agent 1's part at the state `0`. -/
+theorem part₁_zero : P₁.partOf 0 = ((({0, 1} : Finset (Fin 4))) : Set (Fin 4)) := by
+  rw [Partitions.partOf_orderIso]
   ext b
   fin_cases b <;> simp [ker_def]
 
-theorem part₂_zero : P₂.part 0 = ((({0, 2} : Finset (Fin 4))) : Set (Fin 4)) := by
-  rw [Partitions.part_orderIso]
+/-- Agent 2's part at the state `0`. -/
+theorem part₂_zero : P₂.partOf 0 = ((({0, 2} : Finset (Fin 4))) : Set (Fin 4)) := by
+  rw [Partitions.partOf_orderIso]
   ext b
   fin_cases b <;> simp [ker_def]
 
@@ -76,7 +78,7 @@ theorem posterior₂_zero : posterior P₂ Measure.count E 0 = 1 / 2 := by
 this disagreement is not common knowledge there. -/
 theorem disagreement_not_commonKnowledge :
     posterior P₁ Measure.count E 0 ≠ posterior P₂ Measure.count E 0 ∧
-      ¬(P₁ ⊔ P₂).part 0 ⊆
+      ¬(P₁ ⊔ P₂).partOf 0 ⊆
         {ω | posterior P₁ Measure.count E ω = 1 ∧ posterior P₂ Measure.count E ω = 1 / 2} := by
   have hne : (1 : ℝ≥0∞) ≠ 1 / 2 := (ENNReal.half_lt_self one_ne_zero ENNReal.one_ne_top).ne'
   refine ⟨by rw [posterior₁_zero, posterior₂_zero]; exact hne, fun h ↦ hne ?_⟩
@@ -89,7 +91,7 @@ theorem disagreement_not_commonBelief :
     ¬IsCommonBeliefAt ![P₁, P₂] Measure.count (9 / 10)
       {ω | ∀ i, posterior (![P₁, P₂] i) Measure.count E ω = ![1, 1 / 2] i} 0 := by
   intro h
-  have := abs_sub_le_of_isCommonBeliefAt (fun i ↦ measurable _) (fun i ↦ count_pos _)
+  have := abs_toReal_sub_le_of_isCommonBeliefAt (fun i ↦ measurable _) (fun i ↦ count_pos _)
     .of_discrete 0 (by norm_num) h 0 1
   norm_num [ENNReal.toReal_div] at this
 
