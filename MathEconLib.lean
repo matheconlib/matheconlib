@@ -57,11 +57,13 @@ public import MathEconLib.ForMathlib.Kakutani
 public import MathEconLib.ForMathlib.MeasureTheory
 public import MathEconLib.ForMathlib.MeasureTheory.AnalyticNullMeasurable
 public import MathEconLib.ForMathlib.MeasureTheory.AnalyticUniformization
+public import MathEconLib.ForMathlib.MeasureTheory.SetoidPartition
 public import MathEconLib.ForMathlib.MeasureTheory.VonNeumannSelection
 public import MathEconLib.ForMathlib.Order.FixedPointLattice
 public import MathEconLib.ForMathlib.Order.IterateFiniteSet
 public import MathEconLib.ForMathlib.Order.IterateFixedPoint
 public import MathEconLib.ForMathlib.Order.Refinement
+public import MathEconLib.ForMathlib.Order.SetoidPartition
 public import MathEconLib.ForMathlib.ProbabilityMeasure
 public import MathEconLib.ForMathlib.Quasiconvex
 public import MathEconLib.ForMathlib.Schauder
