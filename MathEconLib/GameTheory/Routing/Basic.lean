@@ -90,8 +90,35 @@ structure RoutingGame (C P E : Type*) where
 
 namespace RoutingGame
 
-variable {C P E : Type*} [Fintype P] [Fintype E]
-  (R : RoutingGame C P E) {f g : P → ℝ}
+variable {C P E : Type*}
+
+/-!
+## Games from sets and multisets of edges
+-/
+
+/-- The game whose paths use each edge in a given set once. -/
+def ofFinset [DecidableEq E] (commodity : P → C) (edges : P → Finset E) (demand : C → ℝ)
+    (latency : E → ℝ → ℝ) : RoutingGame C P E where
+  commodity := commodity
+  usage p e := if e ∈ edges p then 1 else 0
+  usage_nonneg p e := by split_ifs <;> norm_num
+  demand := demand
+  latency := latency
+
+/-- The game whose paths use each edge as many times as it occurs in a given multiset. -/
+def ofMultiset [DecidableEq E] (commodity : P → C) (edges : P → Multiset E) (demand : C → ℝ)
+    (latency : E → ℝ → ℝ) : RoutingGame C P E where
+  commodity := commodity
+  usage p e := (edges p).count e
+  usage_nonneg _ _ := Nat.cast_nonneg _
+  demand := demand
+  latency := latency
+
+variable [Fintype P] (R : RoutingGame C P E) {f g : P → ℝ}
+
+/-!
+## Flows and loads
+-/
 
 /-- A flow is feasible when it is nonnegative and routes exactly each commodity's demand. -/
 def IsFeasible [DecidableEq C] (f : P → ℝ) : Prop :=
@@ -101,6 +128,29 @@ def IsFeasible [DecidableEq C] (f : P → ℝ) : Prop :=
 def load (f : P → ℝ) (e : E) : ℝ :=
   ∑ p, R.usage p e * f p
 
+/-- Feasible flows put nonnegative load on every edge. -/
+lemma IsFeasible.load_nonneg [DecidableEq C] {R : RoutingGame C P E} (hf : R.IsFeasible f) (e : E) :
+    0 ≤ R.load f e :=
+  sum_nonneg fun p _ ↦ mul_nonneg (R.usage_nonneg p e) (hf.1 p)
+
+/-- With paths given by edge sets, an edge's load is the total flow on paths containing it. -/
+lemma load_ofFinset [DecidableEq E] (commodity : P → C) (edges : P → Finset E) (demand : C → ℝ)
+    (latency : E → ℝ → ℝ) (f : P → ℝ) (e : E) :
+    (ofFinset commodity edges demand latency).load f e = ∑ p with e ∈ edges p, f p := by
+  simp [load, ofFinset, sum_filter, ite_mul]
+
+/-- With paths given by edge multisets, each path contributes its flow once per occurrence. -/
+lemma load_ofMultiset [DecidableEq E] (commodity : P → C) (edges : P → Multiset E)
+    (demand : C → ℝ) (latency : E → ℝ → ℝ) (f : P → ℝ) (e : E) :
+    (ofMultiset commodity edges demand latency).load f e = ∑ p, (edges p).count e * f p :=
+  rfl
+
+variable [Fintype E]
+
+/-!
+## Latency and cost
+-/
+
 /-- The latency of a path is the usage-weighted sum of edge latencies at their loads. -/
 def pathLatency (f : P → ℝ) (p : P) : ℝ :=
   ∑ e, R.usage p e * R.latency e (R.load f e)
@@ -109,11 +159,23 @@ def pathLatency (f : P → ℝ) (p : P) : ℝ :=
 def cost (f : P → ℝ) : ℝ :=
   ∑ p, f p * R.pathLatency f p
 
-omit [Fintype E] in
-/-- Feasible flows put nonnegative load on every edge. -/
-lemma IsFeasible.load_nonneg [DecidableEq C] {R : RoutingGame C P E} (hf : R.IsFeasible f) (e : E) :
-    0 ≤ R.load f e :=
-  sum_nonneg fun p _ ↦ mul_nonneg (R.usage_nonneg p e) (hf.1 p)
+/-- With paths given by edge sets, a path's latency is the sum of its edges' latencies. -/
+lemma pathLatency_ofFinset [DecidableEq E] (commodity : P → C) (edges : P → Finset E)
+    (demand : C → ℝ) (latency : E → ℝ → ℝ) (f : P → ℝ) (p : P) :
+    (ofFinset commodity edges demand latency).pathLatency f p =
+      ∑ e ∈ edges p, latency e ((ofFinset commodity edges demand latency).load f e) := by
+  simp [pathLatency, ofFinset, ite_mul, sum_ite_mem]
+
+/-- With paths given by edge multisets, a path's latency adds an edge's latency per occurrence. -/
+lemma pathLatency_ofMultiset [DecidableEq E] (commodity : P → C) (edges : P → Multiset E)
+    (demand : C → ℝ) (latency : E → ℝ → ℝ) (f : P → ℝ) (p : P) :
+    (ofMultiset commodity edges demand latency).pathLatency f p =
+      ((edges p).map fun e ↦
+        latency e ((ofMultiset commodity edges demand latency).load f e)).sum := by
+  rw [Finset.sum_multiset_map_count, pathLatency]
+  simp only [nsmul_eq_mul]
+  refine (sum_subset (subset_univ _) fun e _ he ↦ ?_).symm
+  simp [ofMultiset, Multiset.count_eq_zero_of_notMem (by simpa using he)]
 
 /-- Weighting path sums of edge quantities by a flow weights each edge by its load. -/
 lemma sum_mul_sum_edges (g : P → ℝ) (h : E → ℝ) :
@@ -130,6 +192,10 @@ lemma sum_mul_pathLatency (f g : P → ℝ) :
 lemma cost_eq_sum_edges (f : P → ℝ) :
     R.cost f = ∑ e, R.load f e * R.latency e (R.load f e) :=
   R.sum_mul_pathLatency f f
+
+/-!
+## Wardrop equilibrium
+-/
 
 /-- The equilibrium problem of one infinitesimal driver. A state is a flow together with the
 driver's path. The driver may switch to a path of the same commodity but cannot change the flow,
@@ -183,6 +249,10 @@ theorem IsWardrop.cost_le [DecidableEq C] [Finite C] {R : RoutingGame C P E}
     _ ≤ ∑ p with R.commodity p = c, g p * R.pathLatency f p :=
       sum_le_sum fun p hp ↦ mul_le_mul_of_nonneg_left (inf'_le _ hp) (hg.1 p)
 
+/-!
+## Price of anarchy
+-/
+
 /-- **Price of anarchy from a Pigou bound.** If every latency satisfies
 `y ℓ(x) ≤ y ℓ(y) + β x ℓ(x)` for nonnegative loads, a Wardrop flow costs at most `(1 - β)⁻¹`
 times any feasible flow. -/
@@ -216,56 +286,6 @@ theorem IsWardrop.cost_le_four_thirds_mul [DecidableEq C] [Finite C]
     rw [hl, hl]
     nlinarith [mul_nonneg ha (sq_nonneg (y - x / 2)), mul_nonneg hb hx]) hg
   linarith
-
-/-- The game whose paths use each edge in a given set once. -/
-def ofFinset [DecidableEq E] (commodity : P → C) (edges : P → Finset E) (demand : C → ℝ)
-    (latency : E → ℝ → ℝ) : RoutingGame C P E where
-  commodity := commodity
-  usage p e := if e ∈ edges p then 1 else 0
-  usage_nonneg p e := by split_ifs <;> norm_num
-  demand := demand
-  latency := latency
-
-omit [Fintype E] in
-/-- With paths given by edge sets, an edge's load is the total flow on paths containing it. -/
-lemma load_ofFinset [DecidableEq E] (commodity : P → C) (edges : P → Finset E) (demand : C → ℝ)
-    (latency : E → ℝ → ℝ) (f : P → ℝ) (e : E) :
-    (ofFinset commodity edges demand latency).load f e = ∑ p with e ∈ edges p, f p := by
-  simp [load, ofFinset, sum_filter, ite_mul]
-
-/-- With paths given by edge sets, a path's latency is the sum of its edges' latencies. -/
-lemma pathLatency_ofFinset [DecidableEq E] (commodity : P → C) (edges : P → Finset E)
-    (demand : C → ℝ) (latency : E → ℝ → ℝ) (f : P → ℝ) (p : P) :
-    (ofFinset commodity edges demand latency).pathLatency f p =
-      ∑ e ∈ edges p, latency e ((ofFinset commodity edges demand latency).load f e) := by
-  simp [pathLatency, ofFinset, ite_mul, sum_ite_mem]
-
-/-- The game whose paths use each edge as many times as it occurs in a given multiset. -/
-def ofMultiset [DecidableEq E] (commodity : P → C) (edges : P → Multiset E) (demand : C → ℝ)
-    (latency : E → ℝ → ℝ) : RoutingGame C P E where
-  commodity := commodity
-  usage p e := (edges p).count e
-  usage_nonneg _ _ := Nat.cast_nonneg _
-  demand := demand
-  latency := latency
-
-omit [Fintype E] in
-/-- With paths given by edge multisets, each path contributes its flow once per occurrence. -/
-lemma load_ofMultiset [DecidableEq E] (commodity : P → C) (edges : P → Multiset E)
-    (demand : C → ℝ) (latency : E → ℝ → ℝ) (f : P → ℝ) (e : E) :
-    (ofMultiset commodity edges demand latency).load f e = ∑ p, (edges p).count e * f p :=
-  rfl
-
-/-- With paths given by edge multisets, a path's latency adds an edge's latency per occurrence. -/
-lemma pathLatency_ofMultiset [DecidableEq E] (commodity : P → C) (edges : P → Multiset E)
-    (demand : C → ℝ) (latency : E → ℝ → ℝ) (f : P → ℝ) (p : P) :
-    (ofMultiset commodity edges demand latency).pathLatency f p =
-      ((edges p).map fun e ↦
-        latency e ((ofMultiset commodity edges demand latency).load f e)).sum := by
-  rw [Finset.sum_multiset_map_count, pathLatency]
-  simp only [nsmul_eq_mul]
-  refine (sum_subset (subset_univ _) fun e _ he ↦ ?_).symm
-  simp [ofMultiset, Multiset.count_eq_zero_of_notMem (by simpa using he)]
 
 end RoutingGame
 
