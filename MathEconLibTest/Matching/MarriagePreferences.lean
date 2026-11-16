@@ -70,16 +70,36 @@ example (m : M) : mkt.symm.preferenceW m = mkt.preferenceM m := by simp
 
 example (w : W) : mkt.symm.preferenceM w = mkt.preferenceW w := by simp
 
+/-- Rank being single lowest and partner `n` at height `n + 1`. -/
+def rank : Option ℕ → ℕ
+  | none => 0
+  | some n => n + 1
+
+theorem rank_injective : Function.Injective rank := by
+  intro a b h
+  cases a <;> cases b <;> simp_all [rank]
+
+/-- Men rank being single below every partner. -/
+@[instance_reducible] def singleLowest : LinearOrder (Option ℕ) :=
+  LinearOrder.lift' rank rank_injective
+
+/-- Women reverse that ranking, so being single is their favorite option. -/
+@[instance_reducible] def singleHighest : LinearOrder (Option ℕ) :=
+  LinearOrder.lift' (OrderDual.toDual ∘ rank) (OrderDual.toDual.injective.comp rank_injective)
+
 /-- Opposite rankings on the two sides ensure acceptability need not be mutual. -/
 def asymmetric : MarriageMarket ℕ ℕ where
-  prefM _ := inferInstance
-  prefW _ := inferInstanceAs (LinearOrder (OrderDual (Option ℕ)))
+  prefM _ := singleLowest
+  prefW _ := singleHighest
 
-example : none ≺[asymmetric.preferenceM 0] some 0 :=
-  (asymmetric.acceptableM_iff_preferenceM_lt 0 0).mp (by decide)
+example : none ≺[asymmetric.preferenceM 0] some 0 := by
+  rw [← asymmetric.acceptableM_iff_preferenceM_lt]
+  change rank none < rank (some 0)
+  decide
 
 example : ¬ none ≺[asymmetric.preferenceW 0] some 0 := by
   rw [← asymmetric.acceptableW_iff_preferenceW_lt]
-  decide
+  change ¬ OrderDual.toDual (rank none) < OrderDual.toDual (rank (some 0))
+  simp [rank]
 
 end MathEconLibTest.Matching.MarriagePreferences

@@ -123,7 +123,7 @@ theorem leM_iff_preferenceM_le (m : M) (y z : Option W) :
 
 theorem ltM_iff_preferenceM_lt (m : M) (y z : Option W) :
     mkt.ltM m y z ↔ y ≺[mkt.preferenceM m] z := by
-  letI := mkt.prefM m
+  let := mkt.prefM m
   exact lt_iff_le_not_ge
 
 theorem acceptableM_iff_preferenceM_lt (m : M) (partner : W) :
@@ -142,7 +142,7 @@ theorem leW_iff_preferenceW_le (w : W) (y z : Option M) :
 
 theorem ltW_iff_preferenceW_lt (w : W) (y z : Option M) :
     mkt.ltW w y z ↔ y ≺[mkt.preferenceW w] z := by
-  letI := mkt.prefW w
+  let := mkt.prefW w
   exact lt_iff_le_not_ge
 
 theorem acceptableW_iff_preferenceW_lt (w : W) (partner : M) :
