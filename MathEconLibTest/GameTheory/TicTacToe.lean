@@ -31,7 +31,6 @@ winning conditions before simplifying real-valued payoffs.
 * X and O can each win against a specified opponent strategy.
 * Either player loses for replaying its own square or selecting the opponent's square.
 * The verified non-losing strategies produce a draw when played against one another.
-* The embedded draw profile is a Nash equilibrium with zero payoffs.
 
 ## Tags
 
@@ -139,8 +138,25 @@ example : ticTacToe.payoff X ![basicXStrategy, basicOStrategy] = (1 : ℝ) := by
     decide +kernel
   simp [hx]
 
+/-- X wins by completing `(2, 0)`, `(1, 1)`, `(0, 2)`. -/
+example : ticTacToe.payoff O ![basicXStrategy, basicOStrategy] = (-1 : ℝ) := by
+  have hx :
+      hasWon (finalBoard ![basicXStrategy, basicOStrategy]) X = true := by
+    decide +kernel
+  simp [hx]
+
 /-- O wins by completing `(0, 0)`, `(1, 1)`, `(2, 2)`. -/
 example : ticTacToe.payoff O ![losingXStrategy, winningOStrategy] = (1 : ℝ) := by
+  have hx :
+      hasWon (finalBoard ![losingXStrategy, winningOStrategy]) X = false := by
+    decide +kernel
+  have ho :
+      hasWon (finalBoard ![losingXStrategy, winningOStrategy]) O = true := by
+    decide +kernel
+  simp [hx, ho]
+
+/-- O wins by completing `(0, 0)`, `(1, 1)`, `(2, 2)`. -/
+example : ticTacToe.payoff X ![losingXStrategy, winningOStrategy] = (-1 : ℝ) := by
   have hx :
       hasWon (finalBoard ![losingXStrategy, winningOStrategy]) X = false := by
     decide +kernel
@@ -205,15 +221,6 @@ example : ticTacToe.payoff X ![asStrategy xStrategy, asStrategy oStrategy] = (0 
       hasWon (finalBoard ![asStrategy xStrategy, asStrategy oStrategy]) O = false := by
     decide +kernel
   constructor <;> simp [hx, ho]
-
-/-- The embedded non-losing profile is a pure Nash equilibrium. -/
-example : ticTacToe.IsNash memorylessDrawProfile :=
-  memorylessDrawProfile_isNash
-
-/-- Every pure Nash equilibrium has payoff zero; in particular the draw profile does. -/
-example : ticTacToe.payoff X memorylessDrawProfile = 0 ∧
-    ticTacToe.payoff O memorylessDrawProfile = 0 :=
-  ticTacToe_nash_payoffs_eq_zero memorylessDrawProfile memorylessDrawProfile_isNash
 
 end MathEconLibTest.GameTheory.TicTacToe
 end

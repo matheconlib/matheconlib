@@ -23,19 +23,18 @@ losses, so even policies choosing occupied squares have well-defined payoffs.
 
 Board-dependent (memoryless) policies embed into history policies via `asStrategy`. Explicit
 non-losing strategies `xStrategy` and `oStrategy` are verified by exhaustive Boolean checkers
-against every legal opposing move; soundness theorems lift those checks to both the board and
-history simulators. The embedded draw profile is therefore a pure Nash equilibrium in the full
-history-strategy game, and every pure Nash equilibrium has payoff zero for both players.
+against every legal opposing move; soundness theorems lift those checks to the history
+simulator and yield nonnegative payoffs for each embedded strategy against any opponent.
+The embedded pair is therefore a pure Nash equilibrium, and because the game is zero-sum every
+pure Nash equilibrium has payoff zero for both players.
 
 ## Main definitions
 
-* `Board`, `MemorylessStrategy`, `MemorylessStrategyProfile`, `Strategy`, `StrategyProfile`:
-  Board and strategy types.
+* `Board`, `MemorylessStrategy`, `Strategy`, `StrategyProfile`: Board and strategy types.
 * `playAccordingToStrategy`: Bounded simulation of a history-strategy profile.
 * `ticTacToe`: The strategic game with win/loss/draw payoffs of `1`, `-1`, and `0`.
 * `asStrategy`: Embed a board strategy as a history strategy that ignores the path.
-* `xStrategy`, `oStrategy`, `memorylessDrawProfile`: Explicit non-losing strategies.
-* `IsSecurityX`, `IsSecurityO`: Security (nonnegative guaranteed payoff) for each player.
+* `xStrategy`, `oStrategy`: Explicit non-losing strategies.
 
 ## Verification
 
@@ -47,10 +46,8 @@ history-strategy game, and every pure Nash equilibrium has payoff zero for both 
 
 ## Main results
 
-* `memorylessDrawProfile_isNash`: The embedded non-losing profile is a pure Nash equilibrium.
-* `ticTacToe_nash_payoffs_eq_zero`: Both payoffs vanish in any pure Nash equilibrium.
-* `exists_memoryless_isNash`: A memoryless Nash equilibrium exists.
-* `isNash_iff_isSecurity`: Nash equilibria are exactly the mutually secure profiles.
+* `ticTacToe_exists_isNash`: A pure Nash equilibrium exists.
+* `ticTacToe_nash_payoffs_eq_zero`: Both payoffs are 0 in any pure Nash equilibrium.
 
 ## Tags
 
@@ -145,7 +142,7 @@ def gameOver (b : Board) : Bool :=
 
 /-- Simulate a game under history-dependent strategies, recording each board.
 An illegal move ends the game immediately with a sentinel winning board for the
-opponent, matching `playAccordingToMemorylessStrategyProfile`. -/
+opponent. -/
 def playAccordingToStrategy (σ : StrategyProfile) :
     Nat → Player → History → History
   | 0, _, h => h
@@ -469,7 +466,11 @@ private lemma checkONeverLoses_emptyBoard : checkONeverLoses 9 X emptyBoard = tr
   decide +kernel
 
 /-!
-## Checker soundness and non-losing strategies
+## Checker soundness
+
+The Boolean checkers quantify over every legal opposing move. The lemmas below
+connect a successful check at a board to the corresponding history-strategy
+simulator, so the embedded strategies never lose against an arbitrary opponent.
 -/
 
 /-- If the X checker succeeds with O to move, its check succeeds after
@@ -511,19 +512,6 @@ private lemma checkONeverLoses_of_x_move
   have hi := (List.all_eq_true.mp hall) i (List.mem_finRange i)
   have hj := (List.all_eq_true.mp hi) j (List.mem_finRange j)
   simpa [hempty] using hj
-
-/-!
-## Nash equilibrium payoffs
--/
-
-/-- At every pure strategy profile, the two players’ payoffs sum to zero. -/
-lemma ticTacToe_payoff_add_eq_zero (σ : StrategyProfile) :
-    ticTacToe.payoff X σ + ticTacToe.payoff O σ = 0 := by
-  change
-    (if hasWon (finalBoard σ) X then (1 : ℝ) else if hasWon (finalBoard σ) O then -1 else 0) +
-      (if hasWon (finalBoard σ) X then (-1 : ℝ)
-        else if hasWon (finalBoard σ) O then 1 else 0) = 0
-  cases hx : hasWon (finalBoard σ) X <;> cases ho : hasWon (finalBoard σ) O <;> simp
 
 /-- Helper: X following `xStrategy` never loses in the history simulator. -/
 private theorem checkXNeverLoses_asStrategy_sound
@@ -673,58 +661,94 @@ theorem oStrategy_payoff_nonneg (τ : Strategy) :
   cases hw : hasWon (finalBoard (fun p ↦ if p = O then asStrategy oStrategy else τ)) O <;>
     simp [hno]
 
-/-- The explicit non-losing board strategies, embedded as history strategies. -/
-def memorylessDrawProfile : StrategyProfile :=
-  fun p => if p = X then asStrategy xStrategy else asStrategy oStrategy
+/-!
+## Nash equilibrium
 
-/-- Under `memorylessDrawProfile`, both players receive payoff zero. -/
-lemma memorylessDrawProfile_payoff_eq_zero :
-    ticTacToe.payoff X memorylessDrawProfile = 0 ∧
-      ticTacToe.payoff O memorylessDrawProfile = 0 := by
-  have hXno : hasWon (finalBoard memorylessDrawProfile) O = false :=
-    xStrategy_asStrategy_never_loses (asStrategy oStrategy)
-  have hOno : hasWon (finalBoard memorylessDrawProfile) X = false := by
-    have h := oStrategy_asStrategy_never_loses (asStrategy xStrategy)
-    have heq :
-        memorylessDrawProfile =
-          (fun p ↦ if p = O then asStrategy oStrategy else asStrategy xStrategy) := by
-      funext p; fin_cases p <;> rfl
-    simpa [heq] using h
-  have hpay0 : ticTacToe.payoff X memorylessDrawProfile = 0 := by
-    change
-      (if hasWon (finalBoard memorylessDrawProfile) X then (1 : ℝ)
-        else if hasWon (finalBoard memorylessDrawProfile) O then -1 else 0) = 0
-    cases hx : hasWon (finalBoard memorylessDrawProfile) X
-    · simp [hXno]
-    · rw [hOno] at hx; cases hx
-  exact ⟨hpay0, by linarith [ticTacToe_payoff_add_eq_zero memorylessDrawProfile, hpay0]⟩
+The embedded never-lose strategies form a pure Nash equilibrium. Each player can
+also secure a nonnegative payoff by switching to the corresponding strategy, so
+combined with zero-sum payoffs every pure Nash equilibrium is a draw.
+-/
 
+/-- At every pure strategy profile, the two players’ payoffs sum to zero. -/
+lemma ticTacToe_payoff_add_eq_zero (σ : StrategyProfile) :
+    ticTacToe.payoff X σ + ticTacToe.payoff O σ = 0 := by
+  change
+    (if hasWon (finalBoard σ) X then (1 : ℝ) else if hasWon (finalBoard σ) O then -1 else 0) +
+      (if hasWon (finalBoard σ) X then (-1 : ℝ)
+        else if hasWon (finalBoard σ) O then 1 else 0) = 0
+  cases hx : hasWon (finalBoard σ) X <;> cases ho : hasWon (finalBoard σ) O <;> simp
 
-/-- In every pure Nash equilibrium, both players receive zero payoff.
-Each player can guarantee a nonnegative payoff by switching to the corresponding
-memoryless never-lose strategy, and the game is zero-sum. -/
+/-- Against O's never-lose strategy, X's payoff is at most zero. -/
+private lemma payoffX_le_zero_of_oStrategy (τ : Strategy) :
+    ticTacToe.payoff X (fun p ↦ if p = O then asStrategy oStrategy else τ) ≤ 0 := by
+  linarith [oStrategy_payoff_nonneg τ,
+    ticTacToe_payoff_add_eq_zero (fun p ↦ if p = O then asStrategy oStrategy else τ)]
+
+/-- Against X's never-lose strategy, O's payoff is at most zero. -/
+private lemma payoffO_le_zero_of_xStrategy (τ : Strategy) :
+    ticTacToe.payoff O (fun p ↦ if p = X then asStrategy xStrategy else τ) ≤ 0 := by
+  linarith [xStrategy_payoff_nonneg τ,
+    ticTacToe_payoff_add_eq_zero (fun p ↦ if p = X then asStrategy xStrategy else τ)]
+
+/-- The embedded never-lose strategies. -/
+private def neverLoseProfile : StrategyProfile :=
+  fun p ↦ if p = X then asStrategy xStrategy else asStrategy oStrategy
+
+/-- Under `neverLoseProfile`, both payoffs are zero. -/
+private lemma neverLoseProfile_payoff_eq_zero :
+    ticTacToe.payoff X neverLoseProfile = 0 ∧
+      ticTacToe.payoff O neverLoseProfile = 0 := by
+  have hx : 0 ≤ ticTacToe.payoff X neverLoseProfile := by
+    convert xStrategy_payoff_nonneg (asStrategy oStrategy) using 2
+    funext p; fin_cases p <;> rfl
+  have ho : 0 ≤ ticTacToe.payoff O neverLoseProfile := by
+    convert oStrategy_payoff_nonneg (asStrategy xStrategy) using 2
+    funext p; fin_cases p <;> simp [neverLoseProfile, X, O]
+  constructor <;> linarith [ticTacToe_payoff_add_eq_zero neverLoseProfile]
+
+/-- `neverLoseProfile` is a pure Nash equilibrium. -/
+private theorem neverLoseProfile_isNash : ticTacToe.IsNash neverLoseProfile := by
+  rw [StrategicGame.isNash_iff]
+  intro i s
+  have hpay := neverLoseProfile_payoff_eq_zero
+  fin_cases i
+  · change ticTacToe.payoff X (Function.update neverLoseProfile X s) ≤
+      ticTacToe.payoff X neverLoseProfile
+    have hupd :
+        Function.update neverLoseProfile X s =
+          (fun p ↦ if p = O then asStrategy oStrategy else s) := by
+      funext p; fin_cases p <;> simp [neverLoseProfile, X, O]
+    rw [hupd, hpay.1]
+    exact payoffX_le_zero_of_oStrategy s
+  · change ticTacToe.payoff O (Function.update neverLoseProfile O s) ≤
+      ticTacToe.payoff O neverLoseProfile
+    have hupd :
+        Function.update neverLoseProfile O s =
+          (fun p ↦ if p = X then asStrategy xStrategy else s) := by
+      funext p; fin_cases p <;> simp [neverLoseProfile, X, O]
+    rw [hupd, hpay.2]
+    exact payoffO_le_zero_of_xStrategy s
+
+/-- A pure Nash equilibrium exists. -/
+theorem ticTacToe_exists_isNash : ∃ σ : StrategyProfile, ticTacToe.IsNash σ :=
+  ⟨neverLoseProfile, neverLoseProfile_isNash⟩
+
+/-- In every pure Nash equilibrium, both players receive zero payoff:
+each can secure a nonnegative payoff by switching to a never-lose strategy, and
+the game is zero-sum. -/
 theorem ticTacToe_nash_payoffs_eq_zero
     (σ : StrategyProfile) (hσ : ticTacToe.IsNash σ) :
     ticTacToe.payoff X σ = 0 ∧ ticTacToe.payoff O σ = 0 := by
   rw [StrategicGame.isNash_iff] at hσ
-  have hdevX := hσ X (asStrategy xStrategy)
-  have hdevO := hσ O (asStrategy oStrategy)
-  have hupdateX :
-      Function.update σ X (asStrategy xStrategy) =
-        (fun p ↦ if p = X then asStrategy xStrategy else σ O) := by
-    funext p; fin_cases p <;> simp [X, O]
-  have hupdateO :
-      Function.update σ O (asStrategy oStrategy) =
-        (fun p ↦ if p = O then asStrategy oStrategy else σ X) := by
-    funext p; fin_cases p <;> simp [X, O]
-  have hx : 0 ≤ ticTacToe.payoff X (Function.update σ X (asStrategy xStrategy)) := by
-    rw [hupdateX]; exact xStrategy_payoff_nonneg (σ O)
-  have ho : 0 ≤ ticTacToe.payoff O (Function.update σ O (asStrategy oStrategy)) := by
-    rw [hupdateO]; exact oStrategy_payoff_nonneg (σ X)
-  have hX : 0 ≤ ticTacToe.payoff X σ := le_trans hx hdevX
-  have hO : 0 ≤ ticTacToe.payoff O σ := le_trans ho hdevO
-  have hzero := ticTacToe_payoff_add_eq_zero σ
-  constructor <;> linarith
+  have hx : 0 ≤ ticTacToe.payoff X σ :=
+    le_trans (by
+      convert xStrategy_payoff_nonneg (σ O) using 2
+      funext p; fin_cases p <;> simp [X, O]) (hσ X (asStrategy xStrategy))
+  have ho : 0 ≤ ticTacToe.payoff O σ :=
+    le_trans (by
+      convert oStrategy_payoff_nonneg (σ X) using 2
+      funext p; fin_cases p <;> simp [X, O]) (hσ O (asStrategy oStrategy))
+  constructor <;> linarith [ticTacToe_payoff_add_eq_zero σ]
 
 
 end MathEconLibExamples.GameTheory.TicTacToe
