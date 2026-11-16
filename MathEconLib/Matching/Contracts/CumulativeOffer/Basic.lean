@@ -15,7 +15,7 @@ Unit-demand sellers propose to buyers choosing from their accumulated own-contra
 The cumulative offer process retains the possibility of recalling rejected contracts
 and does not assume substitutability, IRC, or feasibility of held contract sets. Seller
 preferences are fixed complete weak preferences over own contracts and the outside option.
-Only (strictly) acceptable contracts may be proposed [this is WLOG].
+Only strictly acceptable contracts may be proposed.
 
 Admissibility is relational: every weakly best remaining acceptable contract is allowed.
 A proposal batch contains at most one proposal per seller, all evaluated before the round.
@@ -25,27 +25,25 @@ Histories are lists of proposed-contract batches in reverse chronological order.
 Their accumulated offers and held contract sets are derived data. The raw terminal output
 is a set of contracts, without a feasibility requirement.
 
+## Main definitions
+
+* `CumulativeOfferProcess` specifies incidence, buyer choices, and proposer preferences.
+* `offers h` accumulates all proposed contracts, including rejected contracts.
+* `heldContracts A` collects buyers' choices from accumulated offers.
+* `Admissible A x` permits a weakly best unoffered strictly acceptable contract of a seller
+  with no held contract.
+* `ValidBatch`, `Run`, and `Outcome` describe productive batches, valid histories, and
+  terminal held contract sets.
+
+## Main statements
+
+`validBatch_singleton_iff` characterizes singleton proposals; valid batches add fresh offers.
+
 ## Terminology
 
-We retain the market API's `seller` and `buyer` names: sellers propose contracts and buyers
-hold contracts chosen from their accumulated offers. These roles correspond to doctors and
-hospitals in Hatfield–Milgrom and Hatfield–Kojima, and workers and firms in the labor-market
-formulation of Hatfield–Kominers–Westkamp.
-
-- `offers h` is the cumulative set of contracts proposed during history `h`, including
-  contracts subsequently rejected.
-- `heldContracts A` is the set currently chosen by buyers from those accumulated offers.
-  Holding a contract is provisional; it is not a final acceptance or a feasible matching.
-- `NoHeldContract A s` says that no buyer currently holds a contract involving seller `s`.
-- `remaining A s` consists of seller `s`'s unoffered strictly acceptable contracts.
-- `Admissible A x` permits a weakly best remaining contract of a seller with no held contract.
-
-A policy is this library's proposal-selection rule. Histories and batches support the
-generalization to history-dependent scheduling and simultaneous proposals; they do not
-assert equivalence with a particular paper's cumulative offer process. On a finite contract
-set, a cumulative offer process with fixed preferences and a valid policy produces a terminal
-set of held contracts. A mechanism mapping reported preference
-profiles to outcomes is a separate construction.
+Sellers propose and buyers choose held contracts. These roles correspond to doctors and
+hospitals in Hatfield–Milgrom and Hatfield–Kojima, and workers and firms in
+Hatfield–Kominers–Westkamp. Holding is provisional and need not define a feasible matching.
 
 ## References
 
@@ -64,14 +62,6 @@ Mechanisms*, July 30, 2015 working-paper version, §§2.3 and 3 (published in Re
 Studies 88(3), 2021, 1457–1502, https://doi.org/10.1093/restud/rdaa052).
 The proposal condition refers to a proposer having no contract currently held.
 
-## Main definitions
-
-`CumulativeOfferProcess`, `Admissible`, `ValidBatch`, `Run`, and `Outcome` describe
-process data, productive batches, histories, and terminal held contract sets.
-
-## Main statements
-
-`validBatch_singleton_iff` characterizes singleton proposals; valid batches add fresh offers.
 -/
 
 @[expose] public section
