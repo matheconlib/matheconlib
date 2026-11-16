@@ -139,7 +139,8 @@ theorem Run.acceptable_heldContracts {h : List (Set X)} (hr : P.Run h) :
     ∀ x ∈ P.heldContracts (offers h), P.Acceptable x :=
   fun x hx => hr.acceptable_offers P x (P.heldContracts_subset _ hx)
 
-/-- A buyer's part of aggregate held contracts is exactly that buyer's choice from its own offers. -/
+/-- A buyer's part of aggregate held contracts is exactly that buyer's choice
+from its own offers. -/
 theorem buyer_heldContracts_eq (A : Set X) (b : B) :
     {x ∈ P.heldContracts A | P.buyer x = b} = P.choiceB b {x ∈ A | P.buyer x = b} := by
   ext x
@@ -234,7 +235,8 @@ theorem indRational_ofSellerPreferences_of_run
       (fun s => CompletePreference.ofLinearOrder (pref s))).Run h) :
     (Market.ofSellerPreferences buyer seller choiceB hB pref).IndRational
       ((ofMarket (Market.ofSellerPreferences buyer seller choiceB hB pref)
-        (fun s => CompletePreference.ofLinearOrder (pref s))).heldContracts (CumulativeOfferProcess.offers h)) := by
+        (fun s => CompletePreference.ofLinearOrder (pref s))).heldContracts
+          (CumulativeOfferProcess.offers h)) := by
   apply indRational_of_run _ _ hsub hcons ?_ ?_ hr
   · intro s A
     have hmenu : (fun y : {x : X // seller x = s} => y.val) ⁻¹' {x ∈ A | seller x = s} =
