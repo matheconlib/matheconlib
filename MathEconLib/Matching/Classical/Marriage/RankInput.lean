@@ -10,8 +10,18 @@ public import Mathlib.Data.List.GetD
 public import Mathlib.Data.List.Nodup
 public import Mathlib.Logic.Equiv.Fin.Basic
 
-/-! Explicit rank-list inputs for the existing marriage-market model.
-Higher ranks are preferred; the last entry is the outside option. -/
+/-!
+# Balanced rank-list inputs for the existing marriage-market model
+
+`BalancedRankInput` describes equal numbers of men and women. Each row gives
+numeric ranks for all participants on the other side, followed by the outside
+option; higher ranks are preferred. The general marriage-market model and the
+counting bounds also support unequal population sizes. This adapter does not.
+The name `RankInput` is reserved for a future adapter allowing unequal sides.
+
+`BalancedRankInput.leM_iff`, `ltM_iff`, `leW_iff` and `ltW_iff` equate numeric
+rank comparisons with the corresponding weak or strict market preferences.
+-/
 
 @[expose] public section
 
@@ -59,7 +69,7 @@ def rankRowOrder {n : Nat} (row : List Nat) (hlen : row.length = n + 1)
 
 /-- Balanced explicit input lists. Each participant lists a distinct numeric
 rank for every partner and for remaining unmatched. -/
-structure RankInput where
+structure BalancedRankInput where
   men : List (List Nat)
   women : List (List Nat)
   women_length : women.length = men.length
@@ -68,10 +78,10 @@ structure RankInput where
   men_row_nodup : ∀ row ∈ men, row.Nodup
   women_row_nodup : ∀ row ∈ women, row.Nodup
 
-namespace RankInput
+namespace BalancedRankInput
 
 /-- The marriage market whose men and women are indexed by list position. -/
-def market (p : RankInput) : MarriageMarket (Fin p.men.length) (Fin p.men.length) where
+def market (p : BalancedRankInput) : MarriageMarket (Fin p.men.length) (Fin p.men.length) where
   prefM m := rankRowOrder (p.men.get m)
     (p.men_row_length _ (List.get_mem _ _)) (p.men_row_nodup _ (List.get_mem _ _))
   prefW w :=
@@ -79,21 +89,21 @@ def market (p : RankInput) : MarriageMarket (Fin p.men.length) (Fin p.men.length
     rankRowOrder (p.women.get i)
       (p.women_row_length _ (List.get_mem _ _)) (p.women_row_nodup _ (List.get_mem _ _))
 
-theorem leM_iff (p : RankInput) (m : Fin p.men.length)
+theorem leM_iff (p : BalancedRankInput) (m : Fin p.men.length)
     (a b : Option (Fin p.men.length)) :
     p.market.leM m a b ↔
       rankAt p.men m.val (optionIndex a).val ≤ rankAt p.men m.val (optionIndex b).val := by
   simp only [rankAt, List.getD_eq_get p.men [] m]
   rfl
 
-theorem ltM_iff (p : RankInput) (m : Fin p.men.length)
+theorem ltM_iff (p : BalancedRankInput) (m : Fin p.men.length)
     (a b : Option (Fin p.men.length)) :
     p.market.ltM m a b ↔
       rankAt p.men m.val (optionIndex a).val < rankAt p.men m.val (optionIndex b).val := by
   simp only [rankAt, List.getD_eq_get p.men [] m]
   rfl
 
-theorem leW_iff (p : RankInput) (w : Fin p.men.length)
+theorem leW_iff (p : BalancedRankInput) (w : Fin p.men.length)
     (a b : Option (Fin p.men.length)) :
     p.market.leW w a b ↔
       rankAt p.women w.val (optionIndex a).val ≤ rankAt p.women w.val (optionIndex b).val := by
@@ -102,7 +112,7 @@ theorem leW_iff (p : RankInput) (w : Fin p.men.length)
   simp only [rankAt, hrow]
   rfl
 
-theorem ltW_iff (p : RankInput) (w : Fin p.men.length)
+theorem ltW_iff (p : BalancedRankInput) (w : Fin p.men.length)
     (a b : Option (Fin p.men.length)) :
     p.market.ltW w a b ↔
       rankAt p.women w.val (optionIndex a).val < rankAt p.women w.val (optionIndex b).val := by
@@ -111,5 +121,5 @@ theorem ltW_iff (p : RankInput) (w : Fin p.men.length)
   simp only [rankAt, hrow]
   rfl
 
-end RankInput
+end BalancedRankInput
 end MathEconLib.Matching.MarriageMarket

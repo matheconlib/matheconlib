@@ -18,6 +18,7 @@ import MathEconLibTest.Choice.WeakPreferences
 import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.Competition.Cournot
+import MathEconLibTest.Decision.Compatibility
 import MathEconLibTest.ForMathlib.Data.List.BoundedChunks
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.ForMathlib.Order.ThinChains

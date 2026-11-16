@@ -9,8 +9,8 @@ import MathEconLib.Matching.Classical.Marriage
 # Public counting-foundations interface
 
 These clients import only the marriage umbrella. They pin the threshold generators,
-the reservation-cutoff transfer lemmas, the rank-list bridges and the counting
-bounds. Checked applications to concrete markets are in
+the reservation-cutoff transfer lemmas, the equivalences between numeric ranks
+and market preferences, and the counting bounds. Checked applications are in
 `MathEconLibTest.Matching.CountingFoundationsApplications`.
 -/
 
@@ -70,6 +70,18 @@ example {m : M} {o : Option W}
     (hex : ∃ μ : mkt.StableMatching, StableMatching.MeetsThreshold mkt m o μ) :
     StableMatching.MeetsThreshold mkt m o (StableMatching.thresholdGenerator mkt m o) :=
   StableMatching.thresholdGenerator_meets mkt hex
+
+example {m : M} {o : Option W}
+    (hex : ∃ ν : mkt.StableMatching, StableMatching.MeetsThreshold mkt m o ν)
+    (μ : mkt.StableMatching) :
+    StableMatching.thresholdGenerator mkt m o ≤ μ ↔
+      StableMatching.MeetsThreshold mkt m o μ :=
+  StableMatching.thresholdGenerator_le_iff mkt hex μ
+
+example (μ : mkt.StableMatching) :
+    (Finset.univ : Finset M).sup
+      (fun m => StableMatching.thresholdGenerator mkt m (μ.matching m)) = μ :=
+  StableMatching.sup_thresholdGenerator_matching mkt μ
 
 example {m : M} {o : Option W} :
     StableMatching.MeetsThreshold mkt m o (StableMatching.thresholdGenerator mkt m o) ↔
@@ -153,7 +165,7 @@ example {μ : M ≃. W} {m : M} {threshold current : W}
 
 end Transfer
 
-/-! ### Rank-list bridges -/
+/-! ### Numeric ranks and market preferences for equal population sizes -/
 
 section Ranks
 
@@ -162,7 +174,7 @@ example {n : Nat} : Function.Injective (@optionIndex n) := optionIndex_injective
 example {n : Nat} (o : Option (Fin n)) : optionIndex o = finSuccEquivLast.symm o :=
   optionIndex_eq_finSuccEquivLast_symm o
 
-variable (p : RankInput)
+variable (p : BalancedRankInput)
 
 example (m : Fin p.men.length) (a b : Option (Fin p.men.length)) :
     p.market.leM m a b ↔

@@ -10,8 +10,8 @@ import MathEconLibExamples.Matching.CountingFoundations
 
 Regression checks for `MathEconLibExamples.Matching.CountingFoundations`: an
 infeasible threshold and an unmatched man in the unbalanced marriage market, the
-counterexample to transfer through an originally unacceptable cutoff, and the
-empty population.
+counterexamples showing the need for each stability-transfer guard, and the empty
+population.
 -/
 
 open MathEconLib.Matching MarriageMarket
@@ -30,6 +30,23 @@ example : ¬ StableMatching.MeetsThreshold UnbalancedMarriage.market 2 (some 0)
     (StableMatching.thresholdGenerator UnbalancedMarriage.market 2 (some 0)) :=
   thresholdGenerator_third_man.2
 
+-- The feasibility guard cannot be omitted from the generator equivalence.
+example : StableMatching.thresholdGenerator UnbalancedMarriage.market 2 (some 0) ≤ ⊤ ∧
+    ¬ StableMatching.MeetsThreshold UnbalancedMarriage.market 2 (some 0) ⊤ := by
+  refine ⟨le_top, ?_⟩
+  rw [← thresholdGenerator_third_man.1]
+  exact thresholdGenerator_third_man.2
+
+example (μ : UnbalancedMarriage.market.StableMatching) :
+    StableMatching.thresholdGenerator UnbalancedMarriage.market 0 (some 0) ≤ μ ↔
+      StableMatching.MeetsThreshold UnbalancedMarriage.market 0 (some 0) μ :=
+  thresholdGenerator_first_man_le_iff μ
+
+example : (Finset.univ : Finset (Fin 3)).sup
+    (fun m => StableMatching.thresholdGenerator UnbalancedMarriage.market m
+      (UnbalancedMarriage.menBest.matching m)) = UnbalancedMarriage.menBest :=
+  sup_thresholdGenerators_menBest
+
 example : UnbalancedMarriage.market.IsStableMatching UnbalancedMarriage.crossed :=
   crossed_stable_of_truncateMan
 
@@ -43,6 +60,17 @@ example : cutoffInput.market.ltM cutoffMan (some cutoffWoman) none ∧
     movedMarket.IsStableMatching fullMatching ∧
     ¬ cutoffInput.market.IsStableMatching fullMatching :=
   cutoff_counterexample
+
+/-! An acceptable cutoff that leaves the changed man unmatched. -/
+
+example : UnmatchedCutoff.market.leM 0 none (some 0) ∧
+    UnmatchedCutoff.allSingle 0 = none ∧
+    (UnmatchedCutoff.market.truncateMan 0 0).IsStableMatching UnmatchedCutoff.allSingle ∧
+    ¬ UnmatchedCutoff.market.IsStableMatching UnmatchedCutoff.allSingle :=
+  UnmatchedCutoff.matchedness_counterexample
+
+example : UnmatchedCutoff.market.IsBlockingPair UnmatchedCutoff.allSingle 0 1 :=
+  UnmatchedCutoff.original_blockingPair
 
 /-! Empty populations. -/
 

@@ -33,6 +33,12 @@ stable in the original one. This is why `stable_of_stable_truncateMan` assumes
 that the threshold is originally acceptable. A checked version of this
 counterexample is in `MathEconLibExamples.Matching.CountingFoundations`.
 
+The same module also checks why the changed man must remain matched for
+stability to transfer back. One man prefers woman A to woman B to being single;
+A rejects him and B accepts him. Moving his cutoff to A makes the all-single
+outcome stable, but he and B block it in the original market. Here the threshold
+was originally acceptable; it is the matchedness guard that fails.
+
 `truncateMan` applies the change to one man and leaves the other participants'
 preferences unchanged. It is a transformation of the existing marriage market
 model, with no additional market structure.
@@ -259,8 +265,8 @@ theorem stable_truncateMan_of_stable {μ : M ≃. W} {m : M} {threshold current 
     · exact (truncateMan_ltM_of_ne mkt m m' threshold hm _ _).mp hb.1
 
 /-- If the threshold was originally acceptable and the truncated man is matched,
-no removed pair can create a new block. The acceptability assumption cannot be
-dropped; see the module documentation. -/
+no removed pair can create a new block. Neither the acceptability nor the
+matchedness assumption can be dropped; see the module documentation. -/
 theorem stable_of_stable_truncateMan {μ : M ≃. W} {m : M} {threshold current : W}
     (hacceptable : mkt.leM m none (some threshold))
     (hμ : (mkt.truncateMan m threshold).IsStableMatching μ)

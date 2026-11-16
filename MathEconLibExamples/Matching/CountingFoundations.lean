@@ -13,7 +13,8 @@ public import Mathlib.Tactic.FinCases
 # Applications of the marriage counting foundations
 
 These checked applications use the threshold generators, the reservation-cutoff
-transfer lemmas, the rank-list bridges and the counting bounds on concrete markets:
+transfer lemmas, the equivalences between numeric ranks and market preferences,
+and the counting bounds on concrete markets:
 
 * `UnbalancedMarriage.market` (three men, two women, man `2` unmatched in every
   stable matching) gives an infeasible threshold, the generator at an attained
@@ -22,6 +23,10 @@ transfer lemmas, the rank-list bridges and the counting bounds on concrete marke
   woman ranking `[1, 0]`. Moving his cutoff below the originally unacceptable
   woman creates a new stable matching, so the acceptability assumption of
   `stable_of_stable_truncateMan` cannot be dropped.
+* `UnmatchedCutoff.market` has one man and two women. Raising his cutoff to
+  the woman who rejects him leaves everyone single. That outcome is stable
+  after the change but blocked originally, even though the cutoff was
+  acceptable. Thus the changed man's matchedness assumption is also necessary.
 * `emptyInput` has no participants; its only stable matching is the empty one.
 -/
 
@@ -37,67 +42,88 @@ section Unbalanced
 
 open UnbalancedMarriage
 
-/-- In every stable matching, man `2` is unmatched: woman `0` finds him
-unacceptable and he finds woman `1` unacceptable. -/
-theorem matching_third_man (μ : market.StableMatching) : μ.matching 2 = none := by
-  have hrank : ∀ w : Fin 2, manRank 2 none ≤ manRank 2 (some w) →
-      womanRank w none ≤ womanRank w (some 2) → False := by
+-- Side-specific notation distinguishes the men from the women.
+local notation "manA" => (0 : Fin 3)
+local notation "manC" => (2 : Fin 3)
+local notation "womanA" => (0 : Fin 2)
+local notation "womanB" => (1 : Fin 2)
+
+/-- In every stable matching, man `manC` is unmatched: woman `womanA` finds him
+unacceptable and he finds woman `womanB` unacceptable. -/
+theorem matching_third_man (μ : market.StableMatching) : μ.matching manC = none := by
+  have hrank : ∀ w : Fin 2, manRank manC none ≤ manRank manC (some w) →
+      womanRank w none ≤ womanRank w (some manC) → False := by
     decide
-  rcases h : μ.matching 2 with _ | w
+  rcases h : μ.matching manC with _ | w
   · rfl
   · exfalso
-    have hm : market.leM 2 none (μ.matching 2) := μ.isStable.1.1 2
+    have hm : market.leM manC none (μ.matching manC) := μ.isStable.1.1 manC
     have hw : market.leW w none (μ.matching.symm w) := μ.isStable.1.2 w
     rw [h] at hm
     rw [(PEquiv.eq_some_iff _).mpr h] at hw
     exact hrank w hm hw
 
-/-- Man `2` getting woman `0` is an infeasible threshold. -/
+/-- Man `manC` getting woman `womanA` is an infeasible threshold. -/
 theorem not_exists_meetsThreshold_third_man :
     ¬ ∃ μ : market.StableMatching,
-      StableMatching.MeetsThreshold market 2 (some 0) μ := by
+      StableMatching.MeetsThreshold market manC (some womanA) μ := by
   rintro ⟨μ, hμ⟩
-  change market.leM 2 (some 0) (μ.matching 2) at hμ
+  change market.leM manC (some womanA) (μ.matching manC) at hμ
   rw [matching_third_man μ] at hμ
-  change manRank 2 (some 0) ≤ manRank 2 none at hμ
+  change manRank manC (some womanA) ≤ manRank manC none at hμ
   revert hμ
   decide
 
 /-- The generator of the infeasible threshold is the top stable matching and
 does not meet the threshold. -/
 theorem thresholdGenerator_third_man :
-    StableMatching.thresholdGenerator market 2 (some 0) = ⊤ ∧
-      ¬ StableMatching.MeetsThreshold market 2 (some 0)
-        (StableMatching.thresholdGenerator market 2 (some 0)) :=
+    StableMatching.thresholdGenerator market manC (some womanA) = ⊤ ∧
+      ¬ StableMatching.MeetsThreshold market manC (some womanA)
+        (StableMatching.thresholdGenerator market manC (some womanA)) :=
   ⟨StableMatching.thresholdGenerator_eq_top_of_not_exists market
       not_exists_meetsThreshold_third_man,
     fun h => not_exists_meetsThreshold_third_man
       ((StableMatching.meetsThreshold_thresholdGenerator_iff market).mp h)⟩
 
-/-- At the threshold he attains in the men-preferred outcome, man `0` keeps
-woman `0` in the least stable matching meeting that threshold. -/
+/-- At the threshold he attains in the men-preferred outcome, man `manA` keeps
+woman `womanA` in the least stable matching meeting that threshold. -/
 theorem thresholdGenerator_first_man :
-    (StableMatching.thresholdGenerator market 0 (menBest.matching 0)).matching 0 =
-      some 0 :=
-  StableMatching.thresholdGenerator_matching market menBest 0
+    (StableMatching.thresholdGenerator market manA (menBest.matching manA)).matching manA =
+      some womanA :=
+  StableMatching.thresholdGenerator_matching market menBest manA
 
-/-- Woman `1` is acceptable to man `0`. -/
-theorem first_man_accepts_second_woman : market.leM 0 none (some 1) := by
-  change manRank 0 none ≤ manRank 0 (some 1)
+/-- The feasible-threshold interface identifies exactly the outcomes above
+the generator for man A receiving woman A. -/
+theorem thresholdGenerator_first_man_le_iff (μ : market.StableMatching) :
+    StableMatching.thresholdGenerator market manA (some womanA) ≤ μ ↔
+      StableMatching.MeetsThreshold market manA (some womanA) μ :=
+  StableMatching.thresholdGenerator_le_iff market
+    ⟨menBest, by change manRank manA (some womanA) ≤ manRank manA (some womanA); decide⟩ μ
+
+/-- The men-preferred outcome is recovered from its three attained-threshold
+generators, including the threshold `none` of the unmatched man. -/
+theorem sup_thresholdGenerators_menBest :
+    (Finset.univ : Finset (Fin 3)).sup
+      (fun m => StableMatching.thresholdGenerator market m (menBest.matching m)) = menBest :=
+  StableMatching.sup_thresholdGenerator_matching market menBest
+
+/-- Woman `womanB` is acceptable to man `manA`. -/
+theorem first_man_accepts_second_woman : market.leM manA none (some womanB) := by
+  change manRank manA none ≤ manRank manA (some womanB)
   decide
 
-/-- Moving man `0`'s cutoff just below woman `1` keeps the crossed outcome,
+/-- Moving man `manA`'s cutoff just below woman `womanB` keeps the crossed outcome,
 in which he is matched to her, stable. -/
 theorem crossed_stable_truncateMan :
-    (market.truncateMan 0 1).IsStableMatching crossed :=
-  stable_truncateMan_of_stable market crossed_stable (current := 1) rfl
-    (by change manRank 0 (some 1) ≤ manRank 0 (some 1); exact le_rfl)
+    (market.truncateMan manA womanB).IsStableMatching crossed :=
+  stable_truncateMan_of_stable market crossed_stable (current := womanB) rfl
+    (by change manRank manA (some womanB) ≤ manRank manA (some womanB); exact le_rfl)
 
-/-- Because woman `1` was acceptable, stability transfers back, even though
-man `2` stays unmatched. -/
+/-- Because woman `womanB` was acceptable, stability transfers back, even though
+man `manC` stays unmatched. -/
 theorem crossed_stable_of_truncateMan : market.IsStableMatching crossed :=
   stable_of_stable_truncateMan market first_man_accepts_second_woman
-    crossed_stable_truncateMan (current := 1) rfl
+    crossed_stable_truncateMan (current := womanB) rfl
 
 /-- The two distinct stable outcomes and the partner-assignment bound. -/
 theorem card_stableMatching_bounds :
@@ -126,7 +152,7 @@ end Unbalanced
 section Cutoff
 
 /-- One man ranks woman `0` below staying single; one woman prefers him. -/
-def cutoffInput : RankInput where
+def cutoffInput : BalancedRankInput where
   men := [[0, 1]]
   women := [[1, 0]]
   women_length := rfl
@@ -148,14 +174,14 @@ def fullMatching : Fin 1 ≃. Fin 1 := PEquiv.refl (Fin 1)
 abbrev movedMarket : MarriageMarket (Fin cutoffInput.men.length) (Fin cutoffInput.men.length) :=
   cutoffInput.market.truncateMan cutoffMan cutoffWoman
 
-/-- Through the rank bridge, the woman is unacceptable to the man. -/
+/-- The numeric-rank comparison shows that the woman is unacceptable to the man. -/
 theorem cutoff_unacceptable : cutoffInput.market.ltM cutoffMan (some cutoffWoman) none := by
-  rw [RankInput.ltM_iff]
+  rw [BalancedRankInput.ltM_iff]
   decide
 
-/-- Through the rank bridge, the man is acceptable to the woman. -/
+/-- The numeric-rank comparison shows that the man is acceptable to the woman. -/
 theorem cutoff_woman_accepts : cutoffInput.market.ltW cutoffWoman none (some cutoffMan) := by
-  rw [RankInput.ltW_iff]
+  rw [BalancedRankInput.ltW_iff]
   decide
 
 /-- The full matching is not stable originally: the man would rather be single. -/
@@ -202,12 +228,84 @@ theorem cutoff_counterexample :
 
 end Cutoff
 
+/-! ### An acceptable cutoff that leaves the changed man unmatched -/
+
+namespace UnmatchedCutoff
+
+local notation "manA" => (0 : Fin 1)
+local notation "womanA" => (0 : Fin 2)
+local notation "womanB" => (1 : Fin 2)
+
+/-- The man prefers `womanA` to `womanB` to being single. Woman A rejects
+him; woman B prefers him to being single. -/
+def market : MarriageMarket (Fin 1) (Fin 2) where
+  prefM _ := rankRowOrder [2, 1, 0] rfl (by decide)
+  prefW w := if w = womanA then rankRowOrder [0, 1] rfl (by decide)
+    else rankRowOrder [1, 0] rfl (by decide)
+
+/-- The outcome in which all three participants stay single. -/
+def allSingle : Fin 1 ≃. Fin 2 := ⊥
+
+/-- The raised cutoff was originally acceptable to the changed man. -/
+theorem threshold_acceptable : market.leM manA none (some womanA) := by
+  change (0 : Nat) ≤ 2
+  decide
+
+/-- The changed man is unmatched, so the matchedness guard does not hold. -/
+theorem changed_man_unmatched : allSingle manA = none := rfl
+
+/-- Woman B and the man block the all-single outcome in the original market. -/
+theorem original_blockingPair : market.IsBlockingPair allSingle manA womanB := by
+  change (0 : Nat) < 1 ∧ (0 : Nat) < 1
+  decide
+
+/-- Hence the all-single outcome is not stable in the original market. -/
+theorem allSingle_not_stable : ¬ market.IsStableMatching allSingle := by
+  intro h
+  exact h.2.1 manA womanB original_blockingPair
+
+/-- After raising the cutoff, woman B is unacceptable to the man, while
+woman A still rejects him. Thus the all-single outcome is stable. -/
+theorem allSingle_stable_truncateMan :
+    (market.truncateMan manA womanA).IsStableMatching allSingle := by
+  refine ⟨⟨?_, ?_⟩, ?_⟩
+  · intro m
+    change (market.truncateMan manA womanA).leM m none none
+    let := (market.truncateMan manA womanA).prefM m
+    exact le_rfl
+  · intro w
+    change market.leW w none none
+    let := market.prefW w
+    exact le_rfl
+  · apply ((market.truncateMan manA womanA).unblocked_iff_no_blockingPair _).mpr
+    intro m w hb
+    fin_cases m
+    fin_cases w
+    · have h := hb.2
+      change (1 : Nat) < 0 at h
+      exact (by decide : ¬ (1 : Nat) < 0) h
+    · have h := (truncateMan_none_lt_some market manA womanA womanB).mp hb.1
+      change (2 : Nat) ≤ 1 at h
+      exact (by decide : ¬ (2 : Nat) ≤ 1) h
+
+/-- Acceptability of the threshold alone does not suffice for stability
+transfer back: the man whose cutoff changes must also remain matched. -/
+theorem matchedness_counterexample :
+    market.leM manA none (some womanA) ∧
+      allSingle manA = none ∧
+      (market.truncateMan manA womanA).IsStableMatching allSingle ∧
+      ¬ market.IsStableMatching allSingle :=
+  ⟨threshold_acceptable, changed_man_unmatched,
+    allSingle_stable_truncateMan, allSingle_not_stable⟩
+
+end UnmatchedCutoff
+
 /-! ### The empty population -/
 
 section Empty
 
 /-- No men and no women. -/
-def emptyInput : RankInput where
+def emptyInput : BalancedRankInput where
   men := []
   women := []
   women_length := rfl

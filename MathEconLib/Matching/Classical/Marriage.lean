@@ -38,8 +38,9 @@ its terminal outputs to the contracts fixed points; and
 The counting foundations comprise threshold generators for the join-irreducible
 stable matchings (`Marriage.OrderIdeals`), one man's reservation-cutoff change
 with its stability transfers (`Marriage.Truncation`), explicit rank-list inputs
-(`Marriage.RankInput`), and bounds on the number of stable matchings
-(`Marriage.CountingBounds`). Their umbrella-only pins are in
+(`BalancedRankInput` in `Marriage.RankInput`, for equal population sizes), and
+bounds on the number of stable matchings (`Marriage.CountingBounds`). Their
+umbrella-only pins are in
 `MathEconLibTest.Matching.CountingFoundations`; concrete applications are in
 `MathEconLibExamples.Matching.CountingFoundations`.
 -/
