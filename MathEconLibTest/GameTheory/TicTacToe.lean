@@ -15,18 +15,19 @@ These examples test the strategic-form tic-tac-toe implementation in
 winning play for either player, the penalty for selecting an occupied square,
 and a draw between the example's non-losing strategies.
 
-A strategy is a function from boards to positions, so it can choose an illegal
+A strategy is a function from histories to positions, so it can choose an illegal
 move. The simulator treats an attempt to play on any occupied square as an
 immediate loss, regardless of which player occupies it.
 
-The test strategies below select moves by the number of occupied squares.
-Since X moves first, X acts at counts `0`, `2`, `4`, `6`, and `8`, while O acts
-at counts `1`, `3`, `5`, and `7`. The payoff assertions use `decide +kernel`
-to compute Boolean winning conditions before simplifying real-valued payoffs.
+The test strategies below select moves by the number of moves already played
+(equivalently, `history.length - 1` from the initial empty board). Since X moves
+first, X acts at counts `0`, `2`, `4`, `6`, and `8`, while O acts at counts `1`,
+`3`, `5`, and `7`. The payoff assertions use `decide +kernel` to compute Boolean
+winning conditions before simplifying real-valued payoffs.
 
 ## Tests
 
-* The move counter correctly counts occupied squares.
+* The move counter correctly counts occupied squares and history length.
 * X and O can each win against a specified opponent strategy.
 * Either player loses for replaying its own square or selecting the opponent's square.
 * The verified non-losing strategies produce a draw when played against one another.
@@ -35,6 +36,9 @@ to compute Boolean winning conditions before simplifying real-valued payoffs.
 
 tic-tac-toe, strategic games, executable tests, illegal moves, payoffs
 -/
+
+-- This module only contains private helpers and anonymous compile-time clients.
+set_option linter.privateModule false
 
 @[expose] public noncomputable section
 
@@ -50,7 +54,7 @@ specify a complete strategy by listing moves for successive turns, including
 moves that are deliberately illegal.
 -/
 
-/-- A board with three occupied squares, used to test `moveCount`. -/
+/-- A board with three occupied squares, used to test occupied-square counting. -/
 private def exampleBoard : Board :=
   fun (i, j) ↦
     ![
@@ -59,13 +63,13 @@ private def exampleBoard : Board :=
       ![none, none, none]
     ] i j
 
-/-- The number of occupied positions on a board. -/
-private def moveCount (b : Board) : Nat :=
-  ((Finset.univ : Finset Position).filter (fun pos ↦ b pos ≠ none)).card
+/-- The number of moves already played in a history starting from the empty board. -/
+private def moveCount (h : History) : Nat :=
+  h.length - 1
 
-/-- Turn a sequence of moves indexed by occupied-square count into a strategy. -/
+/-- Turn a sequence of moves indexed by move count into a history strategy. -/
 private def moveNumberStrategy (f : Nat → Position) : Strategy :=
-  fun b ↦ f (moveCount b)
+  fun h ↦ f (moveCount h)
 
 /-- A fixed X strategy that completes the antidiagonal against `basicOStrategy`. -/
 private def basicXStrategy : Strategy :=
@@ -105,48 +109,42 @@ private def winningOStrategy : Strategy :=
 
 /-- X illegally attempts to reuse its own center square on its fourth turn. -/
 private def xRepeatsOwnSquare : Strategy :=
-  fun b ↦ if moveCount b = 6 then (1, 1) else basicXStrategy b
+  fun h ↦ if moveCount h = 6 then (1, 1) else basicXStrategy h
 
 /-- X illegally attempts to use O's square `(2, 1)` on its fourth turn. -/
 private def xUsesOpponentsSquare : Strategy :=
-  fun b ↦ if moveCount b = 6 then (2, 1) else basicXStrategy b
+  fun h ↦ if moveCount h = 6 then (2, 1) else basicXStrategy h
 
 /-- O illegally attempts to use X's square `(0, 0)` on its third turn. -/
 private def oUsesOpponentsSquare : Strategy :=
-  fun b ↦ if moveCount b = 5 then (0, 0) else basicOStrategy b
+  fun h ↦ if moveCount h = 5 then (0, 0) else basicOStrategy h
 
 /-- O illegally attempts to reuse its own square `(1, 0)` on its third turn. -/
 private def oRepeatsOwnSquare : Strategy :=
-  fun b ↦ if moveCount b = 5 then (1, 0) else basicOStrategy b
+  fun h ↦ if moveCount h = 5 then (1, 0) else basicOStrategy h
 
 /-!
 ## Move counting and legal wins
 -/
 
-/-- The example board contains exactly three marks. -/
-example : moveCount exampleBoard = 3 := by
+/-- A singleton history has move count zero. -/
+example : moveCount [emptyBoard] = 0 := by
   decide
 
 /-- X wins by completing `(2, 0)`, `(1, 1)`, `(0, 2)`. -/
 example : ticTacToe.payoff X ![basicXStrategy, basicOStrategy] = (1 : ℝ) := by
   have hx :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![basicXStrategy, basicOStrategy] 9 X emptyBoard) X = true := by
+      hasWon (finalBoard ![basicXStrategy, basicOStrategy]) X = true := by
     decide +kernel
   simp [hx]
 
 /-- O wins by completing `(0, 0)`, `(1, 1)`, `(2, 2)`. -/
 example : ticTacToe.payoff O ![losingXStrategy, winningOStrategy] = (1 : ℝ) := by
   have hx :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![losingXStrategy, winningOStrategy] 9 X emptyBoard) X = false := by
+      hasWon (finalBoard ![losingXStrategy, winningOStrategy]) X = false := by
     decide +kernel
   have ho :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![losingXStrategy, winningOStrategy] 9 X emptyBoard) O = true := by
+      hasWon (finalBoard ![losingXStrategy, winningOStrategy]) O = true := by
     decide +kernel
   simp [hx, ho]
 
@@ -161,46 +159,34 @@ player, so the offender's payoff is `-1`.
 /-- X loses for selecting its own previously occupied center square. -/
 example : ticTacToe.payoff X ![xRepeatsOwnSquare, basicOStrategy] = (-1 : ℝ) := by
   have hx :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![xRepeatsOwnSquare, basicOStrategy] 9 X emptyBoard) X = false := by
+      hasWon (finalBoard ![xRepeatsOwnSquare, basicOStrategy]) X = false := by
     decide +kernel
   have ho :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![xRepeatsOwnSquare, basicOStrategy] 9 X emptyBoard) O = true := by
+      hasWon (finalBoard ![xRepeatsOwnSquare, basicOStrategy]) O = true := by
     decide +kernel
   simp [hx, ho]
 
 /-- X loses for selecting a square already occupied by O. -/
 example : ticTacToe.payoff X ![xUsesOpponentsSquare, basicOStrategy] = (-1 : ℝ) := by
   have hx :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![xUsesOpponentsSquare, basicOStrategy] 9 X emptyBoard) X = false := by
+      hasWon (finalBoard ![xUsesOpponentsSquare, basicOStrategy]) X = false := by
     decide +kernel
   have ho :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![xUsesOpponentsSquare, basicOStrategy] 9 X emptyBoard) O = true := by
+      hasWon (finalBoard ![xUsesOpponentsSquare, basicOStrategy]) O = true := by
     decide +kernel
   simp [hx, ho]
 
 /-- O loses for selecting a square already occupied by X. -/
 example : ticTacToe.payoff O ![basicXStrategy, oUsesOpponentsSquare] = (-1 : ℝ) := by
   have hx :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![basicXStrategy, oUsesOpponentsSquare] 9 X emptyBoard) X = true := by
+      hasWon (finalBoard ![basicXStrategy, oUsesOpponentsSquare]) X = true := by
     decide +kernel
   simp [hx]
 
 /-- O loses for selecting its own previously occupied square. -/
 example : ticTacToe.payoff O ![basicXStrategy, oRepeatsOwnSquare] = (-1 : ℝ) := by
   have hx :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![basicXStrategy, oRepeatsOwnSquare] 9 X emptyBoard) X = true := by
+      hasWon (finalBoard ![basicXStrategy, oRepeatsOwnSquare]) X = true := by
     decide +kernel
   simp [hx]
 
@@ -209,17 +195,13 @@ example : ticTacToe.payoff O ![basicXStrategy, oRepeatsOwnSquare] = (-1 : ℝ) :
 -/
 
 /-- Both players receive zero when using the example's verified non-losing strategies. -/
-example : ticTacToe.payoff X ![xStrategy, oStrategy] = (0 : ℝ) ∧
-    ticTacToe.payoff O ![xStrategy, oStrategy] = (0 : ℝ) := by
+example : ticTacToe.payoff X ![asStrategy xStrategy, asStrategy oStrategy] = (0 : ℝ) ∧
+    ticTacToe.payoff O ![asStrategy xStrategy, asStrategy oStrategy] = (0 : ℝ) := by
   have hx :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![xStrategy, oStrategy] 9 X emptyBoard) X = false := by
+      hasWon (finalBoard ![asStrategy xStrategy, asStrategy oStrategy]) X = false := by
     decide +kernel
   have ho :
-      hasWon
-        (playAccordingToStrategyProfile
-          ![xStrategy, oStrategy] 9 X emptyBoard) O = false := by
+      hasWon (finalBoard ![asStrategy xStrategy, asStrategy oStrategy]) O = false := by
     decide +kernel
   constructor <;> simp [hx, ho]
 
