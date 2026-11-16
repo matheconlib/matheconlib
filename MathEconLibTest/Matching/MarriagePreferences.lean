@@ -100,6 +100,7 @@ example : none ≺[asymmetric.preferenceM 0] some 0 := by
 example : ¬ none ≺[asymmetric.preferenceW 0] some 0 := by
   rw [← asymmetric.acceptableW_iff_preferenceW_lt]
   change ¬ OrderDual.toDual (rank none) < OrderDual.toDual (rank (some 0))
-  simp [rank]
+  rw [OrderDual.toDual_lt_toDual]
+  decide
 
 end MathEconLibTest.Matching.MarriagePreferences
