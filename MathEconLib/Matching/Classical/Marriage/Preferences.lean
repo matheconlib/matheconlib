@@ -6,6 +6,7 @@ Authors: Scott Duke Kominers
 module
 
 public import MathEconLib.Choice.Induced
+public import MathEconLib.Preferences.Complete
 public import Mathlib.Data.Finset.Max
 
 /-!
@@ -31,7 +32,7 @@ embedding into that model is in `Marriage.ToContracts`.
 
 namespace MathEconLib.Matching
 
-open MathEconLib.Choice
+open MathEconLib.Choice MathEconLib.Preferences
 open Function OrderDual
 
 universe u v
@@ -107,6 +108,52 @@ def AcceptableW (w : W) (m : M) : Prop :=
 
 @[simp] theorem acceptableW_symm (m : M) (w : W) :
     mkt.symm.AcceptableW m w ↔ mkt.AcceptableM m w := Iff.rfl
+
+/-! ## Shared preference interfaces -/
+
+/-- The stored partner order, including `none`, as a shared complete preference. -/
+def preferenceM (m : M) : CompletePreference (Option W) :=
+  CompletePreference.ofLinearOrder (mkt.prefM m)
+
+instance (m : M) : Std.Antisymm (mkt.preferenceM m).le :=
+  inferInstanceAs (Std.Antisymm (CompletePreference.ofLinearOrder (mkt.prefM m)).le)
+
+theorem leM_iff_preferenceM_le (m : M) (y z : Option W) :
+    mkt.leM m y z ↔ y ≼[mkt.preferenceM m] z := Iff.rfl
+
+theorem ltM_iff_preferenceM_lt (m : M) (y z : Option W) :
+    mkt.ltM m y z ↔ y ≺[mkt.preferenceM m] z := by
+  letI := mkt.prefM m
+  exact lt_iff_le_not_ge
+
+theorem acceptableM_iff_preferenceM_lt (m : M) (partner : W) :
+    mkt.AcceptableM m partner ↔ none ≺[mkt.preferenceM m] some partner :=
+  mkt.ltM_iff_preferenceM_lt m none (some partner)
+
+/-- The stored partner order, including `none`, as a shared complete preference. -/
+def preferenceW (w : W) : CompletePreference (Option M) :=
+  CompletePreference.ofLinearOrder (mkt.prefW w)
+
+instance (w : W) : Std.Antisymm (mkt.preferenceW w).le :=
+  inferInstanceAs (Std.Antisymm (CompletePreference.ofLinearOrder (mkt.prefW w)).le)
+
+theorem leW_iff_preferenceW_le (w : W) (y z : Option M) :
+    mkt.leW w y z ↔ y ≼[mkt.preferenceW w] z := Iff.rfl
+
+theorem ltW_iff_preferenceW_lt (w : W) (y z : Option M) :
+    mkt.ltW w y z ↔ y ≺[mkt.preferenceW w] z := by
+  letI := mkt.prefW w
+  exact lt_iff_le_not_ge
+
+theorem acceptableW_iff_preferenceW_lt (w : W) (partner : M) :
+    mkt.AcceptableW w partner ↔ none ≺[mkt.preferenceW w] some partner :=
+  mkt.ltW_iff_preferenceW_lt w none (some partner)
+
+@[simp] theorem preferenceM_symm (w : W) :
+    mkt.symm.preferenceM w = mkt.preferenceW w := rfl
+
+@[simp] theorem preferenceW_symm (m : M) :
+    mkt.symm.preferenceW m = mkt.preferenceM m := rfl
 
 /-! ## Structural choice on arbitrary partner types -/
 
