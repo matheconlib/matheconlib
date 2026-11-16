@@ -5,7 +5,13 @@ Authors: Yaron Velner
 -/
 module
 
-public import MathEconLib.GameTheory.Strategic.Existence
+public import MathEconLib.GameTheory.Strategic.Basic
+public import Mathlib.Basic.Real.Basic
+public import Mathlib.Data.Fin.Tuple.Basic
+public import Mathlib.Data.Fintype.Fin
+public import Mathlib.Data.Fintype.Prod
+public import Mathlib.Tactic.FinCases
+public import Mathlib.Tactic.Linarith
 
 /-!
 # Tic-tac-toe: verified strategies and Nash equilibrium payoffs
@@ -15,14 +21,14 @@ alternate moves; each strategic-form action is a deterministic policy that may d
 full board history. A bounded simulator evaluates the resulting play. Illegal moves count as
 losses, so even policies choosing occupied squares have well-defined payoffs.
 
-Board-dependent (memoryless) policies embed into history policies via `asStrategy`.
-The example defines explicit non-losing memoryless strategies for X and O. Exhaustive Boolean
-checkers explore every legal opposing move, and soundness theorems connect their results to
-both the board and history simulators. Against a memoryless opponent any history strategy can be
-path-simulated by a board strategy with equal payoff, so the memoryless draw profile is Nash
-even when deviations may depend on history. Every pure Nash equilibrium has payoff zero for
-both players, since each can secure a draw by switching to the corresponding memoryless
-never-lose strategy.
+Board-dependent (memoryless) policies embed into history policies via `asStrategy`; they forget
+move order, so distinct legal histories can share a board. Their non-loss certificates are
+proved from `emptyBoard` against every opposing policy. Exhaustive Boolean checkers explore
+every legal opposing move, and soundness theorems connect those checks to both the board and
+history simulators. Against a memoryless opponent any history strategy can be path-simulated by
+a board strategy with equal payoff, so the memoryless draw profile is Nash even when deviations
+may depend on history. Every pure Nash equilibrium has payoff zero for both players, since each
+can secure a draw by switching to the corresponding memoryless never-lose strategy.
 
 ## Main definitions
 
@@ -38,6 +44,8 @@ never-lose strategy.
 
 * `checkXNeverLoses`, `checkONeverLoses`: Exhaustive checks against all legal opponent moves.
 * `xStrategy_asStrategy_never_loses`, `oStrategy_asStrategy_never_loses`: Non-loss in history play.
+* `xStrategy_payoff_nonneg`, `oStrategy_payoff_nonneg`: Nonnegative payoffs for the
+  embedded strategies.
 * `ticTacToe_payoff_add_eq_zero`: The game's payoff sum is zero.
 
 ## Main results
@@ -583,11 +591,13 @@ def checkONeverLoses (fuel : Nat) (p : Player) (b : Board) : Bool :=
             else
               true
 
-/-! informal check that X's strategy never loses. -/
-example : checkXNeverLoses 9 X emptyBoard = true := by decide +kernel
+/-- Kernel-checked certificate that X's exhaustive never-lose checker succeeds. -/
+private lemma checkXNeverLoses_emptyBoard : checkXNeverLoses 9 X emptyBoard = true := by
+  decide +kernel
 
-/-! informal check that Y's strategy never loses. -/
-example : checkONeverLoses 9 X emptyBoard = true := by decide +kernel
+/-- Kernel-checked certificate that O's exhaustive never-lose checker succeeds. -/
+private lemma checkONeverLoses_emptyBoard : checkONeverLoses 9 X emptyBoard = true := by
+  decide +kernel
 
 /-!
 ## Checker soundness and non-losing strategies
@@ -687,9 +697,7 @@ theorem xStrategy_never_loses (oStrategy : MemorylessStrategy) :
       O = false := by
   let σ : MemorylessStrategyProfile := fun p ↦ if p = X then xStrategy else oStrategy
   have hX : σ X = xStrategy := by simp [σ]
-  have hcheck : checkXNeverLoses 9 X emptyBoard = true := by
-    decide +kernel
-  exact checkXNeverLoses_sound σ hX 9 X emptyBoard hcheck
+  exact checkXNeverLoses_sound σ hX 9 X emptyBoard checkXNeverLoses_emptyBoard
 
 /-- If the O checker succeeds with X to move, its check succeeds after
 any particular legal X move. -/
@@ -785,9 +793,7 @@ theorem oStrategy_never_loses (xStrat : MemorylessStrategy) :
       X = false := by
   let σ : MemorylessStrategyProfile := fun p ↦ if p = O then oStrategy else xStrat
   have hO : σ O = oStrategy := by simp [σ, O]
-  have hcheck : checkONeverLoses 9 X emptyBoard = true := by
-    decide +kernel
-  exact checkONeverLoses_sound σ hO 9 X emptyBoard hcheck
+  exact checkONeverLoses_sound σ hO 9 X emptyBoard checkONeverLoses_emptyBoard
 
 /-!
 ## Nash equilibrium payoffs
@@ -862,7 +868,7 @@ private theorem checkXNeverLoses_asStrategy_sound
 theorem xStrategy_asStrategy_never_loses (oStrat : Strategy) :
     hasWon (finalBoard (fun p ↦ if p = X then asStrategy xStrategy else oStrat))
       O = false :=
-  checkXNeverLoses_asStrategy_sound oStrat 9 X [emptyBoard] (by decide +kernel)
+  checkXNeverLoses_asStrategy_sound oStrat 9 X [emptyBoard] checkXNeverLoses_emptyBoard
 
 /-- Helper: O following `oStrategy` never loses in the history simulator. -/
 private theorem checkONeverLoses_asStrategy_sound
@@ -924,7 +930,31 @@ private theorem checkONeverLoses_asStrategy_sound
 theorem oStrategy_asStrategy_never_loses (xStrat : Strategy) :
     hasWon (finalBoard (fun p ↦ if p = O then asStrategy oStrategy else xStrat))
       X = false :=
-  checkONeverLoses_asStrategy_sound xStrat 9 X [emptyBoard] (by decide +kernel)
+  checkONeverLoses_asStrategy_sound xStrat 9 X [emptyBoard] checkONeverLoses_emptyBoard
+
+/-- X's embedded never-lose strategy guarantees a nonnegative payoff against any opponent. -/
+theorem xStrategy_payoff_nonneg (τ : Strategy) :
+    0 ≤ ticTacToe.payoff X (fun p ↦ if p = X then asStrategy xStrategy else τ) := by
+  have hno := xStrategy_asStrategy_never_loses τ
+  change 0 ≤
+    (if hasWon (finalBoard (fun p ↦ if p = X then asStrategy xStrategy else τ)) X
+      then (1 : ℝ)
+      else if hasWon (finalBoard (fun p ↦ if p = X then asStrategy xStrategy else τ)) O
+        then -1 else 0)
+  cases hw : hasWon (finalBoard (fun p ↦ if p = X then asStrategy xStrategy else τ)) X <;>
+    simp [hno]
+
+/-- O's embedded never-lose strategy guarantees a nonnegative payoff against any opponent. -/
+theorem oStrategy_payoff_nonneg (τ : Strategy) :
+    0 ≤ ticTacToe.payoff O (fun p ↦ if p = O then asStrategy oStrategy else τ) := by
+  have hno := oStrategy_asStrategy_never_loses τ
+  change 0 ≤
+    (if hasWon (finalBoard (fun p ↦ if p = O then asStrategy oStrategy else τ)) X
+      then (-1 : ℝ)
+      else if hasWon (finalBoard (fun p ↦ if p = O then asStrategy oStrategy else τ)) O
+        then 1 else 0)
+  cases hw : hasWon (finalBoard (fun p ↦ if p = O then asStrategy oStrategy else τ)) O <;>
+    simp [hno]
 
 /-- `boardCode` determines the board. -/
 lemma boardCode_injective : Function.Injective boardCode := by
@@ -1402,27 +1432,9 @@ theorem ticTacToe_nash_payoffs_eq_zero
         (fun p ↦ if p = O then asStrategy oStrategy else σ X) := by
     funext p; fin_cases p <;> simp [X, O]
   have hx : 0 ≤ ticTacToe.payoff X (Function.update σ X (asStrategy xStrategy)) := by
-    rw [hupdateX]
-    have hno := xStrategy_asStrategy_never_loses (σ O)
-    change 0 ≤
-      (if hasWon (finalBoard (fun p ↦ if p = X then asStrategy xStrategy else σ O)) X
-        then (1 : ℝ)
-        else if hasWon (finalBoard (fun p ↦ if p = X then asStrategy xStrategy else σ O)) O
-          then -1 else 0)
-    cases hw :
-      hasWon (finalBoard (fun p ↦ if p = X then asStrategy xStrategy else σ O)) X <;>
-      simp [hno]
+    rw [hupdateX]; exact xStrategy_payoff_nonneg (σ O)
   have ho : 0 ≤ ticTacToe.payoff O (Function.update σ O (asStrategy oStrategy)) := by
-    rw [hupdateO]
-    have hno := oStrategy_asStrategy_never_loses (σ X)
-    change 0 ≤
-      (if hasWon (finalBoard (fun p ↦ if p = O then asStrategy oStrategy else σ X)) X
-        then (-1 : ℝ)
-        else if hasWon (finalBoard (fun p ↦ if p = O then asStrategy oStrategy else σ X)) O
-          then 1 else 0)
-    cases hw :
-      hasWon (finalBoard (fun p ↦ if p = O then asStrategy oStrategy else σ X)) O <;>
-      simp [hno]
+    rw [hupdateO]; exact oStrategy_payoff_nonneg (σ X)
   have hX : 0 ≤ ticTacToe.payoff X σ := le_trans hx hdevX
   have hO : 0 ≤ ticTacToe.payoff O σ := le_trans ho hdevO
   have hzero := ticTacToe_payoff_add_eq_zero σ
