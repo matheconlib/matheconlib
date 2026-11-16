@@ -5,6 +5,7 @@ Authors: Frederik Glitzner
 -/
 module
 
+public import MathEconLib.Preferences.Complete
 public import Mathlib.Basic.FunLike.Basic
 public import Mathlib.Data.Fintype.Defs
 public import Mathlib.Order.Basic
@@ -27,7 +28,7 @@ any two of whom may be matched with each other.
 * A matching is an involution `μ : A → A`. `μ a = a` means that `a` is
   unmatched; otherwise `μ a` is `a`'s partner, and `μ (μ a) = a` makes the
   partnership mutual.
-* Preferences are strict (no ties). Weak preferences are out of scope.
+* Preferences are strict: ties between distinct agents are out of scope.
 
 The classical problem of Gale and Shapley (1962), with complete preference
 lists, is the special case in which every agent finds every other agent
@@ -42,6 +43,8 @@ A translation between the two models is not yet formalized.
 * `RoommatesMatching A`: involutions on `A`.
 * `RoommatesMarket.IsStableMatching`: individual rationality and no blocking
   pair of two distinct agents.
+* `RoommatesMarket.preference`: an agent's preference as a shared
+  `CompletePreference`.
 
 ## References
 
@@ -58,6 +61,8 @@ A translation between the two models is not yet formalized.
 @[expose] public section
 
 namespace MathEconLib.Matching
+
+open Preferences
 
 universe u
 
@@ -188,6 +193,58 @@ theorem blocks_self_iff (μ : RoommatesMatching A) (a : A) :
     mkt.Blocks μ a a ↔ ¬mkt.IndividuallyRationalFor μ a := by
   let := mkt.pref a
   exact not_le.symm
+
+
+/-! ## Shared preference interface
+
+Bridges are stated for single agents and pairs; matching-level notions follow
+by quantifying over them. -/
+
+/-- Agent `a`'s preference over potential roommates (and itself), viewed as a
+complete preference of the shared preference API. It has no ties between
+distinct agents. -/
+def preference (a : A) : CompletePreference A :=
+  CompletePreference.ofLinearOrder (mkt.pref a)
+
+/-- An agent's preference has no ties between distinct agents. -/
+instance (a : A) : Std.Antisymm (mkt.preference a).le :=
+  inferInstanceAs (Std.Antisymm (CompletePreference.ofLinearOrder (mkt.pref a)).le)
+
+/-- Agent `a`'s weak preference is the weak comparison of its shared preference. -/
+theorem le_iff_preference_le (a y z : A) :
+    mkt.le a y z ↔ y ≼[mkt.preference a] z :=
+  Iff.rfl
+
+/-- Agent `a`'s strict preference is the strict comparison of its shared preference. -/
+theorem lt_iff_preference_lt (a y z : A) :
+    mkt.lt a y z ↔ y ≺[mkt.preference a] z := by
+  let := mkt.pref a
+  exact lt_iff_le_not_ge
+
+/-- `b` is acceptable to `a` exactly when `a` strictly prefers `b` to remaining
+unmatched. -/
+theorem acceptable_iff_preference_lt (a b : A) :
+    mkt.Acceptable a b ↔ a ≺[mkt.preference a] b :=
+  mkt.lt_iff_preference_lt a a b
+
+/-- Individual rationality for `a`: `a` weakly prefers its assignment to remaining
+unmatched. -/
+theorem individuallyRationalFor_iff_preference_le (μ : RoommatesMatching A) (a : A) :
+    mkt.IndividuallyRationalFor μ a ↔ a ≼[mkt.preference a] μ a :=
+  mkt.le_iff_preference_le a a (μ a)
+
+/-- `a`'s blocking condition: `a` strictly prefers `b` to its assignment. -/
+theorem blocks_iff_preference_lt (μ : RoommatesMatching A) (a b : A) :
+    mkt.Blocks μ a b ↔ μ a ≺[mkt.preference a] b :=
+  mkt.lt_iff_preference_lt a (μ a) b
+
+/-- A blocking pair: two distinct agents who each strictly prefer the other to
+their assignments. -/
+theorem isBlockingPair_iff_ne_and_preference_lt (μ : RoommatesMatching A) (a b : A) :
+    mkt.IsBlockingPair μ a b ↔
+      a ≠ b ∧ μ a ≺[mkt.preference a] b ∧ μ b ≺[mkt.preference b] a :=
+  and_congr_right' (and_congr (mkt.blocks_iff_preference_lt μ a b)
+    (mkt.blocks_iff_preference_lt μ b a))
 
 
 /-! ## Decidability -/

@@ -15,7 +15,8 @@ Public entry point for the one-sided roommates model. Agents rank all agents,
 including themselves; an agent's own position is its outside option. Matchings
 are involutions, with fixed points as unmatched agents.
 
-`Roommates.Basic` defines markets, matchings, and stability.
+`Roommates.Basic` defines markets, matchings, and stability, and connects
+agents' preferences to the shared preference API.
 `Roommates.NonExistence` shows that, unlike in the marriage market, a stable
 matching need not exist.
 -/
