@@ -82,6 +82,11 @@ public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 public import MathEconLib.GameTheory.Strategic.Outcome
+public import MathEconLib.GeneralEquilibrium.PureExchange
+public import MathEconLib.GeneralEquilibrium.PureExchange.Basic
+public import MathEconLib.GeneralEquilibrium.PureExchange.Demand
+public import MathEconLib.GeneralEquilibrium.PureExchange.Existence
+public import MathEconLib.GeneralEquilibrium.PureExchange.FixedPoint
 public import MathEconLib.Matching
 public import MathEconLib.Matching.Classical.Marriage
 public import MathEconLib.Matching.Classical.Marriage.Basic

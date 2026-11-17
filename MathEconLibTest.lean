@@ -35,6 +35,8 @@ import MathEconLibTest.GameTheory.Strategic
 import MathEconLibTest.GameTheory.StrategicTransport
 import MathEconLibTest.GameTheory.Transport
 import MathEconLibTest.GameTheory.VectorPayoffs
+import MathEconLibTest.GeneralEquilibrium.PureExchange.Examples
+import MathEconLibTest.GeneralEquilibrium.PureExchange.PublicImport
 import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
