@@ -57,22 +57,25 @@ jobs:
       # Logs, summary (pins, Mathlib SHA, release date), lake-manifest.json,
       # warning counts, proof-integrity report and the bump commit, on every path.
       - name: Save bump logs and evidence
-        if: always() && !cancelled()
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mathlib-bump-logs
           path: ${{ runner.temp }}/mathlib-bump
           if-no-files-found: warn
+          overwrite: true
           retention-days: 90
 
-  # The only job that writes to GitHub. It runs no project code: it pushes the
-  # commit from the bump job's bundle and calls gh. Runs of Lean Action CI on a
-  # PR opened with GITHUB_TOKEN are created in an approval-required state; a
-  # maintainer approves them so that the required `build` check runs on the
-  # generated head. Any other credential is a separate decision (#233).
+  # The only job that writes to GitHub. It builds nothing and runs only
+  # scripts/mathlib_bump_publish.sh from main, which validates the bump job's
+  # commit before pushing it, then calls gh. Per GitHub's documentation, Lean
+  # Action CI runs on a PR opened with GITHUB_TOKEN are created in an
+  # approval-required state; a maintainer approves them so that the required
+  # `build` check runs on the generated head. Any other credential is a
+  # separate decision (#233). Cancelled and timed-out bump runs are reported.
   publish:
     needs: bump
-    if: ${{ !cancelled() && !inputs.probe }}
+    if: ${{ always() && !inputs.probe }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

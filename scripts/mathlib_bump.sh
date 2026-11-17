@@ -84,7 +84,7 @@ fail() {
   local name="$1" message="$2" code="${3:-1}" remaining
   echo "$message" >&2
   echo "FAIL $name: $message" >> "$summary"
-  remaining=$(echo $STEPS | tr ' ' '\n' | sed "1,/^$name\$/d" | tr '\n' ' ')
+  remaining=$(echo $STEPS | tr ' ' '\n' | awk -v n="$name" 'seen; $0 == n { seen = 1 }' | tr '\n' ' ')
   if ! echo $STEPS | tr ' ' '\n' | grep -qxF "$name"; then remaining=$(echo $STEPS); fi
   result=failed
   output result failed
@@ -145,7 +145,7 @@ record_commit() {
 commit_partial() {
   git add lean-toolchain lakefile.toml lake-manifest.json
   if git diff --cached --quiet; then return 0; fi
-  git commit -q -F - <<EOF
+  git commit -q -F - <<EOF && record_commit
 chore: bump Mathlib to $target (unverified)
 
 Mathlib $current -> $target ($target_sha),
@@ -157,7 +157,6 @@ Passed: $(sed -n 's/^passed_steps=//p' "$summary").
 
 Not run: $(sed -n 's/^remaining_steps=//p' "$summary").
 EOF
-  record_commit
 }
 
 # Keep the evidence on every exit path.
@@ -247,7 +246,7 @@ esac
 output toolchain "$toolchain"
 release_date=$(curl -fsSL "$MATHLIB_API/releases/tags/$target" \
   | python3 -c 'import json, sys; print(json.load(sys.stdin)["published_at"])' 2> /dev/null) \
-  || release_date=unknown
+  || release_date="unknown (GitHub release lookup failed)"
 output release_date "$release_date"
 echo "Mathlib $target is $target_sha, released $release_date; Lean toolchain: $(cat lean-toolchain) -> $toolchain"
 [ -z "$skipped" ] || echo "Stable releases between the pins, not ported separately: $skipped"

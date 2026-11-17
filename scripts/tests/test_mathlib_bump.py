@@ -93,7 +93,7 @@ esac
 
 # A stateful stand-in for the gh commands the publish script uses.
 FAKE_GH = r'''#!/usr/bin/env python3
-import json, os, sys
+import json, os, subprocess, sys
 from pathlib import Path
 state = Path(os.environ["FAKE_STATE"])
 args = sys.argv[1:]
@@ -107,14 +107,18 @@ def save():
     db_path.write_text(json.dumps(db, indent=1))
 cmd = args[:2]
 if cmd == ["pr", "list"]:
-    print(json.dumps([p for p in db["prs"] if p["headRefName"] == opt("--head")]))
+    print(json.dumps([p for p in db["prs"] if opt("--head") in (None, p["headRefName"])
+                      and (opt("--state") == "all" or p["state"] == "OPEN")]))
 elif cmd == ["pr", "create"]:
     if os.environ.get("FAKE_GH_FAIL_CREATE"):
         sys.exit("HTTP 502: gh pr create failed")
     number = len(db["prs"]) + len(db["issues"]) + 1
     url = f"https://github.com/o/r/pull/{number}"
+    head = subprocess.run(["git", "ls-remote", "origin", "refs/heads/" + opt("--head")],
+                          capture_output=True, text=True).stdout.split("\t")[0]
     db["prs"].append({"number": number, "state": "OPEN", "url": url, "headRefName": opt("--head"),
-                      "isDraft": "--draft" in args, "title": opt("--title"), "body": opt("--body")})
+                      "headRefOid": head, "isCrossRepository": False, "isDraft": "--draft" in args,
+                      "title": opt("--title"), "body": opt("--body")})
     save()
     print(url)
 elif cmd == ["issue", "list"]:
@@ -447,7 +451,7 @@ class BumpTest(unittest.TestCase):
         proc = self.publish(log_dir=empty, BUMP_JOB_RESULT="failure")
         self.assertEqual(proc.returncode, 0, proc.stderr)
         [issue] = self.github()["issues"]
-        self.assertIn("setup: the bump job (failure)", issue["comments"][0])
+        self.assertIn("setup: the bump job ended (failure)", issue["comments"][0])
 
     def test_retry_after_failed_pr_creation(self):
         self.bump()
@@ -456,6 +460,8 @@ class BumpTest(unittest.TestCase):
         self.assertNotEqual(proc.returncode, 0)
         self.assertEqual(self.remote_branch(), pushed)
         self.assertEqual(self.github()["prs"], [])
+        [issue] = self.github()["issues"]
+        self.assertIn("Publishing the Mathlib bump result (bumped) failed", issue["comments"][0])
         # The next run finds the stranded branch, skips the build and opens the PR.
         git(self.repo, "switch", "-q", "main")
         git(self.repo, "branch", "-q", "-D", "chore/bump-mathlib-v4.36.1")
@@ -521,6 +527,93 @@ class BumpTest(unittest.TestCase):
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual(self.remote_branch(), before)
         self.assertNotIn("Pushed", proc.stdout)
+
+    def set_pr_state(self, state):
+        db = self.github()
+        db["prs"][0]["state"] = state
+        (self.state / "github.json").write_text(json.dumps(db))
+
+    def test_closed_pr_is_reported_not_reopened(self):
+        self.bump()
+        self.publish()
+        self.set_pr_state("CLOSED")
+        git(self.repo, "switch", "-q", "main")
+        git(self.repo, "branch", "-q", "-D", "chore/bump-mathlib-v4.36.1")
+        self.bump()
+        for _ in range(2):
+            proc = self.publish()
+            self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual(len(self.github()["prs"]), 1)
+        [issue] = self.github()["issues"]
+        self.assertEqual(len(issue["comments"]), 1)
+        self.assertIn("closed without merging", issue["comments"][0])
+
+    def test_new_pr_after_closed_pr_and_deleted_branch(self):
+        self.bump()
+        self.publish()
+        self.set_pr_state("CLOSED")
+        git(self.tmp, "--git-dir", str(self.origin), "update-ref", "-d",
+            "refs/heads/chore/bump-mathlib-v4.36.1")
+        git(self.repo, "switch", "-q", "main")
+        git(self.repo, "branch", "-q", "-D", "chore/bump-mathlib-v4.36.1")
+        self.bump()
+        proc = self.publish()
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        self.assertEqual([p["state"] for p in self.github()["prs"]], ["CLOSED", "OPEN"])
+
+    def test_new_target_lists_superseded_bump_prs(self):
+        self.bump("--target", "v4.36.0", fail="lake-build")
+        self.publish()
+        git(self.repo, "switch", "-q", "main")
+        self.bump(log_dir=self.tmp / "logs2")
+        proc = self.publish(log_dir=self.tmp / "logs2")
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        old, new = self.github()["prs"]
+        self.assertIn("Superseded by this PR", new["body"])
+        self.assertIn(old["url"], new["body"])
+
+    def test_publish_refuses_a_tampered_artifact(self):
+        self.bump()
+        summary = self.tmp / "logs/summary.txt"
+        summary.write_text(summary.read_text().replace(
+            "branch=chore/bump-mathlib-v4.36.1", "branch=release/x"))
+        proc = self.publish()
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("unexpected branch release/x", self.github()["issues"][0]["comments"][0])
+        # A commit that touches more than the pins is refused as well.
+        git(self.repo, "switch", "-q", "main")
+        git(self.repo, "branch", "-q", "-D", "chore/bump-mathlib-v4.36.1")
+        self.bump(log_dir=self.tmp / "logs3")
+        write(self.repo / "MathEconLib.lean", "-- injected\n")
+        git(self.repo, "add", "MathEconLib.lean")
+        git(self.repo, "commit", "-q", "--amend", "--no-edit")
+        logs3 = self.tmp / "logs3"
+        git(self.repo, "bundle", "create", "-q", str(logs3 / "bump.bundle"),
+            "refs/heads/chore/bump-mathlib-v4.36.1", "^main")
+        text = (logs3 / "summary.txt").read_text()
+        old_commit = [l for l in text.splitlines() if l.startswith("commit=")][0]
+        (logs3 / "summary.txt").write_text(text.replace(
+            old_commit, "commit=" + git(self.repo, "rev-parse", "HEAD")))
+        proc = self.publish(log_dir=logs3)
+        self.assertNotEqual(proc.returncode, 0)
+        self.assertIn("changes files other than the pins: MathEconLib.lean",
+                      self.github()["issues"][0]["comments"][-1])
+        self.assertEqual(self.remote_branch(), "")
+        self.assertEqual(self.github()["prs"], [])
+
+    def test_set_pins_failure_lists_every_later_step(self):
+        (self.repo / "lean-toolchain").chmod(0o444)
+        proc, s = self.bump()
+        self.assertEqual(proc.returncode, 1)
+        self.assertEqual(s["failed_step"], "set-pins")
+        self.assertTrue(s["remaining_steps"].startswith("elan-toolchain lake-update"))
+
+    def test_dirty_tree_is_a_precondition_failure(self):
+        write(self.repo / "lakefile.toml", LAKEFILE + "# local edit\n")
+        proc, s = self.bump()
+        self.assertEqual(proc.returncode, 2)
+        self.assertEqual(s["failed_step"], "preflight")
+        self.assertEqual(git(self.repo, "branch", "--show-current"), "main")
 
 
 if __name__ == "__main__":
