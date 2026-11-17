@@ -98,12 +98,44 @@ example {L : ℕ} {I T : Type*} [Fintype I] [Fintype T] [Nonempty T]
   hasLocallyNonsatiatedEquilibriumRationalization_iff_gare
     D hp hL
 
+-- Welfare constructors keep common utilities and weights outside the observation quantifier.
+example {L : ℕ} {I T : Type*} [Fintype I] [Finite T] [Nonempty T]
+    (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k)
+    (x : I → T → Bundle L) (hx : AllocationFeasible D x)
+    (hG : ∀ i, GraphGARP D.price (x i)) :
+    ∃ (u : I → Utility L) (α : I → T → ℝ),
+      (∀ i, Continuous (u i) ∧ ConcaveOn ℝ Set.univ (u i) ∧ StrictlyIncreasing (u i)) ∧
+      UtilityMaximizes D x u ∧
+      ∀ t, (∀ i, 0 < α i t) ∧
+        IsMaxOn (weightedWelfare u (fun i => α i t))
+          (resourceFeasibleSet (D.resources t)) (fun i => x i t) ∧
+        ParetoEfficient (D.resources t) u (fun i => x i t) :=
+  exists_regularUtility_weightedWelfare_paretoEfficient_of_garpAllocation D hp x hx hG
+
+example {L : ℕ} {I T : Type*} [Fintype I] [Fintype T] [Nonempty T]
+    (D : MarketData L I T) (hp : ∀ t k, 0 < D.price t k) (h : GARE D) :
+    ∃ (x : I → T → Bundle L) (u : I → Utility L) (α : I → T → ℝ),
+      AllocationFeasible D x ∧
+      (∀ i, Continuous (u i) ∧ ConcaveOn ℝ Set.univ (u i) ∧ StrictlyIncreasing (u i)) ∧
+      UtilityMaximizes D x u ∧
+      ∀ t, (∀ i, 0 < α i t) ∧
+        IsMaxOn (weightedWelfare u (fun i => α i t))
+          (resourceFeasibleSet (D.resources t)) (fun i => x i t) ∧
+        ParetoEfficient (D.resources t) u (fun i => x i t) :=
+  exists_regularUtility_weightedWelfare_paretoEfficient_of_gare D hp h
+
 example {L : ℕ} {u : Utility L} (hlns : LocallyNonsatiatedOnNonnegative u)
     (p x : Bundle L) (m : ℝ) (hx : Nonnegative x) (hbudget : dot p x ≤ m)
     (hmax : ∀ y, Nonnegative y → dot p y ≤ m → u y ≤ u x) : dot p x = m :=
   budget_exhaustion_of_locallyNonsatiated hlns p x m hx hbudget hmax
 
 -- Exact bridge contracts remain available from the public umbrella alone.
+example {L : ℕ} {I : Type*} [Fintype I]
+    (w : Bundle L) (u : I → Utility L) (x : I → Bundle L) :
+    ParetoEfficient w u x ↔
+      MaximalFor (fun y => y ∈ resourceFeasibleSet w) (fun y i => u i (y i)) x :=
+  paretoEfficient_iff_maximalFor w u x
+
 example {L : ℕ} {T : Type*} [Fintype T] (p q : T → Bundle L) :
     GraphGARP p q ↔ ∃ r : ObservationRanks T, RankCompatible p q (fun t => (r t).val) :=
   graphGARP_iff_exists_observationRanks p q

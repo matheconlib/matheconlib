@@ -58,6 +58,21 @@ def ParetoEfficient [Fintype I] (w : Bundle L) (u : I → Utility L)
     ∀ y ∈ resourceFeasibleSet w, (∀ i, u i (x i) ≤ u i (y i)) →
       ¬ ∃ i, u i (x i) < u i (y i)
 
+/-- Pareto efficiency is maximality of the pointwise utility profile on the
+resource-feasible allocations. Both predicates include feasibility of `x`. -/
+theorem paretoEfficient_iff_maximalFor [Fintype I]
+    (w : Bundle L) (u : I → Utility L) (x : I → Bundle L) :
+    ParetoEfficient w u x ↔
+      MaximalFor (fun y => y ∈ resourceFeasibleSet w) (fun y i => u i (y i)) x := by
+  constructor
+  · rintro ⟨hx, h⟩
+    refine ⟨hx, fun y hy hweak i => ?_⟩
+    exact le_of_not_gt (fun hi => h y hy hweak ⟨i, hi⟩)
+  · rintro ⟨hx, h⟩
+    refine ⟨hx, fun y hy hweak hstrict => ?_⟩
+    obtain ⟨i, hi⟩ := hstrict
+    exact (not_lt_of_ge (h hy hweak i)) hi
+
 /-- Clearing and nonnegative consumption imply resource feasibility. -/
 theorem AllocationFeasible.mem_resourceFeasibleSet [Fintype I]
     {D : MarketData L I T} {x : I → T → Bundle L}
@@ -106,6 +121,20 @@ theorem paretoEfficient_of_isMaxOn_weightedWelfare [Fintype I]
     · exact ⟨j, Finset.mem_univ j, mul_lt_mul_of_pos_left hj (hα j)⟩
   exact (not_lt_of_ge (isMaxOn_iff.mp hmax y hy)) hlt
 
+/-- A positive Afriat multiplier at the chosen observation scales its supporting
+plane to the observed price. Multipliers at other observations need not be positive. -/
+theorem afriatUtility_reciprocal_support_of_pos [Fintype T] [Nonempty T]
+    (U lam : T → ℝ) (p q : T → Bundle L)
+    (t : T) (hpos : 0 < lam t) (hA : AfriatInequalities U lam p q) (y : Bundle L) :
+    (lam t)⁻¹ * globalAfriatUtility U lam p q y ≤
+      (lam t)⁻¹ * globalAfriatUtility U lam p q (q t) + dot (p t) y - dot (p t) (q t) := by
+  have h := mul_le_mul_of_nonneg_left
+    (globalAfriatUtility_le_support U lam p q t y) (inv_pos.mpr hpos).le
+  rw [globalAfriatUtility_eq_observed U lam p q hA t]
+  unfold globalAfriatSupport at h
+  simpa only [mul_add, ← mul_assoc, inv_mul_cancel₀ (ne_of_gt hpos), one_mul,
+    add_sub_assoc] using h
+
 /-- Reciprocal Afriat multipliers scale each household's supporting plane to the
 same observed price. No positivity of consumption or income is required. -/
 theorem afriatUtility_reciprocal_support [Fintype T] [Nonempty T]
@@ -113,13 +142,33 @@ theorem afriatUtility_reciprocal_support [Fintype T] [Nonempty T]
     (hpos : PositiveMultipliers lam) (hA : AfriatInequalities U lam p q)
     (t : T) (y : Bundle L) :
     (lam t)⁻¹ * globalAfriatUtility U lam p q y ≤
-      (lam t)⁻¹ * globalAfriatUtility U lam p q (q t) + dot (p t) y - dot (p t) (q t) := by
-  have h := mul_le_mul_of_nonneg_left
-    (globalAfriatUtility_le_support U lam p q t y) (inv_pos.mpr (hpos t)).le
-  rw [globalAfriatUtility_eq_observed U lam p q hA t]
-  unfold globalAfriatSupport at h
-  simpa only [mul_add, ← mul_assoc, inv_mul_cancel₀ (ne_of_gt (hpos t)), one_mul,
-    add_sub_assoc] using h
+      (lam t)⁻¹ * globalAfriatUtility U lam p q (q t) + dot (p t) y - dot (p t) (q t) :=
+  afriatUtility_reciprocal_support_of_pos U lam p q t (hpos t) hA y
+
+/-- The supplied joint Afriat allocation maximizes weighted welfare, with the
+reciprocal positive multipliers as weights, and is Pareto efficient. Only the
+price at the chosen observation is required to be nonnegative. -/
+theorem afriatAllocation_weightedWelfare_paretoEfficient_of_nonnegative_price
+    [Fintype I] [Fintype T] [Nonempty T]
+    (D : MarketData L I T) (t : T) (hp : Nonnegative (D.price t))
+    (x : I → T → Bundle L) (U lam : I → T → ℝ)
+    (hx : AllocationFeasible D x)
+    (hcert : ∀ i, PositiveMultipliers (lam i) ∧
+      AfriatInequalities (U i) (lam i) D.price (x i)) :
+    let u := fun i => globalAfriatUtility (U i) (lam i) D.price (x i)
+    let α := fun i => (lam i t)⁻¹
+    (∀ i, 0 < α i) ∧
+      IsMaxOn (weightedWelfare u α) (resourceFeasibleSet (D.resources t)) (fun i => x i t) ∧
+      ParetoEfficient (D.resources t) u (fun i => x i t) := by
+  dsimp only
+  have hα : ∀ i, 0 < (lam i t)⁻¹ := fun i => inv_pos.mpr ((hcert i).1 t)
+  have hmax := isMaxOn_weightedWelfare_of_support (D.resources t) (D.price t)
+    (fun i => globalAfriatUtility (U i) (lam i) D.price (x i))
+    (fun i => (lam i t)⁻¹) (fun i => x i t) hp (hx.clearing t)
+    (fun i y _hy => afriatUtility_reciprocal_support (U i) (lam i) D.price (x i)
+      (hcert i).1 (hcert i).2 t y)
+  exact ⟨hα, hmax, paretoEfficient_of_isMaxOn_weightedWelfare _ _ _ _ hα
+    (hx.mem_resourceFeasibleSet t) hmax⟩
 
 /-- The supplied joint Afriat allocation maximizes weighted welfare, with the
 reciprocal positive multipliers as weights, and is Pareto efficient. -/
@@ -134,16 +183,9 @@ theorem afriatAllocation_weightedWelfare_paretoEfficient
     let α := fun i => (lam i t)⁻¹
     (∀ i, 0 < α i) ∧
       IsMaxOn (weightedWelfare u α) (resourceFeasibleSet (D.resources t)) (fun i => x i t) ∧
-      ParetoEfficient (D.resources t) u (fun i => x i t) := by
-  dsimp only
-  have hα : ∀ i, 0 < (lam i t)⁻¹ := fun i => inv_pos.mpr ((hcert i).1 t)
-  have hmax := isMaxOn_weightedWelfare_of_support (D.resources t) (D.price t)
-    (fun i => globalAfriatUtility (U i) (lam i) D.price (x i))
-    (fun i => (lam i t)⁻¹) (fun i => x i t) (hp t) (hx.clearing t)
-    (fun i y _hy => afriatUtility_reciprocal_support (U i) (lam i) D.price (x i)
-      (hcert i).1 (hcert i).2 t y)
-  exact ⟨hα, hmax, paretoEfficient_of_isMaxOn_weightedWelfare _ _ _ _ hα
-    (hx.mem_resourceFeasibleSet t) hmax⟩
+      ParetoEfficient (D.resources t) u (fun i => x i t) :=
+  afriatAllocation_weightedWelfare_paretoEfficient_of_nonnegative_price
+    D t (hp t) x U lam hx hcert
 
 /-- A supplied GARP allocation admits fixed regular utilities and positive,
 possibly observation-dependent welfare weights supporting that same allocation. -/
