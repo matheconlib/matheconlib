@@ -5,38 +5,13 @@ Authors: Ayan
 -/
 module
 
-import MathEconLib
 import MathEconLibExamples.Matching.BlockingLemma
 
-/-! Public import and regression checks for the blocking lemma and weak Pareto optimality of
-deferred acceptance. -/
+/-! Regression checks reusing the blocking-lemma examples. Generic API applications
+through the public root are in `MathEconLibTest.Matching.PublicImport`. -/
 
 open MathEconLib.Matching MarriageMarket
 open MathEconLibExamples.Matching.BlockingLemma
-
-/-! The two forms of the blocking lemma, reached through the public root. -/
-
-example {M W : Type} [Fintype M] [Fintype W] (mkt : MarriageMarket M W) {μ ν : M ≃. W}
-    (hμ : mkt.IsManOptimal μ) (hν : mkt.IndividuallyRational ν) {m₀ : M}
-    (h₀ : mkt.ltM m₀ (μ m₀) (ν m₀)) :
-    ∃ m w, ¬ mkt.ltM m (μ m) (ν m) ∧ (∃ m', mkt.ltM m' (μ m') (ν m') ∧ ν m' = some w) ∧
-      mkt.IsBlockingPair ν m w :=
-  IsManOptimal.exists_isBlockingPair_of_ltM mkt hμ hν.2 h₀
-
-example {M W : Type} [Fintype M] [Fintype W] (mkt : MarriageMarket M W) {ν : M ≃. W}
-    (hν : mkt.IndividuallyRational ν) {m₀ : M} (h₀ : mkt.ltM m₀ (mkt.galeShapley m₀) (ν m₀)) :
-    ∃ m w, ¬ mkt.ltM m (mkt.galeShapley m) (ν m) ∧
-      (∃ m', mkt.ltM m' (mkt.galeShapley m') (ν m') ∧ ν m' = some w) ∧
-      mkt.IsBlockingPair ν m w :=
-  mkt.exists_isBlockingPair_of_ltM_galeShapley hν.2 h₀
-
-/-! A matching that some man strictly prefers to deferred acceptance is not stable. -/
-
-example {M W : Type} [Fintype M] [Fintype W] (mkt : MarriageMarket M W) {ν : M ≃. W}
-    (hν : mkt.IndividuallyRational ν) {m₀ : M} (h₀ : mkt.ltM m₀ (mkt.galeShapley m₀) (ν m₀)) :
-    ∃ m w, mkt.IsBlockingPair ν m w := by
-  obtain ⟨m, w, -, -, h⟩ := mkt.exists_isBlockingPair_of_ltM_galeShapley hν.2 h₀
-  exact ⟨m, w, h⟩
 
 /-! The blocking pair in the trade market, and the failure without the women's half. -/
 
@@ -46,36 +21,13 @@ example : (∀ m, Unwilling.market.ltM m (Unwilling.market.galeShapley m) (Unwil
     ∀ m w, ¬ Unwilling.market.IsBlockingPair Unwilling.paired m w :=
   ⟨Unwilling.forall_ltM_galeShapley_paired, Unwilling.paired_not_isBlockingPair⟩
 
-/-! The three forms of weak Pareto optimality, reached through the public root. -/
-
-example {M W : Type} [Fintype M] [Fintype W] [Nonempty M] (mkt : MarriageMarket M W)
-    {μ ν : M ≃. W} (hμ : mkt.IsManOptimal μ) (hν : mkt.IndividuallyRational ν) :
-    ¬ ∀ m, mkt.ltM m (μ m) (ν m) :=
-  IsManOptimal.not_forall_ltM mkt hμ hν.2
-
-example {M W : Type} [Fintype M] [Fintype W] [Nonempty M] (mkt : MarriageMarket M W)
-    {ν : M ≃. W} (hν : mkt.IndividuallyRational ν) :
-    ¬ ∀ m, mkt.ltM m (mkt.galeShapley m) (ν m) :=
-  mkt.not_forall_ltM_galeShapley hν.2
-
-example {M W : Type} [Fintype M] [Fintype W] [DecidableEq M] [DecidableEq W] [Nonempty M]
-    (mkt : MarriageMarket M W) {ν : M ≃. W} (hν : mkt.IndividuallyRational ν) :
-    ¬ ∀ m, mkt.ltM m (mkt.galeShapleyComputable m) (ν m) :=
-  mkt.not_forall_ltM_galeShapleyComputable hν.2
-
 /-! The women's half of individual rationality cannot be dropped. -/
 
 example : Unwilling.market.IndividuallyRationalM Unwilling.paired ∧
     ∀ m, Unwilling.market.ltM m (Unwilling.market.galeShapley m) (Unwilling.paired m) :=
   ⟨Unwilling.paired_individuallyRationalM, Unwilling.forall_ltM_galeShapley_paired⟩
 
-/-! With no men, every alternative vacuously makes every man strictly better off. -/
-
-example (mkt : MarriageMarket Empty Unit) (ν : Empty ≃. Unit) :
-    ∀ m, mkt.ltM m (mkt.galeShapley m) (ν m) :=
-  fun m => m.elim
-
-/-! Full Pareto efficiency fails. -/
+/-! Full Pareto efficiency for men fails. -/
 
 example : Trade.market.IndividuallyRational Trade.traded ∧
     (∀ m, Trade.market.leM m (Trade.market.galeShapley m) (Trade.traded m)) ∧
