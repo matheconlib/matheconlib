@@ -64,6 +64,10 @@ elif args == ["exe", "cache", "get"]:
 elif args == ["--rehash", "--no-ansi", "build"]:
     print("warning: MathEconLib/Basic.lean:3:4: unused variable `x`")
     print("warning: MathEconLib/Basic.lean:9:2: this tactic is never executed")
+    if fail == "lake-build":
+        print("error: MathEconLib/Basic.lean:12:6: unknown identifier 'foo'")
+    for i in range(100):
+        print(f"info: MathEconLibTest/Basic.lean:{i}:0: 'x{i}' depends on axioms: [propext]")
     print("Build completed successfully." if fail != "lake-build" else "error: build failed")
     sys.exit(1 if fail == "lake-build" else 0)
 else:
@@ -431,7 +435,14 @@ class BumpTest(unittest.TestCase):
         self.assertIn("(unverified)", pr["title"])
         self.assertIn("Failed step: bic-contract", pr["body"])
         self.assertIn("Owner: @lead", pr["body"])
-        self.assertIn("Last lines of 15-bic-contract.log", pr["body"])
+        self.assertIn("Errors and last lines of 15-bic-contract.log", pr["body"])
+
+    def test_build_failure_draft_shows_errors_above_the_tail(self):
+        self.bump(fail="lake-build")
+        proc = self.publish()
+        self.assertEqual(proc.returncode, 0, proc.stderr)
+        [pr] = self.github()["prs"]
+        self.assertIn("unknown identifier 'foo'", pr["body"])
 
     def test_early_failure_reported_once_on_tracking_issue(self):
         self.bump(fail="discover")

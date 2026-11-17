@@ -69,8 +69,10 @@ EOF
   local log
   log=$(ls "$log_dir"/[0-9][0-9]-"$failed_step".log 2> /dev/null | head -n 1)
   if [ -n "$failed_step" ] && [ -n "$log" ]; then
-    printf '\n<details><summary>Last lines of %s</summary>\n\n~~~text\n' "$(basename "$log")"
-    tail -n 60 "$log"
+    printf '\n<details><summary>Errors and last lines of %s</summary>\n\n~~~text\n' "$(basename "$log")"
+    grep -E '^error' "$log" | head -n 40 || true
+    printf '...\n'
+    tail -n 20 "$log"
     printf '~~~\n</details>\n'
   fi
 }
