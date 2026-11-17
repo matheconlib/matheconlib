@@ -556,7 +556,8 @@ class BumpTest(unittest.TestCase):
             "refs/heads/chore/bump-mathlib-v4.36.1")
         git(self.repo, "switch", "-q", "main")
         git(self.repo, "branch", "-q", "-D", "chore/bump-mathlib-v4.36.1")
-        self.bump()
+        # A later run makes a new commit; within the same second it would be identical.
+        self.bump(GIT_COMMITTER_DATE="2030-01-01T00:00:00Z")
         proc = self.publish()
         self.assertEqual(proc.returncode, 0, proc.stderr)
         self.assertEqual([p["state"] for p in self.github()["prs"]], ["CLOSED", "OPEN"])
