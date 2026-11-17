@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Conditions
-import Mathlib.Order.Hom.Basic
+module
+
+public import MathEconLib.Choice.Conditions
+public import Mathlib.Order.Hom.Basic
 
 /-!
 # Mapping choice functions along embeddings
@@ -15,6 +17,8 @@ and pointwise inclusion, and preserves the optional conditions used below.
 No preference orders or finite populations are needed here; the law of
 aggregate demand keeps its finite-menu hypothesis.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 

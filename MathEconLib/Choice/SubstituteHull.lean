@@ -3,14 +3,16 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Conditions
-import MathEconLib.ForMathlib.Order.IterateFixedPoint
-import Mathlib.Basic.Finite.Prod
-import Mathlib.Data.Fintype.Pigeonhole
-import Mathlib.Data.Fintype.Powerset
-import Mathlib.Logic.Relation
-import Mathlib.Order.Bounds.Basic
-import Mathlib.Order.Closure
+module
+
+public import MathEconLib.Choice.Conditions
+public import MathEconLib.ForMathlib.Order.IterateFixedPoint
+public import Mathlib.Basic.Finite.Prod
+public import Mathlib.Data.Fintype.Pigeonhole
+public import Mathlib.Data.Fintype.Powerset
+public import Mathlib.Logic.Relation
+public import Mathlib.Order.Bounds.Basic
+public import Mathlib.Order.Closure
 
 /-!
 # The substitute hull and accumulating repairs
@@ -52,6 +54,8 @@ closure, and IRC-preservation results below are proved independently.
   and consensus problems*, Social Choice and Welfare 23, 349–382,
   DOI 10.1007/s00355-003-0251-9.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 

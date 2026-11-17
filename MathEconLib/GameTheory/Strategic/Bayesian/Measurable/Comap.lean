@@ -19,7 +19,8 @@ profile. The action maps need not be injective or surjective.
 ## Main definitions
 
 * `BayesianGame.Strategy.mapActions`: Translate the actions prescribed by measurable strategies.
-* `BayesianGame.comapActionsComorphism`: The induced map of equilibrium problems.
+* `BayesianGame.comapActionsComorphism`: The map of equilibrium problems that reflects incumbent
+  payoff integrability.
 
 ## Main statements
 
@@ -108,6 +109,7 @@ def comapActionsComorphism (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ 
     simp only [hs.1 j hj]
     rfl
   value_eq _ _ := rfl
+  valid_reflects _ h := h
 
 /-- A strategy profile is an equilibrium in the game with translated actions if its image is an
 equilibrium in the original game. The action maps need not be injective or surjective. -/
@@ -116,7 +118,7 @@ theorem IsBNE.comapActions [LE V] {G : BayesianGame I Θ A V} {μ : Measure (∀
     {s : (G.comapActions (fun i => (κ i).1)).Strategy}
     (h : G.IsBNE μ (Strategy.mapActions G κ s)) :
     (G.comapActions (fun i => (κ i).1)).IsBNE μ s :=
-  ⟨(G.comapActionsComorphism μ κ).pullback h.isEquilibrium, h.integrable⟩
+  (G.comapActionsComorphism μ κ).pullback h
 
 end MathEconLib.GameTheory.BayesianGame
 

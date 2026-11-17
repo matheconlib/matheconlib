@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Induced
-import Mathlib.Data.Finset.Max
+module
+
+public import MathEconLib.Choice.Induced
+public import Mathlib.Data.Finset.Max
 
 /-!
 # Marriage preferences and their induced choice functions
@@ -24,6 +26,8 @@ the realization used by the proposal algorithms.
 This module does not depend on the matching-with-contracts model. The
 embedding into that model is in `Marriage.ToContracts`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

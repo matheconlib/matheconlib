@@ -3,7 +3,9 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
+module
+
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
 
 /-!
 # Classical proposal outcomes and contracts fixed points
@@ -21,6 +23,8 @@ two proof routes share elementary proposal invariants. Their agreement is at
 the level of terminal outcomes; their intermediate states and round counts
 need not agree.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Induced
-import MathEconLib.Choice.Matching.Relationships
+module
+
+public import MathEconLib.Choice.Induced
+public import MathEconLib.Choice.Matching.Relationships
 
 /-!
 # Choice from matching preferences and its completions
@@ -44,6 +46,8 @@ contract per partner. The many-to-one preference constructor is in
 IRC of the original choices and the chosen substitutable completions.
 
 -/
+
+@[expose] public section
 
 /-! ## Feasible bundles and induced choice -/
 

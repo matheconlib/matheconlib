@@ -3,10 +3,12 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import Mathlib.Order.FixedPoints
-import Mathlib.Order.Iterate
-import Mathlib.Order.OrderIsoNat
-import Mathlib.Data.Fintype.Card
+module
+
+public import Mathlib.Order.FixedPoints
+public import Mathlib.Order.Iterate
+public import Mathlib.Order.OrderIsoNat
+public import Mathlib.Data.Fintype.Card
 
 /-!
 # Finite convergence to extremal fixed points
@@ -16,6 +18,8 @@ point from the top and its least fixed point from the bottom. No market or
 choice-theoretic definitions enter these results. These are existence
 statements for a stopping index, not an executable fixed-point solver.
 -/
+
+@[expose] public section
 
 open Function OrderDual
 

@@ -3,7 +3,9 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Choice.Conditions
+module
+
+public import MathEconLib.Choice.Conditions
 
 /-!
 # Weak substitutability for matching choice
@@ -32,6 +34,8 @@ The definitions of completion and substitutable completability are in
 weak substitutability, completion, and the substitute hull are in
 `MathEconLib.Choice.Matching.Relationships`.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Choice
 

@@ -3,8 +3,10 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Contracts.StableFixedPoints
-import MathEconLib.ForMathlib.Order.FixedPointLattice
+module
+
+public import MathEconLib.Matching.Contracts.StableFixedPoints
+public import MathEconLib.ForMathlib.Order.FixedPointLattice
 
 /-!
 # The order and lattice of stable outcomes
@@ -32,6 +34,8 @@ preference-order lattice and opposition of interests. Here the lattice uses
 choice relations; no general bridge from primitive preferences is formalized.
 https://doi.org/10.1016/j.geb.2016.01.002
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching
 

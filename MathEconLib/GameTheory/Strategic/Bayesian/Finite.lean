@@ -21,7 +21,8 @@ totalized to zero.
 
 * `BayesianGame.interimPayoffFin`: Interim payoff under a strategy profile.
 * `BayesianGame.interimPayoffActionFin`: Conditional payoff from an action.
-* `BayesianGame.bnePredFin`: Player-type deviation problem.
+* `BayesianGame.bnePredFin`: Player-type deviation problem admitting every pure strategy profile
+  as a candidate.
 * `BayesianGame.IsBNEFin`: Finite pure Bayesian Nash equilibrium.
 * `BayesianGame.expandedGame`: Strategic game with player-type pairs as players.
 
@@ -125,11 +126,12 @@ def fromExpandedProfile (profile : Π (p : Σ i, Θ i), A p.1) :
 
 /-- The equilibrium problem associated with pure-strategy Bayesian Nash equilibrium. The deviator
 index is a player–type pair `⟨i, θ_i⟩`; the deviation relation says the new strategy may differ
-only at that pair; the value is the interim expected payoff. -/
-noncomputable def bnePredFin : EquilibriumProblem G.PureStrategy (Σ i, Θ i) V where
-  deviation := fun p s s' =>
-    ∀ j θ_j, (⟨j, θ_j⟩ : Σ k, Θ k) ≠ p → s' j θ_j = s j θ_j
-  value := fun p s => G.interimPayoffActionFin d p.1 p.2 (s p.1 p.2) s
+only at that pair; the value is the interim expected payoff. Every pure strategy profile is a
+valid candidate. -/
+noncomputable def bnePredFin : EquilibriumProblem G.PureStrategy (Σ i, Θ i) V :=
+  .ofDeviation
+    (fun p s s' => ∀ j θ_j, (⟨j, θ_j⟩ : Σ k, Θ k) ≠ p → s' j θ_j = s j θ_j)
+    (fun p s => G.interimPayoffActionFin d p.1 p.2 (s p.1 p.2) s)
 
 /-- Pure Bayesian Nash equilibrium: Every player-type deviation weakly lowers its expected
 payoff. -/
@@ -154,8 +156,8 @@ theorem isBNEFin_iff [Preorder V] (s : G.PureStrategy) :
         ∀ (a_i : A i),
           G.interimPayoffActionFin d i θ_i (s i θ_i) s ≥
             G.interimPayoffActionFin d i θ_i a_i s := by
-  unfold IsBNEFin
-  dsimp only [bnePredFin, EquilibriumProblem.IsEquilibrium]
+  unfold IsBNEFin bnePredFin
+  rw [EquilibriumProblem.isEquilibrium_ofDeviation_iff]
   refine ⟨?_, ?_⟩
   · intro h i θ_i _hpos a_i
     classical
@@ -225,6 +227,7 @@ noncomputable def bayesianToStrategicMorphism :
         rw [dite_eq_right hjp, Function.update_of_ne hjp]
         rfl
   value_eq := fun _ _ => rfl
+  valid_preserves _ _ := trivial
 
 /-- The reverse `GameMorphism` from pure Nash on `G.expandedGame` back to pure BNE on `G`, with
 strategy map `fromExpandedProfile`, the inverse of `toExpandedProfile`. -/
@@ -246,6 +249,7 @@ noncomputable def strategicToBayesianMorphism :
       rw [hupd]
       exact (h i θ_i hpair).symm
   value_eq := fun _ _ => rfl
+  valid_preserves _ _ := trivial
 
 /-- Pure BNE on `G` corresponds to pure Nash on `G.expandedGame`, via the Curry/uncurry strategy
 maps `toExpandedProfile` and `fromExpandedProfile`. -/
@@ -283,6 +287,7 @@ def comapActionsFinComorphism {B : I → Type*} (κ : ∀ i, B i → A i) :
   value_eq := by
     intro p s
     exact (G.interimPayoffActionFin_comapActions d κ p.1 p.2 (s p.1 p.2) s).symm
+  valid_reflects _ _ := trivial
 
 /-- A translated strategy that is a Bayesian equilibrium in the original game gives an equilibrium
 in the game with translated actions. -/
