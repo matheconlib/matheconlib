@@ -35,7 +35,7 @@ MATHLIB_API=https://api.github.com/repos/leanprover-community/mathlib4
 STABLE='^v[0-9]+\.[0-9]+\.[0-9]+$'
 # The steps run after discovery, in order.
 STEPS="set-pins elan-toolchain lake-update check-pins cache-get check-headers
-test-update-imports test-warning-counts check-imports lake-build
+test-update-imports test-warning-counts test-mathlib-bump check-imports lake-build
 test-proof-integrity proof-integrity bic-regressions bic-contract"
 
 target=""
@@ -360,6 +360,7 @@ step cache-get lake exe cache get
 step check-headers bash scripts/check-headers.sh
 step test-update-imports python3 scripts/tests/test_update_imports.py
 step test-warning-counts node --test scripts/tests/test_warning_counts.cjs
+step test-mathlib-bump python3 scripts/tests/test_mathlib_bump.py
 step check-imports bash scripts/update-imports.sh --check
 step lake-build lake --rehash --no-ansi build
 record_warnings "$log_dir/$(printf '%02d' "$step_number")-lake-build.log"
