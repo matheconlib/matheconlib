@@ -13,6 +13,7 @@ public import MathEconLibExamples.Decision.RiskAversion
 public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.Matching.DistributiveMarriage
+public import MathEconLibExamples.Matching.Improvements
 public import MathEconLibExamples.Matching.JointPreservation
 public import MathEconLibExamples.Matching.UnbalancedMarriage
 public import MathEconLibExamples.Mechanism.PostedPriceUtility
