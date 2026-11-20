@@ -25,16 +25,17 @@ may be sets of edges (`RoutingGame.ofFinset`), as in nonatomic congestion games,
 (`RoutingGame.ofMultiset`), or arbitrary weightings.
 
 A routing game is a population game (`RoutingGame.toPopulationGame`): The populations are the
-commodities, the actions of a commodity are its paths, and a path pays minus its latency. A Wardrop
-equilibrium is a feasible flow that is a population equilibrium, so a driver on any used path has no
-profitable switch with the flow held fixed. `RoutingGame.isWardrop_iff` gives the usual condition
-that demand is routed only along paths of minimum latency for their commodity.
+commodities, the actions of a commodity are its paths, and a path pays minus its latency. A state
+of this game is a feasible flow, and a Wardrop equilibrium is a population equilibrium of this game:
+A driver on any used path has no profitable switch with the flow held fixed.
+`RoutingGame.isPopulationEquilibrium_iff` gives the usual condition that demand is routed only along
+paths of minimum latency for their commodity.
 
 The social cost of a flow is total latency. If every latency `ℓ` satisfies the Pigou-type bound
-`y ℓ(x) ≤ y ℓ(y) + β x ℓ(x)` on nonnegative loads, every Wardrop flow `f` and feasible flow `g`
-satisfy `(1 - β) C(f) ≤ C(g)`. Affine latencies with nonnegative coefficients satisfy the bound with
-`β = 1 / 4`, which gives the Roughgarden–Tardos price-of-anarchy bound `4 / 3`. The comparison is
-with every feasible flow, so neither existence of an optimal flow nor existence of a Wardrop
+`y ℓ(x) ≤ y ℓ(y) + β x ℓ(x)` on nonnegative loads, every Wardrop equilibrium `f` and feasible flow
+`g` satisfy `(1 - β) C(f) ≤ C(g)`. Affine latencies with nonnegative coefficients satisfy the bound
+with `β = 1 / 4`, which gives the Roughgarden–Tardos price-of-anarchy bound `4 / 3`. The comparison
+is with every feasible flow, so neither existence of an optimal flow nor existence of a Wardrop
 equilibrium is needed.
 
 ## Main definitions
@@ -46,7 +47,6 @@ equilibrium is needed.
 * `RoutingGame.Paths`, `RoutingGame.toProfile`, and `RoutingGame.ofProfile`: The paths of each
   commodity, and flows as population profiles.
 * `RoutingGame.toPopulationGame`: The population game of drivers choosing paths.
-* `RoutingGame.IsWardrop`: Feasible flows that are population equilibria.
 * `RoutingGame.HasAffineLatencies`: Latencies `a x + b` with `a, b ≥ 0`.
 
 ## Main statements
@@ -54,12 +54,12 @@ equilibrium is needed.
 * `RoutingGame.load_ofFinset`, `RoutingGame.pathLatency_ofFinset`, `RoutingGame.load_ofMultiset`,
   and `RoutingGame.pathLatency_ofMultiset`: The usual formulas for sets and multisets of edges.
 * `RoutingGame.isFeasible_iff`: Feasible flows are feasible population profiles.
-* `RoutingGame.isWardrop_iff`: Wardrop equilibrium is the minimum-latency condition on used paths.
+* `RoutingGame.isPopulationEquilibrium_iff`: Wardrop equilibrium is the minimum-latency condition
+  on used paths.
 * `RoutingGame.cost_eq_sum_edges`: Total latency is the sum over edges of load times latency.
-* `RoutingGame.IsWardrop.cost_le`: The variational inequality for Wardrop flows.
-* `RoutingGame.IsWardrop.one_sub_mul_cost_le`: The Pigou-bound price of anarchy.
-* `RoutingGame.IsWardrop.cost_le_four_thirds_mul`: The Roughgarden–Tardos bound for affine
-  latencies.
+* `RoutingGame.cost_le_sum_mul_pathLatency`: The variational inequality for Wardrop equilibria.
+* `RoutingGame.one_sub_mul_cost_le`: The Pigou-bound price of anarchy.
+* `RoutingGame.cost_le_four_thirds_mul`: The Roughgarden–Tardos bound for affine latencies.
 
 ## References
 
@@ -168,6 +168,13 @@ omit [Fintype P] in
 @[simp] lemma ofProfile_toProfile (f : P → ℝ) : R.ofProfile (R.toProfile f) = f :=
   rfl
 
+omit [Fintype P] in
+@[simp] lemma toProfile_ofProfile (x : PopulationProfile R.Paths) :
+    R.toProfile (R.ofProfile x) = x := by
+  funext c ⟨p, hp⟩
+  subst hp
+  rfl
+
 /-- A flow is feasible exactly when it is a feasible population profile. -/
 lemma isFeasible_iff [DecidableEq C] (f : P → ℝ) :
     R.IsFeasible f ↔ (R.toProfile f).IsFeasible R.demand := by
@@ -236,39 +243,35 @@ def toPopulationGame : PopulationGame C R.Paths where
   mass := R.demand
   payoff x _ p := -R.pathLatency (R.ofProfile x.1) p.1
 
-/-- A Wardrop equilibrium is a feasible flow at which no infinitesimal driver on a used path gains
-by switching paths. -/
-def IsWardrop (f : P → ℝ) : Prop :=
-  ∃ hf : R.IsFeasible f,
-    R.toPopulationGame.IsPopulationEquilibrium ⟨R.toProfile f, (R.isFeasible_iff f).1 hf⟩
+/-- The flow of a state of the population game is feasible. -/
+lemma isFeasible_ofProfile (x : R.toPopulationGame.State) : R.IsFeasible (R.ofProfile x.1) :=
+  (R.isFeasible_iff _).2 (by rw [toProfile_ofProfile]; exact x.2)
 
-/-- A Wardrop equilibrium is a feasible flow whose used paths have minimum latency among the paths
-of their commodity. -/
-lemma isWardrop_iff (f : P → ℝ) :
-    R.IsWardrop f ↔ R.IsFeasible f ∧
-      ∀ p q, 0 < f p → R.commodity q = R.commodity p → R.pathLatency f p ≤ R.pathLatency f q := by
-  constructor
-  · rintro ⟨hf, h⟩
-    refine ⟨hf, fun p q hp hq ↦ neg_le_neg_iff.1 ?_⟩
-    exact (PopulationGame.isSubpopulationEquilibrium_iff _ _ _).1 (h (R.commodity p))
+/-- **Wardrop equilibrium.** A state is a population equilibrium exactly when its used paths have
+minimum latency among the paths of their commodity. -/
+lemma isPopulationEquilibrium_iff (x : R.toPopulationGame.State) :
+    R.toPopulationGame.IsPopulationEquilibrium x ↔
+      ∀ p q, 0 < R.ofProfile x.1 p → R.commodity q = R.commodity p →
+        R.pathLatency (R.ofProfile x.1) p ≤ R.pathLatency (R.ofProfile x.1) q := by
+  refine ⟨fun h p q hp hq ↦ neg_le_neg_iff.1 ?_, fun h c ↦ ?_⟩
+  · exact (PopulationGame.isSubpopulationEquilibrium_iff _ _ _).1 (h (R.commodity p))
       ⟨p, rfl⟩ ⟨q, hq⟩ hp
-  · rintro ⟨hf, h⟩
-    refine ⟨hf, fun c ↦ (PopulationGame.isSubpopulationEquilibrium_iff _ _ _).2 ?_⟩
+  · refine (PopulationGame.isSubpopulationEquilibrium_iff _ _ _).2 ?_
     rintro ⟨p, rfl⟩ ⟨q, hq⟩ hp
     exact neg_le_neg_iff.2 (h p q hp hq)
 
-/-- Wardrop equilibria are feasible. -/
-lemma IsWardrop.isFeasible {R : RoutingGame C P E}
-    (hf : R.IsWardrop f) : R.IsFeasible f :=
-  hf.1
-
-/-- **Variational inequality.** A Wardrop flow costs at most any feasible flow evaluated at the
-Wardrop latencies. -/
-theorem IsWardrop.cost_le [Finite C] {R : RoutingGame C P E}
-    (hf : R.IsWardrop f) (hg : R.IsFeasible g) :
-    R.cost f ≤ ∑ p, g p * R.pathLatency f p := by
+/-- **Variational inequality.** A Wardrop equilibrium costs at most any feasible state evaluated
+at the equilibrium latencies. -/
+theorem cost_le_sum_mul_pathLatency [Finite C] {R : RoutingGame C P E}
+    {x : R.toPopulationGame.State} (hx : R.toPopulationGame.IsPopulationEquilibrium x)
+    (y : R.toPopulationGame.State) :
+    R.cost (R.ofProfile x.1) ≤ ∑ p, R.ofProfile y.1 p * R.pathLatency (R.ofProfile x.1) p := by
   have := Fintype.ofFinite C
-  obtain ⟨⟨hf0, hfd⟩, hmin⟩ := (R.isWardrop_iff f).1 hf
+  have hmin := (R.isPopulationEquilibrium_iff x).1 hx
+  obtain ⟨hf0, hfd⟩ := R.isFeasible_ofProfile x
+  have hg := R.isFeasible_ofProfile y
+  generalize R.ofProfile x.1 = f at *
+  generalize R.ofProfile y.1 = g at *
   rw [cost, ← sum_fiberwise univ R.commodity, ← sum_fiberwise univ R.commodity]
   refine sum_le_sum fun c _ ↦ ?_
   rcases (univ.filter (R.commodity · = c)).eq_empty_or_nonempty with hs | hs
@@ -291,19 +294,24 @@ theorem IsWardrop.cost_le [Finite C] {R : RoutingGame C P E}
 -/
 
 /-- **Price of anarchy from a Pigou bound.** If every latency satisfies
-`y ℓ(x) ≤ y ℓ(y) + β x ℓ(x)` for nonnegative loads, a Wardrop flow costs at most `(1 - β)⁻¹`
-times any feasible flow. -/
-theorem IsWardrop.one_sub_mul_cost_le [Finite C]
+`y ℓ(x) ≤ y ℓ(y) + β x ℓ(x)` for nonnegative loads, a Wardrop equilibrium costs at most
+`(1 - β)⁻¹` times any feasible state. -/
+theorem one_sub_mul_cost_le [Finite C]
     {R : RoutingGame C P E} (β : ℝ)
     (hβ : ∀ e x y, 0 ≤ x → 0 ≤ y →
       y * R.latency e x ≤ y * R.latency e y + β * (x * R.latency e x))
-    (hf : R.IsWardrop f) (hg : R.IsFeasible g) :
-    (1 - β) * R.cost f ≤ R.cost g := by
-  have hvi := hf.cost_le hg
+    {x : R.toPopulationGame.State} (hx : R.toPopulationGame.IsPopulationEquilibrium x)
+    (y : R.toPopulationGame.State) :
+    (1 - β) * R.cost (R.ofProfile x.1) ≤ R.cost (R.ofProfile y.1) := by
+  have hvi := cost_le_sum_mul_pathLatency hx y
+  have hf := R.isFeasible_ofProfile x
+  have hg := R.isFeasible_ofProfile y
+  generalize R.ofProfile x.1 = f at *
+  generalize R.ofProfile y.1 = g at *
   have hpt : ∑ e, R.load g e * R.latency e (R.load f e) ≤
       ∑ e, (R.load g e * R.latency e (R.load g e) +
         β * (R.load f e * R.latency e (R.load f e))) :=
-    sum_le_sum fun e _ ↦ hβ e _ _ (hf.isFeasible.load_nonneg e) (hg.load_nonneg e)
+    sum_le_sum fun e _ ↦ hβ e _ _ (hf.load_nonneg e) (hg.load_nonneg e)
   rw [sum_add_distrib, ← mul_sum, ← R.cost_eq_sum_edges, ← R.cost_eq_sum_edges] at hpt
   rw [R.sum_mul_pathLatency] at hvi
   linarith
@@ -312,16 +320,17 @@ theorem IsWardrop.one_sub_mul_cost_le [Finite C]
 def HasAffineLatencies : Prop :=
   ∀ e, ∃ a b : ℝ, 0 ≤ a ∧ 0 ≤ b ∧ ∀ x, R.latency e x = a * x + b
 
-/-- **Roughgarden–Tardos.** With affine latencies, a Wardrop flow costs at most `4 / 3` times any
-feasible flow. -/
-theorem IsWardrop.cost_le_four_thirds_mul [Finite C]
-    {R : RoutingGame C P E} (hR : R.HasAffineLatencies) (hf : R.IsWardrop f)
-    (hg : R.IsFeasible g) :
-    R.cost f ≤ 4 / 3 * R.cost g := by
-  have h := hf.one_sub_mul_cost_le (1 / 4) (fun e x y hx _ ↦ by
+/-- **Roughgarden–Tardos.** With affine latencies, a Wardrop equilibrium costs at most `4 / 3`
+times any feasible state. -/
+theorem cost_le_four_thirds_mul [Finite C]
+    {R : RoutingGame C P E} (hR : R.HasAffineLatencies)
+    {x : R.toPopulationGame.State} (hx : R.toPopulationGame.IsPopulationEquilibrium x)
+    (y : R.toPopulationGame.State) :
+    R.cost (R.ofProfile x.1) ≤ 4 / 3 * R.cost (R.ofProfile y.1) := by
+  have h := one_sub_mul_cost_le (1 / 4) (fun e s t hs _ ↦ by
     obtain ⟨a, b, ha, hb, hl⟩ := hR e
     rw [hl, hl]
-    nlinarith [mul_nonneg ha (sq_nonneg (y - x / 2)), mul_nonneg hb hx]) hg
+    nlinarith [mul_nonneg ha (sq_nonneg (t - s / 2)), mul_nonneg hb hs]) hx y
   linarith
 
 end RoutingGame
