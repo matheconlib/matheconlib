@@ -167,6 +167,7 @@ public import MathEconLib.ValueDistribution.Uniform
 public import MathEconLib.ValueDistribution.UniformPricing
 public import MathEconLib.ValueDistribution.VirtualValue
 public import MathEconLib.Welfare
+public import MathEconLib.Welfare.Choice
 public import MathEconLib.Welfare.Pareto
 public import MathEconLib.Welfare.Representation
 public import MathEconLib.Welfare.Transport

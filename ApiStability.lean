@@ -796,4 +796,8 @@ example : ∀ {I : Type u} {X : Type v}, (I → Preference X) → Set X → X �
 example : ∀ {I : Type u} {X : Type v}, (I → Preference X) → Set X → X → Prop :=
   @IsWeaklyParetoEfficient
 
+example : ∀ {I : Type u} {X : Type v} {R : I → Preference X} {F : Set X} {x : X},
+    x ∈ MathEconLib.Choice.maximizers (unanimousPreference R) F → IsParetoEfficient R F x :=
+  @isParetoEfficient_of_mem_maximizers
+
 end OrdinalWelfare

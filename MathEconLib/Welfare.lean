@@ -5,6 +5,7 @@ Authors: Bo Cowgill
 -/
 module
 
+public import MathEconLib.Welfare.Choice
 public import MathEconLib.Welfare.Pareto
 public import MathEconLib.Welfare.Representation
 public import MathEconLib.Welfare.Transport

@@ -34,6 +34,10 @@ example : IsParetoEfficient R F x ↔
 example : IsWeaklyParetoEfficient R F x ↔ x ∈ F ∧ ∀ y ∈ F, ¬ ∀ i, (R i).lt x y :=
   isWeaklyParetoEfficient_iff R F x
 
+example [Nonempty I] (hx : x ∈ Choice.maximizers (unanimousPreference R) F) :
+    IsWeaklyParetoEfficient R F x :=
+  (isParetoEfficient_of_mem_maximizers hx).isWeaklyParetoEfficient
+
 example [Nonempty I] (hx : IsParetoEfficient R F x) : IsWeaklyParetoEfficient R F x :=
   hx.isWeaklyParetoEfficient
 
@@ -93,5 +97,33 @@ example (z : F) :
     IsWeaklyParetoEfficient (fun i ↦ (R i).comap Subtype.val) Set.univ z ↔
       IsWeaklyParetoEfficient R F ↑z :=
   isWeaklyParetoEfficient_subtype_iff R F z
+
+-- The source menu may distinguish actions that have the same outcome.
+example (f : Y → X) (C : Set Y) (a : Y) :
+    IsParetoEfficient (fun i ↦ (R i).comap f) C a ↔ a ∈ C ∧ IsParetoEfficient R (f '' C) (f a) :=
+  isParetoEfficient_comap_image_iff R f C a
+
+example (f : Y → X) (C : Set Y) (a : Y) :
+    IsWeaklyParetoEfficient (fun i ↦ (R i).comap f) C a ↔
+      a ∈ C ∧ IsWeaklyParetoEfficient R (f '' C) (f a) :=
+  isWeaklyParetoEfficient_comap_image_iff R f C a
+
+-- Only action false is admissible. Both actions produce x, which is efficient on the image.
+example :
+    IsParetoEfficient R ((fun _ : Bool ↦ x) '' {false}) x ∧
+      ¬ IsParetoEfficient (fun i ↦ (R i).comap (fun _ : Bool ↦ x)) {false} true := by
+  constructor
+  · have himage : (fun _ : Bool ↦ x) '' {false} = {x} := Set.image_singleton
+    rw [himage, isParetoEfficient_iff_maximal]
+    simp only [Set.mem_singleton_iff, maximal_eq_iff]
+  · exact fun h ↦ Bool.noConfusion (Set.mem_singleton_iff.mp h.1)
+
+example {C : Set X} (hx : IsParetoEfficient R F x) (hCF : C ⊆ F) (hcx : x ∈ C) :
+    IsParetoEfficient R C x :=
+  hx.mono hCF hcx
+
+example {C : Set X} (hx : IsWeaklyParetoEfficient R F x) (hCF : C ⊆ F) (hcx : x ∈ C) :
+    IsWeaklyParetoEfficient R C x :=
+  hx.mono hCF hcx
 
 end MathEconLib.Welfare.Tests

@@ -10,9 +10,23 @@ import MathEconLibExamples.Matching.UnbalancedMarriage
 
 /-! The matching adapter retains outside options and the argument order of the marriage API. -/
 
-open MathEconLib.Matching MathEconLib.Welfare
+open MathEconLib.Choice MathEconLib.Matching MathEconLib.Welfare
 
 variable {M W : Type*} (mkt : MarriageMarket M W)
+
+example (m : M) : (mkt.completeMatchingPreferenceM m).toPreference = mkt.matchingPreferenceM m :=
+  rfl
+
+example (m : M) : Std.Total (mkt.matchingPreferenceM m).le := inferInstance
+
+example (m : M) (μ ν : M ≃. W) :
+    AntisymmRel (mkt.matchingPreferenceM m).le μ ν ↔ μ m = ν m :=
+  mkt.matchingPreferenceM_antisymmRel_iff m μ ν
+
+-- A finite menu suffices even if the market has infinitely many participants.
+example (m : M) {F : Set (M ≃. W)} (hf : F.Finite) (hne : F.Nonempty) :
+    (maximizers (mkt.matchingPreferenceM m) F).Nonempty :=
+  maximizers_nonempty_of_finite (mkt.completeMatchingPreferenceM m) hf hne
 
 example (μ ν : M ≃. W) :
     (unanimousPreference mkt.matchingPreferenceM).le μ ν ↔ mkt.MenWeaklyPrefer ν μ :=
@@ -27,6 +41,15 @@ example (μ : M ≃. W) :
       mkt.IndividuallyRationalW μ ∧
         ∀ ν, mkt.IndividuallyRationalW ν → ¬ ∀ m, mkt.ltM m (μ m) (ν m) :=
   mkt.isWeaklyParetoEfficient_matchingPreferenceM_iff _ _
+
+example (μ : M ≃. W) :
+    mkt.IsManOptimal μ ↔
+      μ ∈ maximizers (unanimousPreference mkt.matchingPreferenceM) mkt.IsStableMatching :=
+  mkt.isManOptimal_iff_mem_maximizers μ
+
+example {μ : M ≃. W} (hμ : mkt.IsManOptimal μ) :
+    IsParetoEfficient mkt.matchingPreferenceM mkt.IsStableMatching μ :=
+  hμ.isParetoEfficient_among_stable
 
 open MathEconLibExamples.Matching.UnbalancedMarriage
 

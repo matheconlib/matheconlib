@@ -6,6 +6,7 @@ Authors: Bo Cowgill
 module
 
 public import MathEconLib.Mechanism
+import MathEconLib.Welfare
 
 /-!
 # Public mechanism utility contracts
@@ -39,6 +40,16 @@ example (M : MathEconLib.Mechanism I A O) (u : I → S → (O × (I → ℝ)) �
     (s : S) (i : I) (a : Profile A) :
     (M.toStrategicGame u s).payoff i a = u i s (M.outcome a, fun j ↦ M.transfer j a) :=
   M.toStrategicGame_payoff u s i a
+
+-- Welfare at a fixed state compares the outcomes and transfers attainable from admissible actions.
+open MathEconLib.Preferences MathEconLib.Welfare in
+example [Preorder V] (M : MathEconLib.Mechanism I A O) (u : I → S → (O × (I → ℝ)) → V)
+    (s : S) (C : Set (Profile A)) (a : Profile A) :
+    IsParetoEfficient (fun i ↦ Preference.ofUtility ((M.toStrategicGame u s).payoff i)) C a ↔
+      a ∈ C ∧ IsParetoEfficient (fun i ↦ Preference.ofUtility (u i s))
+        (M.toOutcomeGame.outcome '' C) (M.toOutcomeGame.outcome a) :=
+  isParetoEfficient_comap_image_iff (fun i ↦ Preference.ofUtility (u i s))
+    M.toOutcomeGame.outcome C a
 
 example (M : MathEconLib.Mechanism I A O) (u : I → Profile T → (O × (I → ℝ)) → V)
     (i : I) (a : Profile A) (θ : Profile T) :

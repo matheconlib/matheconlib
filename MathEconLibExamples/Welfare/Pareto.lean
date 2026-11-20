@@ -8,11 +8,11 @@ module
 public import MathEconLib.Welfare
 
 /-!
-# Pareto comparisons in two small economies
+# Feasible projects and consumption bundles
 
-A public project benefits one household and leaves the other indifferent. A second example gives
-one consumer a unit of either of two goods. The consumer compares quantities coordinatewise and
-ignores the label on each bundle.
+The project examples compare one household gaining while the other is indifferent with two
+households favoring opposite decisions. The bundle example gives one consumer a unit of either
+of two goods. The consumer compares quantities coordinatewise and ignores the bundle label.
 -/
 
 @[expose] public section
@@ -66,6 +66,30 @@ theorem project_efficiency_shift (offset : Bool → ℕ) (F : Set Bool) (x : Boo
   isParetoEfficient_iff_maximalFor fun i ↦
     (project_represented i).comp_strictMono (g := fun n ↦ n + offset i)
       (fun _ _ h ↦ Nat.add_lt_add_right h _)
+
+/-- Each household strictly prefers the project with its own label. -/
+def opposingProjectRanking (i : Bool) : CompletePreference Bool :=
+  CompletePreference.ofUtility fun x : Bool ↦ (if x = i then 1 else 0 : ℕ)
+
+/-- With opposing rankings, both projects are efficient and neither is unanimously greatest. -/
+theorem opposingProjects_isParetoEfficient_and_not_mem_maximizers (x : Bool) :
+    IsParetoEfficient (fun i ↦ (opposingProjectRanking i).toPreference) Set.univ x ∧
+      x ∉ Choice.maximizers (unanimousPreference (fun i ↦ (opposingProjectRanking i).toPreference))
+        Set.univ := by
+  have eq_of_unanimous {a b : Bool}
+      (h : (unanimousPreference (fun i ↦ (opposingProjectRanking i).toPreference)).le a b) :
+      a = b := by
+    by_contra hne
+    have ha := h a
+    change (if a = a then 1 else 0 : ℕ) ≤ (if b = a then 1 else 0) at ha
+    simp [Ne.symm hne] at ha
+  constructor
+  · refine ⟨Set.mem_univ _, fun y _ hxy ↦ ?_⟩
+    rw [eq_of_unanimous hxy]
+    exact (unanimousPreference _).le_rfl
+  · intro h
+    have heq := eq_of_unanimous (((Choice.mem_maximizers _).mp h).2 (!x) (Set.mem_univ _))
+    cases x <;> contradiction
 
 end PublicProject
 
