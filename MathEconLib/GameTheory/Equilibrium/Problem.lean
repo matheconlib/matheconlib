@@ -49,7 +49,7 @@ universe u v w x y z r
 
 Deviation relations may be arbitrary; notably the supplied relation need not commute or be
 transitive. Solution concepts should therefore take care to supply the correct relation. -/
-structure EquilibriumProblem (S : Type u) (I : Type v) (V : Type r) where
+structure EquilibriumProblem (I : Type u) (S : Type v) (V : Type r) where
   /-- Whether a deviator may change the first state to the second state. -/
   deviation : I → S → S → Prop
   /-- The reward of each deviator at each state. -/
@@ -57,7 +57,7 @@ structure EquilibriumProblem (S : Type u) (I : Type v) (V : Type r) where
 
 namespace EquilibriumProblem
 
-variable {V : Type r} {S : Type u} {I : Type v} {P Q : EquilibriumProblem S I V}
+variable {V : Type r} {I : Type u} {S : Type v} {P Q : EquilibriumProblem I S V}
 
 /-- Every single admissible deviation gives its deviator a reward at most the incumbent reward.
 
@@ -65,12 +65,12 @@ Note that, in a partial order, this excludes incomparable rewards as well as str
 Also note that states are only compared if they are reachable through a single application of the
 deviation relation. The predicate checks this relation as supplied, without adding paths of
 successive deviations or its transitive closure. -/
-def IsEquilibrium [LE V] (P : EquilibriumProblem S I V) (s : S) : Prop :=
+def IsEquilibrium [LE V] (P : EquilibriumProblem I S V) (s : S) : Prop :=
   ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s
 
 /-- Equilibrium holds exactly when every admissible deviation weakly lowers the deviator's
 reward. -/
-@[simp] lemma isEquilibrium_iff [LE V] (P : EquilibriumProblem S I V) (s : S) :
+@[simp] lemma isEquilibrium_iff [LE V] (P : EquilibriumProblem I S V) (s : S) :
     P.IsEquilibrium s ↔ ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s := Iff.rfl
 
 /-- Removing admissible deviations preserves equilibrium when rewards agree. -/
@@ -86,15 +86,15 @@ lemma IsEquilibrium.not_lt [Preorder V] {s : S} (h : P.IsEquilibrium s)
   not_lt_of_ge (h i s' hd)
 
 /-- For linearly ordered rewards, equilibrium is equivalent to absence of strict improvement. -/
-lemma isEquilibrium_iff_not_lt [LinearOrder V] (P : EquilibriumProblem S I V) (s : S) :
+lemma isEquilibrium_iff_not_lt [LinearOrder V] (P : EquilibriumProblem I S V) (s : S) :
     P.IsEquilibrium s ↔ ∀ i s', P.deviation i s s' → ¬ P.value i s < P.value i s' := by
   simp only [isEquilibrium_iff, not_lt]
 
 end EquilibriumProblem
 
 /-- A reward-preserving map under which every target deviation lifts to a source deviation. -/
-structure GameMorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x}
-    (P : EquilibriumProblem S I V) (Q : EquilibriumProblem T J V) where
+structure GameMorphism {V : Type r} {I : Type u} {S : Type v} {J : Type w} {T : Type x}
+    (P : EquilibriumProblem I S V) (Q : EquilibriumProblem J T V) where
   /-- The map from source states to target states. -/
   toFun : S → T
   /-- The source deviator corresponding to each target deviator. -/
@@ -107,8 +107,8 @@ structure GameMorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : 
 
 namespace GameMorphism
 
-variable {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x} {U : Type y} {K : Type z}
-    {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J V} {R : EquilibriumProblem U K V}
+variable {V : Type r} {I : Type u} {S : Type v} {J : Type w} {T : Type x} {K : Type y} {U : Type z}
+    {P : EquilibriumProblem I S V} {Q : EquilibriumProblem J T V} {R : EquilibriumProblem K U V}
 
 /-- A deviation-lifting map sends equilibria to equilibria. -/
 theorem transport [LE V] (f : GameMorphism P Q) {s : S} (h : P.IsEquilibrium s) :
@@ -118,7 +118,7 @@ theorem transport [LE V] (f : GameMorphism P Q) {s : S} (h : P.IsEquilibrium s) 
   simpa only [f.value_eq] using h (f.deviatorMap j) s' hs'
 
 /-- The identity map of an equilibrium problem. -/
-def id (P : EquilibriumProblem S I V) : GameMorphism P P where
+def id (P : EquilibriumProblem I S V) : GameMorphism P P where
   toFun := _root_.id
   deviatorMap := _root_.id
   deviation_lifts _ _ t ht := ⟨t, ht, rfl⟩
@@ -137,8 +137,8 @@ def comp (g : GameMorphism Q R) (f : GameMorphism P Q) : GameMorphism P R where
 end GameMorphism
 
 /-- A reward-preserving map that sends each source deviation to a target deviation. -/
-structure GameComorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x}
-    (P : EquilibriumProblem S I V) (Q : EquilibriumProblem T J V) where
+structure GameComorphism {V : Type r} {I : Type u} {S : Type v} {J : Type w} {T : Type x}
+    (P : EquilibriumProblem I S V) (Q : EquilibriumProblem J T V) where
   /-- The map from source states to target states. -/
   toFun : S → T
   /-- The target deviator corresponding to each source deviator. -/
@@ -151,8 +151,8 @@ structure GameComorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J 
 
 namespace GameComorphism
 
-variable {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x} {U : Type y} {K : Type z}
-    {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J V} {R : EquilibriumProblem U K V}
+variable {V : Type r} {I : Type u} {S : Type v} {J : Type w} {T : Type x} {K : Type y} {U : Type z}
+    {P : EquilibriumProblem I S V} {Q : EquilibriumProblem J T V} {R : EquilibriumProblem K U V}
 
 /-- Equilibrium pulls back along a deviation-preserving map. -/
 theorem pullback [LE V] (f : GameComorphism P Q) {s : S}
@@ -161,7 +161,7 @@ theorem pullback [LE V] (f : GameComorphism P Q) {s : S}
   simpa only [f.value_eq] using h (f.deviatorMap i) (f.toFun s') (f.deviation_maps i s s' hs')
 
 /-- The identity deviation-preserving map. -/
-def id (P : EquilibriumProblem S I V) : GameComorphism P P where
+def id (P : EquilibriumProblem I S V) : GameComorphism P P where
   toFun := _root_.id
   deviatorMap := _root_.id
   deviation_maps _ _ _ h := h

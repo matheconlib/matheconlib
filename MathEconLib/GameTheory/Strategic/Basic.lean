@@ -87,7 +87,7 @@ lemma comapActions_comp {B : ι → Type*} {C : ι → Type*} (G : StrategicGame
     (G.comapActions κ).comapActions τ = G.comapActions (fun i ↦ κ i ∘ τ i) := rfl
 
 /-- The equilibrium problem in which a player may replace only their own action. -/
-def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) : EquilibriumProblem (∀ i, A i) ι V where
+def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) : EquilibriumProblem ι (∀ i, A i) V where
   deviation i a a' := ∃ s, a' = Function.update a i s
   value := G.payoff
 

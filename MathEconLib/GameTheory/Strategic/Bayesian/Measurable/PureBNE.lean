@@ -52,7 +52,7 @@ nonintegrable incumbents, whose Bochner integrals are zero. Bayesian Nash equili
 common probability prior is `IsBNE`, which additionally requires integrability of every incumbent
 payoff. -/
 def bneProblem (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) :
-    EquilibriumProblem G.Strategy I V where
+    EquilibriumProblem I G.Strategy V where
   deviation i s s' := (∀ j, j ≠ i → s' j = s j) ∧
     Integrable (fun θ => G.payoff i (G.measurableActionProfile s' θ) θ) μ
   value i s := G.exAntePayoff μ i s
