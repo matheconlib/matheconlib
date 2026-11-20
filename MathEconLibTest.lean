@@ -39,6 +39,7 @@ import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.DistributiveMarriage
+import MathEconLibTest.Matching.MarriagePareto
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.SellerParticipation
 import MathEconLibTest.Matching.SellerParticipationPublicImport
@@ -63,3 +64,4 @@ import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples
 import MathEconLibTest.ValueDistribution.UniformPricing
+import MathEconLibTest.Welfare.Pareto
