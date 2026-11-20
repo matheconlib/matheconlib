@@ -19,6 +19,7 @@ public import MathEconLibExamples.Mechanism.PostedPriceUtility
 public import MathEconLibExamples.Preferences.Finite
 public import MathEconLibExamples.RevealedPreference
 public import MathEconLibExamples.SingleParameter.BeckerCrime
+public import MathEconLibExamples.Welfare.Pareto
 
 /-!
 # Mathematical economics examples

@@ -97,6 +97,16 @@ theorem IsRepresentedBy.comap {R : Preference Y} [Preorder U] {u : Y → U}
     (hu : R.IsRepresentedBy u) (f : X → Y) :
     (R.comap f).IsRepresentedBy (u ∘ f) := fun x y => hu (f x) (f y)
 
+/-- A utility representation also identifies strict comparisons. -/
+theorem IsRepresentedBy.lt_iff_lt {R : Preference X} [Preorder U] {u : X → U}
+    (hu : R.IsRepresentedBy u) {x y : X} : x ≺[R] y ↔ u x < u y := by
+  rw [Preference.lt, hu x y, hu y x, lt_iff_le_not_ge]
+
+/-- A strictly increasing change of a linear utility scale preserves its representation. -/
+theorem IsRepresentedBy.comp_strictMono {V : Type*} [LinearOrder U] [Preorder V]
+    {R : Preference X} {u : X → U} (hu : R.IsRepresentedBy u) {g : U → V} (hg : StrictMono g) :
+    R.IsRepresentedBy (g ∘ u) := fun x y ↦ (hu x y).trans hg.le_iff_le.symm
+
 /-- A greatest alternative on a menu has exactly the utility-maximization property. -/
 theorem IsRepresentedBy.forall_le_iff_isMaxOn {R : Preference X} [Preorder U] {u : X → U}
     (hu : R.IsRepresentedBy u) {S : Set X} {a : X} :

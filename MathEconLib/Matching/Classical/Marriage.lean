@@ -11,6 +11,7 @@ public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoi
 public import MathEconLib.Matching.Classical.Marriage.Distributive
 public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
+public import MathEconLib.Matching.Classical.Marriage.Pareto
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
 
 /-!
