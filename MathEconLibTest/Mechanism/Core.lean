@@ -6,6 +6,7 @@ Authors: Daniel Lyng
 module
 
 public import MathEconLib.Mechanism
+public import MathEconLibExamples.Mechanism.PostedPriceUtility
 
 /-!
 # Reporting rules, payments, and incentive compatibility
@@ -103,14 +104,12 @@ lemma infiniteAgentMechanism_payment (i : ℕ) (a : ℕ → Bool) :
 
 /-- One buyer reports whether their value is high and receives the good at price one exactly when
 reporting high. -/
-def postedPriceMechanism : MathEconLib.Mechanism Unit (fun _ => Bool) Bool where
-  outcome r := r ()
-  transfer _ r := if r () then -1 else 0
+def postedPriceMechanism : MathEconLib.Mechanism Unit (fun _ => Bool) Bool :=
+  MathEconLibExamples.Mechanism.PostedPriceUtility.mechanism
 
 /-- The buyer values receiving the good at two when their type is high, and at zero otherwise. -/
 def postedPriceEnvironment : QuasilinearEnvironment Unit (fun _ => Bool) Bool :=
-  QuasilinearEnvironment.ofPrivate fun _ high receives =>
-    if receives then if high then 2 else 0 else 0
+  MathEconLibExamples.Mechanism.PostedPriceUtility.environment
 
 /-- Reporting the buyer's value truthfully maximizes utility at the posted price. -/
 lemma postedPrice_isDSIC :

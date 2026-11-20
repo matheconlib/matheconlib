@@ -25,6 +25,12 @@ nonnegative here.
 The all-purchase specification is adapted from Auctionlib/Mechanism/AllPurchase.lean,
 introduced in commit 384acbf.
 
+## Sources and provenance
+
+This formalizes the all-purchase format Scott Duke Kominers observed in NFT sales; see the
+[sale provenance](https://x.com/tiffatronn/status/1928904850022265170).
+See `docs/AuctionReferences.md` for the source map and citation guidance.
+
 ## Main definitions
 
 * `AllPurchaseSpec`: a positive posted price and a continuous, strictly decreasing resale-value
