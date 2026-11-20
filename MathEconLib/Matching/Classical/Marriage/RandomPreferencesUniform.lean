@@ -3,8 +3,10 @@ Copyright (c) 2026 The Formal Conjectures Authors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The Formal Conjectures Authors, Bo Cowgill
 -/
-import MathEconLib.Matching.Classical.Marriage.RandomPreferences
-import MathEconLib.ForMathlib.Uniform
+module
+
+public import MathEconLib.Matching.Classical.Marriage.RandomPreferences
+public import MathEconLib.ForMathlib.Uniform
 
 /-!
 # Independent uniform preference rankings
@@ -19,6 +21,8 @@ The profile representation and uniform law adapt the Formal Conjectures source r
 `RankPreferences`. The independent uniform model is also used in Ashlagi, Kanoria and Leshno
 (2017), Section II.A, https://doi.org/10.1086/689869. Asymptotic results are outside this module.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching.MarriageMarket
 

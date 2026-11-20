@@ -3,9 +3,11 @@ Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers, Bo Cowgill
 -/
-import Mathlib.Basic.PEquiv
-import Mathlib.Data.Set.Card
-import Mathlib.Data.Set.Subsingleton
+module
+
+public import Mathlib.Basic.PEquiv
+public import Mathlib.Data.Set.Card
+public import Mathlib.Data.Set.Subsingleton
 
 /-!
 # Partial equivalences and functional relations
@@ -19,6 +21,8 @@ left side.
 
 The existing `PEquiv` is the only matching structure. Its order remains the extension order.
 -/
+
+@[expose] public section
 
 universe u v u' v' u'' v''
 

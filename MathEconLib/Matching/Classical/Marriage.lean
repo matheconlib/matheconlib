@@ -3,16 +3,19 @@ Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Scott Duke Kominers
 -/
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
-import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
-import MathEconLib.Matching.Classical.Marriage.LoneWolf
-import MathEconLib.Matching.Classical.Marriage.RandomPreferences
-import MathEconLib.Matching.Classical.Marriage.RandomPreferencesUniform
-import MathEconLib.Matching.Classical.Marriage.RankPreferences
-import MathEconLib.Matching.Classical.Marriage.RankPreferencesDA
-import MathEconLib.Matching.Classical.Marriage.StableOrder
+module
+
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
+public import MathEconLib.Matching.Classical.Marriage.Distributive
+public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
+public import MathEconLib.Matching.Classical.Marriage.LoneWolf
+public import MathEconLib.Matching.Classical.Marriage.RandomPreferences
+public import MathEconLib.Matching.Classical.Marriage.RandomPreferencesUniform
+public import MathEconLib.Matching.Classical.Marriage.RankPreferences
+public import MathEconLib.Matching.Classical.Marriage.RankPreferencesDA
+public import MathEconLib.Matching.Classical.Marriage.StableOrder
 
 /-!
 # The classical marriage market
@@ -26,9 +29,12 @@ installed on bare `PEquiv`.
 The components separate basic economic definitions and direct classical facts,
 preferences and their induced choice, the embedding into contracts, stable
 existence, the symmetric extrema, fixed-point convergence, lone wolf results,
-and the stable-matching lattice. `Marriage.DeferredAcceptance` develops the
+and the distributive stable-matching lattice with its intrinsic ideal representation.
+`Marriage.DeferredAcceptance` develops the
 direct proposal algorithm; `Marriage.DeferredAcceptanceFixedPoints` relates
 its terminal outputs to the contracts fixed points; and
 `Marriage.DeferredAcceptanceComputable` supplies executable algorithms.
 -/
+
+@[expose] public section
 

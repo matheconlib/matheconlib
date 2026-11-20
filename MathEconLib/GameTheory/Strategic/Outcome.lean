@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Ben Eltschig, Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Ben Eltschig, Daniel Lyng, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ben Eltschig, Daniel Lyng
+Authors: Ben Eltschig, Daniel Lyng, Bo Cowgill
 -/
 module
 
@@ -55,6 +55,21 @@ structure PayoffStructure (I : Type*) (O : Type*) (V : Type*) where
   payoff : I → O → V
 
 variable {ι : Type*} {A : ι → Type*} {O : Type*} {V : Type*}
+
+namespace PayoffStructure
+
+/-- Fix the true state before evaluating outcomes. The state is separate from the chosen outcome;
+this construction requires no prior, order, or measurable-space structure. -/
+def atState {S : Type*} (P : PayoffStructure ι (S × O) V) (s : S) :
+    PayoffStructure ι O V where
+  payoff i x := P.payoff i (s, x)
+
+/-- State fixing evaluates the original utility at the supplied true state and outcome. -/
+@[simp] theorem atState_payoff {S : Type*} (P : PayoffStructure ι (S × O) V)
+    (s : S) (i : ι) (x : O) : (P.atState s).payoff i x = P.payoff i (s, x) :=
+  rfl
+
+end PayoffStructure
 
 /-- The strategic payoffs of an outcome game evaluated by the players' utilities. -/
 def StrategicGame.ofOutcome (G : OutcomeGame ι A O) (P : PayoffStructure ι O V) :
@@ -127,7 +142,12 @@ export PayoffStructure.Measurable (measurable_payoff)
 
 export PayoffStructure.Bounded (isBounded_payoff_range)
 
-/-- Players evaluate outcome distributions by expected utility in a complete real normed space.
+/-- The payoff structure obtained by integrating utilities over outcome distributions.
+
+For real-valued payoffs, using this construction to evaluate lotteries adopts the expected-utility
+model: each player's supplied utility represents lottery preferences through its expectation,
+whenever integrable. This is the von Neumann–Morgenstern interpretation of utility; preference
+axioms and the corresponding representation theorem are not formalized here.
 
 Measurability and continuity instances for expected utility are provided for real-valued
 utilities. -/

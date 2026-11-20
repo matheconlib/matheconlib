@@ -3,8 +3,10 @@ Copyright (c) 2026 The Formal Conjectures Authors. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: The Formal Conjectures Authors, Bo Cowgill
 -/
-import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
-import MathEconLib.Matching.Classical.Marriage.RankPreferences
+module
+
+public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
+public import MathEconLib.Matching.Classical.Marriage.RankPreferences
 
 /-!
 # Deferred acceptance for finite rank profiles
@@ -15,6 +17,8 @@ matched under any stable matching. The corollaries here apply that fact to the D
 proposer optimality also gives weakly lower average ordinal rank than any other stable outcome.
 No probability assumptions are needed, and `RankPreferences` itself remains independent of DA.
 -/
+
+@[expose] public section
 
 namespace MathEconLib.Matching.MarriageMarket
 
