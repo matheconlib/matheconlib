@@ -24,10 +24,13 @@ full Arrow–Debreu production theorem or every existence theorem in MWG.
 
 ## References
 
-Victor H. Aguiar, *ECON 803 Microeconomics I notes*, appendix “Fixed Points and Equilibrium
-Existence”, proposition “Walrasian existence with convex preferences”
-(`thmfull:walrasian-existence`, `thm:ge-existence-kakutani`). The assumptions and full-budget,
-exact-clearing conclusion agree; the temporary ceiling here is aggregate resources plus one.
+Victor H. Aguiar (2026), *Microeconomic Theory I*, Fall 2026 edition, November 18 revision,
+Appendix B, “Fixed Points and Equilibrium Existence”, Proposition B.4, “Walrasian existence
+with convex preferences”, pp. 216–217
+([stable PDF](https://github.com/vaguiarl/Econ803Micro1SFUFall2026/blob/bd3bef405f1291ee4c494826f1cf734f773cb95f/notes/Microeconomics_1_notes_by_Victor_Aguiar.pdf)).
+The preference and endowment assumptions and the full-budget, exact-clearing conclusion agree.
+Here positive commodity dimension and a nonempty consumer set are explicit; the temporary
+ceiling is aggregate resources plus one, rather than twice aggregate resources.
 
 Kenneth J. Arrow and Gérard Debreu (1954), *Existence of an Equilibrium for a Competitive
 Economy*, Econometrica **22**(3), 265–290, §§2.5 and 3.1–3.4, for the classical fictitious

@@ -7,6 +7,7 @@ module
 
 public import MathEconLib.Choice.Attainment
 public import MathEconLib.Choice.Basic
+public import MathEconLib.Choice.Compact
 public import MathEconLib.Choice.Conditions
 public import MathEconLib.Choice.FiniteOption
 public import MathEconLib.Choice.Induced

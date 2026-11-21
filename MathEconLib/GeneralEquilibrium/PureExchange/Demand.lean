@@ -5,6 +5,7 @@ Authors: Victor H. Aguiar
 -/
 module
 
+public import MathEconLib.Choice.Compact
 public import MathEconLib.GeneralEquilibrium.PureExchange.Basic
 public import Mathlib.Topology.Semicontinuity.Hemicontinuity
 public import Mathlib.Analysis.SpecificLimits.Basic
@@ -76,30 +77,6 @@ theorem tendsto_dot {A : Type*} {l : Filter A}
     Tendsto (fun n => dot (ps n) (xs n)) l (𝓝 (dot p x)) :=
   ((continuous_fst.dotProduct continuous_snd).tendsto (p, x)).comp (hp.prodMk_nhds hx)
 
-/-- A continuous complete preference attains a greatest alternative on each
-nonempty compact menu. Only closed upper contours are needed for attainment. -/
-private theorem completePreference_exists_greatest_of_isCompact
-    {X : Type*} [TopologicalSpace X] [T2Space X]
-    (R : CompletePreference X) {S : Set X} (hS : IsCompact S) (hne : S.Nonempty)
-    (hclosed : ∀ x ∈ S, IsClosed {y | R.le x y}) :
-    ∃ x ∈ S, ∀ y ∈ S, R.le y x := by
-  let : Nonempty S := ⟨⟨hne.choose, hne.choose_spec⟩⟩
-  let C : S → Set X := fun a => S ∩ {x | R.le a.val x}
-  have hdir : Directed (· ⊇ ·) C := by
-    intro a b
-    rcases R.total a.val b.val with hab | hba
-    · exact ⟨b, fun z hz => ⟨hz.1, R.le_trans hab hz.2⟩, subset_rfl⟩
-    · exact ⟨a, subset_rfl, fun z hz => ⟨hz.1, R.le_trans hba hz.2⟩⟩
-  have hnonempty (a : S) : (C a).Nonempty := ⟨a.val, a.property, R.le_refl a.val⟩
-  have hcompact (a : S) : IsCompact (C a) := hS.inter_right (hclosed a.val a.property)
-  have hclose (a : S) : IsClosed (C a) := hS.isClosed.inter (hclosed a.val a.property)
-  obtain ⟨x, hx⟩ := IsCompact.nonempty_iInter_of_directed_nonempty_isCompact_isClosed
-    C hdir hnonempty hcompact hclose
-  have hxall : ∀ a : S, x ∈ C a := Set.mem_iInter.mp hx
-  refine ⟨x, (hxall ⟨hne.choose, hne.choose_spec⟩).1, ?_⟩
-  intro y hy
-  exact (hxall ⟨y, hy⟩).2
-
 variable {L : ℕ}
 
 lemma isClosed_nonnegative : IsClosed {x : Bundle L | Nonnegative x} :=
@@ -142,7 +119,7 @@ lemma cappedDemand_nonempty (R : CompletePreference (Orthant L)) (hR : Preferenc
     isClosedEmbedding_orthant_val.isCompact_preimage (isCompact_cappedBudget e M p)
   have hne : S.Nonempty :=
     ⟨⟨0, fun _ => le_rfl⟩, zero_mem_cappedBudget hM hm⟩
-  obtain ⟨x, hx, hmax⟩ := completePreference_exists_greatest_of_isCompact
+  obtain ⟨x, hx, hmax⟩ := Choice.maximizers_nonempty_of_isCompact
     R hcompact hne (fun x _ => hR.closed_upper x)
   exact ⟨x.val, x.property, hx, hmax⟩
 
