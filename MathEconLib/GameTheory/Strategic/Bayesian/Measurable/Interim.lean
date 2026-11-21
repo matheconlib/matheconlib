@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Daniel Lyng, Bo Cowgill
 -/
 module
 
@@ -256,6 +256,51 @@ variable {I : Type*} {Θ : I → Type*} {A : I → Type*} [DecidableEq I]
   (B : ConditionalBeliefs μ)
   (hmeas : ∀ i, Measurable (fun p : (∀ j, A j) × (∀ j, Θ j) => G.payoff i p.1 p.2))
 
+/-- Every own action has a finite conditional expected payoff and is weakly worse than prescribed
+play at every own type, relative to the selected conditional beliefs. This includes prescribed
+actions and marginally null types. It does not assert global payoff integrability under `μ`. -/
+structure IsPointwiseInterimBestResponse [IsProbabilityMeasure μ] (s : G.Strategy) : Prop where
+  /-- All conditional action comparisons, including prescribed play, have finite expectations. -/
+  integrable : ∀ i θᵢ aᵢ,
+    Integrable (G.interimPayoffActionIntegrand i θᵢ aᵢ s) (B.opponents i θᵢ)
+  /-- Every own action is compared at the same own type and selected opponent beliefs. -/
+  bestResponse : ∀ i θᵢ aᵢ,
+    G.interimPayoffAction μ B i θᵢ aᵢ s ≤ G.interimPayoff μ B i θᵢ s
+
+/-- Pointwise interim best response requires integrability of every comparison, rather than
+restricting the inequality to integrable actions. -/
+theorem isPointwiseInterimBestResponse_iff (s : G.Strategy) :
+    G.IsPointwiseInterimBestResponse μ B s ↔
+      (∀ i θᵢ aᵢ,
+        Integrable (G.interimPayoffActionIntegrand i θᵢ aᵢ s) (B.opponents i θᵢ)) ∧
+      (∀ i θᵢ aᵢ,
+        G.interimPayoffAction μ B i θᵢ aᵢ s ≤ G.interimPayoff μ B i θᵢ s) :=
+  ⟨fun h ↦ ⟨h.integrable, h.bestResponse⟩, fun h ↦ ⟨h.1, h.2⟩⟩
+
+/-- Pointwise conditional finiteness supplies one conull set common to all actions. -/
+theorem IsPointwiseInterimBestResponse.hasIntegrableInterimDeviations {s : G.Strategy}
+    (h : G.IsPointwiseInterimBestResponse μ B s) :
+    G.HasIntegrableInterimDeviations μ B s :=
+  fun i ↦ Filter.Eventually.of_forall (h.integrable i)
+
+/-- Pointwise optimality implies simultaneous almost-everywhere interim optimality. -/
+theorem IsPointwiseInterimBestResponse.isAEInterimBestResponse {s : G.Strategy}
+    (h : G.IsPointwiseInterimBestResponse μ B s) : G.IsAEInterimBestResponse μ B s :=
+  fun i ↦ Filter.Eventually.of_forall (h.bestResponse i)
+
+omit [IsProbabilityMeasure μ] in
+/-- Conditional-a.e. realized payoff dominance gives an interim comparison when both the chosen
+action and prescribed action payoffs are conditionally integrable. -/
+theorem interimPayoffAction_le_of_ae_payoff_le (i : I) (θᵢ : Θ i) (aᵢ : A i)
+    (s : G.Strategy)
+    (ha : Integrable (G.interimPayoffActionIntegrand i θᵢ aᵢ s) (B.opponents i θᵢ))
+    (hs : Integrable (G.interimPayoffActionIntegrand i θᵢ ((s i).1 θᵢ) s)
+      (B.opponents i θᵢ))
+    (hle : G.interimPayoffActionIntegrand i θᵢ aᵢ s ≤ᵐ[B.opponents i θᵢ]
+      G.interimPayoffActionIntegrand i θᵢ ((s i).1 θᵢ) s) :
+    G.interimPayoffAction μ B i θᵢ aᵢ s ≤ G.interimPayoff μ B i θᵢ s :=
+  integral_mono_ae ha hs hle
+
 include hmeas
 
 /-- Interim optimality against all actions on a common conull set for each player implies ex-ante
@@ -272,6 +317,15 @@ theorem isBNE_of_ae_interim (s : G.Strategy)
   filter_upwards [hbr i] with θᵢ hθ
   rw [G.interimPayoff_eq_interimPayoffAction μ B i θᵢ s s' hagree]
   exact hθ ((s' i).1 θᵢ)
+
+/-- Guarded pointwise interim optimality implies the existing Bayesian equilibrium contract:
+all measurable unilateral strategy deviations with integrable deviator payoff are compared.
+Global incumbent integrability is an additional requirement; conditional finiteness alone does
+not supply it. No validity requirement is imposed on opponents after a deviation. -/
+theorem IsPointwiseInterimBestResponse.isBNE {s : G.Strategy}
+    (h : G.IsPointwiseInterimBestResponse μ B s) (hint : G.IncumbentPayoffsIntegrable μ s) :
+    G.IsBNE μ s :=
+  G.isBNE_of_ae_interim μ B hmeas s hint (h.isAEInterimBestResponse G μ B)
 
 /-- Best response against all actions on each player's specified conull type set implies Bayesian
 Nash equilibrium when incumbent payoffs are integrable. -/
