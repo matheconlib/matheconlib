@@ -94,6 +94,16 @@ example {M W : Type} [Fintype M] (old new : MarriageMarket M W) {w : W} {m : M}
     (hm : old.bestW w Y = some m) : new.bestW w Y = some m :=
   old.bestW_eq_some_of_forall_lt_some new h.lt_some_of_lt_some hm
 
+example {M : Type} {old new : LinearOrder (Option M)} {m a b : M}
+    (h : IsUnambiguousImprovement new old m) (ha : a ≠ m) (hb : b ≠ m) :
+    old.lt (some b) (some a) ↔ new.lt (some b) (some a) :=
+  h.some_lt_some_iff ha hb
+
+example {M : Type} {old new : LinearOrder (Option M)} {m a : M}
+    (h : IsUnambiguousImprovement new old m) (ha : a ≠ m) (hacc : old.lt none (some a)) :
+    new.lt none (some a) :=
+  h.none_lt_some_of_none_lt_some ha hacc
+
 /-! The relation is reflexive, so it is satisfiable on every preference. -/
 
 example {M : Type} (ord : LinearOrder (Option M)) (m : M) : IsUnambiguousImprovement ord ord m :=

@@ -11,9 +11,9 @@ public import MathEconLib.Matching.Classical.Marriage.Improvements
 # Fixed-menu choice under unambiguous improvements
 
 `NewlyAcceptable` applies both local choice theorems when a rival becomes newly acceptable.
-`BelowOutside` and `Overtaken` show that preserving the distinguished proposer's advantages
-over the outside option and over rivals are both necessary. These examples concern selection
-from a fixed menu; they make no claim about deferred-acceptance outcomes.
+`BelowOutside` and `Overtaken` show that both comparisons are needed in general. The proposer
+must stay above the outside option and the rivals on the menu. A rival outside the menu can
+pass him without changing the choice. These examples concern selection from a fixed menu.
 -/
 
 @[expose] public section
@@ -167,6 +167,21 @@ theorem not_mem_inducedChoiceW_new :
   rw [true_mem_inducedChoiceW_univ_iff]
   simp only [order_le]
   decide
+
+/-- When the rival is absent, the receiver still selects `true` under both rankings. -/
+theorem mem_inducedChoiceW_singleton_old_and_new :
+    (true, ()) ∈ (market oldOrder).inducedChoiceW () {(true, ())} ∧
+    (true, ()) ∈ (market newOrder).inducedChoiceW () {(true, ())} := by
+  have choose (ord : LinearOrder (Option Bool)) (ha : ord.le none (some true)) :
+      (true, ()) ∈ (market ord).inducedChoiceW () {(true, ())} := by
+    apply (market ord).mem_inducedChoiceW_iff.mpr
+    refine ⟨by simp, ha, ?_⟩
+    intro m hm
+    have he : (m, ()) = (true, ()) := Set.mem_singleton_iff.mp hm
+    have hfirst : m = true := congrArg Prod.fst he
+    subst m
+    exact ord.le_refl _
+  exact ⟨choose oldOrder (by decide), choose newOrder (by decide)⟩
 
 end Overtaken
 
