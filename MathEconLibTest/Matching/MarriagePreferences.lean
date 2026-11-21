@@ -66,6 +66,18 @@ example (μ : M ≃. W) (m : M) (w : W) :
       (μ m) ≺[mkt.preferenceM m] some w ∧ (μ.symm w) ≺[mkt.preferenceW w] some m :=
   mkt.isBlockingPair_iff_preference_lt μ m w
 
+example (μ : M ≃. W) (m : M) (partner : W) :
+    mkt.BlocksM μ m partner ↔ (μ m) ≺[mkt.preferenceM m] some partner :=
+  mkt.blocksM_iff_preferenceM_lt μ m partner
+
+example (μ : M ≃. W) (w : W) (partner : M) :
+    mkt.BlocksW μ w partner ↔ (μ.symm w) ≺[mkt.preferenceW w] some partner :=
+  mkt.blocksW_iff_preferenceW_lt μ w partner
+
+example (m : M) : mkt.symm.preferenceW m = mkt.preferenceM m := mkt.preferenceW_symm m
+
+example (w : W) : mkt.symm.preferenceM w = mkt.preferenceW w := mkt.preferenceM_symm w
+
 example (m : M) : mkt.symm.preferenceW m = mkt.preferenceM m := by simp
 
 example (w : W) : mkt.symm.preferenceM w = mkt.preferenceW w := by simp
@@ -83,5 +95,21 @@ example : none ≺[asymmetric.preferenceM 0] some 0 := by
 example : ¬ none ≺[asymmetric.preferenceW 0] some 0 := by
   rw [← asymmetric.acceptableW_iff_preferenceW_lt]
   exact not_top_lt (a := ((0 : ℕ) : WithTop ℕ))
+
+/-- Opposite rankings of real partners: men rank by `WithBot ℕ`, women by its order dual, so
+the two sides compare `some 0` and `some 1` in opposite directions. -/
+def reversed : MarriageMarket ℕ ℕ where
+  prefM _ := inferInstanceAs (LinearOrder (WithBot ℕ))
+  prefW _ := inferInstanceAs (LinearOrder (WithBot ℕ)ᵒᵈ)
+
+example : some 0 ≺[reversed.preferenceM 0] some 1 := by
+  rw [← reversed.ltM_iff_preferenceM_lt]
+  change ((0 : ℕ) : WithBot ℕ) < ((1 : ℕ) : WithBot ℕ)
+  exact WithBot.coe_lt_coe.mpr Nat.zero_lt_one
+
+example : some 1 ≺[reversed.preferenceW 0] some 0 := by
+  rw [← reversed.ltW_iff_preferenceW_lt]
+  change ((0 : ℕ) : WithBot ℕ) < ((1 : ℕ) : WithBot ℕ)
+  exact WithBot.coe_lt_coe.mpr Nat.zero_lt_one
 
 end MathEconLibTest.Matching.MarriagePreferences
