@@ -1,0 +1,365 @@
+\chapter{All-purchase auctions}
+
+In an all-purchase auction every bidder buys editions of a good at a posted unit price $p$, each edition carries a scarcity value $\varphi(B)$ that decreases in total purchases $B$, and the strictly highest purchaser also wins a prize. This chapter formalizes the all-pay bid function, the reduction of a bidder's interim problem to a quadratic net-cost problem under linear scarcity, explicit equilibrium purchase formulas, the revenue decomposition (Theorem~\ref{thm:MathEconLib.Auction.revenue_decomposition}) with its bundling consequence (Theorem~\ref{thm:MathEconLib.Auction.bundling_revenue_gain}), welfare identities, and an algebraic pricing formula.
+
+\section{The all-pay bid function}
+
+\begin{definition}\label{def:MathEconLib.Auction.allPayBid}
+\lean{MathEconLib.Auction.allPayBid}
+\leanok
+\uses{def:MathEconLib.Auction, def:MathEconLib.Auction.commonCDF}
+For an auction $A$ with $n \ge 1$ bidders whose types are identically distributed with common CDF $F$ and lowest type $\underline v$, the all-pay bid function is
+\[
+  b^{AP}(v) = v\,F(v)^{n-1} - \int_{\underline v}^{v} F(t)^{n-1}\,dt .
+\]
+\end{definition}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.allPayBid_measurable}
+\lean{MathEconLib.Auction.allPayBid_measurable}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid}
+For an auction with identically distributed types, the all-pay bid function $v \mapsto b^{AP}(v)$ is measurable.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Auction.commonCDF}
+The term $v\,F(v)^{n-1}$ is measurable because $F$ is measurable, and $v \mapsto \int_{\underline v}^{v} F^{n-1}$ is monotone (the integrand is nonnegative), hence measurable.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.allPayBid_uniform}
+\lean{MathEconLib.Auction.allPayBid_uniform}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Auction.commonCDF}
+Let $A$ have $n \ge 2$ bidders with identically distributed types, let $\bar v > 0$, suppose the lowest type is $0$ and the common CDF satisfies $F(t) = t/\bar v$ for all $t \in [0,\bar v]$. Then for every $v \in [0,\bar v]$,
+\[
+  b^{AP}(v) = \frac{n-1}{n}\cdot \frac{v^n}{\bar v^{\,n-1}} .
+\]
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid}
+Substitute $F(t) = t/\bar v$ on $[0,v]$, so the integral becomes $v^n/(n\,\bar v^{\,n-1})$, and simplify $v\,(v/\bar v)^{n-1} - v^n/(n\,\bar v^{\,n-1})$.
+\end{proof}
+
+\section{Linear scarcity and quadratic net cost}
+
+\begin{definition}\label{def:MathEconLib.LinearScarcityAuction}
+\lean{MathEconLib.LinearScarcityAuction}
+\leanok
+\uses{def:MathEconLib.Auction, def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec}
+A linear-scarcity all-purchase auction is an $n$-bidder auction (type random variables $\theta_i$ on a probability space) together with an all-purchase specification (a posted unit price $p > 0$, a continuous strictly decreasing per-edition value $\varphi$, strict-highest-bid prize allocation with no prize on ties, and net payment $(p - \varphi(\sum_j b_j))\,b_i$ for bidder $i$), plus reals $\bar\varphi > 0$ and $\alpha > 0$ such that $\varphi(B) = \bar\varphi - \alpha B$ for all $B$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.LinearScarcityAuction.K_linear}
+\lean{MathEconLib.LinearScarcityAuction.K_linear}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction}
+For a linear-scarcity auction and a strategy $\beta$, the marginal net cost at zero purchases is $K(\beta) = p - \bar\varphi + \alpha (n-1)\mu$, where $\mu = \mathbb E[\beta(\theta_0)]$ is bidder $0$'s mean purchase.
+\end{definition}
+
+\begin{theorem}\label{thm:MathEconLib.LinearScarcityAuction.expected_scarcity_linear}
+\lean{MathEconLib.LinearScarcityAuction.expected_scarcity_linear}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction, def:MathEconLib.Auction.IsSymmetricIPV}
+In a linear-scarcity auction with identically distributed types, let $\beta$ be measurable with $\beta(\theta_j)$ integrable for every $j$. Then for every bidder $i$ and purchase $b \in \mathbb R$,
+\[
+  \mathbb E\Big[\varphi\Big(b + \sum_{j \ne i} \beta(\theta_j)\Big)\Big] = \bar\varphi - \alpha\,\big(b + (n-1)\mu\big), \qquad \mu = \mathbb E[\beta(\theta_0)].
+\]
+Independence is not assumed.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction}
+Expand $\varphi$ linearly and use linearity of expectation; identical distribution gives $\mathbb E[\sum_{j \ne i}\beta(\theta_j)] = (n-1)\,\mathbb E[\beta(\theta_0)]$ (the helper lemma \texttt{Auction.expected\_sum\_erase}).
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.LinearScarcityAuction.p_strat_eq_quadratic}
+\lean{MathEconLib.LinearScarcityAuction.p_strat_eq_quadratic}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction, def:MathEconLib.LinearScarcityAuction.K_linear, def:MathEconLib.Auction.q_strat}
+In a linear-scarcity auction with identically distributed types, if $\beta$ is measurable and $\beta(\theta_j)$ is integrable for every $j$, then bidder $i$'s interim expected payment from purchasing $b$ while opponents use $\beta$ is quadratic: $p_{\mathrm{strat}}(\beta, i, b) = \alpha b^2 + K(\beta)\, b$ for all $b \in \mathbb R$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.LinearScarcityAuction.expected_scarcity_linear, def:MathEconLib.LinearScarcityAuction.K_linear, thm:MathEconLib.Mechanism.Auctions.AllPurchaseSpec.payment_eq}
+By the payment formula, $p_{\mathrm{strat}}(\beta,i,b) = p\,b - b\,\mathbb E[\varphi(b + \sum_{j\ne i}\beta(\theta_j))]$; substitute the expected scarcity value and collect terms.
+\end{proof}
+
+\begin{definition}\label{def:MathEconLib.QuadraticCostProblem}
+\lean{MathEconLib.QuadraticCostProblem}
+\leanok
+\uses{def:MathEconLib.BidderProblem}
+A quadratic-cost bidder problem is a bidder problem (winning probability, cost $C$, strategy, type interval) together with reals $\alpha > 0$ and $K$ such that $C(b) = \alpha b^2 + K b$ for all $b$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.LinearCostProblem}
+\lean{MathEconLib.LinearCostProblem}
+\leanok
+\uses{def:MathEconLib.BidderProblem}
+A linear-cost bidder problem is a bidder problem together with a real $p_{\mathrm{net}} > 0$ such that the cost function is $C(b) = p_{\mathrm{net}}\, b$ for all $b$ (the constant-scarcity case).
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.BidderProblem.IsBoundaryRegime}
+\lean{MathEconLib.BidderProblem.IsBoundaryRegime}
+\leanok
+\uses{def:MathEconLib.BidderProblem}
+A bidder problem is in the boundary regime if the lowest type's equilibrium utility is zero: $U(\underline v) = 0$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.InteriorRegimeProblem}
+\lean{MathEconLib.InteriorRegimeProblem}
+\leanok
+\uses{def:MathEconLib.QuadraticCostProblem}
+An interior-regime problem is a quadratic-cost bidder problem ($C(b) = \alpha b^2 + K b$, $\alpha > 0$) with $K < 0$ and lowest-type utility $U(\underline v) = K^2/(4\alpha)$.
+\end{definition}
+
+\begin{definition}\label{def:MathEconLib.LinearScarcityAuction.toQuadraticCostProblem}
+\lean{MathEconLib.LinearScarcityAuction.toQuadraticCostProblem}
+\leanok
+\uses{def:MathEconLib.QuadraticCostProblem, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.LinearScarcityAuction.K_linear, thm:MathEconLib.LinearScarcityAuction.p_strat_eq_quadratic}
+In a linear-scarcity auction with identically distributed types, for a measurable common strategy $\beta$ with integrable purchases $\beta(\theta_j)$ and a bidder $i$, bidder $i$'s induced interim problem (winning probability $q_{\mathrm{strat}}(\beta,i,\cdot)$, cost $p_{\mathrm{strat}}(\beta,i,\cdot)$, prescribed strategy $\beta$) is a quadratic-cost problem with coefficients $\alpha$ and $K(\beta)$; the cost identity is supplied by Theorem~\ref{thm:MathEconLib.LinearScarcityAuction.p_strat_eq_quadratic}.
+\end{definition}
+
+\section{Explicit purchase strategies}
+
+Throughout, for a bidder problem with interim winning probability $q$ on the type interval, $b^{AP}_P(v) = v\,q(v) - \int_{\underline v}^v q$ denotes the problem's all-pay bid. Type-deviation incentive compatibility gives the net-payment identity $C(\beta(v)) = b^{AP}_P(v) - U(\underline v)$, a restatement of the Myerson payment identity.
+
+\begin{theorem}\label{thm:MathEconLib.LinearCostProblem.constant_scarcity_strategy}
+\lean{MathEconLib.LinearCostProblem.constant_scarcity_strategy}
+\leanok
+\uses{def:MathEconLib.LinearCostProblem, def:MathEconLib.BidderProblem.IsBoundaryRegime, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Let $P$ be a linear-cost bidder problem ($C(b) = p_{\mathrm{net}} b$, $p_{\mathrm{net}} > 0$) satisfying type-deviation incentive compatibility and the boundary regime $U(\underline v) = 0$. Then for every $v$ in the type interval, $\beta(v) = b^{AP}_P(v)/p_{\mathrm{net}}$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.BidderProblem.payment_identity}
+The net-payment identity with $U(\underline v) = 0$ gives $p_{\mathrm{net}}\,\beta(v) = b^{AP}_P(v)$; divide by $p_{\mathrm{net}} > 0$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.QuadraticCostProblem.boundary_regime_strategy}
+\lean{MathEconLib.QuadraticCostProblem.boundary_regime_strategy}
+\leanok
+\uses{def:MathEconLib.QuadraticCostProblem, def:MathEconLib.BidderProblem.IsBoundaryRegime, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Let $P$ be a quadratic-cost bidder problem ($C(b) = \alpha b^2 + K b$, $\alpha > 0$) satisfying type-deviation incentive compatibility and the boundary regime $U(\underline v) = 0$, and suppose $K \ge 0$. If $v$ lies in the type interval with $b^{AP}_P(v) \ge 0$ and $\beta(v) \ge 0$, then
+\[
+  \beta(v) = \frac{-K + \sqrt{K^2 + 4\alpha\, b^{AP}_P(v)}}{2\alpha}.
+\]
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.BidderProblem.payment_identity}
+The net-payment identity gives $\alpha\beta(v)^2 + K\beta(v) = b^{AP}_P(v)$, which the displayed value $y \ge 0$ also solves. Factoring gives $(\beta(v) - y)(\alpha(\beta(v)+y) + K) = 0$, and the second factor can vanish only if $K = 0$ and $\beta(v) = y = 0$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.InteriorRegimeProblem.interior_regime_strategy}
+\lean{MathEconLib.InteriorRegimeProblem.interior_regime_strategy}
+\leanok
+\uses{def:MathEconLib.InteriorRegimeProblem, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Let $P$ be an interior-regime problem ($C(b) = \alpha b^2 + K b$, $\alpha > 0$, $K < 0$, $U(\underline v) = K^2/(4\alpha)$) satisfying type-deviation incentive compatibility. If $v$ lies in the type interval with $b^{AP}_P(v) \ge 0$ and $\beta(v) \ge -K/(2\alpha)$, then
+\[
+  \beta(v) = -\frac{K}{2\alpha} + \sqrt{b^{AP}_P(v)/\alpha}.
+\]
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.BidderProblem.payment_identity}
+Completing the square in the net-payment identity gives $\alpha(\beta(v) + K/(2\alpha))^2 = b^{AP}_P(v)$; the lower bound on $\beta(v)$ selects the nonnegative square root.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.LinearScarcityAuction.boundary_regime_strategy_auction}
+\lean{MathEconLib.LinearScarcityAuction.boundary_regime_strategy_auction}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction, def:MathEconLib.LinearScarcityAuction.K_linear, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.BidderProblem.IsBoundaryRegime, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Let $A$ be a linear-scarcity auction with identically distributed types and $\beta$ a measurable common strategy with $\beta(\theta_j)$ integrable for all $j$. Fix bidder $i$ and suppose $i$'s induced interim problem satisfies type-deviation incentive compatibility and $U(\underline v) = 0$, and $K(\beta) \ge 0$. Then for every $v$ in the type interval at which the induced all-pay bid $b^{AP}_i(v) = v\,q_i(v) - \int_{\underline v}^v q_i$ and $\beta(v)$ are nonnegative,
+\[
+  \beta(v) = \frac{-K(\beta) + \sqrt{K(\beta)^2 + 4\alpha\, b^{AP}_i(v)}}{2\alpha}.
+\]
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction.toQuadraticCostProblem, thm:MathEconLib.QuadraticCostProblem.boundary_regime_strategy}
+Apply the boundary-regime formula to the quadratic-cost problem induced by bidder $i$, whose coefficients are $\alpha$ and $K(\beta)$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.LinearScarcityAuction.interior_regime_strategy_auction}
+\lean{MathEconLib.LinearScarcityAuction.interior_regime_strategy_auction}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction, def:MathEconLib.LinearScarcityAuction.K_linear, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Let $A$ be a linear-scarcity auction with identically distributed types and $\beta$ a measurable common strategy with $\beta(\theta_j)$ integrable for all $j$. Fix bidder $i$ and suppose $i$'s induced interim problem satisfies type-deviation incentive compatibility, $K(\beta) < 0$, and $U(\underline v) = K(\beta)^2/(4\alpha)$. Then for every $v$ in the type interval with induced all-pay bid $b^{AP}_i(v) \ge 0$ and $\beta(v) \ge -K(\beta)/(2\alpha)$,
+\[
+  \beta(v) = -\frac{K(\beta)}{2\alpha} + \sqrt{b^{AP}_i(v)/\alpha}.
+\]
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction.toQuadraticCostProblem, def:MathEconLib.InteriorRegimeProblem, thm:MathEconLib.InteriorRegimeProblem.interior_regime_strategy}
+Extend the induced quadratic-cost problem to an interior-regime problem using $K(\beta) < 0$ and the lowest-type utility hypothesis, then apply the interior-regime formula.
+\end{proof}
+
+\section{Revenue decomposition}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.toBidderProblem_allPayBid_eq}
+\lean{MathEconLib.Auction.toBidderProblem_allPayBid_eq}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.Mechanism.Auctions.UsesStrictHighestBidAllocation, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Assume strict-highest-bid allocation and independent, identically distributed, bounded, atomless types with common CDF $F$ on $[\underline v, \bar v]$, and let $\beta$ be measurable and strictly increasing on $[\underline v, \bar v]$. If bidder $i$'s induced interim problem satisfies type-deviation incentive compatibility, then for every $v \in [\underline v, \bar v]$ its all-pay bid equals the auction's all-pay bid: $v\,q_i(v) - \int_{\underline v}^v q_i = b^{AP}(v)$.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.q_strat_eq_cdf_pow}
+Strict monotonicity makes the bid threshold of $\beta(v)$ equal to $v$, so $q_i(\psi) = F(\psi)^{n-1}$ on the type interval; both the boundary term and the integrand agree on $[\underline v, v]$.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.integral_t_i_eq_integral_p_strat}
+\lean{MathEconLib.Auction.integral_t_i_eq_integral_p_strat}
+\leanok
+\uses{def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec, def:MathEconLib.Auction.q_strat, def:MathEconLib.Auction.IsSymmetricIPV}
+For an all-purchase auction with independent bounded types, a measurable strategy $\beta$, and bidder $i$ whose ex-post net payment $t_i(\beta(\theta))$ is integrable, $\mathbb E[t_i(\beta(\theta))] = \mathbb E[p_{\mathrm{strat}}(\beta, i, \beta(\theta_i))]$, i.e.\ the expected payment equals the expected interim payment at the bidder's own bid.
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Mechanism.Auctions.AllPurchaseSpec.payment_eq}
+Write $t_i = h(X, Y)$ with $X = \beta(\theta_i)$, $Y = \sum_{j \ne i}\beta(\theta_j)$ and $h(x,y) = (p - \varphi(x+y))\,x$. Since $X$ and $Y$ are independent, Fubini lets one integrate out $Y$ first, which yields $p_{\mathrm{strat}}(\beta,i,X)$.
+\end{proof}
+
+\begin{lemma}\label{thm:MathEconLib.Auction.expectedNetPayment_eq}
+\lean{MathEconLib.Auction.expectedNetPayment_eq}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Consider an all-purchase auction with independent, identically distributed, bounded, atomless types on $[\underline v,\bar v]$ and a measurable common strategy $\beta$ strictly increasing on $[\underline v,\bar v]$. Assume every bidder's induced problem satisfies type-deviation incentive compatibility, all lowest-type utilities equal bidder $0$'s value $U_0$, each payment $t_i(\beta(\theta))$ is integrable, $b^{AP}$ is measurable and each $b^{AP}(\theta_i)$ is integrable. Then
+\[
+  \mathbb E\Big[\sum_i t_i(\beta(\theta))\Big] = n\,\big(\mathbb E[b^{AP}(\theta_0)] - U_0\big).
+\]
+\end{lemma}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.integral_t_i_eq_integral_p_strat, thm:MathEconLib.Auction.toBidderProblem_allPayBid_eq, thm:MathEconLib.BidderProblem.payment_identity}
+For each bidder, the expected payment is $\mathbb E[p_{\mathrm{strat}}(\beta,i,\beta(\theta_i))]$; the net-payment identity and the previous lemma rewrite the integrand as $b^{AP}(\theta_i) - U_0$, and identical distribution replaces $\theta_i$ by $\theta_0$. Sum over $i$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.revenue_decomposition}
+\lean{MathEconLib.Auction.revenue_decomposition}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec, def:MathEconLib.Auction.toBidderProblem, def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Under the hypotheses of Lemma~\ref{thm:MathEconLib.Auction.expectedNetPayment_eq} and integrability of $B\varphi(B)$ for aggregate purchases $B = \sum_j \beta(\theta_j)$, gross revenue satisfies
+\[
+  p\,\mathbb E[B] = n\,\mathbb E[b^{AP}(\theta_0)] - n\,U_0 + \mathbb E[B\,\varphi(B)].
+\]
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.expectedNetPayment_eq, thm:MathEconLib.Mechanism.Auctions.AllPurchaseSpec.payment_eq}
+Pointwise, $\sum_i t_i + B\varphi(B) = pB$ because $t_i = (p - \varphi(B))\,\beta(\theta_i)$. Take expectations and insert the expected net-payment identity.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.revenue_decomposition_boundary}
+\lean{MathEconLib.Auction.revenue_decomposition_boundary}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec}
+Under the hypotheses of Theorem~\ref{thm:MathEconLib.Auction.revenue_decomposition}, if additionally the common lowest-type utility is $U_0 = 0$, then $p\,\mathbb E[B] = n\,\mathbb E[b^{AP}(\theta_0)] + \mathbb E[B\,\varphi(B)]$.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.revenue_decomposition}
+Set $U_0 = 0$ in the revenue decomposition.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.Auction.bundling_revenue_gain}
+\lean{MathEconLib.Auction.bundling_revenue_gain}
+\leanok
+\uses{def:MathEconLib.Auction.allPayBid, def:MathEconLib.Mechanism.Auctions.AllPurchaseSpec}
+(Bundling revenue gain, as an identity.) Under the hypotheses of Theorem~\ref{thm:MathEconLib.Auction.revenue_decomposition_boundary}, for every unit cost $c$ and supplied editions-only quantity $B_{ed}$, with $\Pi_C = (p-c)\,\mathbb E[B]$, $\Pi_A = n\,\mathbb E[b^{AP}(\theta_0)]$ and $\Pi_B = (p-c)B_{ed}$,
+\[
+  \Pi_C - \Pi_A - \Pi_B = \mathbb E[B\varphi(B)] - c\,\mathbb E[B] - (p-c)B_{ed}.
+\]
+No sign of this difference is asserted. This form of the identity differs from the expression printed in section 6.7.1 of the source notes.
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.revenue_decomposition_boundary}
+Substitute $p\,\mathbb E[B] = \Pi_A + \mathbb E[B\varphi(B)]$ into $\Pi_C = p\,\mathbb E[B] - c\,\mathbb E[B]$ and rearrange.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.LinearScarcityAuction.bundling_revenue_gain_of_isBoundaryRegime}
+\lean{MathEconLib.LinearScarcityAuction.bundling_revenue_gain_of_isBoundaryRegime}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction, def:MathEconLib.BidderProblem.IsBoundaryRegime, def:MathEconLib.Auction.allPayBid, def:MathEconLib.Auction.IsSymmetricIPV, def:MathEconLib.BidderProblem.HasTypeDeviationIC}
+Let $A$ be a linear-scarcity auction with independent, identically distributed, bounded, atomless types, and $\beta$ measurable and strictly increasing on the type interval with every bidder's induced problem type-deviation incentive compatible and in the boundary regime; assume integrable payments, integrable $B\varphi(B)$, and integrable $b^{AP}(\theta_i)$. Then for every $c$, with the interior stationary Cournot quantity $B_{ed} = \frac{n(\bar\varphi - p)}{\alpha(n+1)}$ and $\Pi_C$, $\Pi_A$, $\Pi_B$ as in Theorem~\ref{thm:MathEconLib.Auction.bundling_revenue_gain},
+\[
+  \Pi_C - \Pi_A - \Pi_B = \mathbb E[B\varphi(B)] - c\,\mathbb E[B] - (p-c)B_{ed}.
+\]
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{thm:MathEconLib.Auction.bundling_revenue_gain, thm:MathEconLib.Auction.allPayBid_measurable}
+The boundary regime for every bidder gives equal lowest-type utilities $U_0 = 0$, and $b^{AP}$ is measurable; apply the general bundling identity with $B_{ed}$ as above.
+\end{proof}
+
+\section{Welfare identities}
+
+\begin{theorem}\label{thm:MathEconLib.AllPurchase.editionWelfare_le_firstBest}
+\lean{MathEconLib.AllPurchase.editionWelfare_le_firstBest}
+\leanok
+For reals $\bar\varphi, c$ and $\alpha > 0$, edition welfare $W(B) = (\bar\varphi - c)B - \alpha B^2$ satisfies $W(B) \le (\bar\varphi - c)^2/(4\alpha)$ for every real $B$.
+\end{theorem}
+\begin{proof}
+\leanok
+The gap equals $(\bar\varphi - c - 2\alpha B)^2/(4\alpha) \ge 0$.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.AllPurchase.editionWelfare_mean_sub_bundled}
+\lean{MathEconLib.AllPurchase.editionWelfare_mean_sub_bundled}
+\leanok
+For arbitrary reals $\bar\varphi, c, \alpha, E_1, E_2$, with $W(B) = (\bar\varphi - c)B - \alpha B^2$ and $W^C(E_1,E_2) = (\bar\varphi - c)E_1 - \alpha E_2$,
+\[
+  W(E_1) - W^C(E_1,E_2) = \alpha\,(E_2 - E_1^2),
+\]
+the variance penalty when $E_1, E_2$ are the first two moments of a quantity.
+\end{theorem}
+\begin{proof}
+\leanok
+Expand both sides.
+\end{proof}
+
+\begin{theorem}\label{thm:MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq}
+\lean{MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction}
+In a linear-scarcity auction, for any strategy $\beta$ and unit cost $c$, if aggregate purchases $B = \sum_j \beta(\theta_j)$ and $B^2$ are integrable, then
+\[
+  (\bar\varphi - c)\,\mathbb E[B] - \alpha\,\mathbb E[B^2] = \mathbb E[B\,\varphi(B)] - c\,\mathbb E[B].
+\]
+\end{theorem}
+\begin{proof}
+\leanok
+\uses{def:MathEconLib.LinearScarcityAuction}
+Pointwise $B\varphi(B) = \bar\varphi B - \alpha B^2$; take expectations using integrability of $B$ and $B^2$.
+\end{proof}
+
+\section{Pricing}
+
+\begin{theorem}\label{thm:MathEconLib.AllPurchase.sellerProfitInterior_le_at_optimal}
+\lean{MathEconLib.AllPurchase.sellerProfitInterior_le_at_optimal, MathEconLib.AllPurchase.sellerProfitInterior_eq_at_optimal_iff}
+\leanok
+For reals $\bar\varphi, c, M$, $\alpha > 0$ and a natural number $n \ge 1$, define
+\[
+  Q(p) = \frac{n(\bar\varphi - p)}{\alpha(n+1)} + \frac{2nM}{(n+1)\sqrt\alpha},\qquad \Pi(p) = (p-c)\,Q(p),\qquad p^* = \frac{\bar\varphi + c + 2\sqrt\alpha\, M}{2}.
+\]
+Then $\Pi(p) \le \Pi(p^*)$ for every real $p$, with equality if and only if $p = p^*$. This is a purely algebraic statement; no auction interpretation of $Q$, $\Pi$ or $M$ is proved.
+\end{theorem}
+\begin{proof}
+\leanok
+Factor $\Pi(p) = \frac{n}{\alpha(n+1)}(p-c)(\bar\varphi + 2\sqrt\alpha M - p)$, so $\Pi(p^*) - \Pi(p) = \frac{n}{\alpha(n+1)}(p - p^*)^2$ with a positive coefficient.
+\end{proof}
+
+\section{Open targets}
+
+\begin{theorem}\label{thm:open.interior_pricing_interpretation}
+\uses{thm:MathEconLib.AllPurchase.sellerProfitInterior_le_at_optimal, def:MathEconLib.LinearScarcityAuction, def:MathEconLib.Auction.allPayBid}
+(Auction interpretation of the interior pricing formulas.) Identify $Q(p) = n(\bar\varphi - p)/(\alpha(n+1)) + 2nM/((n+1)\sqrt\alpha)$ and $\Pi(p) = (p-c)Q(p)$ with the equilibrium expected aggregate quantity and seller profit of the linear-scarcity all-purchase auction, with $M = \mathbb E[\sqrt{b^{AP}(V)}]$ (Propositions 6.8 and 6.12, section 6.7.2 of the source notes). The repository records this as unproved in \texttt{MathEconLib/Auction/AllPurchase/OptimalPricing.lean}.
+\end{theorem}
+
+\begin{theorem}\label{thm:open.optimal_price_feasibility}
+\uses{thm:MathEconLib.AllPurchase.sellerProfitInterior_le_at_optimal, def:MathEconLib.LinearScarcityAuction}
+(Feasibility and global optimality of the posted price $p^*$.) Show that the candidate price $p^* = (\bar\varphi + c + 2\sqrt\alpha M)/2$ is feasible for the all-purchase auction and is the economically (globally) optimal posted price for the seller, beyond maximizing the algebraic profit formula over $\mathbb R$. The repository records this as open in \texttt{MathEconLib/Auction/AllPurchase/OptimalPricing.lean} and in AxiomMath/auctionlib issue 46.
+\end{theorem}
