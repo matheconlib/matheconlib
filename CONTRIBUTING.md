@@ -30,6 +30,7 @@ public representation of an existing concept, or introduces an import between
 layers. This applies to extensions of existing foundations such as `Preferences`
 and `Choice`.
 
+Check for duplication against existing MathEconLib and Mathlib APIs.
 Record the canonical API, one representative downstream theorem and its assumptions,
 and the direction of any new imports. During PR review, if the downstream theorem
 exposes an unresolved choice about a shared abstraction, a public representation,
