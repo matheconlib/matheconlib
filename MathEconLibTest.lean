@@ -41,6 +41,7 @@ import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.DistributiveMarriage
 import MathEconLibTest.Matching.Improvements
 import MathEconLibTest.Matching.PublicImport
+import MathEconLibTest.Matching.Roommates
 import MathEconLibTest.Matching.SellerParticipation
 import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
