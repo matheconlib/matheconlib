@@ -54,6 +54,7 @@ import MathEconLibTest.Mechanism.Utility
 import MathEconLibTest.Namespace
 import MathEconLibTest.Preferences.Basic
 import MathEconLibTest.Preferences.Complete
+import MathEconLibTest.Preferences.Profile
 import MathEconLibTest.Preferences.PublicImport
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.RevealedPreference.Compatibility
@@ -61,6 +62,7 @@ import MathEconLibTest.RevealedPreference.Examples
 import MathEconLibTest.RevealedPreference.Geometry
 import MathEconLibTest.SingleParameter.BeckerCrime
 import MathEconLibTest.SingleParameter.Compatibility
+import MathEconLibTest.SocialChoice.PublicImport
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples
 import MathEconLibTest.ValueDistribution.UniformPricing

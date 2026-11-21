@@ -31,8 +31,14 @@ linear order on the alternatives.
   direction.
 * `CompletePreference.not_le` — failure of a weak comparison is strict preference in the reverse
   direction.
+* `CompletePreference.not_lt` — failure of a strict preference is weak preference in the reverse
+  direction.
 * `CompletePreference.lt_or_antisymmRel_or_gt` — any two alternatives are strictly ranked in one
   direction or indifferent.
+* `CompletePreference.lt_or_gt_of_ne` — with antisymmetric weak comparison, distinct alternatives
+  are strictly ranked in one direction.
+* `CompletePreference.le_iff_eq_or_lt` — with antisymmetric weak comparison, weak preference is
+  equality or strict preference.
 * `CompletePreference.ofLinearOrder_toLinearOrder` — an antisymmetric complete preference is the
   preference of its linear order.
 
@@ -62,6 +68,14 @@ namespace CompletePreference
 variable {X Y : Type*}
 
 instance (R : CompletePreference X) : Std.Total R.le := R.isTotal
+
+/-- Complete preferences agree when every weak comparison agrees. -/
+@[ext]
+theorem ext {R S : CompletePreference X} (h : ∀ x y : X, x ≼[R] y ↔ x ≼[S] y) : R = S := by
+  cases R
+  cases S
+  congr
+  exact Preference.ext h
 
 /-- Every pair of alternatives can be compared. -/
 theorem total (R : CompletePreference X) (x y : X) : x ≼[R] y ∨ y ≼[R] x :=
@@ -130,6 +144,28 @@ theorem lt_or_antisymmRel_or_gt (R : CompletePreference X) (x y : X) :
     · exact Or.inr (Or.inl ⟨hxy, hyx⟩)
     · exact Or.inl ⟨hxy, hyx⟩
   · exact Or.inr (Or.inr (R.not_le.mp hxy))
+
+/-- Failure of a strict preference is the reverse weak comparison. -/
+theorem not_lt (R : CompletePreference X) {x y : X} : ¬x ≺[R] y ↔ y ≼[R] x := by
+  rw [← R.not_le, not_not]
+
+/-- With antisymmetric weak comparison, distinct alternatives are strictly ranked. -/
+theorem lt_or_gt_of_ne (R : CompletePreference X) [Std.Antisymm R.le] {x y : X} (h : x ≠ y) :
+    x ≺[R] y ∨ y ≺[R] x := by
+  rcases R.total x y with hxy | hyx
+  · exact Or.inl ⟨hxy, fun hyx => h (antisymm hxy hyx)⟩
+  · exact Or.inr ⟨hyx, fun hxy => h (antisymm hxy hyx)⟩
+
+/-- With antisymmetric weak comparison, weak preference is equality or strict preference. -/
+theorem le_iff_eq_or_lt (R : CompletePreference X) [Std.Antisymm R.le] {x y : X} :
+    x ≼[R] y ↔ x = y ∨ x ≺[R] y := by
+  refine ⟨fun hxy => ?_, ?_⟩
+  · by_cases hyx : y ≼[R] x
+    · exact Or.inl (antisymm hxy hyx)
+    · exact Or.inr ⟨hxy, hyx⟩
+  · rintro (rfl | h)
+    · exact R.le_refl x
+    · exact R.le_of_lt h
 
 end CompletePreference
 end Preferences
