@@ -1,0 +1,24 @@
+/-
+Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Scott Duke Kominers
+-/
+import MathEconLibExamples.AllPurchase.UniformTwoBidder
+
+/-!
+# Axiom checks for all-purchase pricing and prize-aware welfare results
+
+These checks are kept in a non-`module` test file because Lean does not allow `#print axioms`
+inside a `module`. The default test target builds this file and records the results in CI.
+-/
+
+#print axioms MathEconLib.LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior
+#print axioms MathEconLib.LinearScarcityAuction.bundledProfit_le_interior_optimum
+#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.bundledProfit_eq
+#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.universalIC
+#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.prize_aware_best_response
+#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.welfare_gap
+#print axioms MathEconLib.Examples.AllPurchase.UniformTwoBidder.variance_penalty
+
+#print axioms MathEconLib.Auction.integrable_comp_type_of_monotoneOn
+#print axioms MathEconLib.LinearScarcityAuction.interior_regime_strategy_eq_strategyInterior
