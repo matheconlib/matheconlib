@@ -25,7 +25,7 @@ open MathEconLib.GameTheory
 namespace MathEconLibExamples.GameTheory.ExplicitComparisons
 
 /-- Every alternative is an admissible deviation for the single agent. -/
-def problem : EquilibriumProblem Bool Unit Bool where
+def problem : EquilibriumProblem Unit Bool Bool where
   deviation _ _ _ := True
   value _ s := s
   valid _ := True
@@ -50,7 +50,7 @@ theorem equilibrium_iff_no_strictImprovement (s : Bool) :
       (fun _ t _ ↦ prefersTrue_total t s)
 
 /-- The same deviations evaluated by the numerical representation `false ↦ 0`, `true ↦ 1`. -/
-def numericalProblem : EquilibriumProblem Bool Unit Nat where
+def numericalProblem : EquilibriumProblem Unit Bool Nat where
   deviation _ _ _ := True
   value _ s := if s then 1 else 0
   valid _ := True
@@ -78,7 +78,7 @@ theorem false_not_isEquilibrium : ¬ numericalProblem.IsEquilibrium false :=
   fun h ↦ (by decide : ¬ (1 : Nat) ≤ 0) (h.deviation_le () true trivial)
 
 /-- An irrelevant Boolean tag leaves the chosen consequence unchanged. -/
-def taggedProblem : EquilibriumProblem (Bool × Bool) Unit Bool where
+def taggedProblem : EquilibriumProblem Unit (Bool × Bool) Bool where
   deviation _ _ _ := True
   value _ s := s.1
   valid _ := True
@@ -102,7 +102,7 @@ theorem true_isEquilibriumWith_of_transport : problem.IsEquilibriumWith prefersT
     (tagged_true_isEquilibriumWith false)
 
 /-- A restricted problem admits only deviations that leave the current alternative unchanged. -/
-def restrictedProblem : EquilibriumProblem Bool Unit Bool where
+def restrictedProblem : EquilibriumProblem Unit Bool Bool where
   deviation _ s t := s = t
   value _ s := s
   valid _ := True

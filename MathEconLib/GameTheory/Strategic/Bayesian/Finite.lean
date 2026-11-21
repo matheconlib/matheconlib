@@ -128,7 +128,7 @@ def fromExpandedProfile (profile : Π (p : Σ i, Θ i), A p.1) :
 index is a player–type pair `⟨i, θ_i⟩`; the deviation relation says the new strategy may differ
 only at that pair; the value is the interim expected payoff. Every pure strategy profile is a
 valid candidate. -/
-noncomputable def bnePredFin : EquilibriumProblem G.PureStrategy (Σ i, Θ i) V :=
+noncomputable def bnePredFin : EquilibriumProblem (Σ i, Θ i) G.PureStrategy V :=
   .ofDeviation
     (fun p s s' => ∀ j θ_j, (⟨j, θ_j⟩ : Σ k, Θ k) ≠ p → s' j θ_j = s j θ_j)
     (fun p s => G.interimPayoffActionFin d p.1 p.2 (s p.1 p.2) s)

@@ -25,28 +25,28 @@ universe u v w x y z
 
 variable {S : Type u} {I : Type v} {X : Type w} {V : Type x}
 
-example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (i : I) (s : S) :
+example (P : EquilibriumProblem I S X) (R : I → X → X → Prop) (i : I) (s : S) :
     P.IsOptimalWith R i s ↔ ∀ t, P.deviation i s t → R i (P.value i t) (P.value i s) :=
   P.isOptimalWith_iff R i s
 
-example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (s : S) :
+example (P : EquilibriumProblem I S X) (R : I → X → X → Prop) (s : S) :
     P.IsDeviationOptimalWith R s ↔
       ∀ i t, P.deviation i s t → R i (P.value i t) (P.value i s) :=
   P.isDeviationOptimalWith_iff R s
 
-example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (s : S) :
+example (P : EquilibriumProblem I S X) (R : I → X → X → Prop) (s : S) :
     P.IsEquilibriumWith R s ↔ P.valid s ∧ P.IsDeviationOptimalWith R s :=
   P.isEquilibriumWith_iff R s
 
-example [LE X] (P : EquilibriumProblem S I X) (s : S) :
+example [LE X] (P : EquilibriumProblem I S X) (s : S) :
     P.IsDeviationOptimalWith (fun _ x y ↦ x ≤ y) s ↔ P.IsDeviationOptimal s :=
   P.isDeviationOptimalWith_le_iff s
 
-example [LE X] (P : EquilibriumProblem S I X) (s : S) :
+example [LE X] (P : EquilibriumProblem I S X) (s : S) :
     P.IsEquilibriumWith (fun _ x y ↦ x ≤ y) s ↔ P.IsEquilibrium s :=
   P.isEquilibriumWith_le_iff s
 
-example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
+example (P : EquilibriumProblem I S X) (Q : EquilibriumProblem I S V)
     (R : I → X → X → Prop) (R' : I → V → V → Prop)
     (hdev : ∀ i s t, P.deviation i s t ↔ Q.deviation i s t)
     (hcmp : ∀ i s t, P.deviation i s t →
@@ -55,7 +55,7 @@ example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
     P.IsEquilibriumWith R s ↔ Q.IsEquilibriumWith R' s :=
   P.isEquilibriumWith_iff_of_comparisons Q R R' hdev hcmp hvalid s
 
-example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
+example (P : EquilibriumProblem I S X) (Q : EquilibriumProblem I S V)
     (R : I → X → X → Prop) (R' : I → V → V → Prop)
     (hdev : ∀ i s t, P.deviation i s t ↔ Q.deviation i s t)
     (hcmp : ∀ i s t, P.deviation i s t →
@@ -63,7 +63,7 @@ example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
     P.IsDeviationOptimalWith R s ↔ Q.IsDeviationOptimalWith R' s :=
   P.isDeviationOptimalWith_iff_of_comparisons Q R R' hdev hcmp s
 
-example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
+example (P : EquilibriumProblem I S X) (Q : EquilibriumProblem I S V)
     (R : I → X → X → Prop) (R' : I → V → V → Prop) (i : I)
     (hdev : ∀ s t, P.deviation i s t ↔ Q.deviation i s t)
     (hcmp : ∀ s t, P.deviation i s t →
@@ -71,7 +71,7 @@ example (P : EquilibriumProblem S I X) (Q : EquilibriumProblem S I V)
     P.IsOptimalWith R i s ↔ Q.IsOptimalWith R' i s :=
   P.isOptimalWith_iff_of_comparisons Q R R' i (hdev := hdev) (hcmp := hcmp) s
 
-example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (s : S)
+example (P : EquilibriumProblem I S X) (R : I → X → X → Prop) (s : S)
     (hcmp : ∀ i t, P.deviation i s t →
       R i (P.value i t) (P.value i s) ∨ R i (P.value i s) (P.value i t)) :
     P.IsEquilibriumWith R s ↔ P.valid s ∧ ∀ i t, P.deviation i s t →
@@ -79,7 +79,7 @@ example (P : EquilibriumProblem S I X) (R : I → X → X → Prop) (s : S)
   P.isEquilibriumWith_iff_no_strictImprovement R s hcmp
 
 /-- Numerical consequences do not force the supplied comparison to be the ambient order. -/
-def naturalProblem : EquilibriumProblem Nat Unit Nat where
+def naturalProblem : EquilibriumProblem Unit Nat Nat where
   deviation _ _ _ := True
   value _ n := n
   valid _ := True
@@ -93,7 +93,7 @@ example : ¬ naturalProblem.IsEquilibrium 0 :=
 /-! Ordered recovery also recovers both existing transport routes with only an `LE` instance. -/
 
 example {T : Type y} {J : Type z} [LE X]
-    (P : EquilibriumProblem S I X) (Q : EquilibriumProblem T J X)
+    (P : EquilibriumProblem I S X) (Q : EquilibriumProblem J T X)
     (f : GameMorphism P Q) {s : S} (h : P.IsEquilibrium s) :
     Q.IsEquilibrium (f.toFun s) :=
   (Q.isEquilibriumWith_le_iff (f.toFun s)).1
@@ -101,7 +101,7 @@ example {T : Type y} {J : Type z} [LE X]
       (fun _ _ _ _ hxy ↦ hxy) ((P.isEquilibriumWith_le_iff s).2 h))
 
 example {T : Type y} {J : Type z} [LE X]
-    (P : EquilibriumProblem S I X) (Q : EquilibriumProblem T J X)
+    (P : EquilibriumProblem I S X) (Q : EquilibriumProblem J T X)
     (f : GameComorphism P Q) {s : S} (h : Q.IsEquilibrium (f.toFun s)) :
     P.IsEquilibrium s :=
   (P.isEquilibriumWith_le_iff s).1
@@ -111,7 +111,7 @@ example {T : Type y} {J : Type z} [LE X]
 /-! Two players use different comparisons; transport selects the player named `true`. -/
 
 /-- The second player evaluates the natural action; the first always receives zero. -/
-def indexedProblem : EquilibriumProblem Nat Bool Nat where
+def indexedProblem : EquilibriumProblem Bool Nat Nat where
   deviation _ _ _ := True
   value i n := if i then n else 0
   valid _ := True
@@ -153,7 +153,7 @@ example : naturalProblem.IsEquilibriumWith (fun _ x y ↦ y ≤ x ∨ x = 0) 0 :
 /-! Comparability is needed only on admissible pairs, without global order or reflexivity. -/
 
 /-- Only the successor is an admissible deviation. -/
-def successorProblem : EquilibriumProblem Nat Unit Nat where
+def successorProblem : EquilibriumProblem Unit Nat Nat where
   deviation _ s t := t = s + 1
   value _ n := n
   valid _ := True

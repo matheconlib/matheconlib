@@ -70,7 +70,7 @@ universe u v w x y z r r'
 
 Deviation relations may be arbitrary; notably the supplied relation need not commute or be
 transitive. Solution concepts should therefore take care to supply the correct relation. -/
-structure EquilibriumProblem (S : Type u) (I : Type v) (V : Type r) where
+structure EquilibriumProblem (I : Type u) (S : Type v) (V : Type r) where
   /-- Whether a deviator may change the first state to the second state. -/
   deviation : I → S → S → Prop
   /-- The reward of each deviator at each state. -/
@@ -80,22 +80,22 @@ structure EquilibriumProblem (S : Type u) (I : Type v) (V : Type r) where
 
 namespace EquilibriumProblem
 
-variable {V : Type r} {S : Type u} {I : Type v} {P Q : EquilibriumProblem S I V}
+variable {V : Type r} {I : Type u} {S : Type v} {P Q : EquilibriumProblem I S V}
 
 /-- Every admissible deviation by `i` is weakly worse under the supplied comparison.
 `R i x y` means that player `i` weakly prefers `y` to `x`; no order axioms are assumed. -/
-def IsOptimalWith (P : EquilibriumProblem S I V) (R : I → V → V → Prop)
+def IsOptimalWith (P : EquilibriumProblem I S V) (R : I → V → V → Prop)
     (i : I) (s : S) : Prop :=
   ∀ t, P.deviation i s t → R i (P.value i t) (P.value i s)
 
 /-- Every player is deviation-optimal under its explicitly supplied comparison.
 Candidate validity is separate, and no validity condition is imposed on deviation targets. -/
-def IsDeviationOptimalWith (P : EquilibriumProblem S I V) (R : I → V → V → Prop)
+def IsDeviationOptimalWith (P : EquilibriumProblem I S V) (R : I → V → V → Prop)
     (s : S) : Prop :=
   ∀ i, P.IsOptimalWith R i s
 
 /-- A valid incumbent that is deviation-optimal under the supplied comparisons. -/
-structure IsEquilibriumWith (P : EquilibriumProblem S I V) (R : I → V → V → Prop)
+structure IsEquilibriumWith (P : EquilibriumProblem I S V) (R : I → V → V → Prop)
     (s : S) : Prop where
   /-- The incumbent is an admissible equilibrium candidate. -/
   valid : P.valid s
@@ -103,20 +103,20 @@ structure IsEquilibriumWith (P : EquilibriumProblem S I V) (R : I → V → V �
   deviation_le : P.IsDeviationOptimalWith R s
 
 /-- Optimality compares precisely the deviations admitted by the problem. -/
-@[simp] theorem isOptimalWith_iff (P : EquilibriumProblem S I V)
+@[simp] theorem isOptimalWith_iff (P : EquilibriumProblem I S V)
     (R : I → V → V → Prop) (i : I) (s : S) :
     P.IsOptimalWith R i s ↔ ∀ t, P.deviation i s t → R i (P.value i t) (P.value i s) :=
   Iff.rfl
 
 /-- Deviation optimality compares every player's admissible deviations. -/
-@[simp] theorem isDeviationOptimalWith_iff (P : EquilibriumProblem S I V)
+@[simp] theorem isDeviationOptimalWith_iff (P : EquilibriumProblem I S V)
     (R : I → V → V → Prop) (s : S) :
     P.IsDeviationOptimalWith R s ↔
       ∀ i t, P.deviation i s t → R i (P.value i t) (P.value i s) :=
   Iff.rfl
 
 /-- Full equilibrium requires a valid incumbent as well as every deviation comparison. -/
-theorem isEquilibriumWith_iff (P : EquilibriumProblem S I V)
+theorem isEquilibriumWith_iff (P : EquilibriumProblem I S V)
     (R : I → V → V → Prop) (s : S) :
     P.IsEquilibriumWith R s ↔ P.valid s ∧ P.IsDeviationOptimalWith R s :=
   ⟨fun h ↦ ⟨h.valid, h.deviation_le⟩, fun h ↦ ⟨h.1, h.2⟩⟩
@@ -127,12 +127,12 @@ Note that, in a partial order, this excludes incomparable rewards as well as str
 Also note that states are only compared if they are reachable through a single application of the
 deviation relation. The predicate checks this relation as supplied, without adding paths of
 successive deviations or its transitive closure. -/
-def IsDeviationOptimal [LE V] (P : EquilibriumProblem S I V) (s : S) : Prop :=
+def IsDeviationOptimal [LE V] (P : EquilibriumProblem I S V) (s : S) : Prop :=
   ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s
 
 /-- Deviation optimality holds exactly when every admissible deviation weakly lowers the
 reward. -/
-@[simp] lemma isDeviationOptimal_iff [LE V] (P : EquilibriumProblem S I V) (s : S) :
+@[simp] lemma isDeviationOptimal_iff [LE V] (P : EquilibriumProblem I S V) (s : S) :
     P.IsDeviationOptimal s ↔ ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s := Iff.rfl
 
 /-- Removing admissible deviations preserves deviation optimality when rewards agree. -/
@@ -148,19 +148,19 @@ lemma IsDeviationOptimal.not_lt [Preorder V] {s : S} (h : P.IsDeviationOptimal s
   not_lt_of_ge (h i s' hd)
 
 /-- For linearly ordered rewards, deviation optimality is absence of strict improvement. -/
-lemma isDeviationOptimal_iff_not_lt [LinearOrder V] (P : EquilibriumProblem S I V) (s : S) :
+lemma isDeviationOptimal_iff_not_lt [LinearOrder V] (P : EquilibriumProblem I S V) (s : S) :
     P.IsDeviationOptimal s ↔ ∀ i s', P.deviation i s s' → ¬ P.value i s < P.value i s' := by
   simp only [isDeviationOptimal_iff, not_lt]
 
 /-- A valid incumbent whose reward weakly dominates every admissible deviation. -/
-structure IsEquilibrium [LE V] (P : EquilibriumProblem S I V) (s : S) : Prop where
+structure IsEquilibrium [LE V] (P : EquilibriumProblem I S V) (s : S) : Prop where
   /-- The incumbent is an admissible equilibrium candidate. -/
   valid : P.valid s
   /-- Every admissible deviation weakly lowers the deviator's reward. -/
   deviation_le : P.IsDeviationOptimal s
 
 /-- Equilibrium consists of candidate validity and deviation optimality. -/
-lemma isEquilibrium_iff [LE V] (P : EquilibriumProblem S I V) (s : S) :
+lemma isEquilibrium_iff [LE V] (P : EquilibriumProblem I S V) (s : S) :
     P.IsEquilibrium s ↔ P.valid s ∧ P.IsDeviationOptimal s :=
   ⟨fun h ↦ ⟨h.valid, h.deviation_le⟩, fun h ↦ ⟨h.1, h.2⟩⟩
 
@@ -179,7 +179,7 @@ lemma IsEquilibrium.not_lt [Preorder V] {s : S} (h : P.IsEquilibrium s)
 
 /-- An equilibrium problem in which every state is a valid candidate. -/
 def ofDeviation (deviation : I → S → S → Prop) (value : I → S → V) :
-    EquilibriumProblem S I V where
+    EquilibriumProblem I S V where
   deviation := deviation
   value := value
   valid _ := True
@@ -206,26 +206,26 @@ def ofDeviation (deviation : I → S → S → Prop) (value : I → S → V) :
     ofDeviation_value, true_and]
 
 /-- Add a condition on incumbent candidates while retaining the same deviations and rewards. -/
-def refine (P : EquilibriumProblem S I V) (condition : S → Prop) :
-    EquilibriumProblem S I V where
+def refine (P : EquilibriumProblem I S V) (condition : S → Prop) :
+    EquilibriumProblem I S V where
   deviation := P.deviation
   value := P.value
   valid s := P.valid s ∧ condition s
 
 /-- Refinement preserves admissible deviations. -/
-@[simp] lemma refine_deviation (P : EquilibriumProblem S I V) (condition : S → Prop) :
+@[simp] lemma refine_deviation (P : EquilibriumProblem I S V) (condition : S → Prop) :
     (P.refine condition).deviation = P.deviation := rfl
 
 /-- Refinement preserves rewards. -/
-@[simp] lemma refine_value (P : EquilibriumProblem S I V) (condition : S → Prop) :
+@[simp] lemma refine_value (P : EquilibriumProblem I S V) (condition : S → Prop) :
     (P.refine condition).value = P.value := rfl
 
 /-- A refined candidate satisfies both the original validity and the additional condition. -/
-@[simp] lemma refine_valid (P : EquilibriumProblem S I V) (condition : S → Prop) (s : S) :
+@[simp] lemma refine_valid (P : EquilibriumProblem I S V) (condition : S → Prop) (s : S) :
     (P.refine condition).valid s ↔ P.valid s ∧ condition s := Iff.rfl
 
 /-- A refined equilibrium is an equilibrium satisfying the additional candidate condition. -/
-@[simp] lemma isEquilibrium_refine_iff [LE V] (P : EquilibriumProblem S I V)
+@[simp] lemma isEquilibrium_refine_iff [LE V] (P : EquilibriumProblem I S V)
     (condition : S → Prop) (s : S) :
     (P.refine condition).IsEquilibrium s ↔ P.IsEquilibrium s ∧ condition s := by
   constructor
@@ -235,13 +235,13 @@ def refine (P : EquilibriumProblem S I V) (condition : S → Prop) :
     exact ⟨⟨h.valid, hc⟩, h.deviation_le⟩
 
 /-- The explicit order comparison recovers the existing equilibrium predicate exactly. -/
-@[simp] theorem isEquilibriumWith_le_iff [LE V] (P : EquilibriumProblem S I V) (s : S) :
+@[simp] theorem isEquilibriumWith_le_iff [LE V] (P : EquilibriumProblem I S V) (s : S) :
     P.IsEquilibriumWith (fun _ x y ↦ x ≤ y) s ↔ P.IsEquilibrium s :=
   ⟨fun h ↦ ⟨h.valid, h.deviation_le⟩, fun h ↦ ⟨h.valid, h.deviation_le⟩⟩
 
 /-- The explicit order comparison also recovers deviation optimality without candidate validity. -/
 @[simp] theorem isDeviationOptimalWith_le_iff [LE V]
-    (P : EquilibriumProblem S I V) (s : S) :
+    (P : EquilibriumProblem I S V) (s : S) :
     P.IsDeviationOptimalWith (fun _ x y ↦ x ≤ y) s ↔ P.IsDeviationOptimal s :=
   Iff.rfl
 
@@ -269,8 +269,8 @@ theorem IsEquilibriumWith.of_deviation_subset {R : I → V → V → Prop} {s : 
 
 /-- Equivalent comparisons on the pairs actually compared preserve one player's optimality.
 The consequence carriers may differ, so exact numerical representation is a specialization. -/
-theorem isOptimalWith_iff_of_comparisons {W : Type r'} (P : EquilibriumProblem S I V)
-    (Q : EquilibriumProblem S I W) (R : I → V → V → Prop) (R' : I → W → W → Prop)
+theorem isOptimalWith_iff_of_comparisons {W : Type r'} (P : EquilibriumProblem I S V)
+    (Q : EquilibriumProblem I S W) (R : I → V → V → Prop) (R' : I → W → W → Prop)
     (i : I) (hdev : ∀ s t, P.deviation i s t ↔ Q.deviation i s t)
     (hcmp : ∀ s t, P.deviation i s t →
       (R i (P.value i t) (P.value i s) ↔ R' i (Q.value i t) (Q.value i s))) (s : S) :
@@ -281,7 +281,7 @@ theorem isOptimalWith_iff_of_comparisons {W : Type r'} (P : EquilibriumProblem S
 /-- Matching deviations and comparisons preserve deviation optimality across consequence
 carriers. -/
 theorem isDeviationOptimalWith_iff_of_comparisons {W : Type r'}
-    (P : EquilibriumProblem S I V) (Q : EquilibriumProblem S I W)
+    (P : EquilibriumProblem I S V) (Q : EquilibriumProblem I S W)
     (R : I → V → V → Prop) (R' : I → W → W → Prop)
     (hdev : ∀ i s t, P.deviation i s t ↔ Q.deviation i s t)
     (hcmp : ∀ i s t, P.deviation i s t →
@@ -292,7 +292,7 @@ theorem isDeviationOptimalWith_iff_of_comparisons {W : Type r'}
 
 /-- Exact representation preserves full equilibrium when candidate validity also agrees. -/
 theorem isEquilibriumWith_iff_of_comparisons {W : Type r'}
-    (P : EquilibriumProblem S I V) (Q : EquilibriumProblem S I W)
+    (P : EquilibriumProblem I S V) (Q : EquilibriumProblem I S W)
     (R : I → V → V → Prop) (R' : I → W → W → Prop)
     (hdev : ∀ i s t, P.deviation i s t ↔ Q.deviation i s t)
     (hcmp : ∀ i s t, P.deviation i s t →
@@ -321,7 +321,7 @@ theorem IsEquilibriumWith.not_strictImprovement {R : I → V → V → Prop} {s 
   h.deviation_le.not_strictImprovement hd
 
 /-- The converse needs comparability only between the incumbent and its admissible deviations. -/
-theorem isOptimalWith_iff_no_strictImprovement (P : EquilibriumProblem S I V)
+theorem isOptimalWith_iff_no_strictImprovement (P : EquilibriumProblem I S V)
     (R : I → V → V → Prop) (i : I) (s : S)
     (hcmp : ∀ t, P.deviation i s t →
       R i (P.value i t) (P.value i s) ∨ R i (P.value i s) (P.value i t)) :
@@ -332,7 +332,7 @@ theorem isOptimalWith_iff_no_strictImprovement (P : EquilibriumProblem S I V)
       (fun hrev ↦ Classical.byContradiction fun hnot ↦ h t ht ⟨hrev, hnot⟩)⟩
 
 /-- Comparability on admissible pairs makes deviation optimality equivalent to no strict gain. -/
-theorem isDeviationOptimalWith_iff_no_strictImprovement (P : EquilibriumProblem S I V)
+theorem isDeviationOptimalWith_iff_no_strictImprovement (P : EquilibriumProblem I S V)
     (R : I → V → V → Prop) (s : S)
     (hcmp : ∀ i t, P.deviation i s t →
       R i (P.value i t) (P.value i s) ∨ R i (P.value i s) (P.value i t)) :
@@ -342,7 +342,7 @@ theorem isDeviationOptimalWith_iff_no_strictImprovement (P : EquilibriumProblem 
     fun h i ↦ (P.isOptimalWith_iff_no_strictImprovement R i s (hcmp i)).2 (h i)⟩
 
 /-- Under comparability, full equilibrium is candidate validity and absence of strict gain. -/
-theorem isEquilibriumWith_iff_no_strictImprovement (P : EquilibriumProblem S I V)
+theorem isEquilibriumWith_iff_no_strictImprovement (P : EquilibriumProblem I S V)
     (R : I → V → V → Prop) (s : S)
     (hcmp : ∀ i t, P.deviation i s t →
       R i (P.value i t) (P.value i s) ∨ R i (P.value i s) (P.value i t)) :
@@ -354,8 +354,8 @@ end EquilibriumProblem
 
 /-- A reward-preserving map that preserves candidate validity and lifts every target deviation
 to a source deviation. -/
-structure GameMorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x}
-    (P : EquilibriumProblem S I V) (Q : EquilibriumProblem T J V) where
+structure GameMorphism {V : Type r} {I : Type u} {S : Type v} {J : Type w} {T : Type x}
+    (P : EquilibriumProblem I S V) (Q : EquilibriumProblem J T V) where
   /-- The map from source states to target states. -/
   toFun : S → T
   /-- The source deviator corresponding to each target deviator. -/
@@ -370,8 +370,8 @@ structure GameMorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : 
 
 namespace GameMorphism
 
-variable {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x} {U : Type y} {K : Type z}
-    {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J V} {R : EquilibriumProblem U K V}
+variable {V : Type r} {I : Type u} {S : Type v} {J : Type w} {T : Type x} {K : Type y} {U : Type z}
+    {P : EquilibriumProblem I S V} {Q : EquilibriumProblem J T V} {R : EquilibriumProblem K U V}
 
 /-- A deviation-lifting map transports deviation optimality when comparisons on admissible pairs
 are preserved. The existing reward-preserving morphism is reused without an order instance. -/
@@ -408,7 +408,7 @@ theorem transport [LE V] (f : GameMorphism P Q) {s : S} (h : P.IsEquilibrium s) 
   ⟨f.valid_preserves s h.valid, f.transport_isDeviationOptimal h.deviation_le⟩
 
 /-- The identity map of an equilibrium problem. -/
-def id (P : EquilibriumProblem S I V) : GameMorphism P P where
+def id (P : EquilibriumProblem I S V) : GameMorphism P P where
   toFun := _root_.id
   deviatorMap := _root_.id
   deviation_lifts _ _ t ht := ⟨t, ht, rfl⟩
@@ -430,8 +430,8 @@ end GameMorphism
 
 /-- A reward-preserving map that reflects candidate validity and sends each source deviation
 to a target deviation. -/
-structure GameComorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x}
-    (P : EquilibriumProblem S I V) (Q : EquilibriumProblem T J V) where
+structure GameComorphism {V : Type r} {I : Type u} {S : Type v} {J : Type w} {T : Type x}
+    (P : EquilibriumProblem I S V) (Q : EquilibriumProblem J T V) where
   /-- The map from source states to target states. -/
   toFun : S → T
   /-- The target deviator corresponding to each source deviator. -/
@@ -446,8 +446,8 @@ structure GameComorphism {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J 
 
 namespace GameComorphism
 
-variable {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x} {U : Type y} {K : Type z}
-    {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J V} {R : EquilibriumProblem U K V}
+variable {V : Type r} {I : Type u} {S : Type v} {J : Type w} {T : Type x} {K : Type y} {U : Type z}
+    {P : EquilibriumProblem I S V} {Q : EquilibriumProblem J T V} {R : EquilibriumProblem K U V}
 
 /-- A deviation-preserving map pulls deviation optimality back when target comparisons imply
 the source comparisons on admissible pairs. No complete-preference assumption is needed. -/
@@ -480,7 +480,7 @@ theorem pullback [LE V] (f : GameComorphism P Q) {s : S}
   ⟨f.valid_reflects s h.valid, f.pullback_isDeviationOptimal h.deviation_le⟩
 
 /-- The identity deviation-preserving map. -/
-def id (P : EquilibriumProblem S I V) : GameComorphism P P where
+def id (P : EquilibriumProblem I S V) : GameComorphism P P where
   toFun := _root_.id
   deviatorMap := _root_.id
   deviation_maps _ _ _ h := h
