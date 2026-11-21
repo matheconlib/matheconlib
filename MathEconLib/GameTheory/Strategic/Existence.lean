@@ -274,7 +274,7 @@ public lemma bestResponseCorr_eq_pi_bestResponses
   funext i
   congr 1
   ext s
-  simp only [Set.mem_setOf_eq, StrategicGame.mem_bestResponses, StrategicGame.ofOutcome_payoff]
+  simp only [Set.mem_ofPred_eq, StrategicGame.mem_bestResponses, StrategicGame.ofOutcome_payoff]
 
 /-- The best response correspondence has compact values on compact action spaces. -/
 lemma bestResponseCorr_compact {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
