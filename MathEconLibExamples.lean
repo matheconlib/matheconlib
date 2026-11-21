@@ -12,6 +12,7 @@ public import MathEconLibExamples.Choice.SubstituteEnvelope
 public import MathEconLibExamples.Decision.RiskAversion
 public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.GameTheory.MatchingPennies
+public import MathEconLibExamples.Matching.BlockingLemma
 public import MathEconLibExamples.Matching.DistributiveMarriage
 public import MathEconLibExamples.Matching.JointPreservation
 public import MathEconLibExamples.Matching.UnbalancedMarriage
@@ -33,6 +34,9 @@ Concrete economic models illustrate the library's definitions and results.
   for individuals and aggregate crime under a fixed type distribution.
 * A two-couple marriage market has distinct stable outcomes whose lattice join,
   meet, and intrinsic ideal representations are checked explicitly.
+* Three small marriage markets apply the blocking lemma and weak Pareto optimality of the
+  man-optimal stable matching and show that their hypotheses and conclusions cannot be
+  strengthened.
 
 ## Tags
 
