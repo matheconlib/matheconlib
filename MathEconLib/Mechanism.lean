@@ -11,6 +11,8 @@ public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.BayesianUtility
+public import MathEconLib.Mechanism.Core.DeterministicIC
+public import MathEconLib.Mechanism.Core.DeterministicICCompatibility
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import MathEconLib.Mechanism.Core.Strategic
 public import MathEconLib.Mechanism.Core.Utility
