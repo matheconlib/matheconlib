@@ -92,6 +92,16 @@ theorem isBICOn_iff [IsProbabilityMeasure μ] (D : ∀ i, Set (T i)) :
 version. -/
 abbrev IsBIC [IsProbabilityMeasure μ] : Prop := IsBICOn E M μ B (fun _ ↦ Set.univ)
 
+/-- Full-space quasilinear BIC is exactly guarded pointwise interim best response at the truthful
+strategy. No additional integrability assumption is required. This does not identify arbitrary
+set-restricted `IsBICOn` with full-space optimality. -/
+theorem isBIC_iff_isPointwiseInterimBestResponse [IsProbabilityMeasure μ] :
+    IsBIC E M μ B ↔ (M.inducedBayesianGame E).IsPointwiseInterimBestResponse μ B
+      (truthfulStrategy E M) :=
+  ⟨fun h ↦ ⟨fun i s r ↦ h.integrable i s (Set.mem_univ _) r (Set.mem_univ _),
+    fun i s r ↦ h.bic i s (Set.mem_univ _) r (Set.mem_univ _)⟩,
+    fun h ↦ ⟨fun i s _ r _ ↦ h.integrable i s r, fun i s _ r _ ↦ h.bestResponse i s r⟩⟩
+
 /-- Full-space pointwise quasilinear BIC implies that truth is a Bayesian Nash equilibrium. This
 implication does not identify pointwise beliefs at null types with the weaker a.e. equilibrium
 condition. -/
@@ -99,9 +109,7 @@ theorem IsBIC.isBNE [IsProbabilityMeasure μ] (h : IsBIC E M μ B)
     (hmeas : ∀ i, Measurable (fun p : Profile T × Profile T ↦
       (M.inducedBayesianGame E).payoff i p.1 p.2))
     (hint : (M.inducedBayesianGame E).IncumbentPayoffsIntegrable μ (truthfulStrategy E M)) :
-    (M.inducedBayesianGame E).IsBNE μ (truthfulStrategy E M) := by
-  apply BayesianGame.isBNE_of_ae_interim _ μ B hmeas _ hint
-  intro i
-  exact Filter.Eventually.of_forall fun s r ↦ h.bic i s (Set.mem_univ _) r (Set.mem_univ _)
+    (M.inducedBayesianGame E).IsBNE μ (truthfulStrategy E M) :=
+  ((isBIC_iff_isPointwiseInterimBestResponse E M μ B).mp h).isBNE _ μ B hmeas hint
 
 end MathEconLib.Mechanism.DirectMechanism.Quasilinear

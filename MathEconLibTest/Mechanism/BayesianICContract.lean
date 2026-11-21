@@ -40,4 +40,12 @@ example (E : QuasilinearEnvironment I T O) (M : DirectMechanism I T O)
           ∂(B.opponents i s)) :=
   DirectMechanism.Quasilinear.isBICOn_iff E M μ B D
 
+-- Full-space recovery adds no conditional or global integrability hypotheses to legacy BIC.
+example (E : QuasilinearEnvironment I T O) (M : DirectMechanism I T O)
+    (μ : Measure (Profile T)) [IsProbabilityMeasure μ] (B : ConditionalBeliefs μ) :
+    DirectMechanism.Quasilinear.IsBIC E M μ B ↔
+      (M.inducedBayesianGame E).IsPointwiseInterimBestResponse μ B
+        (DirectMechanism.Quasilinear.truthfulStrategy E M) :=
+  DirectMechanism.Quasilinear.isBIC_iff_isPointwiseInterimBestResponse E M μ B
+
 end MathEconLibTest.BayesianICContract
