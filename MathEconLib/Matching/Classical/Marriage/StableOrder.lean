@@ -65,6 +65,16 @@ def symmEquiv : mkt.StableMatching ≃ mkt.symm.StableMatching where
 @[simp] theorem matching_symmEquiv (μ : mkt.StableMatching) :
     (symmEquiv mkt μ).matching = μ.matching.symm := rfl
 
+/-- A stable matching is determined by the men's assignments, including
+the unmatched men. -/
+theorem matching_apply_injective :
+    Function.Injective (fun μ : mkt.StableMatching => fun m : M => μ.matching m) :=
+  fun _ _ h => ext mkt (PEquiv.ext (congrFun h))
+
+/-- Finite populations admit finitely many stable matchings. -/
+instance [Finite M] [Finite W] : Finite mkt.StableMatching :=
+  Finite.of_injective _ (matching_apply_injective mkt)
+
 variable [Fintype M] [Fintype W]
 
 /-- The stability translation, packaged as an equivalence of carriers. -/
