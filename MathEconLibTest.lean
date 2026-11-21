@@ -40,6 +40,11 @@ import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.DistributiveMarriage
 import MathEconLibTest.Matching.PublicImport
+import MathEconLibTest.Matching.RandomPreferences
+import MathEconLibTest.Matching.RandomPreferencesUniform
+import MathEconLibTest.Matching.RankPreferences
+import MathEconLibTest.Matching.RankPreferencesDA
+import MathEconLibTest.Matching.Relabel
 import MathEconLibTest.Matching.SellerParticipation
 import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
@@ -55,6 +60,7 @@ import MathEconLibTest.Preferences.Basic
 import MathEconLibTest.Preferences.Complete
 import MathEconLibTest.Preferences.PublicImport
 import MathEconLibTest.Pricing.Compatibility
+import MathEconLibTest.Probability.Uniform
 import MathEconLibTest.RevealedPreference.Compatibility
 import MathEconLibTest.RevealedPreference.Examples
 import MathEconLibTest.RevealedPreference.Geometry

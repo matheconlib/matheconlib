@@ -15,6 +15,10 @@ public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
 public import MathEconLib.Matching.Classical.Marriage.Optimality
 public import MathEconLib.Matching.Classical.Marriage.Preferences
+public import MathEconLib.Matching.Classical.Marriage.RandomPreferences
+public import MathEconLib.Matching.Classical.Marriage.RandomPreferencesUniform
+public import MathEconLib.Matching.Classical.Marriage.RankPreferences
+public import MathEconLib.Matching.Classical.Marriage.RankPreferencesDA
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
 public import MathEconLib.Matching.Classical.Marriage.ToContracts
 public import MathEconLib.Matching.Contracts.Basic
