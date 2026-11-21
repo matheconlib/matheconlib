@@ -49,9 +49,9 @@ debated it.
 
 ## Build and lint when CI did not run
 
-If CI did not run, the reviewer checks out the exact commit named by the
-review surface, records it, and runs the missing build there rather than at a
-moving branch tip:
+If CI did not run, the reviewer checks out the exact commit named by the review
+surface, records it, and runs the missing build there rather than at a moving
+branch tip:
 
     git clone <repo>
     cd <repo>
