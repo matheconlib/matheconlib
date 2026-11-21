@@ -9,6 +9,7 @@ import MathEconLibTest.Auction.SignalWeights
 import MathEconLibTest.Choice.Attainment
 import MathEconLibTest.Choice.AttainmentPublicImport
 import MathEconLibTest.Choice.BasicImport
+import MathEconLibTest.Choice.CompactPublicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
 import MathEconLibTest.Choice.MatchingConditionsImport
@@ -35,6 +36,9 @@ import MathEconLibTest.GameTheory.Strategic
 import MathEconLibTest.GameTheory.StrategicTransport
 import MathEconLibTest.GameTheory.Transport
 import MathEconLibTest.GameTheory.VectorPayoffs
+import MathEconLibTest.GeneralEquilibrium.PureExchange.Examples
+import MathEconLibTest.GeneralEquilibrium.PureExchange.PublicImport
+import MathEconLibTest.GeneralEquilibrium.PureExchange.ZeroIncome
 import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
