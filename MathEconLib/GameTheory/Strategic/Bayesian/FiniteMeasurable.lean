@@ -161,7 +161,7 @@ theorem isBNEFin_iff_isBNE [NormedAddCommGroup V] [NormedSpace ℝ V]
   rw [G.isBNEFin_iff_exAntePayoff_update_le]
   constructor
   · intro h
-    refine ⟨?_, fun i => d.integrable_toMeasure _⟩
+    refine ⟨fun i => d.integrable_toMeasure _, ?_⟩
     intro i s' hs'
     have hstrategy_eq : s' = G.toMeasurableStrategy (update s i (s' i).1) := by
       funext j
@@ -178,7 +178,7 @@ theorem isBNEFin_iff_isBNE [NormedAddCommGroup V] [NormedSpace ℝ V]
     exact h i (s' i).1
   · intro h i f
     rw [G.exAntePayoffFin_eq_exAntePayoff, G.exAntePayoffFin_eq_exAntePayoff]
-    apply h.isEquilibrium i _
+    apply h.deviation_le i _
     refine ⟨?_, d.integrable_toMeasure _⟩
     intro j hji
     apply Subtype.ext

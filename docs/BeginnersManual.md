@@ -2,13 +2,7 @@
 
 ## Status of this document
 
-This manual was written by Moran Koren (@morankor) as a standalone document,
-and is reproduced here with editorial corrections: link paths rewritten
-relative to `docs/`, stale counts refreshed and dated, a new §4.0 on the
-module-system lines a reader meets at the top of the first real file, an
-architecture appendix, reading list and glossary updated for the layers added
-since, a pointer to `CONTRIBUTING.md` in place of a partial restatement of it,
-and a few typos.
+This manual was written by Moran Koren (@morankor).
 
 Its runnable snippets are collected in
 [`MathEconLibTest/Manual/HandsOn.lean`](../MathEconLibTest/Manual/HandsOn.lean),

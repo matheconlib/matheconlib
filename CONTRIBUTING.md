@@ -270,8 +270,7 @@ For example, a shared lemma and its application can be reviewed separately:
 3. After a refresh or conflict resolution, rerun the import checks and `lake build`
    from the [verification bar](#verification-bar), and wait for applicable CI on
    the latest revision. Verify against current `main` before merging: an old
-   green check can predate changes to build requirements. CI currently runs only
-   for PRs targeting `main`; check children locally until they are retargeted.
+   green check can predate changes to build requirements.
 4. Leave a brief update naming the new base, conflicts resolved, substantive
    changes, and check results. Request another review when statements, APIs,
    implementation, or guidance changed substantively; carry forward
