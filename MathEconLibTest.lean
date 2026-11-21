@@ -21,6 +21,7 @@ import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.Competition.Cournot
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
+import MathEconLibTest.GameTheory.BestResponseEncoding
 import MathEconLibTest.GameTheory.CandidateValidity
 import MathEconLibTest.GameTheory.Choice
 import MathEconLibTest.GameTheory.ConditionalBeliefs
