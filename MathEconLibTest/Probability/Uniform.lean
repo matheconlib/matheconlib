@@ -6,13 +6,59 @@ Authors: Bo Cowgill
 import MathEconLib
 
 /-!
-Public-import checks linking uniform PMF integrals, finite distributions, and finite averages.
+Public API pins and examples linking uniform PMF integrals, finite distributions, and finite
+averages.
 -/
 
 namespace MathEconLibTest.Probability.Uniform
 
 open MathEconLib.Probability MeasureTheory
 open scoped BigOperators
+
+section APIPins
+
+noncomputable example : ∀ (α : Type*) [Fintype α] [Nonempty α], PMF α :=
+  @PMF.uniformFintype
+
+example : ∀ {α : Type*} [Fintype α] [Nonempty α] (a : α),
+    PMF.uniformFintype α a = (Fintype.card α : ENNReal)⁻¹ :=
+  @PMF.uniformFintype_apply
+
+example : ∀ {α : Type*} [Fintype α] [Nonempty α] [MeasurableSpace α]
+    [MeasurableSingletonClass α],
+    (PMF.uniformFintype α).toMeasure = Measure.uniformOfFinset (Finset.univ : Finset α) :=
+  @PMF.toMeasure_uniformFintype
+
+example : ∀ {α β : Type*} [Fintype α] [Fintype β] [Nonempty α] [Nonempty β] (e : α ≃ β),
+    (PMF.uniformFintype α).map e = PMF.uniformFintype β :=
+  @PMF.map_uniformOfFintype
+
+example : ∀ {ι : Type*} [Fintype ι] [DecidableEq ι] {α : ι → Type*}
+    [∀ i, Fintype (α i)] [∀ i, Nonempty (α i)] (f : ∀ i, α i),
+    PMF.uniformFintype (∀ i, α i) f = ∏ i, PMF.uniformFintype (α i) (f i) :=
+  @PMF.uniformFintype_pi_apply
+
+example : ∀ {ι : Type*} [Fintype ι] [DecidableEq ι] {α : ι → Type*}
+    [∀ i, Fintype (α i)] [∀ i, Nonempty (α i)] [∀ i, MeasurableSpace (α i)]
+    [∀ i, MeasurableSingletonClass (α i)],
+    (PMF.uniformFintype (∀ i, α i)).toMeasure =
+      Measure.pi (fun i ↦ (PMF.uniformFintype (α i)).toMeasure) :=
+  @PMF.toMeasure_uniformOfFintype_pi
+
+example : ∀ {α : Type*} [Fintype α] [Nonempty α] [MeasurableSpace α]
+    [MeasurableSingletonClass α] (f : α → ℝ),
+    (∫ a, f a ∂(PMF.uniformFintype α).toMeasure) = 𝔼 a, f a :=
+  @PMF.integral_uniformOfFintype
+
+example : ∀ {α : Type*} [Fintype α] [Nonempty α],
+    (FinDist.uniform (α := α)).toPMF = PMF.uniformFintype α :=
+  @FinDist.toPMF_uniform
+
+example : ∀ {α : Type*} [Fintype α] [Nonempty α] (f : α → ℝ),
+    (FinDist.uniform (α := α)).expect f = 𝔼 a, f a :=
+  @FinDist.expect_uniform
+
+end APIPins
 
 example {α : Type*} [Fintype α] [Nonempty α] [MeasurableSpace α]
     [MeasurableSingletonClass α] (f : α → ℝ) :

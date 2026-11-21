@@ -51,11 +51,10 @@ theorem uniformProfile_apply_eq_prod (p : RankProfile m n) :
     uniformProfile m n p =
       (∏ i : Fin m, PMF.uniformFintype (Equiv.Perm (Fin n)) (p.manRank i)) *
       (∏ j : Fin n, PMF.uniformFintype (Equiv.Perm (Fin m)) (p.womanRank j)) := by
-  simp only [uniformProfile, PMF.uniformFintype_apply, card, Fintype.card_perm,
-    Fintype.card_fin, Finset.prod_const, Finset.card_univ, Nat.cast_mul, Nat.cast_pow]
-  rw [ENNReal.mul_inv (a := (n.factorial : ENNReal) ^ m)
-    (b := (m.factorial : ENNReal) ^ n) (by simp) (by simp)]
-  simp [ENNReal.inv_pow]
+  rw [uniformProfile, PMF.uniformFintype_apply, Fintype.card_congr (equivAgentRanks m n),
+    ← PMF.uniformFintype_apply (equivAgentRanks m n p), PMF.uniformFintype_pi_apply,
+    Fintype.prod_sum_type]
+  rfl
 
 /-- The profile law is normalized, including empty populations. -/
 theorem uniformProfile_univ (m n : ℕ) :

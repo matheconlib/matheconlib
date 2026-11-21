@@ -54,6 +54,13 @@ theorem map_uniformOfFintype {α β : Type*} [Fintype α] [Fintype β]
   rw [map_apply, ← e.symm.tsum_eq]
   simp [Fintype.card_congr e]
 
+/-- The mass of a tuple under the uniform law is the product of its uniform coordinate masses. -/
+theorem uniformFintype_pi_apply {ι : Type*} [Fintype ι] [DecidableEq ι] {α : ι → Type*}
+    [∀ i, Fintype (α i)] [∀ i, Nonempty (α i)] (f : ∀ i, α i) :
+    uniformFintype (∀ i, α i) f = ∏ i, uniformFintype (α i) (f i) := by
+  simp only [uniformFintype_apply, Fintype.card_pi, Nat.cast_prod]
+  exact ENNReal.prod_inv_distrib fun _ _ _ _ _ ↦ Or.inr (by simp)
+
 /-- Uniform sampling of a finite family of finite coordinates has their product law,
 including the empty product. -/
 theorem toMeasure_uniformOfFintype_pi {ι : Type*} [Fintype ι] [DecidableEq ι] {α : ι → Type*}
@@ -61,12 +68,10 @@ theorem toMeasure_uniformOfFintype_pi {ι : Type*} [Fintype ι] [DecidableEq ι]
     [∀ i, MeasurableSingletonClass (α i)] :
     (uniformFintype (∀ i, α i)).toMeasure =
       Measure.pi (fun i ↦ (uniformFintype (α i)).toMeasure) := by
-  classical
   refine Measure.ext_of_singleton fun f ↦ ?_
   rw [toMeasure_apply_singleton _ _ (measurableSet_singleton f), Measure.pi_singleton]
-  simp only [toMeasure_apply_singleton _ _ (measurableSet_singleton _),
-    uniformFintype_apply, Fintype.card_pi, Nat.cast_prod]
-  exact ENNReal.prod_inv_distrib fun _ _ _ _ _ ↦ Or.inr (by simp)
+  simpa only [toMeasure_apply_singleton _ _ (measurableSet_singleton _)] using
+    uniformFintype_pi_apply f
 
 /-- A uniform finite expectation is the ordinary average over the outcome space. -/
 theorem integral_uniformOfFintype {α : Type*} [Fintype α] [Nonempty α]

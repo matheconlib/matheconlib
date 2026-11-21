@@ -73,7 +73,7 @@ lemma toPMF_ofPMF {α : Type*} [Fintype α] (p : PMF α) :
   simp only [toPMF, ofPMF]
   exact ENNReal.ofReal_toReal (ne_top_of_le_ne_top ENNReal.one_ne_top (PMF.coe_le_one p a))
 
-/-- The uniform finite distribution induces Mathlib's uniform PMF on the same space. -/
+/-- The uniform finite distribution induces `PMF.uniformFintype` on the same space. -/
 @[simp] lemma toPMF_uniform {α : Type*} [Fintype α] [Nonempty α] :
     (FinDist.uniform (α := α)).toPMF = PMF.uniformFintype α := by
   ext a
