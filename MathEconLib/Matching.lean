@@ -17,6 +17,9 @@ public import MathEconLib.Matching.Classical.Marriage.Optimality
 public import MathEconLib.Matching.Classical.Marriage.Preferences
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
 public import MathEconLib.Matching.Classical.Marriage.ToContracts
+public import MathEconLib.Matching.Classical.Roommates
+public import MathEconLib.Matching.Classical.Roommates.Basic
+public import MathEconLib.Matching.Classical.Roommates.NonExistence
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
