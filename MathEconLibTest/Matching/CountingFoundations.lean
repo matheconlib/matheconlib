@@ -112,6 +112,25 @@ section Transfer
 
 variable {M W : Type*} [DecidableEq M] (mkt : MarriageMarket M W)
 
+-- The staged numeric rank proofs unfold the tag and key explicitly.
+example (pref : LinearOrder (Option W)) (threshold : W) :
+    truncationTag pref threshold none = 1 := by
+  simp [truncationTag]
+
+example (pref : LinearOrder (Option W)) (threshold w : W) :
+    truncationTag pref threshold (some w) =
+      (let := pref; if some threshold ≤ some w then 2 else 0) := by
+  simp only [truncationTag]
+
+example (pref : LinearOrder (Option W)) (threshold : W) (a b : Option W) :
+    @LE.le (Option W) (truncateOptionOrder pref threshold).toLE a b ↔
+      truncationTag pref threshold a < truncationTag pref threshold b ∨
+        truncationTag pref threshold a = truncationTag pref threshold b ∧
+          @LE.le (Option W) pref.toLE a b := by
+  let := pref
+  change truncationKey pref threshold a ≤ truncationKey pref threshold b ↔ _
+  simp only [truncationKey, Prod.Lex.toLex_le_toLex]
+
 example (pref : LinearOrder (Option W)) (threshold w : W) :
     @LE.le (Option W) (truncateOptionOrder pref threshold).toLE none (some w) ↔
       @LE.le (Option W) pref.toLE (some threshold) (some w) :=

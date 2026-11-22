@@ -53,25 +53,25 @@ universe u v
 variable {M : Type u} {W : Type v}
 
 /-- Three ordered bands: partners below the threshold, the outside option,
-and partners from the threshold up. Implementation detail of
-`truncateOptionOrder`. -/
-def truncateOptionOrder.tag (pref : LinearOrder (Option W)) (threshold : W) : Option W → Nat :=
+and partners from the threshold up. This definition supports direct
+unfolding in rank proofs. -/
+def truncationTag (pref : LinearOrder (Option W)) (threshold : W) : Option W → Nat :=
   let := pref
   fun o => match o with
     | none => 1
     | some w => if some threshold ≤ some w then 2 else 0
 
 /-- The comparison key retains the original ordering within each band.
-Implementation detail of `truncateOptionOrder`. -/
-def truncateOptionOrder.key (pref : LinearOrder (Option W)) (threshold : W)
+This definition supports direct unfolding in rank proofs. -/
+def truncationKey (pref : LinearOrder (Option W)) (threshold : W)
     (o : Option W) : Nat ×ₗ Option W :=
-  toLex (truncateOptionOrder.tag pref threshold o, o)
+  toLex (truncationTag pref threshold o, o)
 
-/-- Compatibility alias for the nested reservation-cutoff tag. -/
-abbrev truncationTag := @truncateOptionOrder.tag
+/-- The reservation-cutoff tag used by `truncateOptionOrder`. -/
+abbrev truncateOptionOrder.tag := @truncationTag
 
-/-- Compatibility alias for the nested reservation-cutoff key. -/
-abbrev truncationKey := @truncateOptionOrder.key
+/-- The reservation-cutoff key used by `truncateOptionOrder`. -/
+abbrev truncateOptionOrder.key := @truncationKey
 
 /-- Keep the partner order and place `none` just below the given partner.
 Partners at least `threshold` become acceptable and all others unacceptable,
@@ -80,7 +80,7 @@ regardless of where `none` was originally. -/
 def truncateOptionOrder (pref : LinearOrder (Option W)) (threshold : W) :
     LinearOrder (Option W) := by
   let := pref
-  apply LinearOrder.lift' (truncateOptionOrder.key pref threshold)
+  apply LinearOrder.lift' (truncationKey pref threshold)
   intro x y h
   exact congrArg (fun z => (ofLex z).2) h
 
@@ -89,18 +89,17 @@ theorem truncateOptionOrder_some_le_some (pref : LinearOrder (Option W))
     @LE.le (Option W) (truncateOptionOrder pref threshold).toLE (some x) (some y) ↔
       @LE.le (Option W) pref.toLE (some x) (some y) := by
   let := pref
-  change truncateOptionOrder.key pref threshold (some x) ≤
-      truncateOptionOrder.key pref threshold (some y) ↔ _
-  simp only [truncateOptionOrder.key, Prod.Lex.toLex_le_toLex]
+  change truncationKey pref threshold (some x) ≤ truncationKey pref threshold (some y) ↔ _
+  simp only [truncationKey, Prod.Lex.toLex_le_toLex]
   by_cases hx : some threshold ≤ some x
   · by_cases hy : some threshold ≤ some y
-    · simp [truncateOptionOrder.tag, hx, hy]
+    · simp [truncationTag, hx, hy]
     · have hxy : ¬ some x ≤ some y := fun h => hy (hx.trans h)
-      simp [truncateOptionOrder.tag, hx, hy, hxy]
+      simp [truncationTag, hx, hy, hxy]
   · by_cases hy : some threshold ≤ some y
     · have hxy : some x ≤ some y := (lt_of_not_ge hx).le.trans hy
-      simp [truncateOptionOrder.tag, hx, hy, hxy]
-    · simp [truncateOptionOrder.tag, hx, hy]
+      simp [truncationTag, hx, hy, hxy]
+    · simp [truncationTag, hx, hy]
 
 theorem truncateOptionOrder_some_lt_some (pref : LinearOrder (Option W))
     (threshold x y : W) :
@@ -115,20 +114,18 @@ theorem truncateOptionOrder_none_le_some (pref : LinearOrder (Option W))
     @LE.le (Option W) (truncateOptionOrder pref threshold).toLE none (some w) ↔
       @LE.le (Option W) pref.toLE (some threshold) (some w) := by
   let := pref
-  change truncateOptionOrder.key pref threshold none ≤
-      truncateOptionOrder.key pref threshold (some w) ↔ _
-  simp only [truncateOptionOrder.key, Prod.Lex.toLex_le_toLex]
-  by_cases h : some threshold ≤ some w <;> simp [truncateOptionOrder.tag, h]
+  change truncationKey pref threshold none ≤ truncationKey pref threshold (some w) ↔ _
+  simp only [truncationKey, Prod.Lex.toLex_le_toLex]
+  by_cases h : some threshold ≤ some w <;> simp [truncationTag, h]
 
 theorem truncateOptionOrder_some_le_none (pref : LinearOrder (Option W))
     (threshold w : W) :
     @LE.le (Option W) (truncateOptionOrder pref threshold).toLE (some w) none ↔
       ¬ @LE.le (Option W) pref.toLE (some threshold) (some w) := by
   let := pref
-  change truncateOptionOrder.key pref threshold (some w) ≤
-      truncateOptionOrder.key pref threshold none ↔ _
-  simp only [truncateOptionOrder.key, Prod.Lex.toLex_le_toLex]
-  by_cases h : some threshold ≤ some w <;> simp [truncateOptionOrder.tag, h]
+  change truncationKey pref threshold (some w) ≤ truncationKey pref threshold none ↔ _
+  simp only [truncationKey, Prod.Lex.toLex_le_toLex]
+  by_cases h : some threshold ≤ some w <;> simp [truncationTag, h]
 
 variable [DecidableEq M] (mkt : MarriageMarket M W)
 
