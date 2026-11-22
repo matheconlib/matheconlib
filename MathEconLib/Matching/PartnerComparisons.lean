@@ -5,6 +5,7 @@ Authors: Bo Cowgill
 -/
 module
 
+public import MathEconLib.Preferences.Basic
 public import Mathlib.Data.Option.Basic
 
 /-!
@@ -31,10 +32,28 @@ namespace PartnerComparisons
 
 variable {A B : Type*}
 
+/-- Use each agent's strict preference over partners and the outside option.
+The supplied preferences may be incomplete; the comparison interface itself imposes no laws. -/
+def ofPreferences (left : A → Preferences.Preference (Option B))
+    (right : B → Preferences.Preference (Option A)) : PartnerComparisons A B :=
+  ⟨fun a ↦ (left a).lt, fun b ↦ (right b).lt⟩
+
+@[simp] theorem ofPreferences_left (left : A → Preferences.Preference (Option B))
+    (right : B → Preferences.Preference (Option A)) (a : A) (x y : Option B) :
+    (ofPreferences left right).left a x y ↔ (left a).lt x y := Iff.rfl
+
+@[simp] theorem ofPreferences_right (left : A → Preferences.Preference (Option B))
+    (right : B → Preferences.Preference (Option A)) (b : B) (x y : Option A) :
+    (ofPreferences left right).right b x y ↔ (right b).lt x y := Iff.rfl
+
 /-- Exchange the two sides' comparisons. -/
 def symm (p : PartnerComparisons A B) : PartnerComparisons B A := ⟨p.right, p.left⟩
 
 @[simp] theorem symm_symm (p : PartnerComparisons A B) : p.symm.symm = p := rfl
+
+@[simp] theorem ofPreferences_symm (left : A → Preferences.Preference (Option B))
+    (right : B → Preferences.Preference (Option A)) :
+    (ofPreferences left right).symm = ofPreferences right left := rfl
 
 /-- Both agents strictly prefer matching to each other over their supplied current assignments. -/
 def Blocks (p : PartnerComparisons A B) (a : A) (b : B)

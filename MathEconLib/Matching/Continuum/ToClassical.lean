@@ -43,12 +43,12 @@ theorem pointwiseStable_iff_classical (f : MatchingMap μ ν) (u : PartnerUtilit
     f.PointwiseStable u ↔ mkt.IsStableMatching f.toMeasurableEquiv.toEquiv.toPEquiv := by
   have hIL (a : A) (b : B) : mkt.leM a none (some b) ↔ u.outsideLeft a ≤ u.left a b := by
     have h := not_congr (Iff.of_eq (congrArg (fun p ↦ p.left a (some b) none) hpref))
-    change (¬mkt.ltM a (some b) none) ↔ (¬u.left a b < u.outsideLeft a) at h
-    simpa only [MarriageMarket.ltM, MarriageMarket.leM, not_lt] using h
+    simpa only [MarriageMarket.toPartnerComparisons, PartnerUtilities.toPartnerComparisons_left,
+      Option.elim_some, Option.elim_none, MarriageMarket.ltM, MarriageMarket.leM, not_lt] using h
   have hIR (b : B) (a : A) : mkt.leW b none (some a) ↔ u.outsideRight b ≤ u.right b a := by
     have h := not_congr (Iff.of_eq (congrArg (fun p ↦ p.right b (some a) none) hpref))
-    change (¬mkt.ltW b (some a) none) ↔ (¬u.right b a < u.outsideRight b) at h
-    simpa only [MarriageMarket.ltW, MarriageMarket.leW, not_lt] using h
+    simpa only [MarriageMarket.toPartnerComparisons, PartnerUtilities.toPartnerComparisons_right,
+      Option.elim_some, Option.elim_none, MarriageMarket.ltW, MarriageMarket.leW, not_lt] using h
   have hi : mkt.IndividuallyRational f.toMeasurableEquiv.toEquiv.toPEquiv ↔
       f.IndividuallyRational u := by
     constructor

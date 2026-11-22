@@ -93,7 +93,8 @@ theorem identity_pointwiseStable : (MatchingMap.refl population).PointwiseStable
   · intro a
     constructor <;> exact le_trans (by norm_num [utilities]) (Nat.cast_nonneg _)
   · intro a b h
-    exact lt_asymm h.1 h.2
+    have hab := (MatchingMap.isBlockingPair_iff _ _ _ _).mp h
+    exact lt_asymm hab.1 hab.2
 
 /-- Apply the general bridge to obtain classical stability of the identity assignment. -/
 theorem identity_classicallyStable :

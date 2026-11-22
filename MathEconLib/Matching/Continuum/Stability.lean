@@ -7,6 +7,7 @@ module
 
 public import MathEconLib.Matching.Continuum.Basic
 public import MathEconLib.Matching.PartnerComparisons
+public import MathEconLib.Preferences.Representation.Basic
 public import Mathlib.MeasureTheory.Constructions.BorelSpace.Basic
 
 /-!
@@ -58,9 +59,22 @@ def symm (u : PartnerUtilities A B) : PartnerUtilities B A :=
 @[simp] theorem symm_symm (u : PartnerUtilities A B) : u.symm.symm = u := rfl
 
 /-- Utilities induce strict comparisons over partners and the outside option. -/
-def toPartnerComparisons (u : PartnerUtilities A B) : PartnerComparisons A B where
-  left a x y := x.elim (u.outsideLeft a) (u.left a) < y.elim (u.outsideLeft a) (u.left a)
-  right b x y := x.elim (u.outsideRight b) (u.right b) < y.elim (u.outsideRight b) (u.right b)
+def toPartnerComparisons (u : PartnerUtilities A B) : PartnerComparisons A B :=
+  PartnerComparisons.ofPreferences
+    (fun a ↦ Preferences.Preference.ofUtility (fun x ↦ x.elim (u.outsideLeft a) (u.left a)))
+    (fun b ↦ Preferences.Preference.ofUtility (fun x ↦ x.elim (u.outsideRight b) (u.right b)))
+
+/-- The standard preference adapter preserves the left side's strict utility comparisons. -/
+@[simp] theorem toPartnerComparisons_left (u : PartnerUtilities A B) (a : A) (x y : Option B) :
+    u.toPartnerComparisons.left a x y ↔
+      x.elim (u.outsideLeft a) (u.left a) < y.elim (u.outsideLeft a) (u.left a) :=
+  Preferences.Preference.ofUtility_lt_iff _ x y
+
+/-- The standard preference adapter preserves the right side's strict utility comparisons. -/
+@[simp] theorem toPartnerComparisons_right (u : PartnerUtilities A B) (b : B) (x y : Option A) :
+    u.toPartnerComparisons.right b x y ↔
+      x.elim (u.outsideRight b) (u.right b) < y.elim (u.outsideRight b) (u.right b) :=
+  Preferences.Preference.ofUtility_lt_iff _ x y
 
 @[simp] theorem toPartnerComparisons_symm (u : PartnerUtilities A B) :
     u.symm.toPartnerComparisons = u.toPartnerComparisons.symm := rfl
@@ -70,7 +84,8 @@ def toPartnerComparisons (u : PartnerUtilities A B) : PartnerComparisons A B whe
     (currentLeft : Option B) (currentRight : Option A) :
     u.toPartnerComparisons.Blocks a b currentLeft currentRight ↔
       currentLeft.elim (u.outsideLeft a) (u.left a) < u.left a b ∧
-      currentRight.elim (u.outsideRight b) (u.right b) < u.right b a := Iff.rfl
+      currentRight.elim (u.outsideRight b) (u.right b) < u.right b a := by
+  simp [PartnerComparisons.Blocks]
 
 /-- Both agents in an assigned pair weakly prefer their partner to their outside option. -/
 def IndividuallyRationalPair (u : PartnerUtilities A B) (p : A × B) : Prop :=
@@ -111,8 +126,9 @@ theorem IsMeasurable.measurableSet_individuallyRationalPair {u : PartnerUtilitie
 theorem measurableSet_blocks {u : PartnerUtilities A B}
     (hleft : Measurable (Function.uncurry u.left))
     (hright : Measurable (Function.uncurry u.right)) :
-    MeasurableSet {z : (A × B) × (A × B) | u.Blocks z.1 z.2} :=
-  (measurableSet_lt (hleft.comp measurable_fst)
+    MeasurableSet {z : (A × B) × (A × B) | u.Blocks z.1 z.2} := by
+  simp only [Blocks, toPartnerComparisons_blocks, Option.elim_some]
+  exact (measurableSet_lt (hleft.comp measurable_fst)
     (hleft.comp (measurable_fst.fst.prodMk measurable_snd.snd))).inter
     (measurableSet_lt (hright.comp (measurable_snd.snd.prodMk measurable_snd.fst))
       (hright.comp (measurable_snd.snd.prodMk measurable_fst.fst)))
@@ -140,7 +156,8 @@ def IsBlockingPair (f : MatchingMap μ ν) (u : PartnerUtilities A B) (a : A) (b
 /-- Blocking is exactly strict improvement for both agents over their assigned partners. -/
 theorem isBlockingPair_iff (f : MatchingMap μ ν) (u : PartnerUtilities A B) (a : A) (b : B) :
     f.IsBlockingPair u a b ↔
-      u.left a (f a) < u.left a b ∧ u.right b (f.symm b) < u.right b a := Iff.rfl
+      u.left a (f a) < u.left a b ∧ u.right b (f.symm b) < u.right b a := by
+  simp [IsBlockingPair]
 
 /-- No pair of agents blocks the matching, even if either agent has zero population mass. -/
 def Unblocked (f : MatchingMap μ ν) (u : PartnerUtilities A B) : Prop :=
