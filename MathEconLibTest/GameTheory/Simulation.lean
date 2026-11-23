@@ -6,6 +6,7 @@ Authors: Elazar Gershuni
 module
 
 public import MathEconLib.GameTheory.Equilibrium.Simulation
+public import MathEconLibTest.GameTheory.CandidateValidity
 public import Mathlib.Basic.Real.Basic
 public import Mathlib.Tactic.Linarith
 public import Mathlib.Tactic.NormNum
@@ -17,6 +18,14 @@ A coin action lies outside a compiler's image, so no exact morphism reaches it, 
 bounded by a legal source action. Simulation transports equilibrium to the enlarged game. The
 tests also check composition, reflection, value recodings across different value spaces and
 player sets, additive errors, and comparison transport where no global value map exists.
+
+The candidate-validity fixtures check that validity is not weakened by domination: an invalid
+incumbent stays excluded, an admitted improving deviation to an invalid candidate still counts,
+and preserving validity and equilibrium does not reflect it. Chained additive errors are
+transported one step at a time, because the step premises need not imply the composite's premise
+once the first step raises the incumbent.
+
+Signature pins for this layer live in `MathEconLibTest.GameTheory.SimulationApi`.
 -/
 
 @[expose] public noncomputable section
@@ -213,43 +222,124 @@ theorem cost_equilibrium :
   ((target.isEquilibriumWith_le_iff _).2 target_equilibrium).of_deviation_comparisons id trivial
     fun _ q _ ↦ ⟨q, trivial, fun hle ↦ neg_le_neg hle⟩
 
+/-! ## Candidate validity -/
+
+section CandidateValidity
+
+open MathEconLibTest.GameTheory.CandidateValidity
+
+/-- Coarsening, as a simulation, transports with a nonconstant validity condition. -/
+def coarsening' : GameSimulation descendingSource descendingTarget :=
+  coarseningMorphism.toSimulation
+
+example : descendingTarget.IsEquilibrium 1 :=
+  coarsening'.transport source_isEquilibrium
+
+/-- The invalid source state one has no improving deviation. -/
+theorem source_one_isDeviationOptimal : descendingSource.IsDeviationOptimal 1 := by
+  intro _ t ht
+  change t < 1 at ht
+  change t / 2 ≤ 1 / 2
+  omega
+
+/-- Domination carries deviation optimality from an invalid incumbent, but the incumbent stays
+excluded on both sides: it is not a source equilibrium, and its image is not a target one. -/
+theorem invalid_incumbent_excluded :
+    descendingTarget.IsDeviationOptimal (coarsening'.toFun 1) ∧
+      ¬ descendingSource.IsEquilibrium 1 ∧
+      ¬ descendingTarget.IsEquilibrium (coarsening'.toFun 1) := by
+  refine ⟨coarsening'.transport_isDeviationOptimal source_one_isDeviationOptimal, ?_, ?_⟩
+  · intro h
+    have : 2 ≤ 1 := h.valid
+    omega
+  · intro h
+    have : 1 ≤ 1 / 2 := h.valid
+    omega
+
+/-- No simulation from a problem without deviations reaches the valid state of
+`improvingDeviation`: domination must cover its improving deviation even though that deviation
+leads to an invalid candidate. -/
+theorem no_simulation_to_improvingDeviation :
+    ¬ ∃ f : GameSimulation noDeviations improvingDeviation, f.toFun true = true := by
+  rintro ⟨f, hf⟩
+  apply improving_invalid_target_not_isEquilibrium
+  rw [← hf]
+  exact f.transport ⟨rfl, fun _ _ h ↦ h.elim⟩
+
+/-- Forgetting all deviations is a simulation that preserves validity, since both problems
+admit only `true`, and bounds incumbent values by recoding them to zero. -/
+def forgetDeviations : GameSimulation improvingDeviation noDeviations where
+  toFun := id
+  deviatorMap := id
+  valueMap _ := OrderHom.const ℕ 0
+  incumbent_value_le _ _ := le_rfl
+  deviation_dominated _ _ _ h := h.elim
+  valid_preserves _ h := h
+
+/-- Preservation alone does not give reflection: the image of `true` is an equilibrium, its
+validity reflects, and yet the source incumbent is not an equilibrium. -/
+theorem forgetDeviations_not_reflect :
+    noDeviations.IsEquilibrium (forgetDeviations.toFun true) ∧
+      (noDeviations.valid (forgetDeviations.toFun true) → improvingDeviation.valid true) ∧
+      ¬ improvingDeviation.IsEquilibrium true :=
+  ⟨⟨rfl, fun _ _ h ↦ h.elim⟩, id, improving_invalid_target_not_isEquilibrium⟩
+
+end CandidateValidity
+
+/-! ## Chained additive errors -/
+
+/-- The first step raises the incumbent `false` from `0` to `1 / 2`. -/
+def raised : EquilibriumProblem Bool Unit ℝ :=
+  .ofDeviation (fun _ _ _ ↦ True) (fun _ b ↦ if b then 1 else 1 / 2)
+
+def raising : GameSimulation source raised where
+  toFun := id
+  deviatorMap := id
+  valueMap _ := OrderHom.id
+  incumbent_value_le _ b := by
+    cases b <;> norm_num [source, raised, EquilibriumProblem.ofDeviation]
+  deviation_dominated _ _ b _ := ⟨true, trivial, by
+    cases b <;> norm_num [source, raised, EquilibriumProblem.ofDeviation]⟩
+  valid_preserves _ _ := trivial
+
+/-- A concave recoding with slope three below `1 / 2` and slope one above it. -/
+def concave : ℝ →o ℝ :=
+  ⟨fun x ↦ min (3 * x) (x + 1), fun _ _ h ↦ min_le_min (by linarith) (by linarith)⟩
+
+@[simp] lemma concave_apply (x : ℝ) : concave x = min (3 * x) (x + 1) := rfl
+
+def concaveTarget : EquilibriumProblem Bool Unit ℝ :=
+  .ofDeviation (fun _ _ _ ↦ True) (fun j b ↦ concave (raised.value j b))
+
+def concaving : GameSimulation raised concaveTarget :=
+  .ofExactLifts id id (fun _ ↦ concave) (fun _ _ ↦ rfl)
+    (fun _ _ t ht ↦ ⟨t, ht, rfl⟩) (fun _ ht ↦ ht)
+
+theorem source_error_false :
+    ∀ i b, source.deviation i false b → source.value i b ≤ source.value i false + 1 := by
+  intro i b _
+  cases b <;> norm_num [source, EquilibriumProblem.ofDeviation]
+
+/-- Applying `transport_le_add` once per step keeps the error at one. The second premise is
+checked at the raised incumbent `1 / 2`, where the recoding has slope one. -/
+theorem chained_error :
+    ∀ j b, concaveTarget.deviation j false b →
+      concaveTarget.value j b ≤ concaveTarget.value j false + 1 :=
+  concaving.transport_le_add (s := false) (fun _ ↦ 1) (fun _ ↦ 1)
+    (fun _ ↦ by norm_num [concaving, GameSimulation.ofExactLifts, raised,
+      EquilibriumProblem.ofDeviation])
+    (raising.transport_le_add (fun _ ↦ 1) (fun _ ↦ 1) (fun _ ↦ le_rfl) source_error_false)
+
+/-- The step premises do not yield the composite's premise with the same error. The composite is
+evaluated at the source incumbent `0`, below the kink, where the recoding has slope three. -/
+theorem composite_premise_fails :
+    ¬ ∀ j, (concaving.comp raising).valueMap j
+        (source.value ((concaving.comp raising).deviatorMap j) false + 1) ≤
+      (concaving.comp raising).valueMap j
+        (source.value ((concaving.comp raising).deviatorMap j) false) + 1 := by
+  intro h
+  have h' := h ()
+  norm_num [GameSimulation.comp, concaving, raising, GameSimulation.ofExactLifts, source,
+    EquilibriumProblem.ofDeviation] at h'
+
 end MathEconLibTest.GameTheory.Simulation
-
-/-! ## Signatures -/
-
-section Signatures
-
-open MathEconLib.GameTheory
-
-example {S I T J V W : Type*} [Preorder V] [Preorder W]
-    {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J W}
-    (f : GameSimulation P Q) {s : S} (h : P.IsEquilibrium s) :
-    Q.IsEquilibrium (f.toFun s) := f.transport h
-
-example {S I T J V W : Type*} [Preorder V] [Preorder W] [Add V] [Add W] [AddRightMono W]
-    {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J W}
-    (f : GameSimulation P Q) (ε : I → V) (δ : J → W) {s : S}
-    (herror : ∀ j, f.valueMap j (P.value (f.deviatorMap j) s + ε (f.deviatorMap j)) ≤
-      f.valueMap j (P.value (f.deviatorMap j) s) + δ j)
-    (h : ∀ i s', P.deviation i s s' → P.value i s' ≤ P.value i s + ε i) :
-    ∀ j t, Q.deviation j (f.toFun s) t → Q.value j t ≤ Q.value j (f.toFun s) + δ j :=
-  f.transport_le_add ε δ herror h
-
-/-- The ordered comparison core requires no order laws and permits different value spaces. -/
-example {S I T J V W : Type*} [LE V] [LE W]
-    {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J W} {s : S} {t : T}
-    (h : P.IsEquilibrium s) (g : J → I) (hvalid : Q.valid t)
-    (hdev : ∀ j t', Q.deviation j t t' → ∃ s', P.deviation (g j) s s' ∧
-      (P.value (g j) s' ≤ P.value (g j) s → Q.value j t' ≤ Q.value j t)) :
-    Q.IsEquilibrium t := h.of_deviation_comparisons g hvalid hdev
-
-/-- The explicit comparison core needs no order instance at all. -/
-example {S I T J V W : Type*}
-    {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J W} {s : S} {t : T}
-    {R : I → V → V → Prop} {R' : J → W → W → Prop}
-    (h : P.IsEquilibriumWith R s) (g : J → I) (hvalid : Q.valid t)
-    (hdev : ∀ j t', Q.deviation j t t' → ∃ s', P.deviation (g j) s s' ∧
-      (R (g j) (P.value (g j) s') (P.value (g j) s) → R' j (Q.value j t') (Q.value j t))) :
-    Q.IsEquilibriumWith R' t := h.of_deviation_comparisons g hvalid hdev
-
-end Signatures
