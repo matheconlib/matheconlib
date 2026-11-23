@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Daniel Lyng, Elazar Gershuni. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Daniel Lyng
+Authors: Daniel Lyng, Elazar Gershuni
 -/
 module
 
@@ -27,6 +27,8 @@ expectations agree with integration against independent probability measures.
 ## Main statements
 
 * `StrategicGame.finiteExpectedPayoff_eq_sum` gives the finite independent expected-payoff formula.
+* `StrategicGame.finiteExpectedPayoff_update_eq_expect` averages pure-deviation payoffs to evaluate
+  a mixed deviation, for values in any real module.
 * `StrategicGame.isFiniteMixedNash_iff_isMixedNash` identifies finite and measure equilibria.
 * `StrategicGame.isFiniteMixedNash_iff_ofOutcome_mixed_isNash` identifies finite equilibria with
   equilibria for expected utilities over induced outcome distributions.
@@ -90,6 +92,26 @@ def IsFiniteMixedNash [AddCommMonoid V] [Module ℝ V] [LE V] (G : StrategicGame
     (G : StrategicGame I A V) (σ : FiniteMixedStrategy A) :
     G.IsFiniteMixedNash σ ↔ ∀ i τ, G.finiteExpectedPayoff i (Function.update σ i τ) ≤
       G.finiteExpectedPayoff i σ := isNash_iff _ _
+
+/-- A finite mixed deviation averages the payoffs of its pure deviations. -/
+lemma finiteExpectedPayoff_update_eq_expect [AddCommMonoid V] [Module ℝ V]
+    [∀ i, DecidableEq (A i)] (G : StrategicGame I A V)
+    (σ : FiniteMixedStrategy A) (i : I) (τ : FinDist (A i)) :
+    G.finiteExpectedPayoff i (Function.update σ i τ) =
+      τ.expect (fun a ↦ G.finiteExpectedPayoff i (Function.update σ i (FinDist.pure a))) := by
+  classical
+  have weights (ρ : FinDist (A i)) (a : ∀ j, A j) :
+      (∏ j, Function.update σ i ρ j (a j)) =
+        ρ (a i) * ∏ j ∈ Finset.univ.erase i, σ j (a j) := by
+    rw [← Finset.mul_prod_erase _ _ (Finset.mem_univ i), Function.update_self]
+    congr 1
+    exact Finset.prod_congr rfl fun j hj ↦ by rw [Function.update_of_ne (Finset.mem_erase.mp hj).1]
+  simp only [FinDist.expect, finiteExpectedPayoff_eq_sum, weights]
+  simp_rw [Finset.smul_sum]
+  rw [Finset.sum_comm]
+  apply Finset.sum_congr rfl
+  intro a _
+  simp [FinDist.pmf_eq_coe, FinDist.pure_apply, ite_mul, ite_smul, smul_ite, mul_smul]
 
 end Payoff
 

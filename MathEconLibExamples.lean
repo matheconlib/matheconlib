@@ -10,6 +10,7 @@ public import MathEconLibExamples.AllPurchase.UniformTwoBidder
 public import MathEconLibExamples.AllPurchase.Welfare
 public import MathEconLibExamples.Choice.SubstituteEnvelope
 public import MathEconLibExamples.Decision.RiskAversion
+public import MathEconLibExamples.GameTheory.DominatedStrategies
 public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.GameTheory.RockPaperScissors
 public import MathEconLibExamples.GameTheory.TicTacToe
@@ -33,6 +34,9 @@ Concrete economic models illustrate the library's definitions and results.
 
 * Matching pennies has a unique mixed Nash equilibrium: Both players randomize uniformly.
 * Matching pennies has no pure Nash equilibrium.
+* A row strictly dominated only by a mixture can be deleted: the reduced game's uniform
+  equilibrium lifts to a mixed equilibrium of the full game, though no retained deviation matches
+  the deleted row's payoff exactly.
 * A Becker-inspired crime-choice model gives a threshold rule and deterrence results
   for individuals and aggregate crime under a fixed type distribution.
 * A two-couple marriage market has distinct stable outcomes whose lattice join,
