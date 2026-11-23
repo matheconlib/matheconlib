@@ -28,7 +28,7 @@ expressed by `MenWeaklyPrefer` and `WomenWeaklyPrefer`.
 
 namespace MathEconLib.Matching
 
-open Function OrderDual
+open Function OrderDual MathEconLib.Preferences
 
 universe u v
 
@@ -99,6 +99,29 @@ def Unblocked (μ : M ≃. W) : Prop :=
 /-- Classical stability: individual rationality and no blocking pair. -/
 def IsStableMatching (μ : M ≃. W) : Prop :=
   mkt.IndividuallyRational μ ∧ mkt.Unblocked μ
+
+/-! ### Shared preference interfaces -/
+
+theorem individuallyRationalForM_iff_preferenceM_le (μ : M ≃. W) (m : M) :
+    mkt.IndividuallyRationalForM μ m ↔ none ≼[mkt.preferenceM m] (μ m) :=
+  Iff.rfl
+
+theorem blocksM_iff_preferenceM_lt (μ : M ≃. W) (m : M) (partner : W) :
+    mkt.BlocksM μ m partner ↔ (μ m) ≺[mkt.preferenceM m] some partner :=
+  mkt.ltM_iff_preferenceM_lt m (μ m) (some partner)
+
+theorem individuallyRationalForW_iff_preferenceW_le (μ : M ≃. W) (w : W) :
+    mkt.IndividuallyRationalForW μ w ↔ none ≼[mkt.preferenceW w] (μ.symm w) :=
+  Iff.rfl
+
+theorem blocksW_iff_preferenceW_lt (μ : M ≃. W) (w : W) (partner : M) :
+    mkt.BlocksW μ w partner ↔ (μ.symm w) ≺[mkt.preferenceW w] some partner :=
+  mkt.ltW_iff_preferenceW_lt w (μ.symm w) (some partner)
+
+theorem isBlockingPair_iff_preference_lt (μ : M ≃. W) (m : M) (w : W) :
+    mkt.IsBlockingPair μ m w ↔
+      (μ m) ≺[mkt.preferenceM m] some w ∧ (μ.symm w) ≺[mkt.preferenceW w] some m :=
+  and_congr (mkt.blocksM_iff_preferenceM_lt μ m w) (mkt.blocksW_iff_preferenceW_lt μ w m)
 
 /-! ### Elementary interfaces -/
 
