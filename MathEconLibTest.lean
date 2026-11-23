@@ -38,6 +38,7 @@ import MathEconLibTest.GameTheory.Transport
 import MathEconLibTest.GameTheory.VectorPayoffs
 import MathEconLibTest.Manual.BeckerResearch
 import MathEconLibTest.Manual.HandsOn
+import MathEconLibTest.Matching.BlockingLemma
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.DistributiveMarriage
 import MathEconLibTest.Matching.PublicImport
