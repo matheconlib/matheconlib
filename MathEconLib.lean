@@ -101,6 +101,10 @@ public import MathEconLib.Matching.Classical.Roommates.Basic
 public import MathEconLib.Matching.Classical.Roommates.NonExistence
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Attainment
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Basic
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Policies
+public import MathEconLib.Matching.Contracts.CumulativeOffer.Termination
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
 public import MathEconLib.Matching.Contracts.JointPreservation
 public import MathEconLib.Matching.Contracts.ManyToOne
