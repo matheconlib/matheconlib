@@ -19,11 +19,12 @@ bounded by a legal source action. Simulation transports equilibrium to the enlar
 tests also check composition, reflection, value recodings across different value spaces and
 player sets, additive errors, and comparison transport where no global value map exists.
 
-The candidate-validity fixtures check that validity is not weakened by domination: an invalid
-incumbent stays excluded, an admitted improving deviation to an invalid candidate still counts,
-and preserving validity and equilibrium does not reflect it. Chained additive errors are
-transported one step at a time, because the step premises need not imply the composite's premise
-once the first step raises the incumbent.
+The candidate-validity fixtures check that validity is not weakened by domination. A non-exact
+doubling simulation with nonconstant validity transports equilibrium while an invalid incumbent
+stays excluded; an admitted improving deviation to an invalid candidate still counts; and an exact
+simulation preserving values and validity still does not reflect equilibrium. Chained additive
+errors are transported one step at a time, because the step premises need not imply the
+composite's premise once the first step raises the incumbent.
 
 Signature pins for this layer live in `MathEconLibTest.GameTheory.SimulationApi`.
 -/
@@ -228,32 +229,71 @@ section CandidateValidity
 
 open MathEconLibTest.GameTheory.CandidateValidity
 
-/-- Coarsening, as a simulation, transports with a nonconstant validity condition. -/
-def coarsening' : GameSimulation descendingSource descendingTarget :=
-  coarseningMorphism.toSimulation
+/-- A coarse grid: states at least one are valid, deviations weakly lower the state, and each
+state is worth twice its index. -/
+def evenSource : EquilibriumProblem ℕ Unit ℕ where
+  deviation _ s t := t ≤ s
+  value _ s := 2 * s
+  valid s := 1 ≤ s
 
-example : descendingTarget.IsEquilibrium 1 :=
-  coarsening'.transport source_isEquilibrium
+/-- Doubling lands on even target states with equal values. A deviation to an odd state has no
+preimage, but the next even state is a legal source deviation worth at least as much. -/
+def doubling : GameSimulation evenSource descendingTarget where
+  toFun s := 2 * s
+  deviatorMap := id
+  valueMap _ := OrderHom.id
+  incumbent_value_le _ _ := le_rfl
+  deviation_dominated _ s t ht := by
+    change t < 2 * s at ht
+    refine ⟨(t + 1) / 2, ?_, ?_⟩
+    · change (t + 1) / 2 ≤ s
+      omega
+    · change t ≤ 2 * ((t + 1) / 2)
+      omega
+  valid_preserves s hs := by
+    change 1 ≤ s at hs
+    change 1 ≤ 2 * s
+    omega
 
-/-- The invalid source state one has no improving deviation. -/
-theorem source_one_isDeviationOptimal : descendingSource.IsDeviationOptimal 1 := by
+theorem evenSource_isEquilibrium : evenSource.IsEquilibrium 1 := by
+  refine ⟨le_rfl, ?_⟩
   intro _ t ht
-  change t < 1 at ht
-  change t / 2 ≤ 1 / 2
+  change t ≤ 1 at ht
+  change 2 * t ≤ 2 * 1
+  omega
+
+/-- Domination transports equilibrium with a nonconstant validity condition. -/
+example : descendingTarget.IsEquilibrium 2 :=
+  doubling.transport evenSource_isEquilibrium
+
+/-- The domination is not exact: the deviation from two to one lifts to no source deviation. -/
+theorem doubling_not_exact : ¬ ∃ f : GameMorphism evenSource descendingTarget,
+    f.toFun = doubling.toFun := by
+  rintro ⟨f, hf⟩
+  obtain ⟨s', _, hs'⟩ := f.deviation_lifts () 1 1 (by rw [hf]; exact Nat.one_lt_two)
+  rw [hf] at hs'
+  change 2 * s' = 1 at hs'
+  omega
+
+/-- The invalid source state zero has no improving deviation. -/
+theorem evenSource_zero_isDeviationOptimal : evenSource.IsDeviationOptimal 0 := by
+  intro _ t ht
+  change t ≤ 0 at ht
+  change 2 * t ≤ 2 * 0
   omega
 
 /-- Domination carries deviation optimality from an invalid incumbent, but the incumbent stays
 excluded on both sides: it is not a source equilibrium, and its image is not a target one. -/
 theorem invalid_incumbent_excluded :
-    descendingTarget.IsDeviationOptimal (coarsening'.toFun 1) ∧
-      ¬ descendingSource.IsEquilibrium 1 ∧
-      ¬ descendingTarget.IsEquilibrium (coarsening'.toFun 1) := by
-  refine ⟨coarsening'.transport_isDeviationOptimal source_one_isDeviationOptimal, ?_, ?_⟩
+    descendingTarget.IsDeviationOptimal (doubling.toFun 0) ∧
+      ¬ evenSource.IsEquilibrium 0 ∧
+      ¬ descendingTarget.IsEquilibrium (doubling.toFun 0) := by
+  refine ⟨doubling.transport_isDeviationOptimal evenSource_zero_isDeviationOptimal, ?_, ?_⟩
   · intro h
-    have : 2 ≤ 1 := h.valid
+    have : 1 ≤ 0 := h.valid
     omega
   · intro h
-    have : 1 ≤ 1 / 2 := h.valid
+    have : 1 ≤ 2 * 0 := h.valid
     omega
 
 /-- No simulation from a problem without deviations reaches the valid state of
@@ -266,23 +306,27 @@ theorem no_simulation_to_improvingDeviation :
   rw [← hf]
   exact f.transport ⟨rfl, fun _ _ h ↦ h.elim⟩
 
-/-- Forgetting all deviations is a simulation that preserves validity, since both problems
-admit only `true`, and bounds incumbent values by recoding them to zero. -/
-def forgetDeviations : GameSimulation improvingDeviation noDeviations where
-  toFun := id
-  deviatorMap := id
-  valueMap _ := OrderHom.const ℕ 0
-  incumbent_value_le _ _ := le_rfl
-  deviation_dominated _ _ _ h := h.elim
-  valid_preserves _ h := h
+/-- `improvingDeviation` with its deviations removed, keeping its values and validity. -/
+def withoutDeviations : EquilibriumProblem Bool Unit ℕ where
+  deviation _ _ _ := False
+  value := improvingDeviation.value
+  valid := improvingDeviation.valid
 
-/-- Preservation alone does not give reflection: the image of `true` is an equilibrium, its
-validity reflects, and yet the source incumbent is not an equilibrium. -/
+/-- Forgetting deviations is exact: identity states, deviators, and value recoding. -/
+def forgetDeviations : GameSimulation improvingDeviation withoutDeviations :=
+  .ofExactLifts id id (fun _ ↦ OrderHom.id) (fun _ _ ↦ rfl) (fun _ _ _ h ↦ h.elim)
+    (fun _ h ↦ h)
+
+/-- Preservation alone does not give reflection. Values and validity agree exactly at `true` and
+its image is an equilibrium, yet the source incumbent is not one: the deviation that rules it out
+has no counterpart in the target. -/
 theorem forgetDeviations_not_reflect :
-    noDeviations.IsEquilibrium (forgetDeviations.toFun true) ∧
-      (noDeviations.valid (forgetDeviations.toFun true) → improvingDeviation.valid true) ∧
+    withoutDeviations.IsEquilibrium (forgetDeviations.toFun true) ∧
+      withoutDeviations.value () (forgetDeviations.toFun true) =
+        improvingDeviation.value () true ∧
+      (withoutDeviations.valid (forgetDeviations.toFun true) ↔ improvingDeviation.valid true) ∧
       ¬ improvingDeviation.IsEquilibrium true :=
-  ⟨⟨rfl, fun _ _ h ↦ h.elim⟩, id, improving_invalid_target_not_isEquilibrium⟩
+  ⟨⟨rfl, fun _ _ h ↦ h.elim⟩, rfl, Iff.rfl, improving_invalid_target_not_isEquilibrium⟩
 
 end CandidateValidity
 
