@@ -46,7 +46,7 @@ def domination : GameSimulation source target where
   toFun := compile
   deviatorMap := id
   valueMap _ := OrderHom.id
-  value_le _ b := by cases b <;> norm_num [source, target, compile,
+  incumbent_value_le _ b := by cases b <;> norm_num [source, target, compile,
     EquilibriumProblem.ofDeviation]
   deviation_dominated _ _ q _ := ⟨true, trivial, target_value_le_one q⟩
   valid_preserves _ _ := trivial
@@ -87,7 +87,7 @@ def coarsening : GameSimulation target terminal where
   toFun _ := ()
   deviatorMap := id
   valueMap _ := OrderHom.id
-  value_le _ q := target_value_le_one q
+  incumbent_value_le _ q := target_value_le_one q
   deviation_dominated _ _ _ _ := by
     refine ⟨2, trivial, ?_⟩
     norm_num [terminal, target, EquilibriumProblem.ofDeviation]

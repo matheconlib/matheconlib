@@ -36,7 +36,7 @@ an independent contract; preservation alone does not imply it.
   transports optimality at one incumbent.
 * `GameSimulation.transport`: Simulations send equilibria to equilibria.
 * `GameSimulation.transport_le_add`: Additive deviation errors transport under a compatible
-  bound on the value maps.
+  bound on the value maps. Chains apply it once per simulation, not to the composite.
 * `GameSimulation.isEquilibrium_iff_of_deviation_comparisons` and
   `GameSimulation.isEquilibrium_iff`: Reflection conditions giving an iff.
 
@@ -63,7 +63,7 @@ structure GameSimulation {V W : Type*} [Preorder V] [Preorder W] {S : Type u} {I
   /-- Recoding source values into each target deviator's value coordinates. -/
   valueMap : J → V →o W
   /-- Translation weakly increases the recoded incumbent value. -/
-  value_le : ∀ j s, valueMap j (P.value (deviatorMap j) s) ≤ Q.value j (toFun s)
+  incumbent_value_le : ∀ j s, valueMap j (P.value (deviatorMap j) s) ≤ Q.value j (toFun s)
   /-- Every target deviation is bounded by one admissible source deviation. -/
   deviation_dominated : ∀ j s t, Q.deviation j (toFun s) t →
     ∃ s', P.deviation (deviatorMap j) s s' ∧
@@ -118,7 +118,7 @@ variable {V W X : Type*} [Preorder V] [Preorder W] [Preorder X] {S : Type u} {I 
 /-- Domination transports deviation optimality without a validity assumption. -/
 theorem transport_isDeviationOptimal (f : GameSimulation P Q) {s : S}
     (h : P.IsDeviationOptimal s) : Q.IsDeviationOptimal (f.toFun s) :=
-  h.of_dominated_deviations f.deviatorMap f.valueMap (fun j ↦ f.value_le j s)
+  h.of_dominated_deviations f.deviatorMap f.valueMap (fun j ↦ f.incumbent_value_le j s)
     (fun j t ↦ f.deviation_dominated j s t)
 
 /-- A simulation sends equilibria to equilibria. -/
@@ -131,17 +131,24 @@ def id (P : EquilibriumProblem S I V) : GameSimulation P P where
   toFun := _root_.id
   deviatorMap := _root_.id
   valueMap _ := OrderHom.id
-  value_le _ _ := le_rfl
+  incumbent_value_le _ _ := le_rfl
   deviation_dominated _ _ t ht := ⟨t, ht, le_rfl⟩
   valid_preserves _ h := h
 
-/-- Simulations compose by composing maps and chaining the deviation bounds. -/
+/-- Simulations compose by composing maps and chaining the deviation bounds.
+
+The local error premises of `transport_le_add` do not compose. The second simulation's premise is
+evaluated at the translated incumbent, which may lie strictly above the recoded source incumbent
+where the composite's premise is evaluated, so the two step premises need not imply the composite
+one. To chain approximate equilibria from the step premises, apply `transport_le_add` to each
+simulation in turn. -/
 def comp (g : GameSimulation Q R) (f : GameSimulation P Q) : GameSimulation P R where
   toFun := g.toFun ∘ f.toFun
   deviatorMap := f.deviatorMap ∘ g.deviatorMap
   valueMap k := (g.valueMap k).comp (f.valueMap (g.deviatorMap k))
-  value_le k s := ((g.valueMap k).monotone (f.value_le (g.deviatorMap k) s)).trans
-    (g.value_le k (f.toFun s))
+  incumbent_value_le k s :=
+    ((g.valueMap k).monotone (f.incumbent_value_le (g.deviatorMap k) s)).trans
+      (g.incumbent_value_le k (f.toFun s))
   deviation_dominated k s t ht := by
     obtain ⟨q, hq, hb⟩ := g.deviation_dominated k (f.toFun s) t ht
     obtain ⟨p, hp, hc⟩ := f.deviation_dominated (g.deviatorMap k) s q hq
@@ -161,7 +168,11 @@ theorem comp_assoc {A B Y : Type*} [Preorder Y] {Z : EquilibriumProblem A B Y}
 
 /-- Transport playerwise additive errors through value maps with a compatible bound.
 The bound is needed only at the incumbent. An affine map with slope `a` scales
-its source error by `a`; identity maps preserve it. -/
+its source error by `a`; identity maps preserve it.
+
+The bound `herror` is evaluated at the recoded source incumbent, not at the translated incumbent.
+For a chain of simulations, apply this theorem once per step, so each step's bound is evaluated at
+that step's own incumbent; see `comp`. -/
 theorem transport_le_add [Add V] [Add W] [AddRightMono W]
     (f : GameSimulation P Q) (ε : I → V) (δ : J → W) {s : S}
     (herror : ∀ j, f.valueMap j (P.value (f.deviatorMap j) s + ε (f.deviatorMap j)) ≤
@@ -171,7 +182,7 @@ theorem transport_le_add [Add V] [Add W] [AddRightMono W]
   intro j t ht
   obtain ⟨s', hs', hbound⟩ := f.deviation_dominated j s t ht
   exact hbound.trans (((f.valueMap j).monotone (h (f.deviatorMap j) s' hs')).trans
-    ((herror j).trans (add_le_add_left (f.value_le j s) (δ j))))
+    ((herror j).trans (add_le_add_left (f.incumbent_value_le j s) (δ j))))
 
 /-- Exact deviation lifts give a simulation after any monotone value recoding. -/
 def ofExactLifts (f : S → T) (g : J → I) (φ : J → V →o W)
@@ -182,7 +193,7 @@ def ofExactLifts (f : S → T) (g : J → I) (φ : J → V →o W)
   toFun := f
   deviatorMap := g
   valueMap := φ
-  value_le j s := (hvalue j s).symm.le
+  incumbent_value_le j s := (hvalue j s).symm.le
   deviation_dominated j s t ht := by
     obtain ⟨s', hs', rfl⟩ := hlift j s t ht
     exact ⟨s', hs', (hvalue j s').le⟩
