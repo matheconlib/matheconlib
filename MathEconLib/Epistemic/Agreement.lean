@@ -26,18 +26,22 @@ countable. The priors need only be finite measures, and the event must be measur
 
 ## Main statements
 
-* `MathEconLib.Epistemic.aumann_agreement`: two agents.
-* `MathEconLib.Epistemic.aumann_agreement_iSup`: a family of agents indexed by any type.
-* `MathEconLib.Epistemic.aumann_agreement_of_commonPrior` and
-  `MathEconLib.Epistemic.aumann_agreement_iSup_of_commonPrior`: Aumann's common-prior form.
+* `MathEconLib.Epistemic.aumann_agreement`: the two-agent modular agreement theorem
+  (Chen et al., Theorem 3.1).
+* `MathEconLib.Epistemic.aumann_agreement_of_commonPrior`: the two-agent common-prior
+  specialization (Corollary 3.2).
+* `MathEconLib.Epistemic.aumann_agreement_iSup`: the indexed extension in Appendix A.
+* `MathEconLib.Epistemic.aumann_agreement_iSup_of_commonPrior`: its common-prior specialization.
 
 ## References
 
 Robert J. Aumann (1976), *Agreeing to Disagree*, *The Annals of Statistics* **4**(6),
 1236–1239. [DOI: 10.1214/aos/1176343654](https://doi.org/10.1214/aos/1176343654).
 
-*We Can't Agree to Disagree, Formally: Aumann's Theorem and Assumption Accounting in Lean*
-(2026), [SSRN 6837298](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6837298).
+Ruize Chen, Ben Eltschig, Scott Duke Kominers, Ken Ono, and Jujian Zhang (2026),
+*We Can't Agree to Disagree, Formally: Aumann's Theorem and Assumption Accounting in Lean*,
+Theorem 3.1, Corollary 3.2, and Appendix A.
+[DOI: 10.2139/ssrn.6837298](https://doi.org/10.2139/ssrn.6837298).
 
 ## Provenance
 

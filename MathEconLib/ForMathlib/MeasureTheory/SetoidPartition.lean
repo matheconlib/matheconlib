@@ -30,6 +30,13 @@ countable, and every measurable set then has the sum of its measures on the part
 * `Setoid.Partitions.measure_eq_tsum_inter`: the measure of a measurable set is the sum of its
   measures on the parts of a countable measurable partition.
 
+## References
+
+Ruize Chen, Ben Eltschig, Scott Duke Kominers, Ken Ono, and Jujian Zhang (2026),
+*We Can't Agree to Disagree, Formally: Aumann's Theorem and Assumption Accounting in Lean*,
+Lemma 4.1 (positive cells are countable).
+[DOI: 10.2139/ssrn.6837298](https://doi.org/10.2139/ssrn.6837298).
+
 ## Provenance
 
 Adapted from the `AgreeToDisagree` Lean development

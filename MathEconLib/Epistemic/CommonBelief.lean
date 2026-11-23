@@ -25,6 +25,10 @@ differ by at most `2 * (1 - p)`. All partitions are measurable with parts of pos
 probability, the prior need only be finite, and `0 < p`. Thresholds and posteriors are values in
 `ℝ≥0∞`; the bound is stated for their real parts.
 
+Theorem 8.1 of Chen et al. assumes a finite nonempty family of agents and a measurable witness
+to common `p`-belief. As in Appendix B, `IsCommonBeliefAt` allows any agent index type and
+an arbitrary witness set. The proof constructs a measurable witness for each pair of agents.
+
 ## Main definitions
 
 * `MathEconLib.Epistemic.belief`: the event that an agent `p`-believes a given event.
@@ -47,8 +51,10 @@ Dov Monderer and Dov Samet (1989), *Approximating Common Knowledge with Common B
 *Games and Economic Behavior* **1**(2), 170–190.
 [DOI: 10.1016/0899-8256(89)90017-1](https://doi.org/10.1016/0899-8256(89)90017-1).
 
-*We Can't Agree to Disagree, Formally: Aumann's Theorem and Assumption Accounting in Lean*
-(2026), [SSRN 6837298](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=6837298).
+Ruize Chen, Ben Eltschig, Scott Duke Kominers, Ken Ono, and Jujian Zhang (2026),
+*We Can't Agree to Disagree, Formally: Aumann's Theorem and Assumption Accounting in Lean*,
+Theorem 8.1 and Appendix B.
+[DOI: 10.2139/ssrn.6837298](https://doi.org/10.2139/ssrn.6837298).
 
 ## Provenance
 
