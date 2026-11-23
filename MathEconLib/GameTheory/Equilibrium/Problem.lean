@@ -432,17 +432,19 @@ variable {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x} {U : T
     {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J V} {R : EquilibriumProblem U K V}
 
 /-- A deviation-lifting map transports deviation optimality when comparisons on admissible pairs
-are preserved. The existing reward-preserving morphism is reused without an order instance. -/
+are preserved. The existing reward-preserving morphism is reused without an order instance; the
+lifted deviation and equal values supply the matching of
+`EquilibriumProblem.IsDeviationOptimalWith.of_deviation_comparisons`. -/
 theorem transport_isDeviationOptimalWith (f : GameMorphism P Q) (C : I → V → V → Prop)
     (D : J → V → V → Prop)
     (hcmp : ∀ j s t, P.deviation (f.deviatorMap j) s t →
       C (f.deviatorMap j) (P.value (f.deviatorMap j) t) (P.value (f.deviatorMap j) s) →
       D j (P.value (f.deviatorMap j) t) (P.value (f.deviatorMap j) s))
     {s : S} (h : P.IsDeviationOptimalWith C s) :
-    Q.IsDeviationOptimalWith D (f.toFun s) := by
-  intro j t ht
-  obtain ⟨s', hs', rfl⟩ := f.deviation_lifts j s t ht
-  simpa only [f.value_eq] using hcmp j s s' hs' (h (f.deviatorMap j) s' hs')
+    Q.IsDeviationOptimalWith D (f.toFun s) :=
+  h.of_deviation_comparisons f.deviatorMap fun j t ht ↦ by
+    obtain ⟨s', hs', rfl⟩ := f.deviation_lifts j s t ht
+    exact ⟨s', hs', fun hc ↦ by simpa only [f.value_eq] using hcmp j s s' hs' hc⟩
 
 /-- A deviation-lifting map transports full equilibrium, including candidate validity. -/
 theorem transportWith (f : GameMorphism P Q) (C : I → V → V → Prop)
@@ -455,10 +457,10 @@ theorem transportWith (f : GameMorphism P Q) (C : I → V → V → Prop)
 
 /-- A deviation-lifting map preserves deviation optimality. -/
 theorem transport_isDeviationOptimal [LE V] (f : GameMorphism P Q) {s : S}
-    (h : P.IsDeviationOptimal s) : Q.IsDeviationOptimal (f.toFun s) := by
-  intro j t ht
-  obtain ⟨s', hs', rfl⟩ := f.deviation_lifts j s t ht
-  simpa only [f.value_eq] using h (f.deviatorMap j) s' hs'
+    (h : P.IsDeviationOptimal s) : Q.IsDeviationOptimal (f.toFun s) :=
+  h.of_deviation_comparisons f.deviatorMap fun j t ht ↦ by
+    obtain ⟨s', hs', rfl⟩ := f.deviation_lifts j s t ht
+    exact ⟨s', hs', fun hle ↦ by simpa only [f.value_eq] using hle⟩
 
 /-- A deviation-lifting map sends equilibria to equilibria. -/
 theorem transport [LE V] (f : GameMorphism P Q) {s : S} (h : P.IsEquilibrium s) :
