@@ -159,27 +159,6 @@ def playAccordingToStrategy (σ : StrategyProfile) :
           (h ++ [Function.update b pos (some p)])
 
 
-/-- Simulate at most `remainingSteps` turns from a given board.
-An illegal move ends the game with the other player winning; the result is a
-sentinel board rather than the last legally reachable board. -/
-def playAccordingToMemorylessStrategyProfile (σ : MemorylessStrategyProfile) (remainingSteps : Nat)
-    (p : Player) (b : Board) : Board :=
-  match remainingSteps with
-  | 0 => b
-  | n + 1 =>
-      if gameOver b then
-        b
-      else
-        let pos := σ p b
-        if (b pos).isSome then
-          if p = X then
-            oWinningBoard  -- X loses for making an illegal move
-          else
-            xWinningBoard  -- O loses for making an illegal move
-        else
-          playAccordingToMemorylessStrategyProfile σ n (otherPlayer p)
-            (Function.update b pos (some p))
-
 /-- Final board under a history profile starting from the empty board. -/
 def finalBoard (σ : StrategyProfile) : Board :=
   currentBoard (playAccordingToStrategy σ 9 X [emptyBoard])
@@ -206,15 +185,6 @@ abbrev ticTacToe : StrategicGame Player (fun _ ↦ Strategy) ℝ where
 def asStrategy (s : MemorylessStrategy) : Strategy :=
   fun h => s (currentBoard h)
 
-/-- X's strategy guarantees nonnegative payoff against every opposing history strategy. -/
-def IsSecurityX (σ : Strategy) : Prop :=
-  ∀ τ : Strategy,
-    0 ≤ ticTacToe.payoff X (fun p ↦ if p = X then σ else τ)
-
-/-- O's strategy guarantees nonnegative payoff against every opposing history strategy. -/
-def IsSecurityO (σ : Strategy) : Prop :=
-  ∀ τ : Strategy,
-    0 ≤ ticTacToe.payoff O (fun p ↦ if p = O then σ else τ)
 
 /-- If the opponent has two marks in a line and the third cell is empty, return that cell. -/
 def findOpponentWinningMove (p : Player) (b : Board) : Option Position :=
