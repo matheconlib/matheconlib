@@ -293,15 +293,30 @@ where to put shared feedback and which PR owns a blocker.
 - Keep PRs single-purpose and reviewable: one theme per PR, with a short
   description of what is proved and where it sits in the library.
 
-### Maintainer merge checkbox
+### Maintainer merge queue
 
-The rulesets for `main` separate permission to merge from PR and CI requirements.
-An approved PR with passing checks may still show **Cannot update this protected
-ref**. If you are on the maintainer bypass list, open **Merge status**, select
-**Merge without waiting for requirements to be met (bypass rules)**, and confirm
-the merge. This is the normal maintainer merge step.
+An allowlisted maintainer can queue an approved PR once its required checks pass.
+Select **Merge when ready** on GitHub. The queue builds the PR together with the
+latest `main` and merges only after the required `build` passes on that integration
+commit. The queue build also runs the proof-integrity check.
 
-The checkbox bypasses only the maintainer update restriction. The separate PR/CI
-ruleset has no bypass list: its required checks and approval conditions must still
-be satisfied. The review requirements above also still apply. See the
-[current rulesets](https://github.com/matheconlib/matheconlib/rules).
+To enqueue a ready PR from the command line, use the explicit GitHub queue
+mutation. Set `pr` to the PR number.
+
+```bash
+pr=123
+read -r pr_id head_sha < <(
+  gh pr view "$pr" --repo matheconlib/matheconlib --json id,headRefOid \
+    --jq '[.id, .headRefOid] | @tsv'
+)
+gh api graphql \
+  -f 'query=mutation($id: ID!, $head: GitObjectID!) {
+    enqueuePullRequest(input: {pullRequestId: $id, expectedHeadOid: $head}) {
+      mergeQueueEntry { state position }
+    }
+  }' \
+  -f id="$pr_id" -f head="$head_sha"
+```
+
+See the [main rulesets](https://github.com/matheconlib/matheconlib/rules) and
+[GitHub's merge queue guide](https://docs.github.com/en/pull-requests/how-tos/merge-and-close-pull-requests/merging-a-pull-request-with-a-merge-queue).
