@@ -194,6 +194,37 @@ class DriverIntegrationTest(unittest.TestCase):
                 self.assertEqual(serial["stage"], "complete")
                 self.assertEqual(set(serial["elaboration_sources"]), {"Fixture.lean", "Fixture/Orphan.lean"})
 
+    def test_ci_build_covers_default_facets_and_orphan_sources(self):
+        (self.root / "lakefile.toml").write_text(
+            'name = "fixture"\ndefaultTargets = ["Fixture"]\n'
+            '[[lean_lib]]\nname = "Fixture"\ndefaultFacets = ["static"]\n'
+            'libName = "fixture_defaults"\n')
+        orphan = self.root / "Fixture/Orphan.lean"
+        orphan.write_text("module\npublic import Init\nexample : True := True.intro\n")
+        command = [sys.executable, str(DRIVER), "--root", str(self.root)]
+        built = subprocess.run([*command, "--build-only"], cwd=ROOT,
+                               capture_output=True, text=True, timeout=120)
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        self.assertTrue(any((self.root / ".lake/build/lib").glob("*fixture_defaults.a")),
+                        built.stdout)
+        self.assertTrue((self.root / ".lake/build/lib/lean/Fixture/Orphan.olean").is_file(),
+                        built.stdout)
+
+        report_path = self.root / "report.json"
+        audited = subprocess.run([*command, "--audit-only", "--report", str(report_path)],
+                                 cwd=ROOT, capture_output=True, text=True, timeout=120)
+        self.assertEqual(audited.returncode, 0, audited.stdout + audited.stderr)
+        self.assertNotIn("Build completed", audited.stdout + audited.stderr)
+        report = json.loads(report_path.read_text())
+        self.assertEqual(report["status"], "passed")
+        self.assertIn("Fixture/Orphan.lean", report["elaboration_sources"])
+
+        orphan.write_text("module\npublic import Init\ntheorem broken : True := 0\n")
+        broken = subprocess.run([*command, "--build-only"], cwd=ROOT,
+                                capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(broken.returncode, 0, broken.stdout + broken.stderr)
+        self.assertIn("Fixture/Orphan.lean", broken.stdout + broken.stderr)
+
     def test_source_cache_invalidates_transitive_macro_imports(self):
         (self.root / "Fixture/Orphan.lean").write_text(
             'import Fixture.Bridge\nset_option warningAsError false\n'

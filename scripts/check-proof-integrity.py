@@ -126,6 +126,11 @@ def write_report(path, report):
     path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
 
 
+def build_project(root, targets):
+    return subprocess.run(["lake", "--rehash", "--no-ansi", "build", *targets],
+                          cwd=root).returncode
+
+
 def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
@@ -204,7 +209,7 @@ def audit_source(root, work, index, path, module):
     return result
 
 
-def run(root, report_path, jobs=1, source_cache=None):
+def run(root, report_path, jobs=1, source_cache=None, *, audit_only=False):
     report = {"status": "error", "stage": "discovery"}
     write_report(report_path, report)
     try:
@@ -234,13 +239,13 @@ def run(root, report_path, jobs=1, source_cache=None):
                 print("{source}:{line}: forbidden proof token {token}".format(**violation),
                       file=sys.stderr)
             return 1
-        report["stage"] = "build"
-        write_report(report_path, report)
-        # Explicit module targets also build files not reachable from an umbrella.
-        built = subprocess.run(["lake", "--rehash", "--no-ansi", "build", *modules], cwd=root)
-        if built.returncode:
-            report["error"] = "Building all project modules failed"
-            return 1
+        if not audit_only:
+            report["stage"] = "build"
+            write_report(report_path, report)
+            # Explicit module targets also build files not reachable from an umbrella.
+            if build_project(root, modules):
+                report["error"] = "Building all project modules failed"
+                return 1
         report["stage"] = "audit"
         write_report(report_path, report)
         with tempfile.TemporaryDirectory(prefix="proof-integrity-") as work:
@@ -316,6 +321,11 @@ def run(root, report_path, jobs=1, source_cache=None):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--build-only", action="store_true",
+                      help="build Lake's default targets and every project source in one invocation")
+    mode.add_argument("--audit-only", action="store_true",
+                      help="audit artifacts from a successful --build-only for the same sources")
     parser.add_argument("--report", type=Path, default=REPO / ".lake/proof-integrity/report.json")
     parser.add_argument("--jobs", type=int, default=1, help="number of concurrent source audits")
     parser.add_argument("--source-cache", type=Path,
@@ -323,7 +333,18 @@ def main():
     args = parser.parse_args()
     if args.jobs < 1:
         parser.error("--jobs must be at least 1")
-    return run(args.root.resolve(), args.report.resolve(), args.jobs, args.source_cache)
+    root = args.root.resolve()
+    if args.build_only:
+        try:
+            # @ expands to the root package's default targets. + selects a module
+            # even when a library or executable shares its name.
+            targets = ["@", *(f"+{module_name(path)}" for path in discover_sources(root))]
+            return build_project(root, targets)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            print("Project build failed: " + str(error), file=sys.stderr)
+            return 1
+    return run(root, args.report.resolve(), args.jobs, args.source_cache,
+               audit_only=args.audit_only)
 
 
 if __name__ == "__main__":
