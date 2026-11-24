@@ -32,6 +32,7 @@ import MathEconLibTest.GameTheory.Integrability
 import MathEconLibTest.GameTheory.MatchingPennies
 import MathEconLibTest.GameTheory.MeasurableBayesian
 import MathEconLibTest.GameTheory.OrderedPayoffs
+import MathEconLibTest.GameTheory.RockPaperScissors
 import MathEconLibTest.GameTheory.StateOutcomeEvaluation
 import MathEconLibTest.GameTheory.Strategic
 import MathEconLibTest.GameTheory.StrategicTransport
