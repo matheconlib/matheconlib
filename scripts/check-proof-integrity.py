@@ -3,11 +3,12 @@
 import argparse
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import closing
-from functools import partial
+from functools import cache, partial
 import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import re
 import subprocess
 import sys
@@ -125,6 +126,60 @@ def write_report(path, report):
     path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
 
 
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+
+
+def source_cache_keys(root, source_hashes, workers):
+    # Lean parses the real import header, including private and meta imports.
+    # Outside the project, the pinned toolchain and manifest identify the inputs.
+    output = subprocess.check_output(["lake", "env"], cwd=root, text=True)
+    lake_env = dict(line.split("=", 1) for line in output.splitlines())
+    env = os.environ | lake_env
+    context = digest([
+        platform.system(), platform.machine(), platform.libc_ver(), platform.mac_ver()[0],
+        env.get("ImageOS"), lake_env["LEAN_GITHASH"],
+        [hashlib.sha256(path.read_bytes()).hexdigest() for path in (
+            Path(__file__), BACKEND, root / "lean-toolchain", root / "lakefile.toml",
+            root / "lake-manifest.json",
+        )],
+    ])
+    project_paths = {str(root / source): source for source in source_hashes}
+
+    def project_imports(source):
+        output = subprocess.check_output(
+            [lake_env["LEAN"], "--src-deps", source], cwd=root, env=env, text=True,
+        )
+        return sorted({
+            project_paths[absolute] for path in output.splitlines()
+            if (absolute := os.path.abspath(root / path)) in project_paths
+        })
+
+    imports = dict(zip(source_hashes, workers.map(project_imports, source_hashes)))
+
+    @cache
+    def key(source):
+        return digest([context, source, source_hashes[source], [key(dep) for dep in imports[source]]])
+
+    return {source: key(source) for source in source_hashes}
+
+
+def load_source_cache(path):
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def save_source_cache(path, results):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=path.parent) as work:
+        staged = Path(work) / "cache.json"
+        write_report(staged, results)
+        staged.replace(path)
+
+
 def audit_source(root, work, index, path, module):
     source_report = work / f"source-{index}.json"
     checked = subprocess.run(
@@ -149,7 +204,7 @@ def audit_source(root, work, index, path, module):
     return result
 
 
-def run(root, report_path, jobs=1):
+def run(root, report_path, jobs=1, source_cache=None):
     report = {"status": "error", "stage": "discovery"}
     write_report(report_path, report)
     try:
@@ -215,14 +270,34 @@ def run(root, report_path, jobs=1):
             failed = False
             audit = partial(audit_source, root, Path(work))
             with ThreadPoolExecutor(max_workers=jobs) as workers:
+                cached = load_source_cache(source_cache) if source_cache else {}
+                keys = source_cache_keys(root, report["source_sha256"], workers) if source_cache else {}
+                next_cache = {}
+                hits = 0
+
+                def check(index, path, module):
+                    count = cached.get(keys.get(path.as_posix()))
+                    if type(count) is int and count >= 0:
+                        return {
+                            "declarations_checked": count, "violations": [], "status": "passed",
+                        }, True
+                    return audit(index, path, module), False
+
                 # Consume results in source order and cancel queued work if aggregation fails.
-                with closing(workers.map(audit, range(len(sources)), sources, modules)) as results:
-                    for path, result in zip(sources, results):
+                with closing(workers.map(check, range(len(sources)), sources, modules)) as results:
+                    for path, (result, hit) in zip(sources, results):
                         report["elaboration_sources"].append(path.as_posix())
                         report["elaboration_declarations_checked"] += result["declarations_checked"]
                         report["elaboration_violations"].extend(result["violations"])
                         failed = failed or result["status"] == "failed"
+                        hits += hit
+                        if source_cache and result["status"] == "passed":
+                            next_cache[keys[path.as_posix()]] = result["declarations_checked"]
                         write_report(report_path, report)
+            if source_cache:
+                print(f"Source audit cache: {hits} hits, {len(sources) - hits} misses.", flush=True)
+                if not failed:
+                    save_source_cache(source_cache, next_cache)
             report["status"] = "failed" if failed else "passed"
             report["stage"] = "complete"
             print("Source elaboration audit: {} declarations in {} sources; {} violations.".format(
@@ -243,10 +318,12 @@ def main():
     parser.add_argument("--root", type=Path, default=REPO)
     parser.add_argument("--report", type=Path, default=REPO / ".lake/proof-integrity/report.json")
     parser.add_argument("--jobs", type=int, default=1, help="number of concurrent source audits")
+    parser.add_argument("--source-cache", type=Path,
+                        help="experimental cache of successful source audits from trusted runs")
     args = parser.parse_args()
     if args.jobs < 1:
         parser.error("--jobs must be at least 1")
-    return run(args.root.resolve(), args.report.resolve(), args.jobs)
+    return run(args.root.resolve(), args.report.resolve(), args.jobs, args.source_cache)
 
 
 if __name__ == "__main__":

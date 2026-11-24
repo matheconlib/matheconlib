@@ -194,6 +194,42 @@ class DriverIntegrationTest(unittest.TestCase):
                 self.assertEqual(serial["stage"], "complete")
                 self.assertEqual(set(serial["elaboration_sources"]), {"Fixture.lean", "Fixture/Orphan.lean"})
 
+    def test_source_cache_invalidates_transitive_macro_imports(self):
+        (self.root / "Fixture/Orphan.lean").write_text(
+            'import Fixture.Bridge\nset_option warningAsError false\n'
+            'set_option warn.«sorry» false\nexample : True := importedProof\n')
+        (self.root / "Fixture/Bridge.lean").write_text('import Fixture.Proofs\n')
+        proofs = self.root / "Fixture/Proofs.lean"
+        proofs.write_text('import Lean\nmacro "importedProof" : term => `(True.intro)\n')
+        report = self.root / "report.json"
+        source_cache = self.root / "cache.json"
+        command = [sys.executable, str(DRIVER), "--root", str(self.root), "--report", str(report),
+                   "--jobs", "2"]
+
+        def check(exit_code, hits=None, image_version="seed"):
+            args = command if hits is None else [*command, "--source-cache", str(source_cache)]
+            env = os.environ | {"ImageVersion": image_version}
+            result = subprocess.run(args, cwd=ROOT, env=env, capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, exit_code, result.stdout + result.stderr)
+            if hits is not None:
+                self.assertIn(f"Source audit cache: {hits} hits, {4 - hits} misses.", result.stdout)
+            return report.read_bytes()
+
+        cold = check(0, hits=0)
+        self.assertEqual(check(0, hits=4, image_version="restore"), cold)
+        previous_cache = source_cache.read_bytes()
+        proofs.write_text(
+            'import Lean\nopen Lean in\nmacro "importedProof" : term =>\n'
+            '  pure ⟨.node .none (Name.str `Lean.Parser.Term ("so" ++ "rry"))\n'
+            '    #[.atom .none ("so" ++ "rry")]⟩\n')
+        rejected = check(1, hits=1)
+        self.assertEqual(rejected, check(1))
+        self.assertEqual(previous_cache, source_cache.read_bytes())
+        self.assertTrue(any(
+            violation["source"] == "Fixture/Orphan.lean" and violation["axiom"] == "sorryAx"
+            for violation in json.loads(rejected)["elaboration_violations"]
+        ))
+
     def test_parallel_worker_failures_leave_an_error_report(self):
         source = "Fixture/Orphan.lean"
         (self.root / source).write_text("module\npublic import Init\nexample : True := True.intro\n")
