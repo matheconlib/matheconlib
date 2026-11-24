@@ -25,6 +25,19 @@ Changes to the foundational layers — `Mechanism/`, `BidderProblem/`, `GameTheo
 **design issue** before implementation. Sketch the intended definitions and the main
 statements, and get agreement on the shape before writing the proofs.
 
+Apply design-first review when a contribution adds a shared abstraction, adds a
+public representation of an existing concept, or introduces an import between
+layers. This applies to extensions of existing foundations such as `Preferences`
+and `Choice`.
+
+Check for duplication against existing MathEconLib and Mathlib APIs.
+Record the canonical API, one representative downstream theorem and its assumptions,
+and the direction of any new imports. During PR review, if the downstream theorem
+exposes an unresolved choice about a shared abstraction, a public representation,
+or an import between layers, ask for a design issue or link an existing one that
+covers the question. Agree on the scope there with the contributor before
+requesting a refactor or downstream port.
+
 Leaf contributions — new theorems in existing chapters, documentation, applications
 built on the existing layers — can go straight to a PR.
 
@@ -258,8 +271,7 @@ For example, a shared lemma and its application can be reviewed separately:
 3. After a refresh or conflict resolution, rerun the import checks and `lake build`
    from the [verification bar](#verification-bar), and wait for applicable CI on
    the latest revision. Verify against current `main` before merging: an old
-   green check can predate changes to build requirements. CI currently runs only
-   for PRs targeting `main`; check children locally until they are retargeted.
+   green check can predate changes to build requirements.
 4. Leave a brief update naming the new base, conflicts resolved, substantive
    changes, and check results. Request another review when statements, APIs,
    implementation, or guidance changed substantively; carry forward
@@ -280,3 +292,16 @@ where to put shared feedback and which PR owns a blocker.
   changes that also touch a core layer still need maintainer review.
 - Keep PRs single-purpose and reviewable: one theme per PR, with a short
   description of what is proved and where it sits in the library.
+
+### Maintainer merge checkbox
+
+The rulesets for `main` separate permission to merge from PR and CI requirements.
+An approved PR with passing checks may still show **Cannot update this protected
+ref**. If you are on the maintainer bypass list, open **Merge status**, select
+**Merge without waiting for requirements to be met (bypass rules)**, and confirm
+the merge. This is the normal maintainer merge step.
+
+The checkbox bypasses only the maintainer update restriction. The separate PR/CI
+ruleset has no bypass list: its required checks and approval conditions must still
+be satisfied. The review requirements above also still apply. See the
+[current rulesets](https://github.com/matheconlib/matheconlib/rules).

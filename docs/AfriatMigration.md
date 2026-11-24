@@ -35,6 +35,6 @@ meaning.
 
 The public-import checks in
 [`Compatibility.lean`](../MathEconLibTest/RevealedPreference/Compatibility.lean)
-pin both the definitional aliases and their coordinatewise economic contracts,
+pin both the definitional aliases and their coordinatewise economic meaning,
 including vacuous strict increase with zero commodities. The existing concrete
 Afriat applications and theorem signatures remain checked clients.
