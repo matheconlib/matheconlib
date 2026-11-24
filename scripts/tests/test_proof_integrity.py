@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -161,19 +162,20 @@ class DriverIntegrationTest(unittest.TestCase):
         (self.root / "Fixture.lean").write_text("module\npublic import Init\n")
         (self.root / "Fixture").mkdir()
 
-    def check(self, source, expected_exit=1):
+    def check(self, source, expected_exit=1, *, jobs=None):
         # Deliberately absent from Fixture.lean's imports and Lake's default targets.
         (self.root / "Fixture/Orphan.lean").write_text(source)
         report = self.root / "report.json"
-        result = subprocess.run(
-            [sys.executable, str(DRIVER), "--root", str(self.root), "--report", str(report)],
-            cwd=ROOT, capture_output=True, text=True, timeout=120,
-        )
+        report.unlink(missing_ok=True)
+        command = [sys.executable, str(DRIVER), "--root", str(self.root), "--report", str(report)]
+        if jobs is not None:
+            command.extend(["--jobs", str(jobs)])
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=120)
         self.assertEqual(result.returncode, expected_exit, result.stdout + result.stderr)
         self.assertTrue(report.exists(), result.stdout + result.stderr)
         return json.loads(report.read_text())
 
-    def check_compiled_fixture(self, name, expected_exit=1):
+    def check_compiled_fixture(self, name, expected_exit=1, *, jobs=None):
         source = (FIXTURES / (name + ".lean.txt")).read_text()
         (self.root / "Fixture/Orphan.lean").write_text(source)
         built = subprocess.run(
@@ -181,7 +183,46 @@ class DriverIntegrationTest(unittest.TestCase):
             cwd=self.root, capture_output=True, text=True, timeout=90,
         )
         self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
-        return self.check(source, expected_exit)
+        return self.check(source, expected_exit, jobs=jobs)
+
+    def test_parallel_reports_match_default(self):
+        for fixture, expected_exit in (("CompleteInterpolations", 0), ("MacroHole", 1)):
+            with self.subTest(fixture=fixture):
+                serial = self.check_compiled_fixture(fixture, expected_exit)
+                parallel = self.check_compiled_fixture(fixture, expected_exit, jobs=2)
+                self.assertEqual(serial, parallel)
+                self.assertEqual(serial["stage"], "complete")
+                self.assertEqual(set(serial["elaboration_sources"]), {"Fixture.lean", "Fixture/Orphan.lean"})
+
+    def test_parallel_worker_failures_leave_an_error_report(self):
+        source = "Fixture/Orphan.lean"
+        (self.root / source).write_text("module\npublic import Init\nexample : True := True.intro\n")
+        good_report = {
+            "source": source, "module": "Fixture.Orphan", "status": "passed",
+            "declarations_checked": 1, "violations": [],
+        }
+        run = subprocess.run
+        for payload, exit_code, message in (
+            (None, 0, "did not write a source audit report"),
+            (good_report, 2, "inconsistent result"),
+            ({**good_report, "declarations_checked": -1}, 0, "invalid report"),
+        ):
+            with self.subTest(message=message):
+                def run_with_fault(command, *args, **kwargs):
+                    if "--source" not in command or command[-2] != source:
+                        return run(command, *args, **kwargs)
+                    if payload is not None:
+                        source_report = Path(command[command.index("--source") + 1])
+                        source_report.write_text(json.dumps(payload))
+                    return subprocess.CompletedProcess(command, exit_code)
+
+                report = self.root / "report.json"
+                with patch.object(driver.subprocess, "run", side_effect=run_with_fault):
+                    self.assertEqual(driver.run(self.root, report, jobs=2), 1)
+                result = json.loads(report.read_text())
+                self.assertEqual((result["status"], result["stage"]), ("error", "elaboration"))
+                self.assertIn(message, result["error"])
+                self.assertNotIn(source, result["elaboration_sources"])
 
     def test_separated_interpolations_with_suppressed_sorry_warnings_are_rejected(self):
         for name in ("SpacedInterpolation", "CommentInterpolation", "NewlineInterpolation"):

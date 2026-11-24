@@ -4,7 +4,6 @@ on:
   push:
     branches: [main]
   pull_request:
-    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -18,7 +17,7 @@ jobs:
         with:
           # Same-repo PRs: check out the head branch so the convenience push below
           # can commit back to it. Fork PRs and pushes: default checkout, which for
-          # a PR is the merge ref - i.e. the contributor's code merged onto main.
+          # a PR is the merge ref - i.e. the contributor's code merged onto the base branch.
           ref: ${{ (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository) && github.event.pull_request.head.ref || '' }}
       - name: Check copyright headers
         run: bash scripts/check-headers.sh
@@ -76,7 +75,7 @@ jobs:
         run: python3 scripts/tests/test_proof_integrity.py
       - name: Check project proof integrity
         id: proof_integrity
-        run: python3 scripts/check-proof-integrity.py --report "$RUNNER_TEMP/proof-integrity/report.json"
+        run: python3 scripts/check-proof-integrity.py --jobs 3 --report "$RUNNER_TEMP/proof-integrity/report.json"
       - name: Save proof integrity report
         if: always() && !cancelled() && steps.proof_integrity.outcome != '' && steps.proof_integrity.outcome != 'skipped'
         uses: actions/upload-artifact@v4

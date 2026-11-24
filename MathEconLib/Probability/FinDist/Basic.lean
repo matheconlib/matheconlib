@@ -76,6 +76,11 @@ def IsMode (d : FinDist α) (a : α) : Prop :=
 lemma pmf_le_one (d : FinDist α) (a : α) : d.pmf a ≤ 1 :=
   d.sum_one ▸ Finset.single_le_sum (fun b _ ↦ d.nonneg b) (Finset.mem_univ a)
 
+/-- The support of a distribution carries all of its probability. -/
+lemma sum_support_pmf (d : FinDist α) : ∑ a ∈ d.support, d.pmf a = 1 := by
+  rw [← d.sum_one]
+  exact Finset.sum_filter_of_ne fun a _ h ↦ lt_of_le_of_ne (d.nonneg a) (Ne.symm h)
+
 /-- The two probability masses of a distribution on `Fin 2` sum to one. -/
 lemma sum_pmf_two (d : FinDist (Fin 2)) : d.pmf 0 + d.pmf 1 = 1 := by
   have h := d.sum_one
