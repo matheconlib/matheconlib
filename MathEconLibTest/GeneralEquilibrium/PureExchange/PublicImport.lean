@@ -52,8 +52,8 @@ example {L : ℕ} {I : Type*} [Fintype I]
   · rintro ⟨he, hp, hp0, hb, ho, hc⟩
     exact ⟨he, hp, hp0, hb, ho, hc⟩
 
--- Expanding the regularity hypotheses protects the primitive-preference scope.
-example {L : ℕ} (hL : 0 < L) {I : Type*} [Fintype I] [Nonempty I]
+-- Expanding regularity protects the primitive-preference scope, with no Nonempty I premise.
+example {L : ℕ} (hL : 0 < L) {I : Type*} [Fintype I]
     (e : I → Bundle L) (P : I → CompletePreference (Orthant L))
     (he : ∀ i k, 0 < e i k)
     (hupper : ∀ i x, IsClosed {y | (P i).le x y})
@@ -70,3 +70,17 @@ example {L : ℕ} (hL : 0 < L) {I : Type*} [Fintype I] [Nonempty I]
       convex_upper := hconv i
       strong_mono := hmono i }
   exact exists_walrasianEquilibrium hL e P he hP
+
+-- The empty-household case obtains positive normalized prices through the public theorem.
+example (e : Fin 0 → Bundle 2) (P : Fin 0 → CompletePreference (Orthant 2)) :
+    ∃ (p : Bundle 2) (x : Fin 0 → Orthant 2),
+      IsWalrasianEquilibrium e P p x ∧ (∑ k, p k) = 1 ∧
+      (∀ k, 0 < p k) ∧ (∀ i, dot p (x i).val = dot p (e i)) :=
+  exists_walrasianEquilibrium (by decide) e P (fun i => Fin.elim0 i) (fun i => Fin.elim0 i)
+
+-- Zero goods cannot support even the unnormalized equilibrium predicate.
+example {I : Type*} [Fintype I] (e : I → Bundle 0)
+    (P : I → CompletePreference (Orthant 0)) (p : Bundle 0) (x : I → Orthant 0) :
+    ¬ IsWalrasianEquilibrium e P p x := by
+  intro h
+  exact h.price_ne_zero (Subsingleton.elim _ _)

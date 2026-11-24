@@ -15,6 +15,8 @@ The public interface separates complete preferences, their sufficient regularity
 full endowment budgets, and the Walrasian equilibrium predicate. The existence theorem uses
 ordinary convex preferences and therefore permits multivalued demand; its conclusion gives
 positive normalized prices, full-budget household optimality, and exact market clearing.
+It requires at least one good and allows an empty household set; uniform positive prices
+support the empty allocation.
 
 Use `budgetSet`, `demand`, and `IsWalrasianEquilibrium` to state a model without imposing the
 existence assumptions. Supply `PreferenceRegularity` and positive individual endowments to

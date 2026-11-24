@@ -112,10 +112,15 @@ def fullBudget (e p : Bundle L) : Set (Bundle L) :=
 def cappedBudget (e M p : Bundle L) : Set (Bundle L) :=
   {x | x ∈ consumptionBox M ∧ dot p x ≤ dot p e}
 
-/-- Normalized nonnegative prices, including boundary faces. -/
+/-- Normalized nonnegative prices, including boundary faces. For positive commodity
+dimension, `Internal.priceSimplex_nonempty` supplies a unit-price vertex. -/
 def priceSimplex : Set (Bundle L) := {p | Nonnegative p ∧ ∑ k, p k = 1}
 
-/-- A ceiling strictly above aggregate resources in every coordinate. -/
+/-- A ceiling strictly above aggregate resources in every coordinate, supplied explicitly
+by adding one to aggregate endowment. At a capped-demand/auctioneer fixed point, each
+household's nonnegative bundle is bounded by aggregate consumption, which is bounded by
+aggregate endowment. Thus every household bundle lies strictly below this ceiling;
+`Internal.competitive_of_cappedDemand` uses that slack to recover full-budget optimality. -/
 def resourceCap {I : Type*} [Fintype I] (e : I → Bundle L) : Bundle L := (∑ i, e i) + 1
 
 end Internal

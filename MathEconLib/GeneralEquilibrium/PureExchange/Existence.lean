@@ -29,7 +29,7 @@ Appendix B, “Fixed Points and Equilibrium Existence”, Proposition B.4, “Wa
 with convex preferences”, pp. 216–217
 ([stable PDF](https://github.com/vaguiarl/Econ803Micro1SFUFall2026/blob/bd3bef405f1291ee4c494826f1cf734f773cb95f/notes/Microeconomics_1_notes_by_Victor_Aguiar.pdf)).
 The preference and endowment assumptions and the full-budget, exact-clearing conclusion agree.
-Here positive commodity dimension and a nonempty consumer set are explicit; the temporary
+Here positive commodity dimension is explicit; the consumer set may be empty. The temporary
 ceiling is aggregate resources plus one, rather than twice aggregate resources.
 
 Kenneth J. Arrow and Gérard Debreu (1954), *Existence of an Equilibrium for a Competitive
@@ -231,7 +231,9 @@ lemma preference_budget_eq_of_full_max (hL : 0 < L)
   exact (hR.strong_mono (x := x) (y := ⟨v, hv.1⟩) hxv).2 (hmax _ hv)
 
 /-- A simultaneous capped preference-demand/auctioneer fixed point is an
-unrestricted Walrasian equilibrium with exact market clearing. -/
+unrestricted Walrasian equilibrium with exact market clearing. A household is needed to
+force strict positivity of the given fixed-point price; with no households and two goods,
+a boundary price also satisfies the fixed-point conditions. -/
 theorem competitive_of_cappedDemand (hL : 0 < L)
     {I : Type*} [Fintype I] [Nonempty I]
     (e : I → Bundle L) (R : I → CompletePreference (Orthant L))
@@ -275,32 +277,50 @@ variable {I : Type*} [Fintype I]
 
 /-- Under continuous, convex, strongly monotone preferences and strictly positive
 individual endowments, a finite pure-exchange economy has an exact Walrasian equilibrium.
-The additional conclusions normalize prices, exclude zero prices, and exhaust budgets. -/
-theorem exists_walrasianEquilibrium (hL : 0 < L) [Nonempty I]
+The additional conclusions normalize prices, exclude zero prices, and exhaust budgets.
+The household set may be empty: uniform positive prices support the empty allocation.
+Positive commodity dimension is necessary because equilibrium prices must be nonzero. -/
+theorem exists_walrasianEquilibrium (hL : 0 < L)
     (e : I → Bundle L) (P : I → CompletePreference (Orthant L))
     (he : ∀ i k, 0 < e i k) (hP : ∀ i, PreferenceRegularity (P i)) :
     ∃ (p : Bundle L) (x : I → Orthant L), IsWalrasianEquilibrium e P p x ∧
       (∑ k, p k) = 1 ∧ (∀ k, 0 < p k) ∧
       (∀ i, dot p (x i).val = dot p (e i)) := by
-  have hM : Nonnegative (resourceCap e) := by
-    intro k
-    change 0 ≤ (∑ i, e i) k + 1
-    have hsum : 0 ≤ (∑ i, e i) k := by
-      simp only [Finset.sum_apply]
-      exact Finset.sum_nonneg fun i _ => (he i k).le
-    linarith
-  obtain ⟨p, x, hp, hx, hauction⟩ :=
-    exists_capped_fixedPoint hL e P hP (resourceCap e) he hM
-  let xs : I → Orthant L := fun i => ⟨x i, (hx i).choose⟩
-  obtain ⟨hpos, hbudget, hmax, hclear⟩ :=
-    competitive_of_cappedDemand hL e P hP p xs hp hx hauction
-  refine ⟨p, xs, ?_, hp.2, hpos, hbudget⟩
-  exact {
-    endowment_nonneg := fun i k => (he i k).le
-    price_nonneg := hp.1
-    price_ne_zero := fun hz => by have h := hp.2; simp [hz] at h
-    budget_feasible := fun i => (hbudget i).le
-    optimal := fun i y hy => hmax i y ⟨y.property, hy⟩
-    clearing := hclear }
+  cases isEmpty_or_nonempty I with
+  | inl hI =>
+    let p : Bundle L := fun _ => (L : ℝ)⁻¹
+    let x : I → Orthant L := isEmptyElim
+    have h : 0 < (L : ℝ) := by exact_mod_cast hL
+    have hpos : ∀ k, 0 < p k := fun _ => inv_pos.mpr h
+    have hsum : (∑ k, p k) = 1 := by simp [p, h.ne']
+    refine ⟨p, x, ?_, hsum, hpos, isEmptyElim⟩
+    exact {
+      endowment_nonneg := isEmptyElim
+      price_nonneg := fun k => (hpos k).le
+      price_ne_zero := fun hz => by simp [hz] at hsum
+      budget_feasible := isEmptyElim
+      optimal := isEmptyElim
+      clearing := by simp }
+  | inr hI =>
+    have hM : Nonnegative (resourceCap e) := by
+      intro k
+      change 0 ≤ (∑ i, e i) k + 1
+      have hsum : 0 ≤ (∑ i, e i) k := by
+        simp only [Finset.sum_apply]
+        exact Finset.sum_nonneg fun i _ => (he i k).le
+      linarith
+    obtain ⟨p, x, hp, hx, hauction⟩ :=
+      exists_capped_fixedPoint hL e P hP (resourceCap e) he hM
+    let xs : I → Orthant L := fun i => ⟨x i, (hx i).choose⟩
+    obtain ⟨hpos, hbudget, hmax, hclear⟩ :=
+      competitive_of_cappedDemand hL e P hP p xs hp hx hauction
+    refine ⟨p, xs, ?_, hp.2, hpos, hbudget⟩
+    exact {
+      endowment_nonneg := fun i k => (he i k).le
+      price_nonneg := hp.1
+      price_ne_zero := fun hz => by have h := hp.2; simp [hz] at h
+      budget_feasible := fun i => (hbudget i).le
+      optimal := fun i y hy => hmax i y ⟨y.property, hy⟩
+      clearing := hclear }
 
 end MathEconLib.GeneralEquilibrium.PureExchange

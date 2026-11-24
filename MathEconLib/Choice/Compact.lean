@@ -6,13 +6,13 @@ Authors: Victor H. Aguiar
 module
 
 public import MathEconLib.Choice.Maximizers
-public import Mathlib.Topology.Separation.Hausdorff
+public import Mathlib.Topology.Compactness.Compact
 
 /-!
 # Attainment on compact menus
 
 A complete preference with closed upper contours attains a greatest alternative on each
-nonempty compact menu in a Hausdorff space. The conclusion uses the shared `maximizers`
+nonempty compact menu in a topological space. The conclusion uses the shared `maximizers`
 correspondence. No lower-contour continuity or utility representation is required.
 -/
 
@@ -25,25 +25,23 @@ open Preferences Set
 /-- A nonempty compact menu has a maximizer under a complete preference with closed upper
 contours. -/
 theorem maximizers_nonempty_of_isCompact
-    {X : Type*} [TopologicalSpace X] [T2Space X]
+    {X : Type*} [TopologicalSpace X]
     (R : CompletePreference X) {S : Set X} (hS : IsCompact S) (hne : S.Nonempty)
     (hclosed : ∀ x ∈ S, IsClosed {y | R.le x y}) :
     (maximizers R.toPreference S).Nonempty := by
-  let : Nonempty S := ⟨⟨hne.choose, hne.choose_spec⟩⟩
-  let C : S → Set X := fun a => S ∩ {x | R.le a.val x}
-  have hdir : Directed (· ⊇ ·) C := by
+  have : Nonempty S := hne.to_subtype
+  let U : S → Set X := fun a => {y | R.le a.val y}
+  have hdir : Directed (· ⊇ ·) U := by
     intro a b
     rcases R.total a.val b.val with hab | hba
-    · exact ⟨b, fun z hz => ⟨hz.1, R.le_trans hab hz.2⟩, subset_rfl⟩
-    · exact ⟨a, subset_rfl, fun z hz => ⟨hz.1, R.le_trans hba hz.2⟩⟩
-  have hnonempty (a : S) : (C a).Nonempty := ⟨a.val, a.property, R.le_refl a.val⟩
-  have hcompact (a : S) : IsCompact (C a) := hS.inter_right (hclosed a.val a.property)
-  have hclose (a : S) : IsClosed (C a) := hS.isClosed.inter (hclosed a.val a.property)
-  obtain ⟨x, hx⟩ := IsCompact.nonempty_iInter_of_directed_nonempty_isCompact_isClosed
-    C hdir hnonempty hcompact hclose
-  have hxall : ∀ a : S, x ∈ C a := Set.mem_iInter.mp hx
-  refine ⟨x, (hxall ⟨hne.choose, hne.choose_spec⟩).1, ?_⟩
-  intro y hy
-  exact (hxall ⟨y, hy⟩).2
+    · exact ⟨b, fun _ hz => R.le_trans hab hz, subset_rfl⟩
+    · exact ⟨a, subset_rfl, fun _ hz => R.le_trans hba hz⟩
+  suffices h : (S ∩ ⋂ a, U a).Nonempty by
+    obtain ⟨z, hz, hall⟩ := h
+    exact ⟨z, hz, fun y hy => Set.mem_iInter.mp hall ⟨y, hy⟩⟩
+  by_contra hn
+  rw [Set.not_nonempty_iff_eq_empty, ← Set.disjoint_iff_inter_eq_empty] at hn
+  obtain ⟨a, ha⟩ := hS.elim_directed_family_closed U (fun a => hclosed a a.property) hn hdir
+  exact Set.disjoint_left.mp ha a.property (R.le_refl a.val)
 
 end MathEconLib.Choice

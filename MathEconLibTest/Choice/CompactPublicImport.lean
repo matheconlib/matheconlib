@@ -8,12 +8,13 @@ import MathEconLib.Choice
 /-!
 # Public compact-attainment interface
 
-Import only the choice umbrella and pin compact attainment with closed upper contours.
+Import only the choice umbrella and pin compact attainment with closed upper contours,
+without a separation axiom.
 -/
 
 open MathEconLib.Choice MathEconLib.Preferences
 
-example {X : Type*} [TopologicalSpace X] [T2Space X]
+example {X : Type*} [TopologicalSpace X]
     (R : CompletePreference X) {S : Set X} (hS : IsCompact S) (hne : S.Nonempty)
     (hclosed : ∀ x ∈ S, IsClosed {y | R.le x y}) :
     (maximizers R.toPreference S).Nonempty :=

@@ -160,7 +160,7 @@ lemma convex_cappedDemand (R : CompletePreference (Orthant L))
   exact hrel
 
 
-/-- Radial contraction coefficients tending to one from below. -/
+/-- Radial contraction coefficients tending to 1 from below. -/
 noncomputable def radialWeight (n : ℕ) : ℝ := 1 - 1 / ((n : ℝ) + 1)
 
 lemma radialWeight_nonneg (n : ℕ) : 0 ≤ radialWeight n := by
