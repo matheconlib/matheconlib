@@ -15,6 +15,7 @@ public import MathEconLibExamples.GameTheory.TicTacToe
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.GameTheory.MatchingPenniesBestResponses
 public import MathEconLibExamples.Matching.DistributiveMarriage
+public import MathEconLibExamples.Matching.Improvements
 public import MathEconLibExamples.Matching.JointPreservation
 public import MathEconLibExamples.Matching.UnbalancedMarriage
 public import MathEconLibExamples.Mechanism.PostedPriceUtility

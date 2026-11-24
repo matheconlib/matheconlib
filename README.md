@@ -1,4 +1,4 @@
-# <a href="https://mathecon.dev"><img src="website/src/assets/favicon-mexists.svg" alt="MathEconLib M∃ logo" width="48" height="48" align="absmiddle"></a> MathEconLib
+# <a href="https://mathecon.dev"><img src="website/src/assets/favicon.svg" alt="MathEconLib M∃ logo" width="48" height="48" align="absmiddle"></a> MathEconLib
 
 MathEconLib is an effort to build a shared formal foundation for economics in [Lean 4](https://lean-lang.org/), with the long-term scope of microeconomic theory, macroeconomic theory, and econometrics. Current development focuses on microeconomic theory and its mathematical foundations, building on [Mathlib](https://github.com/leanprover-community/mathlib4).
 
@@ -83,6 +83,8 @@ establish equilibrium existence at other prices. See `docs/AuctionReferences.md`
 Contributions of definitions, proofs, worked applications, and documentation are welcome. Start with the [design principles](DESIGN.md) and [contribution guidelines](CONTRIBUTING.md), which explain where developments belong and when a design discussion is needed.
 
 Browse [open issues](https://github.com/matheconlib/matheconlib/issues) for ongoing work, or look for a [good first issue](https://github.com/matheconlib/matheconlib/issues?q=is%3Aissue+state%3Aopen+label%3A%22good+first+issue%22).
+
+For questions, early ideas, and public project coordination, use [GitHub Discussions](https://github.com/matheconlib/matheconlib/discussions).
 
 Have you built something using MathEconLib, or would you like to get involved? Reach out at [contact@mathecon.dev](mailto:contact@mathecon.dev).
 
