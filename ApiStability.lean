@@ -144,17 +144,17 @@ end MechanismCore
 
 /-! ## MathEconLib.BidderProblem — envelope theorem and Myerson lemmas -/
 
--- Envelope theorem, integral representation: U(v) = U(low) + ∫ q (Theorem 5.1)
+-- Envelope theorem, integral representation: U(v) = U(low) + ∫ q
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     ∀ v ∈ B.typeInterval, B.U v = B.U B.lowestType + ∫ (w : ℝ) in B.lowestType..v, B.q w :=
   @MathEconLib.BidderProblem.integral_rep
 
--- Envelope theorem: interim utility is 1-Lipschitz on the type interval (Theorem 5.1)
+-- Envelope theorem: interim utility is 1-Lipschitz on the type interval
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     LipschitzOnWith 1 B.U B.typeInterval :=
   @MathEconLib.BidderProblem.lipschitz
 
--- Envelope theorem: interim winning probability is monotone (Theorem 5.1)
+-- Envelope theorem: interim winning probability is monotone
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC], MonotoneOn B.q B.typeInterval :=
   @MathEconLib.BidderProblem.q_monotoneOn
 
@@ -163,14 +163,14 @@ example : ∀ (B : MathEconLib.BidderProblem) [B.HasEnvelopeIC],
     ∀ᵐ s ∂volume.restrict B.typeInterval, HasDerivAt B.U (B.q s) s :=
   @MathEconLib.BidderProblem.aeDifferentiable
 
--- Myerson payment identity: cost(strategy(s)) = s·q(s) − U(low) − ∫ q (Lemma 5.2)
+-- Myerson payment identity: cost(strategy(s)) = s·q(s) − U(low) − ∫ q
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasTypeDeviationIC],
     ∀ s ∈ B.typeInterval,
       B.cost (B.strategy s)
         = s * B.q s - B.U B.lowestType - ∫ (ψ : ℝ) in B.lowestType..s, B.q ψ :=
   @MathEconLib.BidderProblem.payment_identity
 
--- Myerson payment uniqueness: same q and U(low) force the same payments (Lemma 5.2)
+-- Myerson payment uniqueness: same q and U(low) force the same payments
 example : ∀ (B : MathEconLib.BidderProblem) [B.HasTypeDeviationIC],
     ∀ (B₂ : MathEconLib.BidderProblem) [B₂.HasTypeDeviationIC],
       B.lowestType = B₂.lowestType → B.highestType = B₂.highestType → B.q = B₂.q →
@@ -279,6 +279,69 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
     A.expectedRevenue = ∫ (a : Ω), A.S₂ a :=
   @MathEconLib.Auction.total_revenue
 
+-- Zero lowest-type utility pins interim payments down to the allocation integral.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n) [A.HasIdenticalTypes]
+    (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    [A.IsIPV] [MathEconLib.Auction.IPV.BIC A] [A.HasZeroLowestTypeUtility]
+    (i : Fin n) {s : ℝ}, s ∈ A.interval i →
+      A.p i s = s * A.q i s - ∫ ψ in A.lowestType..s, A.q i ψ :=
+  @MathEconLib.Auction.payment_eq_allocation_integral
+
+-- Normalized payment uniqueness compares a single bidder's allocation across two auctions.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n) [A.HasIdenticalTypes]
+    {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
+    (A₂ : MathEconLib.Auction Ω₂ n) [A₂.HasIdenticalTypes]
+    [A.IsIPV] [MathEconLib.Auction.IPV.BIC A] [A₂.IsIPV] [MathEconLib.Auction.IPV.BIC A₂]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility] (i : Fin n)
+    (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)),
+    A.q i = A₂.q i → A.lowestType = A₂.lowestType → A.highestType = A₂.highestType →
+      ∀ {s : ℝ}, s ∈ A.interval i → A.p i s = A₂.p i s :=
+  @MathEconLib.Auction.payment_determined_by_allocation
+
+-- Expected interim payments agree; integrability is assumed on the second space only.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n) [A.HasIdenticalTypes]
+    {Ω₂ : Type} [MeasureSpace Ω₂] [IsProbabilityMeasure (volume : Measure Ω₂)]
+    (A₂ : MathEconLib.Auction Ω₂ n) [A₂.HasIdenticalTypes] [A.HasBoundedTypes]
+    [A.IsIPV] [MathEconLib.Auction.IPV.BIC A] [A₂.IsIPV] [MathEconLib.Auction.IPV.BIC A₂]
+    [A.HasZeroLowestTypeUtility] [A₂.HasZeroLowestTypeUtility] (i : Fin n)
+    (_ : IsUnitIntervalAllocation A.rules (fun o i => o i))
+    (_ : IsUnitIntervalAllocation A₂.rules (fun o i => o i)),
+    A.q i = A₂.q i → A.lowestType = A₂.lowestType → A.highestType = A₂.highestType →
+      IdentDistrib (A.θ i) (A₂.θ i) volume volume → Measurable (A₂.p i) →
+        Integrable (fun ω => A₂.p i (A₂.θ i ω)) volume →
+          Integrable (fun ω => A.p i (A.θ i ω)) volume ∧
+            ∫ ω, A.p i (A.θ i ω) = ∫ ω, A₂.p i (A₂.θ i ω) :=
+  @MathEconLib.Auction.expected_payment_determined_by_allocation
+
+/-! ### First-and-second-pay auctions -/
+
+-- The canonical first-and-second-pay mechanism meets its specification.
+example : ∀ {n : ℕ},
+    FirstAndSecondPay.IsFirstAndSecondPay (FirstAndSecondPay.firstAndSecondPay n) :=
+  @FirstAndSecondPay.firstAndSecondPay_spec
+
+-- On a tie-free profile the seller collects exactly the top two bids.
+example : ∀ {n : ℕ} {b : Fin n → ℝ} (M : MathEconLib.Mechanism (Fin n) (fun _ => ℝ) (Fin n → ℝ)),
+    FirstAndSecondPay.IsFirstAndSecondPay M → ∀ [Nontrivial (Fin n)]
+      (hb : FirstAndSecondPay.NoTies b), ∑ j, M.payment j b = b hb.winner + b hb.runnerUp :=
+  @FirstAndSecondPay.NoTies.sum_payment_eq
+
+-- Truthful reporting is not dominant with two private-value bidders.
+example : ∀ (M : MathEconLib.Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ)),
+    FirstAndSecondPay.IsFirstAndSecondPay M →
+      ¬MathEconLib.Mechanism.DirectMechanism.IsDSIC (FirstAndSecondPay.privateValues 2) M :=
+  @FirstAndSecondPay.not_isDSIC
+
+-- Truthful participation is not ex-post individually rational with zero outside utility.
+example : ∀ (M : MathEconLib.Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ)),
+    FirstAndSecondPay.IsFirstAndSecondPay M →
+      ¬MathEconLib.Mechanism.DirectMechanism.IsExPostIR (FirstAndSecondPay.privateValues 2) M :=
+  @FirstAndSecondPay.not_isExPostIR
+
 /-! ## Affiliation -/
 
 section Affiliation
@@ -354,10 +417,55 @@ end Affiliation
 
 /-! ## All-purchase auctions -/
 
+-- A monetary specification accepts an independent resale valuation without regularity hypotheses.
+example {I : Type} [Fintype I] {O : Type}
+    {M : MathEconLib.Mechanism I (fun _ ↦ ℝ) O} {alloc purchases : O → I → ℝ}
+    (spec : AllPurchaseSpec M alloc purchases) (φ : ℝ → ℝ) :
+    (spec.environment φ).value =
+      fun i θ o ↦ θ i * alloc o i + φ (∑ j, purchases o j) * purchases o i := rfl
+
+-- Interim all-purchase adapter pins, pending the shared-analysis replacement in #272.
+-- These compatibility pins require explicit access to the raw net-cost auction.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ}, MathEconLib.AllPurchaseBidderModel Ω n → MathEconLib.Auction Ω n :=
+  @MathEconLib.AllPurchaseBidderModel.toNetCostAuction
+
+-- Seller receipts are defined by the monetary mechanism under the supplied strategy.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.AllPurchaseBidderModel Ω n) (β : ℝ → ℝ),
+    A.expectedSellerRevenue β =
+      ∫ ω, A.toMechanism.revenue (fun i ↦ β (A.toNetCostAuction.θ i ω)) := by
+  intros
+  rfl
+
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.AllPurchaseBidderModel Ω n) (β : ℝ → ℝ),
+    A.expectedSellerRevenue β =
+      A.spec.price * ∫ ω, ∑ i, β (A.toNetCostAuction.θ i ω) :=
+  @MathEconLib.AllPurchaseBidderModel.expectedSellerRevenue_eq
+
+-- Bidder net costs retain a distinct, explicitly named API.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.AllPurchaseBidderModel Ω n) (β : ℝ → ℝ),
+    A.expectedNetCost β =
+      ∫ ω, ∑ i, A.spec.toSpec.netCost A.spec.φ i (fun j ↦ β (A.toNetCostAuction.θ j ω)) := by
+  intros
+  rfl
+
+
+-- The auxiliary bidder model keeps net costs for the envelope calculations (#239).
+-- Actual seller receipts are supplied by spec.toMechanism.
 -- Revenue decomposition keeps every IC, integrability, and boundary-utility hypothesis.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.Auction Ω n) (spec : AllPurchaseBidderSpec A.rules)
+    (β : ℝ → ℝ) (c : ℝ),
+    A.bundledProfit spec β c =
+      ∫ ω, spec.toMechanism.revenue (fun j ↦ β (A.θ j ω)) - c * ∑ j, β (A.θ j ω) :=
+  @MathEconLib.Auction.bundledProfit_eq_integral_profit
+
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
-    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    (spec : AllPurchaseBidderSpec A.rules) [A.HasIdenticalTypes]
     [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
     (β : ℝ → ℝ) (_ : Measurable β)
     (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
@@ -377,7 +485,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 -- Boundary form additionally requires zero lowest-type utility.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
-    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    (spec : AllPurchaseBidderSpec A.rules) [A.HasIdenticalTypes]
     [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
     (β : ℝ → ℝ) (_ : Measurable β)
     (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
@@ -396,7 +504,7 @@ example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Meas
 -- Bundling gain is a profit-difference identity, with no positivity conclusion.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] (A : MathEconLib.Auction Ω n)
-    (spec : AllPurchaseSpec A.rules (fun o i ↦ o i)) [A.HasIdenticalTypes]
+    (spec : AllPurchaseBidderSpec A.rules) [A.HasIdenticalTypes]
     [A.HasIndependentTypes] [A.HasBoundedTypes] [A.HasAtomlessTypes]
     (β : ℝ → ℝ) (_ : Measurable β)
     (_ : StrictMonoOn β (Set.Icc A.lowestType A.highestType))
@@ -427,6 +535,28 @@ example : ∀ {φbar α c M : ℝ} {n : ℕ}, 0 < α → 1 ≤ n → ∀ p : ℝ
       p = MathEconLib.AllPurchase.optimalPriceInterior φbar c α M :=
   @MathEconLib.AllPurchase.sellerProfitInterior_eq_at_optimal_iff
 
+-- The interior formula is identified with actual profit at the supplied auction's posted price.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
+    [A.toNetCostAuction.HasIdenticalTypes] [A.toNetCostAuction.HasIndependentTypes]
+    [A.toNetCostAuction.HasBoundedTypes] [A.toNetCostAuction.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : A.IsInteriorRegimeStrategy β 0) (c : ℝ),
+    A.toNetCostAuction.bundledProfit A.spec β c =
+      MathEconLib.AllPurchase.sellerProfitInterior A.φ_bar A.α_coeff c
+        A.toNetCostAuction.expectedSqrtAllPayBid n A.spec.price :=
+  @MathEconLib.LinearScarcityAuction.bundledProfit_eq_sellerProfitInterior
+
+-- The price-independent moment and actual expected aggregate quantity use the same hypotheses.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.LinearScarcityAuction Ω n)
+    [A.toNetCostAuction.HasIdenticalTypes] [A.toNetCostAuction.HasIndependentTypes]
+    [A.toNetCostAuction.HasBoundedTypes] [A.toNetCostAuction.HasAtomlessTypes]
+    (β : ℝ → ℝ) (_ : A.IsInteriorRegimeStrategy β 0),
+    A.toNetCostAuction.expectedAggregateBid β =
+      MathEconLib.AllPurchase.interiorMeanQuantity A.φ_bar A.α_coeff
+        A.toNetCostAuction.expectedSqrtAllPayBid n A.spec.price :=
+  @MathEconLib.LinearScarcityAuction.expectedAggregateBid_eq_interiorMeanQuantity
+
 -- Edition-welfare bound and moment identity over supplied real parameters.
 example : ∀ φbar c α : ℝ, 0 < α → ∀ B : ℝ,
     MathEconLib.AllPurchase.editionWelfare φbar c α B ≤
@@ -441,21 +571,45 @@ example : ∀ φbar c α EB EB2 : ℝ,
 -- Auction welfare bridge needs aggregate quantity and its square to be integrable.
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
-    Integrable (A.toAuction.aggregateBid β) volume →
-      Integrable (fun ω ↦ (A.toAuction.aggregateBid β ω) ^ 2) volume →
+    Integrable (A.toNetCostAuction.aggregateBid β) volume →
+      Integrable (fun ω ↦ (A.toNetCostAuction.aggregateBid β ω) ^ 2) volume →
         A.bundledEditionWelfare β c =
-          A.toAuction.expectedEditionValue A.spec β - c * A.toAuction.expectedAggregateBid β :=
+          A.toNetCostAuction.expectedEditionValue A.spec β -
+            c * A.toNetCostAuction.expectedAggregateBid β :=
   @MathEconLib.LinearScarcityAuction.bundledEditionWelfare_eq
 
--- Algebraic welfare-gap identity over supplied values, motivated by Proposition 6.13.
--- Equilibrium interpretation and nonnegativity of the two gaps require additional results.
+-- Reusable algebraic welfare-gap identity over supplied values.
+-- The economic statement and the signs of the two gaps are pinned or proved separately.
 example : ∀ φbar c α B_ed WC : ℝ,
     MathEconLib.AllPurchase.firstBestEditionSurplus φbar c α - WC
       = MathEconLib.AllPurchase.cournotLoss φbar c α B_ed +
         MathEconLib.AllPurchase.contestLoss φbar c α B_ed WC :=
   @MathEconLib.AllPurchase.welfare_decomposition
 
--- Uniform all-pay bid (§9.6.3): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
+-- Actual expected edition welfare decomposes at the auction's Cournot
+-- benchmark. Square integrability is the only strategy assumption; gap signs are separate.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    MemLp (A.toNetCostAuction.aggregateBid β) 2 volume →
+      MathEconLib.AllPurchase.firstBestEditionSurplus A.φ_bar c A.α_coeff -
+          (∫ ω, A.toNetCostAuction.aggregateBid β ω *
+            A.spec.φ (A.toNetCostAuction.aggregateBid β ω) -
+            c * A.toNetCostAuction.aggregateBid β ω) =
+        MathEconLib.AllPurchase.cournotLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear +
+          MathEconLib.AllPurchase.contestLoss A.φ_bar c A.α_coeff A.cournotQuantityLinear
+            (A.bundledEditionWelfare β c) :=
+  @MathEconLib.LinearScarcityAuction.welfare_decomposition
+
+-- The welfare penalty is the variance of the actual aggregate purchases.
+example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
+    {n : ℕ} (A : MathEconLib.LinearScarcityAuction Ω n) (β : ℝ → ℝ) (c : ℝ),
+    MemLp (A.toNetCostAuction.aggregateBid β) 2 volume →
+      MathEconLib.AllPurchase.editionWelfare A.φ_bar c A.α_coeff
+          (A.toNetCostAuction.expectedAggregateBid β) - A.bundledEditionWelfare β c =
+        A.α_coeff * variance (A.toNetCostAuction.aggregateBid β) volume :=
+  @MathEconLib.LinearScarcityAuction.editionWelfare_mean_sub_bundled_eq_variance
+
+-- Uniform all-pay bid (Krishna 2010, Example 3.1, rescaled): b^{AP}(v) = (n−1)/n · vⁿ / v̄ⁿ⁻¹
 example : ∀ {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (volume : Measure Ω)]
     {n : ℕ} [NeZero n] [n.AtLeastTwo] (A : MathEconLib.Auction Ω n)
     [A.HasIdenticalTypes] (vbar : ℝ),
