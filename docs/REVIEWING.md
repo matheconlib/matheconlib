@@ -36,9 +36,16 @@ docstring is treated as a pre-merge blocker.
 3. Useful abstractions. A named definition is expensive: ask which theorem it
    supports and wait for a second consumer. Distinguish a richer interface from
    a more general result; avoid unused generality and unnecessary public helpers.
-4. API surface. Sweep for duplication against our own layers and mathlib:
-   nothing forks, and when two abstractions can express the same object,
-   require a bridge lemma, not coexistence. At a transformation boundary,
+4. API surface. Start by expressing a representative caller using the existing
+   library or Mathlib API. Use notation or a local view for a change in
+   presentation. Add a public bridge when both representations have a demonstrated
+   role, and check that imports point from applications toward shared foundations.
+
+   For example, better-first preference notation can use the existing comparison
+   in reverse. A potentially cyclic majority outcome needs a raw relation with its
+   own stated laws.
+
+   At a transformation boundary,
    record what is preserved, which deviations remain expressible, and what is
    lost; reverse implications need an explicit bridge, and transport instances
    must not create search cycles. Check downstream use through the documented
