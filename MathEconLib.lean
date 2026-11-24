@@ -46,6 +46,7 @@ public import MathEconLib.Choice.PathIndependentMinorant
 public import MathEconLib.Choice.SubstituteHull
 public import MathEconLib.Choice.WeakPreferences
 public import MathEconLib.Competition.Cournot.Linear
+public import MathEconLib.Decision.RiskAversion
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
 public import MathEconLib.ForMathlib.Data.PartialMatching
@@ -90,11 +91,19 @@ public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoi
 public import MathEconLib.Matching.Classical.Marriage.Distributive
 public import MathEconLib.Matching.Classical.Marriage.Existence
 public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
+public import MathEconLib.Matching.Classical.Marriage.Improvements
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
 public import MathEconLib.Matching.Classical.Marriage.Optimality
 public import MathEconLib.Matching.Classical.Marriage.Preferences
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
 public import MathEconLib.Matching.Classical.Marriage.ToContracts
+public import MathEconLib.Matching.Classical.Roommates
+public import MathEconLib.Matching.Classical.Roommates.Basic
+public import MathEconLib.Matching.Classical.Roommates.NonExistence
+public import MathEconLib.Matching.Continuum
+public import MathEconLib.Matching.Continuum.Basic
+public import MathEconLib.Matching.Continuum.Stability
+public import MathEconLib.Matching.Continuum.ToClassical
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
@@ -109,6 +118,7 @@ public import MathEconLib.Matching.Contracts.RuralHospitals
 public import MathEconLib.Matching.Contracts.StableFixedPoints
 public import MathEconLib.Matching.Contracts.StableOrder
 public import MathEconLib.Matching.Contracts.WeakSubstitutes
+public import MathEconLib.Matching.PartnerComparisons
 public import MathEconLib.Mechanism
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 public import MathEconLib.Mechanism.Auctions.Allocation
@@ -132,6 +142,7 @@ public import MathEconLib.Preferences.Representation.Basic
 public import MathEconLib.Preferences.Representation.Finite
 public import MathEconLib.Probability.FinDist.Basic
 public import MathEconLib.Probability.FinDist.ConditionalOn
+public import MathEconLib.Probability.FinDist.Convex
 public import MathEconLib.Probability.FinDist.Expect
 public import MathEconLib.Probability.FinDist.Measure
 public import MathEconLib.Probability.FinDist.Simplex
