@@ -1,0 +1,80 @@
+name: Lean Action CI (merge queue pilot)
+
+on:
+  merge_group:
+    types: [checks_requested]
+    branches: [codex/merge-queue-pilot-20261123-t9gyvpgd]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.merge_group.head_sha }}
+          persist-credentials: false
+      - name: Verify checked-out merge group commit
+        env:
+          GROUP_SHA: ${{ github.event.merge_group.head_sha }}
+          GROUP_BASE: ${{ github.event.merge_group.base_ref }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_EVENT_NAME" = merge_group
+          test "$GROUP_BASE" = refs/heads/codex/merge-queue-pilot-20261123-t9gyvpgd
+          test "$GITHUB_SHA" = "$GROUP_SHA"
+          test "$(git rev-parse HEAD)" = "$GROUP_SHA"
+          printf 'Validated checkout %s (%s) for %s\n' "$GROUP_SHA" "$GITHUB_REF" "$GROUP_BASE"
+      - name: Check copyright headers
+        run: bash scripts/check-headers.sh
+      - name: Test import regeneration helper
+        run: python3 scripts/tests/test_update_imports.py
+      - name: Test warning reporting helper
+        run: node --test scripts/tests/test_warning_counts.cjs
+      - name: Cache project build artifacts
+        uses: actions/cache/restore@v5
+        with:
+          # Mathlib has its own cache. Archiving all of .lake duplicates its large
+          # dependency build and can exhaust runner disk space during cache save.
+          path: .lake/build
+          # Use a separate namespace so old whole-.lake archives are not restored.
+          key: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-${{ github.sha }}
+          restore-keys: lake-project-v1-${{ runner.os }}-${{ runner.arch }}-${{ hashFiles('lean-toolchain') }}-${{ hashFiles('lake-manifest.json') }}-
+      - name: Set up Lean and Mathlib
+        uses: leanprover/lean-action@v1
+        with:
+          # Prepare the toolchain and dependencies; generate imports before building.
+          auto-config: false
+          build: false
+          test: false
+          lint: false
+          use-github-cache: false
+          use-mathlib-cache: true
+          mk_all-check: false
+      - name: Check import lists
+        run: |
+          if ! bash scripts/update-imports.sh --check; then
+            echo "::error::Import-list verification failed. Run locally: bash scripts/update-imports.sh, then commit MathEconLib.lean and MathEconLibTest.lean."
+            exit 1
+          fi
+      - name: Build library, API pins, and namespace tests
+        id: lean_build
+        run: |
+          mkdir -p "$RUNNER_TEMP/library-warnings"
+          set -o pipefail
+          lake --rehash --no-ansi build 2>&1 | tee "$RUNNER_TEMP/library-warnings/build.log"
+      - name: Test proof integrity checker
+        run: python3 scripts/tests/test_proof_integrity.py
+      - name: Check project proof integrity
+        id: proof_integrity
+        run: python3 scripts/check-proof-integrity.py --report "$RUNNER_TEMP/proof-integrity/report.json"
+      - name: Save proof integrity report
+        if: always() && !cancelled() && steps.proof_integrity.outcome != '' && steps.proof_integrity.outcome != 'skipped'
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-integrity
+          path: ${{ runner.temp }}/proof-integrity/report.json
+          if-no-files-found: error
+          retention-days: 90
