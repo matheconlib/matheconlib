@@ -148,6 +148,22 @@ def interpolated := s!"sorry {1} admit"
             with self.assertRaisesRegex(ValueError, "No project Lean sources"):
                 driver.discover_sources(Path(directory))
 
+    def test_cache_inputs_track_changes_to_non_lean_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data = root / "data.txt"
+            source = root / "Fixture.lean"
+            data.write_text("old data")
+            source.write_text("example : True := True.intro\n")
+            subprocess.run(["git", "init", "--quiet"], cwd=root, check=True)
+            subprocess.run(["git", "add", "data.txt", "Fixture.lean"], cwd=root, check=True)
+            initial = driver.tracked_audit_inputs(root)
+            self.assertEqual([name for name, _ in initial], ["data.txt"])
+            source.write_text("example : True := by trivial\n")
+            self.assertEqual(driver.tracked_audit_inputs(root), initial)
+            data.write_text("new data")
+            self.assertNotEqual(driver.tracked_audit_inputs(root), initial)
+
 
 class DriverIntegrationTest(unittest.TestCase):
     def setUp(self):

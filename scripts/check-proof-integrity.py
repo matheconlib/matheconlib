@@ -135,6 +135,21 @@ def digest(value):
     return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
 
 
+def tracked_audit_inputs(root):
+    # Lean elaborators can read project data in addition to importing Lean modules.
+    listed = subprocess.check_output(["git", "ls-files", "-z", "--", "."], cwd=root)
+    paths = sorted(set(os.fsdecode(listed).split("\0")) - {""})
+    inputs = []
+    for name in paths:
+        if name.endswith(".lean"):
+            continue
+        path = root / name
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"cannot fingerprint tracked input {name}")
+        inputs.append((name, hashlib.sha256(path.read_bytes()).hexdigest()))
+    return inputs
+
+
 def source_cache_keys(root, source_hashes, workers):
     # Lean parses the real import header, including private and meta imports.
     # Outside the project, the pinned toolchain and manifest identify the inputs.
@@ -144,6 +159,7 @@ def source_cache_keys(root, source_hashes, workers):
     context = digest([
         platform.system(), platform.machine(), platform.libc_ver(), platform.mac_ver()[0],
         env.get("ImageOS"), lake_env["LEAN_GITHASH"],
+        tracked_audit_inputs(root),
         [hashlib.sha256(path.read_bytes()).hexdigest() for path in (
             Path(__file__), BACKEND, root / "lean-toolchain", root / "lakefile.toml",
             root / "lake-manifest.json",
@@ -213,6 +229,8 @@ def run(root, report_path, jobs=1, source_cache=None, *, audit_only=False):
     report = {"status": "error", "stage": "discovery"}
     write_report(report_path, report)
     try:
+        # Read the snapshot before starting any Lean processes.
+        cached = load_source_cache(source_cache) if source_cache else {}
         sources = discover_sources(root)
         modules = [module_name(path) for path in sources]
         report.update({
@@ -275,8 +293,13 @@ def run(root, report_path, jobs=1, source_cache=None, *, audit_only=False):
             failed = False
             audit = partial(audit_source, root, Path(work))
             with ThreadPoolExecutor(max_workers=jobs) as workers:
-                cached = load_source_cache(source_cache) if source_cache else {}
-                keys = source_cache_keys(root, report["source_sha256"], workers) if source_cache else {}
+                keys = {}
+                if source_cache:
+                    try:
+                        keys = source_cache_keys(root, report["source_sha256"], workers)
+                    except (OSError, ValueError, subprocess.SubprocessError) as error:
+                        print(f"Source audit cache unavailable: {error}", file=sys.stderr)
+                        source_cache = None
                 next_cache = {}
                 hits = 0
 
@@ -302,7 +325,10 @@ def run(root, report_path, jobs=1, source_cache=None, *, audit_only=False):
             if source_cache:
                 print(f"Source audit cache: {hits} hits, {len(sources) - hits} misses.", flush=True)
                 if not failed:
-                    save_source_cache(source_cache, next_cache)
+                    try:
+                        save_source_cache(source_cache, next_cache)
+                    except OSError as error:
+                        print(f"Unable to save source audit cache: {error}", file=sys.stderr)
             report["status"] = "failed" if failed else "passed"
             report["stage"] = "complete"
             print("Source elaboration audit: {} declarations in {} sources; {} violations.".format(
