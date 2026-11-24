@@ -83,6 +83,7 @@ public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 public import MathEconLib.GameTheory.Strategic.Outcome
+public import MathEconLib.GameTheory.Strategic.OutcomeIncentives
 public import MathEconLib.Matching
 public import MathEconLib.Matching.Classical.Marriage
 public import MathEconLib.Matching.Classical.Marriage.Basic
@@ -128,6 +129,8 @@ public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.BayesianUtility
 public import MathEconLib.Mechanism.Core.Comap
+public import MathEconLib.Mechanism.Core.DeterministicIC
+public import MathEconLib.Mechanism.Core.DeterministicICCompatibility
 public import MathEconLib.Mechanism.Core.Environment
 public import MathEconLib.Mechanism.Core.Mechanism
 public import MathEconLib.Mechanism.Core.Profile

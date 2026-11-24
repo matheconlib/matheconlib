@@ -11,6 +11,8 @@ public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.BayesianUtility
+public import MathEconLib.Mechanism.Core.DeterministicIC
+public import MathEconLib.Mechanism.Core.DeterministicICCompatibility
 public import MathEconLib.Mechanism.Core.SolutionConcepts
 public import MathEconLib.Mechanism.Core.Strategic
 public import MathEconLib.Mechanism.Core.Utility
@@ -20,11 +22,16 @@ public import MathEconLib.Mechanism.Core.UtilityCompatibility
 # Mechanisms, incentives, and induced games
 
 Mechanisms assign outcomes and signed monetary transfers to action profiles without specifying
-preferences. Quasilinear environments evaluate outcomes at true type profiles and add the signed
-transfer to outcome value. The incentive, participation and welfare APIs here use that utility
-model; incentive compatibility as an economic concept does not require quasilinearity. Budget
-balance and revenue accounting depend only on transfers. All-purchase specifications describe
-allocation and payment rules for auctions in which every agent pays.
+preferences. Deterministic incentive compatibility can use explicit comparisons of complete
+consequences: physical outcomes and signed transfer vectors, evaluated at fixed true type profiles.
+`Mechanism.IsDSICWith` requires dominant intended actions; `Mechanism.IsExPostICWith` requires
+intended play to be Nash. These comparison predicates require neither a numerical utility
+representation nor quasilinearity.
+
+Quasilinear environments evaluate outcomes at true type profiles and add signed transfers to
+outcome values. The retained quasilinear incentive, participation and total-value efficiency APIs
+use this evaluator. Budget balance and revenue accounting depend only on transfers. All-purchase
+specifications describe allocation and payment rules for auctions in which every agent pays.
 
 Direct mechanisms induce strategic games in which dominant-strategy incentive compatibility is
 equivalent to dominance of truthful reporting. Mechanisms also induce Bayesian games whose payoffs
@@ -37,6 +44,8 @@ equilibrium under the stated analytic hypotheses.
 ## Main definitions
 
 * `Mechanism`: Outcome and signed-transfer rules for dependent action profiles.
+* `Mechanism.IsDSICWith`: Dominant intended actions under explicit consequence comparisons.
+* `Mechanism.IsExPostICWith`: Ex-post Nash intended play under explicit consequence comparisons.
 * `QuasilinearEnvironment`: Values at true type profiles and quasilinear utility.
 * `DirectMechanism.IsDSIC`: Quasilinear dominant-strategy IC without a type prior.
 * `DirectMechanism.Quasilinear.IsBICOn`: Quasilinear conditional Bayesian IC on declared type/report
