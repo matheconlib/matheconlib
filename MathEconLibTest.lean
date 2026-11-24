@@ -33,6 +33,7 @@ import MathEconLibTest.GameTheory.OrderedPayoffs
 import MathEconLibTest.GameTheory.StateOutcomeEvaluation
 import MathEconLibTest.GameTheory.Strategic
 import MathEconLibTest.GameTheory.StrategicTransport
+import MathEconLibTest.GameTheory.TicTacToe
 import MathEconLibTest.GameTheory.Transport
 import MathEconLibTest.GameTheory.VectorPayoffs
 import MathEconLibTest.Manual.BeckerResearch
