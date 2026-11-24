@@ -41,11 +41,12 @@ def model : LinearScarcityAuction Unit 2 :=
 /-- Each buyer purchases the symmetric editions-only Cournot amount. -/
 def purchase : ℝ → ℝ := fun _ => 1 / 3
 
-theorem aggregate_purchase : model.toAuction.aggregateBid purchase = fun _ => (2 : ℝ) / 3 := by
+theorem aggregate_purchase :
+    model.toNetCostAuction.aggregateBid purchase = fun _ => (2 : ℝ) / 3 := by
   funext ω
   norm_num [Auction.aggregateBid, purchase, Fin.sum_univ_two]
 
-theorem aggregate_memLp : MemLp (model.toAuction.aggregateBid purchase) 2 ℙ := by
+theorem aggregate_memLp : MemLp (model.toNetCostAuction.aggregateBid purchase) 2 ℙ := by
   rw [aggregate_purchase]
   exact memLp_const _
 
@@ -68,8 +69,8 @@ theorem expected_welfare : model.bundledEditionWelfare purchase 0 = (14 : ℝ) /
 and contest loss `0` in this deterministic benchmark. -/
 theorem welfare_gap :
     MathEconLib.AllPurchase.firstBestEditionSurplus model.φ_bar 0 model.α_coeff -
-        𝔼[fun ω => model.toAuction.aggregateBid purchase ω *
-          model.spec.φ (model.toAuction.aggregateBid purchase ω)] =
+        𝔼[fun ω => model.toNetCostAuction.aggregateBid purchase ω *
+          model.spec.φ (model.toNetCostAuction.aggregateBid purchase ω)] =
       (25 : ℝ) / 36 := by
   have h := model.welfare_decomposition purchase 0 aggregate_memLp
   simp only [zero_mul, sub_zero] at h
@@ -81,7 +82,7 @@ theorem welfare_gap :
 /-- The variance theorem applies to the actual aggregate quantity and gives penalty `0`. -/
 theorem variance_penalty :
     MathEconLib.AllPurchase.editionWelfare model.φ_bar 0 model.α_coeff
-        (model.toAuction.expectedAggregateBid purchase) -
+        (model.toNetCostAuction.expectedAggregateBid purchase) -
       model.bundledEditionWelfare purchase 0 = 0 := by
   rw [model.editionWelfare_mean_sub_bundled_eq_variance purchase 0 aggregate_memLp,
     aggregate_purchase]
