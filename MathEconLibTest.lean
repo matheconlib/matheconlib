@@ -19,6 +19,7 @@ import MathEconLibTest.Choice.WeakPreferences
 import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.Competition.Cournot
+import MathEconLibTest.Decision.Compatibility
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
@@ -35,6 +36,7 @@ import MathEconLibTest.GameTheory.OrderedPayoffs
 import MathEconLibTest.GameTheory.StateOutcomeEvaluation
 import MathEconLibTest.GameTheory.Strategic
 import MathEconLibTest.GameTheory.StrategicTransport
+import MathEconLibTest.GameTheory.TicTacToe
 import MathEconLibTest.GameTheory.Transport
 import MathEconLibTest.GameTheory.VectorPayoffs
 import MathEconLibTest.Manual.BeckerResearch
@@ -42,6 +44,7 @@ import MathEconLibTest.Manual.HandsOn
 import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.DistributiveMarriage
 import MathEconLibTest.Matching.PublicImport
+import MathEconLibTest.Matching.Roommates
 import MathEconLibTest.Matching.SellerParticipation
 import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
