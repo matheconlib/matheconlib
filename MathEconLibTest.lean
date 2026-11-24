@@ -45,6 +45,7 @@ import MathEconLibTest.Matching.Continuum.Antipodal
 import MathEconLibTest.Matching.Continuum.Compatibility
 import MathEconLibTest.Matching.DistributiveMarriage
 import MathEconLibTest.Matching.Improvements
+import MathEconLibTest.Matching.MarriagePareto
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.Roommates
 import MathEconLibTest.Matching.SellerParticipation
@@ -70,3 +71,4 @@ import MathEconLibTest.SingleParameter.Compatibility
 import MathEconLibTest.ValueDistribution.Compatibility
 import MathEconLibTest.ValueDistribution.Examples
 import MathEconLibTest.ValueDistribution.UniformPricing
+import MathEconLibTest.Welfare.Pareto

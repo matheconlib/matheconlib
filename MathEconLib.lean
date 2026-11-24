@@ -94,6 +94,7 @@ public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 public import MathEconLib.Matching.Classical.Marriage.Improvements
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
 public import MathEconLib.Matching.Classical.Marriage.Optimality
+public import MathEconLib.Matching.Classical.Marriage.Pareto
 public import MathEconLib.Matching.Classical.Marriage.Preferences
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
 public import MathEconLib.Matching.Classical.Marriage.ToContracts
@@ -174,3 +175,8 @@ public import MathEconLib.ValueDistribution.TailIntegral
 public import MathEconLib.ValueDistribution.Uniform
 public import MathEconLib.ValueDistribution.UniformPricing
 public import MathEconLib.ValueDistribution.VirtualValue
+public import MathEconLib.Welfare
+public import MathEconLib.Welfare.Choice
+public import MathEconLib.Welfare.Pareto
+public import MathEconLib.Welfare.Representation
+public import MathEconLib.Welfare.Transport

@@ -780,3 +780,24 @@ example : ∀ {ι : Type u} {A : ι → Type v} {O : Type w}
     [P.expected.Continuous],
     ∃ a, (StrategicGame.ofOutcome G.mixed P.expected).IsNash a :=
   @OutcomeGame.exists_isNash_of_isCompact
+
+/-! ## Ordinal welfare -/
+
+section OrdinalWelfare
+
+open MathEconLib.Preferences MathEconLib.Welfare
+
+example : ∀ {I : Type u} {X : Type v}, (I → Preference X) → Preference X :=
+  @unanimousPreference
+
+example : ∀ {I : Type u} {X : Type v}, (I → Preference X) → Set X → X → Prop :=
+  @IsParetoEfficient
+
+example : ∀ {I : Type u} {X : Type v}, (I → Preference X) → Set X → X → Prop :=
+  @IsWeaklyParetoEfficient
+
+example : ∀ {I : Type u} {X : Type v} {R : I → Preference X} {F : Set X} {x : X},
+    x ∈ MathEconLib.Choice.maximizers (unanimousPreference R) F → IsParetoEfficient R F x :=
+  @isParetoEfficient_of_mem_maximizers
+
+end OrdinalWelfare
