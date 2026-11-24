@@ -16,6 +16,7 @@ import MathEconLibTest.Choice.Counterexamples
 import MathEconLibTest.Choice.MatchingConditionsImport
 import MathEconLibTest.Choice.PublicImport
 import MathEconLibTest.Choice.SubstituteEnvelope
+import MathEconLibTest.Choice.Value
 import MathEconLibTest.Choice.WeakPreferences
 import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
@@ -24,12 +25,14 @@ import MathEconLibTest.Decision.Compatibility
 import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
+import MathEconLibTest.GameTheory.Choice
 import MathEconLibTest.GameTheory.ConditionalBeliefs
 import MathEconLibTest.GameTheory.ExplicitComparisonValidity
 import MathEconLibTest.GameTheory.ExplicitComparisons
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
 import MathEconLibTest.GameTheory.MatchingPennies
+import MathEconLibTest.GameTheory.MatchingPenniesBestResponses
 import MathEconLibTest.GameTheory.MeasurableBayesian
 import MathEconLibTest.GameTheory.OrderedPayoffs
 import MathEconLibTest.GameTheory.RockPaperScissors

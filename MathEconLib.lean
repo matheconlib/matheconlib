@@ -45,6 +45,7 @@ public import MathEconLib.Choice.Matching.WeakSubstitutability
 public import MathEconLib.Choice.Maximizers
 public import MathEconLib.Choice.PathIndependentMinorant
 public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.Choice.Value
 public import MathEconLib.Choice.WeakPreferences
 public import MathEconLib.Competition.Cournot.Linear
 public import MathEconLib.Decision.RiskAversion
@@ -67,6 +68,7 @@ public import MathEconLib.ForMathlib.ProbabilityMeasure
 public import MathEconLib.ForMathlib.Quasiconvex
 public import MathEconLib.ForMathlib.Schauder
 public import MathEconLib.ForMathlib.StochasticOrder
+public import MathEconLib.GameTheory.Equilibrium.Choice
 public import MathEconLib.GameTheory.Equilibrium.Problem
 public import MathEconLib.GameTheory.Strategic.Basic
 public import MathEconLib.GameTheory.Strategic.Bayesian.Finite
@@ -79,6 +81,7 @@ public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Interim
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.InterimConverse
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
 public import MathEconLib.GameTheory.Strategic.Bayesian.Outcome
+public import MathEconLib.GameTheory.Strategic.BestResponse
 public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite

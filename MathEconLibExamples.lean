@@ -14,6 +14,7 @@ public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.GameTheory.RockPaperScissors
 public import MathEconLibExamples.GameTheory.TicTacToe
 public import MathEconLibExamples.GameTheory.MatchingPennies
+public import MathEconLibExamples.GameTheory.MatchingPenniesBestResponses
 public import MathEconLibExamples.Matching.DistributiveMarriage
 public import MathEconLibExamples.Matching.Improvements
 public import MathEconLibExamples.Matching.JointPreservation
