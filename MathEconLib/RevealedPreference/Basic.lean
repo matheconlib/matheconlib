@@ -74,34 +74,25 @@ theorem dot_sub {L : ℕ} (p x y : Bundle L) : dot p (x - y) = dot p x - dot p y
   simp only [dot, dotProduct, Pi.sub_apply, mul_sub, Finset.sum_sub_distrib]
 
 /-- Coordinatewise nonnegativity of a commodity bundle. -/
-def Nonnegative {L : ℕ} (x : Bundle L) : Prop := ∀ i, 0 ≤ x i
+abbrev Nonnegative {L : ℕ} (x : Bundle L) : Prop := 0 ≤ x
 
 /--
 The strict commodity dominance order: `x` weakly dominates `z` in every
 coordinate and the two bundles are unequal.  In finite dimension this is
 equivalent to weak dominance with a strict inequality in some coordinate.
 -/
-def StrictDominates {L : ℕ} (x z : Bundle L) : Prop :=
-  (∀ i, z i ≤ x i) ∧ x ≠ z
+abbrev StrictDominates {L : ℕ} (x z : Bundle L) : Prop := z < x
 
 /-- A utility is strictly increasing for strict commodity dominance. -/
-def StrictlyIncreasing {L : ℕ} (u : Utility L) : Prop :=
-  ∀ ⦃x z : Bundle L⦄, StrictDominates x z → u z < u x
+abbrev StrictlyIncreasing {L : ℕ} (u : Utility L) : Prop := StrictMono u
 
 /-- Strict commodity dominance is the strict product order, with the arguments reversed. -/
 theorem strictDominates_iff_lt {L : ℕ} {x z : Bundle L} :
-    StrictDominates x z ↔ z < x := by
-  rw [lt_iff_le_and_ne]
-  exact ⟨fun h => ⟨h.1, Ne.symm h.2⟩, fun h => ⟨h.1, Ne.symm h.2⟩⟩
+    StrictDominates x z ↔ z < x := Iff.rfl
 
 /-- Economic strict increase agrees with Mathlib's strict monotonicity predicate. -/
 theorem strictlyIncreasing_iff_strictMono {L : ℕ} {u : Utility L} :
-    StrictlyIncreasing u ↔ StrictMono u := by
-  constructor
-  · intro h x z hxz
-    exact h (strictDominates_iff_lt.mpr hxz)
-  · intro h x z hxz
-    exact h (strictDominates_iff_lt.mp hxz)
+    StrictlyIncreasing u ↔ StrictMono u := Iff.rfl
 
 /--
 A consumer dataset indexed by `T`, specialized to strictly positive prices and nonnegative
@@ -151,22 +142,12 @@ theorem dot_strictlyIncreasing_of_pos
     {p x z : Bundle L} (hp : ∀ i, 0 < p i)
     (hxz : StrictDominates x z) :
     dot p z < dot p x := by
-  rcases hxz with ⟨hle, hne⟩
-  have hexists : ∃ i, z i < x i := by
-    by_contra hnone
-    apply hne
-    funext i
-    have hxle : x i ≤ z i := by
-      apply le_of_not_gt
-      intro hstrict
-      exact hnone ⟨i, hstrict⟩
-    exact le_antisymm hxle (hle i)
+  rcases Pi.lt_def.mp hxz with ⟨hle, i, hi⟩
   unfold dot dotProduct
   apply Finset.sum_lt_sum
   · intro i _hi
     exact mul_le_mul_of_nonneg_left (hle i) (hp i).le
-  · obtain ⟨i, hi⟩ := hexists
-    exact ⟨i, Finset.mem_univ i, mul_lt_mul_of_pos_left hi (hp i)⟩
+  · exact ⟨i, Finset.mem_univ i, mul_lt_mul_of_pos_left hi (hp i)⟩
 
 /-- Observed expenditure is strictly increasing under strict dominance. -/
 theorem expenditure_strictlyIncreasing
@@ -227,6 +208,7 @@ theorem exists_strictDominating_affordable
     positivity
   let z : Bundle L := fun k => D.choice t k + ε
   have hdom : StrictDominates z (D.choice t) := by
+    apply lt_iff_le_and_ne.mpr
     refine ⟨fun k => by dsimp [z]; linarith, ?_⟩
     intro heq
     have hk := congr_fun heq ⟨0, hL⟩
