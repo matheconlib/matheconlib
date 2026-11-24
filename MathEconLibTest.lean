@@ -43,6 +43,7 @@ import MathEconLibTest.Matching.Continuum
 import MathEconLibTest.Matching.Continuum.Antipodal
 import MathEconLibTest.Matching.Continuum.Compatibility
 import MathEconLibTest.Matching.DistributiveMarriage
+import MathEconLibTest.Matching.Improvements
 import MathEconLibTest.Matching.PublicImport
 import MathEconLibTest.Matching.Roommates
 import MathEconLibTest.Matching.SellerParticipation
