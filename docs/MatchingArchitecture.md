@@ -58,7 +58,7 @@ represented feasible bundle retains the existing empty fallback.
 
 ## Module organization
 
-There are ten substantive modules beneath `Choice/`, exported by the public
+There are fourteen substantive modules beneath `Choice/`, exported by the public
 `MathEconLib.Choice` root. General results are in the parent folder. The
 `Matching` subfolder holds constructions and conditions that additionally use
 a map from alternatives to matching partners; it does not require a market.
@@ -74,6 +74,10 @@ a map from alternatives to matching partners; it does not require a market.
 | `Matching.WeakSubstitutability` | Freshness and unilateral/bilateral substitutability |
 | `Matching.Completion` | Completion, substitutable completability, the joint IRC-completion condition and elementary facts |
 | `Matching.Relationships` | Contraction, hull characterizations and completion implications |
+| `Matching.SubstituteEnvelope` | Feasible-menu rejection bound, greatest substitutable completion, and hull–envelope sandwich |
+| `PathIndependentMinorant` | Greatest path-independent minorant on arbitrary alternative types |
+| `Matching.PathIndependentEnvelope` | Greatest consistent substitutable completion and path-independent sandwich |
+| `Matching.CompletionEvidence` | Rejection-evidence characterization and obstruction theorem |
 | `Matching.Preferences` | Feasible-bundle constructors and preference-induced completion results |
 
 The shared predicates are defined once in `Conditions`; matching vocabulary
@@ -232,3 +236,10 @@ checks alone are not a successful Lean build.
 
 The edition-specific reference map is in [MatchingReferences.md](MatchingReferences.md).
 The review-to-commit record is in [PR103ReviewChanges.md](PR103ReviewChanges.md).
+
+## Completion follow-on
+
+`Matching.SubstituteEnvelope` extends the existing hull characterization to arbitrary
+substitutable completions. See [SubstitutableCompletionFollowup.md](SubstitutableCompletionFollowup.md)
+for the precise scope, proofs, and remaining finite-certificate and
+law-of-aggregate-demand formalization tasks.

@@ -59,6 +59,13 @@ noncomputable def expect (d : FinDist α) (f : α → V) : V :=
 lemma expect_eq_sum (d : FinDist α) (f : α → V) :
     d.expect f = ∑ a, d.pmf a • f a := rfl
 
+/-- Expectation is the probability-weighted sum over the support. -/
+lemma expect_eq_sum_support (d : FinDist α) (f : α → V) :
+    d.expect f = ∑ a ∈ d.support, d.pmf a • f a := by
+  rw [expect_eq_sum]
+  refine (Finset.sum_filter_of_ne fun a _ h ↦ ?_).symm
+  exact lt_of_le_of_ne (d.nonneg a) fun hz ↦ h (by rw [← hz, zero_smul])
+
 /-- The expectation of a constant is that constant. -/
 lemma expect_const (d : FinDist α) (c : V) : d.expect (fun _ ↦ c) = c := by
   rw [expect, ← Finset.sum_smul, d.sum_one, one_smul]
