@@ -1,8 +1,8 @@
 # Finite WGARP rationalization
 
 For a finite dataset with strictly positive prices and nonnegative
-observed bundles, WGARP is equivalent to rationalization by a continuous,
-strictly increasing, sign-asymmetric numerical preference, and to rationalization
+observed bundles, WGARP is equivalent to being rationalizable by a continuous,
+strictly increasing, sign-asymmetric numerical preference, and to being rationalizable
 by a finite coherent coalitional multi-utility (CMU) function. Continuity of the
 preference is joint, strict increase is in its first bundle argument, and every
 component utility of the CMU witness is continuous, strictly increasing, and concave.
@@ -15,9 +15,11 @@ The proof first identifies WGARP with GARP on every two-observation restriction
 (`wgarp_iff_pairwise_garp`). Finite Afriat supplies one continuous, concave,
 strictly increasing utility for each ordered pair. Row-and-column coalitions
 share members; their finite maximum of finite minimum utility differences gives
-the coherent CMU rationalizer. Coherence supplies both weak and strict
-`SignAsymmetric` implications. Empty data use a single utility and a singleton coalition.
-Coherence does not assert numerical skew symmetry.
+the coherent CMU rationalizer. Coherence guarantees that `r(x,y) ≥ 0` implies
+`r(y,x) ≤ 0`, and that `r(x,y) > 0` implies `r(y,x) < 0`. These are the two
+`SignAsymmetric` implications; they do not require numerical skew symmetry
+`r(y,x) = -r(x,y)` or completeness of the nonnegative-score comparison.
+Empty data use a single utility and a singleton coalition.
 
 `finiteCMU_nonneg_iff` exposes the CMU comparison as existence of a coalition
 whose every member weakly prefers the first bundle. `finiteCMU_const` recovers
@@ -26,7 +28,10 @@ whose every member weakly prefers the first bundle. `finiteCMU_const` recovers
 `wgarp_iff_hasRegularPreferenceRationalization` exposes the preference
 equivalence. `preferenceChoice` packages all available bundles whose numerical
 comparison against every available alternative is nonnegative in the existing
-`Choice.ChoiceFunction`. The theorem
+`Choice.ChoiceFunction`. Here `0 ≤ r x y` means that `x` is at least as good as `y`;
+the corresponding order orientation would be `R.le x y := 0 ≤ r y x`.
+If that relation is a preorder, the selected bundles are greatest feasible
+alternatives. Incomparability can leave the choice set empty. The theorem
 `preferenceRationalizes_iff_mem_preferenceChoice` identifies rationalization with
 observed membership on `budgetSet`; `wgarp_iff_exists_regular_preferenceChoice`
 supplies that membership from WGARP. Choices retain ties. Rationalization
@@ -42,20 +47,30 @@ regularity assumptions on the utility.
 
 The numerical preferences and component utilities are defined on all of
 `Bundle L`, while budgets contain only nonnegative bundles. The formalization
-permits zero observed bundles and any natural-number dimension, including zero.
-The representation equivalences assume a finite observation type, including empty data;
-the pairwise-GARP bridge and the necessity argument need no finiteness assumption.
+permits zero observed bundles and any nonnegative integer dimension `L : ℕ`,
+including zero; commodity dimension is always finite. The representation
+equivalences assume a finite observation type, including empty data. The
+pairwise-GARP bridge and the necessity argument allow infinite observation types.
+The generic CMU algebraic lemmas allow arbitrary alternative spaces; continuity
+lemmas require a topology and monotonicity lemmas require a preorder, with the
+stated regularity assumptions on participating agents.
 Witness selection is noncomputable and supplies no numerical fitting algorithm.
 
 The [checked examples](../MathEconLibExamples/RevealedPreference/WGARP.lean)
 apply the characterization and choice bridge to the existing three-observation
 cycle, which satisfies WGARP and violates GARP. Separate applications handle
-expenditure ties and a prohibited binary reversal. These are exact illustrative
-datasets; no empirical calibration or predictive claim is made.
+expenditure ties and a prohibited binary reversal. The `disagreement` example
+uses one coalition containing both utilities `u(x) = 2x₁ + x₂` and
+`v(x) = x₁ + 2x₂`. The coalition is coherent and both components are continuous,
+strictly increasing, and concave. Between `e₁ = (1,0)` and `e₂ = (0,1)`, both
+directional CMU scores are `-1`. Thus neither weak comparison holds, numerical
+skew symmetry fails, and `disagreement_preferenceChoice_empty` proves that the
+actual `preferenceChoice` on `{e₁,e₂}` is empty. These are exact mathematical
+examples; no empirical calibration or predictive claim is made.
 
 ## API migration
 
-`WGARP` is now the direct binary-expenditure condition; replace
+`WGARP` is now the direct binary-expenditure condition; we replace
 `SatisfiesWGARP` with `WGARP`. The numerical sign predicate is named
 `SignAsymmetric` instead of `Asymmetric`. Its contract still includes both
 `0 ≤ r x y → r y x ≤ 0` and `0 < r x y → r y x < 0` for all bundles.

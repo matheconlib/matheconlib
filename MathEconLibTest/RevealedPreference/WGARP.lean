@@ -54,6 +54,32 @@ example : FiniteCoherentCMURationalizes majorityDataset majorityCoalitions major
 example : finiteCMU majorityCoalitions majorityAgents ![1, 0, 0] ![0, 1, 0] = 1 :=
   majority_scores.1
 
+-- Regularity and coherence permit incomparability and empty choice on a binary menu.
+example : disagreementCoalitions.IsCoherent ∧
+    ContinuousPreference (finiteCMU disagreementCoalitions disagreementAgents) ∧
+    StrictlyIncreasingFirst (finiteCMU disagreementCoalitions disagreementAgents) ∧
+    SignAsymmetric (finiteCMU disagreementCoalitions disagreementAgents) :=
+  ⟨disagreementCoalitions_isCoherent, disagreement_preference_regular⟩
+
+example : ∀ i, Continuous (disagreementAgents i) ∧
+    StrictlyIncreasing (disagreementAgents i) ∧ ConcaveOn ℝ Set.univ (disagreementAgents i) :=
+  disagreementAgents_regular
+
+example : finiteCMU disagreementCoalitions disagreementAgents ![1, 0] ![0, 1] = -1 ∧
+    finiteCMU disagreementCoalitions disagreementAgents ![0, 1] ![1, 0] = -1 :=
+  disagreement_scores
+
+example : ¬ (0 ≤ finiteCMU disagreementCoalitions disagreementAgents ![1, 0] ![0, 1] ∨
+    0 ≤ finiteCMU disagreementCoalitions disagreementAgents ![0, 1] ![1, 0]) :=
+  disagreement_incomparable
+
+example : finiteCMU disagreementCoalitions disagreementAgents ![0, 1] ![1, 0] ≠
+    -finiteCMU disagreementCoalitions disagreementAgents ![1, 0] ![0, 1] :=
+  disagreement_not_skew
+
+example : preferenceChoice (finiteCMU disagreementCoalitions disagreementAgents)
+    {![1, 0], ![0, 1]} = ∅ := disagreement_preferenceChoice_empty
+
 private def zeroPurchaseDataset (L : ℕ) : Dataset L (Fin 1) where
   price := fun _ _ => 1
   choice := fun _ _ => 0

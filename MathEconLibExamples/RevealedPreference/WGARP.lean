@@ -21,6 +21,10 @@ An explicit three-agent majority witness also proves regularity and rationalizat
 on three observed budgets, then applies the supplied-witness converse. Its scores
 exhibit a strict cycle on the separate menu of unit bundles.
 
+A single two-member coalition with positive linear utilities gives scores of minus one
+in both directions between two unit bundles. Its regular, sign-asymmetric preference
+is incomplete, is not numerically skew symmetric, and chooses neither bundle on that menu.
+
 A separate tie example distinguishes WGARP from the single-valued WARP condition:
 two distinct choices on the same budget are permitted by weak rationalization.
 These are exact mathematical examples, not empirical estimates. No demand existence
@@ -145,6 +149,87 @@ theorem majority_scores :
     finiteCMU majorityCoalitions majorityAgents ![1, 0, 0] ![0, 0, 1] = -1 := by
   norm_num [finiteCMU, coalitionScore, majorityCoalitions, majorityAgents, majorityWeights,
     Fin.univ_succ, dot, dotProduct, Fin.sum_univ_succ]
+
+/-- One coalition containing both agents: every comparison requires their unanimity. -/
+def disagreementCoalitions : FiniteCoalitionSystem (Fin 1) (Fin 2) where
+  members := fun _ => {0, 1}
+  members_nonempty := by intro c; simp
+
+/-- The single two-member coalition is coherent. -/
+theorem disagreementCoalitions_isCoherent : disagreementCoalitions.IsCoherent := by
+  intro c d
+  exact ⟨0, by simp [disagreementCoalitions], by simp [disagreementCoalitions]⟩
+
+/-- The agents weight the two goods differently, with strictly positive coefficients. -/
+def disagreementWeights : Fin 2 → Bundle 2 := ![![2, 1], ![1, 2]]
+
+/-- The two utilities are `2 * x 0 + x 1` and `x 0 + 2 * x 1`. -/
+noncomputable def disagreementAgents (i : Fin 2) : Utility 2 := dot (disagreementWeights i)
+
+/-- Both components are continuous, strictly increasing, and concave on all bundles. -/
+theorem disagreementAgents_regular (i : Fin 2) :
+    Continuous (disagreementAgents i) ∧ StrictlyIncreasing (disagreementAgents i) ∧
+      ConcaveOn ℝ Set.univ (disagreementAgents i) := by
+  refine ⟨continuous_dot _, ?_, convex_univ, ?_⟩
+  · apply strictlyIncreasing_iff_strictMono.mpr
+    intro z x hzx
+    apply dot_strictlyIncreasing_of_pos (p := disagreementWeights i) _
+      (strictDominates_iff_lt.mpr hzx)
+    intro j
+    fin_cases i <;> fin_cases j <;> norm_num [disagreementWeights]
+  · intro x _ y _ a b _ _ _
+    exact le_of_eq (dot_add_smul (disagreementWeights i) x y a b).symm
+
+/-- The CMU has the regularity and sign asymmetry used in preference rationalization. -/
+theorem disagreement_preference_regular :
+    ContinuousPreference (finiteCMU disagreementCoalitions disagreementAgents) ∧
+      StrictlyIncreasingFirst (finiteCMU disagreementCoalitions disagreementAgents) ∧
+      SignAsymmetric (finiteCMU disagreementCoalitions disagreementAgents) := by
+  refine ⟨finiteCMU_continuous _ _ (fun _ i _ => (disagreementAgents_regular i).1),
+    finiteCMU_strictlyIncreasingFirst _ _
+      (fun _ i _ => (disagreementAgents_regular i).2.1), ?_, ?_⟩
+  · intro x y h
+    exact finiteCMU_weakSignAsymmetry _ _ disagreementCoalitions_isCoherent h
+  · intro x y h
+    exact finiteCMU_signAsymmetry _ _ disagreementCoalitions_isCoherent h
+
+/-- Disagreement makes both directional scores minus one on the binary unit-bundle menu. -/
+theorem disagreement_scores :
+    finiteCMU disagreementCoalitions disagreementAgents ![1, 0] ![0, 1] = -1 ∧
+      finiteCMU disagreementCoalitions disagreementAgents ![0, 1] ![1, 0] = -1 := by
+  norm_num [finiteCMU, coalitionScore, disagreementCoalitions, disagreementAgents,
+    disagreementWeights, Fin.univ_succ, dot, dotProduct, Fin.sum_univ_succ]
+
+/-- Neither weak comparison holds, so the induced relation is incomplete. -/
+theorem disagreement_incomparable :
+    ¬ (0 ≤ finiteCMU disagreementCoalitions disagreementAgents ![1, 0] ![0, 1] ∨
+      0 ≤ finiteCMU disagreementCoalitions disagreementAgents ![0, 1] ![1, 0]) := by
+  rw [disagreement_scores.1, disagreement_scores.2]
+  norm_num
+
+/-- Coherence and sign asymmetry do not force numerical skew symmetry. -/
+theorem disagreement_not_skew :
+    finiteCMU disagreementCoalitions disagreementAgents ![0, 1] ![1, 0] ≠
+      -finiteCMU disagreementCoalitions disagreementAgents ![1, 0] ![0, 1] := by
+  rw [disagreement_scores.1, disagreement_scores.2]
+  norm_num
+
+/-- The actual induced choice is empty on a nonempty two-alternative menu. -/
+theorem disagreement_preferenceChoice_empty :
+    preferenceChoice (finiteCMU disagreementCoalitions disagreementAgents)
+      {![1, 0], ![0, 1]} = ∅ := by
+  apply Set.eq_empty_iff_forall_notMem.mpr
+  intro x hx
+  obtain ⟨hx, hcomp⟩ := (mem_preferenceChoice _ _ _).mp hx
+  rcases Set.mem_insert_iff.mp hx with rfl | hx
+  · have h := hcomp ![0, 1] (by simp)
+    rw [disagreement_scores.1] at h
+    norm_num at h
+  · have hx := Set.mem_singleton_iff.mp hx
+    subst x
+    have h := hcomp ![1, 0] (by simp)
+    rw [disagreement_scores.2] at h
+    norm_num at h
 
 /-- Two distinct bundles chosen at identical prices and identical expenditure. -/
 def tieDataset : Dataset 2 (Fin 2) where
