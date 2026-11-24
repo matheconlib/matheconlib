@@ -29,6 +29,7 @@ import MathEconLibTest.GameTheory.ExplicitComparisons
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
 import MathEconLibTest.GameTheory.MatchingPennies
+import MathEconLibTest.GameTheory.MatchingPenniesBestResponses
 import MathEconLibTest.GameTheory.MeasurableBayesian
 import MathEconLibTest.GameTheory.OrderedPayoffs
 import MathEconLibTest.GameTheory.StateOutcomeEvaluation
