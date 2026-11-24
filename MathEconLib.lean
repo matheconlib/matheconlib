@@ -30,6 +30,7 @@ public import MathEconLib.BidderProblem.UniversalIC
 public import MathEconLib.Choice
 public import MathEconLib.Choice.Attainment
 public import MathEconLib.Choice.Basic
+public import MathEconLib.Choice.Compact
 public import MathEconLib.Choice.Conditions
 public import MathEconLib.Choice.FiniteOption
 public import MathEconLib.Choice.Induced
@@ -82,6 +83,11 @@ public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 public import MathEconLib.GameTheory.Strategic.Outcome
+public import MathEconLib.GeneralEquilibrium.PureExchange
+public import MathEconLib.GeneralEquilibrium.PureExchange.Basic
+public import MathEconLib.GeneralEquilibrium.PureExchange.Demand
+public import MathEconLib.GeneralEquilibrium.PureExchange.Existence
+public import MathEconLib.GeneralEquilibrium.PureExchange.FixedPoint
 public import MathEconLib.Matching
 public import MathEconLib.Matching.Classical.Marriage
 public import MathEconLib.Matching.Classical.Marriage.Basic
