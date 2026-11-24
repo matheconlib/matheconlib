@@ -10,6 +10,7 @@ public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputab
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
 public import MathEconLib.Matching.Classical.Marriage.Distributive
 public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
+public import MathEconLib.Matching.Classical.Marriage.Improvements
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
 public import MathEconLib.Matching.Classical.Marriage.Pareto
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
@@ -27,6 +28,8 @@ The components separate basic economic definitions and direct classical facts,
 preferences and their induced choice, the embedding into contracts, stable
 existence, the symmetric extrema, fixed-point convergence, lone wolf results,
 and the distributive stable-matching lattice with its intrinsic ideal representation.
+`Marriage.Improvements` defines unambiguous improvements and proves that they preserve
+selection from a fixed menu.
 `Marriage.DeferredAcceptance` develops the
 direct proposal algorithm; `Marriage.DeferredAcceptanceFixedPoints` relates
 its terminal outputs to the contracts fixed points; and
