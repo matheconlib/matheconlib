@@ -10,14 +10,16 @@ public import MathEconLib.GameTheory.Strategic.Reduction
 /-!
 # Eliminating a strategy dominated only by a mixture
 
-Row's payoffs in a two-player zero-sum game are `(3, 0)`, `(0, 3)`, and `(1, 1)`.
+In a two-player zero-sum game, Row's three rows pay `(3, 0)`, `(0, 3)`, and `(1, 1)` against the
+two columns.
 The last row is strictly dominated by the half-half mixture of the first two, but neither retained
 pure row dominates it. The reduced game's uniform equilibrium lifts through a `GameSimulation`.
 
 The source already permits all mixed strategies on the retained rows. Against the uniform column
 strategy, every source deviation pays `3 / 2`, while the deleted row pays `1`. Thus even allowing
-mixed source deviations cannot supply an exact payoff match. This example demonstrates payoff
-domination, rather than utility-independent equality of outcome laws.
+mixed source deviations cannot supply an exact payoff match. The domination uses these payoffs:
+the deleted row's outcomes are not a mixture of the retained rows' outcomes, so other payoffs over
+the same outcomes could make it a best response.
 -/
 
 @[expose] public noncomputable section
@@ -124,7 +126,8 @@ theorem pure_deviations_dominated (σ : Bool → FinDist (Fin 2)) (i : Bool) (a 
     exact ⟨FinDist.pure a, by simp [column_expected, row_expected, reduced_column_payoff,
       includeActions, FinDist.pure_apply]⟩
 
-/-- A certificate that composes with other dominated-strategy reductions. -/
+/-- The reduction as a simulation, built by `dominatedFiniteMixedSimulation` from
+`pure_deviations_dominated`. It composes with further reductions. -/
 def simulation : GameSimulation reduced.nashProblem game.finiteMixedExtension.nashProblem :=
   game.dominatedFiniteMixedSimulation includeActions pure_deviations_dominated
 
@@ -156,7 +159,8 @@ theorem reduced_isNash_iff (σ : Bool → FinDist (Fin 2)) :
     reduced.IsNash σ ↔ game.IsFiniteMixedNash (fun i ↦ includeActions i (σ i)) :=
   game.isNash_comapFiniteMixed_iff_of_dominated includeActions σ (pure_deviations_dominated σ)
 
-/-- The named simulation theorem lifts an equilibrium after a genuinely mixed dominance step. -/
+/-- The uniform profile, which never plays the deleted row, is a mixed equilibrium of the full
+game, by `GameSimulation.transport`. -/
 theorem full_equilibrium : game.IsFiniteMixedNash (fun i ↦ includeActions i (uniformProfile i)) :=
   simulation.transport reduced_equilibrium
 

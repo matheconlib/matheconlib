@@ -17,7 +17,9 @@ measured through a monotone value map for each target deviator. Source and targe
 values may live in different preorders. The translated incumbent may have a larger
 value than its recoding. Exact reward-preserving morphisms use identity value maps.
 
-The pointwise comparison theorem in `Equilibrium.Problem` underlies transport.
+The record is for maps that are composed or reused. A one-off transport at a single incumbent
+needs no record: use `EquilibriumProblem.IsEquilibrium.of_deviation_comparisons`, or
+`EquilibriumProblem.IsDeviationOptimal.of_dominated_deviations` for a domination bound.
 Additive errors require a separate compatibility bound for the value maps;
 monotonicity alone does not preserve a numerical error. Reflection requires
 an independent contract; preservation alone does not imply it.
@@ -166,13 +168,14 @@ theorem comp_assoc {A B Y : Type*} [Preorder Y] {Z : EquilibriumProblem A B Y}
     (h.comp g).comp f = h.comp (g.comp f) := by
   ext <;> rfl
 
-/-- Transport playerwise additive errors through value maps with a compatible bound.
-The bound is needed only at the incumbent. An affine map with slope `a` scales
-its source error by `a`; identity maps preserve it.
+/-- Transport playerwise additive errors. If no deviation from `s` gains more than `ε`, validity
+aside, then no deviation from its image gains more than `δ`, provided each value map turns an
+`ε` gain at the recoded source incumbent into at most a `δ` gain (`herror`). An affine map with
+slope `a` satisfies this with `δ = a • ε`; identity maps with `δ = ε`.
 
-The bound `herror` is evaluated at the recoded source incumbent, not at the translated incumbent.
-For a chain of simulations, apply this theorem once per step, so each step's bound is evaluated at
-that step's own incumbent; see `comp`. -/
+`herror` is evaluated at the recoded source incumbent, not at the translated incumbent. For a chain
+of simulations, apply this theorem once per step, so each step's bound is evaluated at that step's
+own incumbent; see `comp`. -/
 theorem transport_le_add [Add V] [Add W] [AddRightMono W]
     (f : GameSimulation P Q) (ε : I → V) (δ : J → W) {s : S}
     (herror : ∀ j, f.valueMap j (P.value (f.deviatorMap j) s + ε (f.deviatorMap j)) ≤
@@ -209,7 +212,7 @@ theorem isEquilibrium_iff_of_deviation_comparisons (f : GameSimulation P Q) {s :
     Q.IsEquilibrium (f.toFun s) ↔ P.IsEquilibrium s :=
   ⟨fun h ↦ h.of_deviation_comparisons g (hvalid h.valid) hdev, f.transport⟩
 
-/-- A separate reward-preserving reflection contract on the same state map gives an iff. -/
+/-- A comorphism with the same state map supplies the converse, giving an iff. -/
 theorem isEquilibrium_iff {Q : EquilibriumProblem T J V}
     (f : GameSimulation P Q) (g : GameComorphism P Q)
     (hmap : g.toFun = f.toFun) (s : S) :

@@ -14,10 +14,11 @@ public import Mathlib.Tactic.NormNum
 /-!
 # Applications and boundaries of equilibrium simulation
 
-A coin action lies outside a compiler's image, so no exact morphism reaches it, but its value is
-bounded by a legal source action. Simulation transports equilibrium to the enlarged game. The
-tests also check composition, reflection, value recodings across different value spaces and
-player sets, additive errors, and comparison transport where no global value map exists.
+An added action worth one half lies outside the image of an inclusion, so no exact morphism
+reaches it, but its value is bounded by a legal source action. Simulation transports equilibrium
+to the enlarged game. The tests also check composition, reflection, value recodings across
+different value spaces and player sets, additive errors, and comparison transport where no
+global value map exists.
 
 The candidate-validity fixtures check that validity is not weakened by domination. A non-exact
 doubling simulation with nonconstant validity transports equilibrium while an invalid incumbent
@@ -43,20 +44,20 @@ def source : EquilibriumProblem Bool Unit ℝ :=
 def target : EquilibriumProblem (Fin 3) Unit ℝ :=
   .ofDeviation (fun _ _ _ ↦ True) (fun _ q ↦ (q.val : ℝ) / 2)
 
-/-- Compilation includes the two deterministic actions. -/
-def compile (b : Bool) : Fin 3 := if b then 2 else 0
+/-- Include the two source actions as the target's lowest and highest actions. -/
+def inclusion (b : Bool) : Fin 3 := if b then 2 else 0
 
 lemma target_value_le_one (q : Fin 3) : target.value () q ≤ 1 := by
   change (q.val : ℝ) / 2 ≤ 1
   have hq : (q.val : ℝ) ≤ 2 := by exact_mod_cast Nat.le_of_lt_succ q.isLt
   linarith
 
-/-- The added coin action is bounded by the best source action. -/
+/-- The added action is bounded by the best source action. -/
 def domination : GameSimulation source target where
-  toFun := compile
+  toFun := inclusion
   deviatorMap := id
   valueMap _ := OrderHom.id
-  incumbent_value_le _ b := by cases b <;> norm_num [source, target, compile,
+  incumbent_value_le _ b := by cases b <;> norm_num [source, target, inclusion,
     EquilibriumProblem.ofDeviation]
   deviation_dominated _ _ q _ := ⟨true, trivial, target_value_le_one q⟩
   valid_preserves _ _ := trivial
@@ -67,26 +68,27 @@ theorem source_equilibrium : source.IsEquilibrium true := by
   cases b <;> norm_num [source, EquilibriumProblem.ofDeviation]
 
 /-- The public simulation theorem establishes equilibrium in the enlarged game. -/
-theorem target_equilibrium : target.IsEquilibrium (compile true) :=
+theorem target_equilibrium : target.IsEquilibrium (inclusion true) :=
   domination.transport source_equilibrium
 
-/-- The chosen compiler cannot lift the new target action exactly. -/
-theorem no_exact_morphism : ¬ ∃ f : GameMorphism source target, f.toFun = compile := by
+/-- The inclusion cannot lift a deviation to the added action exactly. -/
+theorem no_exact_morphism : ¬ ∃ f : GameMorphism source target, f.toFun = inclusion := by
   rintro ⟨f, hf⟩
   obtain ⟨b, _, hb⟩ := f.deviation_lifts () false 1 trivial
   rw [hf] at hb
-  cases b <;> norm_num [compile] at hb
+  cases b <;> norm_num [inclusion] at hb
 
-/-- Honest compilation maps source deviations, giving independent reflection. -/
+/-- The inclusion is also a comorphism: it maps source deviations with equal values, which gives
+reflection independently of the simulation. -/
 def reflection : GameComorphism source target where
-  toFun := compile
+  toFun := inclusion
   deviatorMap := id
   deviation_maps _ _ _ _ := trivial
-  value_eq _ b := by cases b <;> norm_num [source, target, compile,
+  value_eq _ b := by cases b <;> norm_num [source, target, inclusion,
     EquilibriumProblem.ofDeviation]
   valid_reflects _ _ := trivial
 
-theorem equilibrium_iff (b : Bool) : target.IsEquilibrium (compile b) ↔ source.IsEquilibrium b :=
+theorem equilibrium_iff (b : Bool) : target.IsEquilibrium (inclusion b) ↔ source.IsEquilibrium b :=
   domination.isEquilibrium_iff reflection rfl b
 
 /-- Coarsening all target states to one state can improve incumbent values. -/
@@ -124,13 +126,13 @@ def recoding : GameSimulation target vectorTarget :=
   .ofExactLifts id (fun _ ↦ ()) vectorRecoding (fun _ _ ↦ rfl)
     (fun _ _ t _ ↦ ⟨t, trivial, rfl⟩) (fun _ _ ↦ trivial)
 
-/-- Reflection works across value spaces even when the compiler omits a target state. -/
+/-- Reflection works across value spaces even when the inclusion misses a target state. -/
 theorem cross_value_equilibrium_iff (b : Bool) :
-    vectorTarget.IsEquilibrium (compile b) ↔ source.IsEquilibrium b := by
+    vectorTarget.IsEquilibrium (inclusion b) ↔ source.IsEquilibrium b := by
   apply (recoding.comp domination).isEquilibrium_iff_of_deviation_comparisons
     (fun _ ↦ false) (fun _ ↦ trivial)
   intro i b' _
-  refine ⟨compile b', trivial, fun hle ↦ ?_⟩
+  refine ⟨inclusion b', trivial, fun hle ↦ ?_⟩
   have hscalar := (add_le_add_iff_right (7 : ℝ)).mp hle.2
   exact (reflection.value_eq () b').ge.trans (hscalar.trans (reflection.value_eq () b).le)
 
@@ -145,7 +147,7 @@ def projecting : GameSimulation vectorTarget finalTarget :=
     (fun _ _ t _ ↦ ⟨t, trivial, rfl⟩) (fun _ _ ↦ trivial)
 
 /-- Nontrivial value maps compose across different value spaces and player sets. -/
-theorem recoded_equilibrium : finalTarget.IsEquilibrium (compile true) :=
+theorem recoded_equilibrium : finalTarget.IsEquilibrium (inclusion true) :=
   (projecting.comp (recoding.comp domination)).transport source_equilibrium
 
 def affineRecoding : ℝ →o ℝ :=
@@ -219,7 +221,7 @@ def costTarget : EquilibriumProblem (Fin 3) Unit ℝ :=
 
 /-- Explicit comparisons transport an ordered equilibrium to a cost-minimizing reading. -/
 theorem cost_equilibrium :
-    costTarget.IsEquilibriumWith (fun _ x y ↦ y ≤ x) (compile true) :=
+    costTarget.IsEquilibriumWith (fun _ x y ↦ y ≤ x) (inclusion true) :=
   ((target.isEquilibriumWith_le_iff _).2 target_equilibrium).of_deviation_comparisons id trivial
     fun _ q _ ↦ ⟨q, trivial, fun hle ↦ neg_le_neg hle⟩
 

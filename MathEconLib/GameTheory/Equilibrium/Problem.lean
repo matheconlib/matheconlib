@@ -432,9 +432,9 @@ variable {V : Type r} {S : Type u} {I : Type v} {T : Type w} {J : Type x} {U : T
     {P : EquilibriumProblem S I V} {Q : EquilibriumProblem T J V} {R : EquilibriumProblem U K V}
 
 /-- A deviation-lifting map transports deviation optimality when comparisons on admissible pairs
-are preserved. The existing reward-preserving morphism is reused without an order instance; the
-lifted deviation and equal values supply the matching of
-`EquilibriumProblem.IsDeviationOptimalWith.of_deviation_comparisons`. -/
+are preserved. The existing reward-preserving morphism is reused without an order instance. This
+is `EquilibriumProblem.IsDeviationOptimalWith.of_deviation_comparisons` with each lifted deviation
+as the match. -/
 theorem transport_isDeviationOptimalWith (f : GameMorphism P Q) (C : I → V → V → Prop)
     (D : J → V → V → Prop)
     (hcmp : ∀ j s t, P.deviation (f.deviatorMap j) s t →

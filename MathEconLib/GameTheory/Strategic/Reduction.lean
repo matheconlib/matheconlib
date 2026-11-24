@@ -14,11 +14,16 @@ public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 An action translation includes a reduced game in a larger game. If every omitted deviation is
 weakly dominated by a retained deviation against the translated opponents, the inclusion is a
 `GameSimulation`. Equilibria of the reduced game therefore remain equilibria in the larger game.
-Together with the existing action comorphism, this gives an equivalence at included profiles.
+Together with `StrategicGame.IsNash.comapActions`, this gives an equivalence at included profiles.
 
-Actions may themselves be mixed strategies. In a finite mixed extension it suffices to dominate
-each pure deviation by a retained strategy, which may be a mixture: linearity handles every
-randomized deviation. No exact payoff or outcome match is required for omitted deviations.
+The simulation needs domination at every reduced profile. To lift a single equilibrium, use the
+pointwise iff theorems, which need domination only at that profile.
+
+Actions may themselves be mixed strategies. In a finite mixed extension with real-valued payoffs,
+it suffices to dominate each pure deviation by a retained strategy, which may be a mixture: a
+mixed deviation is worth at most its best pure deviation. This step needs a linear order on
+payoffs and fails for vector payoffs, where a mixture of two incomparable payoffs need not be
+dominated by either. No exact payoff or outcome match is required for omitted deviations.
 Simulations compose, so successive reductions lift equilibria through the same transport API.
 
 ## Main statements
@@ -27,8 +32,12 @@ Simulations compose, so successive reductions lift equilibria through the same t
   reduction, without requiring the action maps to be injective.
 * `StrategicGame.isNash_comapActions_iff_of_dominated`: Reduced and full Nash agree at translated
   profiles when all full deviations are covered by domination.
+* `StrategicGame.exists_retained_deviation_ge`: With real payoffs, domination of pure deviations
+  at one profile bounds every mixed deviation there by a retained strategy.
 * `StrategicGame.dominatedFiniteMixedSimulation`: Domination of pure deviations suffices for
   arbitrary mixed deviations, including mixed strategies on the retained actions.
+* `StrategicGame.isNash_comapFiniteMixed_iff_of_dominated`: Reduced and full mixed Nash agree at a
+  retained profile when every pure deviation there is dominated.
 
 ## Tags
 
@@ -44,7 +53,8 @@ namespace MathEconLib.GameTheory.StrategicGame
 variable {I : Type*} {A B : I → Type*} {V : Type*} [DecidableEq I]
 
 /-- A reduction preserves Nash when every full deviation is weakly dominated by a retained one.
-The dominating action may depend on the opponents' incumbent strategies. -/
+The dominating action may depend on the opponents' incumbent strategies. Domination is required at
+every reduced profile; for a single profile, use `isNash_comapActions_iff_of_dominated`. -/
 def dominatedActionSimulation [Preorder V] (G : StrategicGame I A V) (f : ∀ i, B i → A i)
     (hdom : ∀ b i a, ∃ b', G.payoff i (Function.update (fun j ↦ f j (b j)) i a) ≤
       (G.comapActions f).payoff i (Function.update b i b')) :
@@ -59,8 +69,8 @@ def dominatedActionSimulation [Preorder V] (G : StrategicGame I A V) (f : ∀ i,
     exact ⟨Function.update b i b', ⟨b', rfl⟩, hb'⟩
   valid_preserves _ _ := trivial
 
-/-- Domination of omitted actions gives the converse of action-comorphism pullback at included
-profiles. It need not preserve all equilibria of the larger game. -/
+/-- Domination at one reduced profile gives the converse of `IsNash.comapActions` there. Only
+that profile's image is covered; equilibria of the larger game outside the image of `f` are not. -/
 theorem isNash_comapActions_iff_of_dominated [Preorder V] (G : StrategicGame I A V)
     (f : ∀ i, B i → A i) (b : ∀ i, B i)
     (hdom : ∀ i a, ∃ b', G.payoff i (Function.update (fun j ↦ f j (b j)) i a) ≤
@@ -96,8 +106,9 @@ lemma exists_retained_deviation_ge (G : StrategicGame I A ℝ)
   exact ((τ.expect_mono value (fun _ ↦ value a)
     (fun c ↦ hmax c (Finset.mem_univ _))).trans_eq (τ.expect_const _)).trans hb'
 
-/-- In a finite mixed extension, it suffices to dominate pure deviations by retained strategies.
-The retained strategies may already be mixed; their carriers need not be finite. -/
+/-- In a finite mixed extension with real payoffs, it suffices to dominate pure deviations by
+retained strategies at every reduced profile. The retained strategies may already be mixed; their
+carriers need not be finite. -/
 def dominatedFiniteMixedSimulation (G : StrategicGame I A ℝ)
     (f : ∀ i, B i → FinDist (A i))
     (hdom : ∀ b i a, ∃ b', G.finiteExpectedPayoff i
