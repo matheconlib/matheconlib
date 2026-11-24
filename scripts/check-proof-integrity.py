@@ -1,6 +1,9 @@
 """Build and audit every project Lean source; retain a JSON report on success or failure."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
+from functools import partial
 import hashlib
 import json
 import os
@@ -122,7 +125,31 @@ def write_report(path, report):
     path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
 
 
-def run(root, report_path):
+def audit_source(root, work, index, path, module):
+    source_report = work / f"source-{index}.json"
+    checked = subprocess.run(
+        ["lake", "env", "lean", "--run", str(BACKEND), "--source",
+         str(source_report), path.as_posix(), module], cwd=root,
+    )
+    if not source_report.exists():
+        raise ValueError("Lean did not write a source audit report: " + str(path))
+    result = json.loads(source_report.read_text())
+    if (not isinstance(result, dict) or result.get("source") != path.as_posix()
+            or result.get("module") != module):
+        raise ValueError("Lean audited a different source: " + str(path))
+    status = result.get("status")
+    expected = 0 if status == "passed" else 1
+    if checked.returncode != expected or status not in {"passed", "failed"}:
+        raise ValueError("Lean source audit returned an inconsistent result: " + str(path))
+    count = result.get("declarations_checked")
+    violations = result.get("violations")
+    if (type(count) is not int or count < 0 or not isinstance(violations, list)
+            or bool(violations) != (status == "failed")):
+        raise ValueError("Lean source audit returned an invalid report: " + str(path))
+    return result
+
+
+def run(root, report_path, jobs=1):
     report = {"status": "error", "stage": "discovery"}
     write_report(report_path, report)
     try:
@@ -180,31 +207,23 @@ def run(root, report_path):
                 report["stage"] = "complete"
                 return expected
             report["stage"] = "elaboration"
+            report["status"] = "error"
             report["elaboration_sources"] = []
             report["elaboration_declarations_checked"] = 0
             report["elaboration_violations"] = []
             write_report(report_path, report)
-            for path, module in zip(sources, modules):
-                source_report = Path(work) / "source.json"
-                source_report.unlink(missing_ok=True)
-                checked = subprocess.run(
-                    ["lake", "env", "lean", "--run", str(BACKEND), "--source",
-                     str(source_report), path.as_posix(), module], cwd=root,
-                )
-                if not source_report.exists():
-                    raise ValueError("Lean did not write a source audit report: " + str(path))
-                result = json.loads(source_report.read_text())
-                if result.get("source") != path.as_posix() or result.get("module") != module:
-                    raise ValueError("Lean audited a different source: " + str(path))
-                expected = 0 if result.get("status") == "passed" else 1
-                if checked.returncode != expected or result.get("status") not in {"passed", "failed"}:
-                    raise ValueError("Lean source audit returned an inconsistent result")
-                report["elaboration_sources"].append(path.as_posix())
-                report["elaboration_declarations_checked"] += result["declarations_checked"]
-                report["elaboration_violations"].extend(result["violations"])
-                if expected:
-                    report["status"] = "failed"
-                write_report(report_path, report)
+            failed = False
+            audit = partial(audit_source, root, Path(work))
+            with ThreadPoolExecutor(max_workers=jobs) as workers:
+                # Consume results in source order and cancel queued work if aggregation fails.
+                with closing(workers.map(audit, range(len(sources)), sources, modules)) as results:
+                    for path, result in zip(sources, results):
+                        report["elaboration_sources"].append(path.as_posix())
+                        report["elaboration_declarations_checked"] += result["declarations_checked"]
+                        report["elaboration_violations"].extend(result["violations"])
+                        failed = failed or result["status"] == "failed"
+                        write_report(report_path, report)
+            report["status"] = "failed" if failed else "passed"
             report["stage"] = "complete"
             print("Source elaboration audit: {} declarations in {} sources; {} violations.".format(
                 report["elaboration_declarations_checked"], len(report["elaboration_sources"]),
@@ -223,8 +242,11 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO)
     parser.add_argument("--report", type=Path, default=REPO / ".lake/proof-integrity/report.json")
+    parser.add_argument("--jobs", type=int, default=1, help="number of concurrent source audits")
     args = parser.parse_args()
-    return run(args.root.resolve(), args.report.resolve())
+    if args.jobs < 1:
+        parser.error("--jobs must be at least 1")
+    return run(args.root.resolve(), args.report.resolve(), args.jobs)
 
 
 if __name__ == "__main__":
