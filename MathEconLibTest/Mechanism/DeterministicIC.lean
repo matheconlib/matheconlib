@@ -5,7 +5,7 @@ Authors: Bo Cowgill
 -/
 module
 
-public import MathEconLib
+public import MathEconLib.Mechanism
 public import MathEconLibExamples.GameTheory.ExplicitComparisons
 public import MathEconLibExamples.Mechanism.PostedPriceUtility
 public import MathEconLibTest.Mechanism.TruthfulNash
@@ -115,6 +115,18 @@ theorem interdependent_isExPostICWith :
       (fun i θ c d ↦ environment.consequenceUtility i θ c ≤
         environment.consequenceUtility i θ d) (fun _ ↦ id) :=
   (mechanism.isExPostICWith_iff_quasilinear environment).2 truthful_isNash
+
+/-- Direct unilateral-deviation checks use the same fixed true profile as the recovery test. -/
+theorem interdependent_isExPostICWith_direct :
+    mechanism.IsExPostICWith
+      (fun i θ c d ↦ environment.consequenceUtility i θ c ≤
+        environment.consequenceUtility i θ d) (fun _ ↦ id) := by
+  apply (mechanism.isExPostICWith_iff _ _).2
+  intro θ i ai
+  change environment.utility mechanism i θ (Function.update θ i ai) ≤
+    environment.utility mechanism i θ θ
+  cases i <;> simp [QuasilinearEnvironment.utility, environment, mechanism]
+  split <;> norm_num
 
 /-- The same fixed-true-preference client still fails dominance at arbitrary opponents' reports. -/
 theorem interdependent_not_isDSICWith :
