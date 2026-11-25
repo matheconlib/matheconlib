@@ -10,8 +10,7 @@ permissions:
 
 jobs:
   # Keep this check named build to match the required check on main.
-  # Match the build and proof checks in lean_action_ci.yaml. The separate
-  # workflow lets queue runs use a read-only token.
+  # The separate workflow lets queue runs use a read-only token.
   build:
     runs-on: ubuntu-latest
     steps:
@@ -62,17 +61,18 @@ jobs:
             echo "::error::Import-list verification failed. Run locally: bash scripts/update-imports.sh, then commit MathEconLib.lean and MathEconLibTest.lean."
             exit 1
           fi
-      - name: Build library, API pins, and namespace tests
+      - name: Build default targets and all project sources
         id: lean_build
         run: |
           mkdir -p "$RUNNER_TEMP/library-warnings"
           set -o pipefail
-          lake --rehash --no-ansi build 2>&1 | tee "$RUNNER_TEMP/library-warnings/build.log"
+          python3 scripts/check-proof-integrity.py --build-only 2>&1 | tee "$RUNNER_TEMP/library-warnings/build.log"
       - name: Test proof integrity checker
         run: python3 scripts/tests/test_proof_integrity.py
+      # Re-elaborate every source because external inputs can affect elaboration.
       - name: Check project proof integrity
         id: proof_integrity
-        run: python3 scripts/check-proof-integrity.py --jobs 3 --report "$RUNNER_TEMP/proof-integrity/report.json"
+        run: python3 scripts/check-proof-integrity.py --audit-only --jobs 3 --report "$RUNNER_TEMP/proof-integrity/report.json"
       - name: Save proof integrity report
         if: always() && !cancelled() && steps.proof_integrity.outcome != '' && steps.proof_integrity.outcome != 'skipped'
         uses: actions/upload-artifact@v4

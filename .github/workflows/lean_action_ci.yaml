@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  actions: read
 
 jobs:
   build:
@@ -23,8 +24,8 @@ jobs:
         run: bash scripts/check-headers.sh
       - name: Test import regeneration helper
         run: python3 scripts/tests/test_update_imports.py
-      - name: Test warning reporting helper
-        run: node --test scripts/tests/test_warning_counts.cjs
+      - name: Test warning reporting and cache restore helpers
+        run: node --test scripts/tests/test_warning_counts.cjs scripts/tests/test_restore_proof_source_cache.cjs
       - name: Cache project build artifacts
         uses: actions/cache@v5
         with:
@@ -56,12 +57,12 @@ jobs:
             echo "::error::Import-list verification failed. Run locally: bash scripts/update-imports.sh, then commit MathEconLib.lean and MathEconLibTest.lean."
             exit 1
           fi
-      - name: Build library, API pins, and namespace tests
+      - name: Build default targets and all project sources
         id: lean_build
         run: |
           mkdir -p "$RUNNER_TEMP/library-warnings"
           set -o pipefail
-          lake --rehash --no-ansi build 2>&1 | tee "$RUNNER_TEMP/library-warnings/build.log"
+          python3 scripts/check-proof-integrity.py --build-only 2>&1 | tee "$RUNNER_TEMP/library-warnings/build.log"
       - name: Commit verified import lists (same-repo PRs only)
         if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
         run: |
@@ -73,9 +74,35 @@ jobs:
           git push
       - name: Test proof integrity checker
         run: python3 scripts/tests/test_proof_integrity.py
+      - name: Restore source audit cache from main
+        id: source_cache
+        continue-on-error: true
+        uses: actions/github-script@v8
+        with:
+          script: |
+            const { restoreProofSourceCache } = require('./scripts/restore-proof-source-cache.cjs');
+            await restoreProofSourceCache({ github, context, core });
       - name: Check project proof integrity
         id: proof_integrity
-        run: python3 scripts/check-proof-integrity.py --jobs 3 --report "$RUNNER_TEMP/proof-integrity/report.json"
+        env:
+          SOURCE_CACHE: ${{ steps.source_cache.outputs.path }}
+        run: |
+          if [ -z "$SOURCE_CACHE" ]; then
+            SOURCE_CACHE="$(mktemp -d "$RUNNER_TEMP/proof-source-cache-XXXXXX")/source-cache.json"
+          fi
+          printf 'source_cache=%s\n' "$SOURCE_CACHE" >> "$GITHUB_OUTPUT"
+          python3 scripts/check-proof-integrity.py --audit-only --jobs 3 \
+            --report "$RUNNER_TEMP/proof-integrity/report.json" \
+            --source-cache "$SOURCE_CACHE"
+      - name: Publish source audit cache from main
+        if: success() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        continue-on-error: true
+        uses: actions/upload-artifact@v4
+        with:
+          name: proof-source-cache-v1-${{ github.run_attempt }}
+          path: ${{ steps.proof_integrity.outputs.source_cache }}
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Save proof integrity report
         if: always() && !cancelled() && steps.proof_integrity.outcome != '' && steps.proof_integrity.outcome != 'skipped'
         uses: actions/upload-artifact@v4
