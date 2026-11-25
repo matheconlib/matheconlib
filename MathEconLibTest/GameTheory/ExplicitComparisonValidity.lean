@@ -108,7 +108,7 @@ example : descendingTarget.IsDeviationOptimalWith (fun _ x y ↦ x ≤ y) 1 :=
     (fun _ _ _ _ h ↦ h) source_isEquilibriumWith.deviation_le
 
 /-- Removing only candidate validity retains the same rewards and deviation relation. -/
-def unrestricted : EquilibriumProblem Bool Unit Nat :=
+def unrestricted : EquilibriumProblem Unit Bool Nat :=
   .ofDeviation noDeviations.deviation noDeviations.value
 
 /-- An unrestricted candidate can be an equilibrium although its identical source is invalid. -/

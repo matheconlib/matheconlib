@@ -144,7 +144,7 @@ player's value is the payoff integral against the independent action laws. Candi
 integrable incumbent payoffs. -/
 def mixedNashProblem [NormedAddCommGroup V] [NormedSpace ℝ V] [CompleteSpace V]
     [Fintype I] [DecidableEq I] (G : StrategicGame I A V) :
-    EquilibriumProblem (MixedStrategy A) I V where
+    EquilibriumProblem I (MixedStrategy A) V where
   deviation i σ σ' := (∃ τ, σ' = Function.update σ i τ) ∧
     Integrable (G.payoff i) (Measure.pi (fun j ↦ (σ' j : Measure (A j))))
   value := G.mixedExtension.payoff

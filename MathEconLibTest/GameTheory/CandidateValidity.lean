@@ -53,7 +53,7 @@ open MathEconLib.GameTheory
 namespace MathEconLibTest.GameTheory.CandidateValidity
 
 /-- Only `true` is a valid incumbent, and neither state admits a deviation. -/
-def noDeviations : EquilibriumProblem Bool Unit Nat where
+def noDeviations : EquilibriumProblem Unit Bool Nat where
   deviation _ _ _ := False
   value _ _ := 0
   valid s := s = true
@@ -67,7 +67,7 @@ theorem invalid_not_isEquilibrium : ¬ noDeviations.IsEquilibrium false :=
   fun h => Bool.false_ne_true h.valid
 
 /-- The valid state admits an improving deviation to the invalid state `false`. -/
-def improvingDeviation : EquilibriumProblem Bool Unit Nat where
+def improvingDeviation : EquilibriumProblem Unit Bool Nat where
   deviation _ s t := s = true ∧ t = false
   value _ s := if s then 0 else 1
   valid s := s = true
@@ -80,13 +80,13 @@ theorem improving_invalid_target_not_isEquilibrium :
   exact Nat.not_succ_le_zero 0 hle
 
 /-- States at least two are valid; deviations lower the state and values are half the state. -/
-def descendingSource : EquilibriumProblem ℕ Unit ℕ where
+def descendingSource : EquilibriumProblem Unit ℕ ℕ where
   deviation _ s t := t < s
   value _ s := s / 2
   valid s := 2 ≤ s
 
 /-- Positive states are valid; deviations lower the state and values equal the state. -/
-def descendingTarget : EquilibriumProblem ℕ Unit ℕ where
+def descendingTarget : EquilibriumProblem Unit ℕ ℕ where
   deviation _ s t := t < s
   value _ s := s
   valid s := 1 ≤ s
@@ -120,7 +120,7 @@ theorem transport_equilibrium : descendingTarget.IsEquilibrium 1 :=
   coarseningMorphism.transport source_isEquilibrium
 
 /-- Target rewards and deviations with candidate validity requiring states at least two. -/
-def stricterTarget : EquilibriumProblem ℕ Unit ℕ :=
+def stricterTarget : EquilibriumProblem Unit ℕ ℕ :=
   descendingTarget.refine (fun s => 2 ≤ s)
 
 /-- Coarsening still lifts deviations when the target's candidate validity is strengthened. -/

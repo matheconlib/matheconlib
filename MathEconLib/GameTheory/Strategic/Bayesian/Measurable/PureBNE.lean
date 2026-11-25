@@ -52,7 +52,7 @@ Each player's value is their ex-ante payoff integral. Valid candidates have inte
 payoffs under the supplied measure `μ`. When `μ` is a probability measure, its equilibrium
 predicate is Bayesian Nash equilibrium `IsBNE`. -/
 def bneProblem (G : BayesianGame I Θ A V) (μ : Measure (∀ i, Θ i)) :
-    EquilibriumProblem G.Strategy I V where
+    EquilibriumProblem I G.Strategy V where
   deviation i s s' := (∀ j, j ≠ i → s' j = s j) ∧
     Integrable (fun θ => G.payoff i (G.measurableActionProfile s' θ) θ) μ
   value i s := G.exAntePayoff μ i s

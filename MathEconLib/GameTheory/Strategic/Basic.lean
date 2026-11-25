@@ -90,7 +90,7 @@ lemma comapActions_comp {B : ι → Type*} {C : ι → Type*} (G : StrategicGame
 /-- The equilibrium problem in which every profile is a valid candidate and a player may replace
 only their own action. -/
 def nashProblem [DecidableEq ι] (G : StrategicGame ι A V) :
-    EquilibriumProblem ((i : ι) → A i) ι V :=
+    EquilibriumProblem ι ((i : ι) → A i) V :=
   .ofDeviation (fun i a a' ↦ ∃ s, a' = Function.update a i s) G.payoff
 
 /-- Action translation maps unilateral deviations to unilateral deviations and preserves each
