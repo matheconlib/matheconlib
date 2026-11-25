@@ -254,13 +254,6 @@ For dependent work, branch from the parent and target its branch so the child di
 shows only the dependent change. Each PR description names its base and links its
 parent and any known children.
 
-Use the [merge queue](#maintainer-merge-queue) for clean, ready PRs targeting
-`main`. It tests the PR together with current `main`.
-
-When a manual refresh is needed, merge `main` into shared branches to preserve
-their history. Rebase short-lived branches you own when linear history is useful.
-Coordinate before rewriting a branch others depend on.
-
 For example, a shared lemma and its application can be reviewed separately:
 
 | PR | Head branch | Base branch | Description |
@@ -272,12 +265,13 @@ For example, a shared lemma and its application can be reviewed separately:
    commit contained in B until the child is refreshed.
 2. Refresh B onto `main` and retarget its PR to `main`. After a squash merge,
    replay only B's commits, using [git rebase --onto](https://git-scm.com/docs/git-rebase)
-   with that parent commit as the boundary. Use `--force-with-lease` when
-   pushing rewritten history. Check that B's diff contains only its intended
-   application before deleting the parent branch.
+   with that parent commit as the boundary. Coordinate any rewrite of a shared
+   branch; use `--force-with-lease` when pushing rewritten history. Check that B's
+   diff contains only its intended application before deleting the parent branch.
 3. After a refresh or conflict resolution, rerun the import checks and `lake build`
    from the [verification bar](#verification-bar), and wait for applicable CI on
-   the latest revision.
+   the latest revision. Verify against current `main` before merging: an old
+   green check can predate changes to build requirements.
 4. Leave a brief update naming the new base, conflicts resolved, substantive
    changes, and check results. Request another review when statements, APIs,
    implementation, or guidance changed substantively; carry forward
