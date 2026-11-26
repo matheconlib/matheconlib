@@ -70,6 +70,7 @@ public import MathEconLib.ForMathlib.Schauder
 public import MathEconLib.ForMathlib.StochasticOrder
 public import MathEconLib.GameTheory.Equilibrium.Choice
 public import MathEconLib.GameTheory.Equilibrium.Problem
+public import MathEconLib.GameTheory.Equilibrium.Simulation
 public import MathEconLib.GameTheory.Strategic.Basic
 public import MathEconLib.GameTheory.Strategic.Bayesian.Finite
 public import MathEconLib.GameTheory.Strategic.Bayesian.FiniteMeasurable
@@ -87,6 +88,7 @@ public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 public import MathEconLib.GameTheory.Strategic.Outcome
 public import MathEconLib.GameTheory.Strategic.OutcomeIncentives
+public import MathEconLib.GameTheory.Strategic.Reduction
 public import MathEconLib.Matching
 public import MathEconLib.Matching.Classical.Marriage
 public import MathEconLib.Matching.Classical.Marriage.Basic
