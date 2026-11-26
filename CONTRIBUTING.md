@@ -172,13 +172,15 @@ From the repository root, use:
 ```bash
 lake exe cache get                 # first checkout, or after a dependency/toolchain change
 git add path/to/NewFile.lean        # if adding a Lean file
-bash scripts/update-imports.sh      # regenerate both root import files, then verify them
+bash scripts/update-imports.sh      # regenerate and verify the library and test import lists
 lake build                         # includes API pins and MathEconLibTest/Manual/HandsOn.lean
 python3 scripts/check-proof-integrity.py
 ```
 
-Omit the `git add` line if you have not added a file. Include changes to
-`MathEconLib.lean` and `MathEconLibTest.lean` in your commit.
+Stage new Lean source files before regenerating the import lists. Commit any
+changes to `MathEconLib.lean`, `MathEconLib/Index/`, and `MathEconLibTest.lean`.
+The generated indices under `MathEconLib/Index/` give the root import complete
+core coverage. The hand-written category umbrellas remain curated entry points.
 Use `bash scripts/update-imports.sh --check` to verify imports without changing files.
 
 CI runs the proof integrity check as a failing step in the build job. It builds

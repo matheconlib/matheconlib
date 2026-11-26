@@ -12,8 +12,8 @@ alongside the review order below.
 
 ## What review is for
 
-CI builds the library, API pins, tests, and examples and checks both import
-lists. Its proof integrity check rejects incomplete proofs and nonstandard
+CI builds the library, API pins, tests, and examples and checks the library
+and test import lists. Its proof integrity check rejects incomplete proofs and nonstandard
 axioms, including unused and private axioms; the report is saved with the build
 artifacts. See [CONTRIBUTING.md](../CONTRIBUTING.md#verification-bar) for local
 commands and coverage. Review checks meaning:

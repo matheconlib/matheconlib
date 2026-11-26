@@ -1956,7 +1956,8 @@ bash scripts/update-imports.sh  # regenerate and verify both library and test im
 lake build
 ```
 
-Commit any changes to `MathEconLib.lean` and `MathEconLibTest.lean` with your work.
+Commit any changes to `MathEconLib.lean`, `MathEconLib/Index/`, and
+`MathEconLibTest.lean` with your work.
 Use `bash scripts/update-imports.sh --check` to verify without changing files.
 See the [verification and review requirements](../CONTRIBUTING.md#verification-bar)
 before requesting review. Core changes need maintainer review and the applicable

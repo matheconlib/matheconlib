@@ -58,7 +58,7 @@ jobs:
       - name: Check import lists
         run: |
           if ! bash scripts/update-imports.sh --check; then
-            echo "::error::Import-list verification failed. Run locally: bash scripts/update-imports.sh, then commit MathEconLib.lean and MathEconLibTest.lean."
+            echo "::error::Import-list verification failed. Run locally: bash scripts/update-imports.sh, then commit the updated import lists."
             exit 1
           fi
       - name: Build default targets and all project sources
