@@ -14,6 +14,8 @@ import MathEconLibTest.Choice.BasicImport
 import MathEconLibTest.Choice.CompletionCounterexamples
 import MathEconLibTest.Choice.Counterexamples
 import MathEconLibTest.Choice.MatchingConditionsImport
+import MathEconLibTest.Choice.Optimality
+import MathEconLibTest.Choice.OptimalityPublicImport
 import MathEconLibTest.Choice.PublicImport
 import MathEconLibTest.Choice.SubstituteEnvelope
 import MathEconLibTest.Choice.Value

@@ -8,6 +8,7 @@ module
 
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
+public import MathEconLib.Mechanism.Choice
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.BayesianUtility

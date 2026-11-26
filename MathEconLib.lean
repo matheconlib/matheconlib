@@ -128,6 +128,7 @@ public import MathEconLib.Mechanism
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 public import MathEconLib.Mechanism.Auctions.Allocation
 public import MathEconLib.Mechanism.Auctions.FirstAndSecondPay
+public import MathEconLib.Mechanism.Choice
 public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.BayesianUtility
@@ -162,6 +163,7 @@ public import MathEconLib.RevealedPreference.Choice
 public import MathEconLib.RevealedPreference.GARP
 public import MathEconLib.SingleParameter
 public import MathEconLib.SingleParameter.Basic
+public import MathEconLib.SingleParameter.Choice
 public import MathEconLib.SingleParameter.EnvelopeIC
 public import MathEconLib.SingleParameter.IC
 public import MathEconLib.SingleParameter.Payment
