@@ -20,8 +20,8 @@ needs a design discussion first: open an issue and get agreement before changing
 
 The file lives at the repository root (outside `MathEconLib/`) so that `lake exe mk_all` never
 touches it, and is built as its own `lean_lib` (`ApiStability`), listed in `defaultTargets` so a
-plain `lake build` checks it. (It is deliberately a non-`module` file: it imports the
-mk_all-generated root `MathEconLib`, which is itself a plain import list.)
+plain `lake build` checks it. (It is deliberately a non-`module` file and checks the generated
+public entry point `MathEconLib`.)
 -/
 
 open MeasureTheory ProbabilityTheory
