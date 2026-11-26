@@ -10,6 +10,7 @@ public import MathEconLib.RevealedPreference.AfriatGeometry
 public import MathEconLib.RevealedPreference.Basic
 public import MathEconLib.RevealedPreference.Choice
 public import MathEconLib.RevealedPreference.GARP
+public import MathEconLib.RevealedPreference.WGARP
 
 /-!
 # Finite revealed preference
@@ -22,6 +23,10 @@ observed utility maximization in the library's existing `ChoiceFunction` API.
 `AfriatGeometry` contains the certificate definitions and affine-envelope construction,
 independently of GARP. `GARP` constructs certificates from the revealed-preference graph;
 `Afriat` combines these ingredients into the economic equivalences.
+
+`WGARP` reuses finite Afriat on each pair of observations to characterize WGARP by
+continuous, strictly increasing, sign-asymmetric numerical preferences and finite
+coherent coalitional multi-utility. Its choice interface accommodates cyclic preferences.
 
 See the leaf modules for hypotheses, sources, and proof provenance, and
 `MathEconLibExamples.RevealedPreference` for checked applications.
