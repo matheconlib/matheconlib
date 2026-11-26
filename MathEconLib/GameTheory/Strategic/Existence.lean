@@ -1,11 +1,12 @@
 /-
-Copyright (c) 2026 Ben Eltschig, Ruiz Chen, Daniel Lyng. All rights reserved.
+Copyright (c) 2026 Ben Eltschig, Ruiz Chen, Daniel Lyng, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Ben Eltschig, Ruiz Chen, Daniel Lyng
+Authors: Ben Eltschig, Ruiz Chen, Daniel Lyng, Bo Cowgill
 -/
 module
 
 public import MathEconLib.ForMathlib.Quasiconvex
+public import MathEconLib.GameTheory.Strategic.BestResponse
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 import MathEconLib.ForMathlib.ApproximateSelection
 import MathEconLib.ForMathlib.Kakutani
@@ -66,14 +67,14 @@ lemma nonempty_ki {ι : Type*} {A : ι → Type*} {E : ι → Type*}
   ⟨_, (e i (Classical.arbitrary (A i))).property⟩
 
 /-- Decode a point in the product space `∏ k i` to a strategy profile. -/
-noncomputable def decode {ι : Type*} {A : ι → Type*} {E : ι → Type*}
+@[expose] public noncomputable def decode {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (x : ↑(Set.univ.pi k)) : (i : ι) → A i :=
   fun i => (e i).symm ⟨x.val i, x.property i (Set.mem_univ i)⟩
 
 /-- Encode a strategy profile as a point in `∏ E i`. -/
-noncomputable def encode {ι : Type*} {A : ι → Type*} {E : ι → Type*}
+@[expose] public noncomputable def encode {ι : Type*} {A : ι → Type*} {E : ι → Type*}
     [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
     (a : (i : ι) → A i) : (i : ι) → E i :=
@@ -90,7 +91,8 @@ lemma encode_mem {ι : Type*} {A : ι → Type*} {E : ι → Type*}
 
 /-- The best response correspondence maps a point in the product space to the set of strategy
 profiles where each player plays a best response. -/
-noncomputable def bestResponseCorr {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
+@[expose] public noncomputable def bestResponseCorr
+    {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
@@ -229,7 +231,7 @@ lemma bestResponse_isCompact {ι : Type*} {A : ι → Type*} {O : Type*}
   exact isClosed_iInter fun t => isClosed_le continuous_const (payoff_update_continuous G P a i)
 
 /-- The best response correspondence is the product of the players’ encoded best response sets. -/
-lemma bestResponseCorr_eq_pi {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
+public lemma bestResponseCorr_eq_pi {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
     [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
     [TopologicalSpace O]
     {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
@@ -253,6 +255,26 @@ lemma bestResponseCorr_eq_pi {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι
     exact ⟨Set.mem_univ_pi.mp (encode_mem e si), fun i s => by
       rw [decode_encode_component]
       exact hsi_br i s⟩
+
+/-- The encoded best-response correspondence is the product of the images of the strategic
+best-response sets under the action-space representations. -/
+public lemma bestResponseCorr_eq_pi_bestResponses
+    {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
+    [DecidableEq ι] [∀ i, TopologicalSpace (A i)] [∀ i, TopologicalSpace (E i)]
+    [TopologicalSpace O]
+    {k : (i : ι) → Set (E i)} (e : ∀ i, A i ≃ₜ k i)
+    [Preorder V]
+    (G : OutcomeGame ι A O) (P : PayoffStructure ι O V)
+    (x : ↑(Set.univ.pi k)) :
+    bestResponseCorr e G P x = Set.univ.pi (fun i ↦
+      (fun s : A i ↦ ((e i) s : E i)) ''
+        (StrategicGame.ofOutcome G P).bestResponses i (decode e x)) := by
+  rw [bestResponseCorr_eq_pi]
+  congr 1
+  funext i
+  congr 1
+  ext s
+  simp only [Set.mem_ofPred_eq, StrategicGame.mem_bestResponses, StrategicGame.ofOutcome_payoff]
 
 /-- The best response correspondence has compact values on compact action spaces. -/
 lemma bestResponseCorr_compact {ι : Type*} {A : ι → Type*} {O : Type*} {E : ι → Type*}
