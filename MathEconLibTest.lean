@@ -61,6 +61,7 @@ import MathEconLibTest.Mechanism.DeterministicIC
 import MathEconLibTest.Mechanism.FirstAndSecondPay
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
+import MathEconLibTest.Mechanism.PriorityOptOut
 import MathEconLibTest.Mechanism.TruthfulNash
 import MathEconLibTest.Mechanism.Utility
 import MathEconLibTest.Namespace
