@@ -8,6 +8,7 @@ public import MathEconLib.Auction.Affiliation.MonotoneCondExp
 public import MathEconLib.Auction.Affiliation.WinnersCurse
 public import MathEconLib.Auction.AllPurchase
 public import MathEconLib.Auction.AllPurchase.Basic
+public import MathEconLib.Auction.AllPurchase.BidderModel
 public import MathEconLib.Auction.AllPurchase.ExplicitSolutions
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
 public import MathEconLib.Auction.AllPurchase.OptimalPricing
@@ -44,6 +45,7 @@ public import MathEconLib.Choice.Matching.WeakSubstitutability
 public import MathEconLib.Choice.Maximizers
 public import MathEconLib.Choice.PathIndependentMinorant
 public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.Choice.Value
 public import MathEconLib.Choice.WeakPreferences
 public import MathEconLib.Competition.Cournot.Linear
 public import MathEconLib.Decision.RiskAversion
@@ -66,6 +68,7 @@ public import MathEconLib.ForMathlib.ProbabilityMeasure
 public import MathEconLib.ForMathlib.Quasiconvex
 public import MathEconLib.ForMathlib.Schauder
 public import MathEconLib.ForMathlib.StochasticOrder
+public import MathEconLib.GameTheory.Equilibrium.Choice
 public import MathEconLib.GameTheory.Equilibrium.Problem
 public import MathEconLib.GameTheory.Strategic.Basic
 public import MathEconLib.GameTheory.Strategic.Bayesian.Finite
@@ -78,10 +81,12 @@ public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.Interim
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.InterimConverse
 public import MathEconLib.GameTheory.Strategic.Bayesian.Measurable.PureBNE
 public import MathEconLib.GameTheory.Strategic.Bayesian.Outcome
+public import MathEconLib.GameTheory.Strategic.BestResponse
 public import MathEconLib.GameTheory.Strategic.Existence
 public import MathEconLib.GameTheory.Strategic.Mixed
 public import MathEconLib.GameTheory.Strategic.Mixed.Finite
 public import MathEconLib.GameTheory.Strategic.Outcome
+public import MathEconLib.GameTheory.Strategic.OutcomeIncentives
 public import MathEconLib.Matching
 public import MathEconLib.Matching.Classical.Marriage
 public import MathEconLib.Matching.Classical.Marriage.Basic
@@ -91,11 +96,19 @@ public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoi
 public import MathEconLib.Matching.Classical.Marriage.Distributive
 public import MathEconLib.Matching.Classical.Marriage.Existence
 public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
+public import MathEconLib.Matching.Classical.Marriage.Improvements
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
 public import MathEconLib.Matching.Classical.Marriage.Optimality
 public import MathEconLib.Matching.Classical.Marriage.Preferences
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
 public import MathEconLib.Matching.Classical.Marriage.ToContracts
+public import MathEconLib.Matching.Classical.Roommates
+public import MathEconLib.Matching.Classical.Roommates.Basic
+public import MathEconLib.Matching.Classical.Roommates.NonExistence
+public import MathEconLib.Matching.Continuum
+public import MathEconLib.Matching.Continuum.Basic
+public import MathEconLib.Matching.Continuum.Stability
+public import MathEconLib.Matching.Continuum.ToClassical
 public import MathEconLib.Matching.Contracts.Basic
 public import MathEconLib.Matching.Contracts.Completion
 public import MathEconLib.Matching.Contracts.FixedPointConvergence
@@ -110,6 +123,7 @@ public import MathEconLib.Matching.Contracts.RuralHospitals
 public import MathEconLib.Matching.Contracts.StableFixedPoints
 public import MathEconLib.Matching.Contracts.StableOrder
 public import MathEconLib.Matching.Contracts.WeakSubstitutes
+public import MathEconLib.Matching.PartnerComparisons
 public import MathEconLib.Mechanism
 public import MathEconLib.Mechanism.Auctions.AllPurchase.Spec
 public import MathEconLib.Mechanism.Auctions.Allocation
@@ -118,6 +132,8 @@ public import MathEconLib.Mechanism.Core.Bayesian
 public import MathEconLib.Mechanism.Core.BayesianIC
 public import MathEconLib.Mechanism.Core.BayesianUtility
 public import MathEconLib.Mechanism.Core.Comap
+public import MathEconLib.Mechanism.Core.DeterministicIC
+public import MathEconLib.Mechanism.Core.DeterministicICCompatibility
 public import MathEconLib.Mechanism.Core.Environment
 public import MathEconLib.Mechanism.Core.Mechanism
 public import MathEconLib.Mechanism.Core.Profile
@@ -128,6 +144,7 @@ public import MathEconLib.Mechanism.Core.UtilityCompatibility
 public import MathEconLib.Preferences
 public import MathEconLib.Preferences.Basic
 public import MathEconLib.Preferences.Complete
+public import MathEconLib.Preferences.Profile
 public import MathEconLib.Preferences.Refinement
 public import MathEconLib.Preferences.Representation.Basic
 public import MathEconLib.Preferences.Representation.Finite

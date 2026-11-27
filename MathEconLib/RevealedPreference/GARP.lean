@@ -65,11 +65,7 @@ def GraphGARP (p q : T → Bundle L) : Prop :=
   ∀ s t, RevealedPreferred p q s t → ¬ StrictlyCheaperAt p q t s
 
 /-- GARP for an observed consumer dataset. -/
-def SatisfiesGARP (D : Dataset L T) : Prop :=
-  GraphGARP D.price D.choice
-
-/-- Short dataset-level name used in theorem statements. -/
-abbrev GARP (D : Dataset L T) : Prop := SatisfiesGARP D
+abbrev GARP (D : Dataset L T) : Prop := GraphGARP D.price D.choice
 
 theorem directlyRevealedPreferred_iff_expenditureGap_nonneg (D : Dataset L T) (s t : T) :
     DirectlyRevealedPreferred D.price D.choice s t ↔ 0 ≤ expenditureGap D s t := by
@@ -84,7 +80,7 @@ theorem strictlyCheaperAt_iff_expenditureGap_pos (D : Dataset L T) (s t : T) :
 /-- Dataset GARP expressed using the expenditure gap of the reverse comparison. -/
 theorem garp_dataset_iff (D : Dataset L T) :
     GARP D ↔ ∀ s t, RevealedPreferred D.price D.choice s t → ¬ 0 < expenditureGap D t s := by
-  simp only [GARP, SatisfiesGARP, GraphGARP, strictlyCheaperAt_iff_expenditureGap_pos]
+  simp only [GARP, GraphGARP, strictlyCheaperAt_iff_expenditureGap_pos]
 
 theorem directlyRevealedPreferred_revealedPreferred (p q : T → Bundle L) {s t : T}
     (h : DirectlyRevealedPreferred p q s t) : RevealedPreferred p q s t :=

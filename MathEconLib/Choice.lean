@@ -21,4 +21,5 @@ public import MathEconLib.Choice.Matching.SubstituteEnvelope
 public import MathEconLib.Choice.Matching.WeakSubstitutability
 public import MathEconLib.Choice.PathIndependentMinorant
 public import MathEconLib.Choice.SubstituteHull
+public import MathEconLib.Choice.Value
 public import MathEconLib.Choice.WeakPreferences
