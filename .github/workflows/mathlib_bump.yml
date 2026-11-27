@@ -1,0 +1,104 @@
+name: Mathlib version bump
+
+# Weekly (and on demand): if Mathlib has a newer stable release than our pin,
+# run scripts/mathlib_bump.sh in a read-only job, then publish the result in a
+# separate job: a PR for a verified bump, a draft PR for a bump whose checks
+# failed, or a comment on the tracking issue for earlier failures. A dispatched
+# probe runs every check against the target, even the current pin, and
+# publishes nothing.
+on:
+  schedule:
+    - cron: "17 6 * * 1"
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Stable Mathlib tag vX.Y.Z to bump to (default: latest stable)"
+        required: false
+        default: ""
+      probe:
+        description: "Compatibility probe: run every check, even against the current pin; publish nothing"
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: mathlib-bump
+  cancel-in-progress: false
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Install elan
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh \
+            | sh -s -- -y --default-toolchain none
+          echo "$HOME/.elan/bin" >> "$GITHUB_PATH"
+      - name: Bump, build, and check
+        env:
+          TARGET: ${{ inputs.target }}
+          PROBE: ${{ inputs.probe }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          args=(--log-dir "$RUNNER_TEMP/mathlib-bump")
+          if [ -n "$TARGET" ]; then args+=(--target "$TARGET"); fi
+          if [ "$PROBE" = "true" ]; then args+=(--probe); fi
+          bash scripts/mathlib_bump.sh "${args[@]}"
+      # Logs, summary (pins, Mathlib SHA, release date), lake-manifest.json,
+      # warning counts, proof-integrity report and the bump commit, on every path.
+      - name: Save bump logs and evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mathlib-bump-logs
+          path: ${{ runner.temp }}/mathlib-bump
+          if-no-files-found: warn
+          overwrite: true
+          retention-days: 90
+
+  # The only job that writes to GitHub. It builds nothing and runs only
+  # scripts/mathlib_bump_publish.sh from main, which validates the bump job's
+  # commit before pushing it, then calls gh. Per GitHub's documentation, Lean
+  # Action CI runs on a PR opened with GITHUB_TOKEN are created in an
+  # approval-required state; a maintainer approves them so that the required
+  # `build` check runs on the generated head. Any other credential is a
+  # separate decision (#233). Cancelled and timed-out bump runs are reported.
+  publish:
+    needs: bump
+    if: ${{ always() && !inputs.probe }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write       # push the bump branch
+      pull-requests: write  # open the bump PR
+      issues: write         # comment on the failure tracking issue
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Fetch bump logs and evidence
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: mathlib-bump-logs
+          path: ${{ runner.temp }}/mathlib-bump
+      - name: Publish the bump or report the failure
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BUMP_JOB_RESULT: ${{ needs.bump.result }}
+          MATHLIB_BUMP_OWNER: ${{ vars.MATHLIB_BUMP_OWNER }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          bash scripts/mathlib_bump_publish.sh "$RUNNER_TEMP/mathlib-bump"

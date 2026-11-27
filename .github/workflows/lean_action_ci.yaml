@@ -26,6 +26,8 @@ jobs:
         run: python3 scripts/tests/test_update_imports.py
       - name: Test warning reporting and cache restore helpers
         run: node --test scripts/tests/test_warning_counts.cjs scripts/tests/test_restore_proof_source_cache.cjs
+      - name: Test Mathlib bump scripts
+        run: python3 scripts/tests/test_mathlib_bump.py
       - name: Cache project build artifacts
         uses: actions/cache@v5
         with:
