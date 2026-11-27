@@ -1,19 +1,23 @@
 /-
-Copyright (c) 2026 Scott Duke Kominers. All rights reserved.
+Copyright (c) 2026 Scott Duke Kominers, Bo Cowgill. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Scott Duke Kominers
+Authors: Scott Duke Kominers, Bo Cowgill
 -/
 module
 
 public import MathEconLib.Auction.AllPurchase.LinearScarcity
 
 /-!
-# An all-purchase auction with two bidders
+# An all-purchase model with two bidders
 
 These examples use a posted unit price of `2` and scarcity value `3 - B` at total purchases `B`.
 The unique highest purchaser receives the prize, and a tie leaves it unallocated. The probability
-space and the two bidders' values remain parameters, so the deterministic welfare example and the
-uniform equilibrium example use exactly the same mechanism.
+space and the two bidders' values remain parameters. The deterministic welfare and uniform
+examples share the auxiliary scalar bidder model and its associated monetary mechanism.
+
+`bidderRules` subtract net costs for the existing incentive analysis. `monetaryRules` instead
+record purchases and charge gross expenditure. Pair `monetarySpec` with
+`monetarySpec.environment bidderSpec.φ` to value resale separately from monetary transfers.
 -/
 
 @[expose] public section
@@ -25,14 +29,14 @@ open MathEconLib.Mechanism.Auctions
 
 namespace MathEconLib.Examples.AllPurchase
 
-/-- The shared mechanism with price `2` with scarcity value `3 - B`. -/
-def rules : Mechanism (Fin 2) (fun _ => ℝ) (Fin 2 → ℝ) where
+/-- Auxiliary scalar bidder rules: transfers subtract net costs, not seller receipts. -/
+def bidderRules : Mechanism (Fin 2) (fun _ ↦ ℝ) (Fin 2 → ℝ) where
   outcome b i := {r | ∀ j ≠ i, r j < r i}.indicator 1 b
   transfer i b := -((2 - (3 - ∑ j, b j)) * b i)
 
 /-- Each prize-allocation coordinate is measurable in the bid profile. -/
-theorem rules_outcome_measurable (i : Fin 2) :
-    Measurable (fun b => rules.outcome b i) := by
+theorem bidderRules_outcome_measurable (i : Fin 2) :
+    Measurable (fun b ↦ bidderRules.outcome b i) := by
   classical
   change Measurable ({b : Fin 2 → ℝ | ∀ j ≠ i, b j < b i}.indicator (1 : (Fin 2 → ℝ) → ℝ))
   apply measurable_const.indicator
@@ -41,36 +45,46 @@ theorem rules_outcome_measurable (i : Fin 2) :
     ext b
     simp
   rw [hset]
-  exact MeasurableSet.iInter fun j => MeasurableSet.iInter fun _ =>
+  exact MeasurableSet.iInter fun j ↦ MeasurableSet.iInter fun _ ↦
     measurableSet_lt (measurable_pi_apply j) (measurable_pi_apply i)
 
-/-- The shared mechanism satisfies the library's all-purchase specification. -/
-def spec : AllPurchaseSpec rules (fun o i => o i) where
+/-- Price and resale schedule for the auxiliary net-cost analysis. -/
+def bidderSpec : AllPurchaseBidderSpec bidderRules where
   price := 2
   price_pos := by norm_num
-  φ := fun total => 3 - total
+  φ := fun total ↦ 3 - total
   φ_continuous := continuous_const.sub continuous_id
-  φ_strictAnti := fun _ _ h => sub_lt_sub_left h 3
+  φ_strictAnti := fun _ _ h ↦ sub_lt_sub_left h 3
   usesStrictHighestBidAllocation _ := rfl
   transfer_eq _ _ := rfl
 
-/-- Equip the shared mechanism with any measurable pair of values, with stated bounds `[0, 2]`.
-Containment of values in these bounds and other distributional assumptions are proved separately
-for each example. -/
+/-- Actual monetary rules record purchases and charge the full posted price. -/
+def monetaryRules :
+    Mechanism (Fin 2) (fun _ ↦ ℝ) (AllPurchaseBidderSpec.Outcome (Fin 2)) :=
+  bidderSpec.toMechanism
+
+/-- The monetary specification is independent of the resale valuation. -/
+def monetarySpec : AllPurchaseSpec monetaryRules (fun o ↦ o.prize) (fun o ↦ o.purchases) :=
+  bidderSpec.toSpec
+
+/-- Equip the shared bidder model with measurable values and stated bounds `[0, 2]`.
+Containment in these bounds and distributional assumptions are proved by each example. -/
 def auction {Ω : Type} [MeasureSpace Ω] [IsProbabilityMeasure (ℙ : Measure Ω)]
     (θ : Fin 2 → Ω → ℝ) (hθ : ∀ i, Measurable (θ i)) : LinearScarcityAuction Ω 2 where
-  rules := rules
-  outcome_measurable := rules_outcome_measurable
-  θmin := fun _ => 0
-  θmax := fun _ => 2
-  θ := θ
-  θ_measurable := hθ
-  spec := spec
+  toNetCostAuction := {
+    rules := bidderRules
+    outcome_measurable := bidderRules_outcome_measurable
+    θmin := fun _ ↦ 0
+    θmax := fun _ ↦ 2
+    θ := θ
+    θ_measurable := hθ
+  }
+  spec := bidderSpec
   φ_bar := 3
   α_coeff := 1
   α_pos := by norm_num
   φ_bar_pos := by norm_num
-  scarcity_is_linear := by funext b; simp [spec]
+  scarcity_is_linear := by funext b; simp [bidderSpec]
 
 end MathEconLib.Examples.AllPurchase
 

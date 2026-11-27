@@ -8,6 +8,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -147,6 +148,22 @@ def interpolated := s!"sorry {1} admit"
             with self.assertRaisesRegex(ValueError, "No project Lean sources"):
                 driver.discover_sources(Path(directory))
 
+    def test_cache_inputs_track_changes_to_non_lean_files(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            data = root / "data.txt"
+            source = root / "Fixture.lean"
+            data.write_text("old data")
+            source.write_text("example : True := True.intro\n")
+            subprocess.run(["git", "init", "--quiet"], cwd=root, check=True)
+            subprocess.run(["git", "add", "data.txt", "Fixture.lean"], cwd=root, check=True)
+            initial = driver.tracked_audit_inputs(root)
+            self.assertEqual([name for name, _ in initial], ["data.txt"])
+            source.write_text("example : True := by trivial\n")
+            self.assertEqual(driver.tracked_audit_inputs(root), initial)
+            data.write_text("new data")
+            self.assertNotEqual(driver.tracked_audit_inputs(root), initial)
+
 
 class DriverIntegrationTest(unittest.TestCase):
     def setUp(self):
@@ -161,19 +178,20 @@ class DriverIntegrationTest(unittest.TestCase):
         (self.root / "Fixture.lean").write_text("module\npublic import Init\n")
         (self.root / "Fixture").mkdir()
 
-    def check(self, source, expected_exit=1):
+    def check(self, source, expected_exit=1, *, jobs=None):
         # Deliberately absent from Fixture.lean's imports and Lake's default targets.
         (self.root / "Fixture/Orphan.lean").write_text(source)
         report = self.root / "report.json"
-        result = subprocess.run(
-            [sys.executable, str(DRIVER), "--root", str(self.root), "--report", str(report)],
-            cwd=ROOT, capture_output=True, text=True, timeout=120,
-        )
+        report.unlink(missing_ok=True)
+        command = [sys.executable, str(DRIVER), "--root", str(self.root), "--report", str(report)]
+        if jobs is not None:
+            command.extend(["--jobs", str(jobs)])
+        result = subprocess.run(command, cwd=ROOT, capture_output=True, text=True, timeout=120)
         self.assertEqual(result.returncode, expected_exit, result.stdout + result.stderr)
         self.assertTrue(report.exists(), result.stdout + result.stderr)
         return json.loads(report.read_text())
 
-    def check_compiled_fixture(self, name, expected_exit=1):
+    def check_compiled_fixture(self, name, expected_exit=1, *, jobs=None):
         source = (FIXTURES / (name + ".lean.txt")).read_text()
         (self.root / "Fixture/Orphan.lean").write_text(source)
         built = subprocess.run(
@@ -181,7 +199,113 @@ class DriverIntegrationTest(unittest.TestCase):
             cwd=self.root, capture_output=True, text=True, timeout=90,
         )
         self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
-        return self.check(source, expected_exit)
+        return self.check(source, expected_exit, jobs=jobs)
+
+    def test_parallel_reports_match_default(self):
+        for fixture, expected_exit in (("CompleteInterpolations", 0), ("MacroHole", 1)):
+            with self.subTest(fixture=fixture):
+                serial = self.check_compiled_fixture(fixture, expected_exit)
+                parallel = self.check_compiled_fixture(fixture, expected_exit, jobs=2)
+                self.assertEqual(serial, parallel)
+                self.assertEqual(serial["stage"], "complete")
+                self.assertEqual(set(serial["elaboration_sources"]), {"Fixture.lean", "Fixture/Orphan.lean"})
+
+    def test_ci_build_covers_default_facets_and_orphan_sources(self):
+        (self.root / "lakefile.toml").write_text(
+            'name = "fixture"\ndefaultTargets = ["Fixture"]\n'
+            '[[lean_lib]]\nname = "Fixture"\ndefaultFacets = ["static"]\n'
+            'libName = "fixture_defaults"\n')
+        orphan = self.root / "Fixture/Orphan.lean"
+        orphan.write_text("module\npublic import Init\nexample : True := True.intro\n")
+        command = [sys.executable, str(DRIVER), "--root", str(self.root)]
+        built = subprocess.run([*command, "--build-only"], cwd=ROOT,
+                               capture_output=True, text=True, timeout=120)
+        self.assertEqual(built.returncode, 0, built.stdout + built.stderr)
+        self.assertTrue(any((self.root / ".lake/build/lib").glob("*fixture_defaults.a")),
+                        built.stdout)
+        self.assertTrue((self.root / ".lake/build/lib/lean/Fixture/Orphan.olean").is_file(),
+                        built.stdout)
+
+        report_path = self.root / "report.json"
+        audited = subprocess.run([*command, "--audit-only", "--report", str(report_path)],
+                                 cwd=ROOT, capture_output=True, text=True, timeout=120)
+        self.assertEqual(audited.returncode, 0, audited.stdout + audited.stderr)
+        self.assertNotIn("Build completed", audited.stdout + audited.stderr)
+        report = json.loads(report_path.read_text())
+        self.assertEqual(report["status"], "passed")
+        self.assertIn("Fixture/Orphan.lean", report["elaboration_sources"])
+
+        orphan.write_text("module\npublic import Init\ntheorem broken : True := 0\n")
+        broken = subprocess.run([*command, "--build-only"], cwd=ROOT,
+                                capture_output=True, text=True, timeout=120)
+        self.assertNotEqual(broken.returncode, 0, broken.stdout + broken.stderr)
+        self.assertIn("Fixture/Orphan.lean", broken.stdout + broken.stderr)
+
+    def test_source_cache_invalidates_transitive_macro_imports(self):
+        (self.root / "Fixture/Orphan.lean").write_text(
+            'import Fixture.Bridge\nset_option warningAsError false\n'
+            'set_option warn.«sorry» false\nexample : True := importedProof\n')
+        (self.root / "Fixture/Bridge.lean").write_text('import Fixture.Proofs\n')
+        proofs = self.root / "Fixture/Proofs.lean"
+        proofs.write_text('import Lean\nmacro "importedProof" : term => `(True.intro)\n')
+        report = self.root / "report.json"
+        source_cache = self.root / "cache.json"
+        command = [sys.executable, str(DRIVER), "--root", str(self.root), "--report", str(report),
+                   "--jobs", "2"]
+
+        def check(exit_code, hits=None, image_version="seed"):
+            args = command if hits is None else [*command, "--source-cache", str(source_cache)]
+            env = os.environ | {"ImageVersion": image_version}
+            result = subprocess.run(args, cwd=ROOT, env=env, capture_output=True, text=True, timeout=120)
+            self.assertEqual(result.returncode, exit_code, result.stdout + result.stderr)
+            if hits is not None:
+                self.assertIn(f"Source audit cache: {hits} hits, {4 - hits} misses.", result.stdout)
+            return report.read_bytes()
+
+        cold = check(0, hits=0)
+        self.assertEqual(check(0, hits=4, image_version="restore"), cold)
+        previous_cache = source_cache.read_bytes()
+        proofs.write_text(
+            'import Lean\nopen Lean in\nmacro "importedProof" : term =>\n'
+            '  pure ⟨.node .none (Name.str `Lean.Parser.Term ("so" ++ "rry"))\n'
+            '    #[.atom .none ("so" ++ "rry")]⟩\n')
+        rejected = check(1, hits=1)
+        self.assertEqual(rejected, check(1))
+        self.assertEqual(previous_cache, source_cache.read_bytes())
+        self.assertTrue(any(
+            violation["source"] == "Fixture/Orphan.lean" and violation["axiom"] == "sorryAx"
+            for violation in json.loads(rejected)["elaboration_violations"]
+        ))
+
+    def test_parallel_worker_failures_leave_an_error_report(self):
+        source = "Fixture/Orphan.lean"
+        (self.root / source).write_text("module\npublic import Init\nexample : True := True.intro\n")
+        good_report = {
+            "source": source, "module": "Fixture.Orphan", "status": "passed",
+            "declarations_checked": 1, "violations": [],
+        }
+        run = subprocess.run
+        for payload, exit_code, message in (
+            (None, 0, "did not write a source audit report"),
+            (good_report, 2, "inconsistent result"),
+            ({**good_report, "declarations_checked": -1}, 0, "invalid report"),
+        ):
+            with self.subTest(message=message):
+                def run_with_fault(command, *args, **kwargs):
+                    if "--source" not in command or command[-2] != source:
+                        return run(command, *args, **kwargs)
+                    if payload is not None:
+                        source_report = Path(command[command.index("--source") + 1])
+                        source_report.write_text(json.dumps(payload))
+                    return subprocess.CompletedProcess(command, exit_code)
+
+                report = self.root / "report.json"
+                with patch.object(driver.subprocess, "run", side_effect=run_with_fault):
+                    self.assertEqual(driver.run(self.root, report, jobs=2), 1)
+                result = json.loads(report.read_text())
+                self.assertEqual((result["status"], result["stage"]), ("error", "elaboration"))
+                self.assertIn(message, result["error"])
+                self.assertNotIn(source, result["elaboration_sources"])
 
     def test_separated_interpolations_with_suppressed_sorry_warnings_are_rejected(self):
         for name in ("SpacedInterpolation", "CommentInterpolation", "NewlineInterpolation"):

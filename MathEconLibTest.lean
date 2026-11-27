@@ -1,5 +1,6 @@
 import MathEconLibTest.AllPurchase.PricingAxioms
 import MathEconLibTest.AllPurchase.WelfareAxioms
+import MathEconLibTest.Auction.AllPurchaseAccounting
 import MathEconLibTest.Auction.CorrelatedValues
 import MathEconLibTest.Auction.ExAnteIR
 import MathEconLibTest.Auction.IndependentValues
@@ -15,6 +16,7 @@ import MathEconLibTest.Choice.Counterexamples
 import MathEconLibTest.Choice.MatchingConditionsImport
 import MathEconLibTest.Choice.PublicImport
 import MathEconLibTest.Choice.SubstituteEnvelope
+import MathEconLibTest.Choice.Value
 import MathEconLibTest.Choice.WeakPreferences
 import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
@@ -25,14 +27,17 @@ import MathEconLibTest.ForMathlib.Order.Refinement
 import MathEconLibTest.ForMathlib.Order.ThinChains
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
+import MathEconLibTest.GameTheory.Choice
 import MathEconLibTest.GameTheory.ConditionalBeliefs
 import MathEconLibTest.GameTheory.ExplicitComparisonValidity
 import MathEconLibTest.GameTheory.ExplicitComparisons
 import MathEconLibTest.GameTheory.FiniteBayesian
 import MathEconLibTest.GameTheory.Integrability
 import MathEconLibTest.GameTheory.MatchingPennies
+import MathEconLibTest.GameTheory.MatchingPenniesBestResponses
 import MathEconLibTest.GameTheory.MeasurableBayesian
 import MathEconLibTest.GameTheory.OrderedPayoffs
+import MathEconLibTest.GameTheory.RockPaperScissors
 import MathEconLibTest.GameTheory.StateOutcomeEvaluation
 import MathEconLibTest.GameTheory.Strategic
 import MathEconLibTest.GameTheory.StrategicTransport
@@ -56,6 +61,7 @@ import MathEconLibTest.Matching.SellerParticipationPublicImport
 import MathEconLibTest.Mechanism.BayesianIC
 import MathEconLibTest.Mechanism.BayesianICContract
 import MathEconLibTest.Mechanism.Core
+import MathEconLibTest.Mechanism.DeterministicIC
 import MathEconLibTest.Mechanism.FirstAndSecondPay
 import MathEconLibTest.Mechanism.Games
 import MathEconLibTest.Mechanism.PostedPriceGames
@@ -64,6 +70,7 @@ import MathEconLibTest.Mechanism.Utility
 import MathEconLibTest.Namespace
 import MathEconLibTest.Preferences.Basic
 import MathEconLibTest.Preferences.Complete
+import MathEconLibTest.Preferences.Profile
 import MathEconLibTest.Preferences.PublicImport
 import MathEconLibTest.Pricing.Compatibility
 import MathEconLibTest.RevealedPreference.Compatibility

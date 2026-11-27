@@ -1,10 +1,14 @@
 """Build and audit every project Lean source; retain a JSON report on success or failure."""
 
 import argparse
+from concurrent.futures import ThreadPoolExecutor
+from contextlib import closing
+from functools import cache, partial
 import hashlib
 import json
 import os
 from pathlib import Path
+import platform
 import re
 import subprocess
 import sys
@@ -122,10 +126,111 @@ def write_report(path, report):
     path.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
 
 
-def run(root, report_path):
+def build_project(root, targets):
+    return subprocess.run(["lake", "--rehash", "--no-ansi", "build", *targets],
+                          cwd=root).returncode
+
+
+def digest(value):
+    return hashlib.sha256(json.dumps(value, sort_keys=True).encode()).hexdigest()
+
+
+def tracked_audit_inputs(root):
+    # Lean elaborators can read project data in addition to importing Lean modules.
+    listed = subprocess.check_output(["git", "ls-files", "-z", "--", "."], cwd=root)
+    paths = sorted(set(os.fsdecode(listed).split("\0")) - {""})
+    inputs = []
+    for name in paths:
+        if name.endswith(".lean"):
+            continue
+        path = root / name
+        if path.is_symlink() or not path.is_file():
+            raise ValueError(f"cannot fingerprint tracked input {name}")
+        inputs.append((name, hashlib.sha256(path.read_bytes()).hexdigest()))
+    return inputs
+
+
+def source_cache_keys(root, source_hashes, workers):
+    # Lean parses the real import header, including private and meta imports.
+    # Outside the project, the pinned toolchain and manifest identify the inputs.
+    output = subprocess.check_output(["lake", "env"], cwd=root, text=True)
+    lake_env = dict(line.split("=", 1) for line in output.splitlines())
+    env = os.environ | lake_env
+    context = digest([
+        platform.system(), platform.machine(), platform.libc_ver(), platform.mac_ver()[0],
+        env.get("ImageOS"), lake_env["LEAN_GITHASH"],
+        tracked_audit_inputs(root),
+        [hashlib.sha256(path.read_bytes()).hexdigest() for path in (
+            Path(__file__), BACKEND, root / "lean-toolchain", root / "lakefile.toml",
+            root / "lake-manifest.json",
+        )],
+    ])
+    project_paths = {str(root / source): source for source in source_hashes}
+
+    def project_imports(source):
+        output = subprocess.check_output(
+            [lake_env["LEAN"], "--src-deps", source], cwd=root, env=env, text=True,
+        )
+        return sorted({
+            project_paths[absolute] for path in output.splitlines()
+            if (absolute := os.path.abspath(root / path)) in project_paths
+        })
+
+    imports = dict(zip(source_hashes, workers.map(project_imports, source_hashes)))
+
+    @cache
+    def key(source):
+        return digest([context, source, source_hashes[source], [key(dep) for dep in imports[source]]])
+
+    return {source: key(source) for source in source_hashes}
+
+
+def load_source_cache(path):
+    try:
+        data = json.loads(path.read_text())
+    except (OSError, ValueError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def save_source_cache(path, results):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with tempfile.TemporaryDirectory(dir=path.parent) as work:
+        staged = Path(work) / "cache.json"
+        write_report(staged, results)
+        staged.replace(path)
+
+
+def audit_source(root, work, index, path, module):
+    source_report = work / f"source-{index}.json"
+    checked = subprocess.run(
+        ["lake", "env", "lean", "--run", str(BACKEND), "--source",
+         str(source_report), path.as_posix(), module], cwd=root,
+    )
+    if not source_report.exists():
+        raise ValueError("Lean did not write a source audit report: " + str(path))
+    result = json.loads(source_report.read_text())
+    if (not isinstance(result, dict) or result.get("source") != path.as_posix()
+            or result.get("module") != module):
+        raise ValueError("Lean audited a different source: " + str(path))
+    status = result.get("status")
+    expected = 0 if status == "passed" else 1
+    if checked.returncode != expected or status not in {"passed", "failed"}:
+        raise ValueError("Lean source audit returned an inconsistent result: " + str(path))
+    count = result.get("declarations_checked")
+    violations = result.get("violations")
+    if (type(count) is not int or count < 0 or not isinstance(violations, list)
+            or bool(violations) != (status == "failed")):
+        raise ValueError("Lean source audit returned an invalid report: " + str(path))
+    return result
+
+
+def run(root, report_path, jobs=1, source_cache=None, *, audit_only=False):
     report = {"status": "error", "stage": "discovery"}
     write_report(report_path, report)
     try:
+        # Read the snapshot before starting any Lean processes.
+        cached = load_source_cache(source_cache) if source_cache else {}
         sources = discover_sources(root)
         modules = [module_name(path) for path in sources]
         report.update({
@@ -152,13 +257,13 @@ def run(root, report_path):
                 print("{source}:{line}: forbidden proof token {token}".format(**violation),
                       file=sys.stderr)
             return 1
-        report["stage"] = "build"
-        write_report(report_path, report)
-        # Explicit module targets also build files not reachable from an umbrella.
-        built = subprocess.run(["lake", "--rehash", "--no-ansi", "build", *modules], cwd=root)
-        if built.returncode:
-            report["error"] = "Building all project modules failed"
-            return 1
+        if not audit_only:
+            report["stage"] = "build"
+            write_report(report_path, report)
+            # Explicit module targets also build files not reachable from an umbrella.
+            if build_project(root, modules):
+                report["error"] = "Building all project modules failed"
+                return 1
         report["stage"] = "audit"
         write_report(report_path, report)
         with tempfile.TemporaryDirectory(prefix="proof-integrity-") as work:
@@ -180,31 +285,51 @@ def run(root, report_path):
                 report["stage"] = "complete"
                 return expected
             report["stage"] = "elaboration"
+            report["status"] = "error"
             report["elaboration_sources"] = []
             report["elaboration_declarations_checked"] = 0
             report["elaboration_violations"] = []
             write_report(report_path, report)
-            for path, module in zip(sources, modules):
-                source_report = Path(work) / "source.json"
-                source_report.unlink(missing_ok=True)
-                checked = subprocess.run(
-                    ["lake", "env", "lean", "--run", str(BACKEND), "--source",
-                     str(source_report), path.as_posix(), module], cwd=root,
-                )
-                if not source_report.exists():
-                    raise ValueError("Lean did not write a source audit report: " + str(path))
-                result = json.loads(source_report.read_text())
-                if result.get("source") != path.as_posix() or result.get("module") != module:
-                    raise ValueError("Lean audited a different source: " + str(path))
-                expected = 0 if result.get("status") == "passed" else 1
-                if checked.returncode != expected or result.get("status") not in {"passed", "failed"}:
-                    raise ValueError("Lean source audit returned an inconsistent result")
-                report["elaboration_sources"].append(path.as_posix())
-                report["elaboration_declarations_checked"] += result["declarations_checked"]
-                report["elaboration_violations"].extend(result["violations"])
-                if expected:
-                    report["status"] = "failed"
-                write_report(report_path, report)
+            failed = False
+            audit = partial(audit_source, root, Path(work))
+            with ThreadPoolExecutor(max_workers=jobs) as workers:
+                keys = {}
+                if source_cache:
+                    try:
+                        keys = source_cache_keys(root, report["source_sha256"], workers)
+                    except (OSError, ValueError, subprocess.SubprocessError) as error:
+                        print(f"Source audit cache unavailable: {error}", file=sys.stderr)
+                        source_cache = None
+                next_cache = {}
+                hits = 0
+
+                def check(index, path, module):
+                    count = cached.get(keys.get(path.as_posix()))
+                    if type(count) is int and count >= 0:
+                        return {
+                            "declarations_checked": count, "violations": [], "status": "passed",
+                        }, True
+                    return audit(index, path, module), False
+
+                # Consume results in source order and cancel queued work if aggregation fails.
+                with closing(workers.map(check, range(len(sources)), sources, modules)) as results:
+                    for path, (result, hit) in zip(sources, results):
+                        report["elaboration_sources"].append(path.as_posix())
+                        report["elaboration_declarations_checked"] += result["declarations_checked"]
+                        report["elaboration_violations"].extend(result["violations"])
+                        failed = failed or result["status"] == "failed"
+                        hits += hit
+                        if source_cache and result["status"] == "passed":
+                            next_cache[keys[path.as_posix()]] = result["declarations_checked"]
+                        write_report(report_path, report)
+            if source_cache:
+                print(f"Source audit cache: {hits} hits, {len(sources) - hits} misses.", flush=True)
+                if not failed:
+                    try:
+                        save_source_cache(source_cache, next_cache)
+                    except OSError as error:
+                        print(f"Unable to save source audit cache: {error}", file=sys.stderr)
+            report["status"] = "failed" if failed else "passed"
             report["stage"] = "complete"
             print("Source elaboration audit: {} declarations in {} sources; {} violations.".format(
                 report["elaboration_declarations_checked"], len(report["elaboration_sources"]),
@@ -222,9 +347,30 @@ def run(root, report_path):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--root", type=Path, default=REPO)
+    mode = parser.add_mutually_exclusive_group()
+    mode.add_argument("--build-only", action="store_true",
+                      help="build Lake's default targets and every project source in one invocation")
+    mode.add_argument("--audit-only", action="store_true",
+                      help="audit artifacts from a successful --build-only for the same sources")
     parser.add_argument("--report", type=Path, default=REPO / ".lake/proof-integrity/report.json")
+    parser.add_argument("--jobs", type=int, default=1, help="number of concurrent source audits")
+    parser.add_argument("--source-cache", type=Path,
+                        help="experimental cache of successful source audits from trusted runs")
     args = parser.parse_args()
-    return run(args.root.resolve(), args.report.resolve())
+    if args.jobs < 1:
+        parser.error("--jobs must be at least 1")
+    root = args.root.resolve()
+    if args.build_only:
+        try:
+            # @ expands to the root package's default targets. + selects a module
+            # even when a library or executable shares its name.
+            targets = ["@", *(f"+{module_name(path)}" for path in discover_sources(root))]
+            return build_project(root, targets)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            print("Project build failed: " + str(error), file=sys.stderr)
+            return 1
+    return run(root, args.report.resolve(), args.jobs, args.source_cache,
+               audit_only=args.audit_only)
 
 
 if __name__ == "__main__":
