@@ -5,6 +5,7 @@ Authors: Scott Duke Kominers
 -/
 module
 
+public import MathEconLib.Matching.Classical.Marriage.CountingBounds
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptance
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceComputable
 public import MathEconLib.Matching.Classical.Marriage.DeferredAcceptanceFixedPoints
@@ -12,7 +13,10 @@ public import MathEconLib.Matching.Classical.Marriage.Distributive
 public import MathEconLib.Matching.Classical.Marriage.FixedPointConvergence
 public import MathEconLib.Matching.Classical.Marriage.Improvements
 public import MathEconLib.Matching.Classical.Marriage.LoneWolf
+public import MathEconLib.Matching.Classical.Marriage.OrderIdeals
+public import MathEconLib.Matching.Classical.Marriage.RankInput
 public import MathEconLib.Matching.Classical.Marriage.StableOrder
+public import MathEconLib.Matching.Classical.Marriage.Truncation
 
 /-!
 # The classical marriage market
@@ -33,6 +37,15 @@ selection from a fixed menu.
 direct proposal algorithm; `Marriage.DeferredAcceptanceFixedPoints` relates
 its terminal outputs to the contracts fixed points; and
 `Marriage.DeferredAcceptanceComputable` supplies executable algorithms.
+
+The counting foundations comprise threshold generators for the join-irreducible
+stable matchings (`Marriage.OrderIdeals`), one man's reservation-cutoff change
+with its stability transfers (`Marriage.Truncation`), explicit rank-list inputs
+(`BalancedRankInput` in `Marriage.RankInput`, for equal population sizes), and
+bounds on the number of stable matchings (`Marriage.CountingBounds`). Their
+umbrella-only pins are in
+`MathEconLibTest.Matching.CountingFoundations`; concrete applications are in
+`MathEconLibExamples.Matching.CountingFoundations`.
 -/
 
 @[expose] public section

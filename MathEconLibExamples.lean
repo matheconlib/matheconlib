@@ -15,6 +15,7 @@ public import MathEconLibExamples.GameTheory.RockPaperScissors
 public import MathEconLibExamples.GameTheory.TicTacToe
 public import MathEconLibExamples.GameTheory.MatchingPennies
 public import MathEconLibExamples.GameTheory.MatchingPenniesBestResponses
+public import MathEconLibExamples.Matching.CountingFoundations
 public import MathEconLibExamples.Matching.DistributiveMarriage
 public import MathEconLibExamples.Matching.Improvements
 public import MathEconLibExamples.Matching.JointPreservation
@@ -37,6 +38,9 @@ Concrete economic models illustrate the library's definitions and results.
   for individuals and aggregate crime under a fixed type distribution.
 * A two-couple marriage market has distinct stable outcomes whose lattice join,
   meet, and intrinsic ideal representations are checked explicitly.
+* Concrete marriage markets exercise the stable-matching counting foundations:
+  an infeasible threshold, an unmatched man, an originally unacceptable
+  reservation cutoff whose stability does not transfer back, and the empty market.
 
 ## Tags
 

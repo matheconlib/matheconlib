@@ -22,7 +22,9 @@ import MathEconLibTest.Choice.WeakPreferencesGame
 import MathEconLibTest.Choice.WeakPreferencesPublicImport
 import MathEconLibTest.Competition.Cournot
 import MathEconLibTest.Decision.Compatibility
+import MathEconLibTest.ForMathlib.Data.List.BoundedChunks
 import MathEconLibTest.ForMathlib.Order.Refinement
+import MathEconLibTest.ForMathlib.Order.ThinChains
 import MathEconLibTest.GameTheory.ActionMaps
 import MathEconLibTest.GameTheory.CandidateValidity
 import MathEconLibTest.GameTheory.Choice
@@ -48,6 +50,8 @@ import MathEconLibTest.Matching.Completion
 import MathEconLibTest.Matching.Continuum
 import MathEconLibTest.Matching.Continuum.Antipodal
 import MathEconLibTest.Matching.Continuum.Compatibility
+import MathEconLibTest.Matching.CountingFoundations
+import MathEconLibTest.Matching.CountingFoundationsApplications
 import MathEconLibTest.Matching.DistributiveMarriage
 import MathEconLibTest.Matching.Improvements
 import MathEconLibTest.Matching.PublicImport
