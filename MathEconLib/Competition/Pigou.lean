@@ -94,13 +94,11 @@ theorem mem_welfareMaximizers_of_isTaxResponse {τ : ℝ} {e : I → ℝ} (h : P
     (hs : P.SupportsDamageAt τ (∑ i, e i)) :
     e ∈ P.welfareMaximizers := by
   refine (mem_maximizers_ofUtility _).2 ⟨IsTaxResponse.mem_feasible h, fun e' he' => ?_⟩
-  have hD := hs (∑ i, e' i) (sum_nonneg fun i _ => he' i)
-  have hB : ∀ i, P.benefit i (e' i) - τ * e' i ≤ P.benefit i (e i) - τ * e i :=
-    fun i => IsTaxResponse.isMaxOn h i (he' i)
-  have hsum := Finset.sum_le_sum fun i (_ : i ∈ Finset.univ) => hB i
-  simp only [sum_sub_distrib, ← mul_sum] at hsum
+  have hB := Finset.sum_le_sum fun i (_ : i ∈ Finset.univ) => IsTaxResponse.isMaxOn h i (he' i)
+  simp only [sum_sub_distrib, ← mul_sum] at hB
+  have := hs (∑ i, e' i) (sum_nonneg fun i _ => he' i)
   change P.welfare e' ≤ P.welfare e
-  simp only [welfare]
+  unfold welfare
   linarith
 
 omit [Fintype I] in
@@ -110,12 +108,12 @@ theorem supportsDamageAt_of_hasDerivWithinAt {τ S : ℝ} (hD : ConvexOn ℝ (Ic
     (hS : 0 ≤ S) (hd : HasDerivWithinAt P.damage τ (Ici 0) S) : P.SupportsDamageAt τ S := by
   intro T hT
   rcases lt_trichotomy S T with hST | rfl | hTS
-  · have h := hD.le_slope_of_hasDerivWithinAt (mem_Ici.2 hS) (mem_Ici.2 hT) hST hd
-    rw [slope_def_field, le_div_iff₀ (sub_pos.2 hST)] at h
+  · have := hD.le_slope_of_hasDerivWithinAt hS hT hST hd
+    rw [slope_def_field, le_div_iff₀ (sub_pos.2 hST)] at this
     linarith
   · simp
-  · have h := hD.slope_le_of_hasDerivWithinAt (mem_Ici.2 hT) (mem_Ici.2 hS) hTS hd
-    rw [slope_def_field, div_le_iff₀ (sub_pos.2 hTS)] at h
+  · have := hD.slope_le_of_hasDerivWithinAt hT hS hTS hd
+    rw [slope_def_field, div_le_iff₀ (sub_pos.2 hTS)] at this
     linarith
 
 /-- **Pigou's rule.** With a convex damage, differentiable within `Set.Ici 0` at the candidate

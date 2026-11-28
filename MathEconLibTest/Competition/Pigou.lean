@@ -47,22 +47,15 @@ theorem isTaxResponse_example₂ : example₂.IsTaxResponse 1 ![1, 0] := by
   intro i
   rw [MathEconLib.Choice.mem_maximizers_ofUtility]
   fin_cases i
-  · refine ⟨by norm_num, fun x _ => ?_⟩
-    simp only [example₂]
-    norm_num
-    nlinarith [sq_nonneg (x - 1)]
-  · refine ⟨by norm_num, fun x (hx : (0 : ℝ) ≤ x) => ?_⟩
-    simp only [example₂]
-    norm_num
-    linarith
+  · exact ⟨by norm_num, fun x _ => by simp [example₂]; nlinarith [sq_nonneg (x - 1)]⟩
+  · exact ⟨by norm_num, fun x (hx : (0 : ℝ) ≤ x) => by simp [example₂]; linarith⟩
 
 /-- Pigou's rule applies, with firm `1` at the boundary of its feasible set. -/
 example : ![(1 : ℝ), 0] ∈ example₂.welfareMaximizers := by
-  refine ExternalityProblem.mem_welfareMaximizers_of_pigou ?_ ?_ ?_
-  · exact convexOn_id (convex_Ici 0)
-  · exact differentiableWithinAt_id
-  · rw [derivWithin_damage (by simp [Fin.sum_univ_two])]
-    exact isTaxResponse_example₂
+  refine ExternalityProblem.mem_welfareMaximizers_of_pigou (convexOn_id (convex_Ici 0))
+    differentiableWithinAt_id ?_
+  rw [derivWithin_damage (by simp [Fin.sum_univ_two])]
+  exact isTaxResponse_example₂
 
 #print axioms ExternalityProblem.mem_welfareMaximizers_of_pigou
 
