@@ -119,6 +119,7 @@ public import MathEconLib.Matching.Contracts.RosterCompletion
 public import MathEconLib.Matching.Contracts.RosterStability
 public import MathEconLib.Matching.Contracts.RosterStableSets
 public import MathEconLib.Matching.Contracts.RosterSupermodular
+public import MathEconLib.Matching.Contracts.RosterUniformPreservation
 public import MathEconLib.Matching.Contracts.RuralHospitals
 public import MathEconLib.Matching.Contracts.StableFixedPoints
 public import MathEconLib.Matching.Contracts.StableOrder
