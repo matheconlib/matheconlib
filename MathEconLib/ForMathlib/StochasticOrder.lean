@@ -155,7 +155,7 @@ theorem monotone_indicator_Ioi_one (t : ℝ) :
     Monotone ((Set.Ioi t).indicator (1 : ℝ → ℝ)) := by
   intro a b hab
   by_cases ha : a ∈ Set.Ioi t
-  · rw [Set.indicator_of_mem ha, Set.indicator_of_mem (isUpperSet_Ioi t hab ha)]
+  · rw [Set.indicator_of_mem ha, Set.indicator_of_mem (IsUpperSet.Ioi t hab ha)]
     simp only [Pi.one_apply, le_refl]
   · rw [Set.indicator_of_notMem ha]
     exact Set.indicator_apply_nonneg fun _ => zero_le_one

@@ -94,7 +94,7 @@ lemma coverSet_isOpen
     (F : X → Set Y) (hF_uhc : UpperHemicontinuous F) (W : Set Y) (hW : IsOpen W)
     (V : Set (X × X)) (hV : IsOpen V) (x₀ : X) :
     IsOpen ({z : X | F z ⊆ F x₀ + W} ∩ {z : X | (x₀, z) ∈ V}) :=
-  (hF_uhc.isOpen_of_isOpen _ (IsOpen.add_left hW)).inter (UniformSpace.isOpen_ball x₀ hV)
+  (hF_uhc.isOpen_of_isOpen _ (IsOpen.add_left hW)).inter (UniformSpace.isOpen_ball x₀ hV.relInv)
 
 /-- Each x₀ is in its own cover set. -/
 lemma mem_own_coverSet

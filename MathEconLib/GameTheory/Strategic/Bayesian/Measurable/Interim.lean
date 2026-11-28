@@ -109,7 +109,7 @@ theorem measurable_lintegral_enorm_deviation (i : I) (s : G.Strategy) :
   let κ : Kernel (Θ i × A i) (OpponentProfile Θ i) :=
     (B.opponents i).comap Prod.fst measurable_fst
   exact Measurable.lintegral_kernel_prod_right' (κ := κ)
-    (G.measurable_interimPayoffActionIntegrand hmeas i s).enorm
+    (G.measurable_interimPayoffActionIntegrand hmeas i s).eNorm
 
 /-- Globally bounded measurable payoffs are conditionally integrable for all actions on a common
 conull set of own types. -/

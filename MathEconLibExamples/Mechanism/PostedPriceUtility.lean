@@ -116,7 +116,7 @@ private theorem half_mass :
 def wealthLottery : ProbabilityMeasure ℝ :=
   ⟨ENNReal.ofReal (1 / 2 : ℝ) • Measure.dirac (1 : ℝ) +
     ENNReal.ofReal (1 / 2 : ℝ) • Measure.dirac (3 : ℝ),
-    ⟨by simpa [Measure.add_apply, Measure.smul_apply] using half_mass⟩⟩
+    ⟨by simpa [add_apply, smul_apply] using half_mass⟩⟩
 
 /-- The existing expected-outcome evaluator averages the supplied wealth utility. -/
 def wealthPayoffs : PayoffStructure Unit ℝ ℝ where
@@ -124,7 +124,7 @@ def wealthPayoffs : PayoffStructure Unit ℝ ℝ where
 
 /-- Both lottery outcomes lie in the feasible positive-wealth domain. -/
 theorem wealthLottery_positive : (wealthLottery : Measure ℝ) (Set.Ioi 0) = 1 := by
-  simpa [wealthLottery, Measure.add_apply, Measure.smul_apply, Measure.dirac_apply',
+  simpa [wealthLottery, add_apply, smul_apply, Measure.dirac_apply',
     measurableSet_Ioi] using half_mass
 
 /-- The supplied utility is integrable at every Dirac outcome. -/

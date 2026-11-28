@@ -114,7 +114,7 @@ private lemma exists_le_add_of_ne_top_of_le_iSup {g : ℕ → ℝ≥0∞} {a δ 
 private lemma sum_geometric_two_le (ε : ℝ≥0∞) (n : ℕ) :
     ∑ k ∈ Finset.range n, ε / 2 ^ (k + 1) ≤ ε := by
   have hle_tsum : ∑ k ∈ Finset.range n, ε / 2 ^ (k + 1) ≤ ∑' k : ℕ, ε / 2 ^ (k + 1) :=
-    ENNReal.sum_le_tsum _
+    sum_le_tsum _
   refine hle_tsum.trans ?_
   have hrw : ∀ k : ℕ, ε / 2 ^ (k + 1) = ε * (2⁻¹ : ℝ≥0∞) ^ (k + 1) := by
     intro k
@@ -256,7 +256,12 @@ theorem AnalyticSet.nullMeasurableSet
     {X : Type*} [TopologicalSpace X] [PolishSpace X] [MeasurableSpace X] [BorelSpace X]
     {S : Set X} (hS : AnalyticSet S) (μ : Measure X) [IsFiniteMeasure μ] :
     NullMeasurableSet S μ := by
-  rw [AnalyticSet] at hS
+  replace hS : S = ∅ ∨ ∃ f : (ℕ → ℕ) → X, Continuous f ∧ range f = S := by
+    obtain ⟨β, _, _, g, hg, hgS⟩ := analyticSet_iff_exists_polishSpace_range.1 hS
+    rcases isEmpty_or_nonempty β with hβ | hβ
+    · exact .inl (hgS ▸ range_eq_empty g)
+    · obtain ⟨e, he, he_surj⟩ := PolishSpace.exists_nat_nat_continuous_surjective β
+      exact .inr ⟨g ∘ e, hg.comp he, (he_surj.range_comp g).trans hgS⟩
   rcases hS with rfl | ⟨f, hf_cont, rfl⟩
   · exact MeasurableSet.empty.nullMeasurableSet
   · let := TopologicalSpace.upgradeIsCompletelyMetrizable X

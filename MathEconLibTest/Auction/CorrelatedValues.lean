@@ -241,7 +241,7 @@ lemma square_utility (i : Fin 2) (s r : ℝ) :
     simp [diagonalBeliefs, Kernel.deterministic_apply, squareAuction,
       Auction.valuationEnvironment, Mechanism.QuasilinearEnvironment.ofPrivate,
       GameTheory.BayesianPrior.insert, Equiv.piSplitAt]
-  all_goals ring
+  ring
 
 /-- Quasilinear BIC accepts a correlated model, with a proof over the full report continuum. -/
 theorem square_bic : squareAuction.BIC (diagonalBeliefs squareAuction (fun _ _ ↦ rfl)) := by
