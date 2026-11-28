@@ -48,6 +48,7 @@ public import MathEconLib.Choice.SubstituteHull
 public import MathEconLib.Choice.Value
 public import MathEconLib.Choice.WeakPreferences
 public import MathEconLib.Competition.Cournot.Linear
+public import MathEconLib.Competition.Pigou
 public import MathEconLib.Decision.RiskAversion
 public import MathEconLib.ForMathlib.AbsolutelyContinuous
 public import MathEconLib.ForMathlib.ApproximateSelection
