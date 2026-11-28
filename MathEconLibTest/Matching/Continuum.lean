@@ -96,7 +96,7 @@ example : nullSwap.toMatchingMeasure = (MatchingMap.refl atomicPopulation).toMat
 -- Positive-mass blocking must fail distributional stability.
 noncomputable def twoPointPopulation : ProbabilityMeasure (Fin 3) :=
   ⟨(2 : ENNReal)⁻¹ • (Measure.dirac 1 + Measure.dirac 2), ⟨by
-    norm_num [Measure.smul_apply, Measure.add_apply, ENNReal.inv_two_add_inv_two]⟩⟩
+    norm_num [smul_apply, add_apply, ENNReal.inv_two_add_inv_two]⟩⟩
 
 def crossUtilities : PartnerUtilities (Fin 3) (Fin 3) where
   left a b := if a = b then 0 else 1
@@ -125,7 +125,7 @@ theorem positive_mass_blocking_not_stable :
       {((1, 1), (2, 2))} ≠ 0 := by
     rw [← Set.singleton_prod_singleton,
       Measure.prod_prod, twoPoint_mass, twoPoint_mass]
-    norm_num [twoPointPopulation, Measure.smul_apply, Measure.add_apply, h12, Ne.symm h12]
+    norm_num [twoPointPopulation, smul_apply, add_apply, h12, Ne.symm h12]
   exact hz hmass (by norm_num [PartnerUtilities.Blocks, crossUtilities, h12, Ne.symm h12])
 
 #print axioms MatchingMap.toMatchingMeasure

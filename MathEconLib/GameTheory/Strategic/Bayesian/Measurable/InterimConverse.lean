@@ -80,7 +80,7 @@ theorem ae_interim_of_isBNE (s : G.Strategy) (hbne : G.IsBNE μ s)
     (G.measurable_lintegral_enorm_deviation μ B hmeas i s).comp (measurable_id.prodMk hd₀_meas)
   have hMass_fin_ae : ∀ᵐ θᵢ ∂(marginalType μ i), hMass θᵢ < ∞ := by
     filter_upwards [hdev i] with θᵢ hθ
-    exact hasFiniteIntegral_iff_enorm.mp (hθ (d₀ θᵢ)).2
+    exact hasFiniteIntegral_iff_eNorm.mp (hθ (d₀ θᵢ)).2
   -- A bounded conditional-mass slice retains a positive measure of improving types.
   have hSM_ex : ∃ M : ℕ, 0 < marginalType μ i (T ∩ {θᵢ | hMass θᵢ ≤ M}) := by
     by_contra hall
@@ -127,13 +127,13 @@ theorem ae_interim_of_isBNE (s : G.Strategy) (hbne : G.IsBNE μ s)
       exact le_add_self
   have hs'_int : Integrable (fun θ => G.payoff i (G.measurableActionProfile s' θ) θ) μ := by
     refine ⟨(G.measurable_payoff_comp hmeas i s').aestronglyMeasurable, ?_⟩
-    rw [hasFiniteIntegral_iff_enorm,
-      ← B.lintegral_insert i (G.measurable_payoff_comp hmeas i s').enorm]
+    rw [hasFiniteIntegral_iff_eNorm,
+      ← B.lintegral_insert i (G.measurable_payoff_comp hmeas i s').eNorm]
     have hequil_fin :
         ∫⁻ θᵢ, ∫⁻ θo, ‖G.payoff i (G.measurableActionProfile s (insert i θᵢ θo))
           (insert i θᵢ θo)‖ₑ ∂(B.opponents i θᵢ) ∂(marginalType μ i) < ∞ := by
-      rw [B.lintegral_insert i (G.measurable_payoff_comp hmeas i s).enorm]
-      exact hasFiniteIntegral_iff_enorm.mp (hint i).2
+      rw [B.lintegral_insert i (G.measurable_payoff_comp hmeas i s).eNorm]
+      exact hasFiniteIntegral_iff_eNorm.mp (hint i).2
     calc
       _ ≤ ∫⁻ θᵢ, (M + ∫⁻ θo, ‖G.payoff i (G.measurableActionProfile s (insert i θᵢ θo))
           (insert i θᵢ θo)‖ₑ ∂(B.opponents i θᵢ)) ∂(marginalType μ i) := lintegral_mono hbound

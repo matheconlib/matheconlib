@@ -3825,7 +3825,7 @@ lemma sum_eq_one_of_zero_outside (n : ℕ)
   have h₄ : ∑ i ∈ Finset.univ, z i = ∑ i ∈ C, z i + ∑ i ∈ Finset.univ \ C, z i := by
     have h₅ : ∑ i ∈ Finset.univ, z i = ∑ i ∈ C ∪ (Finset.univ \ C), z i := by
       congr 1
-      simp [Finset.ext_iff]
+      simp
     rw [h₅]
     have h₇ : Disjoint C (Finset.univ \ C) := by
       simp [Finset.disjoint_left]

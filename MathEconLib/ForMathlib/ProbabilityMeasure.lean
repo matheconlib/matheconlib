@@ -142,7 +142,7 @@ lemma ProbabilityMeasure.convex_range_toWeakDualContinuousMap {α : Type*} [Topo
   obtain ⟨μ₂, rfl⟩ := hy
   have hν : IsProbabilityMeasure
       (ENNReal.ofReal a • μ₁.toMeasure + ENNReal.ofReal b • μ₂.toMeasure) := ⟨by
-    simp [Measure.add_apply, Measure.smul_apply, smul_eq_mul,
+    simp [smul_eq_mul,
       ← ENNReal.ofReal_add ha hb, hab]⟩
   refine ⟨⟨_, hν⟩, ContinuousLinearMap.ext fun f ↦ ?_⟩
   simp only [toWeakDualContinuousMap]

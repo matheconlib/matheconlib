@@ -166,7 +166,7 @@ example : correlatedBeliefs.opponents false true {opponents false true} = 1 ∧
   · simp [correlatedBeliefs, Kernel.deterministic_apply]
   · simp only [correlatedPrior, Measure.map_add _ _ (measurable_drop false),
       Measure.map_smul _ (measurable_drop false).aemeasurable,
-      Measure.map_dirac' (measurable_drop false), Measure.add_apply, Measure.smul_apply,
+      Measure.map_dirac' (measurable_drop false), add_apply, smul_apply,
       smul_eq_mul]
     change (1 / 2 : ℝ≥0∞) * (Measure.dirac (opponents false false)) {opponents false true} +
       (1 / 2 : ℝ≥0∞) * (Measure.dirac (opponents false true)) {opponents false true} = 1 / 2

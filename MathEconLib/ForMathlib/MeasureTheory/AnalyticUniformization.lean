@@ -239,7 +239,12 @@ theorem AnalyticSet.exists_uniformization
   rcases isEmpty_or_nonempty X with hX | hX
   · exact ⟨fun x => isEmptyElim x, fun x => isEmptyElim x,
       fun s _ => by simp [Set.eq_empty_of_isEmpty]⟩
-  rw [AnalyticSet] at hR
+  replace hR : R = ∅ ∨ ∃ f : (ℕ → ℕ) → X × A, Continuous f ∧ range f = R := by
+    obtain ⟨β, _, _, g, hg, hgR⟩ := analyticSet_iff_exists_polishSpace_range.1 hR
+    rcases isEmpty_or_nonempty β with hβ | hβ
+    · exact .inl (hgR ▸ range_eq_empty g)
+    · obtain ⟨e, he, he_surj⟩ := PolishSpace.exists_nat_nat_continuous_surjective β
+      exact .inr ⟨g ∘ e, hg.comp he, (he_surj.range_comp g).trans hgR⟩
   rcases hR with hR_empty | ⟨f, hf_cont, hf_range⟩
   · obtain ⟨a, ha⟩ := hsec (Classical.arbitrary X)
     rw [hR_empty] at ha
